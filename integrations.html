@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integrations — KomboAI</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .int-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:16px; }
+    @media(max-width:640px){.int-grid{grid-template-columns:1fr 1fr;}}
+    .int-card { background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px; }
+    .int-logo { width:40px;height:40px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:.8125rem;color:var(--muted); }
+    .int-name { font-weight:600;font-size:.9375rem; }
+    .int-desc { font-size:.8125rem;color:var(--muted); }
+    .int-section { margin-bottom:48px; }
+    .int-section h3 { font-size:1rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header>
+  <nav class="container">
+    <a href="index.html" class="nav-logo">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="30" height="30" rx="8" fill="#6366f1"/>
+        <path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/>
+      </svg>
+      KomboAI
+    </a>
+    <div class="nav-items">
+      <div class="nav-dropdown">
+        <button>Product <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="features.html">Features</a>
+          <a href="integrations.html">Integrations</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Resources <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="customers.html">Customers</a>
+          <a href="podcast.html">Podcast</a>
+          <a href="newsletter.html">Newsletter</a>
+          <a href="blog.html">Blog</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Company <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="contact.html">Contact</a>
+          <a href="team.html">Team</a>
+          <a href="about.html">About</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Connect <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="#">LinkedIn</a>
+          <a href="#">X</a>
+          <a href="#">YouTube</a>
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+        </div>
+      </div>
+    </div>
+    <a href="contact.html" class="btn btn-outline nav-cta">See a Demo</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="11" x2="19" y2="11"/><line x1="3" y1="16" x2="19" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+</header>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu">
+  <details><summary>Product</summary><div class="sub-links"><a href="features.html">Features</a><a href="integrations.html">Integrations</a></div></details>
+  <details><summary>Resources</summary><div class="sub-links"><a href="customers.html">Customers</a><a href="podcast.html">Podcast</a><a href="newsletter.html">Newsletter</a><a href="blog.html">Blog</a></div></details>
+  <details><summary>Company</summary><div class="sub-links"><a href="contact.html">Contact</a><a href="team.html">Team</a><a href="about.html">About</a></div></details>
+  <details><summary>Connect</summary><div class="sub-links"><a href="#">LinkedIn</a><a href="#">X</a><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">TikTok</a></div></details>
+  <a href="contact.html" class="btn btn-primary mobile-btn">See a Demo</a>
+</div>
+
+<main>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">INTEGRATIONS</span>
+      <h1>Connect the tools your team already uses</h1>
+      <p>KomboAI syncs seamlessly with your existing stack. Set up in minutes, not weeks.</p>
+    </div>
+  </section>
+
+  <!-- INTEGRATIONS -->
+  <section>
+    <div class="container">
+
+      <!-- CRM -->
+      <div class="int-section">
+        <h3>CRM</h3>
+        <div class="int-grid">
+          <div class="int-card">
+            <div class="int-logo">HS</div>
+            <div>
+              <div class="int-name">HubSpot</div>
+              <div class="int-desc">Two-way sync for contacts, deals, and activities.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">SF</div>
+            <div>
+              <div class="int-name">Salesforce</div>
+              <div class="int-desc">Enterprise-grade sync with full pipeline visibility.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">PD</div>
+            <div>
+              <div class="int-name">Pipedrive</div>
+              <div class="int-desc">Lightweight CRM sync for fast-moving teams.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outreach & Email -->
+      <div class="int-section">
+        <h3>Outreach &amp; Email</h3>
+        <div class="int-grid">
+          <div class="int-card">
+            <div class="int-logo">Ou</div>
+            <div>
+              <div class="int-name">Outreach</div>
+              <div class="int-desc">Sync sequences and engagement signals.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">SL</div>
+            <div>
+              <div class="int-name">Salesloft</div>
+              <div class="int-desc">Bi-directional cadence and call data sync.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">Gm</div>
+            <div>
+              <div class="int-name">Gmail</div>
+              <div class="int-desc">Log emails and track opens automatically.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">Ou</div>
+            <div>
+              <div class="int-name">Outlook</div>
+              <div class="int-desc">Full calendar and email integration.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data & Enrichment -->
+      <div class="int-section">
+        <h3>Data &amp; Enrichment</h3>
+        <div class="int-grid">
+          <div class="int-card">
+            <div class="int-logo">LI</div>
+            <div>
+              <div class="int-name">LinkedIn Sales Navigator</div>
+              <div class="int-desc">Import prospects and signal data.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">Cl</div>
+            <div>
+              <div class="int-name">Clearbit</div>
+              <div class="int-desc">Enrich contacts with firmographic data.</div>
+            </div>
+          </div>
+          <div class="int-card">
+            <div class="int-logo">ZI</div>
+            <div>
+              <div class="int-name">ZoomInfo</div>
+              <div class="int-desc">Access 300M+ verified business contacts.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-banner">
+        <h2>Ready to Close More Deals<br>With AI?</h2>
+        <p>Join 500+ B2B sales teams using KomboAI to hit quota faster.</p>
+        <div class="cta-btns">
+          <a href="contact.html" class="btn btn-outline">See a Demo</a>
+          <a href="contact.html" class="btn btn-ghost">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;">
+          <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="8" fill="#6366f1"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+          KomboAI
+        </a>
+        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
+      </div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="features.html">Features</a></li><li><a href="integrations.html">Integrations</a></li></ul></div>
+      <div class="footer-col"><h4>Resources</h4><ul><li><a href="customers.html">Customers</a></li><li><a href="podcast.html">Podcast</a></li><li><a href="newsletter.html">Newsletter</a></li><li><a href="blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="contact.html">Contact</a></li><li><a href="team.html">Team</a></li><li><a href="about.html">About</a></li></ul></div>
+      <div class="footer-col"><h4>Connect</h4><ul><li><a href="#">LinkedIn</a></li><li><a href="#">X</a></li><li><a href="#">YouTube</a></li><li><a href="#">Instagram</a></li><li><a href="#">TikTok</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms &amp; Conditions</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Referral Programme</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 KomboAI. All rights reserved.</span>
+      <span class="footer-lang"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><circle cx="8" cy="8" r="6"/><path d="M8 2a9 9 0 0 1 0 12M8 2a9 9 0 0 0 0 12M2 8h12"/></svg> English</span>
+    </div>
+  </div>
+</footer>
+<script src="script.js"></script>
+
+</body>
+</html>
