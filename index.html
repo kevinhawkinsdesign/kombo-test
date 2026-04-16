@@ -3,66 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kombo</title>
+  <title>KomboAI — AI-Powered Sales Intelligence</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <nav>
-      <div class="logo">Kombo</div>
-      <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
 
-  <main>
-    <section class="hero">
-      <h1>Welcome to Kombo</h1>
-      <p>A modern solution for your workflow.</p>
-      <a href="#features" class="btn">Get Started</a>
-    </section>
+<!-- NAV -->
+<header>
+  <nav class="container">
+    <a href="index.html" class="nav-logo">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="30" height="30" rx="8" fill="#6366f1"/>
+        <path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/>
+      </svg>
+      KomboAI
+    </a>
 
-    <section id="features" class="features">
-      <h2>Features</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <h3>Fast</h3>
-          <p>Built for speed and performance from the ground up.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Simple</h3>
-          <p>Clean, intuitive interface that gets out of your way.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Powerful</h3>
-          <p>All the tools you need, when you need them.</p>
+    <div class="nav-items">
+      <div class="nav-dropdown">
+        <button>Product <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="features.html">Features</a>
+          <a href="integrations.html">Integrations</a>
         </div>
       </div>
-    </section>
+      <div class="nav-dropdown">
+        <button>Resources <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="customers.html">Customers</a>
+          <a href="podcast.html">Podcast</a>
+          <a href="newsletter.html">Newsletter</a>
+          <a href="blog.html">Blog</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Company <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="contact.html">Contact</a>
+          <a href="team.html">Team</a>
+          <a href="about.html">About</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Connect <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg></button>
+        <div class="dropdown-menu">
+          <a href="#">LinkedIn</a>
+          <a href="#">X</a>
+          <a href="#">YouTube</a>
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+        </div>
+      </div>
+    </div>
 
-    <section id="about" class="about">
-      <h2>About</h2>
-      <p>Kombo is designed to help teams work smarter, not harder. We believe great software should be accessible to everyone.</p>
-    </section>
+    <a href="contact.html" class="btn btn-outline nav-cta">See a Demo</a>
 
-    <section id="contact" class="contact">
-      <h2>Contact</h2>
-      <form id="contact-form">
-        <input type="text" name="name" placeholder="Your name" required />
-        <input type="email" name="email" placeholder="Your email" required />
-        <textarea name="message" placeholder="Your message" rows="5" required></textarea>
-        <button type="submit" class="btn">Send Message</button>
-      </form>
-    </section>
-  </main>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="11" x2="19" y2="11"/><line x1="3" y1="16" x2="19" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+</header>
 
-  <footer>
-    <p>&copy; 2026 Kombo. All rights reserved.</p>
-  </footer>
+<!-- MOBILE MENU -->
+<div class="mobile-menu">
+  <details><summary>Product</summary><div class="sub-links"><a href="features.html">Features</a><a href="integrations.html">Integrations</a></div></details>
+  <details><summary>Resources</summary><div class="sub-links"><a href="customers.html">Customers</a><a href="podcast.html">Podcast</a><a href="newsletter.html">Newsletter</a><a href="blog.html">Blog</a></div></details>
+  <details><summary>Company</summary><div class="sub-links"><a href="contact.html">Contact</a><a href="team.html">Team</a><a href="about.html">About</a></div></details>
+  <details><summary>Connect</summary><div class="sub-links"><a href="#">LinkedIn</a><a href="#">X</a><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">TikTok</a></div></details>
+  <a href="contact.html" class="btn btn-primary mobile-btn">See a Demo</a>
+</div>
 
-  <script src="script.js"></script>
+<!-- HERO -->
+<section class="home-hero">
+  <div class="container">
+    <h1>Close More Deals<br><span>With AI</span></h1>
+    <p>KomboAI gives your sales team the intelligence of a 20-year veteran — at the speed of AI. Rank leads, predict pipeline, and outreach on autopilot.</p>
+    <div class="home-hero-btns">
+      <a href="contact.html" class="btn btn-primary">See a Demo &rarr;</a>
+      <a href="features.html" class="btn btn-ghost">See How It Works</a>
+    </div>
+    <div class="home-stats">
+      <div class="stat-item">
+        <span class="stat-num">500+</span>
+        <div class="stat-label">B2B teams</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">40%</span>
+        <div class="stat-label">Higher close rate</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">60%</span>
+        <div class="stat-label">Less manual research</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">94%</span>
+        <div class="stat-label">Forecast accuracy</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<section class="logos-section">
+  <div class="container">
+    <p class="logos-label">Trusted by fast-growing B2B sales teams</p>
+    <div class="logos-row">
+      <span class="logo-pill">NovaTech Solutions</span>
+      <span class="logo-pill">Meridian Group</span>
+      <span class="logo-pill">ScaleUp Partners</span>
+      <span class="logo-pill">Apex Revenue</span>
+      <span class="logo-pill">PipelineCo</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES OVERVIEW -->
+<section class="home-features surface">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Product</span>
+      <h2>Everything your team needs to win</h2>
+      <p>From lead scoring to pipeline analytics — KomboAI gives your sales team an unfair advantage at every stage of the deal cycle.</p>
+    </div>
+    <div class="card-grid-3">
+      <div class="card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/><line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/></svg>
+        </div>
+        <h3>AI Lead Scoring</h3>
+        <p>Automatically rank and prioritize leads based on buying signals, engagement history, and fit — updated in real time.</p>
+      </div>
+      <div class="card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Pipeline Intelligence</h3>
+        <p>See the health of every deal at a glance. KomboAI flags stale opportunities and forecasts revenue with 94% accuracy.</p>
+      </div>
+      <div class="card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Automated Outreach</h3>
+        <p>Craft personalized email sequences powered by AI. Reach the right prospects with the right message at the right moment — at scale.</p>
+      </div>
+      <div class="card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <h3>CRM Intelligence</h3>
+        <p>Sync with HubSpot or Salesforce. KomboAI enriches contacts, flags stale deals, and recommends next-best actions.</p>
+      </div>
+      <div class="card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3>Ask KomboAI Anything</h3>
+        <p>Get instant answers about your pipeline, forecasts, and deal status — all in natural language. Like a revenue analyst on speed dial.</p>
+      </div>
+      <div class="card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3>Integrations</h3>
+        <p>Connect with the tools your team already uses — HubSpot, Salesforce, Outreach, LinkedIn, and dozens more — in one click.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:36px;">
+      <a href="features.html" class="btn btn-primary">Explore All Features &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">Customers</span>
+      <h2>Loved by sales teams worldwide</h2>
+      <p>From 5-person startups to 500-seat enterprises — teams that use KomboAI close more deals, faster.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p class="quote-text">"Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher."</p>
+        <div class="quote-author">
+          <div class="avatar">SC</div>
+          <div>
+            <div class="author-name">Sarah Chen</div>
+            <div class="author-title">VP of Sales, NovaTech Solutions</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="quote-text">"The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — and our close rate jumped 40%."</p>
+        <div class="quote-author">
+          <div class="avatar">JW</div>
+          <div>
+            <div class="author-name">James Whitfield</div>
+            <div class="author-title">Head of Revenue, Meridian Group</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="quote-text">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us from 5 reps to 50."</p>
+        <div class="quote-author">
+          <div class="avatar">LF</div>
+          <div>
+            <div class="author-name">Lucia Fernández</div>
+            <div class="author-title">COO, ScaleUp Partners</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:36px;">
+      <a href="customers.html" class="btn btn-ghost">See All Case Studies &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-banner">
+      <h2>Ready to Close More Deals<br>With AI?</h2>
+      <p>Join 500+ B2B sales teams using KomboAI to hit quota faster.</p>
+      <div class="cta-btns">
+        <a href="contact.html" class="btn btn-outline">See a Demo</a>
+        <a href="contact.html" class="btn btn-ghost">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;">
+          <svg width="28" height="28" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="8" fill="#6366f1"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+          KomboAI
+        </a>
+        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="integrations.html">Integrations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="customers.html">Customers</a></li>
+          <li><a href="podcast.html">Podcast</a></li>
+          <li><a href="newsletter.html">Newsletter</a></li>
+          <li><a href="blog.html">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="team.html">Team</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">X</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">TikTok</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Referral Programme</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 KomboAI. All rights reserved.</span>
+      <span class="footer-lang">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2a9 9 0 0 1 0 12M8 2a9 9 0 0 0 0 12M2 8h12"/></svg>
+        English
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
