@@ -45,15 +45,21 @@ On first run, `seedIfEmpty` (`src/seed/index.ts`) creates the 10 docs from `src/
 
 ### One-time setup
 
+The fast path — with the dev server running (`npm run dev`):
+
+```bash
+bash scripts/bootstrap-mcp.sh
+set -a; source .env.mcp.local; set +a
+claude   # launched from the repo root so .mcp.json is picked up
+```
+
+`scripts/bootstrap-mcp.sh` registers an admin user, creates a `payload-mcp-api-keys` doc with full media + pages permissions, generates a UUID for the key, and writes it to `.env.mcp.local` (gitignored, mode 600). Override `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `KEY_LABEL` / `BASE_URL` via env vars if the defaults don't fit.
+
+The manual path:
+
 1. `npm run dev` and create the first admin at http://localhost:3000/admin.
-2. In the admin, go to **MCP → API Keys**, click **Create New**, toggle the capabilities you want the key to allow (find / create / update / delete per collection), and copy the generated key.
-3. Export it in whatever shell you launch Claude Code from:
-
-   ```bash
-   export PAYLOAD_MCP_API_KEY=mcp_...
-   ```
-
-   Claude Code reads `${VAR}` placeholders in `.mcp.json` from the shell environment — it does **not** auto-load this project's `.env`. If you use direnv / mise / dotenv-cli, wire it through there.
+2. In the admin, go to **MCP → API Keys**, click **Create New**, toggle capabilities per collection, click the **Generate New API Key** control, and copy the key.
+3. Export it in whatever shell launches Claude Code (`export PAYLOAD_MCP_API_KEY=...`). Claude Code reads `${VAR}` placeholders in `.mcp.json` from the shell environment — it does **not** auto-load this project's `.env`.
 4. Start Claude Code from the repo root: it'll pick up `.mcp.json` and attach the `payload` MCP server. The dev server must be running for tool calls to succeed.
 
 ### Override the URL
