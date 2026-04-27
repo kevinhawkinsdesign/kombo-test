@@ -32,14 +32,34 @@ The SQLite database file (`payload.db`) is created next to the project root on f
 
 ## MCP
 
-`@payloadcms/plugin-mcp` exposes Payload as an MCP server at `POST /api/mcp`. Setup:
+`@payloadcms/plugin-mcp` exposes Payload as an MCP server at `POST /api/mcp`. The repo ships a project-scoped `.mcp.json` so Claude Code (and any other MCP client that reads `.mcp.json`) auto-registers a `payload` server when run from this directory.
 
-1. `npm run dev`, log into `/admin`, go to **MCP → API Keys**, create a key and toggle the operations you want it to allow.
-2. Hand the key to your MCP client. For Claude Code:
+### One-time setup
+
+1. `npm run dev` and create the first admin at http://localhost:3000/admin.
+2. In the admin, go to **MCP → API Keys**, click **Create New**, toggle the capabilities you want the key to allow (find / create / update / delete per collection), and copy the generated key.
+3. Export it in whatever shell you launch Claude Code from:
 
    ```bash
-   claude mcp add --transport http Payload http://127.0.0.1:3000/api/mcp \
-     --header "Authorization: Bearer MCP-USER-API-KEY"
+   export PAYLOAD_MCP_API_KEY=mcp_...
    ```
 
-Currently the `media` collection is enabled in `payload.config.ts`. Add more collections (or `globals`) to the `mcpPlugin({...})` call as needed — see the [docs](https://payloadcms.com/docs/plugins/mcp).
+   Claude Code reads `${VAR}` placeholders in `.mcp.json` from the shell environment — it does **not** auto-load this project's `.env`. If you use direnv / mise / dotenv-cli, wire it through there.
+4. Start Claude Code from the repo root: it'll pick up `.mcp.json` and attach the `payload` MCP server. The dev server must be running for tool calls to succeed.
+
+### Override the URL
+
+`.mcp.json` falls back to `http://127.0.0.1:3000/api/mcp`. Point it elsewhere (e.g. a deployed instance) by exporting `PAYLOAD_MCP_URL`.
+
+### Alternative: user-scoped install
+
+If you'd rather register the server globally instead of per-project:
+
+```bash
+claude mcp add --transport http Payload http://127.0.0.1:3000/api/mcp \
+  --header "Authorization: Bearer $PAYLOAD_MCP_API_KEY"
+```
+
+### Exposing more collections
+
+The `media` collection is enabled in `payload.config.ts`. Add more collections (or `globals`) to the `mcpPlugin({...})` call as needed — see the [Payload MCP docs](https://payloadcms.com/docs/plugins/mcp).
