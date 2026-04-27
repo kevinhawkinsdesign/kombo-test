@@ -25,10 +25,19 @@ The SQLite database file (`payload.db`) is created next to the project root on f
 
 ## Layout
 
-- `src/payload.config.ts` — Payload config (SQLite adapter, Lexical editor, Users + Media collections, MCP plugin)
-- `src/collections/` — collection definitions
+- `src/payload.config.ts` — Payload config (SQLite adapter, Lexical editor, Users + Media + Pages, MCP plugin, seed-on-init)
+- `src/collections/` — collection definitions (`Users`, `Media`, `Pages`)
+- `src/seed/` — seed data + bootstrap that populates Pages on first run if none exist
+- `src/components/` — shared `Header` / `Footer` used by the public layout
 - `src/app/(payload)/` — Payload admin route group
-- `src/app/(frontend)/` — public site route group
+- `src/app/(frontend)/` — public site (`/` is the home page; `/[slug]` renders any other Page from Payload)
+- `public/site.js` — small client script for the nav dropdowns / mobile menu
+
+## Pages
+
+The original static HTML pages (home, about, blog, contact, customers, features, integrations, newsletter, podcast, team) were migrated into the `pages` collection. Each doc has `slug`, `title`, `metaDescription`, and a `bodyHtml` code field. The shared header and footer live in React components and are not part of `bodyHtml`.
+
+On first run, `seedIfEmpty` (`src/seed/index.ts`) creates the 10 docs from `src/seed/pages-data.ts`. To re-seed, delete `payload.db` and restart the dev server. To edit content, log into `/admin` and edit the doc; the change is live on the next request.
 
 ## MCP
 
