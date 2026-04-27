@@ -25,7 +25,21 @@ The SQLite database file (`payload.db`) is created next to the project root on f
 
 ## Layout
 
-- `src/payload.config.ts` — Payload config (SQLite adapter, Lexical editor, Users + Media collections)
+- `src/payload.config.ts` — Payload config (SQLite adapter, Lexical editor, Users + Media collections, MCP plugin)
 - `src/collections/` — collection definitions
 - `src/app/(payload)/` — Payload admin route group
 - `src/app/(frontend)/` — public site route group
+
+## MCP
+
+`@payloadcms/plugin-mcp` exposes Payload as an MCP server at `POST /api/mcp`. Setup:
+
+1. `npm run dev`, log into `/admin`, go to **MCP → API Keys**, create a key and toggle the operations you want it to allow.
+2. Hand the key to your MCP client. For Claude Code:
+
+   ```bash
+   claude mcp add --transport http Payload http://127.0.0.1:3000/api/mcp \
+     --header "Authorization: Bearer MCP-USER-API-KEY"
+   ```
+
+Currently the `media` collection is enabled in `payload.config.ts`. Add more collections (or `globals`) to the `mcpPlugin({...})` call as needed — see the [docs](https://payloadcms.com/docs/plugins/mcp).
