@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KomboAI — V6 Color Chapters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caprasimo&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --blue-1:#0E2A78;
+    --blue-2:#1B47B8;
+    --orange-1:#F26B2B;
+    --orange-2:#FFA63D;
+    --yellow:#F5C233;
+    --purple-1:#5B3CC2;
+    --purple-2:#3F1FA0;
+    --teal:#1FB7B0;
+    --coral:#E85A5A;
+    --cream:#F4EFE2;
+    --ink:#0A0F1F;
+  }
+  html,body{background:#0A0F1F;color:#fff;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .page{width:1440px;margin:0 auto}
+
+  /* shared section */
+  section{position:relative;overflow:hidden}
+  .nav-row{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:28px 64px;z-index:10}
+  .logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:600;font-size:18px;letter-spacing:-.02em}
+  .logo-mark{width:28px;height:28px;background:#F26B2B;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;font-family:'Caprasimo'}
+  .nav-links{display:flex;gap:6px}
+  .nav-links a{color:#fff;text-decoration:none;font-size:13px;letter-spacing:.04em;padding:8px 14px;border-radius:99px}
+  .nav-links a:hover{background:rgba(255,255,255,.1)}
+  .nav-links a .caret{margin-left:6px;font-size:9px;opacity:.6}
+
+  /* HERO — deep blue */
+  .s-hero{height:820px;background:radial-gradient(ellipse 120% 80% at 80% 30%,var(--blue-2) 0%,var(--blue-1) 50%,#06154A 100%);padding:120px 64px 80px;display:flex;align-items:center;justify-content:space-between;gap:60px}
+  /* coral square top-left like the reference */
+  .corner-tag{position:absolute;top:0;left:0;width:200px;height:160px;background:#E5563D;color:#fff;padding:24px;display:flex;flex-direction:column;justify-content:space-between;font-family:'Caprasimo',serif;font-size:22px;line-height:1;letter-spacing:-.01em;clip-path:polygon(0 0,100% 0,100% 100%,16% 100%,0 88%)}
+  .corner-tag .small{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;opacity:.85}
+
+  /* big plant silhouettes for atmosphere */
+  .leaf{position:absolute;background:linear-gradient(180deg,#162A6E 0%,#091438 100%);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%}
+  .leaf.l1{width:140px;height:340px;top:-40px;right:80px;transform:rotate(15deg)}
+  .leaf.l2{width:100px;height:260px;top:60px;right:200px;transform:rotate(-10deg);background:linear-gradient(180deg,#13245F 0%,#091438 100%)}
+  .leaf.l3{width:80px;height:200px;top:140px;right:30px;transform:rotate(40deg);background:linear-gradient(180deg,#0F1F50 0%,#06133A 100%)}
+
+  /* gradient business card */
+  .grad-card{position:absolute;left:64px;top:200px;width:340px;height:170px;border-radius:14px;background:linear-gradient(135deg,#FF5DAE 0%,#7A2DD9 50%,#2A4DE2 100%);box-shadow:0 30px 60px -20px rgba(0,0,0,.5);display:flex;flex-direction:column;justify-content:space-between;padding:20px;color:#fff;font-size:11px;font-family:'Inter';opacity:.95}
+  .grad-card .gc-name{font-family:'Caprasimo',serif;font-size:22px;letter-spacing:-.01em}
+  .grad-card .gc-meta{font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+  .grad-card .gc-line{height:2px;width:60%;background:rgba(255,255,255,.45);border-radius:2px}
+
+  .hero-content{position:relative;flex:1;max-width:740px;margin-left:340px}
+  .hero-content h1{font-family:'Caprasimo','Fraunces',serif;font-weight:400;font-size:140px;line-height:.92;letter-spacing:-.03em;color:#fff;margin-bottom:28px}
+  .hero-content h1 em{font-style:italic;font-family:'Fraunces',serif;font-weight:400;color:#FFB55A}
+  .hero-content p{font-size:17px;line-height:1.55;color:rgba(255,255,255,.78);max-width:540px;margin-bottom:32px}
+  .hero-cta{display:flex;align-items:center;gap:14px}
+  .hero-cta .btn{font-family:inherit;font-size:14px;font-weight:600;padding:16px 30px;border-radius:8px;background:var(--coral);color:#fff;border:none;cursor:pointer}
+  .hero-cta .btn:hover{filter:brightness(1.05)}
+  .hero-cta .ghost{color:#fff;font-size:14px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4);padding-bottom:2px}
+
+  /* SECTION 2 — orange stage */
+  .s-stage{height:780px;background:linear-gradient(180deg,#F26B2B 0%,#E85B1F 60%,#F5C233 100%);padding:110px 64px 0;position:relative;display:flex;align-items:flex-end}
+  .s-stage::before{content:"";position:absolute;top:0;left:0;right:0;height:140px;background:linear-gradient(180deg,rgba(14,42,120,.4) 0%,transparent 100%)}
+  .stage-arch{position:absolute;right:0;top:0;width:340px;height:100%;background:radial-gradient(ellipse at right top,#FFA63D 0%,transparent 70%);border-bottom-left-radius:300px 200px}
+  .pinstripes{position:absolute;left:60%;top:18%;width:240px;height:62%;background:repeating-linear-gradient(0deg,#E85B1F 0,#E85B1F 6px,transparent 6px,transparent 14px);transform:perspective(700px) rotateY(-12deg);transform-origin:right center;opacity:.55}
+
+  .stage-headline{position:absolute;top:120px;left:64px;color:#fff;font-family:'Caprasimo',serif;font-size:108px;line-height:.92;letter-spacing:-.02em;max-width:780px}
+  .stage-headline em{font-style:italic;font-family:'Fraunces',serif;color:#FFE6B0}
+  .stage-sub{position:absolute;top:380px;left:64px;color:rgba(255,255,255,.85);font-size:17px;line-height:1.55;max-width:480px}
+
+  /* 3D-feel objects on stage */
+  .lamp{position:absolute;left:64px;bottom:80px;width:6px;height:240px;background:#0E2A78;border-radius:3px}
+  .lamp::before{content:"";position:absolute;top:0;left:-2px;width:90px;height:14px;background:#1B47B8;transform:rotate(-22deg);transform-origin:left center;border-radius:3px}
+  .lamp::after{content:"";position:absolute;top:-6px;left:80px;width:14px;height:14px;background:#FFE6B0;border-radius:50%;transform:rotate(-22deg);box-shadow:0 0 30px #FFE6B0,0 0 60px rgba(255,230,176,.5)}
+
+  .sofa{position:absolute;left:200px;bottom:80px;width:300px;height:170px}
+  .sofa .seat{position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(180deg,#C53D2C 0%,#9F2A1C 100%);border-radius:80px 80px 30px 30px;box-shadow:0 14px 0 #6F1B12,inset 0 -12px 24px rgba(0,0,0,.25)}
+  .sofa .cush{position:absolute;bottom:60px;left:30px;right:30px;height:50px;background:#D9492F;border-radius:40px 40px 10px 10px}
+
+  .pot{position:absolute;left:560px;bottom:80px;width:160px;height:240px}
+  .pot .vase{position:absolute;bottom:0;left:30px;width:100px;height:100px;background:linear-gradient(180deg,#D8A26A 0%,#9F6F44 100%);border-radius:8px 8px 18px 18px}
+  .pot .leaf-a{position:absolute;bottom:90px;left:50%;width:24px;height:130px;background:linear-gradient(180deg,#3F8744 0%,#1F5828 100%);border-radius:50%;transform:translateX(-60%) rotate(-12deg)}
+  .pot .leaf-b{position:absolute;bottom:90px;left:50%;width:24px;height:140px;background:linear-gradient(180deg,#4FA44F 0%,#28732E 100%);border-radius:50%;transform:translateX(-20%) rotate(8deg)}
+  .pot .leaf-c{position:absolute;bottom:90px;left:50%;width:24px;height:120px;background:linear-gradient(180deg,#5BB659 0%,#2E8233 100%);border-radius:50%;transform:translateX(-100%) rotate(-30deg)}
+
+  .dog{position:absolute;left:130px;bottom:80px;width:90px;height:140px}
+  .dog .body{position:absolute;bottom:0;left:0;width:90px;height:90px;background:linear-gradient(180deg,#C9A57A 0%,#8C6A40 100%);border-radius:50%}
+  .dog .head{position:absolute;bottom:60px;left:14px;width:62px;height:80px;background:linear-gradient(180deg,#D9B58A 0%,#9C7748 100%);border-radius:40% 40% 30% 30%}
+  .dog .ear-l,.dog .ear-r{position:absolute;width:20px;height:34px;background:#705030;border-radius:50%;top:-6px}
+  .dog .ear-l{left:6px;transform:rotate(-20deg)}
+  .dog .ear-r{right:6px;transform:rotate(20deg)}
+  .dog .eye{position:absolute;width:6px;height:6px;background:#1A1208;border-radius:50%;top:30px}
+  .dog .eye.l{left:18px}
+  .dog .eye.r{right:18px}
+
+  /* SECTION 3 — purple */
+  .s-purple{min-height:740px;background:linear-gradient(180deg,#5B3CC2 0%,#3F1FA0 100%);padding:110px 64px 110px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative}
+  .pp-stripes{position:absolute;left:80px;top:80px;width:260px;height:62%;background:repeating-linear-gradient(0deg,#FF6BB1 0,#FF6BB1 8px,transparent 8px,transparent 18px);transform:perspective(700px) rotateY(8deg);transform-origin:left center;border-radius:8px;opacity:.95}
+  .stool{position:absolute;left:160px;bottom:120px;width:220px;height:160px}
+  .stool .top{position:absolute;top:0;left:0;width:100%;height:60px;background:linear-gradient(180deg,#F5C233 0%,#D4A01F 100%);border-radius:60px 60px 50px 50px}
+  .stool .leg{position:absolute;top:50px;left:50%;width:90px;height:110px;background:linear-gradient(180deg,#E0A91C 0%,#A2740E 100%);border-radius:8px;transform:translateX(-50%)}
+
+  .pp-content{position:relative;z-index:2;grid-column:2;background:rgba(244,239,226,.95);color:var(--ink);padding:54px 48px;border-radius:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.4)}
+  .pp-content .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5B3CC2;font-weight:700;margin-bottom:18px}
+  .pp-content h2{font-family:'Caprasimo','Fraunces',serif;font-size:62px;line-height:.96;letter-spacing:-.025em;color:var(--ink);margin-bottom:20px}
+  .pp-content h2 em{font-style:italic;font-family:'Fraunces',serif;color:#5B3CC2}
+  .pp-content p{font-size:16px;line-height:1.6;color:#3A3F50;margin-bottom:24px}
+  .pp-content .pcta{font-family:inherit;font-size:13px;font-weight:600;padding:13px 26px;border-radius:99px;background:transparent;color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;letter-spacing:.04em}
+
+  /* SECTION 4 — teal + coral split */
+  .s-split{display:grid;grid-template-columns:1fr 1fr}
+  .s-split > div{padding:96px 56px;min-height:480px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;color:#fff}
+  .split-teal{background:linear-gradient(180deg,#1FB7B0 0%,#117D78 100%)}
+  .split-coral{background:linear-gradient(180deg,#E85A5A 0%,#A93535 100%)}
+  .split-teal::after,.split-coral::after{content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 40%),
+    radial-gradient(circle at 20% 80%,rgba(0,0,0,.18),transparent 40%);
+    pointer-events:none}
+
+  .s-split .scribble{font-family:'Caprasimo',serif;font-size:28px;letter-spacing:.02em;margin-bottom:14px;opacity:.9}
+  .s-split h3{font-family:'Caprasimo',serif;font-size:64px;line-height:.95;letter-spacing:-.025em;margin-bottom:18px}
+  .s-split p{font-size:16px;line-height:1.55;max-width:380px;color:rgba(255,255,255,.85);margin-bottom:28px}
+  .s-split .btn{align-self:flex-start;font-family:inherit;font-size:13px;font-weight:600;padding:14px 28px;border-radius:99px;background:#fff;color:var(--ink);border:none;cursor:pointer;letter-spacing:.04em}
+
+  /* stair illustration in coral side */
+  .stairs{position:absolute;right:40px;bottom:0;width:240px;height:240px}
+  .stairs .step{position:absolute;background:linear-gradient(180deg,#FF8B5C 0%,#D04C2D 100%);box-shadow:0 -2px 0 rgba(255,255,255,.15) inset}
+  .stairs .step:nth-child(1){bottom:0;left:0;width:240px;height:60px}
+  .stairs .step:nth-child(2){bottom:60px;left:60px;width:180px;height:60px}
+  .stairs .step:nth-child(3){bottom:120px;left:120px;width:120px;height:60px}
+  .stairs .step:nth-child(4){bottom:180px;left:180px;width:60px;height:60px}
+
+  .arch-teal{position:absolute;right:0;top:0;width:340px;height:100%;background:radial-gradient(circle at right top,rgba(255,255,255,.18),transparent 60%);pointer-events:none}
+  .planet{position:absolute;right:60px;top:60px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7DDED8 0%,#0F6660 80%);box-shadow:inset -16px -16px 30px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25)}
+
+  /* FOOTER */
+  footer{padding:36px 64px;background:#0A0F1F;color:#7E7F88;display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  footer a{color:#fff;text-decoration:none}
+  footer .pages{display:flex;gap:18px}
+  footer .pages span:not(.active){opacity:.5}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO blue chapter -->
+  <section class="s-hero">
+    <div class="nav-row">
+      <div class="logo"><span class="logo-mark">K</span> KOMBOAI</div>
+      <div class="nav-links">
+        <a>Product <span class="caret">▼</span></a>
+        <a>Coaching <span class="caret">▼</span></a>
+        <a>Pricing <span class="caret">▼</span></a>
+        <a>Customers <span class="caret">▼</span></a>
+        <a>Sign in</a>
+      </div>
+    </div>
+
+    <div class="corner-tag">
+      <div class="small">Chapter 01</div>
+      <div>The AI<br>co-pilot</div>
+    </div>
+
+    <div class="leaf l1"></div>
+    <div class="leaf l2"></div>
+    <div class="leaf l3"></div>
+
+    <div class="grad-card">
+      <div>
+        <div class="gc-meta">REVENUE TEAMS</div>
+        <div class="gc-name">Maya Chen</div>
+      </div>
+      <div class="gc-line"></div>
+      <div class="gc-meta">Senior RevOps · Northwind</div>
+    </div>
+
+    <div class="hero-content">
+      <h1>Less clicks.<br><em>More</em> selling.</h1>
+      <p>KomboAI sits on top of your CRM and gives every SDR and AE a personal co-pilot — drafting outreach, surfacing buying signals, and coaching live calls. Without leaving the record.</p>
+      <div class="hero-cta">
+        <button class="btn">Book a demo →</button>
+        <a class="ghost" href="#">See how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORANGE stage chapter -->
+  <section class="s-stage">
+    <div class="stage-arch"></div>
+    <div class="pinstripes"></div>
+    <h2 class="stage-headline">Built for the<br>way your <em>floor</em><br>actually sells.</h2>
+    <p class="stage-sub">No new windows. No copy-paste. Kombo runs inside the record where your reps already work — Salesforce, HubSpot, Gmail, your own internal CRM.</p>
+
+    <div class="lamp"></div>
+    <div class="dog"><div class="ear-l"></div><div class="head"><div class="eye l"></div><div class="eye r"></div></div><div class="ear-r"></div><div class="body"></div></div>
+    <div class="sofa"><div class="seat"></div><div class="cush"></div></div>
+    <div class="pot"><div class="leaf-a"></div><div class="leaf-b"></div><div class="leaf-c"></div><div class="vase"></div></div>
+  </section>
+
+  <!-- PURPLE chapter -->
+  <section class="s-purple">
+    <div class="pp-stripes"></div>
+    <div class="stool"><div class="top"></div><div class="leg"></div></div>
+
+    <div class="pp-content">
+      <div class="eyebrow">Chapter 03 · Coaching</div>
+      <h2>Every rep gets <em>their own AE</em> in the room.</h2>
+      <p>Live call coaching that whispers the next question, the right objection, and the close that fits the deal — based on every call your team has ever logged.</p>
+      <button class="pcta">Read the playbook →</button>
+    </div>
+  </section>
+
+  <!-- TEAL + CORAL split -->
+  <section class="s-split">
+    <div class="split-teal">
+      <div class="arch-teal"></div>
+      <div class="planet"></div>
+      <div>
+        <div class="scribble">Pipeline</div>
+        <h3>Insight that ships in days, not quarters.</h3>
+        <p>Forecasting and pipeline reviews drafted before your Monday meeting. Numbers your CRO can actually trust.</p>
+      </div>
+      <button class="btn">See pipeline AI →</button>
+    </div>
+
+    <div class="split-coral">
+      <div class="stairs"><div class="step"></div><div class="step"></div><div class="step"></div><div class="step"></div></div>
+      <div>
+        <div class="scribble">Onboarding</div>
+        <h3>Ramp new reps to quota in 30 days.</h3>
+        <p>Kombo trains every new hire on your real customer calls — not a recorded webinar from 2021.</p>
+      </div>
+      <button class="btn">Talk to sales →</button>
+    </div>
+  </section>
+
+  <footer>
+    <div>KEVIN HAWKINS · KOMBOAI · 2026</div>
+    <div class="pages"><span class="active">VOL 06</span><span>CHAPTERS 01–04</span></div>
+    <div><a href="./index.html">← BACK TO MOCKUPS</a></div>
+  </footer>
+</div>
+</body>
+</html>

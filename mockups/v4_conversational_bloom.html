@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KomboAI — V4 Conversational Bloom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --ink:#10131A;
+    --ink-2:#3A4150;
+    --muted:#6B7280;
+    --line:#E5E7EB;
+    --paper:#FFFFFF;
+    --shell:#F3F4F6;
+    --sky-1:#B8D5EE;
+    --sky-2:#D9E6F2;
+    --sky-3:#F1F4DA;
+    --blue:#3D7BD0;
+    --blue-soft:#9DC3EE;
+    --lime:#D9E847;
+    --green:#A8D88C;
+    --teal:#6BB6B0;
+    --peach:#E8B596;
+  }
+  html,body{background:var(--shell);color:var(--ink);font-family:'Bricolage Grotesque','Inter',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{width:1440px;margin:0 auto;padding:24px 24px 64px}
+
+  /* TOP TWO-PANEL HERO */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:18px;background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 60%,var(--sky-3) 100%);border-radius:28px;padding:18px;position:relative;min-height:720px;overflow:hidden}
+
+  /* clouds bg */
+  .cloud{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(2px);pointer-events:none}
+  .c1{width:240px;height:120px;top:140px;left:36%}
+  .c2{width:180px;height:90px;top:380px;left:14%}
+  .c3{width:300px;height:140px;top:520px;left:42%}
+
+  /* LEFT PANEL — chat collage */
+  .panel{position:relative;border-radius:22px;padding:22px}
+  .left{display:flex;flex-direction:column;gap:14px;justify-content:flex-start}
+  .topbar{display:flex;align-items:center;justify-content:space-between;background:transparent;padding:0 6px}
+  .auth{display:flex;gap:8px}
+  .auth .btn{font-family:inherit;font-size:13px;font-weight:500;padding:8px 16px;border-radius:99px;background:rgba(255,255,255,.7);border:1px solid rgba(16,19,26,.08);color:var(--ink);cursor:pointer}
+  .auth .btn.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .socials{display:flex;gap:8px}
+  .social{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--blue);font-weight:700}
+
+  .bubbles{position:relative;flex:1;margin-top:18px}
+  .bubble{position:absolute;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 24px -10px rgba(16,19,26,.18);font-size:14px;color:var(--ink);max-width:280px}
+  .bubble .time{display:block;text-align:right;font-size:11px;color:var(--muted);margin-top:4px}
+  .bubble.b1{top:0;left:8px}
+  .bubble.b1 .emoji{font-size:13px;margin-right:2px}
+  .bubble.voice{top:118px;left:24px;display:flex;align-items:center;gap:10px;padding:10px 14px;width:280px}
+  .bubble.voice .play{width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .wave{flex:1;display:flex;align-items:center;gap:2px;height:24px}
+  .wave span{display:block;width:3px;background:var(--blue);border-radius:2px}
+  .wave span:nth-child(odd){height:60%}
+  .wave span:nth-child(3n){height:90%}
+  .wave span:nth-child(5n){height:30%}
+  .voice .av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#F3C28B,#D9905A);flex-shrink:0;border:2px solid #fff}
+  .bubble.b3{top:208px;left:6px;background:#fff}
+  .bubble.b3 .emoji{font-size:13px;margin-left:4px}
+
+  .photo-card{position:absolute;top:286px;left:14px;width:230px;background:#fff;border-radius:16px;padding:8px;box-shadow:0 14px 30px -12px rgba(16,19,26,.22)}
+  .photo{aspect-ratio:1/1;border-radius:12px;background:linear-gradient(135deg,var(--green) 0%,var(--lime) 50%,var(--peach) 100%);position:relative;overflow:hidden}
+  .photo::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 70%,rgba(255,255,255,.4),transparent 50%),radial-gradient(circle at 70% 30%,rgba(16,19,26,.18),transparent 60%)}
+  .photo-meta{display:flex;gap:10px;font-size:13px;padding:8px 6px 4px;color:var(--ink)}
+  .photo-meta span:nth-child(1){color:#E25959}
+  .photo-meta span:nth-child(2){color:var(--blue)}
+  .photo-meta span:nth-child(3){color:#E89C3D}
+
+  .floral{position:absolute;right:-30px;bottom:0;width:240px;height:340px;background:radial-gradient(circle at 50% 30%,#F4D561 0,#F4D561 18%,transparent 22%),radial-gradient(circle at 30% 60%,#F4D561 0,#F4D561 14%,transparent 18%),radial-gradient(circle at 70% 60%,#F4D561 0,#F4D561 14%,transparent 18%),radial-gradient(circle at 50% 80%,#5F8F4A 0,#5F8F4A 12%,transparent 16%);opacity:.7;pointer-events:none}
+
+  /* RIGHT PANEL — white card with headline */
+  .right{background:#fff;border-radius:22px;padding:36px 36px 28px;display:flex;flex-direction:column;justify-content:space-between}
+  .rt-top{display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:18px;letter-spacing:-.02em}
+  .logo-mark{width:28px;height:28px;background:var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+  .menu-row{display:flex;align-items:center;gap:10px}
+  .dots{width:38px;height:38px;border-radius:50%;background:#F1F1F4;display:flex;align-items:center;justify-content:center;gap:3px}
+  .dots span{width:5px;height:5px;border-radius:50%;background:var(--ink)}
+  .menu-pill{background:var(--ink);color:#fff;font-size:13px;font-weight:500;padding:10px 22px;border-radius:99px;display:flex;align-items:center;gap:8px}
+  .menu-pill::after{content:"";width:14px;height:10px;background:linear-gradient(#fff,#fff) center/100% 2px no-repeat,linear-gradient(#fff,#fff) center/100% 2px no-repeat;background-position:0 0,0 100%}
+
+  .headline-block{margin-top:38px}
+  h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:74px;line-height:1.02;letter-spacing:-.04em;color:var(--ink);display:flex;flex-wrap:wrap;gap:10px 12px}
+  h1 .pill{display:inline-flex;align-items:center;padding:2px 22px;border:2px solid var(--ink);border-radius:99px;background:#fff}
+  h1 .pill.fill{background:var(--blue-soft)}
+  h1 .arrow{display:inline-flex;width:78px;height:78px;border-radius:50%;background:var(--blue-soft);border:2px solid var(--ink);align-items:center;justify-content:center;font-size:34px;color:var(--ink)}
+
+  .features{margin-top:30px;display:flex;flex-direction:column;gap:12px}
+  .feat{display:flex;align-items:center;gap:14px;font-size:16px;color:var(--ink)}
+  .feat .dot-ico{width:14px;height:14px;border-radius:50%;background:var(--ink);flex-shrink:0}
+  .feat .ico{width:18px;text-align:center;color:var(--ink);font-weight:600;flex-shrink:0}
+  .feat b{font-weight:600}
+
+  .cta-row{margin-top:30px;display:flex;gap:10px;align-items:center}
+  .pill-btn{font-family:inherit;font-size:14px;font-weight:500;padding:14px 26px;border-radius:99px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+  .pill-btn.dark{background:var(--ink);color:#fff}
+
+  .footnote{margin-top:32px;display:flex;align-items:center;gap:14px;color:var(--ink);font-size:14px}
+  .footnote .ring{width:42px;height:42px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid var(--ink)}
+  .footnote .plus{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid var(--ink);margin-left:-14px}
+
+  .scroll-pip{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);width:48px;height:48px;border-radius:50%;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink);box-shadow:0 8px 24px -8px rgba(0,0,0,.15);z-index:5}
+
+  /* SECOND BLOCK */
+  .below{margin-top:28px;background:#fff;border-radius:28px;padding:48px 48px 40px}
+  .b-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:32px}
+  .b-head h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:42px;line-height:1.15;letter-spacing:-.025em;color:var(--ink);max-width:780px;display:flex;flex-wrap:wrap;gap:6px}
+  .b-head h2 .hl{display:inline-block;padding:0 14px;border:1.5px solid var(--ink);border-radius:99px;background:var(--blue-soft)}
+  .b-head .learn{flex-shrink:0;display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:99px;border:1px solid var(--ink);font-size:14px;font-weight:500}
+  .b-head .learn::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue)}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .pcard{aspect-ratio:3/4;border-radius:20px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+  .pcard.a{background:linear-gradient(180deg,#CFE7DA 0%,#B6DCC8 60%,#E7E6CA 100%)}
+  .pcard.b{background:linear-gradient(160deg,#E7C39A 0%,#7A9A52 70%,#3D5A2E 100%)}
+  .pcard.c{background:linear-gradient(180deg,#9FC3D2 0%,#7DA98C 60%,#3F4F2A 100%)}
+  .pcard .tag{align-self:flex-start;background:#fff;border:1px solid rgba(16,19,26,.1);font-size:12px;font-weight:500;padding:8px 14px;border-radius:99px;color:var(--ink)}
+  .pcard .arr{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink)}
+  .pcard .ttl{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:32px;line-height:1.05;letter-spacing:-.025em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.18)}
+  .pcard.a .ttl{color:#fff}
+  .pcard .explore{margin-top:14px;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-size:13px;font-weight:500;padding:10px 16px;border-radius:99px}
+  .pcard .explore::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue)}
+  .pcard .mid-tag{position:absolute;left:18px;bottom:18px;background:#fff;border:1px solid rgba(16,19,26,.08);font-size:11px;color:var(--ink-2);padding:6px 12px;border-radius:99px}
+  .pcard.b .top-stack{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .pcard.b .top-stack .ttl{font-size:30px;color:#fff;line-height:1.05}
+  .pcard.b .explore-mid{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-size:13px;font-weight:500;padding:10px 16px;border-radius:99px;margin-top:6px}
+  .pcard.b .explore-mid::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue)}
+
+  /* FOOTER */
+  footer{margin-top:32px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;padding:0 12px}
+  footer a{color:var(--ink);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+
+    <!-- LEFT — chat collage -->
+    <div class="panel left">
+      <div class="topbar">
+        <div class="auth">
+          <button class="btn">Log In</button>
+          <button class="btn solid">Sign Up</button>
+        </div>
+        <div class="socials">
+          <div class="social">𝕏</div>
+          <div class="social">f</div>
+          <div class="social">✉</div>
+        </div>
+      </div>
+
+      <div class="bubbles">
+        <div class="bubble b1">Hi all! 👋 I just rebuilt our outbound from scratch and I want Kombo to draft my first 50 follow-ups.<span class="time">5:37</span></div>
+        <div class="bubble voice">
+          <div class="play">▶</div>
+          <div class="wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="av"></div>
+        </div>
+        <div class="bubble b3">Drafted ✓ 12 sent already <span class="emoji">🔥</span><span class="time">5:42</span></div>
+        <div class="photo-card">
+          <div class="photo"></div>
+          <div class="photo-meta"><span>♥</span><span>✦</span><span>🔥</span></div>
+        </div>
+      </div>
+
+      <div class="floral"></div>
+    </div>
+
+    <!-- RIGHT — headline card -->
+    <div class="panel right">
+      <div class="rt-top">
+        <div class="logo"><div class="logo-mark">✕</div> KOMBOAI</div>
+        <div class="menu-row">
+          <div class="dots"><span></span><span></span></div>
+          <div class="menu-pill">Menu</div>
+        </div>
+      </div>
+
+      <div class="headline-block">
+        <h1>
+          <span class="pill">Less.</span><span class="pill">clicks.</span>
+          <span class="pill">More.</span><span class="pill fill">selling.</span>
+          <span class="arrow">→</span>
+        </h1>
+
+        <div class="features">
+          <div class="feat"><span class="dot-ico"></span> AI co-pilot for SDRs and AEs across your CRM <span style="margin-left:auto">→</span></div>
+          <div class="feat"><span class="ico">↓</span> Drafted outreach &amp; live call coaching</div>
+          <div class="feat"><span class="ico">&amp;</span> Pipeline insight that ships <span style="margin-left:auto">↑</span></div>
+        </div>
+
+        <div class="cta-row">
+          <button class="pill-btn dark">Book a demo →</button>
+          <button class="pill-btn" style="border:none">Read more →</button>
+        </div>
+      </div>
+
+      <div class="footnote">
+        <div class="ring">👍</div>
+        <div class="plus">＋</div>
+        <span>One co-pilot can change the quarter. //</span>
+      </div>
+    </div>
+
+    <div class="scroll-pip">↓</div>
+  </section>
+
+  <!-- BELOW: project cards -->
+  <section class="below">
+    <div class="b-head">
+      <h2>We help <span class="hl">SDRs</span> &amp;<br><span class="hl">AEs</span> close bigger <span class="hl">deals</span></h2>
+      <a class="learn" href="#">Learn More</a>
+    </div>
+    <div class="cards">
+      <div class="pcard a">
+        <div class="tag">live deal context</div>
+        <div class="arr">↗</div>
+        <div>
+          <div class="ttl">01/ Smarter<br>Outreach</div>
+          <div class="explore">Explore</div>
+        </div>
+      </div>
+      <div class="pcard b">
+        <div class="top-stack">
+          <div class="ttl">02/ Inspiration<br>&amp; Coaching</div>
+          <div class="explore-mid">Explore</div>
+        </div>
+        <div class="mid-tag">catalyst for new reps</div>
+        <div class="arr">↗</div>
+      </div>
+      <div class="pcard c">
+        <div class="tag">data-driven decisions</div>
+        <div class="arr">↗</div>
+        <div>
+          <div class="ttl">03/ Pipeline<br>&amp; Insight</div>
+          <div class="explore">Explore</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>KEVIN HAWKINS · KOMBOAI · 2026</div>
+    <div><a href="./index.html">← BACK TO MOCKUPS</a></div>
+  </footer>
+</div>
+</body>
+</html>
