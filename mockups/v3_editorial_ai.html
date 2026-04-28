@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KomboAI — V3 Editorial AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --navy:#0E1726;
+    --navy-2:#172238;
+    --ink:#0E1726;
+    --cream:#F2EBDC;
+    --cream-2:#E8DFCB;
+    --paper:#F8F2E5;
+    --rust:#C9633D;
+    --rust-deep:#A14826;
+    --gold:#D4A04F;
+    --teal:#264E4A;
+    --line-d:#2A3548;
+    --line-l:#D6CDB6;
+    --muted-d:#7A8497;
+    --muted-l:#857B65;
+  }
+  html,body{background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .serif{font-family:'Fraunces',serif}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  /* GRAIN texture overlay */
+  .grain{position:relative}
+  .grain::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity:.45;mix-blend-mode:multiply;
+  }
+
+  /* NAV */
+  .nav-shell{background:var(--navy);color:var(--cream);border-bottom:1px solid var(--line-d)}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:20px 64px;width:1440px;margin:0 auto}
+  .top-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-d);letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;padding:8px 64px;width:1440px;margin:0 auto;border-bottom:1px solid var(--line-d)}
+  .top-meta span:nth-child(2){color:var(--gold)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:500;font-size:20px;letter-spacing:-.01em;font-family:'Fraunces',serif}
+  .logo-mark{width:30px;height:30px;background:var(--cream);border-radius:0;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:14px;font-weight:700;font-family:'Fraunces';letter-spacing:-.04em}
+  .nav-links{display:flex;gap:28px;font-size:13px;color:var(--cream);font-weight:400;letter-spacing:.02em}
+  .nav-links a{color:inherit;text-decoration:none}
+  .nav-links a.divider{color:var(--muted-d)}
+  .btn{font-family:inherit;font-size:13px;font-weight:500;padding:10px 20px;border-radius:0;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:8px;letter-spacing:.02em}
+  .btn-rust{background:var(--rust);color:var(--cream);border-color:var(--rust)}
+  .btn-cream{background:var(--cream);color:var(--navy);border-color:var(--cream)}
+
+  /* HERO */
+  .hero-shell{background:var(--navy);color:var(--cream);position:relative;overflow:hidden;padding:0 0 120px}
+  .hero-shell::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity:1;
+  }
+  .hero{padding:80px 64px 0;width:1440px;margin:0 auto;position:relative;z-index:2}
+  .hero-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;margin-bottom:64px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d)}
+  .hero-meta b{color:var(--cream);display:block;margin-top:6px;font-family:'Inter';font-weight:400;font-size:13px;letter-spacing:.02em;text-transform:none}
+  h1{font-family:'Fraunces',serif;font-size:200px;line-height:.92;letter-spacing:-.05em;font-weight:400;max-width:1320px;color:var(--cream)}
+  h1 .it{font-style:italic;font-weight:300;color:var(--gold)}
+  h1 .div{font-weight:300;opacity:.4;font-style:normal;color:var(--cream)}
+  .hero-row{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:64px;align-items:end}
+  .lede{font-size:22px;line-height:1.4;color:#C9C4B6;max-width:520px;font-weight:300;font-family:'Fraunces',serif;font-style:italic}
+  .hero-cta{display:flex;gap:14px;align-items:center;margin-top:32px}
+  .underlink{display:inline-flex;align-items:center;gap:8px;color:var(--cream);font-size:13px;text-decoration:none;border-bottom:1px solid var(--cream);padding-bottom:2px}
+
+  .hero-card{background:rgba(255,255,255,.03);border:1px solid var(--line-d);padding:40px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-d)}
+  .hero-card-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line-d)}
+  .hero-card-row:last-child{border-bottom:0}
+  .hero-card-row b{color:var(--cream);font-family:'Fraunces',serif;font-style:normal;font-size:24px;letter-spacing:-.02em;font-weight:400;text-transform:none}
+  .hero-card-row .gold{color:var(--gold)}
+
+  /* POSTER GRID */
+  .posters-shell{background:var(--navy);padding-top:0;color:var(--cream)}
+  .posters{padding:0 64px 120px;width:1440px;margin:0 auto;position:relative;z-index:2}
+  .posters-head{display:flex;justify-content:space-between;align-items:flex-end;padding:48px 0 32px;border-top:1px solid var(--line-d);margin-bottom:24px}
+  .posters-head h3{font-family:'Fraunces',serif;font-size:48px;font-weight:400;letter-spacing:-.025em;line-height:1;max-width:560px}
+  .posters-head h3 .it{font-style:italic;color:var(--gold)}
+  .posters-head .meta{font-family:'JetBrains Mono';font-size:11px;color:var(--muted-d);letter-spacing:.1em;text-transform:uppercase;text-align:right}
+  .poster-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .poster{aspect-ratio:3/4;border:1px solid var(--line-d);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:24px;color:var(--cream)}
+  .poster .corner{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;color:rgba(255,255,255,.7)}
+  .poster .arrow-lg{font-size:24px;color:rgba(255,255,255,.85)}
+  .poster .title{font-family:'Fraunces',serif;font-size:32px;line-height:.95;letter-spacing:-.02em;font-weight:400;color:var(--cream)}
+  .poster .title b{font-weight:500}
+  .poster .title .it{font-style:italic}
+  .poster .sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:8px;font-family:'JetBrains Mono';letter-spacing:.06em;text-transform:uppercase}
+
+  .p1{background:linear-gradient(135deg,#1a3552 0%, #0E1726 100%)}
+  .p2{background:linear-gradient(180deg,#F2EBDC 0%, #E0D2B0 100%);color:var(--navy)}
+  .p2 .corner,.p2 .sub,.p2 .arrow-lg{color:var(--navy);opacity:.7}
+  .p2 .title{color:var(--navy)}
+  .p3{background:linear-gradient(180deg,#C9633D 0%, #8B3F22 100%)}
+  .p4{background:linear-gradient(135deg,#2A4A4A 0%, #18302F 100%)}
+  .p5{background:linear-gradient(180deg,#D4A04F 0%, #97712E 100%);color:var(--navy)}
+  .p5 .corner,.p5 .sub,.p5 .arrow-lg,.p5 .title{color:var(--navy)}
+  .p5 .corner,.p5 .sub{opacity:.7}
+  .p6{background:linear-gradient(180deg,#172238 0%, #0E1726 100%)}
+
+  /* poster visual flourishes */
+  .poster-vis{position:absolute;inset:0;pointer-events:none}
+  .p1::after{content:"";position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#3B6B96,#0E1726 70%);opacity:.6}
+  .p3::after{content:"";position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#FFB86E 0%,#C9633D 50%,transparent 75%);}
+  .p4::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:0;height:0;border-left:80px solid transparent;border-right:80px solid transparent;border-bottom:140px solid var(--gold);opacity:.85}
+  .p6-rect{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);width:160px;height:160px;background:linear-gradient(135deg,#5D7BA8,#C9633D);opacity:.85}
+
+  /* the trust strip */
+  .trust-bar{background:var(--navy);color:var(--cream);border-top:1px solid var(--line-d);padding:32px 64px;width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+  .tb-label{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d)}
+  .tb-logos{display:flex;gap:48px;font-family:'Fraunces',serif;font-size:18px;font-weight:400;letter-spacing:-.01em}
+
+  /* THESIS / STATS */
+  .thesis{background:var(--cream);padding:140px 64px 100px;width:1440px;margin:0 auto;position:relative}
+  .chapter-num{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-l);margin-bottom:24px;display:flex;align-items:center;gap:18px}
+  .chapter-num::before{content:"";width:48px;height:1px;background:var(--ink)}
+  h2{font-family:'Fraunces',serif;font-size:96px;line-height:.95;letter-spacing:-.04em;font-weight:400;max-width:1100px}
+  h2 .it{font-style:italic;color:var(--rust)}
+  .thesis-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:120px;margin-top:96px;align-items:start}
+  .thesis-text{font-size:18px;line-height:1.6;color:var(--ink);max-width:380px;font-weight:400}
+  .thesis-text p+p{margin-top:18px}
+  .thesis-text .drop{font-family:'Fraunces';font-size:64px;line-height:.85;float:left;margin:6px 14px 0 0;color:var(--rust);font-weight:400}
+  .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
+  .stat{border-top:1px solid var(--ink);padding-top:24px}
+  .stat-num{font-family:'Fraunces',serif;font-size:120px;line-height:.9;letter-spacing:-.05em;font-weight:400}
+  .stat-num .it{font-style:italic;color:var(--rust)}
+  .stat-lab{margin-top:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .stat-desc{margin-top:10px;font-size:14px;color:var(--muted-l);line-height:1.55;font-weight:400}
+
+  /* CHAPTERS / FEATURES */
+  .chapter{padding:120px 64px;width:1440px;margin:0 auto;border-top:1px solid var(--line-l)}
+  .chapter-grid{display:grid;grid-template-columns:5fr 7fr;gap:80px;align-items:start}
+  .chapter-grid.flip{grid-template-columns:7fr 5fr}
+  .chapter-grid.flip .ch-text{order:2}
+  .chapter-grid.flip .ch-vis{order:1}
+  .ch-title{font-family:'Fraunces',serif;font-size:80px;line-height:.95;letter-spacing:-.035em;font-weight:400;margin:24px 0 32px;max-width:560px}
+  .ch-title .it{font-style:italic;color:var(--rust)}
+  .ch-desc{font-size:18px;line-height:1.6;color:var(--ink);max-width:480px;font-weight:400}
+  .ch-desc b{font-weight:600}
+  .ch-link{margin-top:32px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink);padding-bottom:3px;letter-spacing:.02em}
+
+  /* feature visuals — editorial product UIs */
+  .vis-frame{background:var(--paper);border:1px solid var(--line-l);position:relative}
+  .vis-cap{padding:14px 18px;border-bottom:1px solid var(--line-l);display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-l)}
+
+  .seq-list{padding:24px 32px}
+  .seq-row{display:grid;grid-template-columns:auto 1fr auto;gap:20px;padding:18px 0;border-bottom:1px solid var(--line-l);align-items:center;font-size:14px}
+  .seq-row:last-child{border:0}
+  .seq-num{font-family:'Fraunces';font-size:36px;font-weight:400;line-height:1;color:var(--rust);letter-spacing:-.03em;width:48px}
+  .seq-num .it{font-style:italic}
+  .seq-content b{font-family:'Fraunces';font-size:22px;font-weight:400;letter-spacing:-.01em;display:block;line-height:1.1;margin-bottom:4px}
+  .seq-content span{font-size:13px;color:var(--muted-l)}
+  .seq-meta{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-l);text-align:right}
+  .seq-meta b{font-family:'Fraunces';font-size:20px;color:var(--ink);text-transform:none;letter-spacing:-.01em;display:block;font-weight:400}
+
+  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .data-card{padding:36px 28px;border-right:1px solid var(--line-l);border-bottom:1px solid var(--line-l)}
+  .data-card:nth-child(2n){border-right:0}
+  .data-card:nth-last-child(-n+2){border-bottom:0}
+  .data-card .lab{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-l);margin-bottom:14px}
+  .data-card .val{font-family:'Fraunces';font-size:64px;font-weight:400;letter-spacing:-.03em;line-height:.9}
+  .data-card .val .it{font-style:italic;color:var(--rust)}
+  .data-card .sub{font-size:13px;color:var(--ink);margin-top:8px}
+  .data-card .verified{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);margin-top:14px}
+  .data-card .verified::before{content:"✓";font-family:'Inter';font-weight:700}
+
+  .coach-frame{background:var(--navy);color:var(--cream);position:relative;overflow:hidden}
+  .coach-frame .vis-cap{color:var(--muted-d);border-color:var(--line-d)}
+  .coach-body{padding:36px}
+  .coach-tag{display:inline-block;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:24px}
+  .coach-wave{display:flex;gap:3px;align-items:flex-end;height:60px;margin-bottom:28px}
+  .coach-wave span{flex:1;background:var(--gold);opacity:.7}
+  .coach-script{font-family:'Fraunces';font-size:22px;line-height:1.35;font-weight:400;font-style:italic}
+  .coach-script .speaker{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d);font-style:normal;display:block;margin-top:18px;margin-bottom:6px}
+  .coach-script mark{background:rgba(212,160,79,.2);color:var(--gold);padding:1px 4px;font-style:normal;font-family:'Fraunces'}
+
+  .crm-vis{display:grid;grid-template-columns:1fr 1fr}
+  .crm-side{padding:28px 32px}
+  .crm-side.right{background:var(--navy);color:var(--cream)}
+  .crm-side .lab{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-l);margin-bottom:18px}
+  .crm-side.right .lab{color:var(--muted-d)}
+  .crm-name{font-family:'Fraunces';font-size:36px;line-height:1;letter-spacing:-.02em;font-weight:400;margin-bottom:6px}
+  .crm-meta{font-size:13px;color:var(--muted-l);margin-bottom:20px}
+  .crm-side.right .crm-meta{color:var(--muted-d)}
+  .crm-fields{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.04em}
+  .crm-fields div{padding:10px 0;border-bottom:1px solid var(--line-l);display:flex;justify-content:space-between;color:var(--muted-l)}
+  .crm-fields b{font-family:'Inter';font-weight:500;color:var(--ink);text-transform:none}
+  .ai-out{font-family:'Fraunces';font-size:24px;line-height:1.3;color:var(--cream);font-weight:400;margin-bottom:24px}
+  .ai-out b{font-weight:500;color:var(--gold)}
+
+  /* QUOTE */
+  .quote-shell{background:var(--rust);color:var(--cream);padding:140px 64px;position:relative;overflow:hidden}
+  .quote-shell::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .quote{width:1440px;margin:0 auto;padding:0 64px;position:relative;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:80px;align-items:start}
+  .q-num{font-family:'Fraunces';font-size:200px;line-height:.85;font-weight:300;font-style:italic;color:var(--cream);opacity:.55}
+  .q-body{font-family:'Fraunces';font-size:64px;line-height:1.1;letter-spacing:-.025em;font-weight:400;max-width:1080px}
+  .q-body .it{font-style:italic;color:var(--paper)}
+  .q-attr{margin-top:48px;display:flex;align-items:center;gap:18px;font-size:14px}
+  .q-line{width:48px;height:1px;background:var(--cream)}
+  .q-name{font-weight:600;font-family:'Inter'}
+  .q-role{color:#F2DCC6;margin-left:8px}
+
+  /* FAQ */
+  .faq{padding:140px 64px;width:1440px;margin:0 auto;background:var(--cream);border-top:1px solid var(--line-l)}
+  .faq-grid{display:grid;grid-template-columns:5fr 7fr;gap:120px;align-items:start}
+  .faq-list{display:flex;flex-direction:column}
+  .faq-item{padding:32px 0;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;font-family:'Fraunces';font-size:28px;font-weight:400;letter-spacing:-.015em;line-height:1.1}
+  .faq-item:first-child{border-top:1px solid var(--ink)}
+  .faq-item .num{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.08em;color:var(--muted-l);margin-right:24px;font-weight:400}
+  .faq-plus{font-family:'Fraunces';font-size:32px;color:var(--rust);font-weight:300}
+
+  /* CTA */
+  .cta-shell{background:var(--navy);color:var(--cream);padding:160px 64px;position:relative;overflow:hidden}
+  .cta-shell::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .cta{width:1440px;margin:0 auto;padding:0 64px;position:relative;z-index:2;text-align:center}
+  .cta-eyebrow{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:32px}
+  .cta-headline{font-family:'Fraunces';font-size:144px;line-height:.92;letter-spacing:-.04em;font-weight:400;max-width:1240px;margin:0 auto 48px}
+  .cta-headline .it{font-style:italic;color:var(--gold)}
+  .cta-actions{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:24px}
+  .btn-large{padding:18px 32px;font-size:14px}
+  .cta-sub{margin-top:32px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-d)}
+
+  /* FOOTER */
+  footer{background:var(--navy);color:var(--cream);padding:80px 64px 48px;width:1440px;margin:0 auto;border-top:1px solid var(--line-d)}
+  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:80px}
+  .foot-tag{font-family:'Fraunces';font-style:italic;font-size:18px;color:#C9C4B6;max-width:320px;margin-top:18px;line-height:1.5;font-weight:300}
+  .foot-col h4{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;font-weight:500}
+  .foot-col a{display:block;font-size:14px;color:#C9C4B6;text-decoration:none;margin-bottom:12px;font-family:'Fraunces';font-weight:300}
+  .foot-bot{padding-top:32px;border-top:1px solid var(--line-d);display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-d)}
+</style>
+</head>
+<body>
+
+<div class="nav-shell">
+  <div class="top-meta">
+    <span>VOL. 03 · ISSUE 04 · APR 2026</span>
+    <span>● 1,000+ REVENUE TEAMS NOW LIVE</span>
+    <span>SOC 2 · ISO 27001 · GDPR</span>
+  </div>
+  <nav>
+    <div class="logo"><span class="logo-mark">K</span> KomboAI</div>
+    <div class="nav-links">
+      <a>Product</a><a class="divider">/</a><a>Customers</a><a class="divider">/</a><a>Method</a><a class="divider">/</a><a>Pricing</a><a class="divider">/</a><a>Company</a>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn">Sign in</button>
+      <button class="btn btn-cream">Book a demo →</button>
+    </div>
+  </nav>
+</div>
+
+<section class="hero-shell">
+  <div class="hero">
+    <div class="hero-meta">
+      <div>FILED UNDER<b>The next era of revenue tooling</b></div>
+      <div>WRITTEN FOR<b>SDRs, AEs, and the leaders backing them</b></div>
+      <div>READING TIME<b>20 minutes — or one demo call</b></div>
+    </div>
+
+    <h1>Less <span class="it">clicks.</span><br>More <span class="it">selling.</span></h1>
+
+    <div class="hero-row">
+      <div>
+        <p class="lede">"After three decades of bolt-ons, the CRM is finally writing back. Kombo isn't another tab — it's the co-pilot that lives <em>inside</em> the record."</p>
+        <div class="hero-cta">
+          <button class="btn btn-rust">Book a demo →</button>
+          <a class="underlink">Read the methodology</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-row"><span>Reps using daily</span><b>1,000+</b></div>
+        <div class="hero-card-row"><span>Time saved / rep / day</span><b class="gold">3 hours</b></div>
+        <div class="hero-card-row"><span>Conversion lift</span><b>3×</b></div>
+        <div class="hero-card-row"><span>Implementation</span><b>14 days</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="posters-shell">
+  <div class="posters">
+    <div class="posters-head">
+      <h3>The case for a co-pilot, made <span class="it">six ways.</span></h3>
+      <div class="meta">CHAPTERS · 01 — 06<br>CONTENTS</div>
+    </div>
+    <div class="poster-grid">
+      <div class="poster p1">
+        <div class="corner"><span>CHAPTER 01</span><span class="arrow-lg">↗</span></div>
+        <div></div>
+        <div>
+          <div class="title">Personalization, <em class="it">at scale.</em></div>
+          <div class="sub">DRAFTED FROM THE PUBLIC WEB · IN UNDER 12 SECONDS</div>
+        </div>
+      </div>
+      <div class="poster p2">
+        <div class="corner"><span>CHAPTER 02</span><span class="arrow-lg">↗</span></div>
+        <div style="position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);font-family:'Fraunces';font-size:120px;font-weight:300;font-style:italic;letter-spacing:-.05em;color:var(--rust)">240M</div>
+        <div>
+          <div class="title">Numbers others <b>can't find.</b></div>
+          <div class="sub">240M MOBILE DIRECT DIALS · REFRESHED WEEKLY</div>
+        </div>
+      </div>
+      <div class="poster p3">
+        <div class="corner"><span>CHAPTER 03</span><span class="arrow-lg">↗</span></div>
+        <div></div>
+        <div>
+          <div class="title">Coaching that <em class="it">whispers.</em></div>
+          <div class="sub">REAL-TIME · MID-CALL · INVISIBLE TO THE PROSPECT</div>
+        </div>
+      </div>
+      <div class="poster p4">
+        <div class="corner"><span>CHAPTER 04</span><span class="arrow-lg">↗</span></div>
+        <div></div>
+        <div>
+          <div class="title">Lives <em class="it">inside</em> your CRM.</div>
+          <div class="sub">SALESFORCE · HUBSPOT · PIPEDRIVE · DYNAMICS</div>
+        </div>
+      </div>
+      <div class="poster p5">
+        <div class="corner"><span>CHAPTER 05</span><span class="arrow-lg">↗</span></div>
+        <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:'Fraunces';font-size:160px;font-weight:300;letter-spacing:-.05em;color:var(--navy)">3<span style="font-style:italic">×</span></div>
+        <div>
+          <div class="title">Three times the <b>conversion.</b></div>
+          <div class="sub">MEASURED ACROSS 1,000+ REVENUE TEAMS</div>
+        </div>
+      </div>
+      <div class="poster p6">
+        <div class="p6-rect"></div>
+        <div class="corner"><span>CHAPTER 06</span><span class="arrow-lg">↗</span></div>
+        <div></div>
+        <div>
+          <div class="title">Built with the <em class="it">enterprise</em> in mind.</div>
+          <div class="sub">SOC 2 · ISO 27001 · GDPR · HIPAA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trust-bar">
+    <div class="tb-label">Lives inside</div>
+    <div class="tb-logos">
+      <span>Salesforce</span><span>HubSpot</span><span>Pipedrive</span><span>Dynamics 365</span><span>Outreach</span><span>Gong</span>
+    </div>
+    <div class="tb-label">Vol. 04 · 2026</div>
+  </div>
+</section>
+
+<section class="thesis">
+  <div class="chapter-num">CHAPTER 01 · THE THESIS</div>
+  <h2>Your reps spend <span class="it">three hours a day</span> not selling. We give them back.</h2>
+
+  <div class="thesis-grid">
+    <div class="thesis-text">
+      <p><span class="drop">F</span>or thirty years, the CRM has been a filing cabinet — a place reps put information so leadership can read it. The reps themselves got nothing back.</p>
+      <p>KomboAI inverts the contract. The CRM now writes back: drafting outreach, finding mobile numbers, surfacing the moment a buyer is ready, whispering the right answer mid-call.</p>
+      <p>The result, measured across more than a thousand revenue teams: roughly three hours a day, returned to every rep.</p>
+    </div>
+    <div class="stats-strip">
+      <div class="stat">
+        <div class="stat-num">60<span class="it">%</span></div>
+        <div class="stat-lab">LESS MANUAL WORK</div>
+        <div class="stat-desc">Across CRM updates, research, and personalization.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1k<span class="it">+</span></div>
+        <div class="stat-lab">REPS ONBOARDED</div>
+        <div class="stat-desc">Series A to public revenue teams of 500+.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3<span class="it">×</span></div>
+        <div class="stat-lab">CONVERSION LIFT</div>
+        <div class="stat-desc">Right person, right moment, right message.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter">
+  <div class="chapter-num">CHAPTER 02 · PERSONALIZATION</div>
+  <div class="chapter-grid">
+    <div class="ch-text">
+      <h3 class="ch-title">Real personalization at <span class="it">scale.</span></h3>
+      <p class="ch-desc">Kombo reads every signal across your CRM, your inbox, and the public web — then writes outreach that actually sounds like <b>you</b> wrote it. Not a template. Not a Mad Lib. The drafts read like a senior rep on their best day, and they ship as-is more than half the time.</p>
+      <a class="ch-link">Read the personalization brief →</a>
+    </div>
+    <div class="ch-vis">
+      <div class="vis-frame">
+        <div class="vis-cap"><span>SEQUENCE · MAYA CHEN · NORTHWIND</span><span>AUTO-GENERATED · 12s</span></div>
+        <div class="seq-list">
+          <div class="seq-row">
+            <div class="seq-num"><span class="it">1</span></div>
+            <div class="seq-content"><b>Day 1 · Email</b><span>Reference Maya's LinkedIn post on outbound rebuild</span></div>
+            <div class="seq-meta"><b>87%</b>OPEN · 14% REPLY</div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-num"><span class="it">2</span></div>
+            <div class="seq-content"><b>Day 3 · LinkedIn</b><span>Comment with the EMEA hiring data point</span></div>
+            <div class="seq-meta"><b>64%</b>CONNECT · 22% REPLY</div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-num"><span class="it">3</span></div>
+            <div class="seq-content"><b>Day 5 · Email</b><span>Send the outbound rebuild Loom — 90s</span></div>
+            <div class="seq-meta"><b>71%</b>OPEN · 9% REPLY</div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-num"><span class="it">4</span></div>
+            <div class="seq-content"><b>Day 8 · Call</b><span>Open with the Series C — Kombo coaches live</span></div>
+            <div class="seq-meta"><b>38%</b>CONNECT · 18% MEETING</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter">
+  <div class="chapter-num">CHAPTER 03 · CONTACT DATA</div>
+  <div class="chapter-grid flip">
+    <div class="ch-text">
+      <h3 class="ch-title">The numbers others <span class="it">can't find.</span></h3>
+      <p class="ch-desc">Direct dials, mobile numbers, and deliverable email addresses — verified across <b>40+ sources</b>, refreshed weekly, and benchmarked against the bounce rates we'd be embarrassed to publish if we couldn't beat them. The dataset isn't bigger; it's <b>better</b>.</p>
+      <a class="ch-link">Inside the dataset →</a>
+    </div>
+    <div class="ch-vis">
+      <div class="vis-frame">
+        <div class="vis-cap"><span>THE DATASET · UPDATED 04.28.26</span><span>VERIFIED ACROSS 40 SOURCES</span></div>
+        <div class="data-grid">
+          <div class="data-card">
+            <div class="lab">Mobile direct dials</div>
+            <div class="val">240M<span class="it">+</span></div>
+            <div class="sub">North America, EMEA, APAC</div>
+            <div class="verified">92% connect rate</div>
+          </div>
+          <div class="data-card">
+            <div class="lab">Verified work emails</div>
+            <div class="val">680M<span class="it">+</span></div>
+            <div class="sub">Refreshed weekly</div>
+            <div class="verified">96% deliverability</div>
+          </div>
+          <div class="data-card">
+            <div class="lab">Companies tracked</div>
+            <div class="val">42M</div>
+            <div class="sub">Funding · headcount · tech stack</div>
+            <div class="verified">Daily intent signals</div>
+          </div>
+          <div class="data-card">
+            <div class="lab">Buying-intent signals</div>
+            <div class="val">1.4B<span class="it">/wk</span></div>
+            <div class="sub">Hiring · news · web visits</div>
+            <div class="verified">Real-time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter">
+  <div class="chapter-num">CHAPTER 04 · LIVE COACHING</div>
+  <div class="chapter-grid">
+    <div class="ch-text">
+      <h3 class="ch-title">Coaching that <span class="it">whispers.</span></h3>
+      <p class="ch-desc">Kombo listens to the call, recognizes the moment, and surfaces the next best thing to say — pricing answers, objection handlers, the case study they need to hear — without the prospect ever knowing it's there. It's the senior rep your junior reps couldn't otherwise hire.</p>
+      <a class="ch-link">Listen to a real session →</a>
+    </div>
+    <div class="ch-vis">
+      <div class="vis-frame coach-frame">
+        <div class="vis-cap"><span>● LIVE · DISCOVERY CALL</span><span>14:32 · NORTHWIND</span></div>
+        <div class="coach-body">
+          <span class="coach-tag">REAL-TIME WHISPER · INVISIBLE</span>
+          <div class="coach-wave">
+            <span style="height:30%"></span><span style="height:60%"></span><span style="height:80%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:90%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:65%"></span><span style="height:80%"></span><span style="height:40%"></span><span style="height:75%"></span><span style="height:55%"></span><span style="height:30%"></span><span style="height:60%"></span><span style="height:85%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:80%"></span><span style="height:60%"></span><span style="height:45%"></span><span style="height:70%"></span>
+          </div>
+          <div class="coach-script">
+            <span class="speaker">MAYA, PROSPECT</span>
+            "Honestly, our last tool just felt like a glorified email scheduler…"
+            <span class="speaker">↳ KOMBO, WHISPER</span>
+            <mark>Lead with the Northwind case</mark> — they cut sequence-building from four hours to eighteen minutes. Don't pitch features yet.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter">
+  <div class="chapter-num">CHAPTER 05 · THE INTEGRATION</div>
+  <div class="chapter-grid flip">
+    <div class="ch-text">
+      <h3 class="ch-title">It lives <span class="it">inside</span> your CRM.</h3>
+      <p class="ch-desc">No new tab. No new dashboard. Kombo sits inside the record your reps already work in — Salesforce, HubSpot, Pipedrive, Dynamics — and every action it takes lands back in the CRM as a clean, attributed log entry. <b>Leadership gets reporting. Reps get their hours back.</b></p>
+      <a class="ch-link">See the integration →</a>
+    </div>
+    <div class="ch-vis">
+      <div class="vis-frame">
+        <div class="vis-cap"><span>SALESFORCE · LEAD RECORD</span><span>+ KOMBO CO-PILOT</span></div>
+        <div class="crm-vis">
+          <div class="crm-side">
+            <div class="lab">CRM RECORD</div>
+            <div class="crm-name">Maya Chen</div>
+            <div class="crm-meta">Sr. Director, RevOps · Northwind Commerce</div>
+            <div class="crm-fields">
+              <div><span>STAGE</span><b>Discovery</b></div>
+              <div><span>SCORE</span><b>94 / 100</b></div>
+              <div><span>LAST TOUCH</span><b>2 days · opened</b></div>
+              <div><span>STACK</span><b>SF · Outreach · Gong</b></div>
+            </div>
+          </div>
+          <div class="crm-side right">
+            <div class="lab">KOMBO · ✦ INSIGHT</div>
+            <div class="ai-out">Maya posted on LinkedIn 2h ago about <b>rebuilding outbound from scratch.</b> Northwind closed Series C 24h ago. <b>Reach out today.</b></div>
+            <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding-top:18px;border-top:1px solid var(--line-d)">SCORE 94 · CONFIDENCE HIGH</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="quote-shell">
+  <div class="quote">
+    <div class="q-num">"</div>
+    <div>
+      <div class="q-body">"Kombo is the first tool my reps actually <span class="it">open on Mondays.</span> It's the only thing that ever moved both rep happiness and pipeline at the same time."</div>
+      <div class="q-attr">
+        <div class="q-line"></div>
+        <div><span class="q-name">James Ortega</span><span class="q-role">VP Sales · Atlas Group · Customer since 2024</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="faq-grid">
+    <div>
+      <div class="chapter-num">APPENDIX · COMMON QUESTIONS</div>
+      <h2 style="font-size:64px;margin-top:8px">A few <span class="it">remaining</span> questions.</h2>
+      <p style="margin-top:24px;font-size:17px;color:var(--ink-2);max-width:380px">If we haven't answered yours here, a 20-minute demo will cover the rest — usually in less.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item"><div><span class="num">01</span>How long does setup take?</div><span class="faq-plus">+</span></div>
+      <div class="faq-item"><div><span class="num">02</span>Where does the contact data come from?</div><span class="faq-plus">+</span></div>
+      <div class="faq-item"><div><span class="num">03</span>Is it compliant with our legal team's setup?</div><span class="faq-plus">+</span></div>
+      <div class="faq-item"><div><span class="num">04</span>How is this different from Outreach or Salesloft?</div><span class="faq-plus">+</span></div>
+      <div class="faq-item"><div><span class="num">05</span>How does the on-call coaching work?</div><span class="faq-plus">+</span></div>
+      <div class="faq-item"><div><span class="num">06</span>Who has access to call recordings?</div><span class="faq-plus">+</span></div>
+      <div class="faq-item"><div><span class="num">07</span>Can we run a paid pilot first?</div><span class="faq-plus">+</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-shell">
+  <div class="cta">
+    <div class="cta-eyebrow">★ THE INVITATION</div>
+    <div class="cta-headline">Give your reps their <span class="it">three hours</span> back.</div>
+    <div class="cta-actions">
+      <button class="btn btn-rust btn-large">Book a demo →</button>
+      <button class="btn btn-large" style="color:var(--cream);border-color:var(--cream)">Read the methodology</button>
+    </div>
+    <div class="cta-sub">★★★★★ 4.9 ON G2 · 200+ REVIEWS · 14-DAY PAID PILOT</div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="logo" style="color:var(--cream)"><span class="logo-mark">K</span> KomboAI</div>
+      <p class="foot-tag">"The CRM, finally writing back."</p>
+    </div>
+    <div class="foot-col"><h4>Product</h4><a>Personalization</a><a>Contact data</a><a>Live coaching</a><a>Integrations</a><a>Pricing</a></div>
+    <div class="foot-col"><h4>Resources</h4><a>Methodology</a><a>Customer briefs</a><a>ROI calculator</a><a>Editorial</a><a>Help</a></div>
+    <div class="foot-col"><h4>Company</h4><a>About</a><a>Careers</a><a>Press</a><a>Contact</a><a>Security</a></div>
+    <div class="foot-col"><h4>Legal</h4><a>Terms</a><a>Privacy</a><a>DPA</a><a>Subprocessors</a></div>
+  </div>
+  <div class="foot-bot">
+    <div>© 2026 KOMBOAI · ALL RIGHTS RESERVED</div>
+    <div>SOC 2 · ISO 27001 · GDPR · HIPAA</div>
+  </div>
+</footer>
+
+</body>
+</html>

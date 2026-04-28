@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KomboAI — V2 Sales Floor Energy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#FFF9EE;
+    --ink:#171326;
+    --ink-2:#3D374F;
+    --muted:#7A7388;
+    --line:#E8E1CF;
+    --lavender:#C8B6FF;
+    --lavender-2:#A48BFF;
+    --peach:#FFB89E;
+    --peach-2:#FF8B6B;
+    --lime:#D4E847;
+    --lime-2:#B8D930;
+    --purple:#6B4EFF;
+    --pink:#FF7A93;
+    --sky:#9ED9FF;
+    --yellow:#FFD93D;
+    --paper:#FFFEF7;
+  }
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .wrap{width:1440px;margin:0 auto;padding:0 56px}
+  .scribble{font-family:'Caveat',cursive}
+  .serif{font-family:'Fraunces',serif}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:24px 56px;width:1440px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-.02em}
+  .logo-mark{width:30px;height:30px;background:var(--purple);border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;font-weight:800;transform:rotate(-6deg);box-shadow:3px 3px 0 var(--ink)}
+  .nav-pill{display:flex;gap:4px;background:var(--paper);border:1.5px solid var(--ink);border-radius:999px;padding:5px;box-shadow:3px 3px 0 var(--ink)}
+  .nav-pill a{padding:8px 16px;font-size:14px;font-weight:500;color:var(--ink-2);border-radius:999px;text-decoration:none}
+  .nav-pill a.on{background:var(--ink);color:white}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{font-family:inherit;font-size:14px;font-weight:600;padding:11px 20px;border-radius:999px;border:1.5px solid var(--ink);background:white;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+  .btn-primary{background:var(--purple);color:white;border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+  .btn-yellow{background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+  .btn-lime{background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+  .btn-ghost{border:0;background:transparent;box-shadow:none}
+
+  /* HERO */
+  .hero{padding:40px 56px 80px;width:1440px;margin:0 auto;position:relative}
+  .ann{display:inline-flex;align-items:center;gap:10px;background:var(--lime);border:1.5px solid var(--ink);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:3px 3px 0 var(--ink);margin-bottom:36px}
+  .ann .pulse{width:8px;height:8px;background:var(--ink);border-radius:50%}
+  h1{font-size:128px;line-height:.92;letter-spacing:-.045em;font-weight:700;max-width:1200px;font-family:'Fraunces',serif}
+  .pill-word{display:inline-block;border:2.5px solid var(--ink);border-radius:999px;padding:0 28px;background:var(--peach);transform:rotate(-2deg);position:relative}
+  .pill-word.lav{background:var(--lavender);transform:rotate(1.5deg)}
+  .pill-word.lime{background:var(--lime);transform:rotate(-1deg)}
+  .pill-word.sky{background:var(--sky);transform:rotate(2deg)}
+  .pill-word.yellow{background:var(--yellow)}
+  h1 .it{font-style:italic;font-weight:500}
+  .hero-row{display:grid;grid-template-columns:1.1fr 1fr;gap:80px;margin-top:48px;align-items:center}
+  .lede{font-size:22px;line-height:1.5;color:var(--ink-2);max-width:520px;font-weight:400}
+  .lede b{font-weight:700;color:var(--ink);background:var(--yellow);padding:1px 6px;border-radius:4px}
+  .hero-cta{margin-top:32px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .hero-side{position:relative}
+
+  /* product UI playful */
+  .ui-stack{position:relative;height:520px}
+  .ui-card{background:white;border:2px solid var(--ink);border-radius:18px;padding:18px 20px;box-shadow:4px 4px 0 var(--ink);position:absolute}
+  .ui-card.email{top:0;left:0;width:380px;transform:rotate(-3deg);background:var(--paper)}
+  .ui-card.crm{top:60px;right:-20px;width:340px;transform:rotate(3deg);background:white}
+  .ui-card.coach{bottom:0;left:40px;width:380px;transform:rotate(-1deg);background:var(--lavender)}
+
+  .email-from{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+  .email-subj{font-weight:700;font-size:15px;margin-bottom:10px;letter-spacing:-.01em}
+  .email-body{font-size:13px;line-height:1.55;color:var(--ink-2)}
+  .email-body mark{background:var(--peach);padding:1px 5px;border-radius:4px;color:var(--ink);font-weight:500}
+  .email-foot{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+  .mini-chip{font-size:11px;background:var(--ink);color:white;padding:5px 10px;border-radius:99px;font-weight:600}
+  .mini-chip.out{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+
+  .crm-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .crm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--peach),var(--pink));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink);font-size:13px;border:1.5px solid var(--ink)}
+  .crm-name{font-weight:700;font-size:14px}
+  .crm-meta{font-size:11px;color:var(--muted)}
+  .crm-row{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px dashed var(--line)}
+  .crm-row span{color:var(--muted)}
+  .crm-row b{font-weight:600}
+  .crm-tag{display:inline-block;font-size:10px;background:var(--lime);padding:3px 8px;border-radius:99px;font-weight:700;border:1.5px solid var(--ink);margin-top:8px}
+
+  .coach-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:700}
+  .coach-mark{width:24px;height:24px;background:var(--ink);color:var(--lime);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+  .coach-msg{background:white;border:1.5px solid var(--ink);border-radius:12px;padding:12px;font-size:13px;line-height:1.5}
+  .coach-msg b{font-weight:700}
+  .coach-pill{display:inline-block;font-size:10px;background:var(--peach);border:1.5px solid var(--ink);padding:3px 8px;border-radius:99px;font-weight:700;margin-bottom:8px}
+
+  /* doodle decorations */
+  .doodle{position:absolute;pointer-events:none}
+  .scribble-note{font-family:'Caveat',cursive;font-size:24px;font-weight:700;color:var(--purple)}
+
+  /* TRUST */
+  .trust-row{padding:24px 56px;width:1440px;margin:0 auto;display:flex;align-items:center;gap:32px;flex-wrap:wrap;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--lavender);position:relative}
+  .trust-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:10px}
+  .trust-label::after{content:"→";font-family:'Caveat';font-size:24px;color:var(--ink);font-weight:700}
+  .trust-logos{display:flex;gap:40px;align-items:center;flex-wrap:wrap}
+  .t-logo{font-size:18px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:6px}
+
+  /* BIG STAT */
+  .big-stat{padding:120px 56px;width:1440px;margin:0 auto;text-align:center;position:relative}
+  .big-stat .scribble-arrow{position:absolute;top:80px;right:200px;font-family:'Caveat';font-size:30px;font-weight:700;color:var(--purple);transform:rotate(-12deg)}
+  h2{font-size:88px;line-height:.95;letter-spacing:-.04em;font-weight:700;font-family:'Fraunces',serif;max-width:1200px;margin:0 auto}
+  h2 .it{font-style:italic;font-weight:500}
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
+  .stat-block{border:2px solid var(--ink);border-radius:24px;padding:48px 36px;text-align:left;box-shadow:6px 6px 0 var(--ink);position:relative}
+  .stat-block.lav{background:var(--lavender)}
+  .stat-block.peach{background:var(--peach)}
+  .stat-block.lime{background:var(--lime)}
+  .stat-num{font-size:120px;line-height:.9;letter-spacing:-.05em;font-weight:700;font-family:'Fraunces',serif}
+  .stat-lab{margin-top:16px;font-size:18px;font-weight:600;letter-spacing:-.01em}
+  .stat-sub{margin-top:8px;font-size:14px;color:var(--ink-2);line-height:1.5}
+  .stat-sticker{position:absolute;top:-16px;right:-12px;background:white;border:2px solid var(--ink);border-radius:99px;padding:6px 14px;font-family:'Caveat';font-size:18px;font-weight:700;transform:rotate(8deg);box-shadow:2px 2px 0 var(--ink)}
+
+  /* FEATURE BLOCKS */
+  .feature{padding:48px 56px;width:1440px;margin:0 auto}
+  .f-block{border:2px solid var(--ink);border-radius:32px;padding:64px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+  .f-block.lav{background:var(--lavender)}
+  .f-block.peach{background:var(--peach)}
+  .f-block.lime{background:var(--lime)}
+  .f-block.sky{background:var(--sky)}
+  .f-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:white;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:24px}
+  .f-eyebrow .num{background:white;color:var(--ink);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+  .f-title{font-size:64px;line-height:.95;letter-spacing:-.035em;font-weight:700;font-family:'Fraunces',serif;margin-bottom:24px}
+  .f-title .it{font-style:italic}
+  .f-title .underline{position:relative;display:inline-block}
+  .f-title .underline::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:8px;background:var(--yellow);z-index:-1;border-radius:4px}
+  .f-desc{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:480px}
+  .f-desc b{font-weight:700;color:var(--ink)}
+  .f-cta{margin-top:28px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--ink);background:white;border:1.5px solid var(--ink);padding:11px 18px;border-radius:99px;text-decoration:none;box-shadow:3px 3px 0 var(--ink)}
+
+  /* feature visuals */
+  .vis-card-2{background:white;border:2px solid var(--ink);border-radius:18px;padding:22px;box-shadow:4px 4px 0 var(--ink)}
+  .seq-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .seq-row:last-child{border-bottom:0}
+  .seq-num{width:28px;height:28px;border-radius:50%;background:var(--lime);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .seq-content{flex:1}
+  .seq-content b{display:block;font-weight:700;margin-bottom:2px}
+  .seq-content span{font-size:12px;color:var(--muted)}
+  .seq-meta b{font-weight:700;font-size:13px}
+  .seq-meta{font-size:11px;color:var(--muted);text-align:right}
+
+  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .data-card{background:white;border:2px solid var(--ink);border-radius:14px;padding:18px;box-shadow:3px 3px 0 var(--ink)}
+  .data-card .lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+  .data-card .val{font-size:30px;font-weight:700;letter-spacing:-.02em;font-family:'Fraunces',serif;line-height:1}
+  .data-card .sub{font-size:12px;color:var(--ink-2);margin-top:6px}
+  .data-card .check{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink);background:var(--lime);padding:3px 8px;border-radius:99px;margin-top:10px;font-weight:700;border:1px solid var(--ink)}
+
+  .coach-block{background:var(--ink);color:white;border-radius:18px;padding:28px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--purple)}
+  .coach-tag{display:inline-block;font-size:10px;background:var(--lime);color:var(--ink);padding:5px 10px;border-radius:99px;font-weight:700;margin-bottom:18px;letter-spacing:.05em}
+  .coach-wave{display:flex;gap:3px;align-items:flex-end;height:48px;margin-bottom:18px}
+  .coach-wave span{flex:1;background:var(--lime);border-radius:2px}
+  .coach-line{font-size:13px;line-height:1.55;color:#D4D0E0}
+  .coach-line .me{color:white}
+  .coach-line mark{background:var(--lime);color:var(--ink);padding:1px 4px;border-radius:3px;font-weight:600}
+
+  /* TESTIMONIALS */
+  .test{padding:120px 56px;width:1440px;margin:0 auto;position:relative}
+  .test-head{text-align:center;margin-bottom:64px}
+  .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .t-card{background:white;border:2px solid var(--ink);border-radius:24px;padding:36px;box-shadow:6px 6px 0 var(--ink);position:relative}
+  .t-card.r1{transform:rotate(-2deg);background:var(--paper)}
+  .t-card.r2{transform:rotate(1deg);background:var(--peach)}
+  .t-card.r3{transform:rotate(-1deg);background:var(--lavender)}
+  .t-stars{color:var(--purple);font-size:18px;margin-bottom:14px;letter-spacing:2px}
+  .t-quote{font-size:20px;line-height:1.4;font-weight:500;letter-spacing:-.01em;margin-bottom:24px;font-family:'Fraunces',serif}
+  .t-attr{display:flex;align-items:center;gap:12px;border-top:1.5px solid var(--ink);padding-top:18px}
+  .t-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--lavender),var(--purple));border:1.5px solid var(--ink)}
+  .t-attr.b .t-avatar{background:linear-gradient(135deg,var(--lime),var(--peach-2))}
+  .t-attr.c .t-avatar{background:linear-gradient(135deg,var(--sky),var(--purple))}
+  .t-name{font-weight:700;font-size:14px}
+  .t-role{font-size:12px;color:var(--ink-2)}
+  .t-sticker{position:absolute;top:-14px;left:24px;background:var(--yellow);border:2px solid var(--ink);border-radius:99px;padding:5px 12px;font-family:'Caveat';font-size:16px;font-weight:700;transform:rotate(-4deg)}
+
+  /* CTA */
+  .cta{padding:80px 56px 120px;width:1440px;margin:0 auto;position:relative}
+  .cta-card{background:var(--purple);color:white;border:2px solid var(--ink);border-radius:32px;padding:96px 64px;text-align:center;box-shadow:8px 8px 0 var(--ink);position:relative;overflow:hidden}
+  .cta-headline{font-size:96px;line-height:.95;letter-spacing:-.04em;font-weight:700;font-family:'Fraunces',serif;max-width:1000px;margin:0 auto 32px}
+  .cta-headline .it{font-style:italic;background:var(--yellow);color:var(--ink);padding:0 20px;border-radius:999px;display:inline-block;border:2px solid var(--ink);transform:rotate(-2deg)}
+  .cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;align-items:center}
+  .cta-sub{margin-top:20px;font-size:14px;color:#E0DAFF}
+
+  /* FOOTER */
+  footer{padding:56px;width:1440px;margin:0 auto;background:var(--ink);color:white;border-radius:32px 32px 0 0}
+  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+  .foot-tag{font-size:14px;color:#A29BB8;max-width:300px;margin-top:14px;line-height:1.5}
+  .foot-col h4{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);margin-bottom:18px;font-weight:700}
+  .foot-col a{display:block;font-size:14px;color:#D4CEE5;text-decoration:none;margin-bottom:12px}
+  .foot-bot{padding-top:24px;border-top:1px solid #2C2640;display:flex;justify-content:space-between;font-size:12px;color:#A29BB8}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span class="logo-mark">K</span> KomboAI</div>
+  <div class="nav-pill">
+    <a class="on">Product</a><a>Customers</a><a>Pricing</a><a>Resources</a><a>Company</a>
+  </div>
+  <div class="nav-cta">
+    <button class="btn btn-ghost">Sign in</button>
+    <button class="btn btn-yellow">Book a demo →</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="ann"><span class="pulse"></span> NEW · Live coaching is here, and it's wild</div>
+  <h1>
+    Less <span class="pill-word">clicks.</span><br>
+    More <span class="pill-word lav">selling.</span>
+  </h1>
+  <div class="hero-row">
+    <div>
+      <p class="lede">Kombo is the AI co-pilot that lives <b>where your reps already work</b> — your CRM. It drafts the email, finds the mobile number, and whispers the pricing answer mid-call. No new tab. No new tool. Just three hours back.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary">Book a demo →</button>
+        <button class="btn">Watch the 90s tour</button>
+        <span class="scribble-note" style="margin-left:8px">← takes 20 seconds</span>
+      </div>
+      <div style="margin-top:48px;display:flex;align-items:center;gap:24px">
+        <div style="font-size:13px;font-weight:700">★★★★★ <b>4.9</b> · G2</div>
+        <div style="font-size:13px;color:var(--muted)">— 1,000+ reps onboarded</div>
+      </div>
+    </div>
+
+    <div class="hero-side">
+      <div class="ui-stack">
+        <div class="ui-card email">
+          <div class="email-from">DRAFTED FOR YOU · 12s ago</div>
+          <div class="email-subj">Outbound rebuild — three things I'd skip</div>
+          <div class="email-body">
+            Hi Maya, saw your <mark>LinkedIn post</mark> about rebuilding outbound from scratch — congrats on the <mark>Series C</mark> last week. We've helped 40+ teams scaling SDRs in EMEA dodge the three traps that…
+          </div>
+          <div class="email-foot">
+            <span class="mini-chip">Send</span><span class="mini-chip out">Edit</span><span class="mini-chip out">Try another</span>
+          </div>
+        </div>
+
+        <div class="ui-card crm">
+          <div class="crm-head">
+            <div class="crm-avatar">MC</div>
+            <div><div class="crm-name">Maya Chen</div><div class="crm-meta">VP RevOps · Northwind</div></div>
+          </div>
+          <div class="crm-row"><span>Mobile</span><b>+1 (415) 555-0142</b></div>
+          <div class="crm-row"><span>Stage</span><b>Discovery</b></div>
+          <div class="crm-row"><span>Last touch</span><b>Opened email · 2d</b></div>
+          <div class="crm-row"><span>Score</span><b>94 / 100</b></div>
+          <span class="crm-tag">● Buying signal · 2h ago</span>
+        </div>
+
+        <div class="ui-card coach">
+          <span class="coach-pill">● LIVE COACHING</span>
+          <div class="coach-head"><span class="coach-mark">K</span> Kombo whispers</div>
+          <div class="coach-msg">
+            <b>Lead with the Northwind case.</b> They cut sequence-building from 4hrs → 18min. Don't pitch features yet — Maya cares about the rebuild, not the feature list.
+          </div>
+        </div>
+
+        <!-- doodle arrows -->
+        <svg class="doodle" style="top:-10px;right:160px;width:80px;height:60px" viewBox="0 0 80 60">
+          <path d="M5,55 Q40,5 75,30" stroke="#6B4EFF" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M70,22 L75,30 L67,35" stroke="#6B4EFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="scribble-note" style="position:absolute;top:-30px;right:-10px;transform:rotate(8deg)">drafts itself ✦</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust-row">
+  <div class="trust-label">Lives inside</div>
+  <div class="trust-logos">
+    <div class="t-logo">◆ Salesforce</div>
+    <div class="t-logo">◇ HubSpot</div>
+    <div class="t-logo">▲ Pipedrive</div>
+    <div class="t-logo">◈ Dynamics 365</div>
+    <div class="t-logo">◐ Outreach</div>
+    <div class="t-logo">◑ Gong</div>
+  </div>
+  <div style="margin-left:auto;font-size:12px;font-weight:600">SOC 2 · GDPR · ISO 27001</div>
+</section>
+
+<section class="big-stat">
+  <h2>Your reps spend <span class="it" style="background:var(--peach);padding:0 24px;border-radius:99px;border:2px solid var(--ink);display:inline-block;transform:rotate(-2deg);box-shadow:4px 4px 0 var(--ink)">3 hours a day</span> not selling.<br>Kombo gives them back.</h2>
+  <div style="font-family:'Caveat';font-size:28px;font-weight:700;color:var(--purple);margin-top:24px;transform:rotate(-2deg);display:inline-block">↳ and the data agrees</div>
+
+  <div class="stat-strip">
+    <div class="stat-block lav">
+      <div class="stat-sticker">verified ✓</div>
+      <div class="stat-num">60%</div>
+      <div class="stat-lab">Less manual work</div>
+      <div class="stat-sub">Across CRM updates, research, drafting. Your reps can finally focus on selling.</div>
+    </div>
+    <div class="stat-block peach">
+      <div class="stat-sticker" style="background:var(--lime)">+ counting</div>
+      <div class="stat-num">1,000+</div>
+      <div class="stat-lab">SDRs and AEs onboarded</div>
+      <div class="stat-sub">From Series A scale-ups to public companies with 500+ reps.</div>
+    </div>
+    <div class="stat-block lime">
+      <div class="stat-sticker" style="background:var(--peach)">3× → 🚀</div>
+      <div class="stat-num">3×</div>
+      <div class="stat-lab">Higher conversion rates</div>
+      <div class="stat-sub">Right person. Right moment. Right message. Every time.</div>
+    </div>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="f-block lav">
+    <div>
+      <div class="f-eyebrow"><span class="num">01</span> PERSONALIZATION</div>
+      <h3 class="f-title">Real personalization, <span class="underline">at scale.</span></h3>
+      <p class="f-desc">Kombo reads every signal across your CRM, inbox, and the public web — then writes outreach that sounds like <b>you</b> wrote it. Not a template. Not a Mad Lib. <b>Actually you.</b></p>
+      <a class="f-cta">See it write a sequence →</a>
+    </div>
+    <div>
+      <div class="vis-card-2">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Auto-generated sequence · Maya · Northwind</div>
+        <div class="seq-row">
+          <div class="seq-num">1</div>
+          <div class="seq-content"><b>Day 1 · Email</b><span>Reference Maya's LinkedIn post</span></div>
+          <div class="seq-meta"><b>87% open</b>14% reply</div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-num">2</div>
+          <div class="seq-content"><b>Day 3 · LinkedIn</b><span>Comment with the EMEA hiring data</span></div>
+          <div class="seq-meta"><b>64% connect</b>22% reply</div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-num">3</div>
+          <div class="seq-content"><b>Day 5 · Email</b><span>Send the outbound rebuild Loom</span></div>
+          <div class="seq-meta"><b>71% open</b>9% reply</div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-num">4</div>
+          <div class="seq-content"><b>Day 8 · Call</b><span>Open with the Series C — Kombo coaches</span></div>
+          <div class="seq-meta"><b>38% connect</b>18% meeting</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="f-block peach">
+    <div>
+      <div class="f-eyebrow"><span class="num">02</span> CONTACT DATA</div>
+      <h3 class="f-title">Numbers others <span class="it underline">can't find.</span></h3>
+      <p class="f-desc">Direct dials, mobile numbers, deliverable emails — verified across <b>40+ sources</b> and refreshed weekly. We pay the bounce penalty so you don't.</p>
+      <a class="f-cta">Browse the dataset →</a>
+    </div>
+    <div class="data-grid">
+      <div class="data-card"><div class="lab">Mobile direct dials</div><div class="val">240M+</div><div class="sub">Across NA, EMEA, APAC</div><div class="check">✓ 92% connect rate</div></div>
+      <div class="data-card"><div class="lab">Verified work emails</div><div class="val">680M+</div><div class="sub">Refreshed weekly</div><div class="check">✓ 96% deliverability</div></div>
+      <div class="data-card"><div class="lab">Companies tracked</div><div class="val">42M</div><div class="sub">Funding · headcount · tech</div><div class="check">✓ Daily intent</div></div>
+      <div class="data-card"><div class="lab">Buying signals</div><div class="val">1.4B/wk</div><div class="sub">Hiring · news · web visits</div><div class="check">✓ Real-time</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="f-block lime">
+    <div>
+      <div class="f-eyebrow"><span class="num">03</span> LIVE COACHING</div>
+      <h3 class="f-title">Whispers the <span class="underline" style="background:var(--peach)">right answer</span> mid-call.</h3>
+      <p class="f-desc">Kombo listens, recognizes the moment, and surfaces the next best thing to say — <b>pricing answers, objection handlers, the case study they need.</b> Without the prospect ever knowing.</p>
+      <a class="f-cta">Hear a real session →</a>
+    </div>
+    <div>
+      <div class="coach-block">
+        <span class="coach-tag">● LIVE · DISCOVERY · 14:32</span>
+        <div class="coach-wave">
+          <span style="height:30%"></span><span style="height:60%"></span><span style="height:80%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:90%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:65%"></span><span style="height:80%"></span><span style="height:40%"></span><span style="height:75%"></span><span style="height:55%"></span><span style="height:30%"></span><span style="height:60%"></span><span style="height:85%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:80%"></span>
+        </div>
+        <div class="coach-line">
+          <p><b style="color:white">Maya:</b> "Honestly our last tool just felt like a glorified email scheduler…"</p>
+          <p style="margin-top:10px"><span class="me">↳ Kombo:</span> "<mark>Lead with the Northwind case</mark> — they cut sequence-building from 4hrs to 18min. Don't pitch features yet."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="f-block sky">
+    <div>
+      <div class="f-eyebrow"><span class="num">04</span> THE CO-PILOT</div>
+      <h3 class="f-title">Lives <span class="underline">on top</span> of your CRM.</h3>
+      <p class="f-desc">No new dashboard. No new tab. Kombo sits inside <b>Salesforce, HubSpot, Pipedrive</b>, and Dynamics — every action you take with it lands back in the record automatically.</p>
+      <a class="f-cta">See the integration →</a>
+    </div>
+    <div style="position:relative">
+      <div class="vis-card-2" style="padding:0;overflow:hidden">
+        <div style="background:var(--ink);color:white;padding:14px 20px;font-size:12px;font-weight:600;display:flex;justify-content:space-between">
+          <div>● ● ●  salesforce.com / Lead</div>
+          <div style="color:var(--lime)">+ KomboAI</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;min-height:280px">
+          <div style="padding:20px;border-right:1.5px solid var(--ink)">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase">Salesforce record</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--peach),var(--pink));border-radius:50%;border:1.5px solid var(--ink)"></div>
+              <div><div style="font-weight:700;font-size:14px">Maya Chen</div><div style="font-size:11px;color:var(--muted)">VP RevOps · Northwind</div></div>
+            </div>
+            <div style="font-size:12px;line-height:1.7;color:var(--ink-2)">Stage: Discovery<br>Score: 94<br>Last touch: 2d</div>
+          </div>
+          <div style="padding:20px;background:var(--lavender)">
+            <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase">✦ Kombo says</div>
+            <div style="font-size:13px;line-height:1.5;font-weight:500">Maya posted on LinkedIn 2h ago. <b>Reach out today</b> — referencing her outbound rebuild post.</div>
+            <div style="margin-top:14px"><span class="mini-chip">Draft now</span></div>
+          </div>
+        </div>
+      </div>
+      <span class="scribble-note" style="position:absolute;bottom:-32px;right:20px;transform:rotate(-3deg)">→ in 1 click ✦</span>
+    </div>
+  </div>
+</section>
+
+<section class="test">
+  <div class="test-head">
+    <div class="f-eyebrow" style="margin-bottom:20px"><span class="num">★</span> SAID BY HUMANS</div>
+    <h2>What sales leaders are <span class="it">saying.</span></h2>
+  </div>
+  <div class="test-grid">
+    <div class="t-card r1">
+      <span class="t-sticker">2× pipeline ↑</span>
+      <div class="t-stars">★★★★★</div>
+      <div class="t-quote">"My SDRs literally <b>cheered</b> when we rolled it out. The drafts are good enough that they ship them. That's never happened before."</div>
+      <div class="t-attr"><div class="t-avatar"></div><div><div class="t-name">Sarah Lim</div><div class="t-role">Head of Sales · Mavva Corp</div></div></div>
+    </div>
+    <div class="t-card r2">
+      <span class="t-sticker" style="background:var(--lime)">replaced 3 tools</span>
+      <div class="t-stars">★★★★★</div>
+      <div class="t-quote">"It's the first tool my reps actually <b>open on Mondays</b>. Replaced our enrichment tool, our coaching tool, and half of our sequencer."</div>
+      <div class="t-attr b"><div class="t-avatar"></div><div><div class="t-name">James Ortega</div><div class="t-role">VP Sales · Atlas Group</div></div></div>
+    </div>
+    <div class="t-card r3">
+      <span class="t-sticker">3hrs/day back</span>
+      <div class="t-stars">★★★★★</div>
+      <div class="t-quote">"We measured it: <b>3 hours a day</b> back per rep. Times 40 SDRs. The ROI math basically embarrasses every other line item."</div>
+      <div class="t-attr c"><div class="t-avatar"></div><div><div class="t-name">Lara Chen</div><div class="t-role">CRO · Ply Goodman Group</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="cta-card">
+    <div class="cta-headline">Give your reps their <span class="it">three hours</span> back.</div>
+    <p style="font-size:20px;color:#E0DAFF;max-width:680px;margin:0 auto 32px">14-day pilot. Full data access. No credit card. If your reps don't love it in two weeks, we'll write you the goodbye email ourselves.</p>
+    <div class="cta-actions">
+      <button class="btn btn-yellow" style="font-size:16px;padding:14px 24px">Book a demo →</button>
+      <button class="btn" style="background:transparent;color:white;border-color:white">Get the playbook</button>
+    </div>
+    <div class="cta-sub">★★★★★ 4.9 on G2 · 200+ reviews · 1,000+ reps using it daily</div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="logo" style="color:white"><span class="logo-mark" style="background:var(--lime);color:var(--ink)">K</span> KomboAI</div>
+      <p class="foot-tag">The AI co-pilot for revenue teams. Lives where your reps already work — drafting, finding, and coaching.</p>
+    </div>
+    <div class="foot-col"><h4>Product</h4><a>Personalization</a><a>Contact data</a><a>Live coaching</a><a>Integrations</a><a>Pricing</a></div>
+    <div class="foot-col"><h4>Resources</h4><a>Customer stories</a><a>Playbooks</a><a>ROI calculator</a><a>Blog</a><a>Help</a></div>
+    <div class="foot-col"><h4>Company</h4><a>About</a><a>Careers</a><a>Press</a><a>Contact</a><a>Security</a></div>
+    <div class="foot-col"><h4>Legal</h4><a>Terms</a><a>Privacy</a><a>DPA</a><a>Subprocessors</a></div>
+  </div>
+  <div class="foot-bot">
+    <div>© 2026 KomboAI</div>
+    <div>SOC 2 · GDPR · ISO 27001 · HIPAA</div>
+  </div>
+</footer>
+
+</body>
+</html>
