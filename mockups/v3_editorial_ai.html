@@ -2,590 +2,634 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kombo — V3 Editorial AI</title>
+<title>KomboAI — V3 Editorial AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
     --navy:#0E1726;
-    --navy-2:#172238;
-    --ink:#0E1726;
+    --navy-2:#142036;
+    --navy-3:#1B2D4A;
+    --ink:#0A0F1F;
     --cream:#F2EBDC;
-    --cream-2:#E8DFCB;
-    --paper:#F8F2E5;
-    --rust:#C9633D;
-    --rust-deep:#A14826;
+    --cream-2:#E8DFC8;
+    --cream-3:#CFC4A8;
     --gold:#D4A04F;
-    --teal:#264E4A;
-    --line-d:#2A3548;
-    --line-l:#D6CDB6;
-    --muted-d:#7A8497;
-    --muted-l:#857B65;
+    --gold-2:#B8853A;
+    --gold-3:#7A5722;
+    --bluegrey:#7A8497;
+    --bluegrey-2:#5A6478;
+    --hair:rgba(242,235,220,.16);
+    --hair-2:rgba(242,235,220,.08);
   }
-  html,body{background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
-  .serif{font-family:'Fraunces',serif}
-  .mono{font-family:'JetBrains Mono',monospace}
+  html,body{background:var(--navy);color:var(--cream);font-family:'Inter',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  /* film grain overlay */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .12 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");opacity:.55;mix-blend-mode:overlay}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at top,transparent 0%,rgba(10,15,31,.4) 100%)}
+  .page{width:1440px;max-width:100%;margin:0 auto;position:relative;z-index:2}
+  a{color:inherit;text-decoration:none;cursor:pointer}
 
-  /* GRAIN texture overlay */
-  .grain{position:relative}
-  .grain::before{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-    opacity:.45;mix-blend-mode:multiply;
-  }
+  /* === MASTHEAD === */
+  .masthead{padding:18px 48px;border-bottom:1px solid var(--hair);display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey)}
+  .masthead .left,.masthead .right{display:flex;gap:24px}
+  .masthead .center{font-family:'Fraunces',serif;font-style:italic;color:var(--gold);letter-spacing:.04em;text-transform:none;font-size:13px}
 
-  /* NAV */
-  .nav-shell{background:var(--navy);color:var(--cream);border-bottom:1px solid var(--line-d)}
-  nav{display:flex;align-items:center;justify-content:space-between;padding:20px 64px;width:1440px;margin:0 auto}
-  .top-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-d);letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;padding:8px 64px;width:1440px;margin:0 auto;border-bottom:1px solid var(--line-d)}
-  .top-meta span:nth-child(2){color:var(--gold)}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:500;font-size:15px;letter-spacing:.04em;font-family:'Press Start 2P',monospace}
-  .logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#5B5BD6 0%,#3F3FB8 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;font-family:'Press Start 2P',monospace;letter-spacing:0;box-shadow:0 4px 10px rgba(91,91,214,.25)}
-  .nav-links{display:flex;gap:28px;font-size:13px;color:var(--cream);font-weight:400;letter-spacing:.02em}
-  .nav-links a{color:inherit;text-decoration:none}
-  .nav-links a.divider{color:var(--muted-d)}
-  .btn{font-family:inherit;font-size:13px;font-weight:500;padding:10px 20px;border-radius:0;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:8px;letter-spacing:.02em}
-  .btn-rust{background:var(--rust);color:var(--cream);border-color:var(--rust)}
-  .btn-cream{background:var(--cream);color:var(--navy);border-color:var(--cream)}
+  /* === NAV === */
+  .nav-wrap{padding:22px 48px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--hair);position:relative}
+  .logo{display:inline-flex;align-items:center;gap:11px;font-family:'Fraunces',serif;font-weight:500;font-size:22px;letter-spacing:-.01em;color:var(--cream)}
+  .logo .dot{color:var(--gold);font-style:italic}
+  .nav-links{display:flex;gap:36px;font-family:'Inter';font-size:13px;font-weight:500;color:var(--cream);letter-spacing:.04em;text-transform:uppercase}
+  .nav-links a{position:relative;padding-bottom:3px}
+  .nav-links a:hover{color:var(--gold)}
+  .nav-cta{display:inline-flex;align-items:center;gap:8px;font-family:'Inter';font-size:13px;font-weight:500;padding:10px 20px;border:1px solid var(--gold);border-radius:0;background:transparent;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;transition:all .2s}
+  .nav-cta:hover{background:var(--gold);color:var(--navy)}
 
-  /* HERO */
-  .hero-shell{background:var(--navy);color:var(--cream);position:relative;overflow:hidden;padding:0 0 120px}
-  .hero-shell::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-    opacity:1;
-  }
-  .hero{padding:80px 64px 0;width:1440px;margin:0 auto;position:relative;z-index:2}
-  .hero-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;margin-bottom:64px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d)}
-  .hero-meta b{color:var(--cream);display:block;margin-top:6px;font-family:'Inter';font-weight:400;font-size:13px;letter-spacing:.02em;text-transform:none}
-  h1{font-family:'Fraunces',serif;font-size:200px;line-height:.92;letter-spacing:-.05em;font-weight:400;max-width:1320px;color:var(--cream)}
-  h1 .it{font-style:italic;font-weight:300;color:var(--gold)}
-  h1 .div{font-weight:300;opacity:.4;font-style:normal;color:var(--cream)}
-  .hero-row{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:64px;align-items:end}
-  .lede{font-size:22px;line-height:1.4;color:#C9C4B6;max-width:520px;font-weight:300;font-family:'Fraunces',serif;font-style:italic}
-  .hero-cta{display:flex;gap:14px;align-items:center;margin-top:32px}
-  .underlink{display:inline-flex;align-items:center;gap:8px;color:var(--cream);font-size:13px;text-decoration:none;border-bottom:1px solid var(--cream);padding-bottom:2px}
+  /* === HERO === */
+  .hero{padding:80px 48px 72px;border-bottom:1px solid var(--hair);position:relative}
+  .hero-issue{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--bluegrey);margin-bottom:42px;padding-bottom:18px;border-bottom:1px solid var(--hair)}
+  .hero-issue .vol{color:var(--gold)}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:32px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"§";font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--gold)}
 
-  .hero-card{background:rgba(255,255,255,.03);border:1px solid var(--line-d);padding:40px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-d)}
-  .hero-card-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line-d)}
-  .hero-card-row:last-child{border-bottom:0}
-  .hero-card-row b{color:var(--cream);font-family:'Fraunces',serif;font-style:normal;font-size:24px;letter-spacing:-.02em;font-weight:400;text-transform:none}
-  .hero-card-row .gold{color:var(--gold)}
+  h1.hero-h{font-family:'Fraunces',serif;font-weight:300;font-size:144px;line-height:.92;letter-spacing:-.035em;color:var(--cream);margin-bottom:48px;max-width:1280px}
+  h1.hero-h em{font-style:italic;color:var(--gold);font-weight:400}
+  h1.hero-h .pill-h{display:inline-block;padding:0 36px 4px;border:1.5px solid var(--gold);border-radius:99px;font-style:normal;color:var(--cream);font-weight:300}
 
-  /* POSTER GRID */
-  .posters-shell{background:var(--navy);padding-top:0;color:var(--cream)}
-  .posters{padding:0 64px 120px;width:1440px;margin:0 auto;position:relative;z-index:2}
-  .posters-head{display:flex;justify-content:space-between;align-items:flex-end;padding:48px 0 32px;border-top:1px solid var(--line-d);margin-bottom:24px}
-  .posters-head h3{font-family:'Fraunces',serif;font-size:48px;font-weight:400;letter-spacing:-.025em;line-height:1;max-width:560px}
-  .posters-head h3 .it{font-style:italic;color:var(--gold)}
-  .posters-head .meta{font-family:'JetBrains Mono';font-size:11px;color:var(--muted-d);letter-spacing:.1em;text-transform:uppercase;text-align:right}
-  .poster-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  .poster{aspect-ratio:3/4;border:1px solid var(--line-d);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:24px;color:var(--cream)}
-  .poster .corner{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;color:rgba(255,255,255,.7)}
-  .poster .arrow-lg{font-size:24px;color:rgba(255,255,255,.85)}
-  .poster .title{font-family:'Fraunces',serif;font-size:32px;line-height:.95;letter-spacing:-.02em;font-weight:400;color:var(--cream)}
-  .poster .title b{font-weight:500}
-  .poster .title .it{font-style:italic}
-  .poster .sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:8px;font-family:'JetBrains Mono';letter-spacing:.06em;text-transform:uppercase}
+  .hero-body-grid{display:grid;grid-template-columns:240px 1fr 1fr 240px;gap:36px;align-items:start;padding-top:32px;border-top:1px solid var(--hair)}
+  .hero-meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bluegrey);line-height:1.8}
+  .hero-meta .label{color:var(--gold);display:block;margin-bottom:4px}
+  .hero-meta .name{color:var(--cream);font-family:'Fraunces',serif;font-style:italic;text-transform:none;letter-spacing:0;font-size:14px}
+  .hero-meta + .hero-meta{padding-top:14px;margin-top:14px;border-top:1px solid var(--hair-2)}
 
-  .p1{background:linear-gradient(135deg,#1a3552 0%, #0E1726 100%)}
-  .p2{background:linear-gradient(180deg,#F2EBDC 0%, #E0D2B0 100%);color:var(--navy)}
-  .p2 .corner,.p2 .sub,.p2 .arrow-lg{color:var(--navy);opacity:.7}
-  .p2 .title{color:var(--navy)}
-  .p3{background:linear-gradient(180deg,#C9633D 0%, #8B3F22 100%)}
-  .p4{background:linear-gradient(135deg,#2A4A4A 0%, #18302F 100%)}
-  .p5{background:linear-gradient(180deg,#D4A04F 0%, #97712E 100%);color:var(--navy)}
-  .p5 .corner,.p5 .sub,.p5 .arrow-lg,.p5 .title{color:var(--navy)}
-  .p5 .corner,.p5 .sub{opacity:.7}
-  .p6{background:linear-gradient(180deg,#172238 0%, #0E1726 100%)}
+  .hero-lede{font-family:'Inter';font-size:17px;line-height:1.7;color:var(--cream-2);font-weight:400;column-count:1}
+  .hero-lede:first-letter{font-family:'Fraunces',serif;font-weight:300;float:left;font-size:96px;line-height:.85;margin:6px 12px -6px 0;color:var(--gold);font-style:italic}
+  .hero-lede em{font-family:'Fraunces',serif;font-style:italic;color:var(--cream);font-size:18px}
 
-  /* poster visual flourishes */
-  .poster-vis{position:absolute;inset:0;pointer-events:none}
-  .p1::after{content:"";position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#3B6B96,#0E1726 70%);opacity:.6}
-  .p3::after{content:"";position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#FFB86E 0%,#C9633D 50%,transparent 75%);}
-  .p4::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:0;height:0;border-left:80px solid transparent;border-right:80px solid transparent;border-bottom:140px solid var(--gold);opacity:.85}
-  .p6-rect{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);width:160px;height:160px;background:linear-gradient(135deg,#5D7BA8,#C9633D);opacity:.85}
+  .hero-col-2{font-family:'Inter';font-size:14.5px;line-height:1.7;color:var(--cream-2);border-left:1px solid var(--hair);padding-left:36px}
+  .hero-col-2 p+p{margin-top:14px}
+  .hero-col-2 strong{color:var(--gold);font-weight:600;font-family:'Fraunces',serif;font-style:italic}
+  .hero-cta-block{margin-top:24px;padding-top:18px;border-top:1px solid var(--hair);display:flex;flex-direction:column;gap:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:space-between;font-family:'Inter';font-size:13px;font-weight:500;padding:13px 18px;border-radius:0;letter-spacing:.06em;text-transform:uppercase;transition:all .2s;cursor:pointer;border:1px solid transparent}
+  .btn-primary{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+  .btn-primary:hover{background:var(--cream);border-color:var(--cream)}
+  .btn-ghost{background:transparent;color:var(--cream);border-color:var(--cream-3)}
+  .btn-ghost:hover{background:var(--cream-3);color:var(--navy)}
+  .btn .arr{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--gold)}
+  .btn-primary .arr{color:var(--navy)}
 
-  /* the trust strip */
-  .trust-bar{background:var(--navy);color:var(--cream);border-top:1px solid var(--line-d);padding:32px 64px;width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
-  .tb-label{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d)}
-  .tb-logos{display:flex;gap:48px;font-family:'Fraunces',serif;font-size:18px;font-weight:400;letter-spacing:-.01em}
+  /* === STATS — typeset table === */
+  .stats{padding:0 48px;border-bottom:1px solid var(--hair)}
+  .stats-head{display:flex;justify-content:space-between;align-items:baseline;padding:36px 0 20px;border-bottom:1px solid var(--hair)}
+  .stats-head .ttl{font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:24px;color:var(--cream)}
+  .stats-head .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey)}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);padding:48px 0 56px}
+  .stat-cell{padding:0 32px;border-right:1px solid var(--hair);position:relative}
+  .stat-cell:first-child{padding-left:0}
+  .stat-cell:last-child{border-right:none;padding-right:0}
+  .stat-num{font-family:'Fraunces',serif;font-weight:300;font-size:88px;line-height:.95;letter-spacing:-.04em;color:var(--cream)}
+  .stat-num em{font-style:italic;color:var(--gold);font-weight:400}
+  .stat-lab{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey);line-height:1.6}
+  .stat-source{margin-top:8px;font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--cream-3)}
 
-  /* THESIS / STATS */
-  .thesis{background:var(--cream);padding:140px 64px 100px;width:1440px;margin:0 auto;position:relative}
-  .chapter-num{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-l);margin-bottom:24px;display:flex;align-items:center;gap:18px}
-  .chapter-num::before{content:"";width:48px;height:1px;background:var(--ink)}
-  h2{font-family:'Fraunces',serif;font-size:96px;line-height:.95;letter-spacing:-.04em;font-weight:400;max-width:1100px}
-  h2 .it{font-style:italic;color:var(--rust)}
-  .thesis-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:120px;margin-top:96px;align-items:start}
-  .thesis-text{font-size:18px;line-height:1.6;color:var(--ink);max-width:380px;font-weight:400}
-  .thesis-text p+p{margin-top:18px}
-  .thesis-text .drop{font-family:'Fraunces';font-size:64px;line-height:.85;float:left;margin:6px 14px 0 0;color:var(--rust);font-weight:400}
-  .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
-  .stat{border-top:1px solid var(--ink);padding-top:24px}
-  .stat-num{font-family:'Fraunces',serif;font-size:120px;line-height:.9;letter-spacing:-.05em;font-weight:400}
-  .stat-num .it{font-style:italic;color:var(--rust)}
-  .stat-lab{margin-top:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-  .stat-desc{margin-top:10px;font-size:14px;color:var(--muted-l);line-height:1.55;font-weight:400}
+  /* === LOGO STRIP === */
+  .logos{padding:48px 48px 56px;border-bottom:1px solid var(--hair);text-align:center;position:relative}
+  .logos-label{font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:18px;color:var(--cream-3);margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:24px}
+  .logos-label::before,.logos-label::after{content:"";flex:0 0 80px;height:1px;background:var(--hair)}
+  .logos-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
+  .logo-pill{padding:10px 22px;border:1px solid var(--cream-3);border-radius:0;font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:14px;color:var(--cream);background:transparent;letter-spacing:.01em}
 
-  /* CHAPTERS / FEATURES */
-  .chapter{padding:120px 64px;width:1440px;margin:0 auto;border-top:1px solid var(--line-l)}
-  .chapter-grid{display:grid;grid-template-columns:5fr 7fr;gap:80px;align-items:start}
-  .chapter-grid.flip{grid-template-columns:7fr 5fr}
-  .chapter-grid.flip .ch-text{order:2}
-  .chapter-grid.flip .ch-vis{order:1}
-  .ch-title{font-family:'Fraunces',serif;font-size:80px;line-height:.95;letter-spacing:-.035em;font-weight:400;margin:24px 0 32px;max-width:560px}
-  .ch-title .it{font-style:italic;color:var(--rust)}
-  .ch-desc{font-size:18px;line-height:1.6;color:var(--ink);max-width:480px;font-weight:400}
-  .ch-desc b{font-weight:600}
-  .ch-link{margin-top:32px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink);padding-bottom:3px;letter-spacing:.02em}
+  /* === CHAPTER SECTIONS === */
+  .chapter{padding:120px 48px;border-bottom:1px solid var(--hair);display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;position:relative}
+  .chapter.alt{background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%)}
+  .ch-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;display:flex;align-items:center;gap:14px}
+  .ch-num::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--gold) 0%,transparent 100%);max-width:120px}
+  .chapter h2{font-family:'Fraunces',serif;font-weight:300;font-size:80px;line-height:.98;letter-spacing:-.03em;color:var(--cream);margin-bottom:32px;max-width:540px}
+  .chapter h2 em{font-style:italic;color:var(--gold);font-weight:400}
+  .chapter h2 .small{font-size:64px}
+  .chapter-byline{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bluegrey);margin-bottom:24px}
+  .chapter-byline span{color:var(--gold)}
+  .chapter p.body{font-family:'Inter';font-size:17px;line-height:1.75;color:var(--cream-2);max-width:480px;margin-bottom:18px}
+  .chapter p.body:first-of-type:first-letter{font-family:'Fraunces',serif;font-weight:300;float:left;font-size:72px;line-height:.85;margin:6px 10px -6px 0;color:var(--gold);font-style:italic}
+  .chapter p.body em{font-family:'Fraunces',serif;font-style:italic;color:var(--cream)}
+  .chapter p.body strong{color:var(--gold);font-weight:500;font-family:'Fraunces',serif;font-style:italic}
+  .ch-cta{margin-top:32px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .ch-link{display:inline-flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--gold);border-bottom:1px solid var(--gold);padding-bottom:3px}
+  .ch-link::after{content:"→";font-family:'Fraunces',serif;font-style:italic}
 
-  /* feature visuals — editorial product UIs */
-  .vis-frame{background:var(--paper);border:1px solid var(--line-l);position:relative}
-  .vis-cap{padding:14px 18px;border-bottom:1px solid var(--line-l);display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-l)}
+  /* === DARK PRODUCT WINDOWS === */
+  .window{background:var(--navy-2);border:1px solid var(--hair);border-radius:6px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.7), 0 4px 12px rgba(0,0,0,.4)}
+  .win-bar{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--ink);border-bottom:1px solid var(--hair)}
+  .win-traffic{display:flex;gap:6px}
+  .win-traffic span{width:10px;height:10px;border-radius:50%;background:var(--navy-3);border:1px solid var(--hair)}
+  .win-url{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--bluegrey);letter-spacing:.04em}
+  .win-min{display:flex;gap:14px;color:var(--bluegrey);font-size:12px}
+  .win-body{padding:24px}
 
-  .seq-list{padding:24px 32px}
-  .seq-row{display:grid;grid-template-columns:auto 1fr auto;gap:20px;padding:18px 0;border-bottom:1px solid var(--line-l);align-items:center;font-size:14px}
-  .seq-row:last-child{border:0}
-  .seq-num{font-family:'Fraunces';font-size:36px;font-weight:400;line-height:1;color:var(--rust);letter-spacing:-.03em;width:48px}
-  .seq-num .it{font-style:italic}
-  .seq-content b{font-family:'Fraunces';font-size:22px;font-weight:400;letter-spacing:-.01em;display:block;line-height:1.1;margin-bottom:4px}
-  .seq-content span{font-size:13px;color:var(--muted-l)}
-  .seq-meta{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-l);text-align:right}
-  .seq-meta b{font-family:'Fraunces';font-size:20px;color:var(--ink);text-transform:none;letter-spacing:-.01em;display:block;font-weight:400}
+  /* lead list */
+  .lead-list{display:flex;flex-direction:column;gap:0}
+  .lead-row{display:grid;grid-template-columns:1.5fr 1.3fr 80px 110px;gap:16px;padding:14px 8px;border-bottom:1px solid var(--hair-2);font-size:13px;align-items:center}
+  .lead-row:last-child{border-bottom:none}
+  .lead-row.head{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey);font-weight:500;padding:8px 8px 14px;border-bottom:1px solid var(--hair)}
+  .lead-name{font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--cream);font-weight:400}
+  .lead-name .sub{display:block;font-style:normal;font-family:'Inter';font-weight:400;color:var(--bluegrey);font-size:11px;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
+  .lead-co{color:var(--cream-2);font-size:13px}
+  .lead-co .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--bluegrey);margin-top:4px;letter-spacing:.06em;text-transform:uppercase}
+  .score{font-family:'Fraunces',serif;font-weight:400;font-size:32px;color:var(--gold);text-align:right;line-height:1}
+  .score .pct{font-size:14px;color:var(--bluegrey);font-style:italic}
+  .nba{font-family:'Fraunces',serif;font-style:italic;color:var(--cream);font-size:14px}
+  .nba::before{content:"→ ";color:var(--gold)}
 
-  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
-  .data-card{padding:36px 28px;border-right:1px solid var(--line-l);border-bottom:1px solid var(--line-l)}
-  .data-card:nth-child(2n){border-right:0}
-  .data-card:nth-last-child(-n+2){border-bottom:0}
-  .data-card .lab{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-l);margin-bottom:14px}
-  .data-card .val{font-family:'Fraunces';font-size:64px;font-weight:400;letter-spacing:-.03em;line-height:.9}
-  .data-card .val .it{font-style:italic;color:var(--rust)}
-  .data-card .sub{font-size:13px;color:var(--ink);margin-top:8px}
-  .data-card .verified{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--rust);margin-top:14px}
-  .data-card .verified::before{content:"✓";font-family:'Inter';font-weight:700}
+  /* email preview */
+  .email-meta{padding:0 0 18px;border-bottom:1px solid var(--hair);margin-bottom:20px;display:flex;flex-direction:column;gap:8px}
+  .email-meta .row{display:flex;gap:16px;font-size:13px;align-items:baseline}
+  .email-meta .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey);width:60px;flex-shrink:0}
+  .email-meta .val{color:var(--cream-2);flex:1;font-family:'Inter'}
+  .email-meta .val.subject{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--cream);font-weight:400}
+  .email-body{font-family:'Inter';font-size:14px;line-height:1.85;color:var(--cream-2)}
+  .email-body p{margin-bottom:12px}
+  .email-body p:first-of-type:first-letter{font-family:'Fraunces',serif;font-weight:400;float:left;font-size:46px;line-height:.85;margin:4px 8px -2px 0;color:var(--gold);font-style:italic}
+  .email-body em{font-family:'Fraunces',serif;font-style:italic;color:var(--gold)}
+  .email-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--hair-2);display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--bluegrey)}
+  .email-foot .badge{color:var(--gold)}
 
-  .coach-frame{background:var(--navy);color:var(--cream);position:relative;overflow:hidden}
-  .coach-frame .vis-cap{color:var(--muted-d);border-color:var(--line-d)}
-  .coach-body{padding:36px}
-  .coach-tag{display:inline-block;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:24px}
-  .coach-wave{display:flex;gap:3px;align-items:flex-end;height:60px;margin-bottom:28px}
-  .coach-wave span{flex:1;background:var(--gold);opacity:.7}
-  .coach-script{font-family:'Fraunces';font-size:22px;line-height:1.35;font-weight:400;font-style:italic}
-  .coach-script .speaker{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d);font-style:normal;display:block;margin-top:18px;margin-bottom:6px}
-  .coach-script mark{background:rgba(212,160,79,.2);color:var(--gold);padding:1px 4px;font-style:normal;font-family:'Fraunces'}
+  /* forecast chart */
+  .forecast-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--hair-2)}
+  .forecast-head h4{font-family:'Fraunces',serif;font-weight:400;font-size:24px;color:var(--cream);letter-spacing:-.01em}
+  .forecast-head h4 em{font-style:italic;color:var(--gold)}
+  .forecast-head .acc{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.1em}
+  .chart{height:200px;position:relative;padding-left:42px;margin-bottom:14px}
+  .chart .y-lab{position:absolute;left:0;top:0;height:100%;display:flex;flex-direction:column;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--bluegrey);letter-spacing:.06em}
+  .chart-inner{height:100%;border-bottom:1px solid var(--hair);border-left:1px solid var(--hair);position:relative}
+  .chart svg{width:100%;height:100%;display:block}
+  .chart-x{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--bluegrey);letter-spacing:.08em;text-transform:uppercase;padding:6px 0 0;margin-left:42px}
+  .stale{margin-top:22px;padding:16px;background:rgba(212,160,79,.06);border-left:2px solid var(--gold);font-family:'Inter';font-size:13.5px;color:var(--cream-2);line-height:1.6}
+  .stale b{font-family:'Fraunces',serif;font-style:italic;color:var(--gold);font-weight:500}
 
-  .crm-vis{display:grid;grid-template-columns:1fr 1fr}
-  .crm-side{padding:28px 32px}
-  .crm-side.right{background:var(--navy);color:var(--cream)}
-  .crm-side .lab{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-l);margin-bottom:18px}
-  .crm-side.right .lab{color:var(--muted-d)}
-  .crm-name{font-family:'Fraunces';font-size:36px;line-height:1;letter-spacing:-.02em;font-weight:400;margin-bottom:6px}
-  .crm-meta{font-size:13px;color:var(--muted-l);margin-bottom:20px}
-  .crm-side.right .crm-meta{color:var(--muted-d)}
-  .crm-fields{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.04em}
-  .crm-fields div{padding:10px 0;border-bottom:1px solid var(--line-l);display:flex;justify-content:space-between;color:var(--muted-l)}
-  .crm-fields b{font-family:'Inter';font-weight:500;color:var(--ink);text-transform:none}
-  .ai-out{font-family:'Fraunces';font-size:24px;line-height:1.3;color:var(--cream);font-weight:400;margin-bottom:24px}
-  .ai-out b{font-weight:500;color:var(--gold)}
+  /* prospect profile */
+  .prospect-head{display:flex;gap:18px;align-items:flex-start;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--hair-2)}
+  .prospect-photo{width:78px;height:78px;border-radius:0;background:linear-gradient(135deg,var(--gold) 0%,var(--gold-3) 100%);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:32px;color:var(--navy);flex-shrink:0;font-weight:500}
+  .prospect-info .pf-name{font-family:'Fraunces',serif;font-weight:400;font-size:24px;color:var(--cream);letter-spacing:-.01em}
+  .prospect-info .pf-title{font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--gold);margin-top:2px}
+  .prospect-info .pf-co{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--bluegrey);letter-spacing:.12em;text-transform:uppercase;margin-top:6px}
+  .prospect-summary{font-family:'Inter';font-size:13.5px;line-height:1.7;color:var(--cream-2)}
+  .prospect-summary p+p{margin-top:10px}
+  .prospect-summary em{font-family:'Fraunces',serif;font-style:italic;color:var(--gold)}
 
-  /* QUOTE */
-  .quote-shell{background:var(--rust);color:var(--cream);padding:140px 64px;position:relative;overflow:hidden}
-  .quote-shell::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  }
-  .quote{width:1440px;margin:0 auto;padding:0 64px;position:relative;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:80px;align-items:start}
-  .q-num{font-family:'Fraunces';font-size:200px;line-height:.85;font-weight:300;font-style:italic;color:var(--cream);opacity:.55}
-  .q-body{font-family:'Fraunces';font-size:64px;line-height:1.1;letter-spacing:-.025em;font-weight:400;max-width:1080px}
-  .q-body .it{font-style:italic;color:var(--paper)}
-  .q-attr{margin-top:48px;display:flex;align-items:center;gap:18px;font-size:14px}
-  .q-line{width:48px;height:1px;background:var(--cream)}
-  .q-name{font-weight:600;font-family:'Inter'}
-  .q-role{color:#F2DCC6;margin-left:8px}
+  /* === FEATURE POSTERS === */
+  .features-3{padding:120px 48px;border-bottom:1px solid var(--hair)}
+  .f3-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;gap:48px;padding-bottom:24px;border-bottom:1px solid var(--hair)}
+  .f3-head .lt h3{font-family:'Fraunces',serif;font-weight:300;font-size:64px;line-height:.98;letter-spacing:-.03em;color:var(--cream);max-width:780px}
+  .f3-head .lt h3 em{font-style:italic;color:var(--gold)}
+  .f3-head .lt .ch-num{margin-bottom:18px}
+  .f3-head .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey);text-align:right;line-height:1.8}
+  .f3-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+  .f3-card{padding:48px 40px 44px;border-right:1px solid var(--hair);display:flex;flex-direction:column;gap:18px;min-height:380px;position:relative}
+  .f3-card:last-child{border-right:none}
+  .f3-num{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--gold);font-weight:400}
+  .f3-num::before{content:"Ch. ";color:var(--bluegrey);font-style:italic}
+  .f3-card h4{font-family:'Fraunces',serif;font-weight:400;font-size:32px;letter-spacing:-.02em;line-height:1.1;color:var(--cream)}
+  .f3-card h4 em{font-style:italic;color:var(--gold)}
+  .f3-card p{font-family:'Inter';font-size:15px;line-height:1.7;color:var(--cream-2);flex:1}
+  .f3-card .more{display:inline-flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--gold);margin-top:8px}
+  .f3-card .more::after{content:"→"}
 
-  /* FAQ */
-  .faq{padding:140px 64px;width:1440px;margin:0 auto;background:var(--cream);border-top:1px solid var(--line-l)}
-  .faq-grid{display:grid;grid-template-columns:5fr 7fr;gap:120px;align-items:start}
-  .faq-list{display:flex;flex-direction:column}
-  .faq-item{padding:32px 0;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;font-family:'Fraunces';font-size:28px;font-weight:400;letter-spacing:-.015em;line-height:1.1}
-  .faq-item:first-child{border-top:1px solid var(--ink)}
-  .faq-item .num{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.08em;color:var(--muted-l);margin-right:24px;font-weight:400}
-  .faq-plus{font-family:'Fraunces';font-size:32px;color:var(--rust);font-weight:300}
+  /* === TESTIMONIALS — pull quotes === */
+  .testimonials{padding:120px 48px;border-bottom:1px solid var(--hair)}
+  .t-head{margin-bottom:80px;text-align:center;max-width:880px;margin-left:auto;margin-right:auto}
+  .t-head .eyebrow{justify-content:center}
+  .t-head h3{font-family:'Fraunces',serif;font-weight:300;font-size:64px;line-height:1.0;letter-spacing:-.03em;color:var(--cream)}
+  .t-head h3 em{font-style:italic;color:var(--gold)}
+  .t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
+  .t-card{display:flex;flex-direction:column;gap:24px;border-top:1px solid var(--gold);padding-top:40px;position:relative}
+  .t-card::before{content:"❝";position:absolute;top:-8px;left:0;font-family:'Fraunces',serif;font-style:italic;font-size:64px;color:var(--gold);line-height:0;background:var(--navy);padding:0 12px 0 0}
+  .t-quote{font-family:'Fraunces',serif;font-weight:300;font-style:italic;font-size:24px;line-height:1.4;color:var(--cream);flex:1;letter-spacing:-.005em}
+  .t-author{padding-top:20px;border-top:1px solid var(--hair-2);display:flex;flex-direction:column;gap:4px}
+  .t-name{font-family:'Fraunces',serif;font-weight:400;font-size:18px;color:var(--cream)}
+  .t-name::before{content:"— ";color:var(--gold);font-style:italic}
+  .t-role{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bluegrey)}
 
-  /* CTA */
-  .cta-shell{background:var(--navy);color:var(--cream);padding:160px 64px;position:relative;overflow:hidden}
-  .cta-shell::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  }
-  .cta{width:1440px;margin:0 auto;padding:0 64px;position:relative;z-index:2;text-align:center}
-  .cta-eyebrow{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:32px}
-  .cta-headline{font-family:'Fraunces';font-size:144px;line-height:.92;letter-spacing:-.04em;font-weight:400;max-width:1240px;margin:0 auto 48px}
-  .cta-headline .it{font-style:italic;color:var(--gold)}
-  .cta-actions{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:24px}
-  .btn-large{padding:18px 32px;font-size:14px}
-  .cta-sub{margin-top:32px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-d)}
+  /* === FINAL CTA === */
+  .cta-final{padding:140px 48px;background:linear-gradient(180deg,var(--navy) 0%,var(--ink) 100%);border-bottom:1px solid var(--hair);position:relative;overflow:hidden;text-align:center}
+  .cta-final::before{content:"";position:absolute;top:60px;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent 0%,var(--gold) 50%,transparent 100%)}
+  .cta-final::after{content:"§";position:absolute;top:84px;left:50%;transform:translateX(-50%);font-family:'Fraunces',serif;font-style:italic;color:var(--gold);font-size:24px}
+  .cta-final .ch-num{justify-content:center;margin-bottom:32px}
+  .cta-final .ch-num::after{display:none}
+  .cta-final .ch-num::before{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent 0%,var(--gold) 100%);max-width:100px;margin-right:14px}
+  .cta-final h3{font-family:'Fraunces',serif;font-weight:300;font-size:128px;line-height:.95;letter-spacing:-.035em;color:var(--cream);margin-bottom:36px;max-width:1100px;margin-left:auto;margin-right:auto}
+  .cta-final h3 em{font-style:italic;color:var(--gold);font-weight:400}
+  .cta-final p{font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:22px;color:var(--cream-2);max-width:560px;margin:0 auto 40px;line-height:1.5}
+  .cta-final .ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .cta-final .ornament{margin-top:64px;display:flex;align-items:center;justify-content:center;gap:18px;font-family:'Fraunces',serif;font-style:italic;color:var(--gold);font-size:14px}
+  .cta-final .ornament::before,.cta-final .ornament::after{content:"";width:64px;height:1px;background:var(--gold-2)}
 
-  /* FOOTER */
-  footer{background:var(--navy);color:var(--cream);padding:80px 64px 48px;width:1440px;margin:0 auto;border-top:1px solid var(--line-d)}
-  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:80px}
-  .foot-tag{font-family:'Fraunces';font-style:italic;font-size:18px;color:#C9C4B6;max-width:320px;margin-top:18px;line-height:1.5;font-weight:300}
-  .foot-col h4{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;font-weight:500}
-  .foot-col a{display:block;font-size:14px;color:#C9C4B6;text-decoration:none;margin-bottom:12px;font-family:'Fraunces';font-weight:300}
-  .foot-bot{padding-top:32px;border-top:1px solid var(--line-d);display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-d)}
+  /* === FOOTER === */
+  .footer-main{padding:80px 48px 40px;background:var(--ink);border-top:1px solid var(--hair)}
+  .footer-grid{display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:40px;margin-bottom:60px;padding-bottom:40px;border-bottom:1px solid var(--hair)}
+  .footer-brand p{font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:16px;color:var(--cream-2);line-height:1.6;margin-top:16px;max-width:300px}
+  .footer-col h5{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;font-weight:500}
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .footer-col a{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--cream-2)}
+  .footer-col a:hover{color:var(--gold)}
+  .footer-bot{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--bluegrey)}
+  .footer-bot a{color:var(--gold)}
+
 </style>
 </head>
 <body>
+<div class="page">
 
-<div class="nav-shell">
-  <div class="top-meta">
-    <span>VOL. 03 · ISSUE 04 · APR 2026</span>
-    <span>● 1,000+ REVENUE TEAMS NOW LIVE</span>
-    <span>SOC 2 · ISO 27001 · GDPR</span>
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="left"><span>Vol. 04 · No. 12</span><span>Spring '26</span></div>
+    <div class="center">An editorial of revenue intelligence</div>
+    <div class="right"><span>$0.00</span><span>komboai.com</span></div>
   </div>
-  <nav>
-    <div class="logo"><span class="logo-mark">K</span> KOMBO</div>
+
+  <!-- NAV -->
+  <div class="nav-wrap">
+    <a class="logo" href="./index.html">
+      <svg width="28" height="28" viewBox="0 0 30 30"><rect width="30" height="30" rx="3" fill="#D4A04F"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="#0E1726"/></svg>
+      Kombo<span class="dot">AI</span>
+    </a>
     <div class="nav-links">
-      <a>Product</a><a class="divider">/</a><a>Customers</a><a class="divider">/</a><a>Method</a><a class="divider">/</a><a>Pricing</a><a class="divider">/</a><a>Company</a>
+      <a>Product</a><a>Resources</a><a>Company</a><a>Connect</a>
     </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn">Sign in</button>
-      <button class="btn btn-cream">Book a demo →</button>
-    </div>
-  </nav>
-</div>
+    <a class="nav-cta">See a Demo</a>
+  </div>
 
-<section class="hero-shell">
-  <div class="hero">
-    <div class="hero-meta">
-      <div>FILED UNDER<b>The next era of revenue tooling</b></div>
-      <div>WRITTEN FOR<b>SDRs, AEs, and the leaders backing them</b></div>
-      <div>READING TIME<b>20 minutes — or one demo call</b></div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-issue">
+      <span class="vol">FEATURE — VOL. 04 / ISSUE 12</span>
+      <span>The Modern Sales Floor, Reimagined</span>
+      <span>Filed Q2 2026</span>
     </div>
 
-    <h1>Less <span class="it">clicks.</span><br>More <span class="it">selling.</span></h1>
+    <div class="eyebrow">Cover story</div>
+    <h1 class="hero-h">Close more deals <em>with AI.</em></h1>
 
-    <div class="hero-row">
+    <div class="hero-body-grid">
       <div>
-        <p class="lede">"After three decades of bolt-ons, the CRM is finally writing back. Kombo isn't another tab — it's the co-pilot that lives <em>inside</em> the record."</p>
-        <div class="hero-cta">
-          <button class="btn btn-rust">Book a demo →</button>
-          <a class="underlink">Read the methodology</a>
+        <div class="hero-meta">
+          <span class="label">Author</span>
+          <span class="name">Kevin Hawkins</span>
+        </div>
+        <div class="hero-meta">
+          <span class="label">Filed</span>
+          <span class="name">Q2 · 2026</span>
+        </div>
+        <div class="hero-meta">
+          <span class="label">Categories</span>
+          AI · Revenue · Sales Intelligence · Forecasting · CRM
+        </div>
+        <div class="hero-meta">
+          <span class="label">Read time</span>
+          <span class="name">12 minutes</span>
         </div>
       </div>
-      <div class="hero-card">
-        <div class="hero-card-row"><span>Reps using daily</span><b>1,000+</b></div>
-        <div class="hero-card-row"><span>Time saved / rep / day</span><b class="gold">3 hours</b></div>
-        <div class="hero-card-row"><span>Conversion lift</span><b>3×</b></div>
-        <div class="hero-card-row"><span>Implementation</span><b>14 days</b></div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section class="posters-shell">
-  <div class="posters">
-    <div class="posters-head">
-      <h3>The case for a co-pilot, made <span class="it">six ways.</span></h3>
-      <div class="meta">CHAPTERS · 01 — 06<br>CONTENTS</div>
-    </div>
-    <div class="poster-grid">
-      <div class="poster p1">
-        <div class="corner"><span>CHAPTER 01</span><span class="arrow-lg">↗</span></div>
-        <div></div>
-        <div>
-          <div class="title">Personalization, <em class="it">at scale.</em></div>
-          <div class="sub">DRAFTED FROM THE PUBLIC WEB · IN UNDER 12 SECONDS</div>
-        </div>
-      </div>
-      <div class="poster p2">
-        <div class="corner"><span>CHAPTER 02</span><span class="arrow-lg">↗</span></div>
-        <div style="position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);font-family:'Fraunces';font-size:120px;font-weight:300;font-style:italic;letter-spacing:-.05em;color:var(--rust)">240M</div>
-        <div>
-          <div class="title">Numbers others <b>can't find.</b></div>
-          <div class="sub">240M MOBILE DIRECT DIALS · REFRESHED WEEKLY</div>
-        </div>
-      </div>
-      <div class="poster p3">
-        <div class="corner"><span>CHAPTER 03</span><span class="arrow-lg">↗</span></div>
-        <div></div>
-        <div>
-          <div class="title">Coaching that <em class="it">whispers.</em></div>
-          <div class="sub">REAL-TIME · MID-CALL · INVISIBLE TO THE PROSPECT</div>
-        </div>
-      </div>
-      <div class="poster p4">
-        <div class="corner"><span>CHAPTER 04</span><span class="arrow-lg">↗</span></div>
-        <div></div>
-        <div>
-          <div class="title">Lives <em class="it">inside</em> your CRM.</div>
-          <div class="sub">SALESFORCE · HUBSPOT · PIPEDRIVE · DYNAMICS</div>
-        </div>
-      </div>
-      <div class="poster p5">
-        <div class="corner"><span>CHAPTER 05</span><span class="arrow-lg">↗</span></div>
-        <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:'Fraunces';font-size:160px;font-weight:300;letter-spacing:-.05em;color:var(--navy)">3<span style="font-style:italic">×</span></div>
-        <div>
-          <div class="title">Three times the <b>conversion.</b></div>
-          <div class="sub">MEASURED ACROSS 1,000+ REVENUE TEAMS</div>
-        </div>
-      </div>
-      <div class="poster p6">
-        <div class="p6-rect"></div>
-        <div class="corner"><span>CHAPTER 06</span><span class="arrow-lg">↗</span></div>
-        <div></div>
-        <div>
-          <div class="title">Built with the <em class="it">enterprise</em> in mind.</div>
-          <div class="sub">SOC 2 · ISO 27001 · GDPR · HIPAA</div>
-        </div>
-      </div>
-    </div>
-  </div>
+      <p class="hero-lede">
+        KomboAI gives your sales team the intelligence of a 20-year veteran — at the <em>speed of AI.</em> Rank leads, predict pipeline, and outreach on autopilot. From the first cold email to the closed-won celebration, every step in the modern revenue motion is being quietly rewritten by an artificial intelligence trained on the deal cycles of the world's best B2B teams.
+      </p>
 
-  <div class="trust-bar">
-    <div class="tb-label">Lives inside</div>
-    <div class="tb-logos">
-      <span>Salesforce</span><span>HubSpot</span><span>Pipedrive</span><span>Dynamics 365</span><span>Outreach</span><span>Gong</span>
-    </div>
-    <div class="tb-label">Vol. 04 · 2026</div>
-  </div>
-</section>
-
-<section class="thesis">
-  <div class="chapter-num">CHAPTER 01 · THE THESIS</div>
-  <h2>Your reps spend <span class="it">three hours a day</span> not selling. We give them back.</h2>
-
-  <div class="thesis-grid">
-    <div class="thesis-text">
-      <p><span class="drop">F</span>or thirty years, the CRM has been a filing cabinet — a place reps put information so leadership can read it. The reps themselves got nothing back.</p>
-      <p>KomboAI inverts the contract. The CRM now writes back: drafting outreach, finding mobile numbers, surfacing the moment a buyer is ready, whispering the right answer mid-call.</p>
-      <p>The result, measured across more than a thousand revenue teams: roughly three hours a day, returned to every rep.</p>
-    </div>
-    <div class="stats-strip">
-      <div class="stat">
-        <div class="stat-num">60<span class="it">%</span></div>
-        <div class="stat-lab">LESS MANUAL WORK</div>
-        <div class="stat-desc">Across CRM updates, research, and personalization.</div>
+      <div class="hero-col-2">
+        <p>Five hundred sales floors are already running on it. Their close rates are up <strong>40%</strong>. Their reps spend <strong>60%</strong> less time on manual lead research. Their forecasts hit within <strong>94%</strong> of plan.</p>
+        <p>And the technology was deployed, on average, in under four minutes.</p>
+        <div class="hero-cta-block">
+          <a class="btn btn-primary"><span>See a Demo</span><span class="arr">→</span></a>
+          <a class="btn btn-ghost"><span>See How It Works</span><span class="arr">→</span></a>
+        </div>
       </div>
-      <div class="stat">
-        <div class="stat-num">1k<span class="it">+</span></div>
-        <div class="stat-lab">REPS ONBOARDED</div>
-        <div class="stat-desc">Series A to public revenue teams of 500+.</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">3<span class="it">×</span></div>
-        <div class="stat-lab">CONVERSION LIFT</div>
-        <div class="stat-desc">Right person, right moment, right message.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section class="chapter">
-  <div class="chapter-num">CHAPTER 02 · PERSONALIZATION</div>
-  <div class="chapter-grid">
-    <div class="ch-text">
-      <h3 class="ch-title">Real personalization at <span class="it">scale.</span></h3>
-      <p class="ch-desc">Kombo reads every signal across your CRM, your inbox, and the public web — then writes outreach that actually sounds like <b>you</b> wrote it. Not a template. Not a Mad Lib. The drafts read like a senior rep on their best day, and they ship as-is more than half the time.</p>
-      <a class="ch-link">Read the personalization brief →</a>
-    </div>
-    <div class="ch-vis">
-      <div class="vis-frame">
-        <div class="vis-cap"><span>SEQUENCE · MAYA CHEN · NORTHWIND</span><span>AUTO-GENERATED · 12s</span></div>
-        <div class="seq-list">
-          <div class="seq-row">
-            <div class="seq-num"><span class="it">1</span></div>
-            <div class="seq-content"><b>Day 1 · Email</b><span>Reference Maya's LinkedIn post on outbound rebuild</span></div>
-            <div class="seq-meta"><b>87%</b>OPEN · 14% REPLY</div>
-          </div>
-          <div class="seq-row">
-            <div class="seq-num"><span class="it">2</span></div>
-            <div class="seq-content"><b>Day 3 · LinkedIn</b><span>Comment with the EMEA hiring data point</span></div>
-            <div class="seq-meta"><b>64%</b>CONNECT · 22% REPLY</div>
-          </div>
-          <div class="seq-row">
-            <div class="seq-num"><span class="it">3</span></div>
-            <div class="seq-content"><b>Day 5 · Email</b><span>Send the outbound rebuild Loom — 90s</span></div>
-            <div class="seq-meta"><b>71%</b>OPEN · 9% REPLY</div>
-          </div>
-          <div class="seq-row">
-            <div class="seq-num"><span class="it">4</span></div>
-            <div class="seq-content"><b>Day 8 · Call</b><span>Open with the Series C — Kombo coaches live</span></div>
-            <div class="seq-meta"><b>38%</b>CONNECT · 18% MEETING</div>
-          </div>
+      <div>
+        <div class="hero-meta">
+          <span class="label">Inside this issue</span>
+          <span style="color:var(--cream)">Ch. 01 · Lead Scoring<br>Ch. 02 · Pipeline Intelligence<br>Ch. 03 · Automated Outreach<br>Ch. 04 · A Profile in Revenue<br>Ch. 05 · The Closing Argument</span>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="chapter">
-  <div class="chapter-num">CHAPTER 03 · CONTACT DATA</div>
-  <div class="chapter-grid flip">
-    <div class="ch-text">
-      <h3 class="ch-title">The numbers others <span class="it">can't find.</span></h3>
-      <p class="ch-desc">Direct dials, mobile numbers, and deliverable email addresses — verified across <b>40+ sources</b>, refreshed weekly, and benchmarked against the bounce rates we'd be embarrassed to publish if we couldn't beat them. The dataset isn't bigger; it's <b>better</b>.</p>
-      <a class="ch-link">Inside the dataset →</a>
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stats-head">
+      <div class="ttl">By the numbers.</div>
+      <div class="meta">A KomboAI customer panel · n = 500</div>
     </div>
-    <div class="ch-vis">
-      <div class="vis-frame">
-        <div class="vis-cap"><span>THE DATASET · UPDATED 04.28.26</span><span>VERIFIED ACROSS 40 SOURCES</span></div>
-        <div class="data-grid">
-          <div class="data-card">
-            <div class="lab">Mobile direct dials</div>
-            <div class="val">240M<span class="it">+</span></div>
-            <div class="sub">North America, EMEA, APAC</div>
-            <div class="verified">92% connect rate</div>
-          </div>
-          <div class="data-card">
-            <div class="lab">Verified work emails</div>
-            <div class="val">680M<span class="it">+</span></div>
-            <div class="sub">Refreshed weekly</div>
-            <div class="verified">96% deliverability</div>
-          </div>
-          <div class="data-card">
-            <div class="lab">Companies tracked</div>
-            <div class="val">42M</div>
-            <div class="sub">Funding · headcount · tech stack</div>
-            <div class="verified">Daily intent signals</div>
-          </div>
-          <div class="data-card">
-            <div class="lab">Buying-intent signals</div>
-            <div class="val">1.4B<span class="it">/wk</span></div>
-            <div class="sub">Hiring · news · web visits</div>
-            <div class="verified">Real-time</div>
-          </div>
-        </div>
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-num">500<em>+</em></div>
+        <div class="stat-lab">B2B teams</div>
+        <div class="stat-source">Active deployments, Q2 '26</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><em>40</em>%</div>
+        <div class="stat-lab">Higher close rate</div>
+        <div class="stat-source">Within first quarter of use</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><em>60</em>%</div>
+        <div class="stat-lab">Less manual research</div>
+        <div class="stat-source">Time saved per rep, weekly</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><em>94</em>%</div>
+        <div class="stat-lab">Forecast accuracy</div>
+        <div class="stat-source">vs. plan, last 4 quarters</div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="chapter">
-  <div class="chapter-num">CHAPTER 04 · LIVE COACHING</div>
-  <div class="chapter-grid">
-    <div class="ch-text">
-      <h3 class="ch-title">Coaching that <span class="it">whispers.</span></h3>
-      <p class="ch-desc">Kombo listens to the call, recognizes the moment, and surfaces the next best thing to say — pricing answers, objection handlers, the case study they need to hear — without the prospect ever knowing it's there. It's the senior rep your junior reps couldn't otherwise hire.</p>
-      <a class="ch-link">Listen to a real session →</a>
+  <!-- LOGOS -->
+  <section class="logos">
+    <div class="logos-label">Trusted by fast-growing B2B sales teams</div>
+    <div class="logos-row">
+      <span class="logo-pill">NovaTech Solutions</span>
+      <span class="logo-pill">Meridian Group</span>
+      <span class="logo-pill">ScaleUp Partners</span>
+      <span class="logo-pill">Apex Revenue</span>
+      <span class="logo-pill">PipelineCo</span>
     </div>
-    <div class="ch-vis">
-      <div class="vis-frame coach-frame">
-        <div class="vis-cap"><span>● LIVE · DISCOVERY CALL</span><span>14:32 · NORTHWIND</span></div>
-        <div class="coach-body">
-          <span class="coach-tag">REAL-TIME WHISPER · INVISIBLE</span>
-          <div class="coach-wave">
-            <span style="height:30%"></span><span style="height:60%"></span><span style="height:80%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:90%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:65%"></span><span style="height:80%"></span><span style="height:40%"></span><span style="height:75%"></span><span style="height:55%"></span><span style="height:30%"></span><span style="height:60%"></span><span style="height:85%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:80%"></span><span style="height:60%"></span><span style="height:45%"></span><span style="height:70%"></span>
-          </div>
-          <div class="coach-script">
-            <span class="speaker">MAYA, PROSPECT</span>
-            "Honestly, our last tool just felt like a glorified email scheduler…"
-            <span class="speaker">↳ KOMBO, WHISPER</span>
-            <mark>Lead with the Northwind case</mark> — they cut sequence-building from four hours to eighteen minutes. Don't pitch features yet.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="chapter">
-  <div class="chapter-num">CHAPTER 05 · THE INTEGRATION</div>
-  <div class="chapter-grid flip">
-    <div class="ch-text">
-      <h3 class="ch-title">It lives <span class="it">inside</span> your CRM.</h3>
-      <p class="ch-desc">No new tab. No new dashboard. Kombo sits inside the record your reps already work in — Salesforce, HubSpot, Pipedrive, Dynamics — and every action it takes lands back in the CRM as a clean, attributed log entry. <b>Leadership gets reporting. Reps get their hours back.</b></p>
-      <a class="ch-link">See the integration →</a>
-    </div>
-    <div class="ch-vis">
-      <div class="vis-frame">
-        <div class="vis-cap"><span>SALESFORCE · LEAD RECORD</span><span>+ KOMBO CO-PILOT</span></div>
-        <div class="crm-vis">
-          <div class="crm-side">
-            <div class="lab">CRM RECORD</div>
-            <div class="crm-name">Maya Chen</div>
-            <div class="crm-meta">Sr. Director, RevOps · Northwind Commerce</div>
-            <div class="crm-fields">
-              <div><span>STAGE</span><b>Discovery</b></div>
-              <div><span>SCORE</span><b>94 / 100</b></div>
-              <div><span>LAST TOUCH</span><b>2 days · opened</b></div>
-              <div><span>STACK</span><b>SF · Outreach · Gong</b></div>
-            </div>
-          </div>
-          <div class="crm-side right">
-            <div class="lab">KOMBO · ✦ INSIGHT</div>
-            <div class="ai-out">Maya posted on LinkedIn 2h ago about <b>rebuilding outbound from scratch.</b> Northwind closed Series C 24h ago. <b>Reach out today.</b></div>
-            <div style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding-top:18px;border-top:1px solid var(--line-d)">SCORE 94 · CONFIDENCE HIGH</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="quote-shell">
-  <div class="quote">
-    <div class="q-num">"</div>
+  <!-- CHAPTER 01 — LEAD SCORING -->
+  <section class="chapter">
     <div>
-      <div class="q-body">"Kombo is the first tool my reps actually <span class="it">open on Mondays.</span> It's the only thing that ever moved both rep happiness and pipeline at the same time."</div>
-      <div class="q-attr">
-        <div class="q-line"></div>
-        <div><span class="q-name">James Ortega</span><span class="q-role">VP Sales · Atlas Group · Customer since 2024</span></div>
+      <div class="ch-num">CH. 01 — Lead Scoring</div>
+      <h2>The right name, <em>first.</em></h2>
+      <div class="chapter-byline">A FEATURE STORY · BY <span>THE EDITORS</span></div>
+      <p class="body">For thirty years the great anxiety of the sales floor has been a simple one: <em>which lead do I call next?</em> KomboAI answers it before the morning stand-up. The system ranks every prospect against buying signals, engagement history, and fit — and updates its judgment in <strong>real time</strong> as new data arrives.</p>
+      <p class="body">Reps stop guessing. They open the dashboard and dial the right name, in the right order, every time.</p>
+      <div class="ch-cta">
+        <a class="btn btn-primary"><span>Read Ch. 01</span><span class="arr">→</span></a>
+        <a class="ch-link">Methodology</a>
       </div>
     </div>
-  </div>
-</section>
+    <div class="window">
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / pipeline / scored-leads · Q2</div>
+        <div class="win-min">— ▢ ×</div>
+      </div>
+      <div class="win-body">
+        <div class="lead-list">
+          <div class="lead-row head">
+            <div>Prospect</div><div>Account</div><div style="text-align:right">Score</div><div>Next Best Action</div>
+          </div>
+          <div class="lead-row">
+            <div class="lead-name">Sarah Chen<span class="sub">VP of Sales</span></div>
+            <div class="lead-co">NovaTech Solutions<span class="tag">SaaS · 320 FTE</span></div>
+            <div class="score">94<span class="pct">/100</span></div>
+            <div class="nba">Send demo invite</div>
+          </div>
+          <div class="lead-row">
+            <div class="lead-name">James Whitfield<span class="sub">Head of Revenue</span></div>
+            <div class="lead-co">Meridian Group<span class="tag">FinTech · 1.2k FTE</span></div>
+            <div class="score">88<span class="pct">/100</span></div>
+            <div class="nba">Book discovery call</div>
+          </div>
+          <div class="lead-row">
+            <div class="lead-name">Lucia Fernández<span class="sub">COO</span></div>
+            <div class="lead-co">ScaleUp Partners<span class="tag">Series B · 48 FTE</span></div>
+            <div class="score">81<span class="pct">/100</span></div>
+            <div class="nba">Warm referral intro</div>
+          </div>
+          <div class="lead-row">
+            <div class="lead-name">Marcus Webb<span class="sub">CRO</span></div>
+            <div class="lead-co">Apex Revenue<span class="tag">Mid-mkt · 210 FTE</span></div>
+            <div class="score">72<span class="pct">/100</span></div>
+            <div class="nba">Re-engage (stale 14d)</div>
+          </div>
+          <div class="lead-row">
+            <div class="lead-name">Priya Nair<span class="sub">Director, GTM</span></div>
+            <div class="lead-co">PipelineCo<span class="tag">SaaS · 96 FTE</span></div>
+            <div class="score">65<span class="pct">/100</span></div>
+            <div class="nba">Long-form nurture</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section class="faq">
-  <div class="faq-grid">
+  <!-- CHAPTER 02 — PIPELINE INTELLIGENCE -->
+  <section class="chapter alt">
+    <div class="window">
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / forecast / Q2 — confidence 94%</div>
+        <div class="win-min">— ▢ ×</div>
+      </div>
+      <div class="win-body">
+        <div class="forecast-head">
+          <h4>Q2 Forecast · <em>$8.42M</em></h4>
+          <div class="acc">● 94% CONFIDENCE</div>
+        </div>
+        <div class="chart">
+          <div class="y-lab"><span>$10.0M</span><span>$5.0M</span><span>$0</span></div>
+          <div class="chart-inner">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="ggold" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#D4A04F" stop-opacity=".3"/><stop offset="100%" stop-color="#D4A04F" stop-opacity="0"/></linearGradient>
+              </defs>
+              <path d="M0,160 L40,140 L80,148 L120,108 L160,116 L200,86 L240,94 L280,62 L320,72 L360,44 L400,52 L400,200 L0,200 Z" fill="url(#ggold)"/>
+              <path d="M0,160 L40,140 L80,148 L120,108 L160,116 L200,86 L240,94 L280,62 L320,72 L360,44 L400,52" stroke="#D4A04F" stroke-width="1.5" fill="none"/>
+              <path d="M0,170 L40,158 L80,164 L120,134 L160,142 L200,122 L240,128 L280,102 L320,108 L360,86 L400,94" stroke="#7A8497" stroke-width="1" fill="none" stroke-dasharray="3 3"/>
+              <circle cx="400" cy="52" r="3" fill="#D4A04F"/>
+              <circle cx="400" cy="94" r="3" fill="#7A8497"/>
+            </svg>
+          </div>
+        </div>
+        <div class="chart-x"><span>WK 01</span><span>WK 03</span><span>WK 05</span><span>WK 07</span><span>WK 09</span><span>WK 11</span><span>WK 13</span></div>
+        <div class="stale"><b>3 deals flagged stale.</b> Meridian Group ($420k) hasn't moved in 14 days. Recommended: warm follow-up via James Whitfield's referral chain. Two further deals — Apex ($175k) and Helio ($112k) — are showing similar decay curves.</div>
+      </div>
+    </div>
     <div>
-      <div class="chapter-num">APPENDIX · COMMON QUESTIONS</div>
-      <h2 style="font-size:64px;margin-top:8px">A few <span class="it">remaining</span> questions.</h2>
-      <p style="margin-top:24px;font-size:17px;color:var(--ink-2);max-width:380px">If we haven't answered yours here, a 20-minute demo will cover the rest — usually in less.</p>
+      <div class="ch-num">CH. 02 — Pipeline Intelligence</div>
+      <h2>The forecast, <em>without</em> the guesswork.</h2>
+      <div class="chapter-byline">A FIELD REPORT · FROM <span>THE FORECAST DESK</span></div>
+      <p class="body">The Monday pipeline review is, for many revenue leaders, a quiet form of theater — a meeting in which everyone agrees the number is plausible while privately suspecting it is not. KomboAI replaces theater with arithmetic. The system reads every deal in the pipe, weighs activity against historical close patterns, and returns a forecast accurate within <strong>94%</strong>.</p>
+      <p class="body">Stale deals, the silent killers of every quarter, are surfaced before they cost you the renewal. The veteran's intuition, in software.</p>
+      <div class="ch-cta">
+        <a class="btn btn-primary"><span>Read Ch. 02</span><span class="arr">→</span></a>
+        <a class="ch-link">Forecasting guide</a>
+      </div>
     </div>
-    <div class="faq-list">
-      <div class="faq-item"><div><span class="num">01</span>How long does setup take?</div><span class="faq-plus">+</span></div>
-      <div class="faq-item"><div><span class="num">02</span>Where does the contact data come from?</div><span class="faq-plus">+</span></div>
-      <div class="faq-item"><div><span class="num">03</span>Is it compliant with our legal team's setup?</div><span class="faq-plus">+</span></div>
-      <div class="faq-item"><div><span class="num">04</span>How is this different from Outreach or Salesloft?</div><span class="faq-plus">+</span></div>
-      <div class="faq-item"><div><span class="num">05</span>How does the on-call coaching work?</div><span class="faq-plus">+</span></div>
-      <div class="faq-item"><div><span class="num">06</span>Who has access to call recordings?</div><span class="faq-plus">+</span></div>
-      <div class="faq-item"><div><span class="num">07</span>Can we run a paid pilot first?</div><span class="faq-plus">+</span></div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section class="cta-shell">
-  <div class="cta">
-    <div class="cta-eyebrow">★ THE INVITATION</div>
-    <div class="cta-headline">Give your reps their <span class="it">three hours</span> back.</div>
-    <div class="cta-actions">
-      <button class="btn btn-rust btn-large">Book a demo →</button>
-      <button class="btn btn-large" style="color:var(--cream);border-color:var(--cream)">Read the methodology</button>
-    </div>
-    <div class="cta-sub">★★★★★ 4.9 ON G2 · 200+ REVIEWS · 14-DAY PAID PILOT</div>
-  </div>
-</section>
-
-<footer>
-  <div class="foot-grid">
+  <!-- CHAPTER 03 — AUTOMATED OUTREACH -->
+  <section class="chapter">
     <div>
-      <div class="logo" style="color:var(--cream)"><span class="logo-mark">K</span> KOMBO</div>
-      <p class="foot-tag">"The CRM, finally writing back."</p>
+      <div class="ch-num">CH. 03 — Automated Outreach</div>
+      <h2>The cold email, <em>warmed.</em></h2>
+      <div class="chapter-byline">A LETTER · ADDRESSED TO <span>SARAH CHEN</span></div>
+      <p class="body">It is by now something of a cliché to call email dead. The truth is more interesting: email at <em>scale</em> is dead. Email written one-to-one — informed by a buyer's role, signals, and recent moves — has never been more effective. KomboAI drafts those one-to-one emails at the speed of a templated blast.</p>
+      <p class="body">A single rep can send three hundred personalized openers a week, every one of them <strong>tuned to the prospect</strong>'s world.</p>
+      <div class="ch-cta">
+        <a class="btn btn-primary"><span>Read Ch. 03</span><span class="arr">→</span></a>
+        <a class="ch-link">View templates</a>
+      </div>
     </div>
-    <div class="foot-col"><h4>Product</h4><a>Personalization</a><a>Contact data</a><a>Live coaching</a><a>Integrations</a><a>Pricing</a></div>
-    <div class="foot-col"><h4>Resources</h4><a>Methodology</a><a>Customer briefs</a><a>ROI calculator</a><a>Editorial</a><a>Help</a></div>
-    <div class="foot-col"><h4>Company</h4><a>About</a><a>Careers</a><a>Press</a><a>Contact</a><a>Security</a></div>
-    <div class="foot-col"><h4>Legal</h4><a>Terms</a><a>Privacy</a><a>DPA</a><a>Subprocessors</a></div>
-  </div>
-  <div class="foot-bot">
-    <div>© 2026 KOMBO · ALL RIGHTS RESERVED</div>
-    <div>SOC 2 · ISO 27001 · GDPR · HIPAA</div>
-  </div>
-</footer>
+    <div class="window">
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / outreach / draft — Sarah Chen</div>
+        <div class="win-min">— ▢ ×</div>
+      </div>
+      <div class="win-body">
+        <div class="email-meta">
+          <div class="row"><div class="lbl">To</div><div class="val">Sarah Chen — VP of Sales, NovaTech Solutions</div></div>
+          <div class="row"><div class="lbl">From</div><div class="val">alex.morgan@komboai.com</div></div>
+          <div class="row"><div class="lbl">Subject</div><div class="val subject">A quieter SDR floor for NovaTech's Q2.</div></div>
+        </div>
+        <div class="email-body">
+          <p>Sarah — saw NovaTech just hired four AEs last quarter. Congratulations on the growth. Curious how the team is keeping <em>pipeline velocity</em> up while ramping that many reps at once.</p>
+          <p>Three teams in your space — Meridian, Apex, PipelineCo — have used KomboAI to cut manual research by roughly sixty percent. Each saw a forty-percent lift in close rate within the first quarter.</p>
+          <p>Worth twenty minutes next week? Happy to tailor the walkthrough to your Q2 plan.</p>
+          <p>— Alex</p>
+        </div>
+        <div class="email-foot">
+          <span>Drafted in 3.2s</span>
+          <span class="badge">AI · TUNED TO YOUR TONE</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- CHAPTER 04 — PROSPECT PROFILE / ASK KOMBO -->
+  <section class="chapter alt">
+    <div class="window">
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / accounts / sarah-chen-novatech</div>
+        <div class="win-min">— ▢ ×</div>
+      </div>
+      <div class="win-body">
+        <div class="prospect-head">
+          <div class="prospect-photo">SC</div>
+          <div class="prospect-info">
+            <div class="pf-name">Sarah Chen</div>
+            <div class="pf-title">VP of Sales</div>
+            <div class="pf-co">NovaTech Solutions · San Francisco, CA</div>
+          </div>
+        </div>
+        <div class="prospect-summary">
+          <p><em>Professional summary —</em> Eleven years in B2B sales leadership. Spent four years scaling NovaTech's commercial org from twenty to one hundred sixty reps. Public speaker at SaaStr and Pavilion. Personally credited with NovaTech's <em>40% close-rate lift</em> in 2025.</p>
+          <p><em>Buying signals —</em> Visited the pricing page three times in the last forty-eight hours. Replied to your sequence within two hours. Recently posted on LinkedIn about "the false economy of manual lead research."</p>
+          <p><em>Recommended angle —</em> Lead with the case study. Cite Meridian, not the deck. CC her Head of RevOps; she owns the budget line.</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="ch-num">CH. 04 — A Profile in Revenue</div>
+      <h2 class="small">Ask anything. <em>The veteran answers.</em></h2>
+      <div class="chapter-byline">A PROFILE · OF <span>YOUR NEXT BEST CONVERSATION</span></div>
+      <p class="body">Every prospect arrives in the inbox as a name and a job title. KomboAI's research engine returns, in seconds, the <em>person</em> behind the line — career history, public posts, recent moves, and the angle most likely to land. Reps walk into every call already knowing whose office they are stepping into.</p>
+      <p class="body">It is, in the most literal sense, like having a <strong>revenue analyst on speed dial</strong>.</p>
+      <div class="ch-cta">
+        <a class="btn btn-primary"><span>Read Ch. 04</span><span class="arr">→</span></a>
+        <a class="ch-link">Try a sample query</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 FEATURE POSTERS -->
+  <section class="features-3">
+    <div class="f3-head">
+      <div class="lt">
+        <div class="ch-num">CH. 05 — The Toolkit</div>
+        <h3>The rest of the <em>operating system</em> for revenue.</h3>
+      </div>
+      <div class="meta">FEATURES · 06<br>EDITION Q2 2026<br>FILED BY THE EDITORS</div>
+    </div>
+    <div class="f3-grid">
+      <div class="f3-card">
+        <div class="f3-num">06</div>
+        <h4>CRM <em>Intelligence.</em></h4>
+        <p>Sync with HubSpot or Salesforce. KomboAI enriches contacts, flags stale deals, and recommends next-best actions — every record kept current without a single manual update.</p>
+        <a class="more">Read on</a>
+      </div>
+      <div class="f3-card">
+        <div class="f3-num">07</div>
+        <h4>Live <em>coaching</em>, on every call.</h4>
+        <p>Real-time talk-track suggestions, objection handlers, and discovery prompts during the call itself. The 20-year veteran whispers in every rep's ear — and never says a word out loud.</p>
+        <a class="more">Read on</a>
+      </div>
+      <div class="f3-card">
+        <div class="f3-num">08</div>
+        <h4>Connects to <em>everything.</em></h4>
+        <p>Connect with the tools your team already uses — HubSpot, Salesforce, Outreach, LinkedIn, and dozens more — in one click. No engineering ticket required, ever.</p>
+        <a class="more">Read on</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials">
+    <div class="t-head">
+      <div class="eyebrow">Letters from the field</div>
+      <h3>From the desks of the <em>operators.</em></h3>
+    </div>
+    <div class="t-grid">
+      <div class="t-card">
+        <div class="t-quote">Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher.</div>
+        <div class="t-author">
+          <div class="t-name">Sarah Chen</div>
+          <div class="t-role">VP of Sales · NovaTech Solutions</div>
+        </div>
+      </div>
+      <div class="t-card">
+        <div class="t-quote">The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — and our close rate jumped 40%.</div>
+        <div class="t-author">
+          <div class="t-name">James Whitfield</div>
+          <div class="t-role">Head of Revenue · Meridian Group</div>
+        </div>
+      </div>
+      <div class="t-card">
+        <div class="t-quote">As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us from 5 reps to 50.</div>
+        <div class="t-author">
+          <div class="t-name">Lucia Fernández</div>
+          <div class="t-role">COO · ScaleUp Partners</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-final">
+    <div class="ch-num">THE CLOSING ARGUMENT</div>
+    <h3>Ready to close more deals<br><em>with AI?</em></h3>
+    <p>Join 500+ B2B sales teams using KomboAI to hit quota faster.</p>
+    <div class="ctas">
+      <a class="btn btn-primary"><span>See a Demo</span><span class="arr">→</span></a>
+      <a class="btn btn-ghost"><span>Contact Us</span><span class="arr">→</span></a>
+    </div>
+    <div class="ornament">⁂</div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer-main">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="./index.html">
+          <svg width="28" height="28" viewBox="0 0 30 30"><rect width="30" height="30" rx="3" fill="#D4A04F"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="#0E1726"/></svg>
+          Kombo<span class="dot">AI</span>
+        </a>
+        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
+      </div>
+      <div class="footer-col"><h5>Product</h5><ul><li><a>Features</a></li><li><a>Integrations</a></li></ul></div>
+      <div class="footer-col"><h5>Resources</h5><ul><li><a>Customers</a></li><li><a>Podcast</a></li><li><a>Newsletter</a></li><li><a>Blog</a></li></ul></div>
+      <div class="footer-col"><h5>Company</h5><ul><li><a>Contact</a></li><li><a>Team</a></li><li><a>About</a></li></ul></div>
+      <div class="footer-col"><h5>Connect</h5><ul><li><a>LinkedIn</a></li><li><a>X</a></li><li><a>YouTube</a></li><li><a>Instagram</a></li><li><a>TikTok</a></li></ul></div>
+      <div class="footer-col"><h5>Legal</h5><ul><li><a>Terms</a></li><li><a>Privacy</a></li><li><a>Referral</a></li></ul></div>
+    </div>
+    <div class="footer-bot">
+      <span>Kevin Hawkins · KomboAI · 2026 · V3 Editorial AI</span>
+      <a href="./index.html">← back to mockups</a>
+    </div>
+  </footer>
+
+</div>
 </body>
 </html>

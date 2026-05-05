@@ -2,246 +2,618 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kombo — V6 Color Chapters</title>
+<title>KomboAI — V6 Color Chapters</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caprasimo&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --blue-1:#0E2A78;
-    --blue-2:#1B47B8;
-    --orange-1:#F26B2B;
-    --orange-2:#FFA63D;
-    --yellow:#F5C233;
-    --purple-1:#5B3CC2;
-    --purple-2:#3F1FA0;
+    --blue:#0E2A78;
+    --blue-2:#1B3FA8;
+    --orange:#F26B2B;
+    --orange-2:#FF8A4C;
+    --purple:#5B3CC2;
+    --purple-2:#7855E0;
     --teal:#1FB7B0;
+    --teal-2:#3FD4C4;
     --coral:#E85A5A;
-    --cream:#F4EFE2;
-    --ink:#0A0F1F;
+    --coral-2:#FF7A7A;
+    --cream:#F8EFD9;
+    --cream-2:#F1E3BF;
+    --ink:#1A1430;
+    --paper:#FFF6E6;
+    --kombo-indigo:#6366f1;
   }
-  html,body{background:#0A0F1F;color:#fff;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  html,body{background:var(--blue);color:#fff;font-family:'Inter',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
   .page{width:1440px;margin:0 auto}
 
-  /* shared section */
-  section{position:relative;overflow:hidden}
-  .nav-row{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:28px 64px;z-index:10}
-  .logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:600;font-size:14px;letter-spacing:.04em;font-family:'Press Start 2P',monospace}
-  .logo-mark{width:32px;height:32px;background:linear-gradient(135deg,#5B5BD6 0%,#3F3FB8 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;font-family:'Press Start 2P',monospace;box-shadow:0 4px 12px rgba(91,91,214,.4)}
-  .nav-links{display:flex;gap:6px}
-  .nav-links a{color:#fff;text-decoration:none;font-size:13px;letter-spacing:.04em;padding:8px 14px;border-radius:99px}
-  .nav-links a:hover{background:rgba(255,255,255,.1)}
-  .nav-links a .caret{margin-left:6px;font-size:9px;opacity:.6}
+  /* shared overlays */
+  .grain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.4;background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:3px 3px}
+  .stripes{position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 60px,transparent 60px 120px)}
 
-  /* HERO — deep blue */
-  .s-hero{height:820px;background:radial-gradient(ellipse 120% 80% at 80% 30%,var(--blue-2) 0%,var(--blue-1) 50%,#06154A 100%);padding:120px 64px 80px;display:flex;align-items:center;justify-content:space-between;gap:60px}
-  /* coral square top-left like the reference */
-  .corner-tag{position:absolute;top:0;left:0;width:200px;height:160px;background:#E5563D;color:#fff;padding:24px;display:flex;flex-direction:column;justify-content:space-between;font-family:'Caprasimo',serif;font-size:22px;line-height:1;letter-spacing:-.01em;clip-path:polygon(0 0,100% 0,100% 100%,16% 100%,0 88%)}
-  .corner-tag .small{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;opacity:.85}
+  .kombo-logo{display:inline-flex;align-items:center;gap:11px;text-decoration:none}
+  .kombo-mark{width:32px;height:32px;border-radius:8px;background:var(--coral);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(232,90,90,.45)}
+  .kombo-mark svg path{fill:#fff}
+  .kombo-text{font-family:'Press Start 2P',monospace;font-size:13px;letter-spacing:.04em;color:#fff;line-height:1}
+  .kombo-text.dark{color:var(--ink)}
 
-  /* big plant silhouettes for atmosphere */
-  .leaf{position:absolute;background:linear-gradient(180deg,#162A6E 0%,#091438 100%);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%}
-  .leaf.l1{width:140px;height:340px;top:-40px;right:80px;transform:rotate(15deg)}
-  .leaf.l2{width:100px;height:260px;top:60px;right:200px;transform:rotate(-10deg);background:linear-gradient(180deg,#13245F 0%,#091438 100%)}
-  .leaf.l3{width:80px;height:200px;top:140px;right:30px;transform:rotate(40deg);background:linear-gradient(180deg,#0F1F50 0%,#06133A 100%)}
+  /* === HERO (deep blue) === */
+  .hero{position:relative;background:radial-gradient(circle at 70% 30%,var(--blue-2) 0%,var(--blue) 50%,#08184D 100%);padding:0;overflow:hidden;min-height:920px}
+  .hero-grain{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1.5px);background-size:4px 4px;pointer-events:none;opacity:.4}
+  .hero-orbit{position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
+  .ho1{width:1100px;height:1100px;top:-380px;right:-280px}
+  .ho2{width:760px;height:760px;top:-200px;right:-120px}
+  .ho3{width:380px;height:380px;top:-40px;right:60px}
 
-  /* gradient business card */
-  .grad-card{position:absolute;left:64px;top:200px;width:340px;height:170px;border-radius:14px;background:linear-gradient(135deg,#FF5DAE 0%,#7A2DD9 50%,#2A4DE2 100%);box-shadow:0 30px 60px -20px rgba(0,0,0,.5);display:flex;flex-direction:column;justify-content:space-between;padding:20px;color:#fff;font-size:11px;font-family:'Inter';opacity:.95}
-  .grad-card .gc-name{font-family:'Caprasimo',serif;font-size:22px;letter-spacing:-.01em}
-  .grad-card .gc-meta{font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
-  .grad-card .gc-line{height:2px;width:60%;background:rgba(255,255,255,.45);border-radius:2px}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:28px 56px;position:relative;z-index:5}
+  .topnav .nav-mid{display:flex;gap:30px}
+  .topnav .nav-mid a{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:rgba(255,255,255,.78);text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .topnav .nav-mid a::after{content:"▾";font-size:9px;opacity:.6}
+  .nav-cta{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;padding:11px 22px;border-radius:99px;background:var(--coral);color:#fff;text-decoration:none;box-shadow:0 4px 14px rgba(232,90,90,.4)}
 
-  .hero-content{position:relative;flex:1;max-width:740px;margin-left:340px}
-  .hero-content h1{font-family:'Caprasimo','Fraunces',serif;font-weight:400;font-size:140px;line-height:.92;letter-spacing:-.03em;color:#fff;margin-bottom:28px}
-  .hero-content h1 em{font-style:italic;font-family:'Fraunces',serif;font-weight:400;color:#FFB55A}
-  .hero-content p{font-size:17px;line-height:1.55;color:rgba(255,255,255,.78);max-width:540px;margin-bottom:32px}
-  .hero-cta{display:flex;align-items:center;gap:14px}
-  .hero-cta .btn{font-family:inherit;font-size:14px;font-weight:600;padding:16px 30px;border-radius:8px;background:var(--coral);color:#fff;border:none;cursor:pointer}
-  .hero-cta .btn:hover{filter:brightness(1.05)}
-  .hero-cta .ghost{color:#fff;font-size:14px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4);padding-bottom:2px}
+  .corner-tag{position:absolute;top:14px;right:56px;background:var(--coral);color:#fff;font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:14px;padding:10px 22px;border-radius:0 0 14px 14px;letter-spacing:.02em;z-index:6}
 
-  /* SECTION 2 — orange stage */
-  .s-stage{height:780px;background:linear-gradient(180deg,#F26B2B 0%,#E85B1F 60%,#F5C233 100%);padding:110px 64px 0;position:relative;display:flex;align-items:flex-end}
-  .s-stage::before{content:"";position:absolute;top:0;left:0;right:0;height:140px;background:linear-gradient(180deg,rgba(14,42,120,.4) 0%,transparent 100%)}
-  .stage-arch{position:absolute;right:0;top:0;width:340px;height:100%;background:radial-gradient(ellipse at right top,#FFA63D 0%,transparent 70%);border-bottom-left-radius:300px 200px}
-  .pinstripes{position:absolute;left:60%;top:18%;width:240px;height:62%;background:repeating-linear-gradient(0deg,#E85B1F 0,#E85B1F 6px,transparent 6px,transparent 14px);transform:perspective(700px) rotateY(-12deg);transform-origin:right center;opacity:.55}
+  .hero-body{padding:60px 80px 80px;display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center;position:relative}
 
-  .stage-headline{position:absolute;top:120px;left:64px;color:#fff;font-family:'Caprasimo',serif;font-size:108px;line-height:.92;letter-spacing:-.02em;max-width:780px}
-  .stage-headline em{font-style:italic;font-family:'Fraunces',serif;color:#FFE6B0}
-  .stage-sub{position:absolute;top:380px;left:64px;color:rgba(255,255,255,.85);font-size:17px;line-height:1.55;max-width:480px}
+  h1.cap{font-family:'Caprasimo',serif;font-size:160px;line-height:.86;letter-spacing:-.025em;color:#fff;margin-bottom:36px}
+  h1.cap .ai{font-family:'Fraunces',serif;font-style:italic;font-weight:600;background:linear-gradient(120deg,var(--orange) 0%,var(--coral) 50%,var(--purple-2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+  h1.cap .with{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.6em;color:rgba(255,255,255,.78);letter-spacing:0;display:inline-block;margin-right:16px}
+  h1.cap .underline{position:relative}
+  h1.cap .underline::after{content:"";position:absolute;left:-4px;right:-4px;bottom:.06em;height:.18em;background:var(--orange);z-index:-1;border-radius:99px}
+  h1.cap .pill-circle{display:inline-block;padding:0 .14em;border:5px solid var(--coral);border-radius:99px;background:rgba(232,90,90,.18)}
 
-  /* 3D-feel objects on stage */
-  .lamp{position:absolute;left:64px;bottom:80px;width:6px;height:240px;background:#0E2A78;border-radius:3px}
-  .lamp::before{content:"";position:absolute;top:0;left:-2px;width:90px;height:14px;background:#1B47B8;transform:rotate(-22deg);transform-origin:left center;border-radius:3px}
-  .lamp::after{content:"";position:absolute;top:-6px;left:80px;width:14px;height:14px;background:#FFE6B0;border-radius:50%;transform:rotate(-22deg);box-shadow:0 0 30px #FFE6B0,0 0 60px rgba(255,230,176,.5)}
+  .lede{font-family:'Inter',sans-serif;font-size:20px;line-height:1.55;color:rgba(255,255,255,.82);max-width:560px;margin-bottom:36px}
+  .lede b{color:#fff;font-weight:700}
 
-  .sofa{position:absolute;left:200px;bottom:80px;width:300px;height:170px}
-  .sofa .seat{position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(180deg,#C53D2C 0%,#9F2A1C 100%);border-radius:80px 80px 30px 30px;box-shadow:0 14px 0 #6F1B12,inset 0 -12px 24px rgba(0,0,0,.25)}
-  .sofa .cush{position:absolute;bottom:60px;left:30px;right:30px;height:50px;background:#D9492F;border-radius:40px 40px 10px 10px}
+  .hero-ctas{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .btn-cap{font-family:'Inter',sans-serif;font-weight:600;font-size:15px;padding:16px 28px;border-radius:99px;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+  .btn-cap.solid{background:#fff;color:var(--blue);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .btn-cap.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.5)}
+  .btn-cap.coral{background:var(--coral);color:#fff;box-shadow:0 8px 24px rgba(232,90,90,.4)}
 
-  .pot{position:absolute;left:560px;bottom:80px;width:160px;height:240px}
-  .pot .vase{position:absolute;bottom:0;left:30px;width:100px;height:100px;background:linear-gradient(180deg,#D8A26A 0%,#9F6F44 100%);border-radius:8px 8px 18px 18px}
-  .pot .leaf-a{position:absolute;bottom:90px;left:50%;width:24px;height:130px;background:linear-gradient(180deg,#3F8744 0%,#1F5828 100%);border-radius:50%;transform:translateX(-60%) rotate(-12deg)}
-  .pot .leaf-b{position:absolute;bottom:90px;left:50%;width:24px;height:140px;background:linear-gradient(180deg,#4FA44F 0%,#28732E 100%);border-radius:50%;transform:translateX(-20%) rotate(8deg)}
-  .pot .leaf-c{position:absolute;bottom:90px;left:50%;width:24px;height:120px;background:linear-gradient(180deg,#5BB659 0%,#2E8233 100%);border-radius:50%;transform:translateX(-100%) rotate(-30deg)}
+  /* business card peek */
+  .biz-card-stack{position:relative;height:560px}
+  .biz-card{position:absolute;width:380px;border-radius:24px;padding:32px;color:#fff;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
+  .bc-bg{position:absolute;inset:0;pointer-events:none}
+  .biz-card.card1{top:60px;right:-30px;background:linear-gradient(135deg,var(--orange) 0%,var(--coral) 60%,var(--purple) 100%);transform:rotate(6deg)}
+  .biz-card.card2{top:200px;right:80px;background:linear-gradient(135deg,var(--purple) 0%,var(--blue-2) 100%);transform:rotate(-4deg);width:340px}
+  .biz-card.card3{top:380px;right:10px;background:linear-gradient(135deg,var(--teal) 0%,var(--blue-2) 100%);transform:rotate(2deg);width:300px}
+  .bc-corner{position:absolute;top:18px;left:18px;font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:13px;color:rgba(255,255,255,.78);letter-spacing:.04em}
+  .bc-num{position:absolute;top:18px;right:18px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.16em;color:rgba(255,255,255,.55)}
+  .bc-name{font-family:'Caprasimo',serif;font-size:30px;line-height:1;margin-top:60px}
+  .bc-role{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:15px;margin-top:8px;color:rgba(255,255,255,.92)}
+  .bc-co{margin-top:18px;display:flex;align-items:center;gap:10px}
+  .bc-co .av{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.22);font-family:'Caprasimo',serif;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .bc-co .meta{font-family:'Inter',sans-serif;font-size:13px;line-height:1.3}
+  .bc-co .meta b{display:block;font-weight:700;font-size:13px}
+  .bc-score{position:absolute;bottom:24px;left:24px;display:flex;gap:14px;align-items:flex-end}
+  .bc-score .n{font-family:'Caprasimo',serif;font-size:42px;line-height:.85}
+  .bc-score .l{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;padding-bottom:6px}
 
-  .dog{position:absolute;left:130px;bottom:80px;width:90px;height:140px}
-  .dog .body{position:absolute;bottom:0;left:0;width:90px;height:90px;background:linear-gradient(180deg,#C9A57A 0%,#8C6A40 100%);border-radius:50%}
-  .dog .head{position:absolute;bottom:60px;left:14px;width:62px;height:80px;background:linear-gradient(180deg,#D9B58A 0%,#9C7748 100%);border-radius:40% 40% 30% 30%}
-  .dog .ear-l,.dog .ear-r{position:absolute;width:20px;height:34px;background:#705030;border-radius:50%;top:-6px}
-  .dog .ear-l{left:6px;transform:rotate(-20deg)}
-  .dog .ear-r{right:6px;transform:rotate(20deg)}
-  .dog .eye{position:absolute;width:6px;height:6px;background:#1A1208;border-radius:50%;top:30px}
-  .dog .eye.l{left:18px}
-  .dog .eye.r{right:18px}
+  .hero-3d-planet{position:absolute;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFC18C 0%,var(--orange) 50%,#A03A0E 100%);bottom:60px;left:30%;box-shadow:0 30px 60px rgba(242,107,43,.4),inset -30px -20px 0 rgba(0,0,0,.18)}
+  .hero-3d-planet::after{content:"";position:absolute;width:200px;height:14px;background:rgba(255,193,140,.35);border-radius:50%;left:-30px;top:65px;transform:rotate(-12deg)}
 
-  /* SECTION 3 — purple */
-  .s-purple{min-height:740px;background:linear-gradient(180deg,#5B3CC2 0%,#3F1FA0 100%);padding:110px 64px 110px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative}
-  .pp-stripes{position:absolute;left:80px;top:80px;width:260px;height:62%;background:repeating-linear-gradient(0deg,#FF6BB1 0,#FF6BB1 8px,transparent 8px,transparent 18px);transform:perspective(700px) rotateY(8deg);transform-origin:left center;border-radius:8px;opacity:.95}
-  .stool{position:absolute;left:160px;bottom:120px;width:220px;height:160px}
-  .stool .top{position:absolute;top:0;left:0;width:100%;height:60px;background:linear-gradient(180deg,#F5C233 0%,#D4A01F 100%);border-radius:60px 60px 50px 50px}
-  .stool .leg{position:absolute;top:50px;left:50%;width:90px;height:110px;background:linear-gradient(180deg,#E0A91C 0%,#A2740E 100%);border-radius:8px;transform:translateX(-50%)}
+  /* === STATS BAND (rainbow band) === */
+  .stats-band{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--cream);position:relative;overflow:hidden}
+  .stat-cell{padding:48px 36px;color:var(--ink);position:relative;border-right:1px dashed rgba(26,20,48,.18)}
+  .stat-cell:last-child{border-right:0}
+  .stat-cell .n{font-family:'Caprasimo',serif;font-size:88px;line-height:.86;letter-spacing:-.025em;color:var(--ink)}
+  .stat-cell:nth-child(1) .n{color:var(--orange)}
+  .stat-cell:nth-child(2) .n{color:var(--purple)}
+  .stat-cell:nth-child(3) .n{color:var(--teal)}
+  .stat-cell:nth-child(4) .n{color:var(--coral)}
+  .stat-cell .l{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:16px;margin-top:10px;color:var(--ink);opacity:.78}
 
-  .pp-content{position:relative;z-index:2;grid-column:2;background:rgba(244,239,226,.95);color:var(--ink);padding:54px 48px;border-radius:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.4)}
-  .pp-content .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5B3CC2;font-weight:700;margin-bottom:18px}
-  .pp-content h2{font-family:'Caprasimo','Fraunces',serif;font-size:62px;line-height:.96;letter-spacing:-.025em;color:var(--ink);margin-bottom:20px}
-  .pp-content h2 em{font-style:italic;font-family:'Fraunces',serif;color:#5B3CC2}
-  .pp-content p{font-size:16px;line-height:1.6;color:#3A3F50;margin-bottom:24px}
-  .pp-content .pcta{font-family:inherit;font-size:13px;font-weight:600;padding:13px 26px;border-radius:99px;background:transparent;color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;letter-spacing:.04em}
+  /* === LOGOS BAND === */
+  .logos-band{background:var(--ink);color:#fff;padding:48px 56px;display:flex;align-items:center;justify-content:space-between;gap:36px;flex-wrap:wrap}
+  .logos-band .lbl{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:18px;color:rgba(255,255,255,.7)}
+  .logos-band .row{display:flex;gap:14px;flex-wrap:wrap}
+  .logo-pill{font-family:'Caprasimo',serif;font-size:18px;letter-spacing:-.01em;padding:12px 22px;border-radius:99px;border:1px solid rgba(255,255,255,.25);color:#fff}
+  .logo-pill.fill1{background:var(--orange);border-color:var(--orange)}
+  .logo-pill.fill2{background:var(--purple);border-color:var(--purple)}
+  .logo-pill.fill3{background:var(--teal);border-color:var(--teal)}
+  .logo-pill.fill4{background:var(--coral);border-color:var(--coral)}
 
-  /* SECTION 4 — teal + coral split */
-  .s-split{display:grid;grid-template-columns:1fr 1fr}
-  .s-split > div{padding:96px 56px;min-height:480px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;color:#fff}
-  .split-teal{background:linear-gradient(180deg,#1FB7B0 0%,#117D78 100%)}
-  .split-coral{background:linear-gradient(180deg,#E85A5A 0%,#A93535 100%)}
-  .split-teal::after,.split-coral::after{content:"";position:absolute;inset:0;background:
-    radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 40%),
-    radial-gradient(circle at 20% 80%,rgba(0,0,0,.18),transparent 40%);
-    pointer-events:none}
+  /* === CHAPTER 02 — ORANGE STAGE === */
+  .chap{padding:80px 80px;position:relative;overflow:hidden;display:grid;grid-template-columns:.95fr 1.05fr;gap:64px;align-items:center;min-height:680px}
+  .chap.orange{background:linear-gradient(180deg,#FFB680 0%,var(--orange) 60%,#C44E0E 100%);color:var(--ink)}
+  .chap-corner-tag{position:absolute;top:0;left:80px;background:var(--ink);color:var(--cream);font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:14px;padding:10px 24px;border-radius:0 0 14px 14px;letter-spacing:.02em}
+  .chap-num{position:absolute;top:80px;right:80px;font-family:'Caprasimo',serif;font-size:280px;line-height:.8;letter-spacing:-.06em;color:rgba(0,0,0,.06);pointer-events:none;z-index:0}
+  .chap-eyebrow{font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:24px;opacity:.7;display:inline-flex;align-items:center;gap:10px}
+  .chap-eyebrow::before{content:"";width:24px;height:1px;background:currentColor}
+  h2.cap{font-family:'Caprasimo',serif;font-size:96px;line-height:.9;letter-spacing:-.025em;margin-bottom:28px;position:relative;z-index:1}
+  h2.cap em{font-family:'Fraunces',serif;font-style:italic;font-weight:600;color:var(--cream)}
+  .chap-lede{font-family:'Inter',sans-serif;font-size:18px;line-height:1.55;max-width:480px;margin-bottom:28px;position:relative;z-index:1}
+  .chap-lede b{font-weight:700}
+  .chap-cta{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
 
-  .s-split .scribble{font-family:'Caprasimo',serif;font-size:28px;letter-spacing:.02em;margin-bottom:14px;opacity:.9}
-  .s-split h3{font-family:'Caprasimo',serif;font-size:64px;line-height:.95;letter-spacing:-.025em;margin-bottom:18px}
-  .s-split p{font-size:16px;line-height:1.55;max-width:380px;color:rgba(255,255,255,.85);margin-bottom:28px}
-  .s-split .btn{align-self:flex-start;font-family:inherit;font-size:13px;font-weight:600;padding:14px 28px;border-radius:99px;background:#fff;color:var(--ink);border:none;cursor:pointer;letter-spacing:.04em}
+  /* 3D stage objects (orange) */
+  .stage-3d{position:relative;height:520px;display:flex;align-items:flex-end;justify-content:center;z-index:1}
+  .lamp{position:absolute;top:40px;left:30px;width:140px;height:200px}
+  .lamp .shade{position:absolute;width:100%;height:90px;background:linear-gradient(180deg,#FFE0B0 0%,#FFB47C 100%);border-radius:50% 50% 14px 14px / 60% 60% 14px 14px;border-bottom:6px solid #C44E0E;box-shadow:0 14px 28px rgba(196,78,14,.3)}
+  .lamp .stem{position:absolute;top:90px;left:50%;width:6px;height:90px;background:linear-gradient(90deg,#7A3E12,#3A1E08);transform:translateX(-50%)}
+  .lamp .base{position:absolute;bottom:0;left:50%;width:80px;height:20px;background:linear-gradient(180deg,#7A3E12,#3A1E08);border-radius:50%;transform:translateX(-50%)}
+  .sofa{position:absolute;bottom:30px;right:0;width:340px;height:160px}
+  .sofa .back{position:absolute;top:0;width:100%;height:90px;background:linear-gradient(180deg,#7855E0 0%,#5B3CC2 100%);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(91,60,194,.3)}
+  .sofa .seat{position:absolute;bottom:30px;width:100%;height:60px;background:linear-gradient(180deg,#7855E0,#3F1FA0);border-radius:14px}
+  .sofa .leg{position:absolute;bottom:0;width:14px;height:30px;background:#1A1430;border-radius:0 0 4px 4px}
+  .sofa .leg.l{left:14px}
+  .sofa .leg.r{right:14px}
+  .plant{position:absolute;bottom:30px;left:200px;width:90px;height:200px}
+  .plant .pot{position:absolute;bottom:0;width:100%;height:60px;background:linear-gradient(180deg,#E33B2C,#A0240F);border-radius:0 0 14px 14px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
+  .plant .leaf{position:absolute;bottom:50px;left:50%;width:110px;height:140px;background:radial-gradient(ellipse at 50% 100%,#1FB7B0 0%,#0E5654 100%);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;transform:translateX(-50%)}
+  .plant .leaf::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(0,0,0,.18);transform:translateX(-50%)}
+  .dog{position:absolute;bottom:30px;left:120px;width:90px;height:60px}
+  .dog .body{position:absolute;bottom:0;width:80%;height:36px;background:linear-gradient(180deg,#F5C61C,#C49100);border-radius:18px;left:10%}
+  .dog .head{position:absolute;bottom:14px;left:60%;width:36px;height:32px;background:#F5C61C;border-radius:50% 50% 30% 30%}
+  .dog .ear{position:absolute;top:0;left:0;width:14px;height:18px;background:#7A3E12;border-radius:8px 0 8px 14px}
+  .dog .leg{position:absolute;bottom:-8px;width:7px;height:14px;background:#C49100;border-radius:0 0 4px 4px}
+  .dog .leg.l1{left:18%}
+  .dog .leg.l2{left:38%}
+  .dog .leg.l3{right:18%}
+  .dog .leg.l4{right:38%}
 
-  /* stair illustration in coral side */
-  .stairs{position:absolute;right:40px;bottom:0;width:240px;height:240px}
-  .stairs .step{position:absolute;background:linear-gradient(180deg,#FF8B5C 0%,#D04C2D 100%);box-shadow:0 -2px 0 rgba(255,255,255,.15) inset}
-  .stairs .step:nth-child(1){bottom:0;left:0;width:240px;height:60px}
-  .stairs .step:nth-child(2){bottom:60px;left:60px;width:180px;height:60px}
-  .stairs .step:nth-child(3){bottom:120px;left:120px;width:120px;height:60px}
-  .stairs .step:nth-child(4){bottom:180px;left:180px;width:60px;height:60px}
+  /* === CHAPTER 03 — PURPLE STRIPES === */
+  .chap.purple{background:linear-gradient(180deg,#7855E0 0%,var(--purple) 50%,#2F1B82 100%);color:#fff}
+  .chap.purple h2.cap em{color:var(--orange)}
 
-  .arch-teal{position:absolute;right:0;top:0;width:340px;height:100%;background:radial-gradient(circle at right top,rgba(255,255,255,.18),transparent 60%);pointer-events:none}
-  .planet{position:absolute;right:60px;top:60px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7DDED8 0%,#0F6660 80%);box-shadow:inset -16px -16px 30px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25)}
+  /* product window (cream content card) */
+  .product-window{background:var(--cream);color:var(--ink);border-radius:24px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.35);position:relative;overflow:hidden}
+  .pw-bar{display:flex;align-items:center;gap:8px;padding-bottom:14px;margin-bottom:14px;border-bottom:1.5px dashed rgba(26,20,48,.18)}
+  .pw-traffic{display:flex;gap:5px}
+  .pw-traffic span{width:11px;height:11px;border-radius:50%}
+  .pw-traffic span:nth-child(1){background:var(--coral)}
+  .pw-traffic span:nth-child(2){background:var(--orange)}
+  .pw-traffic span:nth-child(3){background:var(--teal)}
+  .pw-url{flex:1;font-family:'Inter',sans-serif;font-size:11px;color:rgba(26,20,48,.6);text-align:center;background:rgba(26,20,48,.05);padding:5px 10px;border-radius:6px}
 
-  /* FOOTER */
-  footer{padding:36px 64px;background:#0A0F1F;color:#7E7F88;display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-  footer a{color:#fff;text-decoration:none}
-  footer .pages{display:flex;gap:18px}
-  footer .pages span:not(.active){opacity:.5}
+  .panel{padding:16px;border-radius:14px;background:#fff}
+  .panel + .panel{margin-top:12px}
+  .panel-head{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-weight:600;font-size:15px;margin-bottom:14px;color:var(--ink)}
+  .panel-head em{font-style:italic;font-weight:500;color:var(--purple)}
+  .panel-head .ph-badge{margin-left:auto;font-family:'Inter',sans-serif;font-size:10px;font-weight:700;background:var(--orange);color:#fff;padding:4px 10px;border-radius:99px;letter-spacing:.04em}
+  .panel-head .ph-badge.teal{background:var(--teal)}
+  .panel-head .ph-badge.purple{background:var(--purple)}
+
+  /* lead-rank rows (chap 03) */
+  .lead-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed rgba(26,20,48,.18)}
+  .lead-row:last-child{border-bottom:0}
+  .lead-rank{width:22px;font-family:'Caprasimo',serif;font-size:18px;color:var(--purple)}
+  .lead-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple-2),var(--purple));color:#fff;font-family:'Caprasimo',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .lead-av.b{background:linear-gradient(135deg,var(--orange-2),var(--orange))}
+  .lead-av.c{background:linear-gradient(135deg,var(--teal-2),var(--teal))}
+  .lead-av.d{background:linear-gradient(135deg,var(--coral-2),var(--coral))}
+  .lead-info{flex:1;min-width:0;font-family:'Inter',sans-serif}
+  .lead-name{font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.2}
+  .lead-co{font-size:11px;color:rgba(26,20,48,.6);margin-top:2px}
+  .lead-bar{width:64px;height:6px;border-radius:3px;background:rgba(26,20,48,.1);overflow:hidden;flex-shrink:0}
+  .lead-bar i{display:block;height:100%;border-radius:3px}
+  .lead-score{font-family:'Caprasimo',serif;font-size:22px;color:var(--purple);letter-spacing:-.02em}
+
+  /* email block */
+  .email-block .row{margin-top:8px;padding:10px 14px;border:1px solid rgba(26,20,48,.12);border-radius:10px;background:rgba(255,255,255,.6)}
+  .email-block .row .lbl{font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:4px}
+  .email-block .row .val{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);line-height:1.5}
+  .email-block pre{font-family:'Inter',sans-serif;white-space:pre-wrap;font-size:13.5px;line-height:1.55;color:var(--ink)}
+
+  /* speech bubbles in chap 02 */
+  .speech-stack{position:absolute;left:30px;bottom:120px;width:280px;display:flex;flex-direction:column;gap:14px;z-index:2}
+  .speech{background:#fff;border-radius:18px;padding:14px 16px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);box-shadow:0 14px 30px rgba(0,0,0,.18);position:relative}
+  .speech.from{background:var(--ink);color:#fff;align-self:flex-end}
+  .speech b{font-family:'Fraunces',serif;font-style:italic;font-weight:600;color:var(--orange)}
+  .speech.from b{color:var(--cream)}
+
+  /* === CHAPTER 04 — TEAL/CORAL SPLIT === */
+  .chap-split{display:grid;grid-template-columns:1fr 1fr;min-height:760px;position:relative}
+  .split-side{padding:80px 56px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
+  .split-side.teal{background:linear-gradient(180deg,#3FD4C4 0%,var(--teal) 60%,#0F6E68 100%);color:#fff}
+  .split-side.coral{background:linear-gradient(180deg,var(--coral-2) 0%,var(--coral) 60%,#A03030 100%);color:#fff}
+  .split-num{position:absolute;font-family:'Caprasimo',serif;font-size:240px;line-height:.8;color:rgba(255,255,255,.1);right:30px;top:30px}
+  .split-eyebrow{font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:20px;opacity:.85;display:inline-flex;align-items:center;gap:10px}
+  .split-eyebrow::before{content:"";width:24px;height:1px;background:currentColor}
+  h3.cap{font-family:'Caprasimo',serif;font-size:64px;line-height:.92;letter-spacing:-.025em;margin-bottom:20px;position:relative;z-index:1}
+  h3.cap em{font-family:'Fraunces',serif;font-style:italic;font-weight:600}
+  .split-lede{font-family:'Inter',sans-serif;font-size:16.5px;line-height:1.55;max-width:460px;margin-bottom:24px;opacity:.92;position:relative;z-index:1}
+  .split-cta{position:relative;z-index:1}
+
+  /* 3D scene objects in split */
+  .scene-planet{position:relative;height:240px;display:flex;align-items:center;justify-content:center;margin-top:24px}
+  .scene-planet .pl{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#A6F4EE 0%,var(--teal) 50%,#0A4F4A 100%);box-shadow:0 30px 60px rgba(0,0,0,.3),inset -30px -20px 0 rgba(0,0,0,.18);position:relative}
+  .scene-planet .pl::after{content:"";position:absolute;width:300px;height:18px;background:rgba(166,244,238,.35);border-radius:50%;left:-50px;top:96px;transform:rotate(-14deg)}
+
+  .scene-stairs{position:relative;height:240px;margin-top:24px}
+  .step{position:absolute;border-radius:6px;background:rgba(255,255,255,.92);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+  .step.s1{width:240px;height:32px;bottom:0;left:30px}
+  .step.s2{width:200px;height:32px;bottom:32px;left:60px;background:rgba(255,255,255,.78)}
+  .step.s3{width:160px;height:32px;bottom:64px;left:90px;background:rgba(255,255,255,.66)}
+  .step.s4{width:120px;height:32px;bottom:96px;left:120px;background:rgba(255,255,255,.54)}
+  .step.s5{width:80px;height:32px;bottom:128px;left:150px;background:rgba(255,255,255,.42)}
+  .step .arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:'Caprasimo',serif;font-size:22px;color:var(--coral)}
+  .step.s1 .label{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:var(--ink)}
+  .step.s2 .label,.step.s3 .label,.step.s4 .label,.step.s5 .label{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:var(--ink)}
+
+  /* mini stat poster in coral */
+  .mini-window{background:var(--cream);color:var(--ink);border-radius:18px;padding:18px;margin-top:20px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .mini-window .h{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:15px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .mini-window .h em{font-style:italic;color:var(--coral)}
+  .crm-row{padding:10px 12px;border:1px solid rgba(26,20,48,.1);border-radius:10px;margin-bottom:8px;font-family:'Inter',sans-serif;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:#fff}
+  .crm-row .src{font-size:10px;font-weight:700;background:rgba(232,90,90,.15);color:var(--coral);padding:3px 8px;border-radius:99px;letter-spacing:.04em}
+  .crm-row .src.sf{background:rgba(91,60,194,.15);color:var(--purple)}
+  .crm-row .src.add{background:rgba(31,183,176,.18);color:#0F6E68}
+  .crm-action{padding:12px 14px;background:rgba(232,90,90,.12);border-radius:10px;margin-top:10px;font-family:'Inter',sans-serif;font-size:13px;display:flex;gap:10px;align-items:center}
+  .crm-action b{font-family:'Fraunces',serif;font-style:italic;font-weight:600;color:var(--coral)}
+
+  /* === TESTIMONIALS (chapter-tinted) === */
+  .testi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--cream)}
+  .testi-card{padding:48px 36px;color:var(--ink);position:relative;border-right:1px dashed rgba(26,20,48,.18);min-height:340px;display:flex;flex-direction:column;justify-content:space-between}
+  .testi-card:last-child{border-right:0}
+  .testi-card .ch{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:14px}
+  .testi-card.orange .ch{color:var(--orange)}
+  .testi-card.purple .ch{color:var(--purple)}
+  .testi-card.teal .ch{color:var(--teal)}
+  .testi-card .quote{font-family:'Caprasimo',serif;font-size:22px;line-height:1.18;letter-spacing:-.015em;color:var(--ink)}
+  .testi-card .quote em{font-family:'Fraunces',serif;font-style:italic;font-weight:600}
+  .testi-card.orange .quote em{color:var(--orange)}
+  .testi-card.purple .quote em{color:var(--purple)}
+  .testi-card.teal .quote em{color:var(--teal)}
+  .testi-card .author{display:flex;align-items:center;gap:14px;margin-top:24px;padding-top:18px;border-top:1px dashed rgba(26,20,48,.18)}
+  .testi-card .av{width:42px;height:42px;border-radius:50%;color:#fff;font-family:'Caprasimo',serif;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .testi-card.orange .av{background:var(--orange)}
+  .testi-card.purple .av{background:var(--purple)}
+  .testi-card.teal .av{background:var(--teal)}
+  .testi-card .name{font-family:'Inter',sans-serif;font-size:14px;font-weight:700}
+  .testi-card .role{font-family:'Inter',sans-serif;font-size:12px;color:rgba(26,20,48,.6);margin-top:1px}
+
+  /* === PROJECT TILES (3 vibrant) === */
+  .project-row{padding:80px 56px;background:var(--ink);position:relative;overflow:hidden}
+  .project-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;color:#fff}
+  .project-head h3{font-family:'Caprasimo',serif;font-size:64px;line-height:.92;letter-spacing:-.025em;max-width:680px}
+  .project-head h3 em{font-family:'Fraunces',serif;font-style:italic;font-weight:600;color:var(--orange)}
+  .project-head .arrow-pill{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;padding:14px 24px;border:1px solid rgba(255,255,255,.4);border-radius:99px;color:#fff;text-decoration:none}
+
+  .project-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ptile{aspect-ratio:3/4;border-radius:24px;padding:28px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;color:#fff}
+  .ptile.orange{background:linear-gradient(180deg,var(--orange-2) 0%,var(--orange) 60%,#A03A0E 100%)}
+  .ptile.purple{background:linear-gradient(180deg,var(--purple-2) 0%,var(--purple) 60%,#2F1B82 100%)}
+  .ptile.teal{background:linear-gradient(180deg,var(--teal-2) 0%,var(--teal) 60%,#0A4F4A 100%)}
+  .ptile .num{font-family:'Caprasimo',serif;font-size:18px;letter-spacing:.04em}
+  .ptile .ttl{font-family:'Caprasimo',serif;font-size:42px;line-height:.92;letter-spacing:-.025em}
+  .ptile .ttl em{font-family:'Fraunces',serif;font-style:italic;font-weight:600}
+  .ptile .desc{font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.5;opacity:.92;margin-top:10px}
+  .ptile .arrow-corner{position:absolute;top:24px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px}
+  .ptile .explore{align-self:flex-start;padding:10px 18px;border-radius:99px;background:#fff;color:var(--ink);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;margin-top:14px}
+
+  /* === BIG CTA === */
+  .cta-block{padding:120px 56px;background:linear-gradient(135deg,var(--orange) 0%,var(--coral) 30%,var(--purple) 65%,var(--blue-2) 100%);color:#fff;position:relative;overflow:hidden;text-align:center}
+  .cta-block::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.18) 1.4px,transparent 1.4px);background-size:9px 9px;pointer-events:none;opacity:.4}
+  .cta-block h4{font-family:'Caprasimo',serif;font-size:144px;line-height:.86;letter-spacing:-.03em;margin-bottom:32px;position:relative}
+  .cta-block h4 em{font-family:'Fraunces',serif;font-style:italic;font-weight:600;color:#fff}
+  .cta-block h4 .pillc{display:inline-block;padding:0 .14em;border:6px solid #fff;border-radius:99px;background:rgba(255,255,255,.08)}
+  .cta-block p{font-family:'Inter',sans-serif;font-size:20px;color:rgba(255,255,255,.85);max-width:640px;margin:0 auto 36px;line-height:1.5;position:relative}
+  .cta-block .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+
+  /* === FOOTER === */
+  footer{background:var(--ink);color:#fff}
+  .footer-multi{padding:56px 56px 32px;display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:32px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .footer-multi .f-brand p{font-family:'Inter',sans-serif;font-size:13.5px;color:rgba(255,255,255,.65);margin-top:14px;max-width:280px;line-height:1.55}
+  .footer-multi h4{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:15px;color:#fff;margin-bottom:14px}
+  .footer-multi ul{list-style:none}
+  .footer-multi li{margin-bottom:8px;font-family:'Inter',sans-serif;font-size:13.5px}
+  .footer-multi a{color:rgba(255,255,255,.7);text-decoration:none}
+  .footer-multi a:hover{color:var(--orange)}
+  .footer-bottom{padding:24px 56px;display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;font-size:11.5px;color:rgba(255,255,255,.55);letter-spacing:.06em;text-transform:uppercase}
+  .footer-bottom a{color:#fff;text-decoration:none}
+
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- HERO blue chapter -->
-  <section class="s-hero">
-    <div class="nav-row">
-      <div class="logo"><span class="logo-mark">K</span> KOMBO</div>
-      <div class="nav-links">
-        <a>Product <span class="caret">▼</span></a>
-        <a>Coaching <span class="caret">▼</span></a>
-        <a>Pricing <span class="caret">▼</span></a>
-        <a>Customers <span class="caret">▼</span></a>
-        <a>Sign in</a>
+  <!-- HERO — Chapter 01: deep blue -->
+  <section class="hero">
+    <div class="hero-grain"></div>
+    <div class="hero-orbit ho1"></div>
+    <div class="hero-orbit ho2"></div>
+    <div class="hero-orbit ho3"></div>
+
+    <div class="corner-tag">Ch. 01 — The AI co-pilot</div>
+
+    <nav class="topnav">
+      <a class="kombo-logo" href="./index.html">
+        <span class="kombo-mark"><svg width="20" height="20" viewBox="0 0 30 30"><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z"/></svg></span>
+        <span class="kombo-text">KomboAI</span>
+      </a>
+      <div class="nav-mid">
+        <a>Product</a><a>Resources</a><a>Company</a><a>Connect</a>
       </div>
-    </div>
+      <a class="nav-cta">See a Demo →</a>
+    </nav>
 
-    <div class="corner-tag">
-      <div class="small">Chapter 01</div>
-      <div>The AI<br>co-pilot</div>
-    </div>
-
-    <div class="leaf l1"></div>
-    <div class="leaf l2"></div>
-    <div class="leaf l3"></div>
-
-    <div class="grad-card">
+    <div class="hero-body">
       <div>
-        <div class="gc-meta">REVENUE TEAMS</div>
-        <div class="gc-name">Maya Chen</div>
+        <h1 class="cap">
+          Close<br>
+          <span class="underline">More</span> Deals<br>
+          <span class="with">with</span> <span class="ai pill-circle">AI.</span>
+        </h1>
+        <p class="lede">KomboAI gives your sales team the intelligence of a <b>20-year veteran</b> — at the speed of AI. <b>Rank leads, predict pipeline,</b> and outreach on autopilot.</p>
+        <div class="hero-ctas">
+          <a class="btn-cap solid">See a Demo →</a>
+          <a class="btn-cap ghost">See How It Works</a>
+        </div>
       </div>
-      <div class="gc-line"></div>
-      <div class="gc-meta">Senior RevOps · Northwind</div>
-    </div>
 
-    <div class="hero-content">
-      <h1>Less clicks.<br><em>More</em> selling.</h1>
-      <p>Kombo sits on top of your CRM and gives every SDR and AE a personal co-pilot — drafting outreach, surfacing buying signals, and coaching live calls. Without leaving the record.</p>
-      <div class="hero-cta">
-        <button class="btn">Book a demo →</button>
-        <a class="ghost" href="#">See how it works</a>
+      <div class="biz-card-stack">
+        <div class="biz-card card1">
+          <div class="bc-corner">— hot lead</div>
+          <div class="bc-num">N° 01</div>
+          <div class="bc-name">Sarah Chen</div>
+          <div class="bc-role">VP of Sales</div>
+          <div class="bc-co">
+            <div class="av">N</div>
+            <div class="meta"><b>NovaTech Solutions</b>Series B · 420 employees</div>
+          </div>
+          <div class="bc-score">
+            <div><div class="n">94</div><div class="l">Lead score</div></div>
+          </div>
+        </div>
+        <div class="biz-card card2" style="opacity:.85">
+          <div class="bc-corner">— ranked 02</div>
+          <div class="bc-num">N° 02</div>
+          <div class="bc-name" style="margin-top:48px">James Whitfield</div>
+          <div class="bc-role">Head of Revenue · Meridian Group</div>
+          <div class="bc-score" style="bottom:18px"><div><div class="n" style="font-size:32px">88</div><div class="l">score</div></div></div>
+        </div>
+        <div class="biz-card card3" style="opacity:.7">
+          <div class="bc-corner">— ranked 03</div>
+          <div class="bc-num">N° 03</div>
+          <div class="bc-name" style="margin-top:36px;font-size:24px">Lucia Fernández</div>
+          <div class="bc-role" style="font-size:13px">COO · ScaleUp Partners</div>
+        </div>
+        <div class="hero-3d-planet"></div>
       </div>
     </div>
   </section>
 
-  <!-- ORANGE stage chapter -->
-  <section class="s-stage">
-    <div class="stage-arch"></div>
-    <div class="pinstripes"></div>
-    <h2 class="stage-headline">Built for the<br>way your <em>floor</em><br>actually sells.</h2>
-    <p class="stage-sub">No new windows. No copy-paste. Kombo runs inside the record where your reps already work — Salesforce, HubSpot, Gmail, your own internal CRM.</p>
-
-    <div class="lamp"></div>
-    <div class="dog"><div class="ear-l"></div><div class="head"><div class="eye l"></div><div class="eye r"></div></div><div class="ear-r"></div><div class="body"></div></div>
-    <div class="sofa"><div class="seat"></div><div class="cush"></div></div>
-    <div class="pot"><div class="leaf-a"></div><div class="leaf-b"></div><div class="leaf-c"></div><div class="vase"></div></div>
+  <!-- STATS BAND -->
+  <section class="stats-band">
+    <div class="stat-cell"><div class="n">500+</div><div class="l">B2B teams winning with KomboAI</div></div>
+    <div class="stat-cell"><div class="n">40%</div><div class="l">Higher close rate, on average</div></div>
+    <div class="stat-cell"><div class="n">60%</div><div class="l">Less manual lead research</div></div>
+    <div class="stat-cell"><div class="n">94%</div><div class="l">Forecast accuracy, quarter over quarter</div></div>
   </section>
 
-  <!-- PURPLE chapter -->
-  <section class="s-purple">
-    <div class="pp-stripes"></div>
-    <div class="stool"><div class="top"></div><div class="leg"></div></div>
-
-    <div class="pp-content">
-      <div class="eyebrow">Chapter 03 · Coaching</div>
-      <h2>Every rep gets <em>their own AE</em> in the room.</h2>
-      <p>Live call coaching that whispers the next question, the right objection, and the close that fits the deal — based on every call your team has ever logged.</p>
-      <button class="pcta">Read the playbook →</button>
+  <!-- LOGOS BAND -->
+  <section class="logos-band">
+    <div class="lbl">Trusted by fast-growing<br>B2B sales teams —</div>
+    <div class="row">
+      <span class="logo-pill fill1">NovaTech Solutions</span>
+      <span class="logo-pill fill2">Meridian Group</span>
+      <span class="logo-pill fill3">ScaleUp Partners</span>
+      <span class="logo-pill fill4">Apex Revenue</span>
+      <span class="logo-pill">PipelineCo</span>
     </div>
   </section>
 
-  <!-- TEAL + CORAL split -->
-  <section class="s-split">
-    <div class="split-teal">
-      <div class="arch-teal"></div>
-      <div class="planet"></div>
+  <!-- CHAPTER 02 — ORANGE STAGE: Automated Outreach -->
+  <section class="chap orange">
+    <div class="grain"></div>
+    <div class="chap-corner-tag">Ch. 02 — The Outreach Stage</div>
+    <div class="chap-num">02</div>
+    <div>
+      <div class="chap-eyebrow">Automated Outreach</div>
+      <h2 class="cap">Send <em>personal</em><br>email at scale.</h2>
+      <p class="chap-lede">Craft personalized email sequences powered by AI. Reach the right prospects with the right message at the right moment — <b>at scale</b>. KomboAI tunes every email to your value prop and their world.</p>
+      <div class="chap-cta">
+        <a class="btn-cap coral">Draft an email →</a>
+        <a class="btn-cap ghost" style="color:var(--ink);border-color:var(--ink)">See How It Works</a>
+      </div>
+    </div>
+    <div class="stage-3d">
+      <div class="lamp"><div class="shade"></div><div class="stem"></div><div class="base"></div></div>
+      <div class="dog"><div class="body"></div><div class="head"><div class="ear"></div></div><div class="leg l1"></div><div class="leg l2"></div><div class="leg l3"></div><div class="leg l4"></div></div>
+      <div class="plant"><div class="leaf"></div><div class="pot"></div></div>
+      <div class="sofa"><div class="back"></div><div class="seat"></div><div class="leg l"></div><div class="leg r"></div></div>
+
+      <div class="speech-stack">
+        <div class="speech from">"Saw the NovaTech Series B — congrats. With 12 SDRs joining, ramp time matters."</div>
+        <div class="speech"><b>Sarah replied 14 min later:</b> "How fast could we pilot? We need ramp shortcuts."</div>
+        <div class="speech from"><b>Kombo drafted a follow-up:</b> "20-min demo Tuesday at 11?"</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 03 — PURPLE STRIPES: Lead Scoring -->
+  <section class="chap purple">
+    <div class="stripes"></div>
+    <div class="grain"></div>
+    <div class="chap-corner-tag" style="background:var(--orange);color:var(--ink)">Ch. 03 — Score Every Lead</div>
+    <div class="chap-num" style="color:rgba(255,255,255,.08)">03</div>
+    <div>
+      <div class="chap-eyebrow">AI Lead Scoring</div>
+      <h2 class="cap">Rank every lead<br>by <em>buying signal.</em></h2>
+      <p class="chap-lede">Automatically rank and prioritize leads based on <b>buying signals, engagement history, and fit</b> — updated in real time. Your reps wake up to a queue ranked by likelihood to close.</p>
+      <div class="chap-cta">
+        <a class="btn-cap solid">See a Demo →</a>
+        <a class="btn-cap ghost">See How It Works</a>
+      </div>
+    </div>
+    <div class="product-window">
+      <div class="pw-bar">
+        <div class="pw-traffic"><span></span><span></span><span></span></div>
+        <div class="pw-url">app.komboai.com / leads · ranked queue</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>⚡</span> Top leads <em>this week</em> <span class="ph-badge purple">LIVE</span></div>
+        <div class="lead-row"><div class="lead-rank">01</div><div class="lead-av">SC</div><div class="lead-info"><div class="lead-name">Sarah Chen</div><div class="lead-co">VP Sales · NovaTech Solutions</div></div><div class="lead-bar"><i style="width:94%;background:var(--purple)"></i></div><div class="lead-score">94</div></div>
+        <div class="lead-row"><div class="lead-rank">02</div><div class="lead-av b">JW</div><div class="lead-info"><div class="lead-name">James Whitfield</div><div class="lead-co">Head of Revenue · Meridian Group</div></div><div class="lead-bar"><i style="width:88%;background:var(--orange)"></i></div><div class="lead-score" style="color:var(--orange)">88</div></div>
+        <div class="lead-row"><div class="lead-rank">03</div><div class="lead-av c">LF</div><div class="lead-info"><div class="lead-name">Lucia Fernández</div><div class="lead-co">COO · ScaleUp Partners</div></div><div class="lead-bar"><i style="width:82%;background:var(--teal)"></i></div><div class="lead-score" style="color:var(--teal)">82</div></div>
+        <div class="lead-row"><div class="lead-rank">04</div><div class="lead-av d">MR</div><div class="lead-info"><div class="lead-name">Marcus Reyes</div><div class="lead-co">Director RevOps · Apex Revenue</div></div><div class="lead-bar"><i style="width:71%;background:var(--coral)"></i></div><div class="lead-score" style="color:var(--coral)">71</div></div>
+        <div class="lead-row"><div class="lead-rank">05</div><div class="lead-av">PK</div><div class="lead-info"><div class="lead-name">Priya Kumar</div><div class="lead-co">CFO · PipelineCo</div></div><div class="lead-bar"><i style="width:48%;background:rgba(26,20,48,.4)"></i></div><div class="lead-score" style="color:rgba(26,20,48,.55)">48</div></div>
+      </div>
+      <div class="panel email-block">
+        <div class="panel-head">✉ AI-drafted reply <em>for Sarah Chen</em><span class="ph-badge">94 · HOT</span></div>
+        <div class="row"><div class="lbl">Subject</div><div class="val">Hiring 12 SDRs? A 60% research shortcut</div></div>
+        <div class="row"><div class="lbl">Body</div><div class="val"><pre>Hi Sarah,
+
+Saw the NovaTech Series B — congrats. KomboAI cuts manual lead research 60% and lifts close rate 40%.
+
+Worth 20 minutes this week?
+
+— Alex, KomboAI</pre></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 04 — TEAL/CORAL SPLIT: Pipeline + CRM -->
+  <section class="chap-split">
+    <!-- TEAL: Pipeline Intelligence -->
+    <div class="split-side teal">
+      <div class="grain"></div>
+      <div class="split-num">04</div>
       <div>
-        <div class="scribble">Pipeline</div>
-        <h3>Insight that ships in days, not quarters.</h3>
-        <p>Forecasting and pipeline reviews drafted before your Monday meeting. Numbers your CRO can actually trust.</p>
+        <div class="split-eyebrow">Ch. 04A · Pipeline Intelligence</div>
+        <h3 class="cap">Forecast<br>at <em>94%.</em></h3>
+        <p class="split-lede">See the health of every deal at a glance. KomboAI <b>flags stale opportunities</b> and forecasts revenue with <b>94% accuracy</b> — so your CFO trusts your number and your reps focus on what's about to close.</p>
+        <div class="scene-stairs">
+          <div class="step s1"><span class="label">Q1 — $1.2M</span><span class="arrow">→</span></div>
+          <div class="step s2"><span class="label">Q2 — $1.8M</span><span class="arrow">→</span></div>
+          <div class="step s3"><span class="label">Q3 — $2.4M</span><span class="arrow">→</span></div>
+          <div class="step s4"><span class="label">Q4 — $2.9M</span><span class="arrow">→</span></div>
+          <div class="step s5"><span class="label">Q1'27</span><span class="arrow">↗</span></div>
+        </div>
       </div>
-      <button class="btn">See pipeline AI →</button>
+      <div class="split-cta"><a class="btn-cap" style="background:#fff;color:var(--teal)">See pipeline →</a></div>
     </div>
 
-    <div class="split-coral">
-      <div class="stairs"><div class="step"></div><div class="step"></div><div class="step"></div><div class="step"></div></div>
+    <!-- CORAL: CRM Intelligence -->
+    <div class="split-side coral">
+      <div class="grain"></div>
+      <div class="split-num">04</div>
       <div>
-        <div class="scribble">Onboarding</div>
-        <h3>Ramp new reps to quota in 30 days.</h3>
-        <p>Kombo trains every new hire on your real customer calls — not a recorded webinar from 2021.</p>
+        <div class="split-eyebrow">Ch. 04B · CRM Intelligence</div>
+        <h3 class="cap">Your CRM,<br><em>finally smart.</em></h3>
+        <p class="split-lede">Sync with HubSpot or Salesforce. KomboAI <b>enriches contacts, flags stale deals,</b> and recommends next-best actions — without a single click from your reps.</p>
+        <div class="scene-planet">
+          <div class="pl"></div>
+        </div>
+        <div class="mini-window">
+          <div class="h">James Whitfield · Meridian <em>(enriched)</em><span class="src sf">Salesforce</span></div>
+          <div class="crm-row"><span><b>Title</b> · Head of Revenue</span><span class="src">HubSpot</span></div>
+          <div class="crm-row"><span><b>Seniority</b> · VP+ decision maker</span><span class="src add">+ Added</span></div>
+          <div class="crm-row"><span><b>Company ARR</b> · $68M est.</span><span class="src add">+ Added</span></div>
+          <div class="crm-action"><b>Next-best action:</b> Loop in their CFO — Meridian's procurement gate triggers at $75K.</div>
+        </div>
       </div>
-      <button class="btn">Talk to sales →</button>
+      <div class="split-cta"><a class="btn-cap" style="background:#fff;color:var(--coral)">Connect your CRM →</a></div>
     </div>
   </section>
 
+  <!-- TESTIMONIALS — chapter-tinted -->
+  <section class="testi-row">
+    <div class="testi-card orange">
+      <div>
+        <div class="ch">Ch. 02 — Outreach</div>
+        <div class="quote">"Reps spend <em>60% less time</em> on manual lead research. Pipeline velocity has never been higher."</div>
+      </div>
+      <div class="author">
+        <div class="av">SC</div>
+        <div><div class="name">Sarah Chen</div><div class="role">VP of Sales · NovaTech Solutions</div></div>
+      </div>
+    </div>
+    <div class="testi-card purple">
+      <div>
+        <div class="ch">Ch. 03 — Lead Scoring</div>
+        <div class="quote">"AI lead scoring is a <em>game-changer.</em> Went from guessing to knowing — close rate jumped 40%."</div>
+      </div>
+      <div class="author">
+        <div class="av">JW</div>
+        <div><div class="name">James Whitfield</div><div class="role">Head of Revenue · Meridian Group</div></div>
+      </div>
+    </div>
+    <div class="testi-card teal">
+      <div>
+        <div class="ch">Ch. 04 — Pipeline</div>
+        <div class="quote">"KomboAI's pipeline insights <em>grew with us</em> from 5 reps to 50. It scales with your team."</div>
+      </div>
+      <div class="author">
+        <div class="av">LF</div>
+        <div><div class="name">Lucia Fernández</div><div class="role">COO · ScaleUp Partners</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT TILES -->
+  <section class="project-row">
+    <div class="grain"></div>
+    <div class="project-head">
+      <h3>Three features.<br><em>Three colors.</em></h3>
+      <a class="arrow-pill">Explore All Features →</a>
+    </div>
+    <div class="project-grid">
+      <div class="ptile orange">
+        <div>
+          <div class="num">N° 01</div>
+          <div class="ttl" style="margin-top:14px">Lead<br><em>Scoring</em></div>
+          <div class="desc">Rank and prioritize leads based on buying signals, engagement, and fit — in real time.</div>
+        </div>
+        <div class="arrow-corner">↗</div>
+        <div class="explore">Explore</div>
+      </div>
+      <div class="ptile purple">
+        <div>
+          <div class="num">N° 02</div>
+          <div class="ttl" style="margin-top:14px">Auto<br><em>Outreach</em></div>
+          <div class="desc">Personalized email sequences powered by AI. Right message, right moment, at scale.</div>
+        </div>
+        <div class="arrow-corner">↗</div>
+        <div class="explore">Explore</div>
+      </div>
+      <div class="ptile teal">
+        <div>
+          <div class="num">N° 03</div>
+          <div class="ttl" style="margin-top:14px">Pipeline<br><em>Intelligence</em></div>
+          <div class="desc">See the health of every deal. Forecast revenue with 94% accuracy.</div>
+        </div>
+        <div class="arrow-corner">↗</div>
+        <div class="explore">Explore</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIG CTA -->
+  <section class="cta-block">
+    <h4>Ready to Close<br>More Deals With<br><em><span class="pillc">AI?</span></em></h4>
+    <p>Join 500+ B2B sales teams using KomboAI to hit quota faster. Live in your CRM in 4 minutes.</p>
+    <div class="row">
+      <a class="btn-cap solid">See a Demo →</a>
+      <a class="btn-cap ghost" style="border-color:#fff">Contact Us</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
   <footer>
-    <div>KEVIN HAWKINS · KOMBO · 2026</div>
-    <div class="pages"><span class="active">VOL 06</span><span>CHAPTERS 01–04</span></div>
-    <div><a href="./index.html">← BACK TO MOCKUPS</a></div>
+    <div class="footer-multi">
+      <div class="f-brand">
+        <a class="kombo-logo" href="./index.html">
+          <span class="kombo-mark"><svg width="20" height="20" viewBox="0 0 30 30"><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z"/></svg></span>
+          <span class="kombo-text">KomboAI</span>
+        </a>
+        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
+      </div>
+      <div><h4>Product</h4><ul><li><a>Features</a></li><li><a>Integrations</a></li></ul></div>
+      <div><h4>Resources</h4><ul><li><a>Customers</a></li><li><a>Podcast</a></li><li><a>Newsletter</a></li><li><a>Blog</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a>Contact</a></li><li><a>Team</a></li><li><a>About</a></li></ul></div>
+      <div><h4>Connect</h4><ul><li><a>LinkedIn</a></li><li><a>X</a></li><li><a>YouTube</a></li><li><a>Instagram</a></li><li><a>TikTok</a></li></ul></div>
+      <div><h4>Legal</h4><ul><li><a>Terms &amp; Conditions</a></li><li><a>Privacy Policy</a></li><li><a>Referral Programme</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>Kevin Hawkins · KomboAI · 2026 · V6 Color Chapters</span>
+      <span><a href="./index.html">← Back to mockups</a></span>
+    </div>
   </footer>
+
 </div>
 </body>
 </html>

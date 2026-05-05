@@ -10,9 +10,9 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{background:#0E1726;color:#F2EBDC;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
-  .wrap{max-width:1280px;margin:0 auto;padding:64px 32px 96px}
+  .wrap{max-width:1440px;margin:0 auto;padding:64px 40px 96px}
   header{padding-bottom:64px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:64px}
-  .meta{font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A8497;margin-bottom:24px}
+  .meta{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A8497;margin-bottom:24px}
   h1{font-family:'Fraunces',serif;font-size:72px;line-height:1;letter-spacing:-.04em;font-weight:400;max-width:900px}
   h1 .it{font-style:italic;color:#D4A04F}
   .lede{margin-top:24px;font-size:18px;line-height:1.55;color:#C9C4B6;max-width:680px}
@@ -20,146 +20,237 @@
   .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .2s ease,border-color .2s ease}
   .card:hover{transform:translateY(-4px);border-color:rgba(212,160,79,.4)}
   .thumb{aspect-ratio:4/5;display:flex;flex-direction:column;justify-content:space-between;padding:32px;position:relative;overflow:hidden}
-  .thumb-num{font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.6}
-  .thumb-title{font-family:'Fraunces',serif;font-size:36px;line-height:.95;letter-spacing:-.025em;font-weight:400}
+  .thumb-num{font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.6}
+  .thumb-title{font-family:'Fraunces',serif;font-size:32px;line-height:.97;letter-spacing:-.025em;font-weight:400}
   .thumb-title .it{font-style:italic}
-  .v1 .thumb{background:linear-gradient(180deg,#F4F0E8 0%, #EFEAE0 100%);color:#161512}
+  .thumb-footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;margin-top:auto}
+
+  /* V1 — Quiet Confidence */
+  .v1 .thumb{background:linear-gradient(160deg,#F4F0E8 0%,#EAE3D4 100%);color:#161512}
   .v1 .thumb-num{color:#7A7770}
   .v1 .accent{color:#FF6B3D}
-  .v2 .thumb{background:linear-gradient(180deg,#FFF9EE 0%, #F7E8D0 100%);color:#171326}
+
+  /* V2 — Sales Floor Energy */
+  .v2 .thumb{background:linear-gradient(160deg,#F0ECFF 0%,#FFE8D6 60%,#F0FFCC 100%);color:#171326}
   .v2 .thumb-num{color:#7A7388}
-  .v2 .accent{color:#6B4EFF}
-  .v2 .pill{display:inline-block;background:#C8B6FF;border:2px solid #171326;border-radius:99px;padding:0 14px;font-family:'Fraunces',serif;font-style:italic;transform:rotate(-2deg)}
-  .v3 .thumb{background:linear-gradient(180deg,#172238 0%, #0E1726 100%);color:#F2EBDC}
+  .v2 .pill{display:inline-block;background:#C8B6FF;border:2.5px solid #171326;border-radius:99px;padding:2px 14px;transform:rotate(-2deg);font-family:'Fraunces',serif;font-style:italic}
+  .v2 .pill.lime{background:#D4E847;transform:rotate(1.5deg)}
+
+  /* V3 — Editorial AI */
+  .v3 .thumb{background:linear-gradient(180deg,#172238 0%,#0E1726 100%);color:#F2EBDC}
   .v3 .thumb-num{color:#7A8497}
   .v3 .accent{color:#D4A04F}
 
-  .v4 .thumb{background:linear-gradient(180deg,#B8D5EE 0%, #D9E6F2 60%, #F1F4DA 100%);color:#10131A}
+  /* V4 — Conversational Bloom (starred) */
+  .v4 .thumb{background:linear-gradient(180deg,#B8D5EE 0%,#D9E6F2 55%,#F1F4DA 100%);color:#10131A}
   .v4 .thumb-num{color:#3A4150}
-  .v4 .accent{color:#3D7BD0}
-  .v4 .ring{display:inline-block;padding:2px 14px;border:2px solid #10131A;border-radius:99px;background:#fff}
+  .v4 .ring{display:inline-block;padding:3px 14px;border:2.5px solid #10131A;border-radius:99px;background:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:28px}
   .v4 .ring.fill{background:#9DC3EE}
+  .v4-star{position:absolute;top:20px;right:20px;background:#10131A;color:#9DC3EE;font-size:10px;letter-spacing:.08em;padding:5px 10px;border-radius:99px}
 
-  .v5 .thumb{background:linear-gradient(180deg,#15161A 0%, #2A2B30 100%);color:#fff}
+  /* V5 — Brand Poster Set */
+  .v5 .thumb{background:linear-gradient(160deg,#15161A 0%,#2A2B30 100%);color:#fff}
   .v5 .thumb-num{color:#7E7F88}
   .v5 .accent{color:#C6E84F}
-  .v5 .stack{display:flex;gap:6px;margin-top:8px}
-  .v5 .stack span{width:34px;height:64px;border-radius:8px;display:block}
+  .v5 .stack{display:flex;gap:6px;margin-top:10px}
+  .v5 .stack span{width:34px;height:60px;border-radius:8px;display:block}
   .v5 .stack .a{background:#C6E84F}
   .v5 .stack .b{background:#E33B2C}
   .v5 .stack .c{background:#5A36C9}
   .v5 .stack .d{background:#F5C61C}
 
-  .v6 .thumb{background:linear-gradient(180deg,#0E2A78 0%, #F26B2B 50%, #5B3CC2 100%);color:#fff}
-  .v6 .thumb-num{color:rgba(255,255,255,.7)}
+  /* V6 — Color Chapters */
+  .v6 .thumb{background:linear-gradient(160deg,#0E2A78 0%,#F26B2B 45%,#5B3CC2 100%);color:#fff}
+  .v6 .thumb-num{color:rgba(255,255,255,.6)}
   .v6 .accent{color:#FFB55A}
-  .v6 .corner{position:absolute;top:0;left:0;width:80px;height:64px;background:#E5563D;clip-path:polygon(0 0,100% 0,100% 100%,16% 100%,0 88%)}
+  .v6 .corner{position:absolute;top:0;left:0;width:76px;height:60px;background:#E5563D;clip-path:polygon(0 0,100% 0,100% 100%,16% 100%,0 88%)}
+
+  /* V7 — Terminal Pulse */
+  .v7 .thumb{background:#0A0A0A;color:#E5E7EB;font-family:'Courier New',monospace;position:relative}
+  .v7 .thumb::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,136,.03) 3px,rgba(0,255,136,.03) 4px)}
+  .v7 .thumb-num{color:#4B5563;font-family:'Courier New',monospace}
+  .v7 .accent{color:#00FF88}
+  .v7 .cmd{font-family:'Courier New',monospace;font-size:13px;color:#00FF88;line-height:1.5}
+
+  /* V8 — Riso Print Shop */
+  .v8 .thumb{background:#F5EFE0;color:#1A1410;position:relative}
+  .v8 .thumb::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(55,84,168,.06) 1px,transparent 1px);background-size:6px 6px}
+  .v8 .thumb-num{color:#9CA3AF;font-family:'Georgia',serif}
+  .v8 .accent-blue{color:#3754A8}
+  .v8 .accent-red{color:#E04E3F}
+
+  /* V9 — Glass Cathedral */
+  .v9 .thumb{background:#06091A;color:#fff;position:relative;overflow:hidden}
+  .v9 .thumb::before{content:"";position:absolute;top:-40%;left:-20%;width:80%;height:80%;background:radial-gradient(circle,rgba(255,61,171,.25),transparent 60%);pointer-events:none}
+  .v9 .thumb::after{content:"";position:absolute;bottom:-30%;right:-20%;width:70%;height:70%;background:radial-gradient(circle,rgba(0,229,255,.2),transparent 60%);pointer-events:none}
+  .v9 .thumb-num{color:rgba(255,255,255,.35);position:relative;z-index:1}
+  .v9 .glass{position:relative;z-index:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px 20px}
+  .v9 .accent{color:#00E5FF}
 
   .info{padding:24px 28px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15)}
   .info-name{font-size:14px;font-weight:600;letter-spacing:.02em;color:#F2EBDC;margin-bottom:4px}
   .info-desc{font-size:13px;color:#9CA3B5;line-height:1.5}
   .info-tags{margin-top:14px;display:flex;gap:6px;flex-wrap:wrap}
   .tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4A04F;border:1px solid rgba(212,160,79,.25);padding:4px 8px;border-radius:99px}
-  footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#7A8497;display:flex;justify-content:space-between;letter-spacing:.06em;text-transform:uppercase;font-family:'Inter'}
+  .tag.new{color:#6366f1;border-color:rgba(99,102,241,.3)}
+  .tag.fav{color:#F59E0B;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.06)}
+  footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#7A8497;display:flex;justify-content:space-between;letter-spacing:.06em;text-transform:uppercase}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="meta">KOMBOAI · HOMEPAGE EXPLORATION · APR 2026</div>
-    <h1>Six directions for the new <span class="it">homepage.</span></h1>
-    <p class="lede">Same headline ("Less clicks. More selling.") — six completely different ways to dress it. Click into any tile to see the full scroll.</p>
+    <div class="meta">KOMBOAI · HOMEPAGE EXPLORATION · MAY 2026</div>
+    <h1>Nine directions for the new <span class="it">homepage.</span></h1>
+    <p class="lede">All built on "Close More Deals With AI" — nine completely different ways to dress it. Each version carries v4's chapter-rhythm DNA with real KomboAI content throughout. Click into any tile to see the full scroll.</p>
   </header>
 
   <div class="grid">
+
+    <!-- V1 -->
     <a class="card v1" href="./v1_quiet_confidence.html">
       <div class="thumb">
         <div class="thumb-num">V1 · QUIET CONFIDENCE</div>
-        <div class="thumb-title">Less clicks.<br><span class="it accent">More</span> selling.</div>
-        <div style="font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A7770;display:flex;justify-content:space-between"><span>★ ★ 4.9 G2</span><span>OPEN →</span></div>
+        <div class="thumb-title">Close More Deals<br><span class="it accent">With AI.</span></div>
+        <div class="thumb-footer" style="color:#7A7770"><span>★ Cream · Minimal</span><span>OPEN →</span></div>
       </div>
       <div class="info">
         <div class="info-name">V1 — Quiet Confidence</div>
-        <div class="info-desc">Premium minimal. Cream + ink + ember. Big confident sans, generous whitespace, real product UI does the talking. Cleo + Enginy.ai energy.</div>
+        <div class="info-desc">Premium minimal. Cream + ink + ember. 104px Inter Tight with Instrument Serif italic accents. Chapter sections with hairline dividers, calm product windows. Apple/Linear energy.</div>
         <div class="info-tags"><span class="tag">Cream</span><span class="tag">Apple-like</span><span class="tag">Product-led</span></div>
       </div>
     </a>
 
+    <!-- V2 -->
     <a class="card v2" href="./v2_sales_floor_energy.html">
       <div class="thumb">
         <div class="thumb-num">V2 · SALES FLOOR ENERGY</div>
-        <div class="thumb-title">Less <span class="pill">clicks.</span><br>More <span class="pill" style="background:#D4E847">selling.</span></div>
-        <div style="font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A7388;display:flex;justify-content:space-between"><span>✦ Personality</span><span>OPEN →</span></div>
+        <div class="thumb-title"><span class="pill">Close.</span> <span class="pill lime">More.</span><br>Deals <span class="pill">With AI.</span></div>
+        <div class="thumb-footer" style="color:#7A7388"><span>✦ Playful</span><span>OPEN →</span></div>
       </div>
       <div class="info">
         <div class="info-name">V2 — Sales Floor Energy</div>
-        <div class="info-desc">Lavender, peach, lime, and electric purple. Hand-drawn arrows, scribbled notes, pill highlights, tilted testimonial cards. Amplemarket + Clay energy.</div>
+        <div class="info-desc">Lavender, peach, lime, electric purple. Bricolage Grotesque + Caveat scribbles. Tilted testimonials, sticker badges, confetti stats, hand-drawn arrows. Amplemarket + Clay energy.</div>
         <div class="info-tags"><span class="tag">Colorful</span><span class="tag">Doodled</span><span class="tag">Playful</span></div>
       </div>
     </a>
 
+    <!-- V3 -->
     <a class="card v3" href="./v3_editorial_ai.html">
       <div class="thumb">
         <div class="thumb-num">V3 · EDITORIAL AI</div>
-        <div class="thumb-title">Less <span class="it accent">clicks.</span><br>More <span class="it accent">selling.</span></div>
-        <div style="font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A8497;display:flex;justify-content:space-between"><span>VOL. 03 · ISSUE 04</span><span>OPEN →</span></div>
+        <div class="thumb-title">Close More Deals<br><span class="it accent">With AI.</span></div>
+        <div class="thumb-footer" style="color:#7A8497"><span>VOL. III · ISSUE 04</span><span>OPEN →</span></div>
       </div>
       <div class="info">
         <div class="info-name">V3 — Editorial AI</div>
-        <div class="info-desc">Magazine layout. Dark navy, grain texture, 200pt Fraunces with rust-gold italics. Six-poster chapter grid, drop-cap thesis. Som + the dark poster set.</div>
+        <div class="info-desc">NYT magazine layout. Dark navy, film grain, 96px Fraunces italic with rust-gold accents. Masthead, drop-cap lede, typeset stats table, pull-quote testimonials. Som + Stripe Press.</div>
         <div class="info-tags"><span class="tag">Editorial</span><span class="tag">Serif</span><span class="tag">Premium</span></div>
       </div>
     </a>
 
+    <!-- V4 — starred -->
     <a class="card v4" href="./v4_conversational_bloom.html">
       <div class="thumb">
+        <div class="v4-star">★ Favourite</div>
         <div class="thumb-num">V4 · CONVERSATIONAL BLOOM</div>
-        <div class="thumb-title" style="display:flex;flex-wrap:wrap;gap:6px 6px;font-family:'Inter';font-weight:600">
-          <span class="ring">Less.</span><span class="ring">clicks.</span>
-          <span class="ring">More.</span><span class="ring fill">selling.</span>
+        <div class="thumb-title" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <span class="ring">Close.</span><span class="ring">More.</span>
+          <span class="ring fill">Deals.</span><span class="ring">With&nbsp;AI.</span>
         </div>
-        <div style="font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#3A4150;display:flex;justify-content:space-between"><span>☁ Community feel</span><span>OPEN →</span></div>
+        <div class="thumb-footer" style="color:#3A4150"><span>☁ Chapter rhythm</span><span>OPEN →</span></div>
       </div>
       <div class="info">
         <div class="info-name">V4 — Conversational Bloom</div>
-        <div class="info-desc">Sky-gradient hero with pill-enclosed words. Speech bubbles, voice-note collage, photo-card peek, three project tiles. Prospera-style warmth and motion.</div>
-        <div class="info-tags"><span class="tag">Sky</span><span class="tag">Pills</span><span class="tag">Collage</span></div>
+        <div class="info-desc">Sky-gradient hero with pill-enclosed words. 5 colour-chapter sections, floating product windows, real KomboAI content, testimonials, project tiles. The reference direction.</div>
+        <div class="info-tags"><span class="tag fav">★ Favourite</span><span class="tag">Sky</span><span class="tag">Pills</span><span class="tag">Chapters</span></div>
       </div>
     </a>
 
+    <!-- V5 -->
     <a class="card v5" href="./v5_brand_poster_set.html">
       <div class="thumb">
         <div class="thumb-num">V5 · BRAND POSTER SET</div>
-        <div class="thumb-title" style="font-family:'Inter';font-weight:800;letter-spacing:-.04em">Less.<br><span class="accent">Clicks.</span><br>More.<br>Selling.</div>
+        <div class="thumb-title" style="font-family:'Inter',sans-serif;font-weight:800;letter-spacing:-.04em;font-size:28px">CLOSE MORE<br><span class="accent">DEALS.</span><br>WITH AI.</div>
         <div class="stack"><span class="a"></span><span class="b"></span><span class="c"></span><span class="d"></span></div>
-        <div style="font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7E7F88;display:flex;justify-content:space-between"><span>POSTER SET</span><span>OPEN →</span></div>
+        <div class="thumb-footer" style="color:#7E7F88"><span>POSTER SET</span><span>OPEN →</span></div>
       </div>
       <div class="info">
         <div class="info-name">V5 — Brand Poster Set</div>
-        <div class="info-desc">Concrete-dark hero with four phone-shaped color posters (lime, red, purple, yellow). Light-wall paper poster grid below. Bold Archivo Black, sticker badges, rewrd energy.</div>
+        <div class="info-desc">Concrete-dark hero, four phone-shaped colour posters (lime, red, purple, yellow), Archivo Black display. Sticker badges, chapter sections, poster-wall project tiles.</div>
         <div class="info-tags"><span class="tag">Bold</span><span class="tag">Posters</span><span class="tag">Brand</span></div>
       </div>
     </a>
 
+    <!-- V6 -->
     <a class="card v6" href="./v6_color_chapters.html">
       <div class="thumb">
         <div class="corner"></div>
-        <div class="thumb-num" style="margin-left:88px">V6 · COLOR CHAPTERS</div>
-        <div class="thumb-title">Less clicks.<br><span class="it accent">More</span> selling.</div>
-        <div style="font-family:'Inter';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.7);display:flex;justify-content:space-between"><span>CH. 01 → 04</span><span>OPEN →</span></div>
+        <div class="thumb-num" style="margin-left:84px">V6 · COLOR CHAPTERS</div>
+        <div class="thumb-title">Close More Deals<br><span class="it accent">With AI.</span></div>
+        <div class="thumb-footer" style="color:rgba(255,255,255,.6)"><span>CH. 01 → 05</span><span>OPEN →</span></div>
       </div>
       <div class="info">
         <div class="info-name">V6 — Color Chapters</div>
-        <div class="info-desc">Full-bleed scrolling sections: deep blue → orange stage → purple → teal/coral split. Caprasimo display type, 3D-feel CSS objects, gradient business card. Vibrant editorial scroll.</div>
+        <div class="info-desc">Full-bleed scroll: deep blue → orange → purple → teal/coral split. Caprasimo display, 3D CSS objects, gradient business card, stats band. Vibrant editorial scroll.</div>
         <div class="info-tags"><span class="tag">Vibrant</span><span class="tag">Sectioned</span><span class="tag">3D</span></div>
       </div>
     </a>
+
+    <!-- V7 — NEW -->
+    <a class="card v7" href="./v7_terminal_pulse.html">
+      <div class="thumb">
+        <div class="thumb-num">V7 · TERMINAL PULSE</div>
+        <div class="cmd">$ kombo close<br>--deals=more<br>--with=ai<br><span style="color:#4B5563">_<span style="animation:blink 1s step-end infinite">▌</span></span></div>
+        <div class="thumb-footer" style="color:#4B5563;font-family:'Courier New',monospace"><span class="accent">● LIVE</span><span>OPEN →</span></div>
+      </div>
+      <div class="info">
+        <div class="info-name">V7 — Terminal Pulse</div>
+        <div class="info-desc">Developer-tool dark mode. JetBrains Mono throughout, phosphor-green CLI hero, scanline overlay, `# module` chapter headers, git-log testimonials, ASCII project tiles. Vercel/Linear/Raycast energy.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Dark</span><span class="tag">Mono</span><span class="tag">Dev-tool</span></div>
+      </div>
+    </a>
+
+    <!-- V8 — NEW -->
+    <a class="card v8" href="./v8_riso_print_shop.html">
+      <div class="thumb">
+        <div class="thumb-num">V8 · RISO PRINT SHOP</div>
+        <div class="thumb-title" style="font-family:'Georgia',serif">Close More<br><span class="accent-red">Deals</span> <span class="accent-blue">With AI.</span></div>
+        <div style="position:absolute;top:24px;right:24px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#3754A8;border:1.5px solid #3754A8;padding:4px 8px;transform:rotate(2deg)">EDITION Nº 5</div>
+        <div class="thumb-footer" style="color:#9CA3AF"><span>RISO PRESS</span><span>OPEN →</span></div>
+      </div>
+      <div class="info">
+        <div class="info-name">V8 — Riso Print Shop</div>
+        <div class="info-desc">Warm paper, halftone dots, Federal Blue + Fluorescent Red palette with text-shadow misregistration. Bagnard serif, zine manifesto layout, broadsheet stats, rubber-stamp logos, colophon CTA.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Paper</span><span class="tag">Halftone</span><span class="tag">Zine</span></div>
+      </div>
+    </a>
+
+    <!-- V9 — NEW -->
+    <a class="card v9" href="./v9_glass_cathedral.html">
+      <div class="thumb">
+        <div class="thumb-num">V9 · GLASS CATHEDRAL</div>
+        <div class="glass">
+          <div style="font-family:'Georgia',serif;font-style:italic;font-size:28px;line-height:1.1;color:#fff">Close More Deals <span class="accent">With AI.</span></div>
+        </div>
+        <div class="thumb-footer" style="color:rgba(255,255,255,.35);position:relative;z-index:1"><span style="color:#FF3DAB">◈ Aurora</span><span>OPEN →</span></div>
+      </div>
+      <div class="info">
+        <div class="info-name">V9 — Glass Cathedral</div>
+        <div class="info-desc">Midnight cathedral with aurora gradient blobs (magenta + cyan). Heavy backdrop-filter frosted glass, Fraunces italic display, neon-glow accents, chapter sections with glass product windows.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Glass</span><span class="tag">Aurora</span><span class="tag">Futuristic</span></div>
+      </div>
+    </a>
+
   </div>
 
   <footer>
     <div>KEVIN HAWKINS · KOMBOAI · 2026</div>
-    <div>EXPLORATION ROUND 2 — 6 DIRECTIONS</div>
+    <div>EXPLORATION ROUND 3 — 9 DIRECTIONS</div>
   </footer>
 </div>
+<style>
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
 </body>
 </html>
