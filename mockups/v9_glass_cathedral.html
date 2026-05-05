@@ -41,7 +41,7 @@
   .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212,255,0,0.25); }
 
   /* Hero */
-  .hero { padding: 36px 0 36px; text-align: center; position: relative; overflow: hidden; min-height: calc(100vh - 80px); display: flex; flex-direction: column; justify-content: center; }
+  .hero { padding: 100px 0 80px; text-align: center; position: relative; overflow: hidden; }
   .hero::before {
     content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
     width: 800px; height: 600px;
@@ -67,15 +67,7 @@
     transform: rotate(-1deg);
   }
   .hero p { font-size: 18px; color: var(--mute); max-width: 580px; margin: 0 auto 36px; line-height: 1.55; position: relative; z-index: 1; }
-  .hero-cta-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 40px; position: relative; z-index: 1; }
-
-  /* Hero stats — bold mono numbers with neon accent */
-  .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 880px; margin: 0 auto; position: relative; z-index: 1; }
-  .hero-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; text-align: left; }
-  .hero-stat .num { font-family: 'JetBrains Mono', 'Inter', monospace; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
-  .hero-stat:nth-child(2) .num,
-  .hero-stat:nth-child(3) .num { color: var(--neon); text-shadow: 0 0 24px rgba(212,255,0,0.3); }
-  .hero-stat .lab { margin-top: 8px; font-size: 11px; color: var(--mute); letter-spacing: 0.04em; text-transform: uppercase; }
+  .hero-cta-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 80px; position: relative; z-index: 1; }
   .btn-neon { background: var(--neon); color: var(--bg); padding: 14px 28px; border-radius: 999px; font-weight: 600; font-size: 14px; transition: transform .2s, box-shadow .2s; }
   .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,255,0,0.3); }
   .btn-ghost { background: transparent; color: var(--ink); padding: 14px 24px; border-radius: 999px; font-weight: 500; font-size: 14px; border: 1px solid var(--line-2); transition: border .2s; }
@@ -366,18 +358,11 @@
     <h1>Less clicks.<br/>More <span class="highlight">selling.</span></h1>
     <p>KomboAI sits on top of your CRM and helps your SDRs and AEs prospect, launch sequences and get coached faster.</p>
     <div class="hero-cta-row">
-      <a href="#" class="btn-neon">See a Demo →</a>
-      <a href="#" class="btn-ghost">See How It Works</a>
+      <a href="#" class="btn-neon">Start free trial</a>
+      <a href="#" class="btn-ghost">View live demo →</a>
     </div>
 
-    <div class="hero-stats">
-      <div class="hero-stat"><div class="num">500+</div><div class="lab">B2B teams</div></div>
-      <div class="hero-stat"><div class="num">40%</div><div class="lab">Higher close rate</div></div>
-      <div class="hero-stat"><div class="num">60%</div><div class="lab">Less manual research</div></div>
-      <div class="hero-stat"><div class="num">94%</div><div class="lab">Forecast accuracy</div></div>
-    </div>
-
-    <div class="dashboard" style="display:none">
+    <div class="dashboard">
       <div class="dash-bar">
         <div class="dash-dots"><span></span><span></span><span></span></div>
         <div class="dash-tabs">
@@ -478,7 +463,7 @@
     <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:56px;color:rgba(255,255,255,0.6);font-weight:600;font-size:15px;">
       <img src="./images/logo-hubspot.png" alt="HubSpot" style="height:26px;width:auto;display:block;filter:brightness(0) invert(1);opacity:0.7;" loading="lazy">
       <img src="./images/logo-salesforce.png" alt="Salesforce" style="height:26px;width:auto;display:block;filter:brightness(0) invert(1);opacity:0.7;" loading="lazy">
-      <img src="./images/logo-linkedin.png" alt="LinkedIn" style="height:26px;width:auto;display:block;opacity:0.85;filter:invert(1);" loading="lazy">
+      <img src="./images/logo-linkedin.png" alt="LinkedIn" style="height:26px;width:auto;display:block;filter:brightness(0) invert(1);opacity:0.85;" loading="lazy">
       <img src="./images/logo-msdynamics.png" alt="Microsoft Dynamics" style="height:26px;width:auto;display:block;filter:brightness(0) invert(1);opacity:0.7;" loading="lazy">
       <span style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.04em;">+ 1000 more</span>
     </div>
