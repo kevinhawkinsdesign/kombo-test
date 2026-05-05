@@ -228,6 +228,16 @@
   .footer-bot a{color:var(--ink);font-weight:700}
   .footer-bot a:hover{color:var(--purple)}
 
+
+  /* Animations */
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { opacity: 0; animation: fadeInUp 0.6s ease-out forwards; }
+  .fade-in.delay-1 { animation-delay: 0.1s; }
+  .fade-in.delay-2 { animation-delay: 0.2s; }
+  .fade-in.delay-3 { animation-delay: 0.3s; }
+  [class*="card"] { transition: transform 0.3s; }
+  [class*="card"]:hover { transform: translateY(-4px); }
+
 </style>
 </head>
 <body>
@@ -571,5 +581,10 @@ Worth a 20-min walkthrough next week?
   </footer>
 
 </div>
+
+<script>
+const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) { obs.unobserve(x.target); } }), {threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+</script>
 </body>
 </html>
