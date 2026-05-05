@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kombo — V12 Method Interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --navy:#001F54;
+    --blue:#4E54C8;
+    --pink:#FF2E63;
+    --light-gray:#F5F7FA;
+    --medium-gray:#E8EBF0;
+    --dark-gray:#6B7280;
+    --text:#1F2937;
+    --white:#FFFFFF;
+  }
+  html,body{background:var(--white);color:var(--text);font-family:'Outfit',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 60px}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:28px 60px;background:var(--white);border-bottom:1px solid var(--medium-gray)}
+  .logo{font-size:20px;font-weight:800;color:var(--navy);letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .logo-dot{width:10px;height:10px;background:var(--blue);border-radius:50%}
+  .nav-links{display:flex;gap:40px;font-size:15px;color:var(--dark-gray);font-weight:500}
+  .nav-links a{color:inherit;text-decoration:none;cursor:pointer}
+  .nav-links a:hover{color:var(--blue)}
+  .nav-cta{display:flex;gap:12px}
+  .btn{font-family:inherit;font-size:14px;font-weight:600;padding:10px 24px;border-radius:8px;border:none;cursor:pointer;transition:all .2s}
+  .btn-secondary{border:2px solid var(--navy);background:transparent;color:var(--navy)}
+  .btn-secondary:hover{background:var(--navy);color:var(--white)}
+  .btn-primary{background:var(--blue);color:var(--white)}
+  .btn-primary:hover{background:#3D43B8}
+
+  /* HERO */
+  .hero{padding:100px 60px 80px;background:var(--light-gray);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(78,84,200,.1),transparent 70%);pointer-events:none}
+  .hero-content{position:relative;z-index:1;max-width:600px}
+  .hero-eyebrow{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:16px;font-weight:600}
+  h1{font-size:72px;line-height:1.1;letter-spacing:-.03em;font-weight:800;margin-bottom:24px;color:var(--navy)}
+  .hero-lede{font-size:18px;line-height:1.6;color:var(--dark-gray);margin-bottom:40px;max-width:550px}
+  .hero-cta{display:flex;gap:16px;align-items:center}
+  .hero-cta .btn{padding:14px 32px;font-size:15px}
+  .btn-icon{display:flex;align-items:center;gap:8px}
+
+  /* PRODUCT SECTION */
+  .product{padding:100px 60px;background:var(--white)}
+  .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+  .product-text h2{font-size:52px;line-height:1.15;font-weight:800;margin-bottom:24px;color:var(--navy)}
+  .product-text p{font-size:17px;color:var(--dark-gray);line-height:1.7;margin-bottom:32px}
+  .features-list{display:flex;flex-direction:column;gap:16px}
+  .feature-item{display:flex;gap:12px;align-items:flex-start}
+  .feature-icon{width:20px;height:20px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+  .feature-text{font-size:15px;color:var(--text)}
+
+  /* STATS */
+  .stats{padding:100px 60px;background:var(--light-gray)}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:60px;text-align:center}
+  .stat-num{font-size:56px;font-weight:800;color:var(--navy);margin-bottom:8px}
+  .stat-label{font-size:15px;color:var(--dark-gray);font-weight:600}
+
+  /* CHART SECTION */
+  .chart-section{padding:100px 60px;background:var(--white)}
+  .section-head{margin-bottom:60px}
+  .section-head h2{font-size:52px;font-weight:800;color:var(--navy);margin-bottom:12px;max-width:600px;line-height:1.2}
+  .section-head p{font-size:17px;color:var(--dark-gray);max-width:600px}
+  .chart-demo{background:var(--light-gray);border-radius:12px;padding:40px;text-align:center;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+  .chart-bars{display:flex;align-items:flex-end;justify-content:center;gap:8px;height:200px}
+  .bar{width:24px;border-radius:4px 4px 0 0;opacity:.8}
+  .bar.blue{background:var(--blue)}
+  .bar.pink{background:var(--pink)}
+  .chart-legend{display:flex;gap:24px;justify-content:center;font-size:13px}
+  .legend-item{display:flex;gap:8px;align-items:center}
+  .legend-dot{width:8px;height:8px;border-radius:50%}
+
+  /* FEATURES GRID */
+  .features-section{padding:100px 60px;background:var(--light-gray)}
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+  .feature-card{background:var(--white);border-radius:12px;padding:36px;border:1px solid var(--medium-gray);transition:all .3s}
+  .feature-card:hover{border-color:var(--blue);transform:translateY(-4px)}
+  .feature-card h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:12px}
+  .feature-card p{font-size:14px;color:var(--dark-gray);line-height:1.6}
+
+  /* PRICING */
+  .pricing{padding:100px 60px;background:var(--white)}
+  .pricing-head{text-align:center;margin-bottom:60px;max-width:700px;margin-left:auto;margin-right:auto}
+  .pricing-head h2{font-size:52px;font-weight:800;color:var(--navy);margin-bottom:16px}
+  .pricing-head p{font-size:17px;color:var(--dark-gray)}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+  .price-card{background:var(--light-gray);border-radius:12px;padding:40px;text-align:center;border:2px solid transparent;transition:all .3s}
+  .price-card.featured{background:var(--navy);color:var(--white);transform:scale(1.05)}
+  .price-card.featured h3{color:var(--white)}
+  .price-card.featured .price{color:var(--white)}
+  .price-card.featured .description{color:rgba(255,255,255,.8)}
+  .price-card.featured .btn-primary{background:var(--blue)}
+  .price-card h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
+  .description{font-size:13px;color:var(--dark-gray);margin-bottom:24px}
+  .price{font-size:48px;font-weight:800;color:var(--navy);margin-bottom:8px}
+  .price-period{font-size:13px;color:var(--dark-gray);margin-bottom:24px}
+  .price-features{text-align:left;font-size:13px;color:var(--dark-gray);margin:24px 0;line-height:1.8}
+  .price-features li{list-style:none;margin-bottom:10px;display:flex;gap:8px}
+  .price-features li::before{content:"✓";color:var(--blue);font-weight:700}
+  .price-card .btn{width:100%}
+
+  /* TESTIMONIALS */
+  .testimonials{padding:100px 60px;background:var(--light-gray)}
+  .testimonials-head{text-align:center;margin-bottom:60px}
+  .testimonials-head h2{font-size:52px;font-weight:800;color:var(--navy);margin-bottom:12px}
+  .testimonials-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:40px}
+  .testimonial{background:var(--white);border-radius:12px;padding:36px;border:1px solid var(--medium-gray)}
+  .testimonial-text{font-size:15px;color:var(--text);line-height:1.7;margin-bottom:24px}
+  .testimonial-star{color:#FFB800;font-size:13px;margin-bottom:16px}
+  .testimonial-author{display:flex;align-items:center;gap:12px}
+  .testimonial-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--pink))}
+  .testimonial-name{font-weight:700;font-size:14px;color:var(--navy)}
+  .testimonial-role{font-size:12px;color:var(--dark-gray)}
+
+  /* CTA */
+  .cta-section{padding:100px 60px;background:var(--navy);color:var(--white)}
+  .cta-container{text-align:center;max-width:700px;margin:0 auto}
+  .cta-section h2{font-size:52px;font-weight:800;margin-bottom:24px;line-height:1.2}
+  .cta-section p{font-size:17px;margin-bottom:36px;opacity:.9}
+  .cta-section .btn{padding:14px 32px;font-size:15px}
+  .cta-primary{background:var(--blue);color:var(--white)}
+  .cta-primary:hover{background:#3D43B8}
+
+  /* FOOTER */
+  footer{padding:60px;background:var(--navy);color:var(--white);border-top:1px solid rgba(255,255,255,.1)}
+  .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+  .footer-col h4{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;font-weight:700;opacity:.7}
+  .footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.8);margin-bottom:10px;text-decoration:none}
+  .footer-col a:hover{color:var(--blue)}
+  .footer-brand{max-width:280px}
+  .footer-brand p{font-size:14px;line-height:1.6;opacity:.8}
+  .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:40px;border-top:1px solid rgba(255,255,255,.1);font-size:13px;opacity:.6}
+  .social-links{display:flex;gap:16px}
+  .social-links a{color:rgba(255,255,255,.8);text-decoration:none;font-weight:600;transition:color .2s}
+  .social-links a:hover{color:var(--blue)}
+
+  @media(max-width:768px){
+    .wrap{padding:0 24px}
+    nav{padding:20px 24px;flex-direction:column;gap:20px}
+    .nav-links{gap:24px}
+    h1{font-size:48px}
+    .product-grid{grid-template-columns:1fr;gap:40px}
+    .stats-grid{grid-template-columns:1fr;gap:40px}
+    .features-grid{grid-template-columns:1fr}
+    .pricing-grid{grid-template-columns:1fr}
+    .testimonials-grid{grid-template-columns:1fr}
+    .footer-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span class="logo-dot"></span> Kombo</div>
+  <div class="nav-links">
+    <a>Product</a><a>Features</a><a>Pricing</a><a>Resources</a>
+  </div>
+  <div class="nav-cta">
+    <button class="btn btn-secondary">Sign in</button>
+    <button class="btn btn-primary">Get started</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Welcome to Method</div>
+    <h1>Smarter ways to work</h1>
+    <p class="hero-lede">Create smart workflows in Method to add your insights from Slack or Figma. Automate tasks and focus on what matters.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary"><span class="btn-icon">Get started <span>→</span></span></button>
+      <button class="btn btn-secondary">See how it works</button>
+    </div>
+  </div>
+</section>
+
+<section class="product">
+  <div class="product-grid">
+    <div class="product-text">
+      <h2>Real personalization at scale</h2>
+      <p>Kombo reads every signal across your CRM, inbox, and the public web — then writes outreach that actually sounds like you wrote it.</p>
+      <ul class="features-list">
+        <li class="feature-item"><span class="feature-icon">✓</span><span class="feature-text">AI-powered personalization</span></li>
+        <li class="feature-item"><span class="feature-icon">✓</span><span class="feature-text">Real-time coaching</span></li>
+        <li class="feature-item"><span class="feature-icon">✓</span><span class="feature-text">Contact data others can't find</span></li>
+        <li class="feature-item"><span class="feature-icon">✓</span><span class="feature-text">Verified email addresses</span></li>
+      </ul>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--light-gray),var(--medium-gray));border-radius:12px;height:400px;display:flex;align-items:center;justify-content:center;color:var(--dark-gray);font-size:14px">
+      Product preview
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stats-grid">
+    <div>
+      <div class="stat-num">60%</div>
+      <div class="stat-label">Less manual work</div>
+    </div>
+    <div>
+      <div class="stat-num">3×</div>
+      <div class="stat-label">Higher conversion rates</div>
+    </div>
+    <div>
+      <div class="stat-num">1K+</div>
+      <div class="stat-label">Revenue teams using Kombo</div>
+    </div>
+  </div>
+</section>
+
+<section class="chart-section">
+  <div class="section-head">
+    <h2>See the results that matter</h2>
+    <p>Track your progress with smart insights and analytics that actually help you close more deals.</p>
+  </div>
+  <div class="chart-demo">
+    <div class="chart-bars">
+      <div class="bar blue" style="height:30%"></div>
+      <div class="bar pink" style="height:50%"></div>
+      <div class="bar blue" style="height:70%"></div>
+      <div class="bar pink" style="height:45%"></div>
+      <div class="bar blue" style="height:60%"></div>
+      <div class="bar pink" style="height:80%"></div>
+      <div class="bar blue" style="height:55%"></div>
+    </div>
+    <div class="chart-legend">
+      <div class="legend-item"><span class="legend-dot blue" style="background:var(--blue)"></span>Your team</div>
+      <div class="legend-item"><span class="legend-dot pink" style="background:var(--pink)"></span>Industry avg</div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="features-grid">
+    <div class="feature-card">
+      <h3>AI Co-pilot</h3>
+      <p>Your personal assistant that drafts outreach, surfaces buying signals, and coaches live calls without leaving your CRM.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Smart Data</h3>
+      <p>Access 680M+ verified emails, 240M+ mobile direct dials, and real-time buying intent signals refreshed weekly.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Real-time Coaching</h3>
+      <p>Whisper the next best thing to say — pricing answers, objection handlers, case studies — live on every call.</p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing">
+  <div class="pricing-head">
+    <h2>Simple, transparent pricing</h2>
+    <p>Choose the plan that fits your team. Always fair, never hidden fees.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <h3>Starter</h3>
+      <div class="description">For growing teams</div>
+      <div class="price">$29<span style="font-size:16px">/mo</span></div>
+      <div class="price-period">Billed annually</div>
+      <ul class="price-features">
+        <li>Up to 3 team members</li>
+        <li>Basic AI co-pilot</li>
+        <li>Email integrations</li>
+        <li>Basic analytics</li>
+      </ul>
+      <button class="btn btn-secondary" style="width:100%">Choose plan</button>
+    </div>
+    <div class="price-card featured">
+      <h3>Pro</h3>
+      <div class="description">For scaling revenue teams</div>
+      <div class="price">$79<span style="font-size:16px">/mo</span></div>
+      <div class="price-period">Billed annually</div>
+      <ul class="price-features">
+        <li>Unlimited team members</li>
+        <li>Advanced AI personalization</li>
+        <li>Real-time coaching</li>
+        <li>Advanced analytics</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="btn btn-primary">Get started</button>
+    </div>
+    <div class="price-card">
+      <h3>Enterprise</h3>
+      <div class="description">For large organizations</div>
+      <div class="price">Custom</div>
+      <div class="price-period">Contact our team</div>
+      <ul class="price-features">
+        <li>Everything in Pro</li>
+        <li>Custom integrations</li>
+        <li>Dedicated support</li>
+        <li>SLA guarantee</li>
+      </ul>
+      <button class="btn btn-secondary" style="width:100%">Contact sales</button>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="testimonials-head">
+    <h2>Loved by revenue teams</h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <div class="testimonial-star">★★★★★</div>
+      <div class="testimonial-text">"Kombo is the first tool my reps actually open on Mondays. It's the only thing that ever moved both rep happiness and pipeline at the same time."</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar"></div>
+        <div>
+          <div class="testimonial-name">James Ortega</div>
+          <div class="testimonial-role">VP Sales, Atlas Group</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-star">★★★★★</div>
+      <div class="testimonial-text">"We cut sequence-building time from 4 hours to 18 minutes. The ROI was immediate and undeniable. Best investment we made this quarter."</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar"></div>
+        <div>
+          <div class="testimonial-name">Sarah Chen</div>
+          <div class="testimonial-role">Director of Sales, TechCorp</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-container">
+    <h2>Ready to close more deals?</h2>
+    <p>Join 1,000+ revenue teams using Kombo to sell smarter.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn cta-primary">Start free trial</button>
+      <button class="btn" style="border:2px solid rgba(255,255,255,.3);background:transparent;color:var(--white)">Schedule demo</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo" style="color:var(--white);margin-bottom:12px"><span class="logo-dot"></span> Kombo</div>
+      <p>The AI co-pilot for revenue teams. Sits on top of your CRM, works where your reps already are.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a>Features</a><a>Pricing</a><a>Integrations</a><a>Security</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a>About</a><a>Blog</a><a>Careers</a><a>Press</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a>Privacy</a><a>Terms</a><a>DPA</a><a>Security</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Kombo. All rights reserved.</div>
+    <div class="social-links">
+      <a>Twitter</a><a>LinkedIn</a><a>GitHub</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

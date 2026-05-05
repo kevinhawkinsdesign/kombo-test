@@ -114,6 +114,14 @@
   .v11 .display .muted{color:rgba(224,224,224,.5)}
   .v11 .accent{color:#FF8C00}
 
+  /* V12 — Method Interface */
+  .v12 .thumb{background:linear-gradient(135deg,#001F54 0%,#0A2A6B 100%);color:#F5F7FA;position:relative;overflow:hidden}
+  .v12 .thumb::before{content:"";position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(78,84,200,.2),transparent 70%);pointer-events:none}
+  .v12 .thumb-num{color:rgba(245,247,250,.4);position:relative;z-index:1}
+  .v12 .display{position:relative;z-index:1;font-size:32px;font-weight:700;line-height:1.05;letter-spacing:-.025em}
+  .v12 .display .muted{color:rgba(245,247,250,.5)}
+  .v12 .accent{color:#4E54C8}
+
   /* INVOICE — Lead Capture */
   .vinv .thumb{background:#ffffff;color:#0f172a;position:relative;overflow:hidden;padding:24px 28px}
   .vinv .thumb::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5B8DEE 0%,#4C6FD5 100%)}
@@ -136,6 +144,9 @@
   .tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4A04F;border:1px solid rgba(212,160,79,.25);padding:4px 8px;border-radius:99px}
   .tag.new{color:#6366f1;border-color:rgba(99,102,241,.3)}
   .tag.fav{color:#F59E0B;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.06)}
+  .section-header{margin-top:80px;margin-bottom:48px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .section-header .meta{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7A8497;margin-bottom:16px}
+  .section-header h2{font-family:'Fraunces',serif;font-size:48px;line-height:1;letter-spacing:-.04em;font-weight:400;color:#F2EBDC}
   footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#7A8497;display:flex;justify-content:space-between;letter-spacing:.06em;text-transform:uppercase}
 </style>
 </head>
@@ -143,8 +154,8 @@
 <div class="wrap">
   <header>
     <div class="meta">KOMBOAI · HOMEPAGE EXPLORATION · MAY 2026</div>
-    <h1>Eleven directions for the new <span class="it">homepage.</span></h1>
-    <p class="lede">All built on "Less clicks. More selling." — eleven completely different ways to dress it. Each version carries real KomboAI content throughout. Click into any tile to see the full scroll.</p>
+    <h1>Twelve directions for the new <span class="it">homepage.</span></h1>
+    <p class="lede">All built on "Less clicks. More selling." — twelve completely different ways to dress it. Each version carries real KomboAI content throughout. Click into any tile to see the full scroll.</p>
   </header>
 
   <div class="grid">
@@ -310,26 +321,51 @@
       </div>
     </a>
 
-    <!-- Invoice V2 — Editorial Premium -->
-    <a class="card vinv" href="./invoice_v2.html">
-      <div class="thumb" style="background:#6b5a42;color:#e8dcc8;padding:32px">
-        <div>
-          <div class="thumb-num" style="color:#8b7a62;font-size:10px;font-family:'JetBrains Mono',monospace">INVOICE · V2 · PREMIUM</div>
-          <div style="font-family:'Fraunces',serif;font-size:48px;font-weight:700;margin-top:12px;line-height:1">Invoice</div>
+    <!-- V12 — Method Interface -->
+    <a class="card v12" href="./v12_method_interface.html">
+      <div class="thumb">
+        <div class="thumb-num">V12 · METHOD INTERFACE</div>
+        <div class="display">Clean B2B<br/><span class="accent">Interface.</span></div>
+        <div style="margin-top:12px;position:relative;z-index:1">
+          <span class="pill" style="color:#F5F7FA;background:rgba(78,84,200,.3);border:1px solid rgba(78,84,200,.5)">Modern</span>
+          <span class="pill" style="color:#F5F7FA;background:rgba(78,84,200,.3);border:1px solid rgba(78,84,200,.5);margin-left:6px">Professional</span>
         </div>
-        <div style="margin-top:14px;font-size:11px">
-          <div style="padding:6px 0;border-bottom:1px solid rgba(139,122,98,.3);color:#b8a891"><span style="color:#e8dcc8;font-weight:600">Subtotal:</span> $997.00</div>
-          <div style="padding:6px 0;border-bottom:1px solid rgba(139,122,98,.3);color:#b8a891"><span style="color:#e8dcc8;font-weight:600">Offer:</span> −$997.00</div>
-          <div style="padding:8px 0;border-top:2px solid #e8dcc8;border-bottom:2px solid #e8dcc8;color:#e8dcc8;font-weight:700;margin:8px 0"><span>Total:</span> $0.00</div>
-        </div>
-        <div class="thumb-footer" style="color:#8b7a62;margin-top:12px;border-top:1px solid rgba(139,122,98,.4);padding-top:12px"><span style="color:#b8a891">◆ Editorial</span><span>OPEN →</span></div>
+        <div class="thumb-footer" style="color:rgba(245,247,250,.4);position:relative;z-index:1"><span class="accent">◆ Design System</span><span>OPEN →</span></div>
       </div>
       <div class="info">
-        <div class="info-name">Invoice V2 — Editorial Premium</div>
-        <div class="info-desc">Bold blocky sans-serif lead capture form. 180px Anton INVOICE title, Oswald typography, warm brown background (#6b5a42). Five benefit line items, followed by "Your Details" form section with grid-based input fields styled as invoice rows. QR code placeholder, payment terms, company footer. Conversion-focused premium aesthetic.</div>
-        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Premium</span><span class="tag">Editorial</span><span class="tag">Form</span></div>
+        <div class="info-name">V12 — Method Interface</div>
+        <div class="info-desc">Clean, professional B2B SaaS design. Navy (#001F54) and electric blue (#4E54C8) Method design system. Outfit typography with sophisticated hierarchy. Navigation, hero with gradient, product features, stats section, analytics chart, feature cards, three-tier pricing with featured Pro tier, testimonials, footer. Modern interface design.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Dark</span><span class="tag">Interface</span><span class="tag">Professional</span></div>
       </div>
     </a>
+
+    <!-- V11 — Enterprise Dark -->
+    <a class="card v11" href="./v11_enterprise_dark.html">
+      <div class="thumb">
+        <div class="thumb-num">V11 · ENTERPRISE DARK</div>
+        <div class="display">Less clicks.<br/>More <span class="accent">selling.</span></div>
+        <div style="margin-top:12px;position:relative;z-index:1">
+          <span class="pill">AI Automation</span>
+          <span class="pill">Enterprise</span>
+        </div>
+        <div class="thumb-footer" style="color:rgba(224,224,224,.4);position:relative;z-index:1"><span class="accent">⚡ Enterprise</span><span>OPEN →</span></div>
+      </div>
+      <div class="info">
+        <div class="info-name">V11 — Enterprise Dark</div>
+        <div class="info-desc">Professional ScriptRunner-inspired enterprise aesthetic. Deep navy-black background with orange gradients (#FF8C00). Dashboard hero, sophisticated typography, advanced comparisons, use case matrix, detailed testimonials, enterprise pricing model.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Dark</span><span class="tag">Enterprise</span><span class="tag">Professional</span></div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Side Projects Section -->
+  <div class="section-header">
+    <div class="meta">SIDE PROJECTS · LEAD CAPTURE FORMS</div>
+    <h2>Invoice <span class="it">Variations.</span></h2>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(2,1fr)">
 
     <!-- Invoice V1 — Lead Capture -->
     <a class="card vinv" href="./invoice.html">
@@ -356,21 +392,24 @@
       </div>
     </a>
 
-    <!-- V11 — Enterprise Dark -->
-    <a class="card v11" href="./v11_enterprise_dark.html">
-      <div class="thumb">
-        <div class="thumb-num">V11 · ENTERPRISE DARK</div>
-        <div class="display">Less clicks.<br/>More <span class="accent">selling.</span></div>
-        <div style="margin-top:12px;position:relative;z-index:1">
-          <span class="pill">AI Automation</span>
-          <span class="pill">Enterprise</span>
+    <!-- Invoice V2 — Editorial Premium -->
+    <a class="card vinv" href="./invoice_v2.html">
+      <div class="thumb" style="background:#6b5a42;color:#e8dcc8;padding:32px">
+        <div>
+          <div class="thumb-num" style="color:#8b7a62;font-size:10px;font-family:'JetBrains Mono',monospace">INVOICE · V2 · PREMIUM</div>
+          <div style="font-family:'Fraunces',serif;font-size:48px;font-weight:700;margin-top:12px;line-height:1">Invoice</div>
         </div>
-        <div class="thumb-footer" style="color:rgba(224,224,224,.4);position:relative;z-index:1"><span class="accent">⚡ Enterprise</span><span>OPEN →</span></div>
+        <div style="margin-top:14px;font-size:11px">
+          <div style="padding:6px 0;border-bottom:1px solid rgba(139,122,98,.3);color:#b8a891"><span style="color:#e8dcc8;font-weight:600">Subtotal:</span> $997.00</div>
+          <div style="padding:6px 0;border-bottom:1px solid rgba(139,122,98,.3);color:#b8a891"><span style="color:#e8dcc8;font-weight:600">Offer:</span> −$997.00</div>
+          <div style="padding:8px 0;border-top:2px solid #e8dcc8;border-bottom:2px solid #e8dcc8;color:#e8dcc8;font-weight:700;margin:8px 0"><span>Total:</span> $0.00</div>
+        </div>
+        <div class="thumb-footer" style="color:#8b7a62;margin-top:12px;border-top:1px solid rgba(139,122,98,.4);padding-top:12px"><span style="color:#b8a891">◆ Editorial</span><span>OPEN →</span></div>
       </div>
       <div class="info">
-        <div class="info-name">V11 — Enterprise Dark</div>
-        <div class="info-desc">Professional ScriptRunner-inspired enterprise aesthetic. Deep navy-black background with orange gradients (#FF8C00). Dashboard hero, sophisticated typography, advanced comparisons, use case matrix, detailed testimonials, enterprise pricing model.</div>
-        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Dark</span><span class="tag">Enterprise</span><span class="tag">Professional</span></div>
+        <div class="info-name">Invoice V2 — Editorial Premium</div>
+        <div class="info-desc">Bold blocky sans-serif lead capture form. 180px Anton INVOICE title, Oswald typography, warm brown background (#6b5a42). Five benefit line items, followed by "Your Details" form section with grid-based input fields styled as invoice rows. QR code placeholder, payment terms, company footer. Conversion-focused premium aesthetic.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Premium</span><span class="tag">Editorial</span><span class="tag">Form</span></div>
       </div>
     </a>
 
@@ -378,7 +417,7 @@
 
   <footer>
     <div>KEVIN HAWKINS · KOMBOAI · 2026</div>
-    <div>EXPLORATION ROUND 3 — 11 DIRECTIONS PLUS INVOICE VARIATIONS</div>
+    <div>EXPLORATION ROUND 3 — TWELVE DIRECTIONS PLUS INVOICE VARIATIONS</div>
   </footer>
 </div>
 <style>
