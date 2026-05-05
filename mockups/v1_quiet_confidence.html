@@ -128,6 +128,23 @@
   .footer-col a:hover { color: var(--text); }
   .footer-bottom { padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; }
 
+  /* Animations */
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .fade-in { opacity: 0; animation: fadeInUp 0.6s ease-out forwards; }
+  .fade-in.delay-1 { animation-delay: 0.1s; }
+  .fade-in.delay-2 { animation-delay: 0.2s; }
+  .fade-in.delay-3 { animation-delay: 0.3s; }
+  .fade-in.delay-4 { animation-delay: 0.4s; }
+  .nav-cta { transition: background-color 0.2s, transform 0.2s; }
+  .nav-cta:hover { transform: translateY(-1px); }
+  .hero-cta { transition: background-color 0.2s, transform 0.2s; }
+  .hero-cta:active { transform: scale(0.98); }
+  .feat-card, .video-card, .stat { transition: transform 0.3s, border-color 0.3s; }
+  .feat-card:hover, .video-card:hover, .stat:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .dashboard { transition: box-shadow 0.3s; }
+  .dashboard:hover { box-shadow: 0 24px 72px rgba(91,141,238,0.15); }
+
   @media (max-width: 880px) {
     .nav-links { display: none; }
     .dash-body { grid-template-columns: 1fr; }
@@ -153,12 +170,12 @@
 
 <section class="hero">
   <div class="container">
-    <div class="hero-eyebrow">Revenue automation for sales teams</div>
-    <h1>Less <span class="muted">clicks.</span><br/>More selling.</h1>
-    <p>An AI layer on top of your CRM that scores leads, drafts outreach, logs activity — so your reps focus on closing deals instead of busywork.</p>
-    <a href="#" class="hero-cta">Start free trial</a>
+    <div class="hero-eyebrow fade-in">Revenue automation for sales teams</div>
+    <h1 class="fade-in delay-1">Less <span class="muted">clicks.</span><br/>More selling.</h1>
+    <p class="fade-in delay-2">An AI layer on top of your CRM that scores leads, drafts outreach, logs activity — so your reps focus on closing deals instead of busywork.</p>
+    <a href="#" class="hero-cta fade-in delay-3">Start free trial</a>
 
-    <div class="dashboard">
+    <div class="dashboard fade-in delay-4">
       <div class="dash-header">
         <div class="dash-dots">
           <div class="dash-dot"></div>
@@ -248,22 +265,22 @@
       <p>Four core capabilities that replace hours of manual work with AI automation.</p>
     </div>
     <div class="features">
-      <div class="feat-card">
+      <div class="feat-card fade-in">
         <div class="feat-icon"></div>
         <h4>AI Lead Scoring</h4>
         <p>Each lead gets a real-time score based on CRM signals, email opens, calendar invites.</p>
       </div>
-      <div class="feat-card">
+      <div class="feat-card fade-in">
         <div class="feat-icon"></div>
         <h4>Auto Outreach</h4>
         <p>Personalised emails drafted in your rep's voice, sent at optimal times.</p>
       </div>
-      <div class="feat-card">
+      <div class="feat-card fade-in">
         <div class="feat-icon"></div>
         <h4>Activity Logging</h4>
         <p>Calls, emails, meetings automatically logged — no more "forgot to update Salesforce".</p>
       </div>
-      <div class="feat-card">
+      <div class="feat-card fade-in">
         <div class="feat-icon"></div>
         <h4>Pipeline Forecast</h4>
         <p>Honest weekly forecasts based on deal signals, with alerts for slipping deals.</p>
@@ -331,7 +348,7 @@
       <p>Real results from teams that switched to KomboAI.</p>
     </div>
     <div class="videos">
-      <div class="video-card">
+      <div class="video-card fade-in">
         <div class="video-thumb">▶</div>
         <div class="video-meta">
           <p>"40% more deals closed"</p>
@@ -339,7 +356,7 @@
           <div class="video-role">AE, NovaTech</div>
         </div>
       </div>
-      <div class="video-card">
+      <div class="video-card fade-in">
         <div class="video-thumb">▶</div>
         <div class="video-meta">
           <p>"Freed up 6 hours per week"</p>
@@ -347,7 +364,7 @@
           <div class="video-role">VP Sales, Meridian</div>
         </div>
       </div>
-      <div class="video-card">
+      <div class="video-card fade-in">
         <div class="video-thumb">▶</div>
         <div class="video-meta">
           <p>"Best adoption we've seen"</p>
@@ -366,17 +383,17 @@
       <p>Results from KomboAI customers in their first 90 days.</p>
     </div>
     <div class="stats">
-      <div class="stat">
+      <div class="stat fade-in">
         <div class="stat-num">500+</div>
         <div class="stat-label">Sales teams</div>
         <div class="stat-desc">From startups to public companies using KomboAI</div>
       </div>
-      <div class="stat">
+      <div class="stat fade-in">
         <div class="stat-num">40%</div>
         <div class="stat-label">More closed-won</div>
         <div class="stat-desc">Average lift in close rate first quarter</div>
       </div>
-      <div class="stat">
+      <div class="stat fade-in">
         <div class="stat-num">60%</div>
         <div class="stat-label">Less admin time</div>
         <div class="stat-desc">Hours saved per rep, per week</div>
@@ -465,6 +482,19 @@
     </div>
   </div>
 </footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animation = entry.target.style.animation.replace('forwards', 'forwards');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
 
 </body>
 </html>
