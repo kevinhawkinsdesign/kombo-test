@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>KomboAI — V4 Conversational Bloom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +37,7 @@
     --accent-blue:#3D7BD0;
   }
   html,body{background:var(--shell);color:var(--ink);font-family:'Bricolage Grotesque','Inter',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
-  .page{width:1440px;margin:0 auto;padding:0 24px 64px}
+  .page{max-width:1440px;width:100%;margin:0 auto;padding:0 24px 64px}
 
   /* === LOGO === */
   .kombo-logo{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
@@ -316,6 +317,135 @@
   .fade-in.delay-3 { animation-delay: 0.3s; }
   [class*="card"] { transition: transform 0.3s; }
   [class*="card"]:hover { transform: translateY(-4px); }
+
+  /* === TABLET (≤1024px) === */
+  @media (max-width: 1024px){
+    .page{padding:0 18px 48px}
+    .hero{min-height:0;padding:18px}
+    .hero-body{grid-template-columns:1fr;gap:48px;padding:36px 20px}
+    h1{font-size:64px}
+    .right-stack{height:auto}
+    .prospect-window{position:relative;width:100%;top:0;right:auto;max-width:520px;margin:0 auto}
+    .bubble.b1,.bubble.b2{display:none}
+    .h-stats{grid-template-columns:repeat(4,1fr);max-width:100%}
+    .section{grid-template-columns:1fr;padding:48px 36px;gap:32px;min-height:0}
+    h2{font-size:48px}
+    .testi-block{padding:36px 28px}
+    .testi-grid{grid-template-columns:repeat(2,1fr)}
+    .integrations{grid-template-columns:1fr;padding:36px;gap:28px}
+    .below{padding:36px 28px}
+    .b-head{flex-direction:column;align-items:flex-start;gap:18px}
+    .b-head h3{font-size:32px}
+    .cards{grid-template-columns:repeat(3,1fr)}
+    .cta-block{padding:60px 36px;flex-direction:column;align-items:flex-start;gap:32px}
+    .cta-block h4{font-size:60px}
+    .footer-multi{grid-template-columns:1.4fr 1fr 1fr 1fr;gap:24px}
+  }
+
+  /* === MOBILE (≤768px) === */
+  @media (max-width: 768px){
+    body{font-size:15px}
+    .page{padding:0 12px 32px}
+
+    .hero{border-radius:24px;padding:14px;min-height:0}
+    .hero-nav{padding:10px;flex-wrap:wrap;gap:10px}
+    .hero-nav .nav-mid{display:none}
+    .hero-cloud{display:none}
+    .hero-body{grid-template-columns:1fr;gap:32px;padding:24px 14px 32px}
+    .h-eyebrow{font-size:11px;margin-bottom:18px}
+    h1{font-size:clamp(38px,10vw,52px);gap:6px 8px}
+    h1 .pill{padding:0 14px;border-width:2px}
+    h1 .arrow-circle{width:48px;height:48px;font-size:22px}
+    .lede{font-size:15px;margin-top:18px}
+    .h-cta{margin-top:22px;flex-wrap:wrap;gap:8px}
+    .h-cta .pill-btn{padding:11px 18px;font-size:14px}
+    .pill-btn{font-size:13px;padding:9px 16px}
+
+    .h-stats{grid-template-columns:repeat(2,1fr);gap:12px;margin-top:28px;max-width:100%}
+    .h-stat .num{font-size:24px}
+    .h-stat .lbl{font-size:11px}
+
+    .right-stack{height:auto}
+    .bubble{display:none}
+    .prospect-window{position:relative;width:100%;top:0;right:auto;padding:14px;max-width:100%}
+    .panel{padding:14px}
+    .panel-head{font-size:13px}
+    .check-row{font-size:12.5px}
+    .check-row span.body{font-size:12px}
+    .scroll-pip{display:none}
+
+    .logos{padding:20px 18px;gap:14px;margin-top:18px;border-radius:18px}
+    .logos-row{justify-content:flex-start}
+    .logo-pill{font-size:13px;padding:7px 12px}
+
+    .section{grid-template-columns:1fr;padding:36px 22px;gap:28px;border-radius:22px;min-height:0;margin-top:18px}
+    .sec-eyebrow{font-size:10px;margin-bottom:14px}
+    h2{font-size:clamp(32px,9vw,42px);margin-bottom:18px}
+    .sec-lede{font-size:15px}
+    .sec-cta{margin-top:18px;flex-wrap:wrap;gap:8px}
+    .product-window{padding:10px}
+    .pw-topbar .pw-url{font-size:10px;padding:3px 8px}
+    .lead-row{flex-wrap:wrap;gap:8px}
+    .lead-info{flex:1 1 60%;min-width:0}
+    .lead-info .lead-co{font-size:10.5px}
+    .lead-bar{width:48px}
+    .lead-score{font-size:17px}
+    .email-row .val pre{font-size:12.5px}
+    .ask-bub{font-size:12.5px}
+    .ask-stats{flex-wrap:wrap;gap:10px}
+    .ask-stats .n{font-size:16px}
+    .crm-fields{grid-template-columns:1fr}
+    .crm-head{flex-wrap:wrap;gap:10px}
+    .crm-srcs{margin-left:0}
+    .forecast .fc-name{width:74px;font-size:11px}
+    .forecast .fc-amt{width:64px;font-size:12px}
+    .fc-summary .big{font-size:24px}
+
+    .testi-block{padding:28px 18px;border-radius:22px;margin-top:18px}
+    .testi-head{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:24px}
+    .testi-head h3{font-size:30px}
+    .testi-head .stars{text-align:left}
+    .testi-grid{grid-template-columns:1fr;gap:14px}
+    .testi-card{min-height:0;padding:22px}
+    .testi-quote{font-size:16px}
+
+    .integrations{grid-template-columns:1fr;padding:32px 22px;border-radius:22px;gap:22px;margin-top:18px}
+    .integrations h4{font-size:28px}
+    .integrations p{font-size:14px}
+    .int-grid{grid-template-columns:repeat(2,1fr)}
+    .int-pill{padding:10px 14px;font-size:13px}
+
+    .below{padding:28px 18px;border-radius:22px;margin-top:18px}
+    .b-head{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:22px}
+    .b-head h3{font-size:26px}
+    .cards{grid-template-columns:1fr;gap:14px}
+    .pcard{aspect-ratio:auto;min-height:220px;padding:18px}
+    .pcard .ttl{font-size:24px}
+
+    .cta-block{padding:48px 22px;border-radius:22px;flex-direction:column;align-items:flex-start;gap:28px;margin-top:18px}
+    .cta-block h4{font-size:clamp(38px,10vw,52px);gap:8px 10px}
+    .cta-block h4 .hl{padding:0 14px}
+    .cta-right{align-items:flex-start;width:100%}
+    .cta-right p{text-align:left}
+    .cta-right .row{flex-wrap:wrap}
+
+    .footer-multi{grid-template-columns:1fr 1fr;gap:22px;padding:36px 8px 18px}
+    .footer-multi .f-brand{grid-column:1/-1}
+    .footer-bottom{flex-direction:column;gap:10px;align-items:flex-start;padding:18px 8px 0}
+  }
+
+  /* === SMALL MOBILE (≤420px) === */
+  @media (max-width: 420px){
+    .page{padding:0 10px 24px}
+    h1{font-size:clamp(34px,10vw,44px)}
+    h1 .arrow-circle{width:42px;height:42px;font-size:20px}
+    h2{font-size:clamp(28px,9vw,36px)}
+    .h-stat .num{font-size:22px}
+    .cta-block h4{font-size:clamp(34px,10vw,44px)}
+    .testi-head h3{font-size:26px}
+    .b-head h3{font-size:22px}
+    .integrations h4{font-size:24px}
+  }
 
 </style>
 </head>
