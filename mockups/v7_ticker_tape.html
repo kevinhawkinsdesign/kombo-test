@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kombo — V7 Ticker Tape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --paper:#F5F1E6;
+    --paper-2:#EAE3D0;
+    --ink:#0F0F0F;
+    --ink-2:#2A2A2A;
+    --rule:#1A1A1A;
+    --muted:#6E665A;
+    --signal:#D9531E;
+    --green:#2E7D4F;
+    --red:#B23B2C;
+  }
+  html,body{background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{width:1440px;margin:0 auto;background:var(--paper);position:relative}
+  .serif{font-family:'Playfair Display',serif}
+
+  /* Tape */
+  .tape{background:var(--ink);color:var(--paper);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:10px 0;display:flex;gap:48px;overflow:hidden;white-space:nowrap;border-bottom:2px solid var(--ink)}
+  .tape span{display:inline-flex;gap:10px;align-items:center}
+  .tape .up{color:#7AE5A6}
+  .tape .down{color:#FF7A6B}
+  .tape .tk{color:var(--signal);font-weight:700}
+
+  /* Nav */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 64px;border-bottom:1px solid var(--rule)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;letter-spacing:.06em;font-family:'Press Start 2P',monospace}
+  .logo-mark{width:30px;height:30px;background:var(--ink);color:var(--paper);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'Press Start 2P',monospace}
+  .nav-links{display:flex;gap:30px;font-size:13px;font-weight:500;color:var(--ink-2)}
+  .nav-links a{color:inherit;text-decoration:none}
+  .nav-cta{display:flex;gap:10px}
+  .btn{font-family:inherit;font-size:13px;font-weight:600;padding:10px 18px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;letter-spacing:.02em}
+  .btn-primary{background:var(--ink);color:var(--paper)}
+
+  /* Masthead */
+  .masthead{padding:32px 64px 14px;border-bottom:3px double var(--rule);text-align:center}
+  .masthead-meta{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .masthead h1.brand{font-family:'Playfair Display',serif;font-weight:900;font-size:78px;letter-spacing:-.03em;line-height:1}
+  .masthead .tag{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--ink-2);margin-top:6px;letter-spacing:.02em}
+
+  /* Hero */
+  .hero{padding:48px 64px 56px;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:8fr 4fr;gap:56px;position:relative}
+  .hero::before{content:"VOL. III · NO. 04";position:absolute;top:18px;right:64px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--muted)}
+  .lead h2{font-family:'Playfair Display',serif;font-weight:900;font-size:128px;line-height:.92;letter-spacing:-.035em}
+  .lead h2 em{font-style:italic;font-weight:400;color:var(--signal)}
+  .lead .deck{font-family:'Playfair Display',serif;font-style:italic;font-size:24px;line-height:1.35;color:var(--ink-2);max-width:760px;margin-top:24px}
+  .lead .byline{margin-top:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;gap:18px;align-items:center}
+  .lead .byline b{color:var(--ink)}
+  .hero-cta{margin-top:32px;display:flex;gap:12px}
+
+  .sidebar{border-left:1px solid var(--rule);padding-left:32px}
+  .sidebar h3{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+  .quote{font-family:'Playfair Display',serif;font-style:italic;font-size:20px;line-height:1.35;color:var(--ink);margin-bottom:14px}
+  .quote::before{content:"“";font-size:48px;line-height:0;vertical-align:-12px;margin-right:4px;color:var(--signal)}
+  .qmeta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .qmeta b{color:var(--ink)}
+  .stocklet{margin-top:28px;background:var(--paper-2);border:1px solid var(--rule);padding:16px}
+  .stocklet .row{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--rule)}
+  .stocklet .row:last-child{border:0}
+  .stocklet .up{color:var(--green);font-weight:700}
+  .stocklet .down{color:var(--red);font-weight:700}
+
+  /* Story columns — three-up */
+  .columns{padding:64px 64px;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
+  .col h4{font-family:'Playfair Display',serif;font-weight:700;font-size:30px;line-height:1.05;letter-spacing:-.02em;margin-bottom:14px}
+  .col h4 em{font-style:italic;font-weight:400;color:var(--signal)}
+  .col .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);margin-bottom:10px}
+  .col p{font-size:14.5px;line-height:1.6;color:var(--ink-2);margin-bottom:10px;text-align:justify;hyphens:auto}
+  .col p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-weight:900;font-size:56px;float:left;line-height:.9;padding:4px 8px 0 0;color:var(--ink)}
+  .col .more{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink);text-decoration:none;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--ink);padding-bottom:2px}
+
+  /* Index / charts strip */
+  .charts{padding:56px 64px;border-bottom:1px solid var(--rule);background:var(--paper-2)}
+  .charts-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px}
+  .charts-head h5{font-family:'Playfair Display',serif;font-weight:900;font-size:48px;letter-spacing:-.025em;line-height:1}
+  .charts-head h5 em{font-style:italic;font-weight:400;color:var(--signal)}
+  .charts-head .meta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .chart-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  .chart{border:1px solid var(--rule);background:var(--paper);padding:18px}
+  .chart .ticker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;display:flex;justify-content:space-between}
+  .chart .ticker b{color:var(--ink)}
+  .chart .num{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;letter-spacing:-.02em;margin-top:6px;line-height:1}
+  .chart .delta{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;margin-top:4px}
+  .chart .delta.up{color:var(--green)}
+  .chart .delta.down{color:var(--red)}
+  .spark{margin-top:14px;height:48px;width:100%}
+
+  /* Op-ed CTA */
+  .opener{padding:80px 64px 80px;border-bottom:3px double var(--rule);text-align:center}
+  .opener .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--signal);margin-bottom:18px}
+  .opener h6{font-family:'Playfair Display',serif;font-weight:900;font-size:88px;line-height:.95;letter-spacing:-.03em;max-width:1100px;margin:0 auto 24px}
+  .opener h6 em{font-style:italic;font-weight:400;color:var(--signal)}
+  .opener .deck{font-family:'Playfair Display',serif;font-style:italic;font-size:20px;color:var(--ink-2);max-width:680px;margin:0 auto 32px}
+  .opener .ctas{display:flex;justify-content:center;gap:14px}
+
+  /* Classifieds (logos / customers) */
+  .classifieds{padding:48px 64px;border-bottom:1px solid var(--rule)}
+  .classifieds .h{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;text-align:center}
+  .clines{display:flex;justify-content:center;gap:56px;flex-wrap:wrap}
+  .clines span{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;letter-spacing:-.02em;color:var(--ink-2)}
+
+  footer{padding:36px 64px;display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  footer a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Live ticker -->
+  <div class="tape">
+    <span><b class="tk">$KMBO</b> 412.18 <b class="up">+4.6%</b></span>
+    <span>PIPELINE COVERAGE <b class="up">3.4x ↑</b></span>
+    <span>RAMP TIME <b class="up">29d ↓ from 91d</b></span>
+    <span>SDR HOURS RECLAIMED <b class="up">2.1M / Q</b></span>
+    <span>WIN RATE <b class="up">+38% YoY</b></span>
+    <span>CRM CLICKS <b class="down">−74% per rep</b></span>
+    <span>FORECAST ACCURACY <b class="up">94.2%</b></span>
+    <span><b class="tk">$KMBO</b> 412.18 <b class="up">+4.6%</b></span>
+  </div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="logo"><span class="logo-mark">K</span> KOMBO</div>
+    <div class="nav-links">
+      <a>Product</a><a>Coaching</a><a>Pricing</a><a>Customers</a><a>Sign in</a>
+    </div>
+    <div class="nav-cta">
+      <button class="btn">Talk to sales</button>
+      <button class="btn btn-primary">Book a demo</button>
+    </div>
+  </nav>
+
+  <!-- Masthead -->
+  <div class="masthead">
+    <div class="masthead-meta">
+      <span>EST. 2024 · SAN FRANCISCO</span>
+      <span>TUESDAY · MAY 5, 2026</span>
+      <span>EDITION III.04 · 6 PAGES · $0.00</span>
+    </div>
+    <div class="brand serif"><h1 class="brand">The Kombo Quarterly</h1></div>
+    <div class="tag">A briefing for revenue teams who would rather sell than click.</div>
+  </div>
+
+  <!-- Hero / Lead story -->
+  <section class="hero">
+    <div class="lead">
+      <div class="lead h2"><h2>Less <em>clicks.</em><br>More selling.</h2></div>
+      <p class="deck">Inside the AI co-pilot that quietly retired the seven-window sales workflow — and why your CRO is already running the numbers.</p>
+      <div class="byline">
+        <span>BY <b>THE EDITORS</b></span>
+        <span>FILED 06:14 PT</span>
+        <span>READ TIME · 4 MIN</span>
+      </div>
+      <div class="hero-cta">
+        <button class="btn btn-primary">Book a demo →</button>
+        <button class="btn">Read the issue</button>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <h3>Quoted in this issue</h3>
+      <div class="quote">We dropped a 21-step workflow into one sidebar. Then quota stopped being scary.</div>
+      <div class="qmeta"><b>RIYA OBERLIN</b> · VP REVENUE · NORTHWIND LOGISTICS</div>
+
+      <div class="stocklet">
+        <div class="row"><span>RAMP</span><span class="up">29d ▲</span></div>
+        <div class="row"><span>WIN RATE</span><span class="up">+38% ▲</span></div>
+        <div class="row"><span>FORECAST ERR.</span><span class="down">−61% ▼</span></div>
+        <div class="row"><span>CLICKS / DEAL</span><span class="down">−74% ▼</span></div>
+        <div class="row"><span>NRR</span><span class="up">142% ▲</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- Three-column stories -->
+  <section class="columns">
+    <div class="col">
+      <div class="kicker">Front Page · Co-pilot</div>
+      <h4>One sidebar replaces <em>seven tabs.</em></h4>
+      <p>The Kombo panel sits inside the record your reps already live in — Salesforce, HubSpot, Gmail, your custom CRM. Drafts move. Signals surface. The next call is queued before the last one ends.</p>
+      <p>Field reports from a 200-seat pilot at a publicly-traded logistics firm describe a workflow collapse so thorough that the team archived four internal Loom tutorials within a month.</p>
+      <a class="more" href="#">Continue on A2 →</a>
+    </div>
+    <div class="col">
+      <div class="kicker">Markets · Coaching</div>
+      <h4>Every rep gets <em>their own AE.</em></h4>
+      <p>Live call coaching whispers the next question, the right objection, and the close that fits the deal. Trained on every recording your team has ever logged — never on someone else's playbook.</p>
+      <p>Junior SDRs at three Series-B startups posted an average of 38% lift in connect-to-meeting conversion within the first 60 days. The losing-deal review takes nine minutes, not ninety.</p>
+      <a class="more" href="#">Continue on B1 →</a>
+    </div>
+    <div class="col">
+      <div class="kicker">Opinion · Pipeline</div>
+      <h4>Forecasts your CRO <em>actually trusts.</em></h4>
+      <p>Pipeline reviews drafted before Monday standup. Numbers reconciled against meeting notes, email threads, product usage, and the quiet signals reps forget to log. Drift gets flagged, not buried.</p>
+      <p>Pre-Kombo, the average finance lead at our reference customers manually re-keyed 18 fields per opportunity. Post-Kombo: zero. The board deck writes its own first draft.</p>
+      <a class="more" href="#">Continue on C3 →</a>
+    </div>
+  </section>
+
+  <!-- Charts strip -->
+  <section class="charts">
+    <div class="charts-head">
+      <h5>The numbers, <em>charted.</em></h5>
+      <div class="meta">SOURCE · KOMBO INDEX · ROLLING 12 MO</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart">
+        <div class="ticker"><b>RAMP TIME</b><span>DAYS</span></div>
+        <div class="num">29</div>
+        <div class="delta down">▼ 62 days vs. cohort baseline</div>
+        <svg class="spark" viewBox="0 0 200 48" preserveAspectRatio="none"><polyline fill="none" stroke="#0F0F0F" stroke-width="2" points="0,8 25,12 50,18 75,22 100,28 125,32 150,38 175,42 200,44"/></svg>
+      </div>
+      <div class="chart">
+        <div class="ticker"><b>WIN RATE</b><span>YoY</span></div>
+        <div class="num">+38%</div>
+        <div class="delta up">▲ Across 142 paying teams</div>
+        <svg class="spark" viewBox="0 0 200 48" preserveAspectRatio="none"><polyline fill="none" stroke="#D9531E" stroke-width="2" points="0,40 25,36 50,30 75,28 100,22 125,18 150,14 175,10 200,6"/></svg>
+      </div>
+      <div class="chart">
+        <div class="ticker"><b>CLICKS / DEAL</b><span>RELATIVE</span></div>
+        <div class="num">0.26x</div>
+        <div class="delta down">▼ 74% vs. legacy CRM-only</div>
+        <svg class="spark" viewBox="0 0 200 48" preserveAspectRatio="none"><polyline fill="none" stroke="#0F0F0F" stroke-width="2" points="0,6 25,10 50,14 75,20 100,26 125,32 150,36 175,40 200,42"/></svg>
+      </div>
+      <div class="chart">
+        <div class="ticker"><b>FORECAST ERR.</b><span>QoQ</span></div>
+        <div class="num">5.8%</div>
+        <div class="delta down">▼ Down from 14.7%</div>
+        <svg class="spark" viewBox="0 0 200 48" preserveAspectRatio="none"><polyline fill="none" stroke="#0F0F0F" stroke-width="2" points="0,12 25,16 50,10 75,18 100,22 125,28 150,30 175,34 200,38"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Op-ed -->
+  <section class="opener">
+    <div class="kicker">Editor's Letter</div>
+    <h6>The CRM is a <em>filing cabinet.</em><br>Your reps deserve <em>a co-pilot.</em></h6>
+    <p class="deck">Kombo doesn't replace the system of record. It just stops asking your team to feed it. So they can sell.</p>
+    <div class="ctas">
+      <button class="btn btn-primary">Book a demo →</button>
+      <button class="btn">Subscribe to the briefing</button>
+    </div>
+  </section>
+
+  <!-- Classifieds / customers -->
+  <section class="classifieds">
+    <div class="h">As filed by — Q1 customers</div>
+    <div class="clines">
+      <span>Northwind</span><span>Halcyon</span><span>Marlowe &amp; Park</span><span>Drift Labs</span><span>Atlas Freight</span><span>Pelican</span><span>Quorum</span>
+    </div>
+  </section>
+
+  <footer>
+    <div>KEVIN HAWKINS · KOMBO · 2026</div>
+    <div>VOL. III · ISSUE 04 · TICKER TAPE</div>
+    <div><a href="./index.html">← BACK TO MOCKUPS</a></div>
+  </footer>
+
+</div>
+</body>
+</html>
