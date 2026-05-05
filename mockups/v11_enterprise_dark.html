@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KomboAI — Less clicks. More selling.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Inter, sans-serif; color: #E0E0E0; background: #0A0E27; line-height: 1.6; }
+
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 14, 39, 0.95); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 140, 0, 0.1);
+      padding: 20px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { font-weight: 800; font-size: 18px; background: linear-gradient(135deg, #FF8C00, #FFB84D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-links { display: flex; gap: 32px; font-size: 14px; }
+    .nav-links a { color: #999; text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: #FF8C00; }
+    .cta-btn {
+      background: linear-gradient(135deg, #FF8C00, #FFB84D);
+      color: #0A0E27; border: none; padding: 10px 20px;
+      border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255, 140, 0, 0.3); }
+
+    .hero {
+      padding: 100px 40px; text-align: center;
+      background: radial-gradient(circle at 50% 0%, rgba(255, 140, 0, 0.1) 0%, transparent 50%);
+      border-bottom: 1px solid rgba(255, 140, 0, 0.05);
+    }
+    .eyebrow { font-size: 11px; color: #FF8C00; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
+    h1 { font-size: 64px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; color: #FFFFFF; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .subheadline { font-size: 18px; color: #B0B0B0; margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; margin-bottom: 60px; }
+    .primary-btn { background: linear-gradient(135deg, #FF8C00, #FFB84D); color: #0A0E27; padding: 14px 32px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.2s; }
+    .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255, 140, 0, 0.4); }
+    .secondary-btn { background: transparent; color: #FF8C00; padding: 14px 32px; border-radius: 8px; border: 2px solid rgba(255, 140, 0, 0.3); cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.2s; }
+    .secondary-btn:hover { border-color: #FF8C00; background: rgba(255, 140, 0, 0.05); }
+
+    .hero-dashboard {
+      width: 100%; max-width: 1000px; margin: 0 auto; height: 450px;
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.08) 0%, rgba(255, 140, 0, 0.02) 100%);
+      border-radius: 12px; border: 1px solid rgba(255, 140, 0, 0.1);
+      display: flex; align-items: center; justify-content: center;
+      color: #666; font-size: 14px;
+    }
+
+    .section { padding: 80px 40px; }
+    .section-title { font-size: 48px; font-weight: 800; text-align: center; margin-bottom: 16px; color: #FFFFFF; }
+    .section-subtitle { font-size: 16px; color: #999; text-align: center; margin-bottom: 50px; max-width: 650px; margin-left: auto; margin-right: auto; }
+
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .feature-card {
+      background: rgba(255, 140, 0, 0.03); border: 1px solid rgba(255, 140, 0, 0.1);
+      padding: 40px; border-radius: 12px; transition: all 0.3s;
+    }
+    .feature-card:hover {
+      background: rgba(255, 140, 0, 0.08); border-color: rgba(255, 140, 0, 0.3);
+      transform: translateY(-4px);
+    }
+    .feature-icon { width: 56px; height: 56px; background: rgba(255, 140, 0, 0.1); border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .feature-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #FFFFFF; }
+    .feature-card p { font-size: 14px; color: #999; line-height: 1.7; }
+
+    .comparison-section {
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.05) 0%, transparent 100%);
+    }
+    .comparison-table {
+      width: 100%; max-width: 1100px; margin: 0 auto;
+      border-collapse: collapse;
+    }
+    .comparison-table thead {
+      border-bottom: 2px solid rgba(255, 140, 0, 0.2);
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 18px 20px; text-align: left;
+    }
+    .comparison-table th { font-weight: 700; color: #FF8C00; font-size: 14px; text-transform: uppercase; }
+    .comparison-table td { color: #B0B0B0; font-size: 14px; border-bottom: 1px solid rgba(255, 140, 0, 0.05); }
+    .comparison-table tr:hover { background: rgba(255, 140, 0, 0.03); }
+    .check { color: #FF8C00; font-weight: 700; }
+    .cross { color: #555; }
+
+    .use-cases {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
+    }
+    .use-case {
+      background: rgba(255, 140, 0, 0.03); border: 1px solid rgba(255, 140, 0, 0.1);
+      padding: 32px; border-radius: 8px; text-align: center;
+    }
+    .use-case h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #FFFFFF; }
+    .use-case p { font-size: 13px; color: #999; }
+
+    .testimonials {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .testimonial {
+      background: rgba(255, 140, 0, 0.05); border: 1px solid rgba(255, 140, 0, 0.1);
+      padding: 32px; border-radius: 8px;
+    }
+    .testimonial-text { color: #D0D0D0; margin-bottom: 20px; font-size: 15px; line-height: 1.6; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #FF8C00, #FFB84D); }
+    .author-info h4 { font-size: 14px; font-weight: 600; color: #FFFFFF; margin-bottom: 2px; }
+    .author-info p { font-size: 12px; color: #888; }
+
+    .stats-band {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 32px;
+      max-width: 1200px; margin: 0 auto; padding: 40px 0;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-number { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, #FF8C00, #FFB84D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+    .stat-label { font-size: 14px; color: #999; }
+
+    .pricing-section {
+      background: linear-gradient(135deg, rgba(255, 140, 0, 0.05) 0%, transparent 100%);
+    }
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: rgba(255, 140, 0, 0.03); border: 1px solid rgba(255, 140, 0, 0.1);
+      border-radius: 12px; padding: 40px 32px;
+      transition: all 0.3s;
+    }
+    .pricing-card:hover { border-color: rgba(255, 140, 0, 0.3); background: rgba(255, 140, 0, 0.08); }
+    .pricing-card.featured {
+      border: 2px solid #FF8C00; background: rgba(255, 140, 0, 0.1);
+    }
+    .pricing-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #FFFFFF; }
+    .price { font-size: 48px; font-weight: 800; color: #FF8C00; margin-bottom: 8px; }
+    .price-period { font-size: 13px; color: #888; margin-bottom: 32px; }
+    .pricing-features { list-style: none; margin-bottom: 32px; }
+    .pricing-features li { padding: 12px 0; border-bottom: 1px solid rgba(255, 140, 0, 0.05); font-size: 13px; color: #B0B0B0; }
+    .pricing-features li::before { content: "→ "; color: #FF8C00; font-weight: 700; margin-right: 8px; }
+    .pricing-features li:last-child { border-bottom: none; }
+
+    .cta-section {
+      padding: 100px 40px; text-align: center;
+      background: radial-gradient(circle at 50% 100%, rgba(255, 140, 0, 0.15) 0%, transparent 60%);
+      border-top: 1px solid rgba(255, 140, 0, 0.1);
+    }
+    .cta-section h2 { font-size: 48px; font-weight: 800; margin-bottom: 16px; color: #FFFFFF; }
+    .cta-section p { font-size: 18px; color: #B0B0B0; margin-bottom: 32px; }
+
+    .footer {
+      background: #000; color: #888; padding: 40px; text-align: center; font-size: 12px;
+      border-top: 1px solid rgba(255, 140, 0, 0.1);
+    }
+    .footer a { color: #FF8C00; text-decoration: none; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+    }
+    .fade-in.delay-1 { animation-delay: 0.1s; }
+    .fade-in.delay-2 { animation-delay: 0.2s; }
+    .fade-in.delay-3 { animation-delay: 0.3s; }
+    .fade-in.delay-4 { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+  <nav class="navbar fade-in">
+    <div class="logo">KOMBO</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#use-cases">Use Cases</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <button class="cta-btn">Start Free</button>
+  </nav>
+
+  <section class="hero fade-in delay-1">
+    <div class="eyebrow">Enterprise Sales Intelligence</div>
+    <h1>Less clicks. More selling.</h1>
+    <p class="subheadline">AI-powered sales automation that integrates seamlessly with your existing tools</p>
+    <div class="hero-buttons">
+      <button class="primary-btn">Get Started Free</button>
+      <button class="secondary-btn">View Demo</button>
+    </div>
+    <div class="hero-dashboard fade-in delay-2">[Dashboard Interface Preview]</div>
+  </section>
+
+  <section class="section fade-in delay-2" id="features">
+    <h2 class="section-title">Powerful Features</h2>
+    <p class="section-subtitle">Built for enterprise teams that demand reliability and performance</p>
+    <div class="features-grid">
+      <div class="feature-card fade-in delay-1">
+        <div class="feature-icon">⚙️</div>
+        <h3>Smart Automation</h3>
+        <p>Intelligent workflows that learn from your sales patterns and optimize automatically</p>
+      </div>
+      <div class="feature-card fade-in delay-2">
+        <div class="feature-icon">🔗</div>
+        <h3>Deep Integrations</h3>
+        <p>Native connectors to Salesforce, HubSpot, Pipedrive, and 50+ enterprise platforms</p>
+      </div>
+      <div class="feature-card fade-in delay-3">
+        <div class="feature-icon">📊</div>
+        <h3>Advanced Analytics</h3>
+        <p>Real-time dashboards with predictive forecasting and win/loss analysis</p>
+      </div>
+      <div class="feature-card fade-in delay-4">
+        <div class="feature-icon">🔐</div>
+        <h3>Enterprise Security</h3>
+        <p>SOC 2 Type II, GDPR compliant, with granular permission controls and audit logs</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="comparison-section fade-in delay-3">
+    <div class="section">
+      <h2 class="section-title">How We Compare</h2>
+      <p class="section-subtitle">Superior features at a fraction of the cost</p>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>KomboAI</th>
+            <th>Competitor A</th>
+            <th>Competitor B</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Prospect Matching</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+          </tr>
+          <tr>
+            <td>Multi-language Support</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+          </tr>
+          <tr>
+            <td>Call Recording & Analysis</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+          </tr>
+          <tr>
+            <td>Custom Workflows</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>White-label Option</td>
+            <td class="check">✓</td>
+            <td class="cross">—</td>
+            <td class="cross">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section fade-in delay-4" id="use-cases">
+    <h2 class="section-title">Built for Every Sales Scenario</h2>
+    <p class="section-subtitle">From startups to enterprises</p>
+    <div class="use-cases">
+      <div class="use-case fade-in delay-1">
+        <h3>🏢 Enterprise SaaS</h3>
+        <p>Manage complex, multi-year sales cycles with predictive intelligence</p>
+      </div>
+      <div class="use-case fade-in delay-2">
+        <h3>🏦 Financial Services</h3>
+        <p>Compliance-ready automation with full audit trails and data governance</p>
+      </div>
+      <div class="use-case fade-in delay-3">
+        <h3>💊 Healthcare & Pharma</h3>
+        <p>HIPAA compliant outreach with specialized prospect segmentation</p>
+      </div>
+      <div class="use-case fade-in delay-4">
+        <h3>🛒 E-commerce & Retail</h3>
+        <p>High-volume automation with conversion optimization and A/B testing</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-in delay-1">
+    <h2 class="section-title">Proven Results</h2>
+    <div class="stats-band">
+      <div class="stat fade-in delay-1">
+        <div class="stat-number">40%</div>
+        <div class="stat-label">Average increase in close rates</div>
+      </div>
+      <div class="stat fade-in delay-2">
+        <div class="stat-number">8hrs</div>
+        <div class="stat-label">Saved per rep per week</div>
+      </div>
+      <div class="stat fade-in delay-3">
+        <div class="stat-number">$2.4M</div>
+        <div class="stat-label">Average pipeline increase</div>
+      </div>
+      <div class="stat fade-in delay-4">
+        <div class="stat-number">94%</div>
+        <div class="stat-label">Forecast accuracy</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-in delay-2">
+    <h2 class="section-title">Trusted by Sales Leaders</h2>
+    <p class="section-subtitle">Proven by teams closing bigger deals</p>
+    <div class="testimonials">
+      <div class="testimonial fade-in delay-1">
+        <p class="testimonial-text">"KomboAI transformed how our sales team operates. The AI insights have been invaluable for pipeline management."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar"></div>
+          <div class="author-info">
+            <h4>David Park</h4>
+            <p>VP Sales, Fortune 500</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial fade-in delay-2">
+        <p class="testimonial-text">"The integration was seamless, and our team was productive within days. ROI exceeded expectations in Q1."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar"></div>
+          <div class="author-info">
+            <h4>Jennifer Lee</h4>
+            <p>Sales Director, TechScale Corp</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial fade-in delay-3">
+        <p class="testimonial-text">"The support team is exceptional. They ensured our deployment was flawless and optimized for our workflow."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar"></div>
+          <div class="author-info">
+            <h4>Marcus Johnson</h4>
+            <p>CRO, Enterprise Solutions Inc.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing-section fade-in delay-3" id="pricing">
+    <div class="section">
+      <h2 class="section-title">Transparent Pricing</h2>
+      <p class="section-subtitle">No hidden fees. Scale as you grow.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card fade-in delay-1">
+          <h3>Growth</h3>
+          <div class="price">$199</div>
+          <p class="price-period">per month</p>
+          <ul class="pricing-features">
+            <li>Up to 10 users</li>
+            <li>1,000 monthly automations</li>
+            <li>Basic integrations</li>
+            <li>Email support</li>
+          </ul>
+          <button class="primary-btn">Get Started</button>
+        </div>
+        <div class="pricing-card featured fade-in delay-2">
+          <h3>Professional</h3>
+          <div class="price">$499</div>
+          <p class="price-period">per month</p>
+          <ul class="pricing-features">
+            <li>Up to 50 users</li>
+            <li>Unlimited automations</li>
+            <li>Advanced analytics</li>
+            <li>Priority support 24/7</li>
+          </ul>
+          <button class="primary-btn">Get Started</button>
+        </div>
+        <div class="pricing-card fade-in delay-3">
+          <h3>Enterprise</h3>
+          <div class="price">Custom</div>
+          <p class="price-period">tailored for you</p>
+          <ul class="pricing-features">
+            <li>Unlimited users</li>
+            <li>Custom integrations</li>
+            <li>Dedicated success manager</li>
+            <li>SLA guarantee</li>
+          </ul>
+          <button class="primary-btn">Contact Sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section fade-in delay-4">
+    <h2>Ready to accelerate your sales?</h2>
+    <p>Join hundreds of leading companies selling smarter with KomboAI</p>
+    <button class="primary-btn">Start Your Free Trial</button>
+  </section>
+
+  <footer class="footer fade-in">
+    <p>&copy; 2026 KomboAI. Enterprise Sales Intelligence.</p>
+    <p style="margin-top: 16px;">← <a href="index.html">BACK TO MOCKUPS</a></p>
+  </footer>
+
+  <script>
+    const obs = new IntersectionObserver(e => e.forEach(x => {
+      if(x.isIntersecting) {
+        x.target.classList.add('fade-in');
+        obs.unobserve(x.target);
+      }
+    }), {threshold: 0.1});
+    document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
