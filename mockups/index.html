@@ -114,6 +114,21 @@
   .v11 .display .muted{color:rgba(224,224,224,.5)}
   .v11 .accent{color:#FF8C00}
 
+  /* INVOICE — Lead Capture */
+  .vinv .thumb{background:#ffffff;color:#0f172a;position:relative;overflow:hidden;padding:24px 28px}
+  .vinv .thumb::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5B8DEE 0%,#4C6FD5 100%)}
+  .vinv .thumb-num{color:#94a3b8}
+  .vinv .invoice-no{font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;letter-spacing:.08em;margin-top:4px}
+  .vinv .display{font-size:28px;font-weight:800;line-height:1.05;letter-spacing:-.03em;color:#0f172a;margin-top:10px}
+  .vinv .display .accent{color:#5B8DEE}
+  .vinv .li{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:11px}
+  .vinv .li:last-child{border-bottom:0}
+  .vinv .li-name{color:#0f172a;font-weight:600}
+  .vinv .li-amt{color:#0f172a;font-family:'JetBrains Mono',monospace;font-weight:700}
+  .vinv .li-amt.green{color:#059669}
+  .vinv .total-band{margin-top:8px;padding-top:8px;border-top:2px solid #0f172a;display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#0f172a}
+  .vinv .total-band .amt{color:#5B8DEE}
+
   .info{padding:24px 28px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15)}
   .info-name{font-size:14px;font-weight:600;letter-spacing:.02em;color:#F2EBDC;margin-bottom:4px}
   .info-desc{font-size:13px;color:#9CA3B5;line-height:1.5}
@@ -292,6 +307,31 @@
         <div class="info-name">V10 — Warm Clarity</div>
         <div class="info-desc">Clean, approachable Outseta-inspired design. Warm pastel background (#FFFCF8) with orange accents (#FF6B35). Comprehensive comparison tables, feature grid, testimonials, FAQ sections, pricing cards. Emphasis on transparency and trust.</div>
         <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Warm</span><span class="tag">Clean</span><span class="tag">Comparison</span></div>
+      </div>
+    </a>
+
+    <!-- Invoice — Lead Capture -->
+    <a class="card vinv" href="./invoice.html">
+      <div class="thumb">
+        <div>
+          <div class="thumb-num">INVOICE · LEAD CAPTURE</div>
+          <div class="invoice-no">№ KOMBO-2026-0001</div>
+          <div class="display">Your free package, <span class="accent">itemized.</span></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="li"><span class="li-name">01 · 40 free leads</span><span class="li-amt green">$0.00</span></div>
+          <div class="li"><span class="li-name">02 · Verified contact data</span><span class="li-amt green">$0.00</span></div>
+          <div class="li"><span class="li-name">03 · Real-time coaching</span><span class="li-amt green">$0.00</span></div>
+          <div class="li"><span class="li-name">04 · AI co-pilot</span><span class="li-amt green">$0.00</span></div>
+          <div class="li"><span class="li-name">05 · 60% less manual work</span><span class="li-amt green">$0.00</span></div>
+          <div class="total-band"><span>Total Due</span><span class="amt">$0.00</span></div>
+        </div>
+        <div class="thumb-footer" style="color:#94a3b8;margin-top:12px"><span style="color:#5B8DEE">◆ Lead Form</span><span>OPEN →</span></div>
+      </div>
+      <div class="info">
+        <div class="info-name">Invoice — Lead Capture</div>
+        <div class="info-desc">A lead capture form disguised as a professional invoice. Five "line items" highlight the package benefits — 40 free leads, verified data, real-time coaching, AI co-pilot, and 60% less manual work — interleaved with form fields styled as invoice rows. Subtotal $997 → discount → total $0.00.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Form</span><span class="tag">Invoice</span><span class="tag">Conversion</span></div>
       </div>
     </a>
 
