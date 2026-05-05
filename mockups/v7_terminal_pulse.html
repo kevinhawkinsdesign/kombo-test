@@ -1,409 +1,515 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KomboAI — V7 Revenue On Autopilot</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KomboAI — Less is the new more</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --dark:#0D0D12;--dark-2:#1A1A22;
-  --grey:#2A2A35;--grey-light:#3D3D4A;
-  --text:#EFEFEF;--text-2:#B8B8C8;
-  --accent:#5B8DEE;--accent-light:#7BA3F5;
-  --orange:#FF6B35;--orange-light:#FF8560;
-}
-html,body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --yellow: #ECFF4E;
+    --yellow-deep: #DDF03A;
+    --red: #FF4426;
+    --red-deep: #E6320F;
+    --ink: #0E0E0E;
+    --paper: #FFFDF5;
+  }
+  html, body { background: var(--yellow); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
 
-.page{max-width:1440px;margin:0 auto}
+  nav { padding: 22px 0; }
+  .nav-row { display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Instrument Serif', serif; font-size: 30px; font-weight: 400; letter-spacing: -0.02em; }
+  .logo em { font-style: italic; }
+  .nav-links { display: flex; gap: 36px; font-size: 15px; font-weight: 500; }
+  .nav-links a:hover { opacity: 0.6; }
+  .nav-cta { background: var(--ink); color: var(--paper); padding: 12px 22px; border-radius: 999px; font-size: 14px; font-weight: 600; transition: transform .2s; }
+  .nav-cta:hover { transform: translateY(-2px); }
 
-/* NAV */
-nav{display:flex;align-items:center;justify-content:space-between;padding:20px 64px;border-bottom:1px solid var(--grey);position:relative;z-index:10}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
-.logo-mark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--dark);font-weight:700;font-size:12px}
-.logo-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.01em}
-.nav-links{display:flex;gap:28px;font-size:13px;color:var(--text-2)}
-.nav-links a{color:inherit;text-decoration:none;transition:color .2s}
-.nav-links a:hover{color:var(--text)}
-.nav-cta{background:var(--accent);color:var(--dark);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:10px 22px;border-radius:6px;text-decoration:none;letter-spacing:.04em}
+  .hero { padding: 70px 0 100px; text-align: center; position: relative; }
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-size: clamp(64px, 11vw, 156px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin-bottom: 28px;
+  }
+  .hero h1 em { font-style: italic; }
+  .hero p { font-size: 19px; max-width: 460px; margin: 0 auto 36px; line-height: 1.5; opacity: 0.85; }
+  .btn-red { display: inline-flex; align-items: center; gap: 8px; background: var(--red); color: white; padding: 16px 30px; border-radius: 999px; font-size: 15px; font-weight: 600; transition: transform .2s; }
+  .btn-red:hover { transform: translateY(-2px); }
 
-/* EYEBROW */
-.eyebrow{padding:64px 64px 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);}
-.eyebrow span{color:var(--accent)}
+  .stickers { position: relative; max-width: 980px; margin: 60px auto 0; height: 200px; }
+  .sticker { position: absolute; background: var(--red); color: white; padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 15px; transform-origin: center; box-shadow: 0 6px 0 rgba(0,0,0,0.08); }
+  .sticker.s1 { top: 0; left: 4%; transform: rotate(-8deg); }
+  .sticker.s2 { top: 30px; left: 26%; transform: rotate(6deg); background: var(--ink); }
+  .sticker.s3 { top: 4px; left: 50%; transform: rotate(-3deg); }
+  .sticker.s4 { top: 36px; right: 22%; transform: rotate(4deg); background: var(--ink); }
+  .sticker.s5 { top: 10px; right: 4%; transform: rotate(-6deg); }
+  .sticker.s6 { top: 100px; left: 14%; transform: rotate(7deg); background: var(--ink); }
+  .sticker.s7 { top: 130px; left: 40%; transform: rotate(-4deg); }
+  .sticker.s8 { top: 110px; right: 12%; transform: rotate(5deg); background: var(--ink); }
 
-/* HERO */
-.hero{padding:40px 64px 100px;display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center}
-h1{font-family:'Syne',sans-serif;font-size:76px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin-bottom:24px}
-h1 .accent{color:var(--accent);display:block;font-weight:700}
-.hero p{font-size:16px;color:var(--text-2);line-height:1.7;margin-bottom:32px;max-width:440px}
-.hero-ctas{display:flex;gap:12px;align-items:center}
-.cta-primary{background:var(--accent);color:var(--dark);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;letter-spacing:.04em;cursor:pointer}
-.cta-secondary{background:rgba(91,141,238,.1);color:var(--accent);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;letter-spacing:.04em;cursor:pointer}
+  section { padding: 80px 0; }
+  .h-section { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(40px, 6vw, 72px); line-height: 0.95; letter-spacing: -0.03em; margin-bottom: 18px; }
+  .h-section em { font-style: italic; }
+  .section-lead { font-size: 17px; max-width: 540px; margin-bottom: 40px; line-height: 1.55; opacity: 0.85; }
 
-/* HERO VISUAL — Dashboard mockup */
-.hero-visual{background:linear-gradient(135deg,var(--dark-2),var(--grey));border:1px solid var(--grey);border-radius:12px;padding:20px;position:relative;overflow:hidden}
-.dashboard-bar{display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--grey-light)}
-.dash-dot{width:8px;height:8px;border-radius:50%;background:var(--grey-light)}
-.dashboard-content{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.metric-card{background:rgba(91,141,238,.08);border:1px solid var(--grey-light);border-radius:8px;padding:12px;font-size:12px}
-.metric-label{color:var(--text-2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-.metric-value{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--accent)}
-.metric-unit{font-size:10px;color:var(--text-2);}
+  .whaaat { background: var(--paper); border-radius: 36px; padding: 70px 60px; margin-top: 30px; }
+  .whaaat-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 80px; align-items: center; }
+  .whaaat-grid p { font-size: 16px; line-height: 1.6; margin-bottom: 16px; }
+  .whaaat-visual { display: flex; align-items: center; justify-content: center; }
+  .toggle-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 28px;
+    padding: 26px 32px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .toggle-knob { width: 86px; height: 44px; background: var(--red); border-radius: 999px; position: relative; }
+  .toggle-knob::after { content: ''; position: absolute; right: 4px; top: 4px; width: 36px; height: 36px; background: var(--paper); border-radius: 50%; border: 2px solid var(--ink); }
+  .toggle-label { font-weight: 700; font-size: 18px; }
 
-/* TRUST LOGOS */
-.trust-section{padding:80px 64px}
-.trust-title{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);margin-bottom:32px}
-.logo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
-.logo-item{background:var(--grey);border:1px solid var(--grey-light);border-radius:8px;height:60px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-2);font-weight:600}
+  .quote-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 28px;
+    padding: 50px 60px;
+    margin-top: 50px;
+    text-align: center;
+    box-shadow: 10px 10px 0 var(--ink);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .quote-eyebrow { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 22px; margin-bottom: 18px; }
+  .quote-card h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 56px; line-height: 0.98; letter-spacing: -0.02em; margin-bottom: 26px; }
+  .quote-card h3 em { font-style: italic; }
+  .quote-author { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 22px 0 26px; }
+  .quote-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--red); border: 2px solid var(--ink); }
+  .quote-name { font-weight: 700; font-size: 14px; }
+  .quote-role { font-size: 13px; opacity: 0.7; }
+  .quote-text { font-size: 14px; line-height: 1.6; max-width: 440px; margin: 0 auto 24px; opacity: 0.85; }
+  .quote-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 22px; }
+  .quote-dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--ink); border: 1px solid var(--ink); }
+  .quote-dots span:nth-child(2) { background: var(--paper); }
+  .quote-dots span:nth-child(3) { background: var(--red); }
 
-/* FEATURES */
-.features{padding:80px 64px}
-.section-title{font-family:'Syne',sans-serif;font-size:48px;font-weight:700;margin-bottom:60px;color:var(--text)}
-.section-title .accent{color:var(--accent)}
-.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;margin-bottom:80px}
-.feature-card{padding:32px;background:rgba(91,141,238,.06);border:1px solid var(--grey-light);border-radius:12px;position:relative;overflow:hidden}
-.feature-card::before{content:"";position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(91,141,238,.1),transparent 70%);border-radius:50%;pointer-events:none}
-.feature-icon{width:48px;height:48px;background:rgba(91,141,238,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px;position:relative;z-index:1}
-.feature-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;position:relative;z-index:1}
-.feature-desc{font-size:14px;color:var(--text-2);line-height:1.6;position:relative;z-index:1}
+  .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .adv-card { background: var(--red); color: white; border-radius: 28px; padding: 32px; min-height: 200px; position: relative; }
+  .adv-card.alt { background: var(--paper); color: var(--ink); border: 2px solid var(--ink); }
+  .adv-card h4 { font-size: 21px; font-weight: 700; margin-bottom: 12px; }
+  .adv-card p { font-size: 14px; line-height: 1.55; opacity: 0.92; max-width: 88%; }
+  .adv-icon {
+    position: absolute;
+    bottom: 26px;
+    right: 26px;
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+  .adv-card.alt .adv-icon { background: var(--yellow); border: 2px solid var(--ink); }
 
-/* STATS */
-.stats-band{padding:60px 64px;background:linear-gradient(90deg,rgba(91,141,238,.05),rgba(255,107,53,.02));border-top:1px solid var(--grey);border-bottom:1px solid var(--grey);display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
-.stat-col{display:flex;flex-direction:column;gap:8px}
-.stat-num{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;color:var(--accent)}
-.stat-desc{font-size:14px;color:var(--text-2)}
+  .marquee {
+    background: var(--paper);
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    overflow: hidden;
+    padding: 28px 0;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 38px;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  .marquee-track { display: inline-block; animation: scroll 30s linear infinite; }
+  .marquee-track span { margin-right: 38px; }
+  .marquee-track span::before { content: '•'; margin-right: 38px; color: var(--red); }
+  @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-/* COMPARISON TABLE */
-.comparison{padding:80px 64px}
-.comp-title{font-family:'Syne',sans-serif;font-size:40px;font-weight:700;margin-bottom:12px}
-.comp-subtitle{font-size:14px;color:var(--text-2);margin-bottom:48px}
-.comp-table{width:100%;border-collapse:collapse}
-.comp-table th{text-align:left;padding:16px;border-bottom:2px solid var(--grey);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
-.comp-table td{padding:16px;border-bottom:1px solid var(--grey-light);font-size:14px}
-.comp-table tr:hover{background:rgba(91,141,238,.04)}
-.check{color:var(--accent);font-weight:700}
-.dash{color:var(--text-2)}
+  .compare-card {
+    background: var(--red);
+    color: white;
+    border-radius: 28px;
+    overflow: hidden;
+    margin-top: 30px;
+  }
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th, .compare-table td { padding: 22px 20px; text-align: center; font-size: 14px; }
+  .compare-table thead th { font-weight: 700; font-size: 14px; padding-top: 32px; }
+  .compare-table thead th.kombo { background: rgba(0,0,0,0.18); }
+  .compare-table tbody tr { border-top: 1px solid rgba(255,255,255,0.18); }
+  .compare-table td.kombo { background: rgba(0,0,0,0.18); }
+  .compare-table td:first-child, .compare-table th:first-child { text-align: left; padding-left: 32px; font-weight: 600; opacity: 0.95; }
+  .check { color: var(--yellow); font-weight: 800; font-size: 18px; }
+  .nope { opacity: 0.5; font-size: 18px; }
 
-/* TESTIMONIALS */
-.testimonials{padding:80px 64px}
-.t-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
-.t-card{background:var(--dark-2);border:1px solid var(--grey-light);border-radius:12px;padding:32px;display:flex;flex-direction:column}
-.t-video{width:100%;height:240px;background:var(--grey);border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:12px}
-.t-company{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em;margin-bottom:12px}
-.t-quote{font-size:15px;color:var(--text);line-height:1.6;margin-bottom:20px;flex:1}
+  .stats-band { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 16px; }
+  .stat-card { background: var(--paper); border: 2px solid var(--ink); border-radius: 28px; padding: 36px; text-align: left; box-shadow: 6px 6px 0 var(--ink); }
+  .stat-num { font-family: 'Instrument Serif', serif; font-size: 76px; line-height: 1; letter-spacing: -0.03em; margin-bottom: 8px; }
+  .stat-label { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .stat-desc { font-size: 13px; opacity: 0.7; line-height: 1.5; }
 
-/* BENEFITS */
-.benefits{padding:80px 64px}
-.benefit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}
-.benefit-card{padding:32px;background:linear-gradient(135deg,rgba(91,141,238,.08),rgba(91,141,238,.03));border:1px solid var(--grey-light);border-radius:12px}
-.benefit-tag{display:inline-block;background:rgba(91,141,238,.15);color:var(--accent);font-size:10px;font-weight:700;padding:6px 10px;border-radius:4px;margin-bottom:12px;letter-spacing:.04em}
-.benefit-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:10px}
-.benefit-desc{font-size:14px;color:var(--text-2);line-height:1.6}
+  .gift {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 28px;
+    padding: 50px 60px;
+    margin-top: 30px;
+    box-shadow: 10px 10px 0 var(--ink);
+    max-width: 740px;
+  }
+  .gift h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 64px; line-height: 0.98; letter-spacing: -0.03em; margin-bottom: 20px; }
+  .gift h3 em { font-style: italic; }
+  .gift p { font-size: 15px; line-height: 1.6; margin-bottom: 26px; max-width: 480px; }
+  .btn-ink { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--paper); padding: 14px 26px; border-radius: 999px; font-size: 14px; font-weight: 600; }
 
-/* FAQ */
-.faq{padding:80px 64px}
-.faq-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.faq-item{border:1px solid var(--grey-light);border-radius:8px;padding:20px;cursor:pointer;transition:background .2s}
-.faq-item:hover{background:rgba(91,141,238,.04)}
-.faq-q{font-family:'Syne',sans-serif;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.faq-a{font-size:13px;color:var(--text-2);line-height:1.6;display:none}
-.faq-item.open .faq-a{display:block}
+  .bestseller-wrap { position: relative; max-width: 540px; margin: 70px auto 0; }
+  .bestseller {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 28px;
+    padding: 48px 50px;
+    text-align: center;
+    box-shadow: 10px 10px 0 var(--ink);
+  }
+  .bestseller .quote-dots { margin-top: 0; margin-bottom: 26px; }
+  .bestseller h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 44px; line-height: 1; letter-spacing: -0.02em; margin-bottom: 22px; }
+  .bestseller p { font-size: 14px; line-height: 1.6; margin-bottom: 24px; opacity: 0.85; }
+  .bestseller-badge {
+    position: absolute;
+    top: -34px;
+    right: -10px;
+    width: 110px;
+    height: 110px;
+    background: var(--red);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    transform: rotate(12deg);
+    border: 2px solid var(--ink);
+    line-height: 1.1;
+  }
 
-/* CTA FINAL */
-.cta-final{padding:100px 64px;text-align:center;border-top:1px solid var(--grey)}
-.cta-final h2{font-family:'Syne',sans-serif;font-size:64px;font-weight:700;color:var(--text);margin-bottom:20px}
-.cta-final p{font-size:16px;color:var(--text-2);margin-bottom:40px;max-width:600px;margin-left:auto;margin-right:auto}
-.cta-final-btn{background:var(--accent);color:var(--dark);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:16px 36px;border-radius:8px;text-decoration:none;letter-spacing:.04em;display:inline-block}
+  .stories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 32px; }
+  .story {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .story-stars { color: var(--red); font-size: 16px; margin-bottom: 14px; letter-spacing: 2px; }
+  .story p { font-size: 13px; line-height: 1.55; margin-bottom: 22px; }
+  .story-author { display: flex; align-items: center; gap: 10px; }
+  .story-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--red); border: 2px solid var(--ink); }
+  .story-meta strong { font-size: 13px; display: block; }
+  .story-meta span { font-size: 12px; opacity: 0.7; }
 
-/* FOOTER */
-.footer{padding:60px 64px;border-top:1px solid var(--grey);display:grid;grid-template-columns:2fr repeat(4,1fr);gap:40px}
-.footer-brand p{font-size:13px;color:var(--text-2);line-height:1.6;margin-top:10px;max-width:220px}
-.footer-col h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);margin-bottom:14px}
-.footer-col ul{list-style:none}
-.footer-col li{margin-bottom:8px}
-.footer-col a{font-size:13px;color:var(--text);text-decoration:none;opacity:.6;transition:opacity .2s}
-.footer-col a:hover{opacity:1}
-.footer-bottom{padding:24px 64px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-2);border-top:1px solid var(--grey);margin-top:40px}
-.footer-bottom a{color:var(--accent);text-decoration:none}
+  .final {
+    background: var(--ink);
+    color: var(--yellow);
+    border-radius: 36px;
+    padding: 100px 60px;
+    text-align: center;
+    margin: 80px 0 60px;
+  }
+  .final h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(56px, 8vw, 110px); line-height: 0.95; letter-spacing: -0.04em; margin-bottom: 22px; }
+  .final h2 em { font-style: italic; }
+  .final p { font-size: 17px; opacity: 0.85; max-width: 460px; margin: 0 auto 32px; color: var(--paper); }
+
+  footer { padding: 40px 0 60px; border-top: 2px solid var(--ink); }
+  .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+  .footer-links { display: flex; gap: 24px; }
+
+  @media (max-width: 880px) {
+    .nav-links { display: none; }
+    .whaaat-grid { grid-template-columns: 1fr; gap: 40px; }
+    .adv-grid { grid-template-columns: 1fr; }
+    .stats-band { grid-template-columns: 1fr; }
+    .stories-grid { grid-template-columns: 1fr; }
+    .stickers { display: none; }
+    .whaaat, .gift, .quote-card, .bestseller, .final { padding: 40px 28px; }
+  }
 </style>
 </head>
 <body>
-<div class="page">
 
-<!-- NAV -->
 <nav>
-  <a href="../index.html" class="logo">
-    <div class="logo-mark">K</div>
-    <span class="logo-name">KomboAI</span>
-  </a>
-  <div class="nav-links">
-    <a href="#">Resources</a>
-    <a href="#">Pricing</a>
-    <a href="#">Customers</a>
+  <div class="container nav-row">
+    <div class="logo">kombo<em>ai</em></div>
+    <div class="nav-links">
+      <a href="#">Product</a>
+      <a href="#">Advantages</a>
+      <a href="#">Stories</a>
+      <a href="#">FAQ</a>
+    </div>
+    <a href="#" class="nav-cta">Get started</a>
   </div>
-  <a href="#" class="nav-cta">Try Free Trial</a>
 </nav>
 
-<!-- EYEBROW -->
-<div class="eyebrow">✦ Introducing <span>Revenue. On autopilot.</span></div>
-
-<!-- HERO -->
 <section class="hero">
-  <div>
-    <h1>Less clicks.<br><span class="accent">More selling.</span></h1>
-    <p>KomboAI gives your sales team the intelligence of a 20-year veteran — at the speed of AI. Rank leads, predict pipeline, and outreach on autopilot.</p>
-    <div class="hero-ctas">
-      <a href="#" class="cta-primary">Try Free Trial</a>
-      <a href="#" class="cta-secondary">See Features</a>
+  <div class="container">
+    <h1>Less <em>clicks.</em><br/>More <em>selling.</em></h1>
+    <p>Stop drowning in tabs, tasks, and CRM busywork. KomboAI does the dialing, drafting, and digging — so you can do the closing.</p>
+    <a href="#" class="btn-red">Get selling →</a>
+
+    <div class="stickers">
+      <div class="sticker s1">cold leads</div>
+      <div class="sticker s2">manual entry</div>
+      <div class="sticker s3">stale pipelines</div>
+      <div class="sticker s4">ghosted emails</div>
+      <div class="sticker s5">bad timing</div>
+      <div class="sticker s6">data tabs</div>
+      <div class="sticker s7">guesswork</div>
+      <div class="sticker s8">spreadsheets</div>
     </div>
   </div>
-  <div class="hero-visual">
-    <div class="dashboard-bar">
-      <div class="dash-dot"></div><div class="dash-dot"></div><div class="dash-dot"></div>
-    </div>
-    <div class="dashboard-content">
-      <div class="metric-card">
-        <div class="metric-label">Close Rate</div>
-        <div class="metric-value">40<span class="metric-unit">%</span></div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container">
+    <div class="whaaat">
+      <div class="whaaat-grid">
+        <div>
+          <h2 class="h-section">Whaaat?</h2>
+          <p>You're already paying for a CRM, an outreach tool, an enrichment plug-in, a meeting scheduler, and four AI add-ons. Honestly, it seems like you have everything you need.</p>
+          <p style="margin-top: 28px;"><strong>So what else do you need to find more revenue?</strong> Less stuff.</p>
+          <p style="margin-top: 16px;">Rather than offering one more dashboard, KomboAI quietly absorbs the busywork between your tools — scoring, drafting, logging, following up — so reps can focus on the conversations that actually move deals.</p>
+        </div>
+        <div class="whaaat-visual">
+          <div class="toggle-card">
+            <div class="toggle-knob"></div>
+            <div class="toggle-label">Autopilot: ON</div>
+          </div>
+        </div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Pipeline</div>
-        <div class="metric-value">$2.4M</div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 0;">
+  <div class="container">
+    <div class="quote-card">
+      <div class="quote-eyebrow">kombo<em>ai</em></div>
+      <h3>I closed <em>40% more</em><br/>and barely <em>opened</em><br/>my CRM.</h3>
+      <div class="quote-author">
+        <div class="quote-avatar"></div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Time Saved</div>
-        <div class="metric-value">60<span class="metric-unit">%</span></div>
+      <div class="quote-name">Hannah Parker</div>
+      <div class="quote-role">AE, NovaTech</div>
+      <p class="quote-text">KomboAI wrote the follow-ups, prioritised the right accounts, and logged everything for me. It's the first tool that actually gave me hours back instead of meetings.</p>
+      <div class="quote-dots"><span></span><span></span><span></span></div>
+      <a href="#" class="btn-red">Get selling</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="h-section">Advantages</h2>
+    <p class="section-lead">Not a customer yet? There's nothing stopping you. Read on for more reasons your team should switch.</p>
+    <div class="adv-grid">
+      <div class="adv-card alt">
+        <h4>Thoughtful scoring</h4>
+        <p>KomboAI watches signals across email, calendar, and CRM to surface the leads most likely to close this quarter — not last quarter.</p>
+        <div class="adv-icon">★</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Forecast</div>
-        <div class="metric-value">94<span class="metric-unit">%</span></div>
+      <div class="adv-card">
+        <h4>Mindful outreach</h4>
+        <p>Drafts that sound like your best rep, not a spam bot. Personalised on actual context, sent at the right hour, in the right tone.</p>
+        <div class="adv-icon">✺</div>
+      </div>
+      <div class="adv-card">
+        <h4>Sustainable pipeline</h4>
+        <p>Self-cleaning CRM. Stages, notes, and next steps logged automatically — no more "we forgot to update Salesforce" excuses.</p>
+        <div class="adv-icon">↻</div>
+      </div>
+      <div class="adv-card alt">
+        <h4>Forecast freedom</h4>
+        <p>Honest pipeline math. KomboAI flags slipping deals before your manager does, with one-click playbooks to recover them.</p>
+        <div class="adv-icon">▲</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- TRUST LOGOS -->
-<section class="trust-section">
-  <div class="trust-title">Trusted by 500+ leading B2B sales teams</div>
-  <div class="logo-grid">
-    <div class="logo-item">NovaTech</div>
-    <div class="logo-item">Meridian</div>
-    <div class="logo-item">ScaleUp</div>
-    <div class="logo-item">Apex</div>
-    <div class="logo-item">Pipeline</div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="features">
-  <h2 class="section-title">Why teams choose <span class="accent">KomboAI</span></h2>
-  <div class="feature-grid">
-    <div class="feature-card">
-      <div class="feature-icon">🎯</div>
-      <div class="feature-title">AI Lead Scoring</div>
-      <div class="feature-desc">Automatically rank and prioritize leads based on buying signals, engagement history, and fit — updated in real time.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">✉️</div>
-      <div class="feature-title">Automated Outreach</div>
-      <div class="feature-desc">Craft personalized email sequences powered by AI. Reach the right prospects with the right message at scale.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">📊</div>
-      <div class="feature-title">Pipeline Intelligence</div>
-      <div class="feature-desc">See the health of every deal at a glance. Flags stale opportunities and forecasts revenue with 94% accuracy.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🤖</div>
-      <div class="feature-title">Ask KomboAI</div>
-      <div class="feature-desc">Get instant answers about your pipeline, forecasts, and deal status — all in natural language.</div>
-    </div>
-  </div>
-
-  <h2 class="section-title">No tedious, no <span class="accent">slow process.</span> Just selling.</h2>
-  <div class="stats-band">
-    <div class="stat-col">
-      <div class="stat-num">500+</div>
-      <div class="stat-desc">B2B teams trust KomboAI</div>
-    </div>
-    <div class="stat-col">
-      <div class="stat-num">40%</div>
-      <div class="stat-desc">Higher close rate on average</div>
-    </div>
-    <div class="stat-col">
-      <div class="stat-num">60%</div>
-      <div class="stat-desc">Less time on manual research</div>
-    </div>
-  </div>
-</section>
-
-<!-- COMPARISON -->
-<section class="comparison">
-  <h2 class="comp-title">Stop wasting time on manual work.</h2>
-  <p class="comp-subtitle">Every minute your reps spend on research is a minute they're not selling. KomboAI reclaims that time.</p>
-  <table class="comp-table">
-    <thead>
-      <tr>
-        <th style="width:30%">Feature</th>
-        <th style="width:35%">Old Way</th>
-        <th style="width:35%">KomboAI</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Lead Prioritization</td>
-        <td class="dash">Manual guessing</td>
-        <td class="check">AI-powered scoring ✓</td>
-      </tr>
-      <tr>
-        <td>Outreach Personalization</td>
-        <td class="dash">Copy-paste templates</td>
-        <td class="check">AI drafts emails ✓</td>
-      </tr>
-      <tr>
-        <td>Pipeline Forecast</td>
-        <td class="dash">Hope & spreadsheets</td>
-        <td class="check">94% accuracy ✓</td>
-      </tr>
-      <tr>
-        <td>Deal Intelligence</td>
-        <td class="dash">Manual research</td>
-        <td class="check">Real-time insights ✓</td>
-      </tr>
-      <tr>
-        <td>Time per lead</td>
-        <td class="dash">45 minutes</td>
-        <td class="check">15 minutes ✓</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
-
-<!-- TESTIMONIALS -->
-<section class="testimonials">
-  <h2 class="section-title">What <span class="accent">founders</span> are saying</h2>
-  <div class="t-grid">
-    <div class="t-card">
-      <div class="t-video">▶ Video Testimonial</div>
-      <div class="t-company">NovaTech Solutions</div>
-      <div class="t-quote">"Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher."</div>
-    </div>
-    <div class="t-card">
-      <div class="t-video">▶ Video Testimonial</div>
-      <div class="t-company">Meridian Group</div>
-      <div class="t-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — close rate jumped 40%."</div>
-    </div>
-  </div>
-</section>
-
-<!-- BENEFITS -->
-<section class="benefits">
-  <h2 class="section-title">Everything your team<br>needs to <span class="accent">win.</span></h2>
-  <div class="benefit-grid">
-    <div class="benefit-card">
-      <div class="benefit-tag">Sales</div>
-      <div class="benefit-title">Lead Ranking</div>
-      <div class="benefit-desc">Automatically identify the most valuable prospects with AI-powered scoring. No more guessing about who to call first.</div>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-tag">Growth</div>
-      <div class="benefit-title">Outreach At Scale</div>
-      <div class="benefit-desc">AI-drafted emails that feel personal. Reach more prospects without sacrificing quality or personalization.</div>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-tag">Ops</div>
-      <div class="benefit-title">Pipeline Visibility</div>
-      <div class="benefit-desc">Real-time pipeline intelligence. Know your forecast before your Monday meeting.</div>
-    </div>
-    <div class="benefit-card">
-      <div class="benefit-tag">Intelligence</div>
-      <div class="benefit-title">Deal Coaching</div>
-      <div class="benefit-desc">Live call coaching that whispers the next question, the right objection, and the close that fits the deal.</div>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section class="faq">
-  <h2 class="section-title">Questions? We've got <span class="accent">answers.</span></h2>
-  <div class="faq-grid">
-    <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">How does it work? <span>+</span></div>
-      <div class="faq-a">KomboAI integrates with your CRM and sits on top of your existing sales process. AI scores leads, drafts emails, and flags stale deals in real time.</div>
-    </div>
-    <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">What CRMs do you support? <span>+</span></div>
-      <div class="faq-a">We support Salesforce, HubSpot, Outreach, and 20+ other platforms. Native integrations mean no manual data entry.</div>
-    </div>
-    <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">Is my data safe? <span>+</span></div>
-      <div class="faq-a">All data is encrypted, SOC 2 compliant, and never shared with third parties. Your CRM data stays in your CRM.</div>
-    </div>
-    <div class="faq-item" onclick="this.classList.toggle('open')">
-      <div class="faq-q">How much does it cost? <span>+</span></div>
-      <div class="faq-a">Pricing starts at $500/month for small teams and scales with your usage. Try free for 14 days, no credit card required.</div>
-    </div>
-  </div>
-</section>
-
-<!-- FINAL CTA -->
-<section class="cta-final">
-  <h2>Ready to give your<br>sales team <span class="accent">superpowers?</span></h2>
-  <p>Join 500+ teams closing more deals, faster.</p>
-  <a href="#" class="cta-final-btn">Try Free Trial</a>
-</section>
-
-<!-- FOOTER -->
-<div class="footer">
-  <div class="footer-brand">
-    <a href="../index.html" class="logo">
-      <div class="logo-mark">K</div>
-      <span class="logo-name">KomboAI</span>
-    </a>
-    <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
-  </div>
-  <div class="footer-col">
-    <h4>Product</h4>
-    <ul>
-      <li><a href="#">Features</a></li>
-      <li><a href="#">Pricing</a></li>
-      <li><a href="#">Integrations</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>Resources</h4>
-    <ul>
-      <li><a href="#">Blog</a></li>
-      <li><a href="#">Guides</a></li>
-      <li><a href="#">Customers</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>Company</h4>
-    <ul>
-      <li><a href="#">About</a></li>
-      <li><a href="#">Contact</a></li>
-      <li><a href="#">Team</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>Legal</h4>
-    <ul>
-      <li><a href="#">Terms</a></li>
-      <li><a href="#">Privacy</a></li>
-      <li><a href="#">Security</a></li>
-    </ul>
+<div class="marquee">
+  <div class="marquee-track">
+    <span>simpler</span><span>sharper</span><span>quieter</span><span>faster</span><span>kinder to reps</span><span>built for closing</span>
+    <span>simpler</span><span>sharper</span><span>quieter</span><span>faster</span><span>kinder to reps</span><span>built for closing</span>
   </div>
 </div>
 
-<div class="footer-bottom">
-  <span>Kevin Hawkins · KomboAI · 2026 · V7 Revenue On Autopilot</span>
-  <a href="./index.html">← Back to Mockups</a>
-</div>
+<section>
+  <div class="container">
+    <h2 class="h-section">Comparison</h2>
+    <p class="section-lead">What makes KomboAI different? Take a look at how we stand out from the rest of the stack.</p>
+    <div class="compare-card">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Legacy CRM</th>
+            <th>Outreach tools</th>
+            <th>Generic AI add-ons</th>
+            <th class="kombo">komboai</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Auto-scored leads</td>
+            <td><span class="nope">—</span></td>
+            <td><span class="nope">—</span></td>
+            <td><span class="nope">—</span></td>
+            <td class="kombo"><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td>Personalised outreach</td>
+            <td><span class="nope">—</span></td>
+            <td><span class="check">✓</span></td>
+            <td><span class="nope">—</span></td>
+            <td class="kombo"><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td>Auto-logged activity</td>
+            <td><span class="nope">—</span></td>
+            <td><span class="nope">—</span></td>
+            <td><span class="nope">—</span></td>
+            <td class="kombo"><span class="check">✓</span></td>
+          </tr>
+          <tr>
+            <td>Honest forecasting</td>
+            <td><span class="nope">—</span></td>
+            <td><span class="nope">—</span></td>
+            <td><span class="nope">—</span></td>
+            <td class="kombo"><span class="check">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
-</div>
+<section>
+  <div class="container">
+    <h2 class="h-section">By the <em>numbers.</em></h2>
+    <p class="section-lead">Real results from real revenue teams that swapped busywork for selling.</p>
+    <div class="stats-band">
+      <div class="stat-card">
+        <div class="stat-num">500+</div>
+        <div class="stat-label">Sales teams</div>
+        <div class="stat-desc">From scrappy startups to public companies running on KomboAI.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">40%</div>
+        <div class="stat-label">More closed-won</div>
+        <div class="stat-desc">Average lift in close rate within the first quarter of switching.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">60%</div>
+        <div class="stat-label">Less admin time</div>
+        <div class="stat-desc">Hours saved per rep, per week — back to actual selling.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="gift">
+      <h3>Bring KomboAI<br/>to your <em>team.</em></h3>
+      <p>Refer a teammate, a friendly competitor, or your sales manager. We'll set them up with a free month and you'll get one too. Less effort, more upside.</p>
+      <a href="#" class="btn-ink">Get a referral link →</a>
+    </div>
+
+    <div class="bestseller-wrap">
+      <div class="bestseller-badge">BEST<br/>SELLER<br/>★</div>
+      <div class="bestseller">
+        <div class="quote-dots"><span></span><span></span><span></span></div>
+        <h3>You got <em>KomboAI.</em></h3>
+        <p>Manny believes the best sales tool is the one your reps actually open. KomboAI runs in the background of the apps they already live in — calendar, inbox, CRM — so adoption is automatic.</p>
+        <a href="#" class="btn-ink">Start a trial</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="h-section">Success <em>Stories</em></h2>
+    <p class="section-lead">Discover how KomboAI changed the way modern revenue teams work.</p>
+    <div class="stories-grid">
+      <div class="story">
+        <div class="story-stars">★★★★★</div>
+        <p>"My reps stopped complaining about admin overnight. KomboAI quietly handles the parts of the job nobody likes — and our forecasts have never been more accurate."</p>
+        <div class="story-author">
+          <div class="story-avatar"></div>
+          <div class="story-meta"><strong>Donald Wright</strong><span>VP Sales, Meridian</span></div>
+        </div>
+      </div>
+      <div class="story">
+        <div class="story-stars">★★★★★</div>
+        <p>"I've never seen such honest marketing before. I expected hype, got results — 40% close rate lift in the first quarter, and our SDRs actually like the tool."</p>
+        <div class="story-author">
+          <div class="story-avatar" style="background: var(--ink);"></div>
+          <div class="story-meta"><strong>Emma Sato</strong><span>RevOps Lead, ScaleUp</span></div>
+        </div>
+      </div>
+      <div class="story">
+        <div class="story-stars">★★★★★</div>
+        <p>"Switching to KomboAI made me realise how much manual work it was for everyone. Now reps just sell. It's the calmest sales floor we've ever run."</p>
+        <div class="story-author">
+          <div class="story-avatar"></div>
+          <div class="story-meta"><strong>Stacy Ramirez</strong><span>CRO, Apex</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-bottom: 20px;">
+  <div class="container">
+    <div class="final">
+      <h2>Less <em>stack.</em><br/>More <em>sold.</em></h2>
+      <p>Try KomboAI free for 14 days. No credit card. No migration. Just fewer tabs and more closed deals.</p>
+      <a href="#" class="btn-red">Get selling →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-row">
+    <div class="logo">kombo<em>ai</em></div>
+    <div class="footer-links">
+      <a href="#">Product</a>
+      <a href="#">Pricing</a>
+      <a href="#">Stories</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+    <div>© 2026 KomboAI</div>
+  </div>
+</footer>
+
 </body>
 </html>
