@@ -25,10 +25,15 @@
   .thumb-title .it{font-style:italic}
   .thumb-footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;margin-top:auto}
 
-  /* V1 — Quiet Confidence */
-  .v1 .thumb{background:linear-gradient(160deg,#F4F0E8 0%,#EAE3D4 100%);color:#161512}
-  .v1 .thumb-num{color:#7A7770}
-  .v1 .accent{color:#FF6B3D}
+  /* V1 — Revenue On Autopilot */
+  .v1 .thumb{background:#0D0D12;color:#F5F5F7;position:relative;overflow:hidden}
+  .v1 .thumb::before{content:"";position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(91,141,238,.15),transparent 70%);pointer-events:none}
+  .v1 .thumb-num{color:rgba(245,245,247,.4)}
+  .v1 .display{position:relative;z-index:1;font-size:36px;font-weight:700;line-height:1.05;letter-spacing:-.03em}
+  .v1 .display .muted{color:rgba(245,245,247,.45)}
+  .v1 .metric{position:relative;z-index:1;display:inline-flex;gap:16px;margin-right:18px;margin-top:12px;font-size:12px;color:rgba(245,245,247,.7)}
+  .v1 .metric-val{font-weight:700;color:#F5F5F7}
+  .v1 .accent{color:#5B8DEE}
 
   /* V2 — Sales Floor Energy */
   .v2 .thumb{background:linear-gradient(160deg,#F0ECFF 0%,#FFE8D6 60%,#F0FFCC 100%);color:#171326}
@@ -111,17 +116,21 @@
 
   <div class="grid">
 
-    <!-- V1 -->
+    <!-- V1 — Revenue On Autopilot -->
     <a class="card v1" href="./v1_quiet_confidence.html">
       <div class="thumb">
-        <div class="thumb-num">V1 · QUIET CONFIDENCE</div>
-        <div class="thumb-title">Close More Deals<br><span class="it accent">With AI.</span></div>
-        <div class="thumb-footer" style="color:#7A7770"><span>★ Cream · Minimal</span><span>OPEN →</span></div>
+        <div class="thumb-num">V1 · REVENUE ON AUTOPILOT</div>
+        <div class="display">Less <span class="muted">clicks.</span><br/>More <span class="accent">selling.</span></div>
+        <div style="margin-top:12px">
+          <div class="metric"><span class="metric-val">40%</span>close rate</div>
+          <div class="metric"><span class="metric-val">$2.4M</span>pipeline</div>
+        </div>
+        <div class="thumb-footer" style="color:rgba(245,245,247,.4)"><span class="accent">◆ Dark · SaaS</span><span>OPEN →</span></div>
       </div>
       <div class="info">
-        <div class="info-name">V1 — Quiet Confidence</div>
-        <div class="info-desc">Premium minimal. Cream + ink + ember. 104px Inter Tight with Instrument Serif italic accents. Chapter sections with hairline dividers, calm product windows. Apple/Linear energy.</div>
-        <div class="info-tags"><span class="tag">Cream</span><span class="tag">Apple-like</span><span class="tag">Product-led</span></div>
+        <div class="info-name">V1 — Revenue On Autopilot</div>
+        <div class="info-desc">Dark SaaS elegance matching Rox.com aesthetic. Deep background (#0D0D12) with blue accents. Dashboard-led hero, clean Inter typography, modular feature cards, comparison tables, video testimonials. Professional and refined.</div>
+        <div class="info-tags"><span class="tag">Dark</span><span class="tag">SaaS</span><span class="tag">Dashboard</span></div>
       </div>
     </a>
 
