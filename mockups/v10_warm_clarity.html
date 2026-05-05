@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KomboAI — Less clicks. More selling.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Inter, sans-serif; color: #2D2D2D; background: #FFFCF8; line-height: 1.6; }
+
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255, 252, 248, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 16px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { font-weight: 700; font-size: 18px; color: #2D2D2D; }
+    .nav-links { display: flex; gap: 32px; font-size: 14px; }
+    .nav-links a { color: #666; text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: #FF6B35; }
+    .cta-btn {
+      background: #FF6B35; color: white; border: none; padding: 10px 20px;
+      border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .cta-btn:hover { background: #E55A2B; }
+
+    .hero {
+      padding: 80px 40px; text-align: center; background: linear-gradient(135deg, #FFF4E6 0%, #FFFCF8 100%);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .eyebrow { font-size: 12px; color: #FF6B35; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    h1 { font-size: 56px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; color: #1A1A1A; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .subheadline { font-size: 18px; color: #666; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; margin-bottom: 40px; }
+    .primary-btn { background: #FF6B35; color: white; padding: 14px 32px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 16px; transition: background 0.2s; }
+    .primary-btn:hover { background: #E55A2B; }
+    .secondary-btn { background: white; color: #FF6B35; padding: 14px 32px; border-radius: 8px; border: 2px solid #FF6B35; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.2s; }
+    .secondary-btn:hover { background: #FFF4E6; }
+
+    .hero-image { width: 100%; max-width: 900px; margin: 0 auto; height: 400px; background: linear-gradient(135deg, #FFE0C9 0%, #FFEFD5 100%); border-radius: 12px; }
+
+    .section { padding: 80px 40px; }
+    .section-title { font-size: 42px; font-weight: 800; text-align: center; margin-bottom: 16px; }
+    .section-subtitle { font-size: 16px; color: #666; text-align: center; margin-bottom: 48px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+    .comparison-table {
+      width: 100%; max-width: 1000px; margin: 0 auto;
+      border-collapse: collapse;
+      background: white; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .comparison-table thead {
+      background: #F5F2EF; border-bottom: 2px solid #E8E4E0;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 16px; text-align: left; border-bottom: 1px solid #E8E4E0;
+    }
+    .comparison-table th { font-weight: 600; color: #2D2D2D; }
+    .comparison-table td { color: #666; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .check { color: #FF6B35; font-weight: 700; }
+    .cross { color: #CCC; }
+
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .feature-card {
+      background: white; padding: 32px; border-radius: 12px;
+      border: 1px solid #E8E4E0; transition: all 0.3s;
+    }
+    .feature-card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); transform: translateY(-4px); }
+    .feature-icon { width: 48px; height: 48px; background: #FFF4E6; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .feature-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: #666; line-height: 1.6; }
+
+    .testimonials-section {
+      background: linear-gradient(135deg, #FFF4E6 0%, #FFFCF8 100%);
+    }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .testimonial-card {
+      background: white; padding: 32px; border-radius: 12px;
+      border: 1px solid #E8E4E0;
+    }
+    .testimonial-text { font-size: 16px; color: #2D2D2D; margin-bottom: 20px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #FF6B35, #FFB84D); }
+    .author-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .author-info p { font-size: 12px; color: #999; }
+
+    .pricing-section {
+      background: white;
+    }
+    .pricing-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: #FFFCF8; border: 2px solid #E8E4E0; border-radius: 12px; padding: 40px 32px;
+      text-align: center; transition: all 0.3s;
+    }
+    .pricing-card.featured {
+      border-color: #FF6B35; background: #FFF9F4; transform: scale(1.05);
+    }
+    .pricing-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+    .price { font-size: 48px; font-weight: 800; color: #FF6B35; margin-bottom: 8px; }
+    .price-period { font-size: 14px; color: #999; margin-bottom: 32px; }
+    .pricing-features { text-align: left; margin-bottom: 32px; }
+    .pricing-features li { list-style: none; padding: 12px 0; border-bottom: 1px solid #E8E4E0; font-size: 14px; color: #666; }
+    .pricing-features li::before { content: "✓ "; color: #FF6B35; font-weight: 700; margin-right: 8px; }
+
+    .faq-section {
+      background: linear-gradient(135deg, #FFF4E6 0%, #FFFCF8 100%);
+    }
+    .faq-container {
+      max-width: 700px; margin: 0 auto;
+    }
+    .faq-item {
+      background: white; border: 1px solid #E8E4E0; border-radius: 8px; margin-bottom: 16px; overflow: hidden;
+    }
+    .faq-question {
+      padding: 20px; cursor: pointer; font-weight: 600; color: #2D2D2D; display: flex; justify-content: space-between; align-items: center; background: white; border: none; width: 100%; text-align: left;
+    }
+    .faq-question::after { content: "+"; font-size: 24px; }
+    .faq-item.active .faq-question::after { content: "−"; }
+    .faq-answer { padding: 0 20px; max-height: 0; overflow: hidden; transition: all 0.3s; color: #666; font-size: 14px; }
+    .faq-item.active .faq-answer { padding: 0 20px 20px 20px; max-height: 500px; }
+
+    .trust-logos {
+      display: flex; gap: 32px; justify-content: center; align-items: center; flex-wrap: wrap;
+      padding: 40px; max-width: 1000px; margin: 0 auto;
+    }
+    .trust-logo { width: 120px; height: 40px; background: #F5F2EF; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; }
+
+    .cta-section {
+      padding: 80px 40px; text-align: center; background: linear-gradient(135deg, #FF6B35 0%, #FFB84D 100%);
+      color: white;
+    }
+    .cta-section h2 { font-size: 42px; font-weight: 800; margin-bottom: 16px; }
+    .cta-section p { font-size: 18px; margin-bottom: 32px; }
+    .cta-btn-white { background: white; color: #FF6B35; padding: 14px 32px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 16px; }
+    .cta-btn-white:hover { background: #FFF4E6; }
+
+    .footer {
+      background: #2D2D2D; color: white; padding: 40px; text-align: center; font-size: 14px;
+    }
+    .footer a { color: #FF6B35; text-decoration: none; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+    }
+    .fade-in.delay-1 { animation-delay: 0.1s; }
+    .fade-in.delay-2 { animation-delay: 0.2s; }
+    .fade-in.delay-3 { animation-delay: 0.3s; }
+    .fade-in.delay-4 { animation-delay: 0.4s; }
+
+    .feature-card, .testimonial-card, .pricing-card, .faq-item {
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover, .testimonial-card:hover, .pricing-card:hover, .faq-item:hover {
+      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar fade-in">
+    <div class="logo">KOMBO</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <button class="cta-btn">Get Started</button>
+  </nav>
+
+  <section class="hero fade-in delay-1">
+    <div class="eyebrow">Sales Intelligence Platform</div>
+    <h1>Less clicks. More selling.</h1>
+    <p class="subheadline">Close more deals with AI-powered prospect intelligence and automated outreach</p>
+    <div class="hero-buttons">
+      <button class="primary-btn">Start Free Trial</button>
+      <button class="secondary-btn">Watch Demo</button>
+    </div>
+    <div class="hero-image fade-in delay-2"></div>
+  </section>
+
+  <section class="section fade-in delay-2">
+    <h2 class="section-title">How KomboAI Compares</h2>
+    <p class="section-subtitle">See why teams choose KomboAI for intelligent sales automation</p>
+    <table class="comparison-table fade-in delay-3">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>KomboAI</th>
+          <th>Competitor A</th>
+          <th>Competitor B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AI Prospect Matching</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="cross">—</td>
+        </tr>
+        <tr>
+          <td>Email Automation</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+        </tr>
+        <tr>
+          <td>Call Recording & Transcription</td>
+          <td class="check">✓</td>
+          <td class="cross">—</td>
+          <td class="cross">—</td>
+        </tr>
+        <tr>
+          <td>Real-time Win/Loss Analysis</td>
+          <td class="check">✓</td>
+          <td class="cross">—</td>
+          <td class="cross">—</td>
+        </tr>
+        <tr>
+          <td>CRM Integration</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section fade-in delay-3" id="features">
+    <h2 class="section-title">Powerful Features</h2>
+    <p class="section-subtitle">Everything you need to accelerate your sales pipeline</p>
+    <div class="features-grid">
+      <div class="feature-card fade-in delay-1">
+        <div class="feature-icon">🎯</div>
+        <h3>Smart Prospecting</h3>
+        <p>AI-powered prospect identification based on your ideal customer profile</p>
+      </div>
+      <div class="feature-card fade-in delay-2">
+        <div class="feature-icon">📧</div>
+        <h3>Personalized Outreach</h3>
+        <p>Auto-generated personalized emails that sound human and convert</p>
+      </div>
+      <div class="feature-card fade-in delay-3">
+        <div class="feature-icon">📞</div>
+        <h3>Call Intelligence</h3>
+        <p>Record, transcribe, and analyze all sales calls automatically</p>
+      </div>
+      <div class="feature-card fade-in delay-4">
+        <div class="feature-icon">🔄</div>
+        <h3>CRM Sync</h3>
+        <p>Seamless integration with Salesforce, HubSpot, Pipedrive, and more</p>
+      </div>
+      <div class="feature-card fade-in delay-1">
+        <div class="feature-icon">📊</div>
+        <h3>Pipeline Analytics</h3>
+        <p>Real-time visibility into deal stages and conversion metrics</p>
+      </div>
+      <div class="feature-card fade-in delay-2">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Sales Coach</h3>
+        <p>Get coaching insights from analyzed calls and win patterns</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section fade-in delay-4">
+    <div class="section">
+      <h2 class="section-title">Loved by Sales Leaders</h2>
+      <p class="section-subtitle">See what our customers have to say</p>
+      <div class="testimonials-grid">
+        <div class="testimonial-card fade-in delay-1">
+          <p class="testimonial-text">"KomboAI increased our close rate by 40% in the first quarter. The prospect matching alone is worth every penny."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar"></div>
+            <div class="author-info">
+              <h4>Sarah Chen</h4>
+              <p>VP Sales, TechCorp Inc.</p>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in delay-2">
+          <p class="testimonial-text">"Our sales team saves 8 hours per week on prospecting. That's 2 days a month spent on actual selling."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar"></div>
+            <div class="author-info">
+              <h4>Michael Rodriguez</h4>
+              <p>Sales Director, Growth Labs</p>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card fade-in delay-3">
+          <p class="testimonial-text">"The call intelligence features give us insights we never had before. Every rep is getting better every day."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar"></div>
+            <div class="author-info">
+              <h4>Emma Williams</h4>
+              <p>CEO, Berlin Ventures</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing-section fade-in delay-1" id="pricing">
+    <div class="section">
+      <h2 class="section-title">Simple Pricing</h2>
+      <p class="section-subtitle">Choose the plan that fits your team</p>
+      <div class="pricing-cards">
+        <div class="pricing-card fade-in delay-1">
+          <h3>Starter</h3>
+          <div class="price">$99</div>
+          <p class="price-period">per month</p>
+          <ul class="pricing-features">
+            <li>Up to 5 users</li>
+            <li>500 monthly emails</li>
+            <li>Basic integrations</li>
+            <li>Email support</li>
+          </ul>
+          <button class="primary-btn">Get Started</button>
+        </div>
+        <div class="pricing-card featured fade-in delay-2">
+          <h3>Professional</h3>
+          <div class="price">$299</div>
+          <p class="price-period">per month</p>
+          <ul class="pricing-features">
+            <li>Up to 20 users</li>
+            <li>5,000 monthly emails</li>
+            <li>Call recording & AI analysis</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="primary-btn">Get Started</button>
+        </div>
+        <div class="pricing-card fade-in delay-3">
+          <h3>Enterprise</h3>
+          <div class="price">Custom</div>
+          <p class="price-period">tailored pricing</p>
+          <ul class="pricing-features">
+            <li>Unlimited users</li>
+            <li>Unlimited emails</li>
+            <li>Custom AI models</li>
+            <li>Dedicated support</li>
+          </ul>
+          <button class="primary-btn">Contact Sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section fade-in delay-2" id="faq">
+    <div class="section">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">Everything you need to know</p>
+      <div class="faq-container">
+        <div class="faq-item fade-in delay-1">
+          <button class="faq-question">How does KomboAI's prospect matching work?</button>
+          <div class="faq-answer">Our AI analyzes your ideal customer profile, your CRM data, and industry signals to identify prospects most likely to convert. It improves continuously as your team marks deals as won or lost.</div>
+        </div>
+        <div class="faq-item fade-in delay-2">
+          <button class="faq-question">Can I integrate with my existing CRM?</button>
+          <div class="faq-answer">Yes! We integrate with Salesforce, HubSpot, Pipedrive, Freshsales, and 50+ other platforms. Two-way sync keeps your data in perfect alignment.</div>
+        </div>
+        <div class="faq-item fade-in delay-3">
+          <button class="faq-question">Is there a free trial?</button>
+          <div class="faq-answer">Absolutely. All plans come with a 14-day free trial with full feature access. No credit card required to get started.</div>
+        </div>
+        <div class="faq-item fade-in delay-4">
+          <button class="faq-question">How secure is my data?</button>
+          <div class="faq-answer">We use enterprise-grade encryption, SOC 2 Type II compliance, and regular security audits. Your data is backed up in multiple regions and never shared with third parties.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-in delay-3">
+    <h2 class="section-title">Trusted by Leading Companies</h2>
+    <div class="trust-logos">
+      <div class="trust-logo">Stripe</div>
+      <div class="trust-logo">HubSpot</div>
+      <div class="trust-logo">Calendly</div>
+      <div class="trust-logo">Zendesk</div>
+      <div class="trust-logo">Asana</div>
+      <div class="trust-logo">Slack</div>
+    </div>
+  </section>
+
+  <section class="cta-section fade-in delay-4">
+    <h2>Start selling smarter today</h2>
+    <p>Join hundreds of teams closing more deals with KomboAI</p>
+    <button class="cta-btn-white">Get Started Free</button>
+  </section>
+
+  <footer class="footer fade-in">
+    <p>&copy; 2026 KomboAI. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+    <p style="margin-top: 16px; font-size: 12px;">← <a href="index.html" style="color: #FF6B35;">BACK TO MOCKUPS</a></p>
+  </footer>
+
+  <script>
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      item.querySelector('.faq-question').addEventListener('click', () => {
+        item.classList.toggle('active');
+      });
+    });
+
+    const obs = new IntersectionObserver(e => e.forEach(x => {
+      if(x.isIntersecting) {
+        x.target.classList.add('fade-in');
+        obs.unobserve(x.target);
+      }
+    }), {threshold: 0.1});
+    document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
