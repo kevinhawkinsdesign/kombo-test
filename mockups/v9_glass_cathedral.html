@@ -252,15 +252,86 @@
   .footer-grid .col a:hover { color: var(--ink); }
   .footer-bottom { padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); }
 
-  @media (max-width: 880px) {
-    .nav-links { display: none; }
-    .dash-body { grid-template-columns: 1fr; }
-    .dash-sidebar { display: none; }
+  @media (max-width: 1024px) {
+    .container { padding: 0 22px; }
+    .nav-links { gap: 22px; font-size: 13px; }
+    .hero { padding: 80px 0 60px; }
+    .dash-body { grid-template-columns: 180px 1fr; }
+    .dash-sidebar { padding: 18px 12px; }
+    .dash-main { padding: 20px 22px; }
     .metrics-row { grid-template-columns: repeat(2, 1fr); }
-    .how-grid, .feat-grid, .rewards, .flow-wrap, .integ, .price-wrap, .footer-grid { grid-template-columns: 1fr; }
-    .how-card.span2 { grid-column: auto; }
-    .table-row .row { grid-template-columns: 1fr 1fr; }
-    .table-row .row > *:nth-child(3), .table-row .row > *:nth-child(4) { display: none; }
+    .how-grid { grid-template-columns: 1fr 1fr; }
+    .feat-grid { grid-template-columns: 1fr 1fr; }
+    .feat-grid .feat-card.neon-tile { grid-column: span 2; }
+    .integ { grid-template-columns: repeat(2, 1fr); }
+    .price-wrap { grid-template-columns: 1fr; }
+    .flow-wrap { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+    section.std { padding: 80px 0; }
+    .section-h { margin-bottom: 44px; }
+  }
+
+  @media (max-width: 880px) {
+    .container { padding: 0 18px; }
+    .nav-links { display: none; }
+    .nav-row { padding: 14px 0; }
+    .nav-cta { padding: 9px 16px; font-size: 12px; }
+    .hero { padding: 60px 0 50px; }
+    .eyebrow { font-size: 12px; padding: 6px 14px; margin-bottom: 22px; }
+    .hero p { font-size: 16px; padding: 0 4px; }
+    .hero-cta-row { flex-wrap: wrap; gap: 10px; margin-bottom: 50px; }
+    .btn-neon, .btn-ghost { padding: 12px 22px; font-size: 13px; }
+    /* Dashboard: stack sidebar above main on mobile */
+    .dashboard { border-radius: 12px; }
+    .dash-bar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+    .dash-tabs { margin-left: 0; }
+    .dash-tab { padding: 5px 10px; font-size: 11px; }
+    .dash-search { display: none; }
+    .dash-body { grid-template-columns: 1fr; min-height: 0; }
+    .dash-sidebar { display: none; }
+    .dash-main { padding: 18px 14px; }
+    .dash-h h3 { font-size: 16px; }
+    .metrics-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .metric { padding: 12px; }
+    .metric-val { font-size: 19px; }
+    .chart-bars { height: 80px; gap: 5px; }
+    .chart-row { padding: 14px; }
+    /* Table: wrap in horizontal scroll instead of hiding columns */
+    .table-row { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-row .row { grid-template-columns: 1.4fr 1fr 1fr 0.8fr; min-width: 560px; padding: 10px 14px; font-size: 11px; }
+    /* Sections */
+    section.std { padding: 60px 0; }
+    .section-h { margin-bottom: 36px; }
+    .section-h p { font-size: 15px; }
+    .how-grid, .feat-grid, .rewards, .integ, .footer-grid { grid-template-columns: 1fr; }
+    .feat-grid .feat-card.neon-tile { grid-column: auto; }
+    .flow-wrap { grid-template-columns: 1fr; }
+    .how-card { padding: 24px; min-height: 0; }
+    .how-card.span2 { grid-column: auto; min-height: 0; }
+    .how-card.span2 > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; gap: 20px !important; }
+    .how-card h4 { font-size: 19px; }
+    .how-num { top: 18px; right: 22px; }
+    .feat-card { padding: 26px; min-height: 0; }
+    .feat-card h4 { font-size: 22px; }
+    .reward-card { padding: 22px; }
+    .integ-card { padding: 18px; }
+    .price-wrap { grid-template-columns: 1fr; }
+    .price-features { padding: 24px; }
+    .price-card { padding: 24px; }
+    .price-num { font-size: 40px; }
+    .flow-diagram { padding: 22px; }
+    /* Footer */
+    .footer-grid { gap: 28px; margin-bottom: 36px; }
+    .footer-bottom { flex-direction: column; gap: 8px; align-items: flex-start; }
+    footer { padding: 60px 0 40px; margin-top: 40px; }
+    .faq-list summary { padding: 18px 20px; font-size: 14px; }
+    details.faq .faq-body { padding: 0 20px 18px; font-size: 13px; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { letter-spacing: -0.03em; }
+    .hero h1 .highlight { padding: 0 10px 3px; }
+    .metric-val { font-size: 17px; }
   }
 
   /* Animations */
