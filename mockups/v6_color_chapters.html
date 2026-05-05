@@ -39,14 +39,14 @@
   .kombo-text.dark{color:var(--ink)}
 
   /* === HERO (deep blue) === */
-  .hero{position:relative;background:radial-gradient(circle at 70% 30%,var(--blue-2) 0%,var(--blue) 50%,#08184D 100%);padding:0;overflow:hidden;min-height:920px}
+  .hero{position:relative;background:radial-gradient(circle at 70% 30%,var(--blue-2) 0%,var(--blue) 50%,#08184D 100%);padding:0;overflow:hidden;min-height:100vh;display:flex;flex-direction:column}
   .hero-grain{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1.5px);background-size:4px 4px;pointer-events:none;opacity:.4}
   .hero-orbit{position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
   .ho1{width:1100px;height:1100px;top:-380px;right:-280px}
   .ho2{width:760px;height:760px;top:-200px;right:-120px}
   .ho3{width:380px;height:380px;top:-40px;right:60px}
 
-  .topnav{display:flex;align-items:center;justify-content:space-between;padding:28px 56px;position:relative;z-index:5}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:20px 56px;position:relative;z-index:5}
   .topnav .nav-mid{display:flex;gap:30px}
   .topnav .nav-mid a{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:rgba(255,255,255,.78);text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .topnav .nav-mid a::after{content:"▾";font-size:9px;opacity:.6}
@@ -54,16 +54,16 @@
 
   .corner-tag{position:absolute;top:14px;right:56px;background:var(--coral);color:#fff;font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:14px;padding:10px 22px;border-radius:0 0 14px 14px;letter-spacing:.02em;z-index:6}
 
-  .hero-body{padding:60px 80px 80px;display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center;position:relative}
+  .hero-body{padding:24px 80px 24px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;position:relative;flex:1}
 
-  h1.cap{font-family:'Caprasimo',serif;font-size:160px;line-height:.86;letter-spacing:-.025em;color:#fff;margin-bottom:36px}
+  h1.cap{font-family:'Caprasimo',serif;font-size:104px;line-height:.86;letter-spacing:-.025em;color:#fff;margin-bottom:22px}
   h1.cap .ai{font-family:'Fraunces',serif;font-style:italic;font-weight:600;background:linear-gradient(120deg,var(--orange) 0%,var(--coral) 50%,var(--purple-2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
   h1.cap .with{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.6em;color:rgba(255,255,255,.78);letter-spacing:0;display:inline-block;margin-right:16px}
   h1.cap .underline{position:relative}
   h1.cap .underline::after{content:"";position:absolute;left:-4px;right:-4px;bottom:.06em;height:.18em;background:var(--orange);z-index:-1;border-radius:99px}
   h1.cap .pill-circle{display:inline-block;padding:0 .14em;border:5px solid var(--coral);border-radius:99px;background:rgba(232,90,90,.18)}
 
-  .lede{font-family:'Inter',sans-serif;font-size:20px;line-height:1.55;color:rgba(255,255,255,.82);max-width:560px;margin-bottom:36px}
+  .lede{font-family:'Inter',sans-serif;font-size:17px;line-height:1.5;color:rgba(255,255,255,.82);max-width:540px;margin-bottom:22px}
   .lede b{color:#fff;font-weight:700}
 
   .hero-ctas{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
@@ -73,7 +73,7 @@
   .btn-cap.coral{background:var(--coral);color:#fff;box-shadow:0 8px 24px rgba(232,90,90,.4)}
 
   /* business card peek */
-  .biz-card-stack{position:relative;height:560px}
+  .biz-card-stack{position:relative;height:440px}
   .biz-card{position:absolute;width:380px;border-radius:24px;padding:32px;color:#fff;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
   .bc-bg{position:absolute;inset:0;pointer-events:none}
   .biz-card.card1{top:60px;right:-30px;background:linear-gradient(135deg,var(--orange) 0%,var(--coral) 60%,var(--purple) 100%);transform:rotate(6deg)}
@@ -93,6 +93,18 @@
 
   .hero-3d-planet{position:absolute;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFC18C 0%,var(--orange) 50%,#A03A0E 100%);bottom:60px;left:30%;box-shadow:0 30px 60px rgba(242,107,43,.4),inset -30px -20px 0 rgba(0,0,0,.18)}
   .hero-3d-planet::after{content:"";position:absolute;width:200px;height:14px;background:rgba(255,193,140,.35);border-radius:50%;left:-30px;top:65px;transform:rotate(-12deg)}
+
+  /* === HERO STATS — bright accents on dark === */
+  .hero-stats{margin:0 80px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px dashed rgba(255,255,255,.18);padding-top:22px}
+  .hero-stat{padding:0 24px;border-right:1px dashed rgba(255,255,255,.14)}
+  .hero-stat:first-child{padding-left:0}
+  .hero-stat:last-child{border-right:0;padding-right:0}
+  .hero-stat .n{font-family:'Caprasimo',serif;font-size:48px;line-height:.95;letter-spacing:-.02em}
+  .hero-stat:nth-child(1) .n{color:var(--orange)}
+  .hero-stat:nth-child(2) .n{color:var(--coral)}
+  .hero-stat:nth-child(3) .n{color:var(--teal)}
+  .hero-stat:nth-child(4) .n{color:#FFC18C}
+  .hero-stat .l{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:13.5px;margin-top:6px;color:rgba(255,255,255,.78)}
 
   /* === STATS BAND (rainbow band) === */
   .stats-band{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--cream);position:relative;overflow:hidden}
@@ -383,6 +395,13 @@
         </div>
         <div class="hero-3d-planet"></div>
       </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="n">500+</div><div class="l">B2B teams</div></div>
+      <div class="hero-stat"><div class="n">40%</div><div class="l">Higher close rate</div></div>
+      <div class="hero-stat"><div class="n">60%</div><div class="l">Less manual research</div></div>
+      <div class="hero-stat"><div class="n">94%</div><div class="l">Forecast accuracy</div></div>
     </div>
   </section>
 
