@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KomboAI — Your Sales Intelligence Package</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        color: #1a1a1a;
+    }
+
+    .container { width: 100%; max-width: 920px; }
+
+    .invoice {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .invoice::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #5B8DEE 0%, #4C6FD5 50%, #5B8DEE 100%);
+    }
+
+    .invoice-header {
+        padding: 48px 56px 40px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .invoice-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 36px;
+    }
+
+    .logo {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+    }
+
+    .logo .accent { color: #5B8DEE; }
+
+    .invoice-meta {
+        text-align: right;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #94a3b8;
+        font-weight: 600;
+        line-height: 1.8;
+    }
+
+    .invoice-meta .label { color: #94a3b8; }
+    .invoice-meta .value { color: #0f172a; font-weight: 700; }
+
+    .invoice-title-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 12px;
+    }
+
+    .invoice-eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #5B8DEE;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    h1.invoice-title {
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        color: #0f172a;
+    }
+
+    .invoice-subtitle {
+        font-size: 15px;
+        color: #64748b;
+        line-height: 1.6;
+        max-width: 560px;
+        margin-top: 12px;
+    }
+
+    .billing-grid {
+        padding: 36px 56px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        background: #fafbfc;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .billing-block h3 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #94a3b8;
+        margin-bottom: 14px;
+        font-weight: 700;
+    }
+
+    .billing-block .from-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .billing-block .from-detail {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.7;
+    }
+
+    .invoice-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #0f172a;
+        background: #ffffff;
+        transition: all 0.2s;
+    }
+
+    .invoice-input::placeholder { color: #cbd5e1; }
+
+    .invoice-input:focus {
+        outline: none;
+        border-color: #5B8DEE;
+        box-shadow: 0 0 0 3px rgba(91, 141, 238, 0.12);
+    }
+
+    .input-label {
+        display: block;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #94a3b8;
+        margin-bottom: 6px;
+        font-weight: 700;
+    }
+
+    .field-stack { margin-bottom: 14px; }
+    .field-stack:last-child { margin-bottom: 0; }
+
+    .line-items { padding: 36px 56px 24px; }
+
+    .line-items-header {
+        display: grid;
+        grid-template-columns: 2.6fr 1fr 0.9fr 0.9fr;
+        gap: 20px;
+        padding: 0 0 14px;
+        border-bottom: 2px solid #0f172a;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .line-items-header .col-right { text-align: right; }
+
+    .line-item {
+        display: grid;
+        grid-template-columns: 2.6fr 1fr 0.9fr 0.9fr;
+        gap: 20px;
+        padding: 18px 0;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+    }
+
+    .line-item.input-row { padding: 14px 0; }
+
+    .item-num {
+        display: inline-block;
+        width: 22px;
+        font-size: 11px;
+        color: #94a3b8;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+        margin-right: 4px;
+    }
+
+    .item-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .item-description {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.5;
+        padding-left: 26px;
+    }
+
+    .badge {
+        display: inline-block;
+        background: #ecfdf5;
+        color: #059669;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .badge.blue { background: #eff6ff; color: #2563eb; }
+    .badge.purple { background: #f5f3ff; color: #7c3aed; }
+    .badge.amber { background: #fffbeb; color: #d97706; }
+
+    .col-right {
+        text-align: right;
+        font-size: 13px;
+        color: #64748b;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .col-right.amount {
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .col-right.struck {
+        color: #cbd5e1;
+        text-decoration: line-through;
+        font-size: 11px;
+        display: block;
+    }
+
+    .totals {
+        padding: 24px 56px 36px;
+        display: flex;
+        justify-content: flex-end;
+        background: #fafbfc;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .totals-table {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 13px;
+        color: #64748b;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .total-row.discount { color: #059669; }
+
+    .total-row.grand {
+        margin-top: 12px;
+        padding: 14px 0 6px;
+        border-top: 2px solid #0f172a;
+        font-size: 16px;
+        font-weight: 800;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .total-row .label { letter-spacing: 0.04em; }
+    .total-row .value { font-weight: 700; }
+
+    .total-row.grand .value {
+        font-size: 22px;
+        letter-spacing: -0.02em;
+    }
+
+    .footnote {
+        font-size: 12px;
+        color: #5B8DEE;
+        font-weight: 600;
+        margin-top: 10px;
+        text-align: right;
+    }
+
+    .cta-section {
+        padding: 36px 56px 48px;
+        text-align: center;
+        background: #ffffff;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    button[type="submit"] {
+        background: linear-gradient(135deg, #5B8DEE 0%, #4C6FD5 100%);
+        color: white;
+        border: none;
+        padding: 16px 48px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s;
+        box-shadow: 0 8px 20px rgba(91, 141, 238, 0.3);
+        font-family: inherit;
+        letter-spacing: -0.005em;
+    }
+
+    button[type="submit"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(91, 141, 238, 0.4);
+    }
+
+    button[type="submit"]:active { transform: translateY(0); }
+
+    .cta-meta {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 16px;
+        line-height: 1.6;
+    }
+
+    .cta-meta strong { color: #0f172a; }
+
+    .invoice-footer {
+        background: #0f172a;
+        padding: 18px 56px;
+        font-size: 11px;
+        color: #94a3b8;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 600;
+    }
+
+    .invoice-footer .dot { color: #5B8DEE; margin: 0 10px; }
+
+    .back-link {
+        position: fixed;
+        top: 24px;
+        left: 24px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 600;
+        padding: 8px 14px;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .back-link:hover {
+        color: #fff;
+        border-color: rgba(255,255,255,0.4);
+    }
+
+    @media (max-width: 720px) {
+        .invoice-header,
+        .billing-grid,
+        .line-items,
+        .totals,
+        .cta-section,
+        .invoice-footer { padding-left: 24px; padding-right: 24px; }
+
+        .billing-grid { grid-template-columns: 1fr; }
+
+        h1.invoice-title { font-size: 28px; }
+
+        .line-items-header { display: none; }
+
+        .line-item,
+        .line-item.input-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+            padding: 18px 0;
+        }
+
+        .col-right {
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .col-right::before {
+            content: attr(data-label) ": ";
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            margin-right: 6px;
+        }
+
+        .item-description { padding-left: 0; }
+
+        .back-link { top: 12px; left: 12px; }
+    }
+</style>
+</head>
+<body>
+    <a class="back-link" href="./index.html">← Back to mockups</a>
+
+    <div class="container">
+        <form id="leadForm" class="invoice" method="POST" action="#">
+
+            <div class="invoice-header">
+                <div class="invoice-top">
+                    <div class="logo">Kombo<span class="accent">AI</span></div>
+                    <div class="invoice-meta">
+                        <div><span class="label">Invoice</span> <span class="value">№ KOMBO-2026-0001</span></div>
+                        <div><span class="label">Issued</span> <span class="value">May 5, 2026</span></div>
+                        <div><span class="label">Due</span> <span class="value">Instant access</span></div>
+                    </div>
+                </div>
+
+                <div class="invoice-eyebrow">Sales Intelligence · Starter Package</div>
+                <h1 class="invoice-title">Your free package, itemized.</h1>
+                <p class="invoice-subtitle">Everything your sales team needs to win — prospect smarter, sell faster, get coached daily. Fill in the line items below to claim your package.</p>
+            </div>
+
+            <div class="billing-grid">
+                <div class="billing-block">
+                    <h3>Billed From</h3>
+                    <div class="from-name">KomboAI, Inc.</div>
+                    <div class="from-detail">
+                        Sits on top of your CRM<br>
+                        HubSpot · Salesforce · Apollo · Dynamics<br>
+                        hello@komboai.com
+                    </div>
+                </div>
+                <div class="billing-block">
+                    <h3>Billed To</h3>
+                    <div class="field-stack">
+                        <label class="input-label" for="fullName">Full Name</label>
+                        <input class="invoice-input" id="fullName" type="text" name="fullName" required placeholder="Jane Smith">
+                    </div>
+                    <div class="field-stack">
+                        <label class="input-label" for="company">Company</label>
+                        <input class="invoice-input" id="company" type="text" name="company" required placeholder="Acme Corp">
+                    </div>
+                </div>
+            </div>
+
+            <div class="line-items">
+                <div class="line-items-header">
+                    <div>Description</div>
+                    <div class="col-right">Quantity</div>
+                    <div class="col-right">Rate</div>
+                    <div class="col-right">Amount</div>
+                </div>
+
+                <!-- Line 1: 40 free leads -->
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">01</span>40 Free Leads To Get Started <span class="badge">Included</span></div>
+                        <div class="item-description">Hand-matched to your ICP, ready to import into your CRM on day one.</div>
+                    </div>
+                    <div class="col-right" data-label="Qty">40 leads</div>
+                    <div class="col-right" data-label="Rate">$0.00</div>
+                    <div class="col-right amount" data-label="Amount">$0.00</div>
+                </div>
+
+                <!-- Input row 1: email -->
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label" for="email">Work Email <span style="color:#dc2626">*</span></label>
+                        <input class="invoice-input" id="email" type="email" name="email" required placeholder="jane@company.com">
+                    </div>
+                    <div class="col-right" data-label="Qty">—</div>
+                    <div class="col-right" data-label="Rate">—</div>
+                    <div class="col-right" data-label="Amount">—</div>
+                </div>
+
+                <!-- Line 2: verified data -->
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">02</span>Verified Phone Numbers &amp; Emails <span class="badge blue">Bonus</span></div>
+                        <div class="item-description">30+ data points per contact, including direct dials, mobile numbers and intent signals.</div>
+                    </div>
+                    <div class="col-right" data-label="Qty">30+ pts</div>
+                    <div class="col-right struck" data-label="Rate">$199.00</div>
+                    <div class="col-right amount" data-label="Amount">$0.00</div>
+                </div>
+
+                <!-- Input row 2: phone -->
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label" for="phone">Phone Number <span style="color:#dc2626">*</span></label>
+                        <input class="invoice-input" id="phone" type="tel" name="phone" required placeholder="(555) 123-4567">
+                    </div>
+                    <div class="col-right" data-label="Qty">—</div>
+                    <div class="col-right" data-label="Rate">—</div>
+                    <div class="col-right" data-label="Amount">—</div>
+                </div>
+
+                <!-- Line 3: real-time coaching -->
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">03</span>Real-Time Sales Coaching <span class="badge purple">Premium</span></div>
+                        <div class="item-description">AI listens to your calls, identifies winning patterns, and coaches every rep with insights from your top performers.</div>
+                    </div>
+                    <div class="col-right" data-label="Qty">Unlimited</div>
+                    <div class="col-right struck" data-label="Rate">$499.00</div>
+                    <div class="col-right amount" data-label="Amount">$0.00</div>
+                </div>
+
+                <!-- Input row 3: role -->
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label" for="role">Your Role <span style="color:#dc2626">*</span></label>
+                        <input class="invoice-input" id="role" type="text" name="role" required placeholder="SDR, AE, RevOps, Sales Leader…">
+                    </div>
+                    <div class="col-right" data-label="Qty">—</div>
+                    <div class="col-right" data-label="Rate">—</div>
+                    <div class="col-right" data-label="Amount">—</div>
+                </div>
+
+                <!-- Line 4: AI co-pilot -->
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">04</span>AI Co-Pilot On Top Of Your CRM <span class="badge amber">Powered</span></div>
+                        <div class="item-description">Native co-pilot for HubSpot, Salesforce, Apollo and Dynamics. Your data stays exactly where it is.</div>
+                    </div>
+                    <div class="col-right" data-label="Qty">Always-on</div>
+                    <div class="col-right struck" data-label="Rate">$299.00</div>
+                    <div class="col-right amount" data-label="Amount">$0.00</div>
+                </div>
+
+                <!-- Input row 4: CRM -->
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label" for="crm">CRM In Use</label>
+                        <input class="invoice-input" id="crm" type="text" name="crm" placeholder="HubSpot · Salesforce · Apollo · Dynamics · Other">
+                    </div>
+                    <div class="col-right" data-label="Qty">—</div>
+                    <div class="col-right" data-label="Rate">—</div>
+                    <div class="col-right" data-label="Amount">—</div>
+                </div>
+
+                <!-- Line 5: 60% less manual work -->
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">05</span>60% Less Manual Work <span class="badge">Guaranteed</span></div>
+                        <div class="item-description">Sequences, dialing, drafting and CRM admin — automated from day one so reps spend their time selling.</div>
+                    </div>
+                    <div class="col-right" data-label="Qty">From day 1</div>
+                    <div class="col-right" data-label="Rate">$0.00</div>
+                    <div class="col-right amount" data-label="Amount">$0.00</div>
+                </div>
+            </div>
+
+            <div class="totals">
+                <div class="totals-table">
+                    <div class="total-row">
+                        <span class="label">Subtotal</span>
+                        <span class="value">$997.00</span>
+                    </div>
+                    <div class="total-row discount">
+                        <span class="label">Limited-time offer</span>
+                        <span class="value">−$997.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="label">Tax</span>
+                        <span class="value">$0.00</span>
+                    </div>
+                    <div class="total-row grand">
+                        <span class="label">Total Due</span>
+                        <span class="value">$0.00</span>
+                    </div>
+                    <div class="footnote">✓ Free forever · No credit card required</div>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <button type="submit">Claim Your Free Package →</button>
+                <div class="cta-meta">Instant access to <strong>40 leads</strong> + the full KomboAI platform for 14 days. No credit card. Cancel anytime.</div>
+            </div>
+
+            <div class="invoice-footer">
+                Secure <span class="dot">·</span> Instant Access <span class="dot">·</span> No Credit Card <span class="dot">·</span> Cancel Anytime
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('leadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                fullName: document.getElementById('fullName').value,
+                company: document.getElementById('company').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                role: document.getElementById('role').value,
+                crm: document.getElementById('crm').value,
+            };
+            console.log('Lead captured:', data);
+            alert('Thank you, ' + (data.fullName || 'there') + '! Your free package is on its way — check your inbox for instant access.');
+        });
+    </script>
+</body>
+</html>
