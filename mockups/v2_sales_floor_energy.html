@@ -2,482 +2,574 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kombo — V2 Sales Floor Energy</title>
+<title>KomboAI — V2 Sales Floor Energy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Caveat:wght@500;700&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --bg:#FFF9EE;
-    --ink:#171326;
-    --ink-2:#3D374F;
-    --muted:#7A7388;
-    --line:#E8E1CF;
-    --lavender:#C8B6FF;
-    --lavender-2:#A48BFF;
-    --peach:#FFB89E;
-    --peach-2:#FF8B6B;
+    --lavender:#E0DAF5;
+    --lavender-2:#C9BFEC;
+    --peach:#FFE0CC;
+    --peach-2:#FFCEAD;
     --lime:#D4E847;
-    --lime-2:#B8D930;
+    --lime-2:#BFD32B;
     --purple:#6B4EFF;
-    --pink:#FF7A93;
-    --sky:#9ED9FF;
-    --yellow:#FFD93D;
-    --paper:#FFFEF7;
+    --purple-2:#5638E5;
+    --cream:#FFF9EE;
+    --ink:#171326;
+    --ink-2:#3A3354;
+    --hot-pink:#FF4D8F;
+    --sky:#9DC3EE;
   }
-  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-  .wrap{width:1440px;margin:0 auto;padding:0 56px}
-  .scribble{font-family:'Caveat',cursive}
-  .serif{font-family:'Fraunces',serif}
+  html,body{background:var(--cream);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");opacity:.6;mix-blend-mode:multiply}
+  .page{width:1440px;max-width:100%;margin:0 auto;padding:0 22px 32px;position:relative;z-index:2}
+  a{color:inherit;text-decoration:none;cursor:pointer}
 
-  /* NAV */
-  nav{display:flex;align-items:center;justify-content:space-between;padding:24px 56px;width:1440px;margin:0 auto}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:.04em;font-family:'Press Start 2P',monospace}
-  .logo-mark{width:36px;height:36px;background:linear-gradient(135deg,#5B5BD6 0%,#3F3FB8 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:800;font-family:'Press Start 2P',monospace;box-shadow:3px 3px 0 var(--ink)}
-  .nav-pill{display:flex;gap:4px;background:var(--paper);border:1.5px solid var(--ink);border-radius:999px;padding:5px;box-shadow:3px 3px 0 var(--ink)}
-  .nav-pill a{padding:8px 16px;font-size:14px;font-weight:500;color:var(--ink-2);border-radius:999px;text-decoration:none}
-  .nav-pill a.on{background:var(--ink);color:white}
-  .nav-cta{display:flex;gap:10px;align-items:center}
-  .btn{font-family:inherit;font-size:14px;font-weight:600;padding:11px 20px;border-radius:999px;border:1.5px solid var(--ink);background:white;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-  .btn-primary{background:var(--purple);color:white;border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
-  .btn-yellow{background:var(--yellow);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
-  .btn-lime{background:var(--lime);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
-  .btn-ghost{border:0;background:transparent;box-shadow:none}
+  /* === NAV === */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:24px 14px}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--ink)}
+  .nav-links{display:flex;gap:28px;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border:2px solid var(--ink);border-radius:99px;background:#fff;color:var(--ink);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .15s, box-shadow .15s}
+  .pill:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+  .pill.dark{background:var(--ink);color:#fff}
+  .pill.lime{background:var(--lime)}
+  .pill.purple{background:var(--purple);color:#fff}
 
-  /* HERO */
-  .hero{padding:40px 56px 80px;width:1440px;margin:0 auto;position:relative}
-  .ann{display:inline-flex;align-items:center;gap:10px;background:var(--lime);border:1.5px solid var(--ink);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:3px 3px 0 var(--ink);margin-bottom:36px}
-  .ann .pulse{width:8px;height:8px;background:var(--ink);border-radius:50%}
-  h1{font-size:128px;line-height:.92;letter-spacing:-.045em;font-weight:700;max-width:1200px;font-family:'Fraunces',serif}
-  .pill-word{display:inline-block;border:2.5px solid var(--ink);border-radius:999px;padding:0 28px;background:var(--peach);transform:rotate(-2deg);position:relative}
-  .pill-word.lav{background:var(--lavender);transform:rotate(1.5deg)}
-  .pill-word.lime{background:var(--lime);transform:rotate(-1deg)}
-  .pill-word.sky{background:var(--sky);transform:rotate(2deg)}
-  .pill-word.yellow{background:var(--yellow)}
-  h1 .it{font-style:italic;font-weight:500}
-  .hero-row{display:grid;grid-template-columns:1.1fr 1fr;gap:80px;margin-top:48px;align-items:center}
-  .lede{font-size:22px;line-height:1.5;color:var(--ink-2);max-width:520px;font-weight:400}
-  .lede b{font-weight:700;color:var(--ink);background:var(--yellow);padding:1px 6px;border-radius:4px}
-  .hero-cta{margin-top:32px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .hero-side{position:relative}
+  /* === HERO === */
+  .hero{margin-top:8px;background:var(--lavender);border:2px solid var(--ink);border-radius:36px;padding:42px 56px 64px;position:relative;overflow:hidden;min-height:760px;box-shadow:6px 6px 0 var(--ink)}
+  .hero::before{content:"";position:absolute;top:-80px;right:-80px;width:420px;height:420px;background:var(--peach);border-radius:50%;filter:blur(2px);z-index:0}
+  .hero::after{content:"";position:absolute;bottom:-120px;left:30%;width:340px;height:340px;background:var(--lime);border-radius:50%;opacity:.6;z-index:0}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(23,19,38,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(23,19,38,.05) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+  .hero-inner{position:relative;z-index:2}
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--ink);border-radius:99px;padding:8px 16px;font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);box-shadow:3px 3px 0 var(--ink);margin:32px 0 32px}
+  .hero-eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--purple);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
 
-  /* product UI playful */
-  .ui-stack{position:relative;height:520px}
-  .ui-card{background:white;border:2px solid var(--ink);border-radius:18px;padding:18px 20px;box-shadow:4px 4px 0 var(--ink);position:absolute}
-  .ui-card.email{top:0;left:0;width:380px;transform:rotate(-3deg);background:var(--paper)}
-  .ui-card.crm{top:60px;right:-20px;width:340px;transform:rotate(3deg);background:white}
-  .ui-card.coach{bottom:0;left:40px;width:380px;transform:rotate(-1deg);background:var(--lavender)}
+  h1.hero-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:96px;line-height:.95;letter-spacing:-.04em;color:var(--ink);display:flex;flex-wrap:wrap;gap:14px 16px;align-items:center;max-width:1100px;margin-bottom:36px}
+  h1.hero-h .word{display:inline-block;padding:6px 26px;border:2.5px solid var(--ink);border-radius:99px;background:#fff;box-shadow:5px 5px 0 var(--ink);transform:rotate(-2deg)}
+  h1.hero-h .word.lime{background:var(--lime);transform:rotate(1deg)}
+  h1.hero-h .word.peach{background:var(--peach-2);transform:rotate(-1deg)}
+  h1.hero-h .word.purple{background:var(--purple);color:#fff;transform:rotate(2deg)}
+  h1.hero-h .word.plain{padding:0;border:none;background:transparent;box-shadow:none;transform:none}
+  h1.hero-h .scribble{font-family:'Caveat',cursive;font-weight:700;color:var(--purple);font-size:62px;transform:rotate(-4deg);display:inline-block}
+  h1.hero-h .ai-circle{display:inline-flex;align-items:center;justify-content:center;width:96px;height:96px;border:3px solid var(--ink);border-radius:50%;background:var(--peach);transform:rotate(-3deg);box-shadow:5px 5px 0 var(--ink);font-style:italic;font-family:'Fraunces',serif}
 
-  .email-from{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
-  .email-subj{font-weight:700;font-size:15px;margin-bottom:10px;letter-spacing:-.01em}
-  .email-body{font-size:13px;line-height:1.55;color:var(--ink-2)}
-  .email-body mark{background:var(--peach);padding:1px 5px;border-radius:4px;color:var(--ink);font-weight:500}
-  .email-foot{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
-  .mini-chip{font-size:11px;background:var(--ink);color:white;padding:5px 10px;border-radius:99px;font-weight:600}
-  .mini-chip.out{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+  .hero-row{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:flex-start;margin-top:8px;position:relative}
+  .lede{font-size:20px;line-height:1.55;color:var(--ink-2);max-width:560px;margin-bottom:30px;font-weight:500}
+  .lede .marker{background:linear-gradient(180deg,transparent 60%,var(--lime) 60%);padding:0 4px;font-weight:700;color:var(--ink)}
 
-  .crm-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-  .crm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--peach),var(--pink));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink);font-size:13px;border:1.5px solid var(--ink)}
-  .crm-name{font-weight:700;font-size:14px}
-  .crm-meta{font-size:11px;color:var(--muted)}
-  .crm-row{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px dashed var(--line)}
-  .crm-row span{color:var(--muted)}
-  .crm-row b{font-weight:600}
-  .crm-tag{display:inline-block;font-size:10px;background:var(--lime);padding:3px 8px;border-radius:99px;font-weight:700;border:1.5px solid var(--ink);margin-top:8px}
+  .hero-cta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;position:relative}
+  .hero-cta .pill{padding:14px 24px;font-size:15px}
+  .arrow-doodle{position:absolute;left:-72px;top:-20px;width:140px;height:80px;pointer-events:none}
+  .arrow-note{position:absolute;left:-180px;top:50px;font-family:'Caveat',cursive;font-size:26px;color:var(--purple);transform:rotate(-8deg);font-weight:700}
 
-  .coach-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:700}
-  .coach-mark{width:24px;height:24px;background:var(--ink);color:var(--lime);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
-  .coach-msg{background:white;border:1.5px solid var(--ink);border-radius:12px;padding:12px;font-size:13px;line-height:1.5}
-  .coach-msg b{font-weight:700}
-  .coach-pill{display:inline-block;font-size:10px;background:var(--peach);border:1.5px solid var(--ink);padding:3px 8px;border-radius:99px;font-weight:700;margin-bottom:8px}
+  /* sticker badges */
+  .sticker{position:absolute;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 14px;font-family:'Caveat',cursive;font-weight:700;font-size:18px;color:var(--ink);box-shadow:4px 4px 0 var(--ink);transform:rotate(-4deg)}
+  .sticker.s1{top:80px;right:6%;background:var(--lime);transform:rotate(8deg)}
+  .sticker.s2{bottom:60px;right:38%;background:var(--peach);transform:rotate(-6deg)}
+  .star{position:absolute;font-size:32px;color:var(--purple);font-family:'Fraunces',serif}
 
-  /* doodle decorations */
-  .doodle{position:absolute;pointer-events:none}
-  .scribble-note{font-family:'Caveat',cursive;font-size:24px;font-weight:700;color:var(--purple)}
+  /* hero product window */
+  .hero-window{background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:14px;box-shadow:8px 8px 0 var(--ink);transform:rotate(1.5deg);position:relative}
+  .hero-window .badge-stick{position:absolute;top:-22px;right:-22px;width:90px;height:90px;background:var(--lime);border:2.5px solid var(--ink);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:13px;line-height:1;color:var(--ink);transform:rotate(-12deg);box-shadow:4px 4px 0 var(--ink);z-index:3}
+  .hero-window .badge-stick small{display:block;font-size:9px;font-weight:600;margin-top:3px;letter-spacing:.04em}
+  .win-bar{display:flex;align-items:center;gap:8px;padding:8px 12px 12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+  .win-traffic{display:flex;gap:6px}
+  .win-traffic span{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink);background:var(--peach)}
+  .win-traffic span:nth-child(2){background:var(--lime)}
+  .win-traffic span:nth-child(3){background:var(--hot-pink)}
+  .win-url{flex:1;text-align:center;font-size:11px;color:var(--ink-2);font-family:'Bricolage Grotesque';font-weight:600;letter-spacing:.02em}
+  .panel{background:var(--cream);border:2px solid var(--ink);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+  .panel-head{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:12px;color:var(--ink)}
+  .panel-head .ph-emoji{font-size:18px}
+  .panel-head .badge{margin-left:auto;background:var(--lime);border:1.5px solid var(--ink);border-radius:99px;padding:3px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .check-list{display:flex;flex-direction:column;gap:9px}
+  .check-row{display:flex;gap:10px;font-size:13px;color:var(--ink-2);line-height:1.4;font-weight:500;align-items:flex-start}
+  .check-row::before{content:"✓";color:var(--purple);font-weight:800;flex-shrink:0;width:14px}
+  .check-row b{color:var(--ink);font-weight:700}
 
-  /* TRUST */
-  .trust-row{padding:24px 56px;width:1440px;margin:0 auto;display:flex;align-items:center;gap:32px;flex-wrap:wrap;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--lavender);position:relative}
-  .trust-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:10px}
-  .trust-label::after{content:"→";font-family:'Caveat';font-size:24px;color:var(--ink);font-weight:700}
-  .trust-logos{display:flex;gap:40px;align-items:center;flex-wrap:wrap}
-  .t-logo{font-size:18px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:6px}
+  /* === STATS — confetti style === */
+  .stats{margin-top:42px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .stat{background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:24px 20px;position:relative;box-shadow:5px 5px 0 var(--ink)}
+  .stat:nth-child(1){background:var(--lime);transform:rotate(-1.5deg)}
+  .stat:nth-child(2){background:var(--peach);transform:rotate(1deg)}
+  .stat:nth-child(3){background:var(--lavender);transform:rotate(-1deg)}
+  .stat:nth-child(4){background:#fff;transform:rotate(1.5deg)}
+  .stat-num{font-family:'Bricolage Grotesque';font-weight:800;font-size:54px;line-height:1;letter-spacing:-.04em;color:var(--ink)}
+  .stat-lab{margin-top:10px;font-size:13px;font-weight:600;color:var(--ink-2);letter-spacing:.02em}
+  .stat .doodle{position:absolute;top:10px;right:14px;font-family:'Caveat',cursive;font-size:22px;color:var(--purple);transform:rotate(8deg)}
 
-  /* BIG STAT */
-  .big-stat{padding:120px 56px;width:1440px;margin:0 auto;text-align:center;position:relative}
-  .big-stat .scribble-arrow{position:absolute;top:80px;right:200px;font-family:'Caveat';font-size:30px;font-weight:700;color:var(--purple);transform:rotate(-12deg)}
-  h2{font-size:88px;line-height:.95;letter-spacing:-.04em;font-weight:700;font-family:'Fraunces',serif;max-width:1200px;margin:0 auto}
-  h2 .it{font-style:italic;font-weight:500}
-  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
-  .stat-block{border:2px solid var(--ink);border-radius:24px;padding:48px 36px;text-align:left;box-shadow:6px 6px 0 var(--ink);position:relative}
-  .stat-block.lav{background:var(--lavender)}
-  .stat-block.peach{background:var(--peach)}
-  .stat-block.lime{background:var(--lime)}
-  .stat-num{font-size:120px;line-height:.9;letter-spacing:-.05em;font-weight:700;font-family:'Fraunces',serif}
-  .stat-lab{margin-top:16px;font-size:18px;font-weight:600;letter-spacing:-.01em}
-  .stat-sub{margin-top:8px;font-size:14px;color:var(--ink-2);line-height:1.5}
-  .stat-sticker{position:absolute;top:-16px;right:-12px;background:white;border:2px solid var(--ink);border-radius:99px;padding:6px 14px;font-family:'Caveat';font-size:18px;font-weight:700;transform:rotate(8deg);box-shadow:2px 2px 0 var(--ink)}
+  /* === LOGOS === */
+  .logos{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:32px 36px;box-shadow:5px 5px 0 var(--ink);position:relative}
+  .logos::before{content:"★";position:absolute;left:-18px;top:-18px;width:48px;height:48px;background:var(--lime);border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink)}
+  .logos-label{font-family:'Caveat',cursive;font-weight:700;font-size:24px;color:var(--purple);text-align:center;margin-bottom:18px;transform:rotate(-1deg)}
+  .logos-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+  .logo-pill{padding:10px 20px;border:2px solid var(--ink);border-radius:99px;font-size:13.5px;font-weight:700;color:var(--ink);background:var(--cream);box-shadow:2px 2px 0 var(--ink)}
+  .logo-pill:nth-child(odd){background:var(--peach)}
+  .logo-pill:nth-child(3n){background:var(--lavender)}
 
-  /* FEATURE BLOCKS */
-  .feature{padding:48px 56px;width:1440px;margin:0 auto}
-  .f-block{border:2px solid var(--ink);border-radius:32px;padding:64px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
-  .f-block.lav{background:var(--lavender)}
-  .f-block.peach{background:var(--peach)}
-  .f-block.lime{background:var(--lime)}
-  .f-block.sky{background:var(--sky)}
-  .f-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:white;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:24px}
-  .f-eyebrow .num{background:white;color:var(--ink);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
-  .f-title{font-size:64px;line-height:.95;letter-spacing:-.035em;font-weight:700;font-family:'Fraunces',serif;margin-bottom:24px}
-  .f-title .it{font-style:italic}
-  .f-title .underline{position:relative;display:inline-block}
-  .f-title .underline::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:8px;background:var(--yellow);z-index:-1;border-radius:4px}
-  .f-desc{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:480px}
-  .f-desc b{font-weight:700;color:var(--ink)}
-  .f-cta{margin-top:28px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--ink);background:white;border:1.5px solid var(--ink);padding:11px 18px;border-radius:99px;text-decoration:none;box-shadow:3px 3px 0 var(--ink)}
+  /* === CHAPTERS === */
+  .chapter{margin-top:36px;border:2.5px solid var(--ink);border-radius:32px;padding:64px 56px;display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:center;box-shadow:7px 7px 0 var(--ink);position:relative;overflow:hidden;min-height:560px}
+  .chapter.lime{background:var(--lime)}
+  .chapter.peach{background:var(--peach)}
+  .chapter.lavender{background:var(--lavender)}
+  .chapter::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(23,19,38,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(23,19,38,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+  .ch-num{display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--ink);border-radius:99px;padding:7px 16px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:22px;box-shadow:3px 3px 0 var(--ink);position:relative;z-index:2}
+  .ch-num .num{font-family:'Fraunces',serif;font-style:italic;font-weight:500;color:var(--purple);font-size:16px}
+  .chapter h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:62px;line-height:1.0;letter-spacing:-.035em;color:var(--ink);margin-bottom:26px;position:relative;z-index:2}
+  .chapter h2 .scribble-ul{position:relative;display:inline-block}
+  .chapter h2 .scribble-ul::after{content:"";position:absolute;left:-2%;right:-2%;bottom:-6px;height:14px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'><path d='M2,8 Q40,1 80,7 T160,8 T200,6' fill='none' stroke='%236B4EFF' stroke-width='3' stroke-linecap='round'/></svg>") no-repeat center/100% 100%}
+  .chapter h2 .it{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--purple)}
+  .chapter h2 .pill-h{display:inline-block;padding:0 22px;border:2.5px solid var(--ink);border-radius:99px;background:#fff;box-shadow:4px 4px 0 var(--ink);transform:rotate(-1deg)}
+  .chapter p.ch-lede{font-size:18px;line-height:1.55;color:var(--ink);max-width:480px;margin-bottom:28px;font-weight:500;position:relative;z-index:2}
+  .chapter p.ch-lede b{font-weight:800}
+  .chapter p.ch-lede .marker{background:linear-gradient(180deg,transparent 65%,#fff 65%);padding:0 4px}
+  .chapter .ch-cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:relative;z-index:2}
 
-  /* feature visuals */
-  .vis-card-2{background:white;border:2px solid var(--ink);border-radius:18px;padding:22px;box-shadow:4px 4px 0 var(--ink)}
-  .seq-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line);font-size:13px}
-  .seq-row:last-child{border-bottom:0}
-  .seq-num{width:28px;height:28px;border-radius:50%;background:var(--lime);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-  .seq-content{flex:1}
-  .seq-content b{display:block;font-weight:700;margin-bottom:2px}
-  .seq-content span{font-size:12px;color:var(--muted)}
-  .seq-meta b{font-weight:700;font-size:13px}
-  .seq-meta{font-size:11px;color:var(--muted);text-align:right}
+  /* product window inside chapter */
+  .product-window{background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:14px;box-shadow:8px 8px 0 var(--ink);position:relative;z-index:2}
+  .product-window .corner-sticker{position:absolute;top:-18px;left:24px;background:var(--purple);color:#fff;border:2px solid var(--ink);border-radius:99px;padding:5px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;transform:rotate(-3deg);box-shadow:3px 3px 0 var(--ink)}
+  .product-window .corner-sticker.lime{background:var(--lime);color:var(--ink)}
+  .product-window .corner-sticker.pink{background:var(--hot-pink);color:#fff}
 
-  .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .data-card{background:white;border:2px solid var(--ink);border-radius:14px;padding:18px;box-shadow:3px 3px 0 var(--ink)}
-  .data-card .lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-  .data-card .val{font-size:30px;font-weight:700;letter-spacing:-.02em;font-family:'Fraunces',serif;line-height:1}
-  .data-card .sub{font-size:12px;color:var(--ink-2);margin-top:6px}
-  .data-card .check{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink);background:var(--lime);padding:3px 8px;border-radius:99px;margin-top:10px;font-weight:700;border:1px solid var(--ink)}
+  /* lead rows */
+  .lead-row{display:grid;grid-template-columns:1.6fr 1fr 70px 90px;gap:14px;padding:12px 8px;border-bottom:1.5px dashed var(--ink);font-size:13px;align-items:center}
+  .lead-row:last-child{border-bottom:none}
+  .lead-row.head{font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);padding-bottom:10px;border-bottom:2px solid var(--ink)}
+  .lead-name{font-weight:700;color:var(--ink)}
+  .lead-name .sub{display:block;font-weight:500;color:var(--ink-2);font-size:11.5px;margin-top:1px}
+  .lead-co{color:var(--ink-2);font-weight:500}
+  .score-pill{display:inline-flex;align-items:center;justify-content:center;background:var(--lime);border:2px solid var(--ink);border-radius:99px;padding:4px 12px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:2px 2px 0 var(--ink);text-align:center}
+  .score-pill.warm{background:var(--peach)}
+  .score-pill.cold{background:#fff}
+  .nba{font-family:'Caveat',cursive;font-weight:700;font-size:16px;color:var(--purple)}
 
-  .coach-block{background:var(--ink);color:white;border-radius:18px;padding:28px;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--purple)}
-  .coach-tag{display:inline-block;font-size:10px;background:var(--lime);color:var(--ink);padding:5px 10px;border-radius:99px;font-weight:700;margin-bottom:18px;letter-spacing:.05em}
-  .coach-wave{display:flex;gap:3px;align-items:flex-end;height:48px;margin-bottom:18px}
-  .coach-wave span{flex:1;background:var(--lime);border-radius:2px}
-  .coach-line{font-size:13px;line-height:1.55;color:#D4D0E0}
-  .coach-line .me{color:white}
-  .coach-line mark{background:var(--lime);color:var(--ink);padding:1px 4px;border-radius:3px;font-weight:600}
+  /* email */
+  .email-row{margin-top:8px;border:2px solid var(--ink);border-radius:12px;padding:10px 12px;background:var(--cream)}
+  .email-row .lbl{font-size:10px;color:var(--purple);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+  .email-row .val{font-size:13px;color:var(--ink);line-height:1.5;font-weight:500}
+  .email-row .val pre{font-family:inherit;white-space:pre-wrap;font-size:13px;line-height:1.55}
+  .email-row .val em{font-family:'Caveat',cursive;font-weight:700;color:var(--purple);font-size:16px;font-style:normal;background:linear-gradient(180deg,transparent 60%,var(--lime) 60%);padding:0 4px}
 
-  /* TESTIMONIALS */
-  .test{padding:120px 56px;width:1440px;margin:0 auto;position:relative}
-  .test-head{text-align:center;margin-bottom:64px}
-  .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .t-card{background:white;border:2px solid var(--ink);border-radius:24px;padding:36px;box-shadow:6px 6px 0 var(--ink);position:relative}
-  .t-card.r1{transform:rotate(-2deg);background:var(--paper)}
-  .t-card.r2{transform:rotate(1deg);background:var(--peach)}
-  .t-card.r3{transform:rotate(-1deg);background:var(--lavender)}
-  .t-stars{color:var(--purple);font-size:18px;margin-bottom:14px;letter-spacing:2px}
-  .t-quote{font-size:20px;line-height:1.4;font-weight:500;letter-spacing:-.01em;margin-bottom:24px;font-family:'Fraunces',serif}
-  .t-attr{display:flex;align-items:center;gap:12px;border-top:1.5px solid var(--ink);padding-top:18px}
-  .t-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--lavender),var(--purple));border:1.5px solid var(--ink)}
-  .t-attr.b .t-avatar{background:linear-gradient(135deg,var(--lime),var(--peach-2))}
-  .t-attr.c .t-avatar{background:linear-gradient(135deg,var(--sky),var(--purple))}
-  .t-name{font-weight:700;font-size:14px}
-  .t-role{font-size:12px;color:var(--ink-2)}
-  .t-sticker{position:absolute;top:-14px;left:24px;background:var(--yellow);border:2px solid var(--ink);border-radius:99px;padding:5px 12px;font-family:'Caveat';font-size:16px;font-weight:700;transform:rotate(-4deg)}
+  /* call coaching */
+  .call-step{position:relative;padding-left:34px;margin-bottom:14px;font-size:14.5px;font-weight:700;color:var(--ink)}
+  .call-step::before{content:counter(stepc);counter-increment:stepc;position:absolute;left:0;top:-1px;width:24px;height:24px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+  .call-q{margin-left:34px;background:var(--lavender);border:2px solid var(--ink);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--ink);line-height:1.5;margin-bottom:14px;font-weight:500;box-shadow:2px 2px 0 var(--ink)}
+  .call-list{counter-reset:stepc}
 
-  /* CTA */
-  .cta{padding:80px 56px 120px;width:1440px;margin:0 auto;position:relative}
-  .cta-card{background:var(--purple);color:white;border:2px solid var(--ink);border-radius:32px;padding:96px 64px;text-align:center;box-shadow:8px 8px 0 var(--ink);position:relative;overflow:hidden}
-  .cta-headline{font-size:96px;line-height:.95;letter-spacing:-.04em;font-weight:700;font-family:'Fraunces',serif;max-width:1000px;margin:0 auto 32px}
-  .cta-headline .it{font-style:italic;background:var(--yellow);color:var(--ink);padding:0 20px;border-radius:999px;display:inline-block;border:2px solid var(--ink);transform:rotate(-2deg)}
-  .cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;align-items:center}
-  .cta-sub{margin-top:20px;font-size:14px;color:#E0DAFF}
+  /* === PROJECT TILES === */
+  .tiles-section{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:32px;padding:48px 48px 44px;box-shadow:6px 6px 0 var(--ink);position:relative}
+  .tiles-section::before{content:"";position:absolute;top:-24px;right:60px;width:80px;height:80px;background:var(--peach);border:2.5px solid var(--ink);border-radius:50%;box-shadow:3px 3px 0 var(--ink);transform:rotate(12deg)}
+  .tiles-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;gap:32px}
+  .tiles-head h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:46px;line-height:1.05;letter-spacing:-.025em;max-width:780px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+  .tiles-head h3 .hl{display:inline-block;padding:0 16px;border:2.5px solid var(--ink);border-radius:99px;background:var(--lime);box-shadow:3px 3px 0 var(--ink);transform:rotate(-2deg)}
+  .tiles-head h3 .hl.peach{background:var(--peach);transform:rotate(1.5deg)}
+  .tiles-head h3 .hl.lavender{background:var(--lavender);transform:rotate(-1deg)}
+  .tiles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .tile{aspect-ratio:3/4;border:2.5px solid var(--ink);border-radius:24px;padding:22px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;box-shadow:5px 5px 0 var(--ink)}
+  .tile.a{background:linear-gradient(160deg,var(--lime) 0%,#A6BC1B 100%)}
+  .tile.b{background:linear-gradient(160deg,var(--peach) 0%,#E59558 100%)}
+  .tile.c{background:linear-gradient(160deg,var(--lavender) 0%,var(--purple) 100%)}
+  .tile.c .ttl{color:#fff}
+  .tile .tag{align-self:flex-start;background:#fff;border:2px solid var(--ink);border-radius:99px;padding:6px 14px;font-size:11.5px;font-weight:700;color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+  .tile .arr{position:absolute;top:22px;right:22px;width:42px;height:42px;border-radius:50%;background:#fff;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+  .tile .ttl{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
+  .tile .ttl-num{font-family:'Caveat',cursive;font-weight:700;font-size:24px;color:var(--purple);display:block;margin-bottom:4px}
+  .tile.c .ttl-num{color:var(--lime)}
+  .tile p{font-size:13px;color:var(--ink);font-weight:500;line-height:1.45;margin-top:10px;max-width:90%}
+  .tile.c p{color:rgba(255,255,255,.92)}
 
-  /* FOOTER */
-  footer{padding:56px;width:1440px;margin:0 auto;background:var(--ink);color:white;border-radius:32px 32px 0 0}
-  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
-  .foot-tag{font-size:14px;color:#A29BB8;max-width:300px;margin-top:14px;line-height:1.5}
-  .foot-col h4{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);margin-bottom:18px;font-weight:700}
-  .foot-col a{display:block;font-size:14px;color:#D4CEE5;text-decoration:none;margin-bottom:12px}
-  .foot-bot{padding-top:24px;border-top:1px solid #2C2640;display:flex;justify-content:space-between;font-size:12px;color:#A29BB8}
+  /* === TESTIMONIALS === */
+  .testimonials{margin-top:36px;background:var(--cream);border:2.5px solid var(--ink);border-radius:32px;padding:64px 56px;box-shadow:7px 7px 0 var(--ink);position:relative;overflow:hidden}
+  .testimonials::before,.testimonials::after{content:"";position:absolute;border-radius:50%}
+  .testimonials::before{top:-60px;left:-60px;width:200px;height:200px;background:var(--lime);opacity:.4}
+  .testimonials::after{bottom:-80px;right:-60px;width:240px;height:240px;background:var(--peach);opacity:.5}
+  .test-head{position:relative;z-index:2;margin-bottom:48px;display:flex;align-items:flex-end;justify-content:space-between;gap:32px}
+  .test-head h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:52px;line-height:1.0;letter-spacing:-.03em;max-width:720px}
+  .test-head h3 .it{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--purple)}
+  .test-head .badge{font-family:'Caveat',cursive;font-weight:700;font-size:22px;color:var(--purple);transform:rotate(-3deg)}
+  .test-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .test-card{background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:28px 26px 24px;box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column;gap:18px;min-height:300px;position:relative}
+  .test-card:nth-child(1){transform:rotate(-2deg)}
+  .test-card:nth-child(2){transform:rotate(1.5deg)}
+  .test-card:nth-child(3){transform:rotate(-1deg)}
+  .test-card .pin{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;background:var(--hot-pink);border:2px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink)}
+  .test-quote{font-size:17px;line-height:1.5;color:var(--ink);font-weight:500;flex:1}
+  .test-quote .marker{background:linear-gradient(180deg,transparent 60%,var(--lime) 60%);font-weight:700;padding:0 3px}
+  .test-quote .marker.peach{background:linear-gradient(180deg,transparent 60%,var(--peach-2) 60%)}
+  .test-author{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:2px dashed var(--ink)}
+  .t-avatar{width:42px;height:42px;border-radius:50%;background:var(--lavender);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink);font-size:14px;box-shadow:2px 2px 0 var(--ink)}
+  .t-name{font-weight:800;font-size:14.5px;color:var(--ink)}
+  .t-role{font-size:12px;color:var(--ink-2);margin-top:2px;font-weight:500}
+
+  /* === FINAL CTA === */
+  .cta-final{margin-top:36px;background:var(--purple);border:2.5px solid var(--ink);border-radius:36px;padding:80px 56px;color:#fff;box-shadow:8px 8px 0 var(--ink);position:relative;overflow:hidden}
+  .cta-final::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+  .cta-final::after{content:"";position:absolute;bottom:-100px;right:-80px;width:380px;height:380px;background:var(--lime);border-radius:50%;opacity:.85;border:2.5px solid var(--ink)}
+  .cta-final-inner{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-end;gap:48px}
+  .cta-final h4{font-family:'Bricolage Grotesque';font-weight:800;font-size:88px;line-height:.96;letter-spacing:-.04em;max-width:760px;color:#fff}
+  .cta-final h4 .word{display:inline-block;padding:0 22px;border:2.5px solid var(--ink);border-radius:99px;background:var(--lime);color:var(--ink);box-shadow:5px 5px 0 var(--ink);transform:rotate(-2deg);margin:6px 4px}
+  .cta-final h4 .it{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--lime)}
+  .cta-final .right p{font-size:17px;color:rgba(255,255,255,.9);margin-bottom:22px;max-width:340px;line-height:1.5;font-weight:500}
+  .cta-final .right .pill{box-shadow:5px 5px 0 var(--ink)}
+
+  /* === FOOTER === */
+  .footer-main{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:32px;padding:56px 48px 36px;box-shadow:6px 6px 0 var(--ink)}
+  .footer-grid{display:grid;grid-template-columns:1.4fr repeat(5,1fr);gap:36px;margin-bottom:40px}
+  .footer-brand p{font-size:14px;color:var(--ink-2);line-height:1.55;margin-top:14px;max-width:260px;font-weight:500}
+  .footer-col h5{font-family:'Bricolage Grotesque';font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin-bottom:16px}
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .footer-col a{font-size:14px;color:var(--ink);font-weight:500}
+  .footer-col a:hover{color:var(--purple)}
+  .footer-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:2px dashed var(--ink);font-size:12.5px;color:var(--ink-2);font-weight:600}
+  .footer-bot a{color:var(--ink);font-weight:700}
+  .footer-bot a:hover{color:var(--purple)}
+
 </style>
 </head>
 <body>
+<div class="page">
 
-<nav>
-  <div class="logo"><span class="logo-mark">K</span> KOMBO</div>
-  <div class="nav-pill">
-    <a class="on">Product</a><a>Customers</a><a>Pricing</a><a>Resources</a><a>Company</a>
-  </div>
-  <div class="nav-cta">
-    <button class="btn btn-ghost">Sign in</button>
-    <button class="btn btn-yellow">Book a demo →</button>
-  </div>
-</nav>
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="./index.html">
+      <svg width="30" height="30" viewBox="0 0 30 30"><rect width="30" height="30" rx="9" fill="#6B4EFF" stroke="#171326" stroke-width="2"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+      KomboAI
+    </a>
+    <div class="nav-links"><a>Product</a><a>Resources</a><a>Company</a><a>Connect</a></div>
+    <a class="pill purple">See a Demo →</a>
+  </nav>
 
-<section class="hero">
-  <div class="ann"><span class="pulse"></span> NEW · Live coaching is here, and it's wild</div>
-  <h1>
-    Less <span class="pill-word">clicks.</span><br>
-    More <span class="pill-word lav">selling.</span>
-  </h1>
-  <div class="hero-row">
-    <div>
-      <p class="lede">Kombo is the AI co-pilot that lives <b>where your reps already work</b> — your CRM. It drafts the email, finds the mobile number, and whispers the pricing answer mid-call. No new tab. No new tool. Just three hours back.</p>
-      <div class="hero-cta">
-        <button class="btn btn-primary">Book a demo →</button>
-        <button class="btn">Watch the 90s tour</button>
-        <span class="scribble-note" style="margin-left:8px">← takes 20 seconds</span>
-      </div>
-      <div style="margin-top:48px;display:flex;align-items:center;gap:24px">
-        <div style="font-size:13px;font-weight:700">★★★★★ <b>4.9</b> · G2</div>
-        <div style="font-size:13px;color:var(--muted)">— 1,000+ reps onboarded</div>
-      </div>
-    </div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="sticker s1">200+ G2 reviews ★</div>
+    <div class="sticker s2">no engineering ticket required!</div>
+    <span class="star" style="top:120px;left:46%">✦</span>
+    <span class="star" style="top:380px;left:8%;font-size:24px;color:var(--hot-pink)">✦</span>
+    <span class="star" style="top:500px;right:18%;font-size:36px;color:var(--purple)">✦</span>
 
-    <div class="hero-side">
-      <div class="ui-stack">
-        <div class="ui-card email">
-          <div class="email-from">DRAFTED FOR YOU · 12s ago</div>
-          <div class="email-subj">Outbound rebuild — three things I'd skip</div>
-          <div class="email-body">
-            Hi Maya, saw your <mark>LinkedIn post</mark> about rebuilding outbound from scratch — congrats on the <mark>Series C</mark> last week. We've helped 40+ teams scaling SDRs in EMEA dodge the three traps that…
-          </div>
-          <div class="email-foot">
-            <span class="mini-chip">Send</span><span class="mini-chip out">Edit</span><span class="mini-chip out">Try another</span>
-          </div>
-        </div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><span class="dot"></span> The AI co-pilot for SDRs &amp; AEs</div>
+      <h1 class="hero-h">
+        <span class="word">Close</span>
+        <span class="word lime">More</span>
+        <span class="word peach">Deals</span>
+        <span class="word plain"><span class="scribble">with</span></span>
+        <span class="word purple">AI</span>
+        <span class="ai-circle">✺</span>
+      </h1>
 
-        <div class="ui-card crm">
-          <div class="crm-head">
-            <div class="crm-avatar">MC</div>
-            <div><div class="crm-name">Maya Chen</div><div class="crm-meta">VP RevOps · Northwind</div></div>
-          </div>
-          <div class="crm-row"><span>Mobile</span><b>+1 (415) 555-0142</b></div>
-          <div class="crm-row"><span>Stage</span><b>Discovery</b></div>
-          <div class="crm-row"><span>Last touch</span><b>Opened email · 2d</b></div>
-          <div class="crm-row"><span>Score</span><b>94 / 100</b></div>
-          <span class="crm-tag">● Buying signal · 2h ago</span>
-        </div>
-
-        <div class="ui-card coach">
-          <span class="coach-pill">● LIVE COACHING</span>
-          <div class="coach-head"><span class="coach-mark">K</span> Kombo whispers</div>
-          <div class="coach-msg">
-            <b>Lead with the Northwind case.</b> They cut sequence-building from 4hrs → 18min. Don't pitch features yet — Maya cares about the rebuild, not the feature list.
+      <div class="hero-row">
+        <div>
+          <p class="lede">KomboAI gives your sales team the intelligence of a <span class="marker">20-year veteran</span> — at the speed of AI. Rank leads, predict pipeline, and outreach on autopilot.</p>
+          <div class="hero-cta">
+            <svg class="arrow-doodle" viewBox="0 0 140 80" fill="none">
+              <path d="M10,20 Q40,5 70,30 T130,55" stroke="#6B4EFF" stroke-width="3" stroke-linecap="round" fill="none"/>
+              <path d="M125,48 L132,55 L122,60" stroke="#6B4EFF" stroke-width="3" stroke-linecap="round" fill="none"/>
+            </svg>
+            <span class="arrow-note">click here ↓</span>
+            <a class="pill dark">See a Demo →</a>
+            <a class="pill">See How It Works</a>
           </div>
         </div>
-
-        <!-- doodle arrows -->
-        <svg class="doodle" style="top:-10px;right:160px;width:80px;height:60px" viewBox="0 0 80 60">
-          <path d="M5,55 Q40,5 75,30" stroke="#6B4EFF" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M70,22 L75,30 L67,35" stroke="#6B4EFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="scribble-note" style="position:absolute;top:-30px;right:-10px;transform:rotate(8deg)">drafts itself ✦</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="trust-row">
-  <div class="trust-label">Lives inside</div>
-  <div class="trust-logos">
-    <div class="t-logo">◆ Salesforce</div>
-    <div class="t-logo">◇ HubSpot</div>
-    <div class="t-logo">▲ Pipedrive</div>
-    <div class="t-logo">◈ Dynamics 365</div>
-    <div class="t-logo">◐ Outreach</div>
-    <div class="t-logo">◑ Gong</div>
-  </div>
-  <div style="margin-left:auto;font-size:12px;font-weight:600">SOC 2 · GDPR · ISO 27001</div>
-</section>
-
-<section class="big-stat">
-  <h2>Your reps spend <span class="it" style="background:var(--peach);padding:0 24px;border-radius:99px;border:2px solid var(--ink);display:inline-block;transform:rotate(-2deg);box-shadow:4px 4px 0 var(--ink)">3 hours a day</span> not selling.<br>Kombo gives them back.</h2>
-  <div style="font-family:'Caveat';font-size:28px;font-weight:700;color:var(--purple);margin-top:24px;transform:rotate(-2deg);display:inline-block">↳ and the data agrees</div>
-
-  <div class="stat-strip">
-    <div class="stat-block lav">
-      <div class="stat-sticker">verified ✓</div>
-      <div class="stat-num">60%</div>
-      <div class="stat-lab">Less manual work</div>
-      <div class="stat-sub">Across CRM updates, research, drafting. Your reps can finally focus on selling.</div>
-    </div>
-    <div class="stat-block peach">
-      <div class="stat-sticker" style="background:var(--lime)">+ counting</div>
-      <div class="stat-num">1,000+</div>
-      <div class="stat-lab">SDRs and AEs onboarded</div>
-      <div class="stat-sub">From Series A scale-ups to public companies with 500+ reps.</div>
-    </div>
-    <div class="stat-block lime">
-      <div class="stat-sticker" style="background:var(--peach)">3× → 🚀</div>
-      <div class="stat-num">3×</div>
-      <div class="stat-lab">Higher conversion rates</div>
-      <div class="stat-sub">Right person. Right moment. Right message. Every time.</div>
-    </div>
-  </div>
-</section>
-
-<section class="feature">
-  <div class="f-block lav">
-    <div>
-      <div class="f-eyebrow"><span class="num">01</span> PERSONALIZATION</div>
-      <h3 class="f-title">Real personalization, <span class="underline">at scale.</span></h3>
-      <p class="f-desc">Kombo reads every signal across your CRM, inbox, and the public web — then writes outreach that sounds like <b>you</b> wrote it. Not a template. Not a Mad Lib. <b>Actually you.</b></p>
-      <a class="f-cta">See it write a sequence →</a>
-    </div>
-    <div>
-      <div class="vis-card-2">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Auto-generated sequence · Maya · Northwind</div>
-        <div class="seq-row">
-          <div class="seq-num">1</div>
-          <div class="seq-content"><b>Day 1 · Email</b><span>Reference Maya's LinkedIn post</span></div>
-          <div class="seq-meta"><b>87% open</b>14% reply</div>
-        </div>
-        <div class="seq-row">
-          <div class="seq-num">2</div>
-          <div class="seq-content"><b>Day 3 · LinkedIn</b><span>Comment with the EMEA hiring data</span></div>
-          <div class="seq-meta"><b>64% connect</b>22% reply</div>
-        </div>
-        <div class="seq-row">
-          <div class="seq-num">3</div>
-          <div class="seq-content"><b>Day 5 · Email</b><span>Send the outbound rebuild Loom</span></div>
-          <div class="seq-meta"><b>71% open</b>9% reply</div>
-        </div>
-        <div class="seq-row">
-          <div class="seq-num">4</div>
-          <div class="seq-content"><b>Day 8 · Call</b><span>Open with the Series C — Kombo coaches</span></div>
-          <div class="seq-meta"><b>38% connect</b>18% meeting</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="feature">
-  <div class="f-block peach">
-    <div>
-      <div class="f-eyebrow"><span class="num">02</span> CONTACT DATA</div>
-      <h3 class="f-title">Numbers others <span class="it underline">can't find.</span></h3>
-      <p class="f-desc">Direct dials, mobile numbers, deliverable emails — verified across <b>40+ sources</b> and refreshed weekly. We pay the bounce penalty so you don't.</p>
-      <a class="f-cta">Browse the dataset →</a>
-    </div>
-    <div class="data-grid">
-      <div class="data-card"><div class="lab">Mobile direct dials</div><div class="val">240M+</div><div class="sub">Across NA, EMEA, APAC</div><div class="check">✓ 92% connect rate</div></div>
-      <div class="data-card"><div class="lab">Verified work emails</div><div class="val">680M+</div><div class="sub">Refreshed weekly</div><div class="check">✓ 96% deliverability</div></div>
-      <div class="data-card"><div class="lab">Companies tracked</div><div class="val">42M</div><div class="sub">Funding · headcount · tech</div><div class="check">✓ Daily intent</div></div>
-      <div class="data-card"><div class="lab">Buying signals</div><div class="val">1.4B/wk</div><div class="sub">Hiring · news · web visits</div><div class="check">✓ Real-time</div></div>
-    </div>
-  </div>
-</section>
-
-<section class="feature">
-  <div class="f-block lime">
-    <div>
-      <div class="f-eyebrow"><span class="num">03</span> LIVE COACHING</div>
-      <h3 class="f-title">Whispers the <span class="underline" style="background:var(--peach)">right answer</span> mid-call.</h3>
-      <p class="f-desc">Kombo listens, recognizes the moment, and surfaces the next best thing to say — <b>pricing answers, objection handlers, the case study they need.</b> Without the prospect ever knowing.</p>
-      <a class="f-cta">Hear a real session →</a>
-    </div>
-    <div>
-      <div class="coach-block">
-        <span class="coach-tag">● LIVE · DISCOVERY · 14:32</span>
-        <div class="coach-wave">
-          <span style="height:30%"></span><span style="height:60%"></span><span style="height:80%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:90%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:65%"></span><span style="height:80%"></span><span style="height:40%"></span><span style="height:75%"></span><span style="height:55%"></span><span style="height:30%"></span><span style="height:60%"></span><span style="height:85%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:50%"></span><span style="height:35%"></span><span style="height:80%"></span>
-        </div>
-        <div class="coach-line">
-          <p><b style="color:white">Maya:</b> "Honestly our last tool just felt like a glorified email scheduler…"</p>
-          <p style="margin-top:10px"><span class="me">↳ Kombo:</span> "<mark>Lead with the Northwind case</mark> — they cut sequence-building from 4hrs to 18min. Don't pitch features yet."</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="feature">
-  <div class="f-block sky">
-    <div>
-      <div class="f-eyebrow"><span class="num">04</span> THE CO-PILOT</div>
-      <h3 class="f-title">Lives <span class="underline">on top</span> of your CRM.</h3>
-      <p class="f-desc">No new dashboard. No new tab. Kombo sits inside <b>Salesforce, HubSpot, Pipedrive</b>, and Dynamics — every action you take with it lands back in the record automatically.</p>
-      <a class="f-cta">See the integration →</a>
-    </div>
-    <div style="position:relative">
-      <div class="vis-card-2" style="padding:0;overflow:hidden">
-        <div style="background:var(--ink);color:white;padding:14px 20px;font-size:12px;font-weight:600;display:flex;justify-content:space-between">
-          <div>● ● ●  salesforce.com / Lead</div>
-          <div style="color:var(--lime)">+ KomboAI</div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;min-height:280px">
-          <div style="padding:20px;border-right:1.5px solid var(--ink)">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase">Salesforce record</div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-              <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--peach),var(--pink));border-radius:50%;border:1.5px solid var(--ink)"></div>
-              <div><div style="font-weight:700;font-size:14px">Maya Chen</div><div style="font-size:11px;color:var(--muted)">VP RevOps · Northwind</div></div>
+        <div class="hero-window">
+          <div class="badge-stick">94%<small>FORECAST<br>ACCURACY</small></div>
+          <div class="win-bar">
+            <div class="win-traffic"><span></span><span></span><span></span></div>
+            <div class="win-url">app.komboai.com / lead — Sarah Chen · NovaTech Solutions</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span class="ph-emoji">⚡</span>
+              <span>Buying Signals</span>
+              <span class="badge">Hot</span>
             </div>
-            <div style="font-size:12px;line-height:1.7;color:var(--ink-2)">Stage: Discovery<br>Score: 94<br>Last touch: 2d</div>
+            <div class="check-list">
+              <div class="check-row"><b>Pricing page visited 3×</b> in last 48h</div>
+              <div class="check-row">Hired <b>4 new AEs</b> last quarter</div>
+              <div class="check-row">Replied to last sequence within 2h</div>
+              <div class="check-row">Engaged with case study on close rate</div>
+            </div>
           </div>
-          <div style="padding:20px;background:var(--lavender)">
-            <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase">✦ Kombo says</div>
-            <div style="font-size:13px;line-height:1.5;font-weight:500">Maya posted on LinkedIn 2h ago. <b>Reach out today</b> — referencing her outbound rebuild post.</div>
-            <div style="margin-top:14px"><span class="mini-chip">Draft now</span></div>
+          <div class="panel">
+            <div class="panel-head">
+              <span class="ph-emoji">🎯</span>
+              <span>Recommended Next Action</span>
+            </div>
+            <div class="check-list">
+              <div class="check-row"><b>Send personalized demo invite</b> referencing NovaTech's Q2 hiring plan</div>
+              <div class="check-row">CC her VP of RevOps — they own budget</div>
+            </div>
           </div>
         </div>
       </div>
-      <span class="scribble-note" style="position:absolute;bottom:-32px;right:20px;transform:rotate(-3deg)">→ in 1 click ✦</span>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="test">
-  <div class="test-head">
-    <div class="f-eyebrow" style="margin-bottom:20px"><span class="num">★</span> SAID BY HUMANS</div>
-    <h2>What sales leaders are <span class="it">saying.</span></h2>
-  </div>
-  <div class="test-grid">
-    <div class="t-card r1">
-      <span class="t-sticker">2× pipeline ↑</span>
-      <div class="t-stars">★★★★★</div>
-      <div class="t-quote">"My SDRs literally <b>cheered</b> when we rolled it out. The drafts are good enough that they ship them. That's never happened before."</div>
-      <div class="t-attr"><div class="t-avatar"></div><div><div class="t-name">Sarah Lim</div><div class="t-role">Head of Sales · Mavva Corp</div></div></div>
-    </div>
-    <div class="t-card r2">
-      <span class="t-sticker" style="background:var(--lime)">replaced 3 tools</span>
-      <div class="t-stars">★★★★★</div>
-      <div class="t-quote">"It's the first tool my reps actually <b>open on Mondays</b>. Replaced our enrichment tool, our coaching tool, and half of our sequencer."</div>
-      <div class="t-attr b"><div class="t-avatar"></div><div><div class="t-name">James Ortega</div><div class="t-role">VP Sales · Atlas Group</div></div></div>
-    </div>
-    <div class="t-card r3">
-      <span class="t-sticker">3hrs/day back</span>
-      <div class="t-stars">★★★★★</div>
-      <div class="t-quote">"We measured it: <b>3 hours a day</b> back per rep. Times 40 SDRs. The ROI math basically embarrasses every other line item."</div>
-      <div class="t-attr c"><div class="t-avatar"></div><div><div class="t-name">Lara Chen</div><div class="t-role">CRO · Ply Goodman Group</div></div></div>
-    </div>
-  </div>
-</section>
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stat"><span class="doodle">teams!</span><div class="stat-num">500+</div><div class="stat-lab">B2B sales teams shipping with KomboAI</div></div>
+    <div class="stat"><span class="doodle">↑</span><div class="stat-num">40%</div><div class="stat-lab">Higher close rate within Q1</div></div>
+    <div class="stat"><span class="doodle">less!</span><div class="stat-num">60%</div><div class="stat-lab">Less manual lead research</div></div>
+    <div class="stat"><span class="doodle">★</span><div class="stat-num">94%</div><div class="stat-lab">Forecast accuracy</div></div>
+  </section>
 
-<section class="cta">
-  <div class="cta-card">
-    <div class="cta-headline">Give your reps their <span class="it">three hours</span> back.</div>
-    <p style="font-size:20px;color:#E0DAFF;max-width:680px;margin:0 auto 32px">14-day pilot. Full data access. No credit card. If your reps don't love it in two weeks, we'll write you the goodbye email ourselves.</p>
-    <div class="cta-actions">
-      <button class="btn btn-yellow" style="font-size:16px;padding:14px 24px">Book a demo →</button>
-      <button class="btn" style="background:transparent;color:white;border-color:white">Get the playbook</button>
+  <!-- LOGOS -->
+  <section class="logos">
+    <div class="logos-label">Trusted by fast-growing B2B sales teams ↓</div>
+    <div class="logos-row">
+      <span class="logo-pill">NovaTech Solutions</span>
+      <span class="logo-pill">Meridian Group</span>
+      <span class="logo-pill">ScaleUp Partners</span>
+      <span class="logo-pill">Apex Revenue</span>
+      <span class="logo-pill">PipelineCo</span>
     </div>
-    <div class="cta-sub">★★★★★ 4.9 on G2 · 200+ reviews · 1,000+ reps using it daily</div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  <div class="foot-grid">
+  <!-- CHAPTER 01 — LIME — LEAD SCORING -->
+  <section class="chapter lime">
     <div>
-      <div class="logo" style="color:white"><span class="logo-mark" style="background:var(--lime);color:var(--ink)">K</span> KomboAI</div>
-      <p class="foot-tag">The AI co-pilot for revenue teams. Lives where your reps already work — drafting, finding, and coaching.</p>
+      <span class="ch-num"><span class="num">01</span> · KNOW WHO TO CALL</span>
+      <h2>Rank every lead<br>in <span class="scribble-ul">real time.</span></h2>
+      <p class="ch-lede">Automatically rank and prioritize leads based on buying signals, engagement history, and fit — <b>updated in real time</b>. Stop guessing. Start dialing the right names.</p>
+      <div class="ch-cta">
+        <a class="pill dark">See it live →</a>
+        <a class="pill">Read playbook</a>
+      </div>
     </div>
-    <div class="foot-col"><h4>Product</h4><a>Personalization</a><a>Contact data</a><a>Live coaching</a><a>Integrations</a><a>Pricing</a></div>
-    <div class="foot-col"><h4>Resources</h4><a>Customer stories</a><a>Playbooks</a><a>ROI calculator</a><a>Blog</a><a>Help</a></div>
-    <div class="foot-col"><h4>Company</h4><a>About</a><a>Careers</a><a>Press</a><a>Contact</a><a>Security</a></div>
-    <div class="foot-col"><h4>Legal</h4><a>Terms</a><a>Privacy</a><a>DPA</a><a>Subprocessors</a></div>
-  </div>
-  <div class="foot-bot">
-    <div>© 2026 KomboAI</div>
-    <div>SOC 2 · GDPR · ISO 27001 · HIPAA</div>
-  </div>
-</footer>
+    <div class="product-window">
+      <div class="corner-sticker">SCORED</div>
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / pipeline / scored-leads</div>
+      </div>
+      <div class="panel" style="background:#fff">
+        <div class="lead-row head"><div>Lead</div><div>Company</div><div>Score</div><div>NBA</div></div>
+        <div class="lead-row">
+          <div class="lead-name">Sarah Chen<span class="sub">VP of Sales</span></div>
+          <div class="lead-co">NovaTech Solutions</div>
+          <div><span class="score-pill">94</span></div>
+          <div class="nba">send demo!</div>
+        </div>
+        <div class="lead-row">
+          <div class="lead-name">James Whitfield<span class="sub">Head of Revenue</span></div>
+          <div class="lead-co">Meridian Group</div>
+          <div><span class="score-pill">88</span></div>
+          <div class="nba">book call</div>
+        </div>
+        <div class="lead-row">
+          <div class="lead-name">Lucia Fernández<span class="sub">COO</span></div>
+          <div class="lead-co">ScaleUp Partners</div>
+          <div><span class="score-pill warm">81</span></div>
+          <div class="nba">warm intro</div>
+        </div>
+        <div class="lead-row">
+          <div class="lead-name">Marcus Webb<span class="sub">CRO</span></div>
+          <div class="lead-co">Apex Revenue</div>
+          <div><span class="score-pill warm">72</span></div>
+          <div class="nba">re-engage</div>
+        </div>
+        <div class="lead-row">
+          <div class="lead-name">Priya Nair<span class="sub">Director, GTM</span></div>
+          <div class="lead-co">PipelineCo</div>
+          <div><span class="score-pill cold">65</span></div>
+          <div class="nba">nurture</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- CHAPTER 02 — PEACH — AUTOMATED OUTREACH -->
+  <section class="chapter peach">
+    <div class="product-window">
+      <div class="corner-sticker pink">DRAFTED IN 3.2s</div>
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / outreach / draft — Sarah Chen</div>
+      </div>
+      <div class="panel" style="background:#fff">
+        <div class="panel-head">
+          <span class="ph-emoji">✉</span>
+          <span>AI-drafted email</span>
+          <span class="badge">Tuned to Sarah</span>
+        </div>
+        <div class="email-row">
+          <div class="lbl">Subject</div>
+          <div class="val"><b>60% less manual research for NovaTech's SDR floor</b></div>
+        </div>
+        <div class="email-row">
+          <div class="lbl">Email body</div>
+          <div class="val"><pre>Hi Sarah,
+
+Saw NovaTech just hired four new AEs last quarter — congrats on the growth.
+
+How's the team keeping <em>pipeline velocity</em> up while ramping that many reps?
+
+Three teams in your space (Meridian, Apex, PipelineCo) cut manual research by ~60% with KomboAI — and saw a 40% lift in close rate within Q1.
+
+Worth a 20-min walkthrough next week?
+
+— Alex</pre></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <span class="ch-num"><span class="num">02</span> · OUTREACH ON AUTOPILOT</span>
+      <h2>Outreach that <span class="it">sounds</span><br>like <span class="pill-h">you.</span></h2>
+      <p class="ch-lede">Craft personalized email sequences powered by AI. Reach the right prospects with the <b>right message at the right moment</b> — at scale, but never copy-paste.</p>
+      <div class="ch-cta">
+        <a class="pill dark">Draft an email →</a>
+        <a class="pill">View templates</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 03 — LAVENDER — PIPELINE INTEL + CALL COACHING -->
+  <section class="chapter lavender">
+    <div>
+      <span class="ch-num"><span class="num">03</span> · CALL COACHING + PIPELINE</span>
+      <h2>Coach every call.<br>Forecast every <span class="it">deal.</span></h2>
+      <p class="ch-lede">See the health of every deal at a glance. KomboAI flags stale opportunities, forecasts revenue with <span class="marker">94% accuracy</span>, and whispers the next-best objection-handler in your rep's ear during the call.</p>
+      <div class="ch-cta">
+        <a class="pill dark">See call coaching →</a>
+        <a class="pill">Forecasting guide</a>
+      </div>
+    </div>
+    <div class="product-window">
+      <div class="corner-sticker lime">LIVE COACHING</div>
+      <div class="win-bar">
+        <div class="win-traffic"><span></span><span></span><span></span></div>
+        <div class="win-url">app.komboai.com / call / James Whitfield · Meridian</div>
+      </div>
+      <div class="panel" style="background:#fff">
+        <div class="panel-head">
+          <span class="ph-emoji">📞</span>
+          <span>Discovery Call · Live Script</span>
+          <span class="badge">Talk : Listen 38/62</span>
+        </div>
+        <div class="call-list">
+          <div class="call-step">Open with the close-rate story (Meridian's Q1 was flat)</div>
+          <div class="call-q">"James, last time we spoke you mentioned Q1 close-rate was sitting at 22%. What's changed since?"</div>
+          <div class="call-step">Pin the pain to forecast accuracy</div>
+          <div class="call-q">"How are you forecasting Q2 right now — gut feel, or is your CRM giving you a number you trust?"</div>
+          <div class="call-step">Tee up the 40% lift proof point</div>
+          <div class="call-q">"NovaTech saw a 40% lift in close rate within their first quarter — would a similar outcome change how you'd resource the SDR team?"</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TILES (Ask + CRM + Integrations) -->
+  <section class="tiles-section">
+    <div class="tiles-head">
+      <h3>One <span class="hl">co-pilot</span> for the <span class="hl peach">whole</span> revenue <span class="hl lavender">team</span></h3>
+      <a class="pill">Explore all features →</a>
+    </div>
+    <div class="tiles-grid">
+      <div class="tile a">
+        <div class="tag">CRM Intelligence</div>
+        <div class="arr">↗</div>
+        <div>
+          <span class="ttl-num">04 /</span>
+          <div class="ttl">Sync once.<br>Enrich forever.</div>
+          <p>Sync HubSpot or Salesforce in 4 minutes. KomboAI enriches contacts, flags stale deals, recommends next-best actions.</p>
+        </div>
+      </div>
+      <div class="tile b">
+        <div class="tag">Ask KomboAI</div>
+        <div class="arr">↗</div>
+        <div>
+          <span class="ttl-num">05 /</span>
+          <div class="ttl">A revenue analyst<br>on speed dial.</div>
+          <p>Get instant answers about your pipeline, forecasts, and deal status — all in natural language.</p>
+        </div>
+      </div>
+      <div class="tile c">
+        <div class="tag">Integrations</div>
+        <div class="arr">↗</div>
+        <div>
+          <span class="ttl-num">06 /</span>
+          <div class="ttl">Connects to<br>everything.</div>
+          <p>HubSpot, Salesforce, Outreach, LinkedIn, and dozens more — in one click. No engineering ticket required.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials">
+    <div class="test-head">
+      <h3>Loved by sales teams<br><span class="it">worldwide.</span></h3>
+      <span class="badge">↗ 5 reps to 500</span>
+    </div>
+    <div class="test-grid">
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"Since switching to KomboAI, our reps spend <span class="marker">60% less time</span> on manual lead research. Pipeline velocity has never been higher."</p>
+        <div class="test-author">
+          <div class="t-avatar">SC</div>
+          <div><div class="t-name">Sarah Chen</div><div class="t-role">VP of Sales · NovaTech Solutions</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <span class="marker peach">jumped 40%</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar">JW</div>
+          <div><div class="t-name">James Whitfield</div><div class="t-role">Head of Revenue · Meridian Group</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <span class="marker">from 5 reps to 50</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar">LF</div>
+          <div><div class="t-name">Lucia Fernández</div><div class="t-role">COO · ScaleUp Partners</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-final">
+    <div class="cta-final-inner">
+      <h4>Ready to close more deals with <span class="word">AI?</span></h4>
+      <div class="right">
+        <p>Join 500+ B2B sales teams using KomboAI to hit quota faster. Drop it into your CRM in 4 minutes — roll it out this week.</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <a class="pill lime">See a Demo →</a>
+          <a class="pill" style="background:#fff">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer-main">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="./index.html">
+          <svg width="30" height="30" viewBox="0 0 30 30"><rect width="30" height="30" rx="9" fill="#6B4EFF" stroke="#171326" stroke-width="2"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+          KomboAI
+        </a>
+        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
+      </div>
+      <div class="footer-col"><h5>Product</h5><ul><li><a>Features</a></li><li><a>Integrations</a></li></ul></div>
+      <div class="footer-col"><h5>Resources</h5><ul><li><a>Customers</a></li><li><a>Podcast</a></li><li><a>Newsletter</a></li><li><a>Blog</a></li></ul></div>
+      <div class="footer-col"><h5>Company</h5><ul><li><a>Contact</a></li><li><a>Team</a></li><li><a>About</a></li></ul></div>
+      <div class="footer-col"><h5>Connect</h5><ul><li><a>LinkedIn</a></li><li><a>X</a></li><li><a>YouTube</a></li><li><a>Instagram</a></li><li><a>TikTok</a></li></ul></div>
+      <div class="footer-col"><h5>Legal</h5><ul><li><a>Terms</a></li><li><a>Privacy</a></li><li><a>Referral</a></li></ul></div>
+    </div>
+    <div class="footer-bot">
+      <span>Kevin Hawkins · KomboAI · 2026 · V2 Sales Floor Energy</span>
+      <a href="./index.html">← back to mockups</a>
+    </div>
+  </footer>
+
+</div>
 </body>
 </html>
