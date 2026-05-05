@@ -6,7 +6,7 @@
 <title>KomboAI — Homepage Mockups</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{background:#0E1726;color:#F2EBDC;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
@@ -65,12 +65,14 @@
   .v6 .accent{color:#FFB55A}
   .v6 .corner{position:absolute;top:0;left:0;width:76px;height:60px;background:#E5563D;clip-path:polygon(0 0,100% 0,100% 100%,16% 100%,0 88%)}
 
-  /* V7 — Terminal Pulse */
-  .v7 .thumb{background:#0A0A0A;color:#E5E7EB;font-family:'Courier New',monospace;position:relative}
-  .v7 .thumb::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,136,.03) 3px,rgba(0,255,136,.03) 4px)}
-  .v7 .thumb-num{color:#4B5563;font-family:'Courier New',monospace}
-  .v7 .accent{color:#00FF88}
-  .v7 .cmd{font-family:'Courier New',monospace;font-size:13px;color:#00FF88;line-height:1.5}
+  /* V7 — Less Is More */
+  .v7 .thumb{background:#ECFF4E;color:#0E0E0E;position:relative;overflow:hidden}
+  .v7 .thumb-num{color:#0E0E0E;opacity:.55}
+  .v7 .display{font-family:'Instrument Serif',serif;font-weight:400;font-size:38px;line-height:.95;letter-spacing:-.03em;color:#0E0E0E}
+  .v7 .display em{font-style:italic}
+  .v7 .pill{display:inline-block;background:#FF4426;color:#fff;padding:5px 12px;border-radius:99px;font-size:10px;font-weight:700;transform:rotate(-4deg);margin-right:6px;margin-top:6px}
+  .v7 .pill.dark{background:#0E0E0E}
+  .v7 .accent{color:#FF4426;font-weight:700}
 
   /* V8 — Riso Print Shop */
   .v8 .thumb{background:#F5EFE0;color:#1A1410;position:relative}
@@ -79,13 +81,15 @@
   .v8 .accent-blue{color:#3754A8}
   .v8 .accent-red{color:#E04E3F}
 
-  /* V9 — Glass Cathedral */
-  .v9 .thumb{background:#06091A;color:#fff;position:relative;overflow:hidden}
-  .v9 .thumb::before{content:"";position:absolute;top:-40%;left:-20%;width:80%;height:80%;background:radial-gradient(circle,rgba(255,61,171,.25),transparent 60%);pointer-events:none}
-  .v9 .thumb::after{content:"";position:absolute;bottom:-30%;right:-20%;width:70%;height:70%;background:radial-gradient(circle,rgba(0,229,255,.2),transparent 60%);pointer-events:none}
-  .v9 .thumb-num{color:rgba(255,255,255,.35);position:relative;z-index:1}
-  .v9 .glass{position:relative;z-index:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px 20px}
-  .v9 .accent{color:#00E5FF}
+  /* V9 — Neon Athletic */
+  .v9 .thumb{background:#0E0E10;color:#F5F5F7;position:relative;overflow:hidden}
+  .v9 .thumb::before{content:"";position:absolute;top:-30%;left:50%;transform:translateX(-50%);width:120%;height:80%;background:radial-gradient(ellipse at center,rgba(212,255,0,.12),transparent 60%);pointer-events:none}
+  .v9 .thumb-num{color:rgba(245,245,247,.4);position:relative;z-index:1}
+  .v9 .display{position:relative;z-index:1;font-size:30px;font-weight:700;line-height:1.05;letter-spacing:-.025em}
+  .v9 .display .hl{background:#D4FF00;color:#0E0E10;padding:0 8px 2px;border-radius:5px;display:inline-block;transform:rotate(-1deg)}
+  .v9 .chip{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid rgba(245,245,247,.18);border-radius:99px;font-size:10px;color:rgba(245,245,247,.7);margin-bottom:14px}
+  .v9 .chip .dot{width:6px;height:6px;background:#D4FF00;border-radius:50%;box-shadow:0 0 8px #D4FF00}
+  .v9 .accent{color:#D4FF00}
 
   .info{padding:24px 28px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15)}
   .info-name{font-size:14px;font-weight:600;letter-spacing:.02em;color:#F2EBDC;margin-bottom:4px}
@@ -197,17 +201,22 @@
       </div>
     </a>
 
-    <!-- V7 — NEW -->
+    <!-- V7 — Less Is More -->
     <a class="card v7" href="./v7_terminal_pulse.html">
       <div class="thumb">
-        <div class="thumb-num">V7 · TERMINAL PULSE</div>
-        <div class="cmd">$ kombo close<br>--deals=more<br>--with=ai<br><span style="color:#4B5563">_<span style="animation:blink 1s step-end infinite">▌</span></span></div>
-        <div class="thumb-footer" style="color:#4B5563;font-family:'Courier New',monospace"><span class="accent">● LIVE</span><span>OPEN →</span></div>
+        <div class="thumb-num">V7 · LESS IS MORE</div>
+        <div class="display">Less <em>clicks.</em><br/>More <em>selling.</em></div>
+        <div style="margin-top:14px">
+          <span class="pill">cold leads</span>
+          <span class="pill dark">manual entry</span>
+          <span class="pill">ghosted</span>
+        </div>
+        <div class="thumb-footer" style="color:rgba(0,0,0,.55);position:relative;z-index:1"><span class="accent">★ Bright</span><span>OPEN →</span></div>
       </div>
       <div class="info">
-        <div class="info-name">V7 — Terminal Pulse</div>
-        <div class="info-desc">Developer-tool dark mode. JetBrains Mono throughout, phosphor-green CLI hero, scanline overlay, `# module` chapter headers, git-log testimonials, ASCII project tiles. Vercel/Linear/Raycast energy.</div>
-        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Dark</span><span class="tag">Mono</span><span class="tag">Dev-tool</span></div>
+        <div class="info-name">V7 — Less Is More</div>
+        <div class="info-desc">Bright playful zine vibes. Acid-yellow background, Instrument Serif italic display, red sticker badges, hand-stamped comparison tables, cream cards with thick black shadows. Joyful and refreshingly direct.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Playful</span><span class="tag">Bright</span><span class="tag">Editorial</span></div>
       </div>
     </a>
 
@@ -226,19 +235,18 @@
       </div>
     </a>
 
-    <!-- V9 — NEW -->
+    <!-- V9 — Neon Athletic -->
     <a class="card v9" href="./v9_glass_cathedral.html">
       <div class="thumb">
-        <div class="thumb-num">V9 · GLASS CATHEDRAL</div>
-        <div class="glass">
-          <div style="font-family:'Georgia',serif;font-style:italic;font-size:28px;line-height:1.1;color:#fff">Close More Deals <span class="accent">With AI.</span></div>
-        </div>
-        <div class="thumb-footer" style="color:rgba(255,255,255,.35);position:relative;z-index:1"><span style="color:#FF3DAB">◈ Aurora</span><span>OPEN →</span></div>
+        <div class="thumb-num">V9 · NEON ATHLETIC</div>
+        <div class="chip"><span class="dot"></span> Built for revenue teams</div>
+        <div class="display">Less clicks.<br/>More <span class="hl">selling.</span></div>
+        <div class="thumb-footer" style="color:rgba(245,245,247,.4);position:relative;z-index:1"><span class="accent">⚡ Neon</span><span>OPEN →</span></div>
       </div>
       <div class="info">
-        <div class="info-name">V9 — Glass Cathedral</div>
-        <div class="info-desc">Midnight cathedral with aurora gradient blobs (magenta + cyan). Heavy backdrop-filter frosted glass, Fraunces italic display, neon-glow accents, chapter sections with glass product windows.</div>
-        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Glass</span><span class="tag">Aurora</span><span class="tag">Futuristic</span></div>
+        <div class="info-name">V9 — Neon Athletic</div>
+        <div class="info-desc">Elegant near-black canvas with electric neon-yellow accents. Clean Inter type, dashboard-led hero, JetBrains Mono labels, modular cards, modern SaaS rigor with athletic energy. Nike meets Linear.</div>
+        <div class="info-tags"><span class="tag new">NEW</span><span class="tag">Dark</span><span class="tag">Neon</span><span class="tag">Athletic</span></div>
       </div>
     </a>
 
