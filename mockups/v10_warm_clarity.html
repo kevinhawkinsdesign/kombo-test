@@ -28,19 +28,26 @@
     .cta-btn:hover { background: #E55A2B; }
 
     .hero {
-      padding: 80px 40px; text-align: center; background: linear-gradient(135deg, #FFF4E6 0%, #FFFCF8 100%);
+      padding: 36px 40px 32px; text-align: center; background: linear-gradient(135deg, #FFF4E6 0%, #FFFCF8 100%);
       border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      min-height: calc(100vh - 70px); display: flex; flex-direction: column; justify-content: center;
     }
-    .eyebrow { font-size: 12px; color: #FF6B35; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-    h1 { font-size: 56px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; color: #1A1A1A; max-width: 800px; margin-left: auto; margin-right: auto; }
-    .subheadline { font-size: 18px; color: #666; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
-    .hero-buttons { display: flex; gap: 16px; justify-content: center; margin-bottom: 40px; }
-    .primary-btn { background: #FF6B35; color: white; padding: 14px 32px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 16px; transition: background 0.2s; }
+    .eyebrow { font-size: 12px; color: #FF6B35; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    h1 { font-size: 56px; font-weight: 800; line-height: 1.1; margin-bottom: 14px; color: #1A1A1A; max-width: 800px; margin-left: auto; margin-right: auto; letter-spacing: -0.02em; }
+    .subheadline { font-size: 17px; color: #666; margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+    .hero-buttons { display: flex; gap: 14px; justify-content: center; margin-bottom: 32px; }
+    .primary-btn { background: #FF6B35; color: white; padding: 13px 28px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 15px; transition: background 0.2s; }
     .primary-btn:hover { background: #E55A2B; }
-    .secondary-btn { background: white; color: #FF6B35; padding: 14px 32px; border-radius: 8px; border: 2px solid #FF6B35; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.2s; }
+    .secondary-btn { background: white; color: #FF6B35; padding: 11px 28px; border-radius: 8px; border: 2px solid #FF6B35; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s; }
     .secondary-btn:hover { background: #FFF4E6; }
 
-    .hero-image { width: 100%; max-width: 900px; margin: 0 auto; height: 400px; background: linear-gradient(135deg, #FFE0C9 0%, #FFEFD5 100%); border-radius: 12px; }
+    /* Hero stats — clean orange accents on warm cream */
+    .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 880px; margin: 0 auto; padding: 24px 0 0; border-top: 1px solid rgba(0,0,0,0.08); }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-size: 38px; font-weight: 800; color: #FF6B35; line-height: 1; letter-spacing: -0.03em; }
+    .hero-stat .lab { margin-top: 6px; font-size: 12px; color: #666; font-weight: 500; }
+
+    .hero-image { width: 100%; max-width: 900px; margin: 0 auto; height: 400px; background: linear-gradient(135deg, #FFE0C9 0%, #FFEFD5 100%); border-radius: 12px; display: none; }
 
     .section { padding: 80px 40px; }
     .section-title { font-size: 42px; font-weight: 800; text-align: center; margin-bottom: 16px; }
@@ -189,10 +196,18 @@
     <h1>Less clicks. More selling.</h1>
     <p class="subheadline">KomboAI sits on top of your CRM and helps your SDRs and AEs prospect, launch sequences and get coached faster.</p>
     <div class="hero-buttons">
-      <button class="primary-btn">Start Free Trial</button>
-      <button class="secondary-btn">Watch Demo</button>
+      <button class="primary-btn">See a Demo →</button>
+      <button class="secondary-btn">See How It Works</button>
     </div>
-    <div class="hero-image fade-in delay-2" style="background:none;height:auto;padding:0;overflow:hidden;border-radius:12px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 16px 60px rgba(0,0,0,0.08);">
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">500+</div><div class="lab">B2B teams</div></div>
+      <div class="hero-stat"><div class="num">40%</div><div class="lab">Higher close rate</div></div>
+      <div class="hero-stat"><div class="num">60%</div><div class="lab">Less manual research</div></div>
+      <div class="hero-stat"><div class="num">94%</div><div class="lab">Forecast accuracy</div></div>
+    </div>
+  </section>
+  <section style="padding:0 40px 60px;background:linear-gradient(135deg,#FFF4E6 0%,#FFFCF8 100%);">
+    <div style="width:100%;max-width:1100px;margin:0 auto;overflow:hidden;border-radius:12px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 16px 60px rgba(0,0,0,0.08);">
       <img src="./images/Group-820.webp" alt="KomboAI product preview" style="width:100%;height:auto;display:block;background:#fff;" loading="lazy">
     </div>
   </section>
