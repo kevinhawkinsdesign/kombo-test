@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KomboAI — Your Sales Intelligence Package</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #7d6b4f;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .container { width: 100%; max-width: 960px; }
+
+    .invoice {
+        background: #6b5a42;
+        color: #e8dcc8;
+        padding: 56px 64px;
+        position: relative;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 56px;
+        padding-bottom: 40px;
+        border-bottom: 2px solid #8b7a62;
+    }
+
+    .invoice-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 88px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        line-height: 0.9;
+        color: #e8dcc8;
+        margin-bottom: 24px;
+        text-transform: uppercase;
+    }
+
+    .header-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 24px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #b8a891;
+        font-family: 'Space Mono', monospace;
+        margin-bottom: 24px;
+    }
+
+    .header-meta div {
+        text-align: center;
+    }
+
+    .meta-label {
+        display: block;
+        color: #8b7a62;
+        margin-bottom: 4px;
+        font-weight: 400;
+    }
+
+    .meta-value {
+        display: block;
+        color: #e8dcc8;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .tagline {
+        font-size: 13px;
+        color: #b8a891;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .content {
+        margin-bottom: 48px;
+    }
+
+    .section-title {
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #8b7a62;
+        margin-bottom: 16px;
+        margin-top: 32px;
+        font-weight: 700;
+    }
+
+    .section-title:first-child { margin-top: 0; }
+
+    .billing-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        margin-bottom: 40px;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #d4c4b0;
+    }
+
+    .info-block h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 18px;
+        color: #e8dcc8;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .info-block p {
+        font-size: 12px;
+        color: #b8a891;
+        margin-bottom: 4px;
+    }
+
+    .line-items-header {
+        display: grid;
+        grid-template-columns: 2.5fr 1fr 1fr 1fr;
+        gap: 24px;
+        padding: 12px 0;
+        border-top: 1px solid #8b7a62;
+        border-bottom: 1px solid #8b7a62;
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #8b7a62;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    .line-item {
+        display: grid;
+        grid-template-columns: 2.5fr 1fr 1fr 1fr;
+        gap: 24px;
+        padding: 18px 0;
+        border-bottom: 1px solid rgba(139, 122, 98, 0.3);
+        align-items: center;
+    }
+
+    .line-item.input-row {
+        padding: 16px 0;
+    }
+
+    .line-item:last-child {
+        border-bottom: 1px solid #8b7a62;
+    }
+
+    .item-num {
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        color: #8b7a62;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-right: 8px;
+    }
+
+    .item-title {
+        font-size: 13px;
+        color: #e8dcc8;
+        font-weight: 600;
+        line-height: 1.4;
+        margin-bottom: 4px;
+    }
+
+    .item-title-small {
+        font-size: 11px;
+        color: #b8a891;
+        line-height: 1.5;
+        margin-left: 28px;
+    }
+
+    .badge {
+        display: inline-block;
+        background: rgba(232, 220, 200, 0.12);
+        color: #d4c4b0;
+        padding: 2px 7px;
+        border-radius: 3px;
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-left: 8px;
+        border: 0.5px solid #8b7a62;
+    }
+
+    .col-right {
+        text-align: right;
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        color: #b8a891;
+        font-weight: 500;
+    }
+
+    .col-right.amount {
+        color: #e8dcc8;
+        font-weight: 700;
+    }
+
+    .col-right.struck {
+        text-decoration: line-through;
+        color: #8b7a62;
+        font-size: 10px;
+    }
+
+    .input-label {
+        display: block;
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #8b7a62;
+        margin-bottom: 6px;
+        font-weight: 700;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"] {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid #8b7a62;
+        color: #e8dcc8;
+        padding: 10px 12px;
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        border-radius: 0;
+        transition: all 0.2s;
+    }
+
+    input::placeholder {
+        color: #8b7a62;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #e8dcc8;
+        background: rgba(0, 0, 0, 0.5);
+        box-shadow: none;
+    }
+
+    .totals {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 48px;
+        padding-top: 24px;
+        border-top: 1px solid #8b7a62;
+    }
+
+    .totals-table {
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+    }
+
+    .total-row .label {
+        color: #b8a891;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+    }
+
+    .total-row .value {
+        color: #b8a891;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .total-row.grand {
+        padding: 14px 0;
+        border-top: 2px solid #e8dcc8;
+        border-bottom: 2px solid #e8dcc8;
+        margin: 12px 0;
+        font-size: 16px;
+    }
+
+    .total-row.grand .label {
+        color: #e8dcc8;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+    }
+
+    .total-row.grand .value {
+        color: #e8dcc8;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .footnote {
+        font-size: 11px;
+        color: #8b7a62;
+        text-align: right;
+        margin-top: 8px;
+        font-family: 'Space Mono', monospace;
+        letter-spacing: 0.08em;
+    }
+
+    .payment-section {
+        display: grid;
+        grid-template-columns: 2fr 1.2fr;
+        gap: 48px;
+        margin-bottom: 48px;
+        padding: 32px 0;
+        border-top: 2px solid #8b7a62;
+        border-bottom: 2px solid #8b7a62;
+    }
+
+    .payment-block h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 22px;
+        color: #e8dcc8;
+        margin-bottom: 16px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .payment-block p {
+        font-size: 11px;
+        color: #b8a891;
+        line-height: 1.8;
+        margin-bottom: 8px;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .payment-block strong {
+        color: #e8dcc8;
+        font-weight: 700;
+    }
+
+    .payment-details {
+        display: flex;
+        gap: 24px;
+    }
+
+    .detail-col {
+        flex: 1;
+    }
+
+    .detail-label {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #8b7a62;
+        margin-bottom: 4px;
+        font-family: 'Space Mono', monospace;
+        font-weight: 700;
+    }
+
+    .detail-value {
+        font-size: 12px;
+        color: #e8dcc8;
+        font-family: 'Space Mono', monospace;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .qr-placeholder {
+        width: 120px;
+        height: 120px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid #8b7a62;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #8b7a62;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .cta-section {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    button[type="submit"] {
+        background: #8b7a62;
+        color: #e8dcc8;
+        border: 2px solid #8b7a62;
+        padding: 16px 56px;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 18px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    button:hover {
+        background: #a59478;
+        border-color: #a59478;
+    }
+
+    button:active {
+        opacity: 0.95;
+    }
+
+    .cta-meta {
+        font-size: 11px;
+        color: #b8a891;
+        margin-top: 12px;
+        font-family: 'Space Mono', monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .footer {
+        padding-top: 32px;
+        border-top: 2px solid #8b7a62;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        font-size: 10px;
+    }
+
+    .footer-col h4 {
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #8b7a62;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .footer-col p {
+        color: #b8a891;
+        line-height: 1.6;
+        font-size: 10px;
+        margin-bottom: 4px;
+    }
+
+    .back-link {
+        position: fixed;
+        top: 24px;
+        left: 24px;
+        font-size: 11px;
+        color: #e8dcc8;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 600;
+        padding: 8px 14px;
+        border: 1px solid #e8dcc8;
+        background: rgba(0, 0, 0, 0.3);
+        transition: all 0.2s;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .back-link:hover {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 800px) {
+        .invoice { padding: 32px 24px; }
+        .invoice-title { font-size: 56px; }
+        .header-meta { grid-template-columns: 1fr; }
+        .billing-info { grid-template-columns: 1fr; gap: 24px; }
+        .payment-section { grid-template-columns: 1fr; gap: 24px; }
+        .footer { grid-template-columns: 1fr; gap: 24px; }
+        .line-items-header { display: none; }
+        .line-item { grid-template-columns: 1fr; gap: 0; padding: 12px 0; }
+        .col-right { text-align: left; margin-top: 4px; }
+        .col-right::before { content: attr(data-label) ": "; color: #8b7a62; margin-right: 6px; }
+    }
+</style>
+</head>
+<body>
+    <a class="back-link" href="./index.html">← Back</a>
+
+    <div class="container">
+        <form id="leadForm" class="invoice" method="POST" action="#">
+
+            <div class="header">
+                <h1 class="invoice-title">Invoice</h1>
+                <div class="header-meta">
+                    <div>
+                        <span class="meta-label">Date</span>
+                        <span class="meta-value">May 5, 2026</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">Invoice #</span>
+                        <span class="meta-value">KOMBO-2026-0001</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">Due</span>
+                        <span class="meta-value">Instant</span>
+                    </div>
+                </div>
+                <p class="tagline">Your Sales Intelligence Package</p>
+            </div>
+
+            <div class="content">
+                <div class="section-title">Bill From</div>
+                <div class="billing-info">
+                    <div class="info-block">
+                        <h3>KomboAI, Inc.</h3>
+                        <p>Sales Intelligence & Automation</p>
+                        <p>HubSpot · Salesforce · Apollo · Dynamics</p>
+                        <p>hello@komboai.com</p>
+                    </div>
+                    <div class="info-block">
+                        <h3>Bill To</h3>
+                        <div style="margin-top: 8px;">
+                            <label class="input-label">Full Name</label>
+                            <input type="text" name="fullName" required placeholder="Jane Smith" style="margin-bottom: 10px;">
+                            <label class="input-label">Company</label>
+                            <input type="text" name="company" required placeholder="Acme Corp">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="line-items-header">
+                    <div>Description</div>
+                    <div class="col-right">Qty</div>
+                    <div class="col-right">Rate</div>
+                    <div class="col-right">Amount</div>
+                </div>
+
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">01</span>40 Free Leads To Get Started <span class="badge">Included</span></div>
+                        <div class="item-title-small">Hand-matched to your ICP, ready to import on day one</div>
+                    </div>
+                    <div class="col-right">40</div>
+                    <div class="col-right">$0.00</div>
+                    <div class="col-right amount">$0.00</div>
+                </div>
+
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label">Email Address</label>
+                        <input type="email" name="email" required placeholder="jane@company.com">
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">02</span>Verified Phone Numbers & Emails <span class="badge">Bonus</span></div>
+                        <div class="item-title-small">30+ data points per contact: direct dials, mobile, intent signals</div>
+                    </div>
+                    <div class="col-right">30+ pts</div>
+                    <div class="col-right struck">$199.00</div>
+                    <div class="col-right amount">$0.00</div>
+                </div>
+
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label">Phone Number</label>
+                        <input type="tel" name="phone" required placeholder="(555) 123-4567">
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">03</span>Real-Time Sales Coaching <span class="badge">Premium</span></div>
+                        <div class="item-title-small">AI listens to calls, identifies patterns, coaches every rep</div>
+                    </div>
+                    <div class="col-right">Unlimited</div>
+                    <div class="col-right struck">$499.00</div>
+                    <div class="col-right amount">$0.00</div>
+                </div>
+
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label">Your Role</label>
+                        <input type="text" name="role" required placeholder="SDR · AE · RevOps · Leader">
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">04</span>AI Co-Pilot On Top of Your CRM <span class="badge">Powered</span></div>
+                        <div class="item-title-small">Native for HubSpot, Salesforce, Apollo, Dynamics — your data stays</div>
+                    </div>
+                    <div class="col-right">Always-on</div>
+                    <div class="col-right struck">$299.00</div>
+                    <div class="col-right amount">$0.00</div>
+                </div>
+
+                <div class="line-item input-row">
+                    <div>
+                        <label class="input-label">CRM In Use</label>
+                        <input type="text" name="crm" placeholder="HubSpot · Salesforce · Apollo · Dynamics">
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="line-item">
+                    <div>
+                        <div class="item-title"><span class="item-num">05</span>60% Less Manual Work <span class="badge">Guaranteed</span></div>
+                        <div class="item-title-small">Sequences, dialing, drafting, CRM admin — automated from day one</div>
+                    </div>
+                    <div class="col-right">From day 1</div>
+                    <div class="col-right">$0.00</div>
+                    <div class="col-right amount">$0.00</div>
+                </div>
+            </div>
+
+            <div class="totals">
+                <div class="totals-table">
+                    <div class="total-row">
+                        <span class="label">Subtotal</span>
+                        <span class="value">$997.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="label">Limited-Time Offer</span>
+                        <span class="value">−$997.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="label">Tax</span>
+                        <span class="value">$0.00</span>
+                    </div>
+                    <div class="total-row grand">
+                        <span class="label">Total Due</span>
+                        <span class="value">$0.00</span>
+                    </div>
+                    <div class="footnote">Free Forever · No Credit Card Required</div>
+                </div>
+            </div>
+
+            <div class="payment-section">
+                <div class="payment-block">
+                    <h3>Payment Terms</h3>
+                    <p><strong>Terms:</strong> 7 days from issue date.</p>
+                    <p>Payment method: Instant access upon submission. No invoice required. Your leads, coaching insights, and platform access activate immediately upon claim.</p>
+                    <p style="margin-top: 12px; font-size: 9px; color: #8b7a62;">This package is valid for 14 days of full platform access. Standard terms & conditions apply. KomboAI reserves the right to modify or cancel offers.</p>
+                </div>
+                <div class="payment-block">
+                    <h3>Scan To Claim</h3>
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="qr-placeholder">[QR Code]</div>
+                        <p style="margin-top: 16px; font-size: 10px;">Or submit this form below</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <button type="submit">Claim Your Package</button>
+                <div class="cta-meta">Instant access · No credit card · 14-day trial included</div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-col">
+                    <h4>KomboAI Inc.</h4>
+                    <p>101 Main Street</p>
+                    <p>Boring, CA 90000</p>
+                    <p style="margin-top: 8px;">www.komboai.com</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <p>hello@komboai.com</p>
+                    <p>(555) 000-0000</p>
+                    <p style="margin-top: 8px;">Payment & Support</p>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('leadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fullName = document.querySelector('input[name="fullName"]').value;
+            alert('Thank you, ' + (fullName || 'there') + '! Your package has been claimed.');
+        });
+    </script>
+</body>
+</html>
