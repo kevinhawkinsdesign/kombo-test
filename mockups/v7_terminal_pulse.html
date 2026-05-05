@@ -3,838 +3,406 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KomboAI — V7 Terminal Pulse</title>
+<title>KomboAI — V7 Revenue On Autopilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --bg:#0A0A0A;
-    --panel:#101418;
-    --panel-2:#0C1014;
-    --hair:#1F2630;
-    --hair-2:#161B22;
-    --text:#E5E7EB;
-    --text-2:#94A3B8;
-    --muted:#5B6677;
-    --phos:#00FF88;
-    --phos-dim:#0BA572;
-    --amber:#F5C61C;
-    --cyan:#7DF9FF;
-    --indigo:#6366f1;
-    --red:#FF4D5E;
-  }
-  html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 1px,transparent 4px);z-index:50;mix-blend-mode:screen;opacity:.6}
-  body::after{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at top,rgba(0,255,136,.04) 0,transparent 60%);z-index:49}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --dark:#0D0D12;--dark-2:#1A1A22;
+  --grey:#2A2A35;--grey-light:#3D3D4A;
+  --text:#EFEFEF;--text-2:#B8B8C8;
+  --accent:#5B8DEE;--accent-light:#7BA3F5;
+  --orange:#FF6B35;--orange-light:#FF8560;
+}
+html,body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 
-  .mono{font-family:'JetBrains Mono',monospace}
-  a{color:inherit;text-decoration:none}
-  .page{max-width:1440px;margin:0 auto;padding:0 28px 0}
+.page{max-width:1440px;margin:0 auto}
 
-  /* === NAV === */
-  nav.top{display:flex;align-items:center;justify-content:space-between;padding:18px 4px;border-bottom:1px solid var(--hair);position:relative;z-index:5}
-  .brand{display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.04em;font-size:14px}
-  .brand-mark{width:26px;height:26px;border-radius:6px;background:var(--indigo);display:grid;place-items:center;color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;box-shadow:0 0 0 1px rgba(99,102,241,.4),0 0 18px rgba(99,102,241,.45)}
-  nav.top .nav-mid{display:flex;gap:6px;font-family:'JetBrains Mono',monospace;font-size:13px}
-  nav.top .nav-mid a{padding:7px 12px;border-radius:6px;color:var(--text-2);display:inline-flex;gap:6px;align-items:center}
-  nav.top .nav-mid a:hover{background:var(--panel);color:var(--text)}
-  nav.top .nav-mid a .caret{color:var(--muted);font-size:10px}
-  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--phos);box-shadow:0 0 8px var(--phos);display:inline-block;animation:pulse 1.6s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-  .nav-status{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);padding:6px 10px;border:1px solid var(--hair);border-radius:6px}
-  .nav-cta{display:inline-flex;align-items:center;gap:8px;background:var(--phos);color:#001A0B;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;padding:9px 16px;border-radius:6px;letter-spacing:-.01em;box-shadow:0 0 0 1px rgba(0,255,136,.3),0 0 24px rgba(0,255,136,.25)}
-  .nav-right{display:flex;gap:10px;align-items:center}
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:20px 64px;border-bottom:1px solid var(--grey);position:relative;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-mark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--dark);font-weight:700;font-size:12px}
+.logo-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.nav-links{display:flex;gap:28px;font-size:13px;color:var(--text-2)}
+.nav-links a{color:inherit;text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--accent);color:var(--dark);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:10px 22px;border-radius:6px;text-decoration:none;letter-spacing:.04em}
 
-  /* === HERO === */
-  .hero{padding:60px 0 56px;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;position:relative;border-bottom:1px solid var(--hair)}
-  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(0,255,136,.08) 0,transparent 40%),radial-gradient(circle at 90% 80%,rgba(99,102,241,.08) 0,transparent 40%);pointer-events:none}
-  .h-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--phos);display:flex;align-items:center;gap:10px;margin-bottom:28px}
-  .h-eyebrow .br{color:var(--muted)}
-  .h-eyebrow .live{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,255,136,.3);padding:4px 9px;border-radius:4px;background:rgba(0,255,136,.05)}
-  h1{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:84px;line-height:.95;letter-spacing:-.04em;color:var(--text);margin-bottom:8px}
-  h1 .br-tok{color:var(--phos);opacity:.55;font-weight:400}
-  h1 .accent{color:var(--phos);text-shadow:0 0 30px rgba(0,255,136,.5)}
-  .caret{display:inline-block;width:.55em;height:.85em;background:var(--phos);margin-left:6px;transform:translateY(.05em);animation:blink 1s step-end infinite;box-shadow:0 0 12px rgba(0,255,136,.7)}
-  @keyframes blink{50%{opacity:0}}
-  .h-lede{margin-top:32px;font-size:18px;line-height:1.6;color:var(--text-2);max-width:540px;font-family:'Inter',sans-serif}
-  .h-lede b{color:var(--text);font-weight:600}
-  .h-cta{margin-top:36px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .btn{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;padding:12px 18px;border-radius:6px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--hair);background:var(--panel);color:var(--text);cursor:pointer}
-  .btn.primary{background:var(--phos);color:#001A0B;border-color:transparent;box-shadow:0 0 0 1px rgba(0,255,136,.3),0 0 28px rgba(0,255,136,.3)}
-  .btn.primary:hover{filter:brightness(1.06)}
-  .btn .arr{font-size:12px}
-  .btn .prompt{color:var(--muted)}
-  .btn.ghost{background:transparent}
+/* EYEBROW */
+.eyebrow{padding:64px 64px 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);}
+.eyebrow span{color:var(--accent)}
 
-  /* hero stats ASCII table */
-  .ascii-stats{margin-top:44px;border:1px solid var(--hair);border-radius:8px;background:var(--panel-2);padding:16px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-2);max-width:600px}
-  .ascii-stats .row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;align-items:end}
-  .ascii-stats .stat{padding:8px 0}
-  .ascii-stats .stat .num{font-size:30px;font-weight:700;color:var(--phos);letter-spacing:-.02em;line-height:1;display:block;margin-bottom:6px;text-shadow:0 0 14px rgba(0,255,136,.35)}
-  .ascii-stats .stat .lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-  .ascii-stats .top-bar,.ascii-stats .bot-bar{color:var(--hair);font-size:11px;letter-spacing:.05em;line-height:1.2}
-  .ascii-stats .top-bar{margin-bottom:4px}
-  .ascii-stats .bot-bar{margin-top:6px}
+/* HERO */
+.hero{padding:40px 64px 100px;display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center}
+h1{font-family:'Syne',sans-serif;font-size:76px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin-bottom:24px}
+h1 .accent{color:var(--accent);display:block;font-weight:700}
+.hero p{font-size:16px;color:var(--text-2);line-height:1.7;margin-bottom:32px;max-width:440px}
+.hero-ctas{display:flex;gap:12px;align-items:center}
+.cta-primary{background:var(--accent);color:var(--dark);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;letter-spacing:.04em;cursor:pointer}
+.cta-secondary{background:rgba(91,141,238,.1);color:var(--accent);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;letter-spacing:.04em;cursor:pointer}
 
-  /* hero CLI window */
-  .cli{background:var(--panel);border:1px solid var(--hair);border-radius:10px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(0,255,136,.18),0 8px 24px -10px rgba(0,0,0,.6);position:relative}
-  .cli-bar{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--hair);background:linear-gradient(180deg,#0F1418,#0B0E12)}
-  .cli-bar .lights{display:flex;gap:6px}
-  .cli-bar .lights span{width:11px;height:11px;border-radius:50%;background:#222;border:1px solid #2C333D}
-  .cli-bar .lights span.r{background:#FF5F57;border-color:transparent}
-  .cli-bar .lights span.y{background:#FEBC2E;border-color:transparent}
-  .cli-bar .lights span.g{background:#28C840;border-color:transparent}
-  .cli-bar .title{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-2);flex:1;text-align:center;letter-spacing:.04em}
-  .cli-bar .title .path{color:var(--muted)}
-  .cli-bar .meta{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted)}
-  .cli-bar .meta .pid{display:inline-flex;align-items:center;gap:4px}
-  .cli-bar .meta .pid::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--phos);box-shadow:0 0 6px var(--phos)}
+/* HERO VISUAL — Dashboard mockup */
+.hero-visual{background:linear-gradient(135deg,var(--dark-2),var(--grey));border:1px solid var(--grey);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.dashboard-bar{display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--grey-light)}
+.dash-dot{width:8px;height:8px;border-radius:50%;background:var(--grey-light)}
+.dashboard-content{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.metric-card{background:rgba(91,141,238,.08);border:1px solid var(--grey-light);border-radius:8px;padding:12px;font-size:12px}
+.metric-label{color:var(--text-2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.metric-value{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--accent)}
+.metric-unit{font-size:10px;color:var(--text-2);}
 
-  .cli-body{padding:18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:var(--text)}
-  .cli-line{display:flex;gap:8px}
-  .cli-line .pmt{color:var(--phos);flex-shrink:0}
-  .cli-line .cmd{color:var(--text)}
-  .cli-line .opt{color:var(--cyan)}
-  .cli-line .arg{color:var(--amber)}
-  .cli-line .com{color:var(--muted);margin-left:10px}
-  .cli-out{margin:6px 0 12px 0;color:var(--text-2);font-size:12px;line-height:1.7;padding:0 6px}
-  .cli-out .ok{color:var(--phos)}
-  .cli-out .warn{color:var(--amber)}
+/* TRUST LOGOS */
+.trust-section{padding:80px 64px}
+.trust-title{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);margin-bottom:32px}
+.logo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.logo-item{background:var(--grey);border:1px solid var(--grey-light);border-radius:8px;height:60px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-2);font-weight:600}
 
-  .lead-table{margin:8px 0 12px;border:1px solid var(--hair);border-radius:6px;overflow:hidden}
-  .lead-table .head{display:grid;grid-template-columns:32px 1.5fr 1fr 60px 90px;gap:10px;padding:8px 12px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:#0B0E12;border-bottom:1px solid var(--hair)}
-  .lead-table .row{display:grid;grid-template-columns:32px 1.5fr 1fr 60px 90px;gap:10px;padding:9px 12px;font-size:12px;color:var(--text);border-bottom:1px solid var(--hair-2);align-items:center}
-  .lead-table .row:last-child{border-bottom:0}
-  .lead-table .row .rk{color:var(--muted)}
-  .lead-table .row .nm{color:var(--text);font-weight:500}
-  .lead-table .row .co{color:var(--text-2)}
-  .lead-table .row .sc{font-weight:700;color:var(--phos);text-shadow:0 0 8px rgba(0,255,136,.35)}
-  .lead-table .row .sc.warm{color:var(--amber);text-shadow:0 0 8px rgba(245,198,28,.3)}
-  .lead-table .row .sc.cool{color:var(--cyan);text-shadow:0 0 8px rgba(125,249,255,.25)}
-  .lead-table .row .st{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--text-2)}
-  .lead-table .row .st::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--phos);box-shadow:0 0 5px var(--phos)}
-  .lead-table .row .st.warm::before{background:var(--amber);box-shadow:0 0 5px var(--amber)}
-  .lead-table .row .st.cool::before{background:var(--cyan);box-shadow:0 0 5px var(--cyan)}
+/* FEATURES */
+.features{padding:80px 64px}
+.section-title{font-family:'Syne',sans-serif;font-size:48px;font-weight:700;margin-bottom:60px;color:var(--text)}
+.section-title .accent{color:var(--accent)}
+.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;margin-bottom:80px}
+.feature-card{padding:32px;background:rgba(91,141,238,.06);border:1px solid var(--grey-light);border-radius:12px;position:relative;overflow:hidden}
+.feature-card::before{content:"";position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(91,141,238,.1),transparent 70%);border-radius:50%;pointer-events:none}
+.feature-icon{width:48px;height:48px;background:rgba(91,141,238,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px;position:relative;z-index:1}
+.feature-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;position:relative;z-index:1}
+.feature-desc{font-size:14px;color:var(--text-2);line-height:1.6;position:relative;z-index:1}
 
-  .sparkline{margin-top:12px;display:flex;align-items:end;gap:3px;height:36px}
-  .sparkline span{flex:1;background:var(--phos);border-radius:1px;opacity:.85;box-shadow:0 0 6px rgba(0,255,136,.3)}
+/* STATS */
+.stats-band{padding:60px 64px;background:linear-gradient(90deg,rgba(91,141,238,.05),rgba(255,107,53,.02));border-top:1px solid var(--grey);border-bottom:1px solid var(--grey);display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.stat-col{display:flex;flex-direction:column;gap:8px}
+.stat-num{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;color:var(--accent)}
+.stat-desc{font-size:14px;color:var(--text-2)}
 
-  /* === LOGOS / IMPORTED_BY === */
-  .imported{padding:42px 0;border-bottom:1px solid var(--hair);font-family:'JetBrains Mono',monospace}
-  .imp-label{display:inline-flex;align-items:center;gap:10px;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
-  .imp-label .gt{color:var(--phos)}
-  .imp-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
-  .imp-co{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--hair);border-radius:6px;padding:9px 14px;font-size:13px;color:var(--text);background:var(--panel-2)}
-  .imp-co .arr{color:var(--phos);opacity:.8}
-  .imp-co .glyph{width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,var(--indigo),var(--cyan));display:inline-block}
-  .imp-co:nth-child(2) .glyph{background:linear-gradient(135deg,var(--phos),#0BA572)}
-  .imp-co:nth-child(3) .glyph{background:linear-gradient(135deg,var(--amber),#D4A40C)}
-  .imp-co:nth-child(4) .glyph{background:linear-gradient(135deg,var(--red),#B33442)}
-  .imp-co:nth-child(5) .glyph{background:linear-gradient(135deg,var(--cyan),#3D9BAA)}
+/* COMPARISON TABLE */
+.comparison{padding:80px 64px}
+.comp-title{font-family:'Syne',sans-serif;font-size:40px;font-weight:700;margin-bottom:12px}
+.comp-subtitle{font-size:14px;color:var(--text-2);margin-bottom:48px}
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{text-align:left;padding:16px;border-bottom:2px solid var(--grey);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.comp-table td{padding:16px;border-bottom:1px solid var(--grey-light);font-size:14px}
+.comp-table tr:hover{background:rgba(91,141,238,.04)}
+.check{color:var(--accent);font-weight:700}
+.dash{color:var(--text-2)}
 
-  /* === MODULE / CHAPTER SECTION === */
-  .module{padding:96px 0;border-bottom:1px solid var(--hair);position:relative}
-  .module + .module{border-top:0}
-  .mod-fname{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:12px;margin-bottom:36px;padding-bottom:14px;border-bottom:1px dashed var(--hair)}
-  .mod-fname .hash{color:var(--phos)}
-  .mod-fname .fn{color:var(--text)}
-  .mod-fname .ext{color:var(--muted)}
-  .mod-fname .tags{margin-left:auto;display:flex;gap:8px}
-  .mod-fname .tag{font-size:10.5px;letter-spacing:.05em;color:var(--text-2);padding:3px 8px;border:1px solid var(--hair);border-radius:4px}
-  .mod-fname .tag.green{color:var(--phos);border-color:rgba(0,255,136,.3)}
+/* TESTIMONIALS */
+.testimonials{padding:80px 64px}
+.t-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.t-card{background:var(--dark-2);border:1px solid var(--grey-light);border-radius:12px;padding:32px;display:flex;flex-direction:column}
+.t-video{width:100%;height:240px;background:var(--grey);border-radius:8px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:12px}
+.t-company{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em;margin-bottom:12px}
+.t-quote{font-size:15px;color:var(--text);line-height:1.6;margin-bottom:20px;flex:1}
 
-  .mod-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:60px;align-items:center}
-  .mod-eye{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--phos);display:inline-flex;align-items:center;gap:8px;margin-bottom:22px}
-  .mod-eye .br{color:var(--muted)}
-  h2.mod-h{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:54px;line-height:1.02;letter-spacing:-.035em;color:var(--text);margin-bottom:22px}
-  h2.mod-h .pill{display:inline-block;padding:0 14px;background:rgba(0,255,136,.12);color:var(--phos);border:1px solid rgba(0,255,136,.3);border-radius:8px;text-shadow:0 0 12px rgba(0,255,136,.4)}
-  h2.mod-h .pill.amber{background:rgba(245,198,28,.12);color:var(--amber);border-color:rgba(245,198,28,.3);text-shadow:0 0 12px rgba(245,198,28,.3)}
-  h2.mod-h .pill.cyan{background:rgba(125,249,255,.12);color:var(--cyan);border-color:rgba(125,249,255,.3);text-shadow:0 0 12px rgba(125,249,255,.3)}
-  h2.mod-h .pill.indigo{background:rgba(99,102,241,.16);color:#A5A8FF;border-color:rgba(99,102,241,.4);text-shadow:0 0 12px rgba(99,102,241,.4)}
-  .mod-lede{font-size:17px;line-height:1.6;color:var(--text-2);max-width:480px;margin-bottom:24px}
-  .mod-lede b{color:var(--text);font-weight:600}
-  .mod-meta{display:flex;gap:20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:18px}
-  .mod-meta .k{color:var(--phos)}
+/* BENEFITS */
+.benefits{padding:80px 64px}
+.benefit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}
+.benefit-card{padding:32px;background:linear-gradient(135deg,rgba(91,141,238,.08),rgba(91,141,238,.03));border:1px solid var(--grey-light);border-radius:12px}
+.benefit-tag{display:inline-block;background:rgba(91,141,238,.15);color:var(--accent);font-size:10px;font-weight:700;padding:6px 10px;border-radius:4px;margin-bottom:12px;letter-spacing:.04em}
+.benefit-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:10px}
+.benefit-desc{font-size:14px;color:var(--text-2);line-height:1.6}
 
-  /* product window — admin panel style */
-  .panel-win{background:var(--panel);border:1px solid var(--hair);border-radius:10px;overflow:hidden;box-shadow:0 40px 100px -40px rgba(0,255,136,.12),0 12px 32px -12px rgba(0,0,0,.7)}
-  .pw-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--hair);background:linear-gradient(180deg,#0F1418,#0B0E12);font-family:'JetBrains Mono',monospace}
-  .pw-bar .lights{display:flex;gap:5px}
-  .pw-bar .lights span{width:10px;height:10px;border-radius:50%;background:#222;border:1px solid #2C333D}
-  .pw-bar .lights span.r{background:#FF5F57;border:0}
-  .pw-bar .lights span.y{background:#FEBC2E;border:0}
-  .pw-bar .lights span.g{background:#28C840;border:0}
-  .pw-bar .url{flex:1;text-align:center;font-size:11px;color:var(--text-2);background:#0A0D11;border:1px solid var(--hair);border-radius:5px;padding:5px 12px}
-  .pw-bar .url .lock{color:var(--phos);margin-right:6px}
-  .pw-bar .url .host{color:var(--text)}
-  .pw-bar .meta{font-size:10.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
-  .pw-bar .meta .live::before{content:"";display:inline-block;width:5px;height:5px;background:var(--phos);border-radius:50%;margin-right:5px;box-shadow:0 0 5px var(--phos)}
+/* FAQ */
+.faq{padding:80px 64px}
+.faq-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.faq-item{border:1px solid var(--grey-light);border-radius:8px;padding:20px;cursor:pointer;transition:background .2s}
+.faq-item:hover{background:rgba(91,141,238,.04)}
+.faq-q{font-family:'Syne',sans-serif;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.faq-a{font-size:13px;color:var(--text-2);line-height:1.6;display:none}
+.faq-item.open .faq-a{display:block}
 
-  .pw-body{display:grid;grid-template-columns:170px 1fr;min-height:430px}
-  .pw-side{border-right:1px solid var(--hair);padding:14px 12px;background:#0A0D11;font-family:'JetBrains Mono',monospace;font-size:12px}
-  .pw-side .grp{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 6px 6px}
-  .pw-side .it{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;color:var(--text-2);cursor:pointer}
-  .pw-side .it:hover{background:#10141A;color:var(--text)}
-  .pw-side .it.active{background:rgba(0,255,136,.08);color:var(--phos);border:1px solid rgba(0,255,136,.18)}
-  .pw-side .it .ico{font-size:11px;width:14px;text-align:center;color:var(--muted)}
-  .pw-side .it.active .ico{color:var(--phos)}
-  .pw-side .it .badge{margin-left:auto;font-size:9.5px;background:var(--panel);border:1px solid var(--hair);border-radius:3px;padding:1px 5px;color:var(--text-2)}
+/* CTA FINAL */
+.cta-final{padding:100px 64px;text-align:center;border-top:1px solid var(--grey)}
+.cta-final h2{font-family:'Syne',sans-serif;font-size:64px;font-weight:700;color:var(--text);margin-bottom:20px}
+.cta-final p{font-size:16px;color:var(--text-2);margin-bottom:40px;max-width:600px;margin-left:auto;margin-right:auto}
+.cta-final-btn{background:var(--accent);color:var(--dark);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:16px 36px;border-radius:8px;text-decoration:none;letter-spacing:.04em;display:inline-block}
 
-  .pw-main{padding:18px 20px;font-family:'JetBrains Mono',monospace}
-  .pw-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-  .pw-h .ttl{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.01em}
-  .pw-h .crumb{font-size:11px;color:var(--muted)}
-  .pw-h .stat{margin-left:auto;display:inline-flex;gap:6px;align-items:center;font-size:11px;color:var(--phos);border:1px solid rgba(0,255,136,.25);padding:4px 9px;border-radius:5px;background:rgba(0,255,136,.06)}
-  .pw-h .stat::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--phos);box-shadow:0 0 5px var(--phos)}
-
-  .kv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
-  .kv{border:1px solid var(--hair);border-radius:6px;padding:10px 12px;background:var(--panel-2)}
-  .kv .l{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-  .kv .v{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.02em}
-  .kv .v.green{color:var(--phos);text-shadow:0 0 10px rgba(0,255,136,.35)}
-  .kv .v.amber{color:var(--amber);text-shadow:0 0 10px rgba(245,198,28,.3)}
-  .kv .v.cyan{color:var(--cyan);text-shadow:0 0 10px rgba(125,249,255,.25)}
-  .kv .delta{font-size:10px;color:var(--phos);margin-top:2px}
-  .kv .delta.dn{color:var(--red)}
-
-  .data-table{border:1px solid var(--hair);border-radius:6px;overflow:hidden}
-  .data-table .h{display:grid;grid-template-columns:1.4fr .9fr .7fr 70px 80px 100px;gap:12px;padding:8px 12px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:#0B0E12;border-bottom:1px solid var(--hair)}
-  .data-table .r{display:grid;grid-template-columns:1.4fr .9fr .7fr 70px 80px 100px;gap:12px;padding:10px 12px;font-size:11.5px;color:var(--text);border-bottom:1px solid var(--hair-2);align-items:center}
-  .data-table .r:last-child{border-bottom:0}
-  .data-table .r .nm{color:var(--text);font-weight:500;display:flex;align-items:center;gap:8px}
-  .data-table .r .nm .ava{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,var(--indigo),var(--cyan));font-size:9px;display:grid;place-items:center;color:#fff;font-weight:700}
-  .data-table .r .co{color:var(--text-2)}
-  .data-table .r .sc{font-weight:700;color:var(--phos)}
-  .data-table .r .sc.warm{color:var(--amber)}
-  .data-table .r .sc.cool{color:var(--cyan)}
-  .data-table .r .arr{font-size:10px;color:var(--muted)}
-  .data-table .r .pill{font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(0,255,136,.1);color:var(--phos);border:1px solid rgba(0,255,136,.25);text-align:center;justify-self:start}
-  .data-table .r .pill.warm{background:rgba(245,198,28,.1);color:var(--amber);border-color:rgba(245,198,28,.25)}
-  .data-table .r .pill.cool{background:rgba(125,249,255,.1);color:var(--cyan);border-color:rgba(125,249,255,.25)}
-  .data-table .r .bar{height:6px;background:#0A0D11;border-radius:3px;overflow:hidden;border:1px solid var(--hair)}
-  .data-table .r .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--phos),#0BA572);box-shadow:0 0 8px rgba(0,255,136,.4)}
-  .data-table .r .bar i.warm{background:linear-gradient(90deg,var(--amber),#D4A40C);box-shadow:0 0 8px rgba(245,198,28,.3)}
-  .data-table .r .bar i.cool{background:linear-gradient(90deg,var(--cyan),#3D9BAA);box-shadow:0 0 8px rgba(125,249,255,.25)}
-
-  /* email panel */
-  .email-pane{padding:18px 20px;font-family:'JetBrains Mono',monospace}
-  .em-from{display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--hair);padding-bottom:14px;margin-bottom:14px}
-  .em-from .ava{width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,var(--indigo),var(--cyan));display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0}
-  .em-from .meta{flex:1;font-size:12px}
-  .em-from .meta .from{color:var(--text);font-weight:600}
-  .em-from .meta .to{color:var(--text-2);margin-top:3px}
-  .em-from .meta .to .at{color:var(--phos)}
-  .em-from .timestamp{font-size:10.5px;color:var(--muted)}
-  .em-subj{font-size:14px;color:var(--text);font-weight:700;margin-bottom:10px;letter-spacing:-.005em}
-  .em-subj::before{content:"SUBJECT  ";color:var(--muted);font-weight:400;font-size:10px;letter-spacing:.1em;margin-right:8px}
-  .em-body{font-size:12.5px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;background:#0A0D11;border:1px solid var(--hair);border-radius:6px;padding:14px}
-  .em-body b{color:var(--text);background:rgba(0,255,136,.12);padding:0 4px;border-radius:3px}
-  .em-tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
-  .em-tag{font-size:10.5px;color:var(--phos);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);padding:3px 8px;border-radius:4px}
-  .em-tag.amber{color:var(--amber);background:rgba(245,198,28,.08);border-color:rgba(245,198,28,.25)}
-  .em-tag.cyan{color:var(--cyan);background:rgba(125,249,255,.08);border-color:rgba(125,249,255,.25)}
-
-  /* call coaching */
-  .call-pane{padding:18px 20px;font-family:'JetBrains Mono',monospace}
-  .call-step{display:grid;grid-template-columns:24px 1fr;gap:12px;margin-bottom:18px;position:relative}
-  .call-step .num{font-size:11px;color:var(--phos);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:4px;display:grid;place-items:center;height:24px;font-weight:700}
-  .call-step .body{font-size:12.5px;line-height:1.6;color:var(--text-2)}
-  .call-step .body b{color:var(--text);font-weight:600;display:block;margin-bottom:4px;font-size:13px}
-  .call-step::after{content:"";position:absolute;left:11px;top:30px;bottom:-12px;width:1px;background:var(--hair)}
-  .call-step:last-child::after{display:none}
-  .call-q{margin-top:8px;background:#0A0D11;border:1px solid var(--hair);border-left:2px solid var(--phos);padding:10px 12px;border-radius:5px;color:var(--text-2);font-size:11.5px;line-height:1.55}
-  .call-q .lbl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--phos);margin-bottom:4px}
-
-  /* natural language query */
-  .nlq-pane{padding:18px 20px;font-family:'JetBrains Mono',monospace}
-  .nlq-input{display:flex;align-items:center;gap:10px;background:#0A0D11;border:1px solid var(--hair);border-radius:6px;padding:10px 14px;margin-bottom:18px}
-  .nlq-input .pmt{color:var(--phos);font-weight:700}
-  .nlq-input .q{flex:1;font-size:13px;color:var(--text)}
-  .nlq-input .meta{font-size:10px;color:var(--muted)}
-  .nlq-resp{font-size:13px;color:var(--text-2);line-height:1.7;padding:12px 0;border-top:1px dashed var(--hair)}
-  .nlq-resp b{color:var(--text);font-weight:600}
-  .nlq-resp .pulse{color:var(--phos);text-shadow:0 0 8px rgba(0,255,136,.35)}
-  .nlq-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
-  .nlq-card{background:#0A0D11;border:1px solid var(--hair);border-radius:6px;padding:10px 12px}
-  .nlq-card .hd{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-  .nlq-card .vl{font-size:18px;font-weight:700;color:var(--phos);text-shadow:0 0 10px rgba(0,255,136,.35)}
-  .nlq-card .vl.amber{color:var(--amber);text-shadow:0 0 10px rgba(245,198,28,.3)}
-  .nlq-card .vl.cyan{color:var(--cyan);text-shadow:0 0 10px rgba(125,249,255,.25)}
-  .nlq-card .nt{font-size:10.5px;color:var(--text-2);margin-top:3px}
-
-  /* === GIT LOG TESTIMONIALS === */
-  .testimonials{padding:96px 0;border-bottom:1px solid var(--hair)}
-  .test-h{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;gap:24px;flex-wrap:wrap}
-  .test-h h3{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;letter-spacing:-.035em;color:var(--text);line-height:1.05;max-width:680px}
-  .test-h h3 .gt{color:var(--phos)}
-  .test-h .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
-  .gitlog{font-family:'JetBrains Mono',monospace;background:var(--panel-2);border:1px solid var(--hair);border-radius:10px;overflow:hidden}
-  .commit{padding:22px 24px;border-bottom:1px solid var(--hair-2);position:relative}
-  .commit:last-child{border-bottom:0}
-  .commit::before{content:"";position:absolute;left:24px;top:48px;bottom:8px;width:1px;background:var(--hair-2)}
-  .commit:last-child::before{display:none}
-  .commit-hd{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
-  .commit-hd .hash{color:var(--amber);font-weight:600}
-  .commit-hd .branch{color:var(--phos);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);padding:2px 8px;border-radius:4px;font-size:10.5px}
-  .commit-hd .author{color:var(--text)}
-  .commit-hd .date{margin-left:auto;color:var(--muted)}
-  .commit-msg{font-size:14.5px;color:var(--text);font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
-  .commit-body{font-size:13.5px;color:var(--text-2);line-height:1.7;font-family:'Inter',sans-serif;font-style:italic;border-left:2px solid var(--phos);padding-left:14px;margin:8px 0 10px}
-  .commit-foot{display:flex;gap:14px;align-items:center;font-size:11px;color:var(--muted);margin-top:8px}
-  .commit-foot .role{color:var(--text-2)}
-  .commit-foot .stat{color:var(--phos)}
-  .commit-foot .stat.dn{color:var(--red)}
-
-  /* === PROJECT TILES === */
-  .tiles-sec{padding:96px 0;border-bottom:1px solid var(--hair)}
-  .tiles-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;gap:24px;flex-wrap:wrap}
-  .tiles-h h3{font-family:'JetBrains Mono',monospace;font-size:38px;font-weight:700;letter-spacing:-.035em;color:var(--text);line-height:1.05;max-width:780px}
-  .tiles-h h3 .pill{padding:0 14px;background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.3);border-radius:8px;color:var(--phos);text-shadow:0 0 12px rgba(0,255,136,.4)}
-  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .tile{background:var(--panel);border:1px solid var(--hair);border-radius:10px;padding:24px;min-height:340px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;transition:border-color .2s}
-  .tile:hover{border-color:rgba(0,255,136,.4)}
-  .tile::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 0%,rgba(0,255,136,.05) 0,transparent 50%);pointer-events:none}
-  .tile .ascii{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.25;color:var(--phos);white-space:pre;letter-spacing:0;text-shadow:0 0 8px rgba(0,255,136,.3);opacity:.85}
-  .tile.b .ascii{color:var(--amber);text-shadow:0 0 8px rgba(245,198,28,.3)}
-  .tile.c .ascii{color:var(--cyan);text-shadow:0 0 8px rgba(125,249,255,.25)}
-  .tile .tag{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:4px;padding:4px 8px;align-self:flex-start}
-  .tile .tag::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--phos);box-shadow:0 0 4px var(--phos)}
-  .tile.b .tag::before{background:var(--amber);box-shadow:0 0 4px var(--amber)}
-  .tile.c .tag::before{background:var(--cyan);box-shadow:0 0 4px var(--cyan)}
-  .tile .ttl{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--text);letter-spacing:-.025em;line-height:1.05}
-  .tile .ttl small{display:block;font-size:11px;color:var(--muted);font-weight:400;letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase}
-  .tile .lede{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text-2);line-height:1.55;margin-top:8px}
-  .tile .ar{align-self:flex-start;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--phos);display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:8px 12px;border:1px solid rgba(0,255,136,.3);border-radius:5px;background:rgba(0,255,136,.06)}
-  .tile.b .ar{color:var(--amber);border-color:rgba(245,198,28,.3);background:rgba(245,198,28,.06)}
-  .tile.c .ar{color:var(--cyan);border-color:rgba(125,249,255,.3);background:rgba(125,249,255,.06)}
-
-  /* === FINAL CTA === */
-  .final{padding:120px 0 110px;text-align:center;position:relative;border-bottom:1px solid var(--hair)}
-  .final::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.12) 0,transparent 60%);pointer-events:none}
-  .final .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--phos);margin-bottom:24px;display:inline-flex;align-items:center;gap:10px}
-  .final h4{font-family:'JetBrains Mono',monospace;font-size:80px;line-height:.98;letter-spacing:-.04em;font-weight:700;color:var(--text);margin-bottom:24px;position:relative;text-shadow:0 0 60px rgba(0,255,136,.25)}
-  .final h4 .glow{color:var(--phos);text-shadow:0 0 30px rgba(0,255,136,.6),0 0 80px rgba(0,255,136,.4);animation:glow-pulse 3s ease-in-out infinite}
-  @keyframes glow-pulse{0%,100%{text-shadow:0 0 30px rgba(0,255,136,.6),0 0 80px rgba(0,255,136,.4)}50%{text-shadow:0 0 40px rgba(0,255,136,.85),0 0 110px rgba(0,255,136,.55)}}
-  .final p{font-family:'Inter',sans-serif;font-size:18px;color:var(--text-2);max-width:540px;margin:0 auto 36px;line-height:1.6}
-  .final .btns{display:inline-flex;gap:12px}
-  .final .btn-cmd{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;padding:14px 22px;border-radius:6px;background:var(--phos);color:#001A0B;border:0;display:inline-flex;align-items:center;gap:10px;box-shadow:0 0 0 1px rgba(0,255,136,.3),0 0 32px rgba(0,255,136,.35)}
-  .final .btn-cmd .pmt{color:#001A0B;opacity:.6}
-  .final .btn-ghost{font-family:'JetBrains Mono',monospace;font-size:14px;padding:14px 22px;border:1px solid var(--hair);border-radius:6px;color:var(--text);background:var(--panel)}
-
-  /* === FOOTER === */
-  footer.site{padding:72px 0 32px;border-bottom:0}
-  .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr;gap:32px;margin-bottom:48px}
-  .foot-brand{font-family:'Inter',sans-serif}
-  .foot-brand p{font-size:13.5px;color:var(--text-2);margin-top:14px;line-height:1.6;max-width:280px}
-  .foot-col h4{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--phos);margin-bottom:14px}
-  .foot-col ul{list-style:none}
-  .foot-col li{margin-bottom:8px}
-  .foot-col a{font-size:13.5px;color:var(--text-2);font-family:'Inter',sans-serif}
-  .foot-col a:hover{color:var(--text)}
-  .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap;gap:12px}
-  .foot-bottom a{color:var(--phos)}
+/* FOOTER */
+.footer{padding:60px 64px;border-top:1px solid var(--grey);display:grid;grid-template-columns:2fr repeat(4,1fr);gap:40px}
+.footer-brand p{font-size:13px;color:var(--text-2);line-height:1.6;margin-top:10px;max-width:220px}
+.footer-col h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);margin-bottom:14px}
+.footer-col ul{list-style:none}
+.footer-col li{margin-bottom:8px}
+.footer-col a{font-size:13px;color:var(--text);text-decoration:none;opacity:.6;transition:opacity .2s}
+.footer-col a:hover{opacity:1}
+.footer-bottom{padding:24px 64px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-2);border-top:1px solid var(--grey);margin-top:40px}
+.footer-bottom a{color:var(--accent);text-decoration:none}
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- NAV -->
-  <nav class="top">
-    <a class="brand" href="#">
-      <span class="brand-mark">K</span>
-      KomboAI<span style="color:var(--muted)">.cli</span>
+<!-- NAV -->
+<nav>
+  <a href="../index.html" class="logo">
+    <div class="logo-mark">K</div>
+    <span class="logo-name">KomboAI</span>
+  </a>
+  <div class="nav-links">
+    <a href="#">Resources</a>
+    <a href="#">Pricing</a>
+    <a href="#">Customers</a>
+  </div>
+  <a href="#" class="nav-cta">Try Free Trial</a>
+</nav>
+
+<!-- EYEBROW -->
+<div class="eyebrow">✦ Introducing <span>Revenue. On autopilot.</span></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <h1>Less clicks.<br><span class="accent">More selling.</span></h1>
+    <p>KomboAI gives your sales team the intelligence of a 20-year veteran — at the speed of AI. Rank leads, predict pipeline, and outreach on autopilot.</p>
+    <div class="hero-ctas">
+      <a href="#" class="cta-primary">Try Free Trial</a>
+      <a href="#" class="cta-secondary">See Features</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="dashboard-bar">
+      <div class="dash-dot"></div><div class="dash-dot"></div><div class="dash-dot"></div>
+    </div>
+    <div class="dashboard-content">
+      <div class="metric-card">
+        <div class="metric-label">Close Rate</div>
+        <div class="metric-value">40<span class="metric-unit">%</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Pipeline</div>
+        <div class="metric-value">$2.4M</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Time Saved</div>
+        <div class="metric-value">60<span class="metric-unit">%</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Forecast</div>
+        <div class="metric-value">94<span class="metric-unit">%</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST LOGOS -->
+<section class="trust-section">
+  <div class="trust-title">Trusted by 500+ leading B2B sales teams</div>
+  <div class="logo-grid">
+    <div class="logo-item">NovaTech</div>
+    <div class="logo-item">Meridian</div>
+    <div class="logo-item">ScaleUp</div>
+    <div class="logo-item">Apex</div>
+    <div class="logo-item">Pipeline</div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <h2 class="section-title">Why teams choose <span class="accent">KomboAI</span></h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">AI Lead Scoring</div>
+      <div class="feature-desc">Automatically rank and prioritize leads based on buying signals, engagement history, and fit — updated in real time.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✉️</div>
+      <div class="feature-title">Automated Outreach</div>
+      <div class="feature-desc">Craft personalized email sequences powered by AI. Reach the right prospects with the right message at scale.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Pipeline Intelligence</div>
+      <div class="feature-desc">See the health of every deal at a glance. Flags stale opportunities and forecasts revenue with 94% accuracy.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">Ask KomboAI</div>
+      <div class="feature-desc">Get instant answers about your pipeline, forecasts, and deal status — all in natural language.</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">No tedious, no <span class="accent">slow process.</span> Just selling.</h2>
+  <div class="stats-band">
+    <div class="stat-col">
+      <div class="stat-num">500+</div>
+      <div class="stat-desc">B2B teams trust KomboAI</div>
+    </div>
+    <div class="stat-col">
+      <div class="stat-num">40%</div>
+      <div class="stat-desc">Higher close rate on average</div>
+    </div>
+    <div class="stat-col">
+      <div class="stat-num">60%</div>
+      <div class="stat-desc">Less time on manual research</div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="comparison">
+  <h2 class="comp-title">Stop wasting time on manual work.</h2>
+  <p class="comp-subtitle">Every minute your reps spend on research is a minute they're not selling. KomboAI reclaims that time.</p>
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th style="width:30%">Feature</th>
+        <th style="width:35%">Old Way</th>
+        <th style="width:35%">KomboAI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Lead Prioritization</td>
+        <td class="dash">Manual guessing</td>
+        <td class="check">AI-powered scoring ✓</td>
+      </tr>
+      <tr>
+        <td>Outreach Personalization</td>
+        <td class="dash">Copy-paste templates</td>
+        <td class="check">AI drafts emails ✓</td>
+      </tr>
+      <tr>
+        <td>Pipeline Forecast</td>
+        <td class="dash">Hope & spreadsheets</td>
+        <td class="check">94% accuracy ✓</td>
+      </tr>
+      <tr>
+        <td>Deal Intelligence</td>
+        <td class="dash">Manual research</td>
+        <td class="check">Real-time insights ✓</td>
+      </tr>
+      <tr>
+        <td>Time per lead</td>
+        <td class="dash">45 minutes</td>
+        <td class="check">15 minutes ✓</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <h2 class="section-title">What <span class="accent">founders</span> are saying</h2>
+  <div class="t-grid">
+    <div class="t-card">
+      <div class="t-video">▶ Video Testimonial</div>
+      <div class="t-company">NovaTech Solutions</div>
+      <div class="t-quote">"Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher."</div>
+    </div>
+    <div class="t-card">
+      <div class="t-video">▶ Video Testimonial</div>
+      <div class="t-company">Meridian Group</div>
+      <div class="t-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — close rate jumped 40%."</div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="benefits">
+  <h2 class="section-title">Everything your team<br>needs to <span class="accent">win.</span></h2>
+  <div class="benefit-grid">
+    <div class="benefit-card">
+      <div class="benefit-tag">Sales</div>
+      <div class="benefit-title">Lead Ranking</div>
+      <div class="benefit-desc">Automatically identify the most valuable prospects with AI-powered scoring. No more guessing about who to call first.</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-tag">Growth</div>
+      <div class="benefit-title">Outreach At Scale</div>
+      <div class="benefit-desc">AI-drafted emails that feel personal. Reach more prospects without sacrificing quality or personalization.</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-tag">Ops</div>
+      <div class="benefit-title">Pipeline Visibility</div>
+      <div class="benefit-desc">Real-time pipeline intelligence. Know your forecast before your Monday meeting.</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-tag">Intelligence</div>
+      <div class="benefit-title">Deal Coaching</div>
+      <div class="benefit-desc">Live call coaching that whispers the next question, the right objection, and the close that fits the deal.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <h2 class="section-title">Questions? We've got <span class="accent">answers.</span></h2>
+  <div class="faq-grid">
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">How does it work? <span>+</span></div>
+      <div class="faq-a">KomboAI integrates with your CRM and sits on top of your existing sales process. AI scores leads, drafts emails, and flags stale deals in real time.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">What CRMs do you support? <span>+</span></div>
+      <div class="faq-a">We support Salesforce, HubSpot, Outreach, and 20+ other platforms. Native integrations mean no manual data entry.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Is my data safe? <span>+</span></div>
+      <div class="faq-a">All data is encrypted, SOC 2 compliant, and never shared with third parties. Your CRM data stays in your CRM.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">How much does it cost? <span>+</span></div>
+      <div class="faq-a">Pricing starts at $500/month for small teams and scales with your usage. Try free for 14 days, no credit card required.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-final">
+  <h2>Ready to give your<br>sales team <span class="accent">superpowers?</span></h2>
+  <p>Join 500+ teams closing more deals, faster.</p>
+  <a href="#" class="cta-final-btn">Try Free Trial</a>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-brand">
+    <a href="../index.html" class="logo">
+      <div class="logo-mark">K</div>
+      <span class="logo-name">KomboAI</span>
     </a>
-    <div class="nav-mid">
-      <a>Product <span class="caret">▾</span></a>
-      <a>Resources <span class="caret">▾</span></a>
-      <a>Company <span class="caret">▾</span></a>
-      <a>Connect <span class="caret">▾</span></a>
-    </div>
-    <div class="nav-right">
-      <span class="nav-status"><span class="status-dot"></span> v4.7.2 · uptime 99.99</span>
-      <a class="nav-cta">$ see-demo</a>
-    </div>
-  </nav>
+    <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Product</h4>
+    <ul>
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Pricing</a></li>
+      <li><a href="#">Integrations</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Resources</h4>
+    <ul>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Guides</a></li>
+      <li><a href="#">Customers</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Company</h4>
+    <ul>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Team</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Legal</h4>
+    <ul>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Security</a></li>
+    </ul>
+  </div>
+</div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div>
-      <div class="h-eyebrow">
-        <span class="live"><span class="status-dot"></span> LIVE</span>
-        <span>~/komboai/sales</span>
-        <span class="br">/</span>
-        <span>main</span>
-      </div>
-      <h1>
-        <span class="br-tok">[</span> Close more deals. <span class="br-tok">]</span><br>
-        <span class="br-tok">[</span> With <span class="accent">AI</span>. <span class="br-tok">]</span><span class="caret"></span>
-      </h1>
-      <p class="h-lede">KomboAI gives your sales team the intelligence of a <b>20-year veteran</b> — at the speed of AI. Rank leads, predict pipeline, and outreach on autopilot.</p>
-      <div class="h-cta">
-        <a class="btn primary"><span class="prompt">$</span> see-demo <span class="arr">→</span></a>
-        <a class="btn ghost">→ See How It Works</a>
-      </div>
-
-      <div class="ascii-stats">
-        <div class="top-bar">┌──────────────────────── stats.tsv ─────────────────────────┐</div>
-        <div class="row">
-          <div class="stat"><span class="num">500+</span><span class="lbl">b2b_teams</span></div>
-          <div class="stat"><span class="num">40%</span><span class="lbl">close_rate</span></div>
-          <div class="stat"><span class="num">60%</span><span class="lbl">less_research</span></div>
-          <div class="stat"><span class="num">94%</span><span class="lbl">forecast_acc</span></div>
-        </div>
-        <div class="bot-bar">└────────────────────────────────────────────────────────────┘</div>
-      </div>
-    </div>
-
-    <!-- CLI window -->
-    <div class="cli">
-      <div class="cli-bar">
-        <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-        <div class="title">~/komboai <span class="path">— zsh — kombo rank-leads</span></div>
-        <div class="meta"><span class="pid">pid 7421</span></div>
-      </div>
-      <div class="cli-body">
-        <div class="cli-line"><span class="pmt">$</span><span class="cmd">kombo</span> <span class="opt">rank-leads</span> <span class="arg">--pipeline=q4</span> <span class="opt">--limit=5</span></div>
-        <div class="cli-out">
-          <span class="ok">→</span> connecting to <span style="color:var(--cyan)">salesforce.komboai.io</span>... <span class="ok">ok</span><br>
-          <span class="ok">→</span> ingesting <span style="color:var(--amber)">2,184</span> open opportunities... <span class="ok">ok</span><br>
-          <span class="ok">→</span> scoring with <span style="color:var(--cyan)">model:kombo-rev-1.4</span>... <span class="ok">94.2% conf</span>
-        </div>
-
-        <div class="lead-table">
-          <div class="head"><span>#</span><span>Lead</span><span>Company</span><span>Score</span><span>Status</span></div>
-          <div class="row"><span class="rk">01</span><span class="nm">Sarah Chen</span><span class="co">NovaTech Sol.</span><span class="sc">98</span><span class="st">hot</span></div>
-          <div class="row"><span class="rk">02</span><span class="nm">James Whitfield</span><span class="co">Meridian Group</span><span class="sc">94</span><span class="st">hot</span></div>
-          <div class="row"><span class="rk">03</span><span class="nm">Lucia Fernández</span><span class="co">ScaleUp Pt.</span><span class="sc">91</span><span class="st">hot</span></div>
-          <div class="row"><span class="rk">04</span><span class="nm">Marcus Owens</span><span class="co">Apex Revenue</span><span class="sc warm">82</span><span class="st warm">warm</span></div>
-          <div class="row"><span class="rk">05</span><span class="nm">Priya Kapoor</span><span class="co">PipelineCo</span><span class="sc cool">71</span><span class="st cool">nurture</span></div>
-        </div>
-
-        <div class="cli-line"><span class="pmt">$</span><span class="cmd">kombo</span> <span class="opt">forecast</span> <span class="arg">--quarter=q4</span> <span class="com"># sparkline preview</span></div>
-        <div class="sparkline">
-          <span style="height:30%"></span><span style="height:42%"></span><span style="height:38%"></span><span style="height:55%"></span><span style="height:48%"></span><span style="height:62%"></span><span style="height:58%"></span><span style="height:70%"></span><span style="height:65%"></span><span style="height:78%"></span><span style="height:72%"></span><span style="height:85%"></span><span style="height:80%"></span><span style="height:92%"></span><span style="height:88%"></span><span style="height:96%"></span><span style="height:90%"></span><span style="height:100%"></span>
-        </div>
-        <div class="cli-out" style="margin-top:10px">
-          <span class="ok">↗</span> projected close: <span style="color:var(--phos);font-weight:700">$4.82M</span> · <span style="color:var(--text-2)">confidence interval ±2.3%</span>
-        </div>
-        <div class="cli-line" style="margin-top:6px"><span class="pmt">$</span><span class="caret"></span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- IMPORTED_BY (logos) -->
-  <section class="imported">
-    <div class="imp-label"><span class="gt">&gt;</span> imported_by · trusted by fast-growing b2b sales teams</div>
-    <div class="imp-row">
-      <span class="imp-co"><span class="glyph"></span> NovaTech Solutions <span class="arr">→</span></span>
-      <span class="imp-co"><span class="glyph"></span> Meridian Group <span class="arr">→</span></span>
-      <span class="imp-co"><span class="glyph"></span> ScaleUp Partners <span class="arr">→</span></span>
-      <span class="imp-co"><span class="glyph"></span> Apex Revenue <span class="arr">→</span></span>
-      <span class="imp-co"><span class="glyph"></span> PipelineCo <span class="arr">→</span></span>
-    </div>
-  </section>
-
-  <!-- MODULE 01 — Lead Scoring -->
-  <section class="module">
-    <div class="mod-fname">
-      <span class="hash">#</span>
-      <span class="fn">01_lead_scoring</span><span class="ext">.md</span>
-      <div class="tags">
-        <span class="tag green">●LIVE</span>
-        <span class="tag">model: kombo-rev-1.4</span>
-        <span class="tag">latency: 84ms</span>
-      </div>
-    </div>
-    <div class="mod-grid">
-      <div>
-        <span class="mod-eye"><span>chapter 01</span><span class="br">/</span><span>know who to call</span></span>
-        <h2 class="mod-h">Rank every lead in <span class="pill">real time</span></h2>
-        <p class="mod-lede">Automatically rank and prioritize leads based on <b>buying signals, engagement history, and fit</b> — updated in real time. The model retrains nightly on your closed-won data.</p>
-        <div class="h-cta">
-          <a class="btn primary"><span class="prompt">$</span> see-demo →</a>
-          <a class="btn">→ See How It Works</a>
-        </div>
-        <div class="mod-meta">
-          <span><span class="k">precision</span> 0.94</span>
-          <span><span class="k">recall</span> 0.91</span>
-          <span><span class="k">refresh</span> 60s</span>
-        </div>
-      </div>
-      <div class="panel-win">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url"><span class="lock">●</span><span class="host">app.komboai.io</span>/leads/scored?pipeline=q4</div>
-          <div class="meta"><span class="live">live</span></div>
-        </div>
-        <div class="pw-body">
-          <div class="pw-side">
-            <div class="grp">PIPELINE</div>
-            <div class="it active"><span class="ico">▸</span> Scored leads <span class="badge">2.1k</span></div>
-            <div class="it"><span class="ico">▹</span> All leads <span class="badge">14k</span></div>
-            <div class="it"><span class="ico">▹</span> Workflows</div>
-            <div class="it"><span class="ico">▹</span> Forecasts</div>
-            <div class="grp" style="margin-top:14px">SIGNALS</div>
-            <div class="it"><span class="ico">▹</span> Visited /pricing</div>
-            <div class="it"><span class="ico">▹</span> Hiring SDRs</div>
-            <div class="it"><span class="ico">▹</span> Funded last 90d</div>
-          </div>
-          <div class="pw-main">
-            <div class="pw-h">
-              <div class="ttl">Top scored leads</div>
-              <div class="crumb">Q4 · 2,184 records</div>
-              <div class="stat">94.2% conf</div>
-            </div>
-            <div class="kv-grid">
-              <div class="kv"><div class="l">Hot</div><div class="v green">312</div><div class="delta">+18 today</div></div>
-              <div class="kv"><div class="l">Warm</div><div class="v amber">748</div><div class="delta">+44 today</div></div>
-              <div class="kv"><div class="l">Nurture</div><div class="v cyan">1,124</div><div class="delta">+212</div></div>
-              <div class="kv"><div class="l">Avg score</div><div class="v">71.4</div><div class="delta">+3.1pts</div></div>
-            </div>
-            <div class="data-table">
-              <div class="h"><span>Contact</span><span>Company</span><span>Stage</span><span>Score</span><span>Trend</span><span>Status</span></div>
-              <div class="r"><span class="nm"><span class="ava">SC</span>Sarah Chen</span><span class="co">NovaTech Sol.</span><span>Discovery</span><span class="sc">98</span><span class="bar"><i style="width:98%"></i></span><span class="pill">hot</span></div>
-              <div class="r"><span class="nm"><span class="ava" style="background:linear-gradient(135deg,#FF4D5E,#A53341)">JW</span>James Whitfield</span><span class="co">Meridian Group</span><span>Proposal</span><span class="sc">94</span><span class="bar"><i style="width:94%"></i></span><span class="pill">hot</span></div>
-              <div class="r"><span class="nm"><span class="ava" style="background:linear-gradient(135deg,#F5C61C,#A57F0C)">LF</span>Lucia Fernández</span><span class="co">ScaleUp Pt.</span><span>Negotiation</span><span class="sc">91</span><span class="bar"><i style="width:91%"></i></span><span class="pill">hot</span></div>
-              <div class="r"><span class="nm"><span class="ava" style="background:linear-gradient(135deg,#7DF9FF,#3D9BAA)">MO</span>Marcus Owens</span><span class="co">Apex Revenue</span><span>Qualified</span><span class="sc warm">82</span><span class="bar"><i class="warm" style="width:82%"></i></span><span class="pill warm">warm</span></div>
-              <div class="r"><span class="nm"><span class="ava" style="background:linear-gradient(135deg,#00FF88,#0BA572)">PK</span>Priya Kapoor</span><span class="co">PipelineCo</span><span>Discovery</span><span class="sc cool">71</span><span class="bar"><i class="cool" style="width:71%"></i></span><span class="pill cool">nurture</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MODULE 02 — Pipeline Intelligence -->
-  <section class="module">
-    <div class="mod-fname">
-      <span class="hash">#</span>
-      <span class="fn">02_pipeline_intel</span><span class="ext">.md</span>
-      <div class="tags">
-        <span class="tag green">●LIVE</span>
-        <span class="tag">forecast: q4-2026</span>
-        <span class="tag">acc: 94%</span>
-      </div>
-    </div>
-    <div class="mod-grid">
-      <div>
-        <span class="mod-eye"><span>chapter 02</span><span class="br">/</span><span>see the pipeline</span></span>
-        <h2 class="mod-h">Forecast revenue with <span class="pill amber">94% accuracy</span></h2>
-        <p class="mod-lede">See the <b>health of every deal</b> at a glance. KomboAI flags stale opportunities, predicts close probability, and forecasts revenue with 94% accuracy across the quarter.</p>
-        <div class="h-cta">
-          <a class="btn primary"><span class="prompt">$</span> forecast --q4 →</a>
-          <a class="btn">→ See How It Works</a>
-        </div>
-        <div class="mod-meta">
-          <span><span class="k">acc</span> 94.2%</span>
-          <span><span class="k">stale flagged</span> 47</span>
-          <span><span class="k">deals tracked</span> 2.1k</span>
-        </div>
-      </div>
-      <div class="panel-win">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url"><span class="lock">●</span><span class="host">app.komboai.io</span>/forecasts/q4-2026</div>
-          <div class="meta"><span class="live">live</span></div>
-        </div>
-        <div class="pw-body" style="grid-template-columns:1fr">
-          <div class="nlq-pane">
-            <div class="pw-h" style="margin-bottom:12px">
-              <div class="ttl">Q4 2026 · revenue forecast</div>
-              <div class="stat">94.2% conf</div>
-            </div>
-            <div class="kv-grid">
-              <div class="kv"><div class="l">Forecast</div><div class="v green">$4.82M</div><div class="delta">+12.4% QoQ</div></div>
-              <div class="kv"><div class="l">Committed</div><div class="v">$3.14M</div><div class="delta">stable</div></div>
-              <div class="kv"><div class="l">Best case</div><div class="v cyan">$5.96M</div><div class="delta">+8.1%</div></div>
-              <div class="kv"><div class="l">Stale flagged</div><div class="v amber">47</div><div class="delta dn">−12 today</div></div>
-            </div>
-            <div style="font-size:10.5px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:14px 0 8px">weekly pace · jul → dec</div>
-            <div class="sparkline" style="height:64px">
-              <span style="height:18%"></span><span style="height:24%"></span><span style="height:30%"></span><span style="height:36%"></span><span style="height:32%"></span><span style="height:42%"></span><span style="height:48%"></span><span style="height:44%"></span><span style="height:54%"></span><span style="height:62%"></span><span style="height:58%"></span><span style="height:68%"></span><span style="height:72%"></span><span style="height:65%"></span><span style="height:78%"></span><span style="height:82%"></span><span style="height:74%"></span><span style="height:88%"></span><span style="height:92%"></span><span style="height:84%"></span><span style="height:96%"></span><span style="height:88%"></span><span style="height:100%"></span><span style="height:94%"></span>
-            </div>
-            <div class="data-table" style="margin-top:18px">
-              <div class="h"><span>Deal</span><span>Owner</span><span>Stage</span><span>Prob.</span><span>$ ARR</span><span>Health</span></div>
-              <div class="r"><span class="nm">NovaTech expansion</span><span class="co">S. Chen</span><span>Negotiation</span><span class="sc">92%</span><span style="font-weight:600">$420k</span><span class="pill">healthy</span></div>
-              <div class="r"><span class="nm">Meridian platform</span><span class="co">J. Whitfield</span><span>Proposal</span><span class="sc">88%</span><span style="font-weight:600">$310k</span><span class="pill">healthy</span></div>
-              <div class="r"><span class="nm">ScaleUp upsell</span><span class="co">L. Fernández</span><span>Discovery</span><span class="sc warm">64%</span><span style="font-weight:600">$180k</span><span class="pill warm">stalling</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MODULE 03 — Automated Outreach (email mockup) -->
-  <section class="module">
-    <div class="mod-fname">
-      <span class="hash">#</span>
-      <span class="fn">03_automated_outreach</span><span class="ext">.md</span>
-      <div class="tags">
-        <span class="tag green">●DRAFTING</span>
-        <span class="tag">model: kombo-write-2.1</span>
-        <span class="tag">tokens: 412</span>
-      </div>
-    </div>
-    <div class="mod-grid">
-      <div>
-        <span class="mod-eye"><span>chapter 03</span><span class="br">/</span><span>send the right thing</span></span>
-        <h2 class="mod-h">Personalized outreach <span class="pill cyan">at scale</span></h2>
-        <p class="mod-lede">Craft personalized email sequences powered by AI. <b>Reach the right prospects with the right message at the right moment</b> — at scale, with reply rates that don't degrade.</p>
-        <div class="h-cta">
-          <a class="btn primary"><span class="prompt">$</span> draft-email →</a>
-          <a class="btn">→ See How It Works</a>
-        </div>
-        <div class="mod-meta">
-          <span><span class="k">reply rate</span> 18.4%</span>
-          <span><span class="k">drafts/day</span> 2.4k</span>
-          <span><span class="k">spam score</span> 0.02</span>
-        </div>
-      </div>
-      <div class="panel-win">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url"><span class="lock">●</span><span class="host">app.komboai.io</span>/outreach/compose?lead=sarah-chen</div>
-          <div class="meta"><span class="live">drafting</span></div>
-        </div>
-        <div class="email-pane">
-          <div class="em-from">
-            <div class="ava">SC</div>
-            <div class="meta">
-              <div class="from">to: <span style="color:var(--text-2);font-weight:400">Sarah Chen, VP Sales</span></div>
-              <div class="to"><span class="at">@</span> NovaTech Solutions · sarah.chen@novatech.io</div>
-            </div>
-            <div class="timestamp">draft · 2 min ago</div>
-          </div>
-          <div class="em-subj">Cutting NovaTech's lead-research time by 60% — quick idea</div>
-          <div class="em-body">Hi Sarah,
-
-Saw NovaTech just hired 12 new SDRs this quarter. Onboarding that many reps while keeping pipeline velocity up is the kind of thing that breaks most teams' tooling.
-
-KomboAI is how teams like Meridian and ScaleUp handle exactly this — <b>our reps spend 60% less time on manual research</b>, and our close rate jumped 40% in the first quarter.
-
-Worth 15 minutes next Tuesday? I can show you the lead scoring live on your own pipeline.
-
-Best,
-Alex
-KomboAI · Sales</div>
-          <div class="em-tags">
-            <span class="em-tag">● tone: direct</span>
-            <span class="em-tag amber">● signal: 12 sdr hires (linkedin)</span>
-            <span class="em-tag cyan">● ref: meridian case study</span>
-            <span class="em-tag">● length: 84 words</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MODULE 04 — Ask KomboAI Anything -->
-  <section class="module">
-    <div class="mod-fname">
-      <span class="hash">#</span>
-      <span class="fn">04_ask_komboai</span><span class="ext">.md</span>
-      <div class="tags">
-        <span class="tag green">●LISTENING</span>
-        <span class="tag">latency: 230ms</span>
-        <span class="tag">context: pipeline+crm</span>
-      </div>
-    </div>
-    <div class="mod-grid">
-      <div>
-        <span class="mod-eye"><span>chapter 04</span><span class="br">/</span><span>ask anything</span></span>
-        <h2 class="mod-h">A revenue analyst <span class="pill indigo">on speed dial</span></h2>
-        <p class="mod-lede">Get instant answers about your pipeline, forecasts, and deal status — all in <b>natural language</b>. Like a revenue analyst on speed dial. Ask anything. Get the receipts.</p>
-        <div class="h-cta">
-          <a class="btn primary"><span class="prompt">$</span> ask --kombo →</a>
-          <a class="btn">→ See How It Works</a>
-        </div>
-        <div class="mod-meta">
-          <span><span class="k">questions/day</span> 14k+</span>
-          <span><span class="k">avg latency</span> 230ms</span>
-          <span><span class="k">accuracy</span> 96.1%</span>
-        </div>
-      </div>
-      <div class="panel-win">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url"><span class="lock">●</span><span class="host">app.komboai.io</span>/ask</div>
-          <div class="meta"><span class="live">listening</span></div>
-        </div>
-        <div class="nlq-pane">
-          <div class="nlq-input">
-            <span class="pmt">?</span>
-            <span class="q">Which deals over $200k are most likely to slip this quarter?</span>
-            <span class="meta">⌘K</span>
-          </div>
-          <div class="nlq-resp">
-            <span class="pulse">●</span> Three deals over $200k look at risk this quarter. Together they represent <b>$1.04M ARR</b>. The pattern: <b>all three have gone &gt;14 days without prospect activity</b>, and decision-makers haven't engaged with the last two emails.
-          </div>
-          <div class="nlq-cards">
-            <div class="nlq-card"><div class="hd">deals at risk</div><div class="vl amber">3</div><div class="nt">over $200k threshold</div></div>
-            <div class="nlq-card"><div class="hd">total $ ARR</div><div class="vl">$1.04M</div><div class="nt">slip risk this quarter</div></div>
-            <div class="nlq-card"><div class="hd">confidence</div><div class="vl cyan">92%</div><div class="nt">based on 412 similar deals</div></div>
-          </div>
-          <div style="margin-top:18px;border-top:1px dashed var(--hair);padding-top:14px">
-            <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">recommended next actions</div>
-            <div class="data-table">
-              <div class="h"><span>Deal</span><span>Owner</span><span>Risk</span><span>Last act.</span><span>$ ARR</span><span>Action</span></div>
-              <div class="r"><span class="nm">Northwind expansion</span><span class="co">A. Park</span><span class="sc warm">76%</span><span>17d ago</span><span style="font-weight:600">$420k</span><span class="pill warm">re-engage</span></div>
-              <div class="r"><span class="nm">Vertex platform</span><span class="co">M. Owens</span><span class="sc warm">68%</span><span>14d ago</span><span style="font-weight:600">$340k</span><span class="pill warm">escalate</span></div>
-              <div class="r"><span class="nm">Helio renewal</span><span class="co">P. Kapoor</span><span class="sc cool">61%</span><span>21d ago</span><span style="font-weight:600">$280k</span><span class="pill cool">exec touch</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS — git log -->
-  <section class="testimonials">
-    <div class="test-h">
-      <h3><span class="gt">$</span> git log --customer-stories<br><span style="color:var(--muted);font-size:14px;letter-spacing:.1em;text-transform:uppercase;font-weight:400">// 500+ teams · 3 highlighted commits</span></h3>
-      <div class="meta">--oneline · --pretty=full</div>
-    </div>
-    <div class="gitlog">
-      <div class="commit">
-        <div class="commit-hd">
-          <span>commit</span>
-          <span class="hash">a4c8b21</span>
-          <span class="branch">novatech/main</span>
-          <span class="author">Author: <span style="color:var(--text)">Sarah Chen</span> &lt;sarah.chen@novatech.io&gt;</span>
-          <span class="date">Date: Mon Apr 14 09:18 2026</span>
-        </div>
-        <div class="commit-msg">switch(crm): replace manual lead research with KomboAI scoring</div>
-        <div class="commit-body">"Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher."</div>
-        <div class="commit-foot">
-          <span class="role">VP of Sales · NovaTech Solutions</span>
-          <span class="stat">+60% velocity</span>
-          <span class="stat">-12hrs/wk per rep</span>
-        </div>
-      </div>
-      <div class="commit">
-        <div class="commit-hd">
-          <span>commit</span>
-          <span class="hash">f81e0d4</span>
-          <span class="branch">meridian/q3-rollout</span>
-          <span class="author">Author: <span style="color:var(--text)">James Whitfield</span> &lt;j.whitfield@meridian.co&gt;</span>
-          <span class="date">Date: Tue Mar 04 14:42 2026</span>
-        </div>
-        <div class="commit-msg">feat(scoring): adopt AI lead scoring across full revenue org</div>
-        <div class="commit-body">"The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — and our close rate jumped 40%."</div>
-        <div class="commit-foot">
-          <span class="role">Head of Revenue · Meridian Group</span>
-          <span class="stat">+40% close rate</span>
-          <span class="stat">94% forecast acc</span>
-        </div>
-      </div>
-      <div class="commit">
-        <div class="commit-hd">
-          <span>commit</span>
-          <span class="hash">9b22c0e</span>
-          <span class="branch">scaleup/scale-to-50</span>
-          <span class="author">Author: <span style="color:var(--text)">Lucia Fernández</span> &lt;lucia@scaleup.io&gt;</span>
-          <span class="date">Date: Fri Feb 21 11:05 2026</span>
-        </div>
-        <div class="commit-msg">scale(team): grow sales org from 5 → 50 reps without breaking ops</div>
-        <div class="commit-body">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us from 5 reps to 50."</div>
-        <div class="commit-foot">
-          <span class="role">COO · ScaleUp Partners</span>
-          <span class="stat">+10× team size</span>
-          <span class="stat">0 churn</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROJECT TILES -->
-  <section class="tiles-sec">
-    <div class="tiles-h">
-      <h3>Three modules. <span class="pill">One co-pilot.</span></h3>
-      <div class="meta" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">// modules.tsv</div>
-    </div>
-    <div class="tiles">
-      <div class="tile a">
-        <div>
-          <div class="ascii"> ┌──────┐
- │ ▍▎ ▍ │
- │ ▎▍ ▎ │
- │ ▍▎ ▍ │
- └──────┘
-   CRM</div>
-          <div class="tag" style="margin-top:14px">CRM_INTELLIGENCE</div>
-          <div class="ttl" style="margin-top:14px"><small>01/</small>CRM Intelligence</div>
-          <div class="lede">Sync with HubSpot or Salesforce. KomboAI enriches contacts, flags stale deals, and recommends next-best actions.</div>
-        </div>
-        <a class="ar">$ explore --crm →</a>
-      </div>
-      <div class="tile b">
-        <div>
-          <div class="ascii">    ╱╲
-   ╱  ╲   ▲
-  ╱    ╲ ╱ ╲
- ╱  ▲   ●   ╲
-╱  ╱ ╲       ╲
-─────────────
- PIPELINE</div>
-          <div class="tag" style="margin-top:14px">PIPELINE_HEALTH</div>
-          <div class="ttl" style="margin-top:14px"><small>02/</small>Pipeline Health</div>
-          <div class="lede">Stale-deal flags, win-prob scores, and forecast intervals — for every opportunity, refreshed every 60 seconds.</div>
-        </div>
-        <a class="ar">$ explore --pipeline →</a>
-      </div>
-      <div class="tile c">
-        <div>
-          <div class="ascii">  ╔═══════╗
-  ║ ▶ ▶ ▶ ║
-  ║ ◆ ◇ ◆ ║
-  ║ ▶ ▶ ▶ ║
-  ╚═══╤═══╝
-      │
-   integrate</div>
-          <div class="tag" style="margin-top:14px">INTEGRATIONS</div>
-          <div class="ttl" style="margin-top:14px"><small>03/</small>Integrations</div>
-          <div class="lede">Connect with the tools your team already uses — HubSpot, Salesforce, Outreach, LinkedIn, and dozens more — in one click.</div>
-        </div>
-        <a class="ar">$ explore --connect →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FINAL CTA -->
-  <section class="final">
-    <div class="lbl"><span class="status-dot"></span> READY · TO · DEPLOY</div>
-    <h4>Ready to <span class="glow">Close More Deals</span><br>With AI?</h4>
-    <p>Join 500+ B2B sales teams using KomboAI to hit quota faster. Spin up in 4 minutes.</p>
-    <div class="btns">
-      <a class="btn-cmd"><span class="pmt">$</span> book-demo --now →</a>
-      <a class="btn-ghost">→ Contact Us</a>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="site">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <a class="brand" href="#">
-          <span class="brand-mark">K</span>
-          KomboAI<span style="color:var(--muted)">.cli</span>
-        </a>
-        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster — at the speed of AI.</p>
-      </div>
-      <div class="foot-col"><h4>// Product</h4><ul><li><a>Features</a></li><li><a>Integrations</a></li></ul></div>
-      <div class="foot-col"><h4>// Resources</h4><ul><li><a>Customers</a></li><li><a>Podcast</a></li><li><a>Newsletter</a></li><li><a>Blog</a></li></ul></div>
-      <div class="foot-col"><h4>// Company</h4><ul><li><a>Contact</a></li><li><a>Team</a></li><li><a>About</a></li></ul></div>
-      <div class="foot-col"><h4>// Connect</h4><ul><li><a>LinkedIn</a></li><li><a>X</a></li><li><a>YouTube</a></li><li><a>Instagram</a></li><li><a>TikTok</a></li></ul></div>
-      <div class="foot-col"><h4>// Legal</h4><ul><li><a>Terms &amp; Conditions</a></li><li><a>Privacy Policy</a></li><li><a>Referral Programme</a></li></ul></div>
-    </div>
-    <div class="foot-bottom">
-      <span>Kevin Hawkins · KomboAI · 2026 · V7 Terminal Pulse</span>
-      <a href="./index.html">← back to mockups</a>
-    </div>
-  </footer>
+<div class="footer-bottom">
+  <span>Kevin Hawkins · KomboAI · 2026 · V7 Revenue On Autopilot</span>
+  <a href="./index.html">← Back to Mockups</a>
+</div>
 
 </div>
 </body>

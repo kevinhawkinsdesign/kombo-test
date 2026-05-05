@@ -3,793 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KomboAI — V8 Riso Print Shop</title>
+<title>KomboAI — V8 Launch Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caudex:ital,wght@0,400;0,700;1,400;1,700&family=Bagnard&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --paper:#F5EFE0;
-    --paper-2:#EDE5D2;
-    --paper-3:#E5DCC4;
-    --ink:#1A1410;
-    --ink-2:#3D3128;
-    --muted:#7A6B58;
-    --rule:#1A1410;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --dark:#0D0D12;--dark-2:#1A1A22;
+  --orange:#FF6B35;--orange-glow:rgba(255,107,53,.4);
+  --cream:#F5EFE0;--cream-dark:#E8DFD0;
+  --text:#E8E8E8;--muted:#A8A8B8;
+}
+html,body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 200% 100% at 50% 0%,rgba(255,107,53,.15) 0%,transparent 60%);pointer-events:none;z-index:0}
 
-    --rblue:#3754A8;
-    --rblue-2:#5B72C4;
-    --rblue-deep:#243A82;
-    --rred:#E04E3F;
-    --rred-2:#F0796D;
-    --rred-deep:#A8362A;
+.page{max-width:1440px;margin:0 auto;position:relative;z-index:1}
 
-    --indigo:#6366f1;
-  }
-  html,body{background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
-  /* halftone overlay */
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 1px 1px,rgba(26,20,16,.16) 1px,transparent 1.4px);background-size:5px 5px;opacity:.32;mix-blend-mode:multiply;z-index:50}
-  /* paper grain */
-  body::after{content:"";position:fixed;inset:0;pointer-events:none;background:
-    repeating-linear-gradient(13deg,rgba(26,20,16,.025) 0,rgba(26,20,16,.025) 1px,transparent 1px,transparent 3px),
-    repeating-linear-gradient(-37deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 4px);
-    z-index:49;mix-blend-mode:multiply}
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:24px 64px;border-bottom:1px solid rgba(255,107,53,.2);position:relative;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--cream)}
+.logo-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.nav-links{display:flex;gap:32px;font-size:13px;color:var(--muted);font-weight:500}
+.nav-links a{color:inherit;text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--orange);color:var(--dark);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:10px 24px;border-radius:6px;text-decoration:none;letter-spacing:.05em}
 
-  a{color:inherit;text-decoration:none}
-  .page{max-width:1440px;margin:0 auto;padding:0 28px}
+/* HERO */
+.hero{padding:120px 64px 160px;display:grid;grid-template-columns:1fr 1.2fr;gap:80px;align-items:center;position:relative}
+.hero::before{content:"";position:absolute;bottom:-200px;right:-300px;width:800px;height:800px;background:radial-gradient(circle,rgba(255,107,53,.25) 0%,transparent 70%);border-radius:50%;filter:blur(80px);pointer-events:none}
 
-  .serif{font-family:'Bagnard','Caudex',serif}
-  .mono{font-family:'DM Mono',monospace}
+.hero-text h1{font-family:'Syne',sans-serif;font-size:88px;line-height:.98;font-weight:700;letter-spacing:-.03em;color:var(--cream);margin-bottom:24px}
+.hero-text p{font-size:18px;color:var(--muted);max-width:480px;line-height:1.7;margin-bottom:36px}
+.hero-ctas{display:flex;gap:14px;align-items:center}
+.cta-primary{background:var(--orange);color:var(--dark);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:16px 32px;border-radius:8px;text-decoration:none;letter-spacing:.04em;cursor:pointer}
+.cta-secondary{background:rgba(255,107,53,.1);color:var(--orange);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;padding:16px 32px;border-radius:8px;text-decoration:none;letter-spacing:.04em;cursor:pointer}
 
-  /* === NAV === */
-  nav.top{display:flex;align-items:center;justify-content:space-between;padding:24px 4px;border-bottom:2px solid var(--ink);position:relative;z-index:5}
-  .brand{display:inline-flex;align-items:center;gap:12px;font-family:'Bagnard','Caudex',serif;font-weight:700;font-size:22px;letter-spacing:-.01em}
-  .brand-mark{width:34px;height:34px;border-radius:8px;background:var(--rblue);display:grid;place-items:center;color:var(--paper);font-family:'Press Start 2P',monospace;font-size:12px;position:relative}
-  .brand-mark::after{content:"";position:absolute;inset:-3px;border-radius:10px;background:var(--rred);z-index:-1;opacity:.6}
-  nav.top .nav-mid{display:flex;gap:28px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500}
-  nav.top .nav-mid a{padding:6px 0;border-bottom:1.5px solid transparent;text-transform:uppercase;letter-spacing:.04em;font-size:11px}
-  nav.top .nav-mid a:hover{border-bottom-color:var(--rred)}
-  .nav-cta{display:inline-flex;align-items:center;gap:8px;background:var(--rred);color:var(--paper);font-family:'DM Mono',monospace;font-weight:500;font-size:12px;padding:11px 18px;border-radius:0;letter-spacing:.06em;text-transform:uppercase;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);transition:transform .1s,box-shadow .1s}
-  .nav-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+/* ORB HERO VISUAL */
+.hero-visual{position:relative;height:500px;display:flex;align-items:center;justify-content:center}
+.orb{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,200,100,.6),rgba(255,107,53,.8));box-shadow:0 0 120px rgba(255,107,53,.6),inset -30px -30px 80px rgba(0,0,0,.4);width:280px;height:280px}
+.orb::before{content:"";position:absolute;inset:20px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,220,140,.4),transparent 70%);opacity:.7}
+.orb-small{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,150,80,.5),rgba(255,107,53,.7));box-shadow:0 0 60px rgba(255,107,53,.4),inset -15px -15px 40px rgba(0,0,0,.3)}
+.orb-s1{top:40px;right:80px;animation:float 6s ease-in-out infinite}
+.orb-s2{bottom:60px;left:100px;animation:float 7s ease-in-out infinite 1s}
 
-  /* === TOP STRIP === */
-  .top-strip{padding:10px 0;border-bottom:1px solid var(--ink);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-  .top-strip span:nth-child(2){color:var(--rred)}
-  .top-strip span:nth-child(3){color:var(--rblue)}
+/* SECTION 2 */
+.section{padding:120px 64px;border-top:1px solid rgba(255,107,53,.1)}
+.section h2{font-family:'Syne',sans-serif;font-size:64px;line-height:1;letter-spacing:-.02em;margin-bottom:40px;color:var(--cream)}
+.section h2 .accent{color:var(--orange)}
 
-  /* === HERO === */
-  .hero{padding:56px 0 64px;border-bottom:2px solid var(--ink);position:relative;overflow:hidden}
-  .edition{position:absolute;top:36px;right:0;border:2px solid var(--rred);color:var(--rred);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;transform:rotate(3deg);background:var(--paper);font-weight:500;line-height:1.3}
-  .edition b{display:block;font-size:13px;letter-spacing:.06em;margin-bottom:2px;color:var(--ink)}
-  .edition i{font-style:normal;display:block;font-size:9px;color:var(--ink-2);letter-spacing:.12em}
+.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;margin-bottom:80px}
+.feature-card{background:linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.05));border:1px solid rgba(255,107,53,.2);border-radius:16px;padding:40px;position:relative;overflow:hidden}
+.feature-card::before{content:"";position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(255,107,53,.2),transparent 70%);border-radius:50%}
+.feature-icon{width:60px;height:60px;background:rgba(255,107,53,.3);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px;color:var(--orange);position:relative;z-index:1}
+.feature-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:600;color:var(--cream);margin-bottom:12px;position:relative;z-index:1}
+.feature-desc{font-size:15px;color:var(--muted);line-height:1.6;position:relative;z-index:1}
 
-  .hero-head{display:flex;align-items:flex-end;gap:24px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin-bottom:20px;border-bottom:1px solid var(--ink);padding-bottom:14px}
-  .hero-head .vol{color:var(--rblue);font-weight:600}
-  .hero-head .num{margin-left:auto;color:var(--rred)}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-bottom:80px}
+.stat{text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:72px;font-weight:700;color:var(--orange);line-height:1;margin-bottom:8px}
+.stat-label{font-size:14px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 
-  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;padding-top:24px}
+/* TESTIMONIALS */
+.testimonials{padding:120px 64px;background:linear-gradient(180deg,rgba(255,107,53,.05),transparent);border-top:1px solid rgba(255,107,53,.1)}
+.t-title{font-family:'Syne',sans-serif;font-size:56px;font-weight:700;color:var(--cream);margin-bottom:60px}
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.t-card{background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.15);border-radius:12px;padding:28px;position:relative;overflow:hidden}
+.t-card::before{content:"";position:absolute;top:-50px;right:-50px;width:150px;height:150px;background:radial-gradient(circle,rgba(255,107,53,.2),transparent 70%);border-radius:50%}
+.t-quote{font-size:15px;color:var(--text);line-height:1.7;margin-bottom:20px;position:relative;z-index:1}
+.t-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--orange);letter-spacing:.04em}
+.t-role{font-size:12px;color:var(--muted);margin-top:4px}
 
-  h1.hero-h{font-family:'Bagnard','Caudex',serif;font-weight:400;font-size:124px;line-height:.92;letter-spacing:-.045em;color:var(--ink);margin-bottom:0;position:relative}
-  h1.hero-h .line{display:block;position:relative}
-  h1.hero-h .ai{font-style:italic;color:var(--rred);position:relative;display:inline-block;text-shadow:3px 3px 0 var(--rblue);letter-spacing:-.02em}
-  h1.hero-h .ai::after{content:"";position:absolute;left:-6px;right:-6px;top:6%;bottom:14%;border:3px solid var(--ink);border-radius:50%;transform:rotate(-2deg);pointer-events:none}
-  h1.hero-h .deals{position:relative;display:inline-block}
-  h1.hero-h .deals::after{content:"";position:absolute;left:-4px;right:-4px;bottom:8px;height:14px;background:rgba(245,255,80,.45);z-index:-1}
-  h1.hero-h .with{font-family:'Bagnard','Caudex',serif;font-style:italic;color:var(--rblue);font-size:.65em}
+/* FEATURE GRID */
+.why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;margin-bottom:80px}
+.why-card{background:linear-gradient(135deg,rgba(255,107,53,.1),rgba(255,107,53,.05));border:1px solid rgba(255,107,53,.2);border-radius:16px;padding:48px;position:relative;overflow:hidden;min-height:280px;display:flex;flex-direction:column;justify-content:space-between}
+.why-card::before{content:"";position:absolute;bottom:-150px;left:-150px;width:400px;height:400px;background:radial-gradient(circle,rgba(255,107,53,.15),transparent 70%);border-radius:50%}
+.why-tag{display:inline-block;background:rgba(255,107,53,.2);color:var(--orange);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;margin-bottom:12px;position:relative;z-index:1;width:fit-content}
+.why-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:700;color:var(--cream);line-height:1.2;position:relative;z-index:1}
 
-  .hero-lede{margin-top:32px;font-size:18px;line-height:1.65;color:var(--ink-2);max-width:520px;font-family:'Caudex',serif}
-  .hero-lede b{color:var(--ink);font-weight:700}
-  .hero-lede::first-letter{font-family:'Bagnard',serif;font-size:48px;float:left;line-height:.85;padding:6px 8px 0 0;color:var(--rred);font-weight:700}
+/* PRICING */
+.pricing{padding:120px 64px}
+.pricing h2{font-family:'Syne',sans-serif;font-size:56px;font-weight:700;color:var(--cream);margin-bottom:60px}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.price-card{background:linear-gradient(135deg,rgba(255,107,53,.08),rgba(255,107,53,.02));border:1px solid rgba(255,107,53,.2);border-radius:16px;padding:40px;position:relative;overflow:hidden}
+.price-card.featured{border-color:var(--orange);background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,107,53,.08))}
+.price-card::before{content:"";position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(255,107,53,.2),transparent 70%);border-radius:50%}
+.price-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--cream);margin-bottom:12px;position:relative;z-index:1}
+.price-amount{font-family:'Syne',sans-serif;font-size:56px;font-weight:700;color:var(--orange);margin-bottom:4px;position:relative;z-index:1}
+.price-period{font-size:13px;color:var(--muted);margin-bottom:24px;position:relative;z-index:1}
+.price-features{font-size:14px;color:var(--text);line-height:1.8;margin-bottom:28px;position:relative;z-index:1}
+.price-features li{margin-bottom:8px;list-style:none}
+.price-features li::before{content:"✓ ";color:var(--orange);font-weight:700;margin-right:6px}
+.price-btn{background:rgba(255,107,53,.1);color:var(--orange);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;text-align:center;width:100%;display:block;letter-spacing:.04em;position:relative;z-index:1}
+.price-card.featured .price-btn{background:var(--orange);color:var(--dark)}
 
-  .hero-cta{margin-top:32px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  .btn-print{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;padding:14px 22px;border-radius:0;background:var(--ink);color:var(--paper);border:2px solid var(--ink);box-shadow:5px 5px 0 var(--rred);display:inline-flex;align-items:center;gap:10px;letter-spacing:.04em;text-transform:uppercase}
-  .btn-print:hover{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--rred)}
-  .btn-print.ghost{background:transparent;color:var(--ink);box-shadow:5px 5px 0 var(--rblue)}
+/* CTA FINAL */
+.cta-final{padding:120px 64px;text-align:center;border-top:1px solid rgba(255,107,53,.1);position:relative}
+.cta-final::before{content:"";position:absolute;bottom:-400px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(255,107,53,.2),transparent 70%);border-radius:50%;filter:blur(80px);pointer-events:none}
+.cta-final h3{font-family:'Syne',sans-serif;font-size:72px;line-height:1;font-weight:700;color:var(--cream);margin-bottom:24px;position:relative;z-index:1}
+.cta-final p{font-size:18px;color:var(--muted);max-width:600px;margin:0 auto 40px;position:relative;z-index:1}
+.cta-final-btns{display:flex;justify-content:center;gap:14px;position:relative;z-index:1}
 
-  .hero-foot{margin-top:34px;display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
-  .stamp-rev{display:inline-flex;align-items:center;justify-content:center;width:74px;height:74px;border:2px solid var(--rred);border-radius:50%;color:var(--rred);font-family:'DM Mono',monospace;font-size:9px;text-align:center;line-height:1.2;letter-spacing:.05em;text-transform:uppercase;font-weight:600;transform:rotate(-8deg);background:var(--paper);padding:6px}
+/* FOOTER */
+.footer{padding:60px 64px;border-top:1px solid rgba(255,107,53,.1);display:grid;grid-template-columns:2fr repeat(4,1fr);gap:40px;margin-top:80px}
+.footer-brand p{font-size:14px;color:var(--muted);line-height:1.6;margin-top:12px;max-width:240px}
+.footer-col h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.footer-col ul{list-style:none}
+.footer-col li{margin-bottom:10px}
+.footer-col a{font-size:14px;color:var(--text);text-decoration:none;opacity:.7;transition:opacity .2s}
+.footer-col a:hover{opacity:1}
+.footer-bottom{padding:24px 64px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);border-top:1px solid rgba(255,107,53,.1);margin-top:40px}
+.footer-bottom a{color:var(--orange);text-decoration:none}
 
-  /* hero illustration: halftone silhouette */
-  .hero-illus{position:relative;height:480px}
-  .silhouette{position:absolute;inset:0;display:grid;place-items:center}
-  .silhouette svg{width:100%;height:100%;max-width:380px}
-  .hi-tag{position:absolute;background:var(--paper);border:2px solid var(--ink);padding:6px 12px;font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);box-shadow:3px 3px 0 var(--rred)}
-  .hi-tag.b{box-shadow:3px 3px 0 var(--rblue)}
-  .hi-tag.t1{top:28px;left:-12px;transform:rotate(-3deg)}
-  .hi-tag.t2{top:130px;right:-20px;transform:rotate(4deg)}
-  .hi-tag.t3{bottom:90px;left:-4px;transform:rotate(2deg)}
-  .hi-tag.t4{bottom:30px;right:14px;transform:rotate(-3deg)}
-
-  /* === BY THE NUMBERS BAND === */
-  .numbers{padding:64px 0;border-bottom:2px solid var(--ink);position:relative}
-  .nb-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;gap:20px;flex-wrap:wrap}
-  .nb-head .ttl{font-family:'Bagnard','Caudex',serif;font-size:54px;line-height:1;letter-spacing:-.03em;font-weight:400;color:var(--ink)}
-  .nb-head .ttl em{font-style:italic;color:var(--rred);position:relative}
-  .nb-head .ttl em::after{content:"";position:absolute;inset:0;border:2px solid var(--ink);border-radius:99px;padding:0 12px;left:-12px;right:-12px;top:6px;bottom:8px;pointer-events:none}
-  .nb-head .meta{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--rblue);font-weight:600;text-align:right;line-height:1.4}
-  .nb-head .meta b{display:block;font-size:14px;color:var(--ink);font-family:'Bagnard',serif;letter-spacing:0;font-weight:700;text-transform:none;margin-bottom:2px}
-
-  .nb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--ink)}
-  .nb-cell{padding:32px 28px;border-right:1.5px solid var(--ink);position:relative}
-  .nb-cell:last-child{border-right:0}
-  .nb-cell .lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-bottom:14px}
-  .nb-cell .lbl::before{content:"●  ";color:var(--rred)}
-  .nb-cell:nth-child(2) .lbl::before{color:var(--rblue)}
-  .nb-cell:nth-child(3) .lbl::before{color:var(--rred)}
-  .nb-cell:nth-child(4) .lbl::before{color:var(--rblue)}
-  .nb-cell .num{font-family:'Bagnard','Caudex',serif;font-size:84px;line-height:.9;letter-spacing:-.045em;color:var(--ink);font-weight:400;text-shadow:3px 3px 0 var(--rred);position:relative}
-  .nb-cell:nth-child(even) .num{text-shadow:3px 3px 0 var(--rblue)}
-  .nb-cell .desc{margin-top:12px;font-size:13px;color:var(--ink-2);line-height:1.5;font-family:'Caudex',serif;font-style:italic}
-
-  /* === STAMPED LOGOS === */
-  .stamps{padding:50px 0;border-bottom:2px solid var(--ink);position:relative;background:repeating-linear-gradient(45deg,transparent 0,transparent 10px,rgba(224,78,63,.04) 10px,rgba(224,78,63,.04) 12px)}
-  .stamps-head{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);margin-bottom:24px;text-align:center}
-  .stamps-head b{color:var(--rred);font-weight:700;letter-spacing:.2em}
-  .stamps-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;align-items:center}
-  .stamp{display:inline-flex;align-items:center;justify-content:center;text-align:center;border:2.5px solid var(--rblue-deep);color:var(--rblue-deep);padding:14px 22px;font-family:'Bagnard','Caudex',serif;font-weight:700;font-size:18px;letter-spacing:.04em;background:var(--paper);position:relative}
-  .stamp::before{content:"";position:absolute;inset:-4px;border:1.5px solid var(--rblue-deep);opacity:.4;pointer-events:none}
-  .stamp:nth-child(2){border-color:var(--rred-deep);color:var(--rred-deep);transform:rotate(-2deg)}
-  .stamp:nth-child(2)::before{border-color:var(--rred-deep)}
-  .stamp:nth-child(3){transform:rotate(1.5deg)}
-  .stamp:nth-child(4){border-color:var(--rred-deep);color:var(--rred-deep);transform:rotate(-1deg)}
-  .stamp:nth-child(4)::before{border-color:var(--rred-deep)}
-  .stamp:nth-child(5){transform:rotate(2deg)}
-
-  /* === SPREAD / CHAPTER === */
-  .spread{padding:88px 0;border-bottom:2px solid var(--ink);position:relative;overflow:hidden}
-  .spread.alt{background:linear-gradient(180deg,var(--paper),var(--paper-2))}
-  .spread-h{display:flex;align-items:center;gap:18px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin-bottom:26px;padding-bottom:14px;border-bottom:1px solid var(--ink)}
-  .spread-h .ch{font-family:'Bagnard',serif;font-size:14px;letter-spacing:.04em;color:var(--rred);font-weight:700;text-transform:none;font-style:italic}
-  .spread-h .nm{font-weight:600}
-  .spread-h .meta{margin-left:auto;color:var(--rblue);font-weight:600}
-
-  .spread-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:60px;align-items:center}
-  .spread-grid.flip{grid-template-columns:1.1fr .9fr}
-  .spread-grid.flip .left{order:2}
-
-  h2.spread-h2{font-family:'Bagnard','Caudex',serif;font-weight:400;font-size:72px;line-height:.96;letter-spacing:-.035em;color:var(--ink);margin-bottom:20px;position:relative}
-  h2.spread-h2 em{font-style:italic;color:var(--rred);position:relative;text-shadow:3px 3px 0 var(--rblue)}
-  h2.spread-h2 .blue{color:var(--rblue);font-style:italic;text-shadow:2px 2px 0 var(--rred)}
-  h2.spread-h2 .ul{position:relative}
-  h2.spread-h2 .ul::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:8px;background:rgba(245,255,80,.35);z-index:-1}
-
-  .spread-lede{font-family:'Caudex',serif;font-size:18px;line-height:1.65;color:var(--ink-2);max-width:480px}
-  .spread-lede b{color:var(--ink);font-weight:700}
-  .spread-cta{margin-top:28px;display:flex;gap:14px;flex-wrap:wrap}
-
-  .footnote{margin-top:24px;font-family:'DM Mono',monospace;font-size:11px;color:var(--rred);letter-spacing:.06em;display:flex;gap:6px}
-  .footnote .ast{color:var(--rblue);font-weight:700}
-  .footnote i{font-style:normal;color:var(--ink-2)}
-
-  /* "printed" product window */
-  .printed-win{background:var(--paper);border:2px solid var(--ink);position:relative;box-shadow:8px 8px 0 var(--rred);overflow:hidden}
-  .printed-win.b{box-shadow:8px 8px 0 var(--rblue)}
-  .printed-win::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1px 1px,rgba(26,20,16,.08) 1px,transparent 1.4px);background-size:4px 4px;pointer-events:none;mix-blend-mode:multiply;opacity:.5}
-
-  .pw-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:2px solid var(--ink);background:var(--paper-3)}
-  .pw-bar .lights{display:flex;gap:6px}
-  .pw-bar .lights span{width:12px;height:12px;border-radius:50%;background:var(--paper);border:1.5px solid var(--ink)}
-  .pw-bar .lights span.r{background:var(--rred)}
-  .pw-bar .lights span.y{background:#F5C61C}
-  .pw-bar .lights span.g{background:#3F8C5A}
-  .pw-bar .url{flex:1;text-align:center;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink);letter-spacing:.04em}
-  .pw-bar .stamp-mini{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--rred);border:1.5px solid var(--rred);padding:3px 7px;font-weight:700}
-
-  .pw-body{padding:22px 24px}
-
-  /* product: scored leads list */
-  .ledger{font-family:'DM Mono',monospace}
-  .ledger-h{display:grid;grid-template-columns:32px 1.7fr 1fr 70px 60px;gap:12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);padding:10px 4px;border-bottom:2px solid var(--ink)}
-  .ledger-r{display:grid;grid-template-columns:32px 1.7fr 1fr 70px 60px;gap:12px;padding:14px 4px;font-size:13px;color:var(--ink);border-bottom:1px solid rgba(26,20,16,.18);align-items:center;font-family:'Caudex',serif}
-  .ledger-r:last-child{border-bottom:0}
-  .ledger-r .rk{font-family:'DM Mono',monospace;font-size:11px;color:var(--rred);font-weight:700}
-  .ledger-r .nm{font-weight:700;font-family:'Bagnard',serif;font-size:15px}
-  .ledger-r .co{color:var(--ink-2);font-style:italic}
-  .ledger-r .sc{font-family:'Bagnard',serif;font-weight:700;font-size:24px;color:var(--rblue);text-shadow:2px 2px 0 var(--rred);letter-spacing:-.02em}
-  .ledger-r .sc.warm{color:var(--rred);text-shadow:2px 2px 0 var(--rblue)}
-  .ledger-r .pill-st{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--paper);background:var(--rred);padding:3px 8px;text-align:center;font-weight:600;border:1.5px solid var(--ink)}
-  .ledger-r .pill-st.warm{background:var(--rblue)}
-  .ledger-r .pill-st.cool{background:var(--paper);color:var(--ink)}
-
-  /* product: forecast tear-sheet */
-  .tear{padding:8px 4px}
-  .tear .head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:18px}
-  .tear .head h5{font-family:'Bagnard',serif;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1;color:var(--ink)}
-  .tear .head h5 em{font-style:italic;color:var(--rred);text-shadow:2px 2px 0 var(--rblue)}
-  .tear .head .qtr{font-family:'DM Mono',monospace;font-size:11px;color:var(--rblue);letter-spacing:.1em;font-weight:600;text-transform:uppercase}
-  .tear .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-  .tear .gcell{border:1.5px solid var(--ink);padding:12px;background:var(--paper)}
-  .tear .gcell .l{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
-  .tear .gcell .v{font-family:'Bagnard',serif;font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1;color:var(--ink);text-shadow:2px 2px 0 var(--rred)}
-  .tear .gcell:nth-child(even) .v{text-shadow:2px 2px 0 var(--rblue)}
-  .tear .gcell .d{font-family:'DM Mono',monospace;font-size:10px;color:var(--rred);margin-top:5px;letter-spacing:.04em}
-  .tear .gcell .d.b{color:var(--rblue)}
-
-  .barchart{border:1.5px solid var(--ink);padding:14px;background:var(--paper);margin-top:8px}
-  .barchart .bc-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-bottom:12px;display:flex;justify-content:space-between}
-  .bc-row{display:grid;grid-template-columns:60px 1fr 70px;gap:12px;align-items:center;margin-bottom:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink)}
-  .bc-row:last-child{margin-bottom:0}
-  .bc-row .qb{height:18px;background:var(--paper-3);border:1px solid var(--ink);position:relative;overflow:hidden}
-  .bc-row .qb i{display:block;height:100%;background:var(--rred);position:relative}
-  .bc-row .qb i.b{background:var(--rblue)}
-  .bc-row .qb i::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0,transparent 4px,rgba(26,20,16,.18) 4px,rgba(26,20,16,.18) 5px)}
-  .bc-row .vl{font-weight:700;text-align:right;font-family:'Bagnard',serif;font-size:14px}
-
-  /* product: email — printed letter */
-  .letter{padding:6px 4px;font-family:'Caudex',serif}
-  .letter-from{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid var(--ink);padding-bottom:14px;margin-bottom:16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase}
-  .letter-from .to{color:var(--ink)}
-  .letter-from .to b{font-family:'Bagnard',serif;font-size:14px;color:var(--ink);text-transform:none;letter-spacing:0;display:block;margin-bottom:3px;font-weight:700}
-  .letter-from .meta{text-align:right;color:var(--rred)}
-  .letter-subj{font-family:'Bagnard',serif;font-size:24px;font-weight:700;letter-spacing:-.015em;line-height:1.15;color:var(--ink);margin-bottom:16px;border-bottom:2px solid var(--rred);padding-bottom:10px}
-  .letter-subj em{font-style:italic;color:var(--rred)}
-  .letter-body{font-size:14.5px;line-height:1.75;color:var(--ink);white-space:pre-line}
-  .letter-body b{font-weight:700;background:rgba(245,255,80,.4);padding:0 4px;color:var(--ink)}
-  .letter-foot{margin-top:18px;padding-top:14px;border-top:1px solid rgba(26,20,16,.2);display:flex;gap:14px;align-items:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
-  .letter-foot .seal{width:38px;height:38px;border:1.5px solid var(--rred);border-radius:50%;display:grid;place-items:center;font-family:'Bagnard',serif;font-size:14px;font-weight:700;color:var(--rred);transform:rotate(-6deg)}
-  .letter-foot span{flex:1}
-  .letter-foot .stamp-mini{color:var(--rblue);border-color:var(--rblue)}
-
-  /* product: ask kombo - quote-box */
-  .askbox{padding:6px 4px;font-family:'Caudex',serif}
-  .askbox .q{font-family:'Bagnard',serif;font-size:22px;font-style:italic;line-height:1.3;color:var(--rblue);border-left:4px solid var(--rblue);padding:8px 18px;margin-bottom:18px;text-shadow:2px 2px 0 rgba(224,78,63,.15)}
-  .askbox .a{font-size:14.5px;line-height:1.7;color:var(--ink);padding:0 0 14px;border-bottom:1px dashed var(--ink);margin-bottom:16px}
-  .askbox .a b{background:rgba(245,255,80,.4);padding:0 4px;font-weight:700}
-  .askbox .a .red{color:var(--rred);font-weight:700}
-  .ask-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-  .ask-card{border:1.5px solid var(--ink);background:var(--paper);padding:12px}
-  .ask-card .l{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
-  .ask-card .v{font-family:'Bagnard',serif;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1;color:var(--ink);text-shadow:2px 2px 0 var(--rred)}
-  .ask-card:nth-child(2) .v{text-shadow:2px 2px 0 var(--rblue)}
-  .ask-card .nt{font-size:11.5px;color:var(--ink-2);margin-top:6px;font-style:italic}
-
-  /* === TESTIMONIAL PULL-QUOTES === */
-  .pulls{padding:96px 0;border-bottom:2px solid var(--ink);position:relative}
-  .pulls-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;flex-wrap:wrap;gap:20px}
-  .pulls-h .ttl{font-family:'Bagnard',serif;font-size:64px;font-weight:400;line-height:.95;letter-spacing:-.03em;color:var(--ink);max-width:680px}
-  .pulls-h .ttl em{font-style:italic;color:var(--rred);text-shadow:3px 3px 0 var(--rblue)}
-  .pulls-h .meta{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);text-align:right}
-  .pulls-h .meta b{display:block;color:var(--rred);font-weight:700}
-
-  .pulls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
-  .pull{background:var(--paper);border:2px solid var(--ink);padding:32px 28px 26px;position:relative;box-shadow:6px 6px 0 var(--rblue)}
-  .pull:nth-child(2){box-shadow:6px 6px 0 var(--rred)}
-  .pull:nth-child(3){box-shadow:6px 6px 0 var(--rblue)}
-  .pull .qmark{position:absolute;top:-16px;left:24px;font-family:'Bagnard',serif;font-size:80px;line-height:1;color:var(--rred);background:var(--paper);padding:0 6px;font-style:italic;font-weight:700}
-  .pull:nth-child(2) .qmark{color:var(--rblue)}
-  .pull .quote{font-family:'Bagnard',serif;font-size:21px;line-height:1.4;color:var(--ink);font-weight:400;letter-spacing:-.005em;margin-bottom:24px;margin-top:14px}
-  .pull .quote em{font-style:italic;color:var(--rred)}
-  .pull .author{display:flex;align-items:center;gap:14px;border-top:2px solid var(--ink);padding-top:18px}
-  .pull .ava{width:48px;height:48px;border-radius:50%;background:var(--rblue);color:var(--paper);display:grid;place-items:center;font-family:'Bagnard',serif;font-weight:700;font-size:18px;border:2px solid var(--ink);position:relative}
-  .pull .ava::after{content:"";position:absolute;inset:-4px;border:1.5px solid var(--rblue);border-radius:50%;opacity:.4}
-  .pull:nth-child(2) .ava{background:var(--rred)}
-  .pull:nth-child(2) .ava::after{border-color:var(--rred)}
-  .pull .who{flex:1}
-  .pull .nm{font-family:'Bagnard',serif;font-weight:700;font-size:16px;color:var(--ink)}
-  .pull .role{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-top:3px}
-  .pull .printer-mark{position:absolute;bottom:-12px;right:18px;font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;background:var(--paper);padding:2px 8px;border:1.5px solid var(--rred);color:var(--rred);font-weight:600;transform:rotate(-2deg)}
-
-  /* === POSTERS === */
-  .posters{padding:96px 0;border-bottom:2px solid var(--ink)}
-  .post-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:42px;gap:20px;flex-wrap:wrap}
-  .post-h .ttl{font-family:'Bagnard',serif;font-size:54px;font-weight:400;line-height:.96;letter-spacing:-.03em;max-width:780px}
-  .post-h .ttl em{font-style:italic;color:var(--rred);text-shadow:3px 3px 0 var(--rblue)}
-  .post-h .ttl .ul{position:relative}
-  .post-h .ttl .ul::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:8px;background:rgba(245,255,80,.35);z-index:-1}
-  .post-h .meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--rblue);letter-spacing:.12em;text-transform:uppercase;font-weight:600;text-align:right}
-
-  .posts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .poster{background:var(--paper);border:2px solid var(--ink);padding:24px;min-height:460px;display:flex;flex-direction:column;justify-content:space-between;position:relative;box-shadow:6px 6px 0 var(--rred)}
-  .poster.b{box-shadow:6px 6px 0 var(--rblue)}
-  .poster.c{box-shadow:6px 6px 0 var(--rred)}
-  .poster::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1px 1px,rgba(26,20,16,.06) 1px,transparent 1.4px);background-size:4px 4px;pointer-events:none;mix-blend-mode:multiply;opacity:.5}
-  .poster .num{font-family:'Bagnard',serif;font-size:20px;font-weight:700;color:var(--rred);font-style:italic;letter-spacing:.04em}
-  .poster.b .num{color:var(--rblue)}
-  .poster .pttl{font-family:'Bagnard',serif;font-size:38px;font-weight:400;line-height:.98;letter-spacing:-.03em;color:var(--ink);margin:14px 0}
-  .poster .pttl em{font-style:italic;color:var(--rred);text-shadow:2px 2px 0 var(--rblue)}
-  .poster.b .pttl em{color:var(--rblue);text-shadow:2px 2px 0 var(--rred)}
-  .poster .plede{font-family:'Caudex',serif;font-size:14px;line-height:1.55;color:var(--ink-2)}
-  .poster .pillus{margin:22px 0;height:140px;display:grid;place-items:center;border:1.5px solid var(--ink);background:repeating-radial-gradient(circle at 50% 50%,var(--rred) 0,var(--rred) 2px,transparent 2px,transparent 6px);position:relative;overflow:hidden}
-  .poster.b .pillus{background:repeating-radial-gradient(circle at 50% 50%,var(--rblue) 0,var(--rblue) 2px,transparent 2px,transparent 6px)}
-  .poster .pillus svg{position:relative;z-index:2}
-  .poster .pillus::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,var(--paper) 0,transparent 60%)}
-  .poster .ar{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);border:2px solid var(--ink);padding:10px 14px;display:inline-flex;align-items:center;gap:8px;align-self:flex-start;background:var(--paper);font-weight:600}
-
-  /* === FINAL CTA POSTER === */
-  .final{background:var(--rred);color:var(--paper);padding:120px 56px 100px;border:2px solid var(--ink);position:relative;margin:64px 0 56px;overflow:hidden;box-shadow:10px 10px 0 var(--ink)}
-  .final::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1px 1px,rgba(245,239,224,.18) 1px,transparent 1.4px);background-size:6px 6px;pointer-events:none}
-  .final::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(13deg,rgba(245,239,224,.05) 0,rgba(245,239,224,.05) 1px,transparent 1px,transparent 4px);pointer-events:none}
-  .final .lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.8;margin-bottom:20px;display:inline-flex;align-items:center;gap:8px;border:1.5px solid rgba(245,239,224,.4);padding:6px 12px}
-  .final h4{font-family:'Bagnard',serif;font-size:120px;line-height:.92;letter-spacing:-.04em;font-weight:400;color:var(--paper);margin-bottom:24px;position:relative}
-  .final h4 em{font-style:italic;color:var(--paper);text-shadow:5px 5px 0 var(--rblue)}
-  .final p{font-family:'Caudex',serif;font-size:20px;color:rgba(245,239,224,.85);max-width:540px;line-height:1.55;margin-bottom:36px;position:relative}
-  .final .btns{display:flex;gap:16px;flex-wrap:wrap;position:relative}
-  .final .btn-print{background:var(--paper);color:var(--ink);box-shadow:5px 5px 0 var(--ink);border-color:var(--paper)}
-  .final .btn-print.ghost{background:transparent;color:var(--paper);box-shadow:5px 5px 0 var(--ink);border-color:var(--paper)}
-  .final .colophon{position:absolute;bottom:24px;right:32px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);opacity:.7;text-align:right;line-height:1.5}
-  .final .colophon b{display:block;color:var(--paper);font-family:'Bagnard',serif;font-size:13px;letter-spacing:0;font-weight:700;text-transform:none;margin-bottom:3px;opacity:1}
-
-  /* === FOOTER === */
-  footer.site{padding:64px 0 32px}
-  .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr;gap:32px;margin-bottom:36px;border-top:2px solid var(--ink);padding-top:48px}
-  .foot-brand p{font-family:'Caudex',serif;font-size:14px;color:var(--ink-2);margin-top:14px;line-height:1.6;max-width:280px;font-style:italic}
-  .foot-col h4{font-family:'Bagnard',serif;font-size:14px;letter-spacing:.04em;color:var(--rred);margin-bottom:14px;font-weight:700;text-transform:uppercase;border-bottom:1.5px solid var(--ink);padding-bottom:6px}
-  .foot-col ul{list-style:none}
-  .foot-col li{margin-bottom:7px}
-  .foot-col a{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink-2)}
-  .foot-col a:hover{color:var(--rred)}
-  .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:2px solid var(--ink);font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-2);letter-spacing:.1em;text-transform:uppercase;flex-wrap:wrap;gap:12px}
-  .foot-bottom a{color:var(--rred);font-weight:700}
-  .foot-bottom .colophon-mark{display:inline-flex;gap:8px;align-items:center}
-
+@keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-20px)}}
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- TOP STRIP -->
-  <div class="top-strip">
-    <span>Vol. 5 · Ed. 12 · 2026</span>
-    <span>Printed in 2 colours · Federal Blue + Fluorescent Red</span>
-    <span>Kombo Press · Brooklyn — Berlin</span>
+<!-- NAV -->
+<nav>
+  <a href="../index.html" class="logo">
+    <svg width="24" height="24" viewBox="0 0 30 30"><rect width="30" height="30" rx="8" fill="#FF6B35"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+    <span class="logo-name">KomboAI</span>
+  </a>
+  <div class="nav-links">
+    <a href="#">Product</a>
+    <a href="#">Resources</a>
+    <a href="#">Company</a>
+  </div>
+  <a href="#" class="nav-cta">Get Started Here</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Launch Faster.<br>Convert Better.</h1>
+    <p>We design leading pages. That helps founders launch in half the time and convert better.</p>
+    <div class="hero-ctas">
+      <a href="#" class="cta-primary">Get Started Here</a>
+      <a href="#" class="cta-secondary">See Features</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="orb"></div>
+    <div class="orb-small orb-s1"></div>
+    <div class="orb-small orb-s2"></div>
+  </div>
+</section>
+
+<!-- WHY SECTION -->
+<section class="section">
+  <h2>Why Clients Stick <span class="accent">With Us</span></h2>
+  <div class="why-grid">
+    <div class="why-card">
+      <div>
+        <div class="why-tag">Implementation</div>
+        <div class="why-title">We Design It</div>
+      </div>
+      <p style="position:relative;z-index:1;color:var(--muted)">Premium landing pages and web design that converts. Built to sell, not just to look good.</p>
+    </div>
+    <div class="why-card">
+      <div>
+        <div class="why-tag">High-Converting</div>
+        <div class="why-title">It Sells</div>
+      </div>
+      <p style="position:relative;z-index:1;color:var(--muted)">Data-driven design. Every element tested and optimized for maximum conversions.</p>
+    </div>
+    <div class="why-card">
+      <div>
+        <div class="why-tag">Speed to Market</div>
+        <div class="why-title">Fast Launch</div>
+      </div>
+      <p style="position:relative;z-index:1;color:var(--muted)">From brief to live in days, not weeks. Our process is optimized for speed.</p>
+    </div>
+    <div class="why-card">
+      <div>
+        <div class="why-tag">ROI Focused</div>
+        <div class="why-title">Clear Returns</div>
+      </div>
+      <p style="position:relative;z-index:1;color:var(--muted)">We measure what matters. Track every conversion and optimize for growth.</p>
+    </div>
   </div>
 
-  <!-- NAV -->
-  <nav class="top">
-    <a class="brand" href="#">
-      <span class="brand-mark">K</span>
-      KomboAI<span class="serif" style="font-style:italic;color:var(--rred);font-weight:400;font-size:18px;margin-left:2px">/press</span>
+  <h2 style="margin-top:80px">The Process. Fast, Clear, Done</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <div class="feature-title">Share Your Vision</div>
+      <div class="feature-desc">Tell us about your product, your goals, and your customers. We listen to understand your unique value prop.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✨</div>
+      <div class="feature-title">We Design It</div>
+      <div class="feature-desc">Our team crafts a custom landing page built to convert. Every pixel placed with purpose.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚀</div>
+      <div class="feature-title">Ready to Launch</div>
+      <div class="feature-desc">Your page is live and optimized. We hand over analytics and recommendations to keep it performing.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <div class="feature-title">We Track Results</div>
+      <div class="feature-desc">Ongoing optimization and support to keep your page converting and improving over time.</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Custom Design</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3x</div>
+      <div class="stat-label">Faster Launch</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">2.5x</div>
+      <div class="stat-label">Higher Conversion</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <h2 class="t-title">What <span class="accent">Founders</span> Are Saying</h2>
+  <div class="t-grid">
+    <div class="t-card">
+      <div class="t-quote">"They shipped a fully custom landing page in 10 days. Our conversion rate hit 12% — never seen numbers like that before."</div>
+      <div class="t-name">Sarah Chen</div>
+      <div class="t-role">Founder, NovaTech Solutions</div>
+    </div>
+    <div class="t-card">
+      <div class="t-quote">"The design is stunning and it actually sells. We went from 100 signups/month to 400. Clear ROI in the first month."</div>
+      <div class="t-name">James Whitfield</div>
+      <div class="t-role">CEO, Meridian Group</div>
+    </div>
+    <div class="t-card">
+      <div class="t-quote">"Not a template. A real, custom page built for our exact use case. Worth every penny."</div>
+      <div class="t-name">Lucia Fernández</div>
+      <div class="t-role">Head of Growth, ScaleUp Partners</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing">
+  <h2>Straightforward pricing that fits</h2>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="price-name">Starter Plan</div>
+      <div class="price-amount">$1000</div>
+      <div class="price-period">USD</div>
+      <div class="price-features">
+        <li>Custom landing page</li>
+        <li>Core conversions setup</li>
+        <li>Mobile responsive</li>
+        <li>Basic analytics</li>
+      </div>
+      <a href="#" class="price-btn">Choose plan</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-name">Pro Plan</div>
+      <div class="price-amount">$2600</div>
+      <div class="price-period">USD</div>
+      <div class="price-features">
+        <li>Premium custom design</li>
+        <li>Advanced conversion tracking</li>
+        <li>A/B testing setup</li>
+        <li>30 days optimization</li>
+        <li>Analytics dashboard</li>
+      </div>
+      <a href="#" class="price-btn">Choose plan</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Velocity+ Plan</div>
+      <div class="price-amount">$4200</div>
+      <div class="price-period">USD</div>
+      <div class="price-features">
+        <li>Full brand presence</li>
+        <li>Multi-page site</li>
+        <li>Advanced integrations</li>
+        <li>90 days optimization</li>
+        <li>Priority support</li>
+      </div>
+      <a href="#" class="price-btn">Choose plan</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <h2>Questions? <span class="accent">We've Got Answers.</span></h2>
+  <div style="margin-top:40px">
+    <details style="margin-bottom:16px;padding:20px;background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.15);border-radius:8px;cursor:pointer">
+      <summary style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text)">How does it work exactly?</summary>
+      <p style="margin-top:12px;color:var(--muted);font-size:14px">We start with a 30-minute strategy call. Then our design team builds your custom page, usually within 5–10 business days.</p>
+    </details>
+    <details style="margin-bottom:16px;padding:20px;background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.15);border-radius:8px;cursor:pointer">
+      <summary style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text)">Can I request revisions?</summary>
+      <p style="margin-top:12px;color:var(--muted);font-size:14px">Absolutely. Every plan includes revision rounds. Pro and higher tiers include 30–90 days of optimization support.</p>
+    </details>
+    <details style="margin-bottom:16px;padding:20px;background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.15);border-radius:8px;cursor:pointer">
+      <summary style="font-family:'Syne',sans-serif;font-weight:600;color:var(--text)">Do you provide hosting?</summary>
+      <p style="margin-top:12px;color:var(--muted);font-size:14px">We design and build your page. You own the code. Host it anywhere — Vercel, Netlify, or your own servers.</p>
+    </details>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-final">
+  <h3>Ready to launch something<br>that actually works?</h3>
+  <p>Let's design a landing page that converts. Start a conversation today.</p>
+  <div class="cta-final-btns">
+    <a href="#" class="cta-primary">Get Started Here</a>
+    <a href="#" class="cta-secondary">Contact Us</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-brand">
+    <a href="../index.html" class="logo">
+      <svg width="24" height="24" viewBox="0 0 30 30"><rect width="30" height="30" rx="8" fill="#FF6B35"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+      <span class="logo-name">KomboAI</span>
     </a>
-    <div class="nav-mid">
-      <a>Product</a>
-      <a>Resources</a>
-      <a>Company</a>
-      <a>Connect</a>
-    </div>
-    <a class="nav-cta">See a Demo →</a>
-  </nav>
+    <p>Premium landing page design for founders. Built to convert, delivered fast.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Product</h4>
+    <ul>
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Pricing</a></li>
+      <li><a href="#">Portfolio</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Resources</h4>
+    <ul>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Case Studies</a></li>
+      <li><a href="#">FAQ</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Company</h4>
+    <ul>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Team</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Legal</h4>
+    <ul>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </div>
+</div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="edition"><i>Edition</i><b>Nº 5</b><i>Kombo Press</i></div>
-
-    <div class="hero-head">
-      <span class="vol">№ 005</span>
-      <span>The Sales Intelligence Manifesto</span>
-      <span class="num">Pp. 01 — 32</span>
-    </div>
-
-    <div class="hero-grid">
-      <div>
-        <h1 class="hero-h">
-          <span class="line">Close More</span>
-          <span class="line"><span class="deals">Deals</span> <span class="with">with</span></span>
-          <span class="line"><span class="ai">AI.</span></span>
-        </h1>
-        <p class="hero-lede">KomboAI gives your sales team the intelligence of a <b>20-year veteran</b> — at the speed of AI. Rank leads, predict pipeline, and outreach on autopilot.</p>
-
-        <div class="hero-cta">
-          <a class="btn-print">See a Demo →</a>
-          <a class="btn-print ghost">See How It Works</a>
-        </div>
-
-        <div class="hero-foot">
-          <div class="stamp-rev">stamped<br><b>4.9 / 5</b><br>200+ rev.</div>
-          <span style="line-height:1.5">Approved by 500+ B2B sales teams.<br><span style="color:var(--rred)">Reviewed monthly. Reprinted on request.</span></span>
-        </div>
-      </div>
-
-      <div class="hero-illus">
-        <div class="silhouette">
-          <svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="dotsR" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
-                <circle cx="3" cy="3" r="1.6" fill="#E04E3F"/>
-              </pattern>
-              <pattern id="dotsB" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
-                <circle cx="3" cy="3" r="1.4" fill="#3754A8"/>
-              </pattern>
-              <pattern id="dotsK" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
-                <circle cx="2.5" cy="2.5" r="1.2" fill="#1A1410"/>
-              </pattern>
-            </defs>
-            <!-- person silhouette -->
-            <g>
-              <!-- head -->
-              <circle cx="190" cy="118" r="58" fill="url(#dotsK)"/>
-              <circle cx="190" cy="118" r="58" fill="none" stroke="#1A1410" stroke-width="2"/>
-              <!-- shoulders/torso -->
-              <path d="M82 460 Q 82 330 130 280 Q 160 252 190 252 Q 220 252 250 280 Q 298 330 298 460 Z" fill="url(#dotsR)" stroke="#1A1410" stroke-width="2"/>
-              <!-- shirt collar -->
-              <path d="M170 252 L 190 282 L 210 252" fill="none" stroke="#1A1410" stroke-width="2"/>
-              <!-- ear/headphone hint -->
-              <ellipse cx="234" cy="118" rx="9" ry="14" fill="#3754A8" stroke="#1A1410" stroke-width="2"/>
-              <!-- speech rays -->
-              <path d="M280 80 L 320 60" stroke="#3754A8" stroke-width="3" stroke-linecap="round"/>
-              <path d="M285 100 L 330 95" stroke="#3754A8" stroke-width="3" stroke-linecap="round"/>
-              <path d="M290 125 L 335 130" stroke="#E04E3F" stroke-width="3" stroke-linecap="round"/>
-              <!-- floating chart -->
-              <rect x="50" y="60" width="80" height="56" fill="#F5EFE0" stroke="#1A1410" stroke-width="2"/>
-              <polyline points="58,100 70,86 80,92 90,72 102,80 116,68" fill="none" stroke="#E04E3F" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="116" cy="68" r="3" fill="#E04E3F"/>
-              <!-- floating pill -->
-              <ellipse cx="290" cy="320" rx="42" ry="14" fill="url(#dotsB)" stroke="#1A1410" stroke-width="2"/>
-              <text x="290" y="324" font-family="Bagnard,serif" font-size="11" font-weight="700" text-anchor="middle" fill="#1A1410">+40%</text>
-            </g>
-          </svg>
-        </div>
-        <div class="hi-tag t1">RANK · LEADS</div>
-        <div class="hi-tag b t2">PREDICT · PIPELINE</div>
-        <div class="hi-tag t3">DRAFT · EMAILS</div>
-        <div class="hi-tag b t4">CLOSE · DEALS</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BY THE NUMBERS -->
-  <section class="numbers">
-    <div class="nb-head">
-      <h2 class="ttl">By the <em>numbers.</em></h2>
-      <div class="meta"><b>The Receipts</b>Set in Bagnard. Printed on uncoated stock.</div>
-    </div>
-    <div class="nb-grid">
-      <div class="nb-cell">
-        <div class="lbl">i. b2b teams</div>
-        <div class="num">500+</div>
-        <div class="desc">Sales teams running on KomboAI — from 5-person startups to 500-seat enterprises.</div>
-      </div>
-      <div class="nb-cell">
-        <div class="lbl">ii. close rate</div>
-        <div class="num">40%</div>
-        <div class="desc">Higher close rates after switching to KomboAI's AI-ranked pipeline.</div>
-      </div>
-      <div class="nb-cell">
-        <div class="lbl">iii. less research</div>
-        <div class="num">60%</div>
-        <div class="desc">Less time spent on manual lead research. Reps stay in selling motions.</div>
-      </div>
-      <div class="nb-cell">
-        <div class="lbl">iv. forecast acc.</div>
-        <div class="num">94%</div>
-        <div class="desc">Forecast accuracy across the quarter — measured against closed-won.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- STAMPED LOGOS -->
-  <section class="stamps">
-    <div class="stamps-head">— <b>Stamped by the trust of</b> · fast-growing B2B sales teams —</div>
-    <div class="stamps-row">
-      <span class="stamp">NovaTech Solutions</span>
-      <span class="stamp">Meridian Group</span>
-      <span class="stamp">ScaleUp Partners</span>
-      <span class="stamp">Apex Revenue</span>
-      <span class="stamp">PipelineCo</span>
-    </div>
-  </section>
-
-  <!-- SPREAD I — Lead Scoring -->
-  <section class="spread">
-    <div class="spread-h">
-      <span class="ch">Chapter I.</span>
-      <span class="nm">AI Lead Scoring</span>
-      <span class="meta">Folio 04 — 09</span>
-    </div>
-    <div class="spread-grid">
-      <div class="left">
-        <h2 class="spread-h2">Rank every lead. <em>In real time.</em></h2>
-        <p class="spread-lede">Automatically rank and prioritize leads based on <b>buying signals, engagement history, and fit</b> — updated in real time. The model retrains nightly on your closed-won data.</p>
-        <div class="spread-cta">
-          <a class="btn-print">See a Demo →</a>
-          <a class="btn-print ghost">See How It Works</a>
-        </div>
-        <div class="footnote"><span class="ast">*</span><i>Set in Caudex, 14pt. Footnotes are typeset by hand at the Kombo Press composing stone, weekly.</i></div>
-      </div>
-      <div class="printed-win">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url">app.komboai.io/leads/scored</div>
-          <div class="stamp-mini">Pl. 01</div>
-        </div>
-        <div class="pw-body">
-          <div class="ledger">
-            <div class="ledger-h"><span>№</span><span>Lead</span><span>Company</span><span>Score</span><span>Stage</span></div>
-            <div class="ledger-r"><span class="rk">01</span><span class="nm">Sarah Chen</span><span class="co">NovaTech Sol.</span><span class="sc">98</span><span class="pill-st">hot</span></div>
-            <div class="ledger-r"><span class="rk">02</span><span class="nm">James Whitfield</span><span class="co">Meridian Group</span><span class="sc warm">94</span><span class="pill-st">hot</span></div>
-            <div class="ledger-r"><span class="rk">03</span><span class="nm">Lucia Fernández</span><span class="co">ScaleUp Pt.</span><span class="sc">91</span><span class="pill-st">hot</span></div>
-            <div class="ledger-r"><span class="rk">04</span><span class="nm">Marcus Owens</span><span class="co">Apex Revenue</span><span class="sc warm">82</span><span class="pill-st warm">warm</span></div>
-            <div class="ledger-r"><span class="rk">05</span><span class="nm">Priya Kapoor</span><span class="co">PipelineCo</span><span class="sc">71</span><span class="pill-st cool">nurture</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SPREAD II — Pipeline Intel -->
-  <section class="spread alt">
-    <div class="spread-h">
-      <span class="ch">Chapter II.</span>
-      <span class="nm">Pipeline Intelligence</span>
-      <span class="meta">Folio 10 — 15</span>
-    </div>
-    <div class="spread-grid flip">
-      <div class="printed-win b">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url">app.komboai.io/forecasts/q4-2026</div>
-          <div class="stamp-mini" style="color:var(--rblue);border-color:var(--rblue)">Pl. 02</div>
-        </div>
-        <div class="pw-body">
-          <div class="tear">
-            <div class="head">
-              <h5>Q4 Forecast — <em>$4.82M</em></h5>
-              <div class="qtr">2026 · Confidence 94.2%</div>
-            </div>
-            <div class="grid4">
-              <div class="gcell"><div class="l">Forecast</div><div class="v">$4.82M</div><div class="d">+12% QoQ</div></div>
-              <div class="gcell"><div class="l">Committed</div><div class="v">$3.14M</div><div class="d b">stable</div></div>
-              <div class="gcell"><div class="l">Best case</div><div class="v">$5.96M</div><div class="d">+8.1%</div></div>
-              <div class="gcell"><div class="l">Stale</div><div class="v">47</div><div class="d b">−12 today</div></div>
-            </div>
-            <div class="barchart">
-              <div class="bc-h"><span>Quarterly pace · Q1 → Q4 2026</span><span>$M ARR</span></div>
-              <div class="bc-row"><span>Q1</span><span class="qb"><i style="width:42%"></i></span><span class="vl">$2.1M</span></div>
-              <div class="bc-row"><span>Q2</span><span class="qb"><i class="b" style="width:58%"></i></span><span class="vl">$2.9M</span></div>
-              <div class="bc-row"><span>Q3</span><span class="qb"><i style="width:74%"></i></span><span class="vl">$3.7M</span></div>
-              <div class="bc-row"><span>Q4</span><span class="qb"><i class="b" style="width:96%"></i></span><span class="vl">$4.8M</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <h2 class="spread-h2">Forecast revenue with <span class="blue">94% accuracy.</span></h2>
-        <p class="spread-lede">See the <b>health of every deal</b> at a glance. KomboAI flags stale opportunities, predicts close probability, and forecasts revenue with 94% accuracy across the quarter.</p>
-        <div class="spread-cta">
-          <a class="btn-print">See a Demo →</a>
-          <a class="btn-print ghost">See How It Works</a>
-        </div>
-        <div class="footnote"><span class="ast">†</span><i>Forecast accuracy measured weekly against closed-won. Audited Q3 2026.</i></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SPREAD III — Outreach as Letter -->
-  <section class="spread">
-    <div class="spread-h">
-      <span class="ch">Chapter III.</span>
-      <span class="nm">Automated Outreach</span>
-      <span class="meta">Folio 16 — 21</span>
-    </div>
-    <div class="spread-grid">
-      <div>
-        <h2 class="spread-h2"><span class="ul">Letters</span> a 20-year <em>veteran</em> would write.</h2>
-        <p class="spread-lede">Craft personalized email sequences powered by AI. <b>Reach the right prospects with the right message at the right moment</b> — at scale, with reply rates that don't degrade.</p>
-        <div class="spread-cta">
-          <a class="btn-print">See a Demo →</a>
-          <a class="btn-print ghost">See How It Works</a>
-        </div>
-        <div class="footnote"><span class="ast">‡</span><i>Letters set in Caudex, 14.5pt. Each draft hand-tuned by the Kombo writing model.</i></div>
-      </div>
-      <div class="printed-win">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url">app.komboai.io/outreach/compose</div>
-          <div class="stamp-mini">Pl. 03</div>
-        </div>
-        <div class="pw-body">
-          <div class="letter">
-            <div class="letter-from">
-              <div class="to">to:<b>Sarah Chen, VP Sales</b>NovaTech Solutions · sarah.chen@novatech.io</div>
-              <div class="meta">draft<br><span style="color:var(--ink-2)">2 minutes ago</span></div>
-            </div>
-            <div class="letter-subj">Cutting NovaTech's lead-research time by <em>60%</em> — quick idea</div>
-            <div class="letter-body">Hi Sarah,
-
-Saw NovaTech just hired 12 new SDRs this quarter. Onboarding that many reps while keeping pipeline velocity up is the kind of thing that breaks most teams' tooling.
-
-KomboAI is how teams like Meridian and ScaleUp handle exactly this — <b>our reps spend 60% less time on manual research</b>, and our close rate jumped 40% in the first quarter.
-
-Worth 15 minutes next Tuesday? I can show you the lead scoring live on your own pipeline.
-
-Best,
-Alex
-KomboAI · Sales</div>
-            <div class="letter-foot">
-              <div class="seal">K</div>
-              <span>Tone: direct · Signal: 12 SDR hires (LinkedIn) · Reference: Meridian case study · 84 words</span>
-              <div class="stamp-mini">N.E.A.T</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SPREAD IV — Ask KomboAI -->
-  <section class="spread alt">
-    <div class="spread-h">
-      <span class="ch">Chapter IV.</span>
-      <span class="nm">Ask KomboAI Anything</span>
-      <span class="meta">Folio 22 — 27</span>
-    </div>
-    <div class="spread-grid flip">
-      <div class="printed-win b">
-        <div class="pw-bar">
-          <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-          <div class="url">app.komboai.io/ask</div>
-          <div class="stamp-mini" style="color:var(--rblue);border-color:var(--rblue)">Pl. 04</div>
-        </div>
-        <div class="pw-body">
-          <div class="askbox">
-            <div class="q">"Which deals over $200k are most likely to slip this quarter?"</div>
-            <div class="a">Three deals over $200k look at risk this quarter. Together they represent <b>$1.04M ARR</b>. The pattern: <span class="red">all three have gone &gt;14 days without prospect activity</span>, and decision-makers haven't engaged with the last two emails.</div>
-            <div class="ask-grid">
-              <div class="ask-card"><div class="l">Deals at risk</div><div class="v">3</div><div class="nt">over $200k threshold</div></div>
-              <div class="ask-card"><div class="l">Total ARR</div><div class="v">$1.04M</div><div class="nt">slip risk this quarter</div></div>
-              <div class="ask-card"><div class="l">Confidence</div><div class="v">92%</div><div class="nt">based on 412 similar deals</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <h2 class="spread-h2">A revenue analyst on <em>speed dial.</em></h2>
-        <p class="spread-lede">Get instant answers about your pipeline, forecasts, and deal status — all in <b>natural language</b>. Like a revenue analyst on speed dial. Ask anything. Get the receipts.</p>
-        <div class="spread-cta">
-          <a class="btn-print">See a Demo →</a>
-          <a class="btn-print ghost">See How It Works</a>
-        </div>
-        <div class="footnote"><span class="ast">§</span><i>Connects to HubSpot, Salesforce, Outreach, LinkedIn. Answers cited line-by-line.</i></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS as pull-quotes -->
-  <section class="pulls">
-    <div class="pulls-h">
-      <h3 class="ttl">From the <em>readers' desk.</em></h3>
-      <div class="meta"><b>Letters to Kombo Press</b>Edition Nº 5 · 2026</div>
-    </div>
-    <div class="pulls-grid">
-      <div class="pull">
-        <div class="qmark">"</div>
-        <div class="quote">Since switching to KomboAI, our reps spend <em>60% less time</em> on manual lead research. Pipeline velocity has never been higher.</div>
-        <div class="author">
-          <div class="ava">SC</div>
-          <div class="who">
-            <div class="nm">Sarah Chen</div>
-            <div class="role">VP of Sales · NovaTech Solutions</div>
-          </div>
-        </div>
-        <div class="printer-mark">Letter Nº 1</div>
-      </div>
-      <div class="pull">
-        <div class="qmark">"</div>
-        <div class="quote">The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — and our close rate jumped <em>40%.</em></div>
-        <div class="author">
-          <div class="ava">JW</div>
-          <div class="who">
-            <div class="nm">James Whitfield</div>
-            <div class="role">Head of Revenue · Meridian Group</div>
-          </div>
-        </div>
-        <div class="printer-mark">Letter Nº 2</div>
-      </div>
-      <div class="pull">
-        <div class="qmark">"</div>
-        <div class="quote">As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <em>from 5 reps to 50.</em></div>
-        <div class="author">
-          <div class="ava">LF</div>
-          <div class="who">
-            <div class="nm">Lucia Fernández</div>
-            <div class="role">COO · ScaleUp Partners</div>
-          </div>
-        </div>
-        <div class="printer-mark">Letter Nº 3</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- POSTERS / 3 tiles -->
-  <section class="posters">
-    <div class="post-h">
-      <h2 class="ttl">Three <span class="ul">posters.</span> One <em>press.</em></h2>
-      <div class="meta">Pp. 28 — 30<br>Printed on Mohawk Cream</div>
-    </div>
-    <div class="posts-grid">
-      <div class="poster">
-        <div>
-          <div class="num">№ I.</div>
-          <div class="pttl">CRM <em>Intelligence</em></div>
-          <div class="plede">Sync with HubSpot or Salesforce. KomboAI enriches contacts, flags stale deals, and recommends next-best actions.</div>
-          <div class="pillus">
-            <svg width="80" height="80" viewBox="0 0 80 80">
-              <rect x="14" y="14" width="52" height="52" fill="#F5EFE0" stroke="#1A1410" stroke-width="2.5"/>
-              <line x1="14" y1="32" x2="66" y2="32" stroke="#1A1410" stroke-width="2"/>
-              <line x1="32" y1="14" x2="32" y2="66" stroke="#1A1410" stroke-width="2"/>
-              <circle cx="49" cy="49" r="9" fill="#E04E3F"/>
-            </svg>
-          </div>
-        </div>
-        <a class="ar">Read more →</a>
-      </div>
-      <div class="poster b">
-        <div>
-          <div class="num">№ II.</div>
-          <div class="pttl">Pipeline <em>Health</em></div>
-          <div class="plede">Stale-deal flags, win-prob scores, and forecast intervals — refreshed every 60 seconds for every deal.</div>
-          <div class="pillus">
-            <svg width="100" height="80" viewBox="0 0 100 80">
-              <polyline points="10,68 25,52 38,58 50,38 63,46 76,28 92,16" fill="none" stroke="#1A1410" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="92" cy="16" r="5" fill="#3754A8" stroke="#1A1410" stroke-width="2"/>
-              <line x1="10" y1="72" x2="92" y2="72" stroke="#1A1410" stroke-width="2"/>
-            </svg>
-          </div>
-        </div>
-        <a class="ar">Read more →</a>
-      </div>
-      <div class="poster c">
-        <div>
-          <div class="num">№ III.</div>
-          <div class="pttl">One-click <em>Integrations</em></div>
-          <div class="plede">Connect with the tools your team already uses — HubSpot, Salesforce, Outreach, LinkedIn, and dozens more.</div>
-          <div class="pillus">
-            <svg width="100" height="80" viewBox="0 0 100 80">
-              <circle cx="50" cy="40" r="10" fill="#E04E3F" stroke="#1A1410" stroke-width="2"/>
-              <circle cx="22" cy="22" r="7" fill="#F5EFE0" stroke="#1A1410" stroke-width="2"/>
-              <circle cx="78" cy="22" r="7" fill="#F5EFE0" stroke="#1A1410" stroke-width="2"/>
-              <circle cx="22" cy="58" r="7" fill="#F5EFE0" stroke="#1A1410" stroke-width="2"/>
-              <circle cx="78" cy="58" r="7" fill="#F5EFE0" stroke="#1A1410" stroke-width="2"/>
-              <line x1="29" y1="27" x2="42" y2="36" stroke="#1A1410" stroke-width="2"/>
-              <line x1="71" y1="27" x2="58" y2="36" stroke="#1A1410" stroke-width="2"/>
-              <line x1="29" y1="53" x2="42" y2="44" stroke="#1A1410" stroke-width="2"/>
-              <line x1="71" y1="53" x2="58" y2="44" stroke="#1A1410" stroke-width="2"/>
-            </svg>
-          </div>
-        </div>
-        <a class="ar">Read more →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FINAL CTA POSTER -->
-  <section class="final">
-    <div class="lbl">● Final Edition · Subscribe Today ●</div>
-    <h4>Ready to Close<br>More Deals<br>With <em>AI?</em></h4>
-    <p>Join 500+ B2B sales teams using KomboAI to hit quota faster. Spin up in 4 minutes.</p>
-    <div class="btns">
-      <a class="btn-print">See a Demo →</a>
-      <a class="btn-print ghost">Contact Us</a>
-    </div>
-    <div class="colophon">
-      <b>Kombo Press</b>
-      Set in Bagnard &amp; Caudex<br>
-      Printed in Federal Blue<br>
-      &amp; Fluorescent Red · 2026
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="site">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <a class="brand" href="#">
-          <span class="brand-mark">K</span>
-          KomboAI<span class="serif" style="font-style:italic;color:var(--rred);font-weight:400;font-size:18px;margin-left:2px">/press</span>
-        </a>
-        <p>AI-powered sales intelligence for B2B teams. Close more deals, faster — set in serif, printed in two colours.</p>
-      </div>
-      <div class="foot-col"><h4>Product</h4><ul><li><a>Features</a></li><li><a>Integrations</a></li></ul></div>
-      <div class="foot-col"><h4>Resources</h4><ul><li><a>Customers</a></li><li><a>Podcast</a></li><li><a>Newsletter</a></li><li><a>Blog</a></li></ul></div>
-      <div class="foot-col"><h4>Company</h4><ul><li><a>Contact</a></li><li><a>Team</a></li><li><a>About</a></li></ul></div>
-      <div class="foot-col"><h4>Connect</h4><ul><li><a>LinkedIn</a></li><li><a>X</a></li><li><a>YouTube</a></li><li><a>Instagram</a></li><li><a>TikTok</a></li></ul></div>
-      <div class="foot-col"><h4>Legal</h4><ul><li><a>Terms &amp; Conditions</a></li><li><a>Privacy Policy</a></li><li><a>Referral Programme</a></li></ul></div>
-    </div>
-    <div class="foot-bottom">
-      <span class="colophon-mark">Kevin Hawkins · KomboAI · 2026 · V8 Riso Print Shop</span>
-      <a href="./index.html">← back to mockups</a>
-    </div>
-  </footer>
+<div class="footer-bottom">
+  <span>Kevin Hawkins · KomboAI · 2026 · V8 Launch Platform</span>
+  <a href="./index.html">← Back to Mockups</a>
+</div>
 
 </div>
 </body>
