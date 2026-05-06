@@ -55,6 +55,43 @@
     50% { opacity: 0.35; box-shadow: 0 0 4px var(--neon); }
   }
 
+  /* Testimonials */
+  .testi-block { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: 56px 56px 64px; position: relative; overflow: hidden; }
+  .testi-block::before { content: ''; position: absolute; top: -120px; right: -80px; width: 360px; height: 360px; background: radial-gradient(circle, rgba(212,255,0,0.12) 0%, transparent 60%); pointer-events: none; }
+  .testi-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 36px; position: relative; z-index: 1; }
+  .testi-head h3 { font-weight: 700; font-size: 46px; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); max-width: 680px; }
+  .testi-hl { display: inline-block; padding: 0 14px 2px; background: var(--neon); color: var(--bg); border-radius: 99px; transform: rotate(-1.5deg); }
+  .testi-stars { font-size: 13px; color: var(--mute); text-align: right; }
+  .testi-stars .s { color: var(--neon); font-size: 18px; letter-spacing: 2px; display: block; text-shadow: 0 0 12px rgba(212,255,0,0.4); }
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; position: relative; z-index: 1; }
+  .testi-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 20px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; min-height: 300px; transition: transform 0.3s cubic-bezier(0.22,0.61,0.36,1), border-color 0.3s, box-shadow 0.3s; }
+  .testi-card:hover { transform: translateY(-4px); }
+  .testi-neon { background: linear-gradient(160deg, rgba(212,255,0,0.18) 0%, rgba(212,255,0,0.04) 100%); border-color: rgba(212,255,0,0.3); }
+  .testi-neon:hover { border-color: var(--neon); box-shadow: 0 12px 40px rgba(212,255,0,0.18); }
+  .testi-purple { background: linear-gradient(160deg, rgba(167,139,250,0.22) 0%, rgba(167,139,250,0.05) 100%); border-color: rgba(167,139,250,0.3); }
+  .testi-purple:hover { border-color: var(--purple); box-shadow: 0 12px 40px rgba(167,139,250,0.22); }
+  .testi-blue { background: linear-gradient(160deg, rgba(96,165,250,0.22) 0%, rgba(96,165,250,0.05) 100%); border-color: rgba(96,165,250,0.3); }
+  .testi-blue:hover { border-color: #60A5FA; box-shadow: 0 12px 40px rgba(96,165,250,0.22); }
+  .testi-quote { font-weight: 600; font-size: 19px; line-height: 1.4; letter-spacing: -0.015em; color: var(--ink); }
+  .testi-author { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+  .testi-av { width: 42px; height: 42px; border-radius: 50%; background: var(--neon); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .testi-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .testi-role { font-size: 12px; color: var(--mute); margin-top: 1px; }
+  @media (max-width: 1024px) {
+    .testi-block { padding: 44px 36px; }
+    .testi-head h3 { font-size: 36px; }
+    .testi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 720px) {
+    .testi-block { padding: 32px 22px; border-radius: 22px; }
+    .testi-head { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 24px; }
+    .testi-head h3 { font-size: 28px; }
+    .testi-stars { text-align: left; }
+    .testi-grid { grid-template-columns: 1fr; gap: 14px; }
+    .testi-card { min-height: 0; padding: 22px; }
+    .testi-quote { font-size: 16px; }
+  }
+
   /* Scroll fade-in */
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1); will-change: opacity, transform; }
   .reveal.is-visible { opacity: 1; transform: translateY(0); }
@@ -548,6 +585,52 @@
   </div>
 </section>
 <!-- KOMBO_SHOWCASE_END -->
+
+
+<!-- KOMBO_TESTIMONIALS_START -->
+<section class="kombo-testimonials reveal" style="padding:96px 24px;">
+  <div style="max-width:1180px;margin:0 auto;">
+    <div class="testi-block">
+      <div class="testi-head">
+        <h3>Loved by <span class="testi-hl">B2B sales</span><br/>teams worldwide.</h3>
+        <div class="testi-stars"><span class="s">★★★★★</span>4.9 avg · 200+ G2 reviews</div>
+      </div>
+      <div class="testi-grid">
+        <div class="testi-card testi-neon">
+          <p class="testi-quote">"Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher."</p>
+          <div class="testi-author">
+            <div class="testi-av">SC</div>
+            <div>
+              <div class="testi-name">Sarah Chen</div>
+              <div class="testi-role">VP of Sales, NovaTech Solutions</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card testi-purple">
+          <p class="testi-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — and our close rate jumped 40%."</p>
+          <div class="testi-author">
+            <div class="testi-av" style="background:#A78BFA;color:#0E0E10;">JW</div>
+            <div>
+              <div class="testi-name">James Whitfield</div>
+              <div class="testi-role">Head of Revenue, Meridian Group</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card testi-blue">
+          <p class="testi-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us from 5 reps to 50."</p>
+          <div class="testi-author">
+            <div class="testi-av" style="background:#60A5FA;color:#0E0E10;">LF</div>
+            <div>
+              <div class="testi-name">Lucia Fernández</div>
+              <div class="testi-role">COO, ScaleUp Partners</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- KOMBO_TESTIMONIALS_END -->
 
 
 <div class="trust reveal">
