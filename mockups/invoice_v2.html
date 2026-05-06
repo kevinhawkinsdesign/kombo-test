@@ -337,7 +337,9 @@
 
     input[type="text"],
     input[type="email"],
-    input[type="tel"] {
+    input[type="tel"],
+    input[type="number"],
+    select {
         width: 100%;
         background: rgba(0, 0, 0, 0.3);
         border: 1px solid #8b7a62;
@@ -352,16 +354,42 @@
         letter-spacing: 0.02em;
     }
 
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%238b7a62' stroke-width='1.5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 44px;
+        cursor: pointer;
+    }
+
+    select option {
+        background: #1a1410;
+        color: #e8dcc8;
+    }
+
     input::placeholder {
         color: #8b7a62;
         text-transform: uppercase;
         letter-spacing: 0.02em;
     }
 
-    input:focus {
+    input:focus,
+    select:focus {
         outline: none;
         border-color: #e8dcc8;
-        background: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .required {
+        color: #c8915a;
+        margin-left: 2px;
+    }
+
+    .form-grid-full {
+        grid-column: 1 / -1;
     }
 
     .payment-section {
@@ -637,28 +665,59 @@
 
                 <div class="form-grid">
                     <div class="field-group">
-                        <label class="input-label">Full Name</label>
-                        <input type="text" name="fullName" required placeholder="Jane Smith">
+                        <label class="input-label">First Name <span class="required">*</span></label>
+                        <input type="text" name="firstName" required placeholder="Jane">
                     </div>
                     <div class="field-group">
-                        <label class="input-label">Company</label>
+                        <label class="input-label">Last Name <span class="required">*</span></label>
+                        <input type="text" name="lastName" required placeholder="Smith">
+                    </div>
+                    <div class="field-group">
+                        <label class="input-label">Job Title <span class="required">*</span></label>
+                        <input type="text" name="jobTitle" required placeholder="Head of Sales">
+                    </div>
+                    <div class="field-group">
+                        <label class="input-label">Company Name <span class="required">*</span></label>
                         <input type="text" name="company" required placeholder="Acme Corp">
                     </div>
                     <div class="field-group">
-                        <label class="input-label">Email Address</label>
+                        <label class="input-label">Work Email <span class="required">*</span></label>
                         <input type="email" name="email" required placeholder="jane@company.com">
                     </div>
                     <div class="field-group">
-                        <label class="input-label">Phone Number</label>
+                        <label class="input-label">Phone Number <span class="required">*</span></label>
                         <input type="tel" name="phone" required placeholder="(555) 123-4567">
                     </div>
                     <div class="field-group">
-                        <label class="input-label">Your Role</label>
-                        <input type="text" name="role" required placeholder="SDR · AE · RevOps · Leader">
+                        <label class="input-label">Sales Team Size <span class="required">*</span></label>
+                        <select name="teamSize" required>
+                            <option value="" disabled selected>Select team size</option>
+                            <option value="1-5">1–5</option>
+                            <option value="6-10">6–10</option>
+                            <option value="11-20">11–20</option>
+                            <option value="21-50">21–50</option>
+                            <option value="50+">50+</option>
+                        </select>
                     </div>
                     <div class="field-group">
-                        <label class="input-label">CRM In Use</label>
-                        <input type="text" name="crm" placeholder="HubSpot · Salesforce · Apollo">
+                        <label class="input-label">Running Outbound? <span class="required">*</span></label>
+                        <select name="outbound" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div class="field-group form-grid-full">
+                        <label class="input-label">How Did You Hear About Us? <span class="required">*</span></label>
+                        <select name="source" required>
+                            <option value="" disabled selected>Select a channel</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="battle">Battle</option>
+                            <option value="google">Google</option>
+                            <option value="podcast">Podcast</option>
+                            <option value="other">Other</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -705,8 +764,8 @@
     <script>
         document.getElementById('leadForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const fullName = document.querySelector('input[name="fullName"]').value;
-            alert('Thank you, ' + (fullName || 'there') + '! Your package has been claimed.');
+            const firstName = document.querySelector('input[name="firstName"]').value;
+            alert('Thank you, ' + (firstName || 'there') + '! Your package has been claimed.');
         });
     </script>
 </body>
