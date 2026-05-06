@@ -56,16 +56,15 @@
   .mono { font-family: 'JetBrains Mono', monospace; }
 
   /* Nav */
-  nav { position: sticky; top: 0; background: rgba(14,14,16,0.85); backdrop-filter: blur(14px); z-index: 50; border-bottom: 1px solid var(--line); }
+  nav { position: sticky; top: 0; background: rgba(14,14,16,0.85); backdrop-filter: blur(14px); z-index: 50; border-bottom: 1px solid var(--line); transition: background-color .3s, border-color .3s; }
+  :root[data-theme="light"] nav { background: rgba(255,255,255,0.88); border-bottom-color: var(--line); }
   .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
   .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
   .logo-mark { width: 26px; height: 26px; background: var(--neon); border-radius: 7px; position: relative; }
   .logo-mark::after { content: ''; position: absolute; inset: 6px; border: 2px solid var(--bg); border-radius: 3px; }
-  .logo { text-decoration: none; }
-  .logo-img { height: 28px; width: auto; display: block; }
-  .logo-light { display: none; }
-  :root[data-theme="light"] .logo-dark { display: none; }
-  :root[data-theme="light"] .logo-light { display: block; }
+  .logo { text-decoration: none; color: var(--ink); }
+  .logo-img { height: 26px; width: auto; display: block; }
+  .logo-text { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
   /* Theme toggle */
   .nav-end { display: flex; align-items: center; gap: 12px; }
   .theme-toggle { width: 36px; height: 36px; border-radius: 999px; background: transparent; border: 1px solid var(--line-2); color: var(--mute); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: color .2s, border-color .2s, transform .2s, background .2s; }
@@ -336,6 +335,124 @@
   .visual-tag.neon { background: var(--neon); border-color: var(--neon); color: var(--bg); font-weight: 600; }
   .visual-arrow { color: var(--mute); }
 
+  /* Chapters (replaces small how-grid) */
+  .chapter { padding: 80px 0; position: relative; }
+  .chapter + .chapter { padding-top: 0; }
+  .chapter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .chapter.reverse .chapter-text { order: 2; }
+  .chapter.reverse .chapter-prod { order: 1; }
+  .chapter-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--lavender-soft); border-radius: 999px; font-size: 12px; color: var(--lavender); margin-bottom: 22px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(181,161,255,0.05); }
+  .chapter-eyebrow .dot { width: 7px; height: 7px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon); animation: dot-blink 1.4s ease-in-out infinite; }
+  .chapter h2 { font-size: clamp(34px, 4.6vw, 56px); font-weight: 700; line-height: 1.04; letter-spacing: -0.03em; margin-bottom: 22px; color: var(--ink); }
+  .chapter h2 em { font-style: italic; color: var(--neon); font-weight: 700; }
+  .chapter-lede { font-size: 17px; color: var(--mute); line-height: 1.55; margin-bottom: 28px; max-width: 480px; }
+  .chapter-lede b { color: var(--ink); font-weight: 600; }
+  .chapter-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Chapter product window — always light/bright */
+  .chapter-prod {
+    --surface: #FFFFFF;
+    --surface-2: #F2F3F6;
+    --bg-2: #FAFBFC;
+    --line: #E5E6EB;
+    --line-2: #D1D2D9;
+    --ink: #0E0E10;
+    --mute: #5A5A63;
+    --mute-2: #8A8A95;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,255,0,0.04);
+  }
+  .prod-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .prod-dots { display: flex; gap: 5px; }
+  .prod-dots span { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
+  .prod-url { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--mute); text-align: center; }
+  .prod-body { padding: 22px; }
+  .prod-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .prod-icon { font-size: 18px; }
+  .prod-title { font-size: 14px; font-weight: 700; color: var(--ink); flex: 1; }
+  .prod-pill { padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-2); color: var(--mute); }
+  .prod-pill.neon { background: var(--neon); color: #0E0E10; }
+  .prod-pill.lav { background: rgba(167,139,250,0.18); color: #6B4EFF; }
+
+  /* Lead rows (chapter 1) */
+  .lead-row { display: grid; grid-template-columns: 24px 32px 1fr 100px 32px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .lead-row:last-child { border-bottom: 0; }
+  .lead-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--mute-2); }
+  .lead-av { width: 30px; height: 30px; border-radius: 50%; background: var(--neon); color: #0E0E10; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .lead-av.b { background: #A78BFA; color: #fff; }
+  .lead-av.c { background: #60A5FA; color: #fff; }
+  .lead-av.d { background: #F5C61C; color: #0E0E10; }
+  .lead-av.e { background: #F87171; color: #fff; }
+  .lead-name { font-weight: 600; color: var(--ink); }
+  .lead-co { font-size: 11px; color: var(--mute); margin-top: 1px; }
+  .lead-bar { height: 5px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .lead-bar i { display: block; height: 100%; background: var(--neon); }
+  .lead-bar.med i { background: #F5C61C; }
+  .lead-bar.low i { background: var(--line-2); }
+  .lead-score { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink); text-align: right; }
+  .lead-score.med { color: #C49000; }
+  .lead-score.low { color: var(--mute); }
+
+  /* Email rows (chapter 2) */
+  .email-row { padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: var(--bg-2); }
+  .email-row .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mute); margin-bottom: 4px; font-weight: 600; }
+  .email-row .val { font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+  .email-row .val pre { font-family: inherit; white-space: pre-wrap; font-size: 12.5px; color: var(--ink); }
+  .email-row.confidence { background: rgba(212,255,0,0.1); border-color: rgba(212,255,0,0.4); }
+  .email-row.confidence .lbl { color: #0E0E10; }
+
+  /* Ask chat (chapter 3) */
+  .ask-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .ask-row.you { flex-direction: row-reverse; }
+  .ask-av { width: 28px; height: 28px; border-radius: 50%; background: var(--neon); color: #0E0E10; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .ask-av.you { background: #A78BFA; color: #fff; }
+  .ask-bub { padding: 10px 14px; border-radius: 12px; background: var(--surface-2); font-size: 13px; line-height: 1.45; color: var(--ink); max-width: 80%; }
+  .ask-bub.you { background: rgba(167,139,250,0.15); }
+  .ask-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .ask-stats .n { font-size: 16px; font-weight: 700; color: var(--ink); }
+  .ask-stats .l { font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+
+  /* Forecast (chapter 4) */
+  .fc-row { display: grid; grid-template-columns: 110px 1fr 80px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .fc-row:last-child { border-bottom: 0; }
+  .fc-name { color: var(--mute); font-weight: 500; }
+  .fc-bar { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .fc-bar i { display: block; height: 100%; background: var(--neon); }
+  .fc-bar.warm i { background: #F5C61C; }
+  .fc-bar.cool i { background: #A78BFA; }
+  .fc-amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); text-align: right; }
+  .fc-summary { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .fc-summary .big { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+  .fc-summary .acc { font-size: 12px; font-weight: 600; color: #0E0E10; background: var(--neon); padding: 6px 12px; border-radius: 999px; }
+
+  /* CRM (chapter 5) */
+  .crm-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .crm-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .crm-av { width: 42px; height: 42px; border-radius: 50%; background: #A78BFA; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .crm-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .crm-role { font-size: 12px; color: var(--mute); margin-top: 1px; }
+  .crm-srcs { margin-left: auto; display: flex; gap: 4px; }
+  .crm-src { font-size: 9px; padding: 3px 7px; border-radius: 999px; background: var(--surface-2); color: var(--mute); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .crm-src.sf { background: #DAEEFC; color: #0A6EAD; }
+  .crm-src.hub { background: #FFE6D5; color: #D45C18; }
+  .crm-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .crm-field .l { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mute); margin-bottom: 2px; }
+  .crm-field .v { font-size: 12.5px; color: var(--ink); font-weight: 500; }
+  .crm-field .v.add { color: #0E0E10; background: var(--neon); display: inline-block; padding: 1px 8px; border-radius: 999px; font-weight: 700; font-size: 11.5px; }
+  .crm-action { margin-top: 12px; padding: 12px 14px; background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px; display: flex; gap: 12px; align-items: flex-start; font-size: 12.5px; color: var(--ink); line-height: 1.45; }
+  .crm-action .ic { font-weight: 700; color: #6B4EFF; flex-shrink: 0; }
+
+  @media (max-width: 980px) {
+    .chapter-grid { grid-template-columns: 1fr; gap: 36px; }
+    .chapter.reverse .chapter-text { order: 1; }
+    .chapter.reverse .chapter-prod { order: 2; }
+    .chapter { padding: 56px 0; }
+  }
+
   /* Features grid v2 */
   .feat-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 14px; margin-top: 60px; }
   .feat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 32px; min-height: 320px; }
@@ -515,8 +632,8 @@
 <nav>
   <div class="container nav-row">
     <a href="./index.html" class="logo">
-      <img class="logo-img logo-dark" src="./images/LOGO/Logo grande blanco.PNG" alt="KomboAI">
-      <img class="logo-img logo-light" src="./images/LOGO/Logo grande lila.PNG" alt="KomboAI">
+      <img class="logo-img" src="./images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
     </a>
     <div class="nav-links">
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="product">Product<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -790,62 +907,197 @@
   </div>
 </div>
 
-<section class="std reveal">
-  <div class="container">
-    <div class="section-h">
-      <h2>How it <span class="accent">works</span></h2>
-      <p>KomboAI is built on the simple concept of effortless revenue automation. Connect your stack, write your rules, and let your reps focus on closing.</p>
+<!-- CHAPTER 01 — LEAD SCORING -->
+<section class="chapter reveal">
+  <div class="container chapter-grid">
+    <div class="chapter-text">
+      <span class="chapter-eyebrow"><span class="dot"></span> Chapter 01 · Lead Scoring</span>
+      <h2>Rank every lead<br/>by <em>buying signal.</em></h2>
+      <p class="chapter-lede">Automatically rank and prioritize leads based on <b>buying signals, engagement history, and fit</b> — updated in real time. Your reps wake up to a queue ranked by likelihood to close.</p>
+      <div class="chapter-cta">
+        <a href="#" class="btn-neon">See a demo</a>
+        <a href="#" class="btn-ghost">See how it works →</a>
+      </div>
     </div>
-    <div class="how-grid">
-      <div class="how-card">
-        <div>
-          <div class="how-icon-box neon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          </div>
-          <h4>Score every lead</h4>
-          <p>Each lead gets a real-time score based on signals across your CRM, calendar, and inbox.</p>
-        </div>
-        <div class="how-visual">
-          <div class="visual-tag">Acme Co</div>
-          <div class="visual-arrow">→</div>
-          <div class="visual-tag neon">94 Hot</div>
-        </div>
-        <div class="how-num">01</div>
+    <div class="chapter-prod">
+      <div class="prod-bar">
+        <div class="prod-dots"><span></span><span></span><span></span></div>
+        <div class="prod-url">app.komboai.com / leads · ranked queue</div>
       </div>
-      <div class="how-card">
-        <div>
-          <div class="how-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
-          </div>
-          <h4>Reach in their voice</h4>
-          <p>KomboAI drafts follow-ups in your top rep's tone, sent at the moment buyers are most likely to reply.</p>
+      <div class="prod-body">
+        <div class="prod-head">
+          <span class="prod-icon">⚡</span>
+          <span class="prod-title">Top leads · this week</span>
+          <span class="prod-pill neon">LIVE</span>
         </div>
-        <div class="how-visual">
-          <div class="visual-tag neon">+38% reply rate</div>
-          <div class="visual-tag">12 sent</div>
-          <div class="visual-tag">5 replied</div>
-        </div>
-        <div class="how-num">02</div>
+        <div class="lead-row"><span class="lead-rank">01</span><span class="lead-av">SC</span><div><div class="lead-name">Sarah Chen</div><div class="lead-co">VP Sales · NovaTech Solutions</div></div><div class="lead-bar"><i style="width:94%"></i></div><span class="lead-score">94</span></div>
+        <div class="lead-row"><span class="lead-rank">02</span><span class="lead-av b">JW</span><div><div class="lead-name">James Whitfield</div><div class="lead-co">Head of Revenue · Meridian Group</div></div><div class="lead-bar"><i style="width:88%"></i></div><span class="lead-score">88</span></div>
+        <div class="lead-row"><span class="lead-rank">03</span><span class="lead-av c">LF</span><div><div class="lead-name">Lucia Fernández</div><div class="lead-co">COO · ScaleUp Partners</div></div><div class="lead-bar"><i style="width:82%"></i></div><span class="lead-score">82</span></div>
+        <div class="lead-row"><span class="lead-rank">04</span><span class="lead-av d">MR</span><div><div class="lead-name">Marcus Reyes</div><div class="lead-co">Director RevOps · Apex Revenue</div></div><div class="lead-bar med"><i style="width:71%"></i></div><span class="lead-score med">71</span></div>
+        <div class="lead-row"><span class="lead-rank">05</span><span class="lead-av e">PK</span><div><div class="lead-name">Priya Kumar</div><div class="lead-co">CFO · PipelineCo</div></div><div class="lead-bar low"><i style="width:48%"></i></div><span class="lead-score low">48</span></div>
       </div>
-      <div class="how-card span2">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; height: 100%;">
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 02 — OUTREACH -->
+<section class="chapter reverse reveal">
+  <div class="container chapter-grid">
+    <div class="chapter-text">
+      <span class="chapter-eyebrow"><span class="dot"></span> Chapter 02 · Outreach</span>
+      <h2>Personalized email,<br/><em>at scale.</em></h2>
+      <p class="chapter-lede">Craft personalized email sequences powered by AI. Reach the right prospects with the right message at the right moment — <b>at scale</b>. KomboAI drafts every email tuned to your value prop and their world.</p>
+      <div class="chapter-cta">
+        <a href="#" class="btn-neon">See a demo</a>
+      </div>
+    </div>
+    <div class="chapter-prod">
+      <div class="prod-bar">
+        <div class="prod-dots"><span></span><span></span><span></span></div>
+        <div class="prod-url">app.komboai.com / outreach / draft</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-head">
+          <span class="prod-icon">✉</span>
+          <span class="prod-title">AI-drafted email · Sarah Chen</span>
+          <span class="prod-pill neon">94 · HOT</span>
+        </div>
+        <div class="email-row"><div class="lbl">To</div><div class="val">sarah.chen@novatech.io · VP of Sales, NovaTech Solutions</div></div>
+        <div class="email-row"><div class="lbl">Subject</div><div class="val">Hiring 12 SDRs? A 60% research shortcut</div></div>
+        <div class="email-row"><div class="lbl">Email body</div><div class="val"><pre>Hi Sarah,
+
+Saw the NovaTech Series B announcement — congrats. With 12 SDRs joining this quarter, ramp time is everything.
+
+KomboAI cuts manual lead research by 60% and lifts close rate 40%. Reps spend their first 30 days closing, not Googling.
+
+Worth a 20-minute look this week?
+
+— Alex
+KomboAI</pre></div></div>
+        <div class="email-row confidence"><div class="lbl">AI confidence</div><div class="val" style="display:flex;align-items:center;gap:10px;"><b style="font-size:18px;letter-spacing:-.02em;">92%</b><span style="font-size:12px;color:var(--mute);">Likely to get a reply within 48 hours</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 03 — ASK ANYTHING -->
+<section class="chapter reveal">
+  <div class="container chapter-grid">
+    <div class="chapter-text">
+      <span class="chapter-eyebrow"><span class="dot"></span> Chapter 03 · Ask Anything</span>
+      <h2>Your revenue analyst<br/>on <em>speed dial.</em></h2>
+      <p class="chapter-lede">Get instant answers about your <b>pipeline, forecasts, and deal status</b> — all in natural language. Like a revenue analyst on speed dial, except it never sleeps and it knows every account by heart.</p>
+      <div class="chapter-cta">
+        <a href="#" class="btn-neon">See a demo</a>
+      </div>
+    </div>
+    <div class="chapter-prod">
+      <div class="prod-bar">
+        <div class="prod-dots"><span></span><span></span><span></span></div>
+        <div class="prod-url">app.komboai.com / ask</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-head">
+          <span class="prod-icon">💬</span>
+          <span class="prod-title">Ask KomboAI</span>
+          <span class="prod-pill lav">Q4 · 2026</span>
+        </div>
+        <div class="ask-row you"><div class="ask-av you">A</div><div class="ask-bub you">Which Q4 deals are most likely to slip?</div></div>
+        <div class="ask-row"><div class="ask-av">K</div><div class="ask-bub">3 deals look at risk: <b>NovaTech ($120K)</b> — no champion call in 14 days. <b>Meridian ($85K)</b> — procurement loop with no response. <b>Apex ($60K)</b> — competitor mentioned twice last call.<div class="ask-stats"><div><div class="n">$265K</div><div class="l">at risk</div></div><div><div class="n">14d</div><div class="l">avg silence</div></div><div><div class="n">94%</div><div class="l">confidence</div></div></div></div></div>
+        <div class="ask-row you"><div class="ask-av you">A</div><div class="ask-bub you">Draft outreach to all three with the right unblocker.</div></div>
+        <div class="ask-row"><div class="ask-av">K</div><div class="ask-bub">Drafted 3 emails tuned to each deal's stall reason. Ready in your queue — <b>review &amp; send.</b></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 04 — PIPELINE -->
+<section class="chapter reverse reveal">
+  <div class="container chapter-grid">
+    <div class="chapter-text">
+      <span class="chapter-eyebrow"><span class="dot"></span> Chapter 04 · Pipeline</span>
+      <h2>Forecast revenue<br/>with <em>94% accuracy.</em></h2>
+      <p class="chapter-lede">See the health of every deal at a glance. KomboAI <b>flags stale opportunities</b> and forecasts revenue with <b>94% accuracy</b> — so your CFO trusts your number and your reps focus on what's about to close.</p>
+      <div class="chapter-cta">
+        <a href="#" class="btn-neon">See a demo</a>
+      </div>
+    </div>
+    <div class="chapter-prod">
+      <div class="prod-bar">
+        <div class="prod-dots"><span></span><span></span><span></span></div>
+        <div class="prod-url">app.komboai.com / pipeline · Q4 forecast</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-head">
+          <span class="prod-icon">📈</span>
+          <span class="prod-title">Q4 Forecast · live</span>
+          <span class="prod-pill lav">94% conf.</span>
+        </div>
+        <div class="fc-row"><span class="fc-name">Closed-Won</span><div class="fc-bar"><i style="width:78%"></i></div><span class="fc-amt">$1.42M</span></div>
+        <div class="fc-row"><span class="fc-name">Commit</span><div class="fc-bar warm"><i style="width:62%"></i></div><span class="fc-amt">$880K</span></div>
+        <div class="fc-row"><span class="fc-name">Best Case</span><div class="fc-bar warm"><i style="width:48%"></i></div><span class="fc-amt">$640K</span></div>
+        <div class="fc-row"><span class="fc-name">Pipeline</span><div class="fc-bar cool"><i style="width:88%"></i></div><span class="fc-amt">$3.10M</span></div>
+        <div class="fc-summary">
           <div>
-            <div class="how-icon-box neon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12l5 5L21 4"/></svg>
-            </div>
-            <h4>Close, log, repeat</h4>
-            <p>Stages, notes, and next steps logged automatically — your CRM stays clean without anyone touching it.</p>
+            <div style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Forecast total</div>
+            <div class="big">$2.94M</div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-            <div class="visual-tag" style="text-align: center; padding: 14px 8px;">Stage</div>
-            <div class="visual-tag" style="text-align: center; padding: 14px 8px;">Notes</div>
-            <div class="visual-tag" style="text-align: center; padding: 14px 8px;">Next step</div>
-            <div class="visual-tag neon" style="text-align: center; padding: 14px 8px;">Auto</div>
-            <div class="visual-tag neon" style="text-align: center; padding: 14px 8px;">Auto</div>
-            <div class="visual-tag neon" style="text-align: center; padding: 14px 8px;">Auto</div>
+          <div class="acc">↑ 94% accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER 05 — CRM INTELLIGENCE -->
+<section class="chapter reveal">
+  <div class="container chapter-grid">
+    <div class="chapter-text">
+      <span class="chapter-eyebrow"><span class="dot"></span> Chapter 05 · CRM Intelligence</span>
+      <h2>Your CRM,<br/><em>finally smart.</em></h2>
+      <p class="chapter-lede">Sync with HubSpot or Salesforce. KomboAI <b>enriches contacts, flags stale deals,</b> and recommends next-best actions — <b>without a single click from your reps.</b></p>
+      <div class="chapter-cta">
+        <a href="#" class="btn-neon">See a demo</a>
+        <a href="#" class="btn-ghost">See how it works →</a>
+      </div>
+    </div>
+    <div class="chapter-prod">
+      <div class="prod-bar">
+        <div class="prod-dots"><span></span><span></span><span></span></div>
+        <div class="prod-url">salesforce.com / contact · enriched by KomboAI</div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-head">
+          <span class="prod-icon">👤</span>
+          <span class="prod-title">Enriched contact</span>
+          <span class="prod-pill lav">Auto-synced</span>
+        </div>
+        <div class="crm-card">
+          <div class="crm-head">
+            <div class="crm-av">JW</div>
+            <div>
+              <div class="crm-name">James Whitfield</div>
+              <div class="crm-role">Head of Revenue · Meridian Group</div>
+            </div>
+            <div class="crm-srcs">
+              <span class="crm-src sf">Salesforce</span>
+              <span class="crm-src hub">HubSpot</span>
+              <span class="crm-src">LinkedIn</span>
+            </div>
+          </div>
+          <div class="crm-fields">
+            <div class="crm-field"><div class="l">Title</div><div class="v">Head of Revenue</div></div>
+            <div class="crm-field"><div class="l">Company size</div><div class="v">420 employees</div></div>
+            <div class="crm-field"><div class="l">Seniority (added)</div><div class="v add">VP+ · decision maker</div></div>
+            <div class="crm-field"><div class="l">ARR (added)</div><div class="v add">$68M est.</div></div>
+            <div class="crm-field"><div class="l">Last activity</div><div class="v">Replied · 2 days ago</div></div>
+            <div class="crm-field"><div class="l">Deal stage</div><div class="v">Negotiation · $85K</div></div>
+          </div>
+          <div class="crm-action">
+            <div class="ic">→</div>
+            <div><b>Next-best action:</b> Loop in their CFO — Meridian's procurement gate triggers at $75K.</div>
           </div>
         </div>
-        <div class="how-num">03</div>
       </div>
     </div>
   </div>
@@ -1031,8 +1283,8 @@
     <div class="footer-grid">
       <div class="col">
         <a href="./index.html" class="logo">
-      <img class="logo-img logo-dark" src="./images/LOGO/Logo grande blanco.PNG" alt="KomboAI">
-      <img class="logo-img logo-light" src="./images/LOGO/Logo grande lila.PNG" alt="KomboAI">
+      <img class="logo-img" src="./images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
     </a>
         <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
       </div>
