@@ -232,9 +232,20 @@
   .btn-ghost { background: transparent; color: var(--lavender); padding: 14px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid var(--lavender-soft); transition: border-color .2s, color .2s, box-shadow .2s, transform .2s, background .2s; }
   .btn-ghost:hover { border-color: var(--lavender); color: #fff; background: rgba(181,161,255,0.08); box-shadow: 0 10px 30px rgba(181,161,255,0.25); transform: translateY(-2px); }
 
-  /* Hero dashboard */
+  /* Hero dashboard — always light, regardless of page theme */
   .dashboard {
+    /* Scoped light tokens override the page theme inside this block */
+    --surface: #FFFFFF;
+    --surface-2: #F2F3F6;
+    --bg: #FAFBFC;
+    --bg-2: #FAFBFC;
+    --line: #E5E6EB;
+    --line-2: #D1D2D9;
+    --ink: #0E0E10;
+    --mute: #5A5A63;
+    --mute-2: #8A8A95;
     background: var(--surface);
+    color: var(--ink);
     border: 1px solid var(--line);
     border-radius: 16px;
     overflow: hidden;
@@ -244,6 +255,7 @@
     margin: 0 auto;
     max-width: 1100px;
   }
+  .dashboard h3, .dashboard h6 { color: var(--ink); }
   .dash-bar { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
   .dash-dots { display: flex; gap: 6px; }
   .dash-dots span { width: 11px; height: 11px; border-radius: 50%; background: var(--line-2); }
