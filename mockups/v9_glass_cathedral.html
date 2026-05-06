@@ -419,17 +419,51 @@
   .visual-arrow { color: var(--mute); }
 
   /* Chapters (replaces small how-grid) */
-  .chapter { padding: 140px 0; position: relative; }
+  .chapter { padding: 56px 0; position: relative; }
   .chapter + .chapter { padding-top: 0; }
-  .chapter::after { content: ''; display: block; position: absolute; left: 50%; bottom: -2px; width: 1px; height: 56px; background: linear-gradient(to bottom, transparent, var(--line)); transform: translateX(-50%); opacity: 0.6; }
-  .chapter:last-of-type::after { display: none; }
-  .chapter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .chapter-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    background: var(--card-bg, transparent);
+    padding: 72px;
+    border-radius: 36px;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .chapter-grid::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px);
+    background-size: 72px 72px;
+    pointer-events: none;
+    mask-image: linear-gradient(135deg, #000 0%, transparent 65%);
+    -webkit-mask-image: linear-gradient(135deg, #000 0%, transparent 65%);
+    z-index: -1;
+  }
   .chapter.reverse .chapter-text { order: 2; }
   .chapter.reverse .chapter-prod { order: 1; }
+
+  /* Tints */
+  .chapter.tint-green   { --card-bg: linear-gradient(135deg, #A8E0B8 0%, #C5E8C8 100%); --ink: #1F5132; --mute: rgba(31,81,50,0.72); --em-color: #0D6B3A; }
+  .chapter.tint-orange  { --card-bg: linear-gradient(135deg, #FFAA66 0%, #FFD0A0 100%); --ink: #7A3E12; --mute: rgba(122,62,18,0.72); --em-color: #C44E0F; }
+  .chapter.tint-purple  { --card-bg: linear-gradient(135deg, #9D8DF1 0%, #C4B9FA 100%); --ink: #1A1240; --mute: rgba(26,18,64,0.72); --em-color: #4F3BC9; }
+  .chapter.tint-blue    { --card-bg: linear-gradient(135deg, #94C8F5 0%, #BCDCF6 100%); --ink: #0E2A4A; --mute: rgba(14,42,74,0.72); --em-color: #1565C0; }
+  .chapter.tint-yellow  { --card-bg: linear-gradient(135deg, #F5DA70 0%, #FAE9B0 100%); --ink: #4A3800; --mute: rgba(74,56,0,0.72); --em-color: #B07A00; }
+
+  .chapter[class*="tint-"] .chapter-eyebrow {
+    background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.12); color: var(--ink);
+  }
+  .chapter[class*="tint-"] .chapter-eyebrow .dot { background: var(--ink); box-shadow: 0 0 10px rgba(0,0,0,0.15); }
+  .chapter[class*="tint-"] .chapter-lede b { color: var(--ink); }
+  .chapter[class*="tint-"] .btn-neon { background: var(--ink); color: #fff; }
+  .chapter[class*="tint-"] .btn-neon:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
+  .chapter[class*="tint-"] .btn-ghost { color: var(--ink); border-color: var(--ink); background: transparent; }
+  .chapter[class*="tint-"] .btn-ghost:hover { background: var(--ink); color: #fff; }
+
   .chapter-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--lavender-soft); border-radius: 999px; font-size: 12px; color: var(--lavender); margin-bottom: 22px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(181,161,255,0.05); }
   .chapter-eyebrow .dot { width: 7px; height: 7px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon); animation: dot-blink 1.4s ease-in-out infinite; }
   .chapter h2 { font-size: clamp(34px, 4.6vw, 56px); font-weight: 700; line-height: 1.04; letter-spacing: -0.03em; margin-bottom: 22px; color: var(--ink); }
-  .chapter h2 em { font-style: italic; color: var(--neon); font-weight: 700; }
+  .chapter h2 em { font-style: italic; color: var(--em-color, var(--neon)); font-weight: 700; }
   .chapter-lede { font-size: 17px; color: var(--mute); line-height: 1.55; margin-bottom: 28px; max-width: 480px; }
   .chapter-lede b { color: var(--ink); font-weight: 600; }
   .chapter-cta { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -532,10 +566,10 @@
   .crm-action .ic { font-weight: 700; color: #6B4EFF; flex-shrink: 0; }
 
   @media (max-width: 980px) {
-    .chapter-grid { grid-template-columns: 1fr; gap: 36px; }
+    .chapter-grid { grid-template-columns: 1fr; gap: 36px; padding: 44px 28px; border-radius: 24px; }
     .chapter.reverse .chapter-text { order: 1; }
     .chapter.reverse .chapter-prod { order: 2; }
-    .chapter { padding: 80px 0; }
+    .chapter { padding: 28px 0; }
   }
 
   /* Features grid v2 */
@@ -1012,7 +1046,7 @@
 </div>
 
 <!-- CHAPTER 01 — LEAD SCORING -->
-<section class="chapter reveal" id="ch01">
+<section class="chapter tint-green reveal" id="ch01">
   <div class="container chapter-grid">
     <div class="chapter-text">
       <span class="chapter-eyebrow"><span class="dot"></span> Chapter 01 · Lead Scoring</span>
@@ -1045,7 +1079,7 @@
 </section>
 
 <!-- CHAPTER 02 — OUTREACH -->
-<section class="chapter reverse reveal" id="ch02">
+<section class="chapter tint-orange reverse reveal" id="ch02">
   <div class="container chapter-grid">
     <div class="chapter-text">
       <span class="chapter-eyebrow"><span class="dot"></span> Chapter 02 · Outreach</span>
@@ -1085,7 +1119,7 @@ KomboAI</pre></div></div>
 </section>
 
 <!-- CHAPTER 03 — ASK ANYTHING -->
-<section class="chapter reveal" id="ch03">
+<section class="chapter tint-purple reveal" id="ch03">
   <div class="container chapter-grid">
     <div class="chapter-text">
       <span class="chapter-eyebrow"><span class="dot"></span> Chapter 03 · Ask Anything</span>
@@ -1116,7 +1150,7 @@ KomboAI</pre></div></div>
 </section>
 
 <!-- CHAPTER 04 — PIPELINE -->
-<section class="chapter reverse reveal" id="ch04">
+<section class="chapter tint-blue reverse reveal" id="ch04">
   <div class="container chapter-grid">
     <div class="chapter-text">
       <span class="chapter-eyebrow"><span class="dot"></span> Chapter 04 · Pipeline</span>
@@ -1154,7 +1188,7 @@ KomboAI</pre></div></div>
 </section>
 
 <!-- CHAPTER 05 — CRM INTELLIGENCE -->
-<section class="chapter reveal" id="ch05">
+<section class="chapter tint-yellow reveal" id="ch05">
   <div class="container chapter-grid">
     <div class="chapter-text">
       <span class="chapter-eyebrow"><span class="dot"></span> Chapter 05 · CRM Intelligence</span>
