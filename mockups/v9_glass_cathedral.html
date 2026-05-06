@@ -39,6 +39,10 @@
   .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--mute); }
   .nav-links a { transition: color .2s; }
   .nav-links a:hover { color: var(--ink); }
+  .nav-trigger { background: transparent; border: 0; color: var(--mute); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; padding: 6px 0; display: inline-flex; align-items: center; gap: 4px; transition: color .2s; }
+  .nav-trigger:hover, .nav-trigger[aria-expanded="true"] { color: var(--ink); }
+  .nav-chev { transition: transform .2s ease; }
+  .nav-trigger[aria-expanded="true"] .nav-chev { transform: rotate(180deg); }
   .nav-cta { background: var(--neon); color: var(--bg); padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 13px; transition: transform .2s, box-shadow .2s; }
   .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212,255,0,0.25); }
 
@@ -419,10 +423,10 @@
   <div class="container nav-row">
     <div class="logo"><div class="logo-mark"></div>komboai</div>
     <div class="nav-links">
-      <a href="#">How it works</a>
-      <a href="#">Pricing</a>
-      <a href="#">FAQ</a>
-      <a href="#">Docs</a>
+      <button type="button" class="nav-trigger" aria-expanded="false" data-menu="product">Product<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button type="button" class="nav-trigger" aria-expanded="false" data-menu="resources">Resources<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button type="button" class="nav-trigger" aria-expanded="false" data-menu="company">Company<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button type="button" class="nav-trigger" aria-expanded="false" data-menu="connect">Connect<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
     <a href="#" class="nav-cta">Get started</a>
   </div>
