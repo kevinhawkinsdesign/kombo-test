@@ -31,25 +31,6 @@
     --on-surface-04: rgba(255,255,255,0.04);
     --on-surface-02: rgba(255,255,255,0.02);
   }
-  :root[data-theme="light"] {
-    --bg: #FAFBFC;
-    --bg-2: #FFFFFF;
-    --surface: #FFFFFF;
-    --surface-2: #F2F3F6;
-    --line: #E5E6EB;
-    --line-2: #D1D2D9;
-    --ink: #0E0E10;
-    --mute: #5A5A63;
-    --mute-2: #8A8A95;
-    --on-surface-65: rgba(0,0,0,0.65);
-    --on-surface-50: rgba(0,0,0,0.50);
-    --on-surface-30: rgba(0,0,0,0.30);
-    --on-surface-08: rgba(0,0,0,0.08);
-    --on-surface-04: rgba(0,0,0,0.04);
-    --on-surface-02: rgba(0,0,0,0.02);
-  }
-  html { transition: background-color 0.3s ease; }
-  body { transition: background-color 0.3s ease, color 0.3s ease; }
   html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
   .container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
@@ -57,7 +38,6 @@
 
   /* Nav */
   nav { position: sticky; top: 0; background: rgba(14,14,16,0.85); backdrop-filter: blur(14px); z-index: 50; border-bottom: 1px solid var(--line); transition: background-color .3s, border-color .3s; }
-  :root[data-theme="light"] nav { background: rgba(255,255,255,0.88); border-bottom-color: var(--line); }
   .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
   .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
   .logo-mark { width: 26px; height: 26px; background: var(--neon); border-radius: 7px; position: relative; }
@@ -65,14 +45,6 @@
   .logo { text-decoration: none; color: var(--ink); }
   .logo-img { height: 26px; width: auto; display: block; }
   .logo-text { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
-  /* Theme toggle */
-  .nav-end { display: flex; align-items: center; gap: 12px; }
-  .theme-toggle { width: 36px; height: 36px; border-radius: 999px; background: transparent; border: 1px solid var(--line-2); color: var(--mute); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: color .2s, border-color .2s, transform .2s, background .2s; }
-  .theme-toggle:hover { color: var(--ink); border-color: var(--ink); transform: rotate(15deg); }
-  .theme-toggle .icon-sun { display: none; }
-  .theme-toggle .icon-moon { display: block; }
-  :root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
-  :root[data-theme="light"] .theme-toggle .icon-moon { display: none; }
   .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--mute); }
   .nav-links a { transition: color .2s; }
   .nav-links a:hover { color: var(--ink); }
@@ -136,45 +108,11 @@
   }
 
   /* Light mode overrides for sections with inline rgba(255,255,255,...) */
-  :root[data-theme="light"] .kombo-social-proof { background: rgba(0,0,0,0.025) !important; border-top-color: rgba(0,0,0,0.08) !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
-  :root[data-theme="light"] .kombo-social-proof div[style*="rgba(0,0,0,0.4)"],
-  :root[data-theme="light"] .kombo-social-proof [style*="color:rgba(255,255,255,0.4)"] { color: rgba(0,0,0,0.55) !important; }
-  :root[data-theme="light"] .kombo-social-proof img[style*="filter:brightness(0) invert(1)"] { filter: brightness(0) !important; opacity: 0.65 !important; }
-  :root[data-theme="light"] .kombo-video-section { background: rgba(0,0,0,0.02) !important; }
-  :root[data-theme="light"] .kombo-video-section [style*="color:rgba(255,255,255,0.92)"],
-  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.92)"],
-  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.95)"] { color: rgba(0,0,0,0.92) !important; }
-  :root[data-theme="light"] .kombo-video-section [style*="color:rgba(255,255,255,0.6)"],
-  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.65)"],
-  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.6)"],
-  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.5)"] { color: rgba(0,0,0,0.6) !important; }
-  :root[data-theme="light"] .kombo-showcase { background: rgba(0,0,0,0.02) !important; }
-  :root[data-theme="light"] .kombo-showcase [style*="background:rgba(255,255,255,0.04)"] { background: rgba(0,0,0,0.025) !important; border-color: rgba(0,0,0,0.08) !important; }
-  :root[data-theme="light"] .kombo-showcase [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(0,0,0,0.08) !important; }
-  :root[data-theme="light"] .testi-block { background: var(--surface); border-color: var(--line); }
-  :root[data-theme="light"] .testi-card { background: var(--bg-2); border-color: var(--line); }
-  :root[data-theme="light"] .testi-quote, :root[data-theme="light"] .testi-name { color: var(--ink); }
-  :root[data-theme="light"] .testi-role { color: var(--mute); }
   /* Showcase stat band */
-  :root[data-theme="light"] .kombo-showcase [style*="font-size:48px"] { color: #6B4EFF !important; }
   /* Hero CTA stats */
-  :root[data-theme="light"] .hero [style*="color:#D4FF00"] { color: #6B4EFF !important; }
-  :root[data-theme="light"] .hero [style*="color:rgba(255,255,255,0.55)"] { color: rgba(0,0,0,0.55) !important; }
   /* Logo mark inside light bg */
-  :root[data-theme="light"] .logo-mark { background: var(--lavender); }
-  :root[data-theme="light"] .logo-mark::after { border-color: #fff; }
-  :root[data-theme="light"] .nav-cta { background: var(--lavender); color: #fff; }
-  :root[data-theme="light"] .nav-cta:hover { box-shadow: 0 8px 24px rgba(181,161,255,0.4); }
-  :root[data-theme="light"] .btn-neon { background: var(--lavender); color: #fff; }
-  :root[data-theme="light"] .btn-neon:hover { box-shadow: 0 10px 30px rgba(181,161,255,0.4); }
-  :root[data-theme="light"] .testi-hl { background: var(--lavender); color: #fff; }
-  :root[data-theme="light"] .eyebrow .dot { background: var(--lavender); box-shadow: 0 0 12px var(--lavender); }
-  :root[data-theme="light"] @keyframes dot-blink { 0%, 100% { box-shadow: 0 0 12px var(--lavender); } 50% { box-shadow: 0 0 4px var(--lavender); } }
   /* Trust strip */
-  :root[data-theme="light"] .trust { background: var(--bg-2); border-color: var(--line); }
-  :root[data-theme="light"] .trust-row span { color: var(--mute); }
   /* std sections */
-  :root[data-theme="light"] section.std { color: var(--ink); }
 
   /* Scroll fade-in */
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1); will-change: opacity, transform; }
@@ -203,8 +141,7 @@
 
   /* Hero doodles */
   .hero-doodles { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-  .dood { position: absolute; opacity: 0.32; filter: drop-shadow(0 0 18px rgba(212,255,0,0.08)); animation: dood-float 7s ease-in-out infinite; }
-  :root[data-theme="light"] .dood { filter: invert(1) drop-shadow(0 0 18px rgba(181,161,255,0.18)); }
+  .dood { position: absolute; opacity: 0.6; filter: invert(1) drop-shadow(0 0 14px rgba(212,255,0,0.12)); animation: dood-float 7s ease-in-out infinite; }
   .dood.d1 { top: 70px; left: 4%; width: 132px; transform: rotate(-6deg); animation-delay: 0s; }
   .dood.d2 { top: 90px; right: 4%; width: 150px; transform: rotate(8deg); animation-delay: 0.6s; }
   .dood.d3 { top: 200px; left: 1%; width: 64px; opacity: 0.26; animation-delay: 1.1s; }
@@ -230,10 +167,8 @@
   /* Page-wide scroll doodles */
   .page-doodles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
   body { position: relative; }
-  .page-dood { position: absolute; opacity: 0; transform: translateY(20px); transition: opacity 0.9s ease-out, transform 1.1s cubic-bezier(0.22, 0.61, 0.36, 1); filter: drop-shadow(0 0 14px rgba(212,255,0,0.06)); }
-  .page-dood.is-visible { opacity: 0.28; transform: translateY(0); }
-  :root[data-theme="light"] .page-dood { filter: invert(1) drop-shadow(0 0 14px rgba(181,161,255,0.15)); }
-  :root[data-theme="light"] .page-dood.is-visible { opacity: 0.4; }
+  .page-dood { position: absolute; opacity: 0; transform: translateY(20px); transition: opacity 0.9s ease-out, transform 1.1s cubic-bezier(0.22, 0.61, 0.36, 1); filter: invert(1) drop-shadow(0 0 12px rgba(212,255,0,0.10)); }
+  .page-dood.is-visible { opacity: 0.55; transform: translateY(0); }
   @media (max-width: 1180px) { .page-doodles { display: none; } }
   @media (prefers-reduced-motion: reduce) { .page-dood { transition: none; } }
 
@@ -449,22 +384,65 @@
   .chapter.reverse .chapter-text { order: 2; }
   .chapter.reverse .chapter-prod { order: 1; }
 
-  /* Tints */
-  .chapter.tint-green   { --card-bg: linear-gradient(135deg, #A8E0B8 0%, #C5E8C8 100%); --ink: #1F5132; --mute: rgba(31,81,50,0.72); --em-color: #0D6B3A; }
-  .chapter.tint-orange  { --card-bg: linear-gradient(135deg, #FFAA66 0%, #FFD0A0 100%); --ink: #7A3E12; --mute: rgba(122,62,18,0.72); --em-color: #C44E0F; }
-  .chapter.tint-purple  { --card-bg: linear-gradient(135deg, #9D8DF1 0%, #C4B9FA 100%); --ink: #1A1240; --mute: rgba(26,18,64,0.72); --em-color: #4F3BC9; }
-  .chapter.tint-blue    { --card-bg: linear-gradient(135deg, #94C8F5 0%, #BCDCF6 100%); --ink: #0E2A4A; --mute: rgba(14,42,74,0.72); --em-color: #1565C0; }
-  .chapter.tint-yellow  { --card-bg: linear-gradient(135deg, #F5DA70 0%, #FAE9B0 100%); --ink: #4A3800; --mute: rgba(74,56,0,0.72); --em-color: #B07A00; }
-
-  .chapter[class*="tint-"] .chapter-eyebrow {
-    background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.12); color: var(--ink);
+  /* Tints — dark surface with neon-transparent glow */
+  .chapter[class*="tint-"] .chapter-grid {
+    border: 1px solid var(--tint-border, rgba(255,255,255,0.06));
+    box-shadow: 0 24px 80px -20px var(--tint-glow, rgba(0,0,0,0.4)), inset 0 1px 0 rgba(255,255,255,0.04);
   }
-  .chapter[class*="tint-"] .chapter-eyebrow .dot { background: var(--ink); box-shadow: 0 0 10px rgba(0,0,0,0.15); }
-  .chapter[class*="tint-"] .chapter-lede b { color: var(--ink); }
-  .chapter[class*="tint-"] .btn-neon { background: var(--ink); color: #fff; }
-  .chapter[class*="tint-"] .btn-neon:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
-  .chapter[class*="tint-"] .btn-ghost { color: var(--ink); border-color: var(--ink); background: transparent; }
-  .chapter[class*="tint-"] .btn-ghost:hover { background: var(--ink); color: #fff; }
+  .chapter.tint-green {
+    --card-bg:
+      radial-gradient(ellipse at 0% 0%, rgba(212,255,0,0.20) 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(212,255,0,0.06) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%),
+      #15161A;
+    --em-color: var(--neon);
+    --tint-border: rgba(212,255,0,0.18);
+    --tint-glow: rgba(212,255,0,0.20);
+  }
+  .chapter.tint-orange {
+    --card-bg:
+      radial-gradient(ellipse at 100% 0%, rgba(255,170,102,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 0% 100%, rgba(255,170,102,0.06) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%),
+      #181410;
+    --em-color: #FFB880;
+    --tint-border: rgba(255,170,102,0.18);
+    --tint-glow: rgba(255,170,102,0.22);
+  }
+  .chapter.tint-purple {
+    --card-bg:
+      radial-gradient(ellipse at 0% 0%, rgba(181,161,255,0.24) 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(181,161,255,0.07) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%),
+      #16141C;
+    --em-color: var(--lavender);
+    --tint-border: rgba(181,161,255,0.20);
+    --tint-glow: rgba(181,161,255,0.22);
+  }
+  .chapter.tint-blue {
+    --card-bg:
+      radial-gradient(ellipse at 100% 0%, rgba(96,165,250,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 0% 100%, rgba(96,165,250,0.06) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%),
+      #11141C;
+    --em-color: #7CB7FF;
+    --tint-border: rgba(96,165,250,0.18);
+    --tint-glow: rgba(96,165,250,0.22);
+  }
+  .chapter.tint-yellow {
+    --card-bg:
+      radial-gradient(ellipse at 0% 0%, rgba(245,218,112,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(245,218,112,0.06) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%),
+      #18160E;
+    --em-color: #F5DA70;
+    --tint-border: rgba(245,218,112,0.18);
+    --tint-glow: rgba(245,218,112,0.22);
+  }
+  /* Slightly lighter grid overlay for dark cards */
+  .chapter-grid::before {
+    background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px) !important;
+  }
 
   .chapter-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--lavender-soft); border-radius: 999px; font-size: 12px; color: var(--lavender); margin-bottom: 22px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(181,161,255,0.05); }
   .chapter-eyebrow .dot { width: 7px; height: 7px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon); animation: dot-blink 1.4s ease-in-out infinite; }
@@ -750,22 +728,21 @@
   [class*="card"]:hover { transform: translateY(-4px); }
 
 </style>
-<script>(function(){try{var t=localStorage.getItem('v9-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 </head>
 <body>
 
 <div class="page-doodles" aria-hidden="true">
-  <img src="./images/doodles/white/Group 10.png" class="page-dood" style="top:1100px;left:2%;width:120px;transform:translateY(20px) rotate(-8deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 14.png" class="page-dood" style="top:1480px;right:2%;width:170px;transform:translateY(20px) rotate(6deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 16.png" class="page-dood" style="top:2100px;left:3%;width:110px;transform:translateY(20px) rotate(11deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 11.png" class="page-dood" style="top:2580px;right:3%;width:130px;transform:translateY(20px) rotate(-9deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 17.png" class="page-dood" style="top:3200px;left:1.5%;width:96px;transform:translateY(20px) rotate(7deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 8.png" class="page-dood" style="top:3680px;right:2%;width:160px;transform:translateY(20px) rotate(-5deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 18.png" class="page-dood" style="top:4280px;left:2.5%;width:150px;transform:translateY(20px) rotate(8deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 15.png" class="page-dood" style="top:4860px;right:2%;width:120px;transform:translateY(20px) rotate(-10deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 20.png" class="page-dood" style="top:5460px;left:3%;width:140px;transform:translateY(20px) rotate(4deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 13.png" class="page-dood" style="top:6040px;right:3%;width:115px;transform:translateY(20px) rotate(-6deg);" alt="" loading="lazy">
-  <img src="./images/doodles/white/Group 22.png" class="page-dood" style="top:6700px;left:2%;width:135px;transform:translateY(20px) rotate(9deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-7.png" class="page-dood" style="top:1100px;left:2%;width:120px;transform:translateY(20px) rotate(-8deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-19.png" class="page-dood" style="top:1480px;right:2%;width:170px;transform:translateY(20px) rotate(6deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-31.png" class="page-dood" style="top:2100px;left:3%;width:110px;transform:translateY(20px) rotate(11deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-44.png" class="page-dood" style="top:2580px;right:3%;width:130px;transform:translateY(20px) rotate(-9deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-56.png" class="page-dood" style="top:3200px;left:1.5%;width:96px;transform:translateY(20px) rotate(7deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-68.png" class="page-dood" style="top:3680px;right:2%;width:160px;transform:translateY(20px) rotate(-5deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-79.png" class="page-dood" style="top:4280px;left:2.5%;width:150px;transform:translateY(20px) rotate(8deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-91.png" class="page-dood" style="top:4860px;right:2%;width:120px;transform:translateY(20px) rotate(-10deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-99.png" class="page-dood" style="top:5460px;left:3%;width:140px;transform:translateY(20px) rotate(4deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-71.png" class="page-dood" style="top:6040px;right:3%;width:115px;transform:translateY(20px) rotate(-6deg);" alt="" loading="lazy">
+  <img src="./images/arrows-scribbles/icon-59.png" class="page-dood" style="top:6700px;left:2%;width:135px;transform:translateY(20px) rotate(9deg);" alt="" loading="lazy">
 </div>
 
 
@@ -781,26 +758,20 @@
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="company">Company<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="connect">Connect<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
-    <div class="nav-end">
-      <button type="button" class="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark">
-        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-      <a href="#" class="nav-cta">Get started</a>
-    </div>
+    <a href="#" class="nav-cta">Get started</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="hero-doodles" aria-hidden="true">
-    <img src="./images/doodles/white/Group 7.png" class="dood d1" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 21.png" class="dood d2" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 6.png" class="dood d3" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 12.png" class="dood d4" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 19.png" class="dood d5" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 22.png" class="dood d6" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 13.png" class="dood d7" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 9.png" class="dood d8" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-3.png" class="dood d1" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-12.png" class="dood d2" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-25.png" class="dood d3" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-37.png" class="dood d4" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-48.png" class="dood d5" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-110.png" class="dood d6" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-104.png" class="dood d7" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-82.png" class="dood d8" alt="" loading="lazy">
   </div>
   <div class="container">
     <div class="eyebrow reveal"><span class="dot"></span> Stop losing pipeline to manual work AI could do for you</div>
@@ -1463,21 +1434,6 @@ KomboAI</pre></div></div>
 
 
 <script>
-// Theme toggle
-(function() {
-  const root = document.documentElement;
-  const stored = localStorage.getItem('v9-theme');
-  if (stored) root.setAttribute('data-theme', stored);
-  const toggle = document.querySelector('.theme-toggle');
-  if (toggle) {
-    toggle.addEventListener('click', () => {
-      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      if (next === 'dark') root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', next);
-      localStorage.setItem('v9-theme', next);
-    });
-  }
-})();
 
 (function() {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
