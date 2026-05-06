@@ -298,17 +298,23 @@
   .video-frame .video-play.is-playing .ico-play { display: none; }
   .video-frame .video-play.is-playing .ico-pause { display: block; margin-left: 0; }
   .video-frame .video-play.is-playing svg { width: 22px; height: 22px; }
-  /* Cover top of YouTube iframe to hide title bar */
+  /* Hide YouTube branding (title bar, watermark, more-videos panel) */
   .video-frame::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 64px;
-    background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 96px;
+    background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 55%, transparent 100%);
     z-index: 1; pointer-events: none;
   }
   .video-frame::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50px;
-    background: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%);
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
     z-index: 1; pointer-events: none;
   }
+  /* Black backdrop revealed when video ends — covers any end-screen overlay */
+  .video-frame .yt-end-mask {
+    position: absolute; inset: 0; background: #000; z-index: 1;
+    pointer-events: none; opacity: 0; transition: opacity 0.25s;
+  }
+  .video-frame.is-ended .yt-end-mask { opacity: 1; }
   .hero-cta-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 80px; position: relative; z-index: 1; }
   .btn-neon { background: var(--neon); color: var(--bg); padding: 14px 28px; border-radius: 999px; font-weight: 600; font-size: 14px; transition: transform .2s, box-shadow .2s; }
   .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,255,0,0.3); }
@@ -936,7 +942,8 @@
     <h2 style="font-size:clamp(32px,5vw,52px);font-weight:700;letter-spacing:-0.03em;line-height:1.05;margin-bottom:16px;color:rgba(255,255,255,0.95);">Watch how KomboAI works</h2>
     <p style="font-size:17px;color:rgba(255,255,255,0.6);max-width:600px;margin:0 auto 40px;line-height:1.55;">A 90-second look at how KomboAI helps your sales team prospect, launch sequences, and get coached faster.</p>
     <div class="video-frame" style="position:relative;width:100%;max-width:1000px;margin:0 auto;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 80px rgba(0,0,0,0.35);">
-      <iframe id="kombo-video" src="https://www.youtube.com/embed/G7leMLRWJx8?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0" title="KomboAI Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></iframe>
+      <iframe id="kombo-video" src="https://www.youtube-nocookie.com/embed/G7leMLRWJx8?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0&showinfo=0&cc_load_policy=0&hl=en" title="KomboAI Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" style="position:absolute;top:-2px;left:0;width:100%;height:calc(100% + 4px);pointer-events:none;"></iframe>
+      <div class="yt-end-mask"></div>
       <button type="button" class="video-play" aria-label="Play video">
         <svg class="ico-play" viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         <svg class="ico-pause" viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
@@ -1526,18 +1533,42 @@ KomboAI</pre></div></div>
   update();
 })();
 
-// Custom play/pause for the YouTube video (controls hidden)
+// Custom play/pause for the YouTube video (controls + branding hidden)
 (function() {
+  const frame = document.querySelector('.video-frame');
   const btn = document.querySelector('.video-play');
-  const iframe = document.getElementById('kombo-video');
-  if (!btn || !iframe) return;
+  if (!frame || !btn) return;
+  // Inject the YouTube IFrame API script
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+  let player = null;
   let playing = false;
-  btn.addEventListener('click', () => {
-    const cmd = playing ? 'pauseVideo' : 'playVideo';
-    iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*');
-    playing = !playing;
+  function setUI(state) {
+    playing = state;
     btn.classList.toggle('is-playing', playing);
     btn.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
+  }
+  window.onYouTubeIframeAPIReady = function() {
+    player = new YT.Player('kombo-video', {
+      events: {
+        onStateChange: function(e) {
+          // PLAYING=1, PAUSED=2, ENDED=0, BUFFERING=3
+          if (e.data === 1) { setUI(true); frame.classList.remove('is-ended'); }
+          else if (e.data === 2) { setUI(false); }
+          else if (e.data === 0) {
+            // Reset before YouTube can show its end-screen
+            frame.classList.add('is-ended');
+            setTimeout(() => { player.seekTo(0, true); player.pauseVideo(); frame.classList.remove('is-ended'); setUI(false); }, 280);
+          }
+        }
+      }
+    });
+  };
+  btn.addEventListener('click', () => {
+    if (!player || !player.playVideo) return;
+    if (playing) player.pauseVideo();
+    else player.playVideo();
   });
 })();
 
