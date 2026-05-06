@@ -24,7 +24,32 @@
     --purple: #A78BFA;
     --lavender: #B5A1FF;
     --lavender-soft: rgba(181, 161, 255, 0.35);
+    --on-surface-65: rgba(255,255,255,0.65);
+    --on-surface-50: rgba(255,255,255,0.50);
+    --on-surface-30: rgba(255,255,255,0.30);
+    --on-surface-08: rgba(255,255,255,0.08);
+    --on-surface-04: rgba(255,255,255,0.04);
+    --on-surface-02: rgba(255,255,255,0.02);
   }
+  :root[data-theme="light"] {
+    --bg: #FAFBFC;
+    --bg-2: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-2: #F2F3F6;
+    --line: #E5E6EB;
+    --line-2: #D1D2D9;
+    --ink: #0E0E10;
+    --mute: #5A5A63;
+    --mute-2: #8A8A95;
+    --on-surface-65: rgba(0,0,0,0.65);
+    --on-surface-50: rgba(0,0,0,0.50);
+    --on-surface-30: rgba(0,0,0,0.30);
+    --on-surface-08: rgba(0,0,0,0.08);
+    --on-surface-04: rgba(0,0,0,0.04);
+    --on-surface-02: rgba(0,0,0,0.02);
+  }
+  html { transition: background-color 0.3s ease; }
+  body { transition: background-color 0.3s ease, color 0.3s ease; }
   html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
   .container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
@@ -36,6 +61,19 @@
   .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
   .logo-mark { width: 26px; height: 26px; background: var(--neon); border-radius: 7px; position: relative; }
   .logo-mark::after { content: ''; position: absolute; inset: 6px; border: 2px solid var(--bg); border-radius: 3px; }
+  .logo { text-decoration: none; }
+  .logo-img { height: 28px; width: auto; display: block; }
+  .logo-light { display: none; }
+  :root[data-theme="light"] .logo-dark { display: none; }
+  :root[data-theme="light"] .logo-light { display: block; }
+  /* Theme toggle */
+  .nav-end { display: flex; align-items: center; gap: 12px; }
+  .theme-toggle { width: 36px; height: 36px; border-radius: 999px; background: transparent; border: 1px solid var(--line-2); color: var(--mute); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: color .2s, border-color .2s, transform .2s, background .2s; }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--ink); transform: rotate(15deg); }
+  .theme-toggle .icon-sun { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  :root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
+  :root[data-theme="light"] .theme-toggle .icon-moon { display: none; }
   .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--mute); }
   .nav-links a { transition: color .2s; }
   .nav-links a:hover { color: var(--ink); }
@@ -97,6 +135,47 @@
     .testi-card { min-height: 0; padding: 22px; }
     .testi-quote { font-size: 16px; }
   }
+
+  /* Light mode overrides for sections with inline rgba(255,255,255,...) */
+  :root[data-theme="light"] .kombo-social-proof { background: rgba(0,0,0,0.025) !important; border-top-color: rgba(0,0,0,0.08) !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
+  :root[data-theme="light"] .kombo-social-proof div[style*="rgba(0,0,0,0.4)"],
+  :root[data-theme="light"] .kombo-social-proof [style*="color:rgba(255,255,255,0.4)"] { color: rgba(0,0,0,0.55) !important; }
+  :root[data-theme="light"] .kombo-social-proof img[style*="filter:brightness(0) invert(1)"] { filter: brightness(0) !important; opacity: 0.65 !important; }
+  :root[data-theme="light"] .kombo-video-section { background: rgba(0,0,0,0.02) !important; }
+  :root[data-theme="light"] .kombo-video-section [style*="color:rgba(255,255,255,0.92)"],
+  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.92)"],
+  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.95)"] { color: rgba(0,0,0,0.92) !important; }
+  :root[data-theme="light"] .kombo-video-section [style*="color:rgba(255,255,255,0.6)"],
+  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.65)"],
+  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.6)"],
+  :root[data-theme="light"] .kombo-showcase [style*="color:rgba(255,255,255,0.5)"] { color: rgba(0,0,0,0.6) !important; }
+  :root[data-theme="light"] .kombo-showcase { background: rgba(0,0,0,0.02) !important; }
+  :root[data-theme="light"] .kombo-showcase [style*="background:rgba(255,255,255,0.04)"] { background: rgba(0,0,0,0.025) !important; border-color: rgba(0,0,0,0.08) !important; }
+  :root[data-theme="light"] .kombo-showcase [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(0,0,0,0.08) !important; }
+  :root[data-theme="light"] .testi-block { background: var(--surface); border-color: var(--line); }
+  :root[data-theme="light"] .testi-card { background: var(--bg-2); border-color: var(--line); }
+  :root[data-theme="light"] .testi-quote, :root[data-theme="light"] .testi-name { color: var(--ink); }
+  :root[data-theme="light"] .testi-role { color: var(--mute); }
+  /* Showcase stat band */
+  :root[data-theme="light"] .kombo-showcase [style*="font-size:48px"] { color: #6B4EFF !important; }
+  /* Hero CTA stats */
+  :root[data-theme="light"] .hero [style*="color:#D4FF00"] { color: #6B4EFF !important; }
+  :root[data-theme="light"] .hero [style*="color:rgba(255,255,255,0.55)"] { color: rgba(0,0,0,0.55) !important; }
+  /* Logo mark inside light bg */
+  :root[data-theme="light"] .logo-mark { background: var(--lavender); }
+  :root[data-theme="light"] .logo-mark::after { border-color: #fff; }
+  :root[data-theme="light"] .nav-cta { background: var(--lavender); color: #fff; }
+  :root[data-theme="light"] .nav-cta:hover { box-shadow: 0 8px 24px rgba(181,161,255,0.4); }
+  :root[data-theme="light"] .btn-neon { background: var(--lavender); color: #fff; }
+  :root[data-theme="light"] .btn-neon:hover { box-shadow: 0 10px 30px rgba(181,161,255,0.4); }
+  :root[data-theme="light"] .testi-hl { background: var(--lavender); color: #fff; }
+  :root[data-theme="light"] .eyebrow .dot { background: var(--lavender); box-shadow: 0 0 12px var(--lavender); }
+  :root[data-theme="light"] @keyframes dot-blink { 0%, 100% { box-shadow: 0 0 12px var(--lavender); } 50% { box-shadow: 0 0 4px var(--lavender); } }
+  /* Trust strip */
+  :root[data-theme="light"] .trust { background: var(--bg-2); border-color: var(--line); }
+  :root[data-theme="light"] .trust-row span { color: var(--mute); }
+  /* std sections */
+  :root[data-theme="light"] section.std { color: var(--ink); }
 
   /* Scroll fade-in */
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1); will-change: opacity, transform; }
@@ -416,19 +495,29 @@
   [class*="card"]:hover { transform: translateY(-4px); }
 
 </style>
+<script>(function(){try{var t=localStorage.getItem('v9-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 </head>
 <body>
 
 <nav>
   <div class="container nav-row">
-    <div class="logo"><div class="logo-mark"></div>komboai</div>
+    <a href="./index.html" class="logo">
+      <img class="logo-img logo-dark" src="./images/LOGO/Logo grande blanco.PNG" alt="KomboAI">
+      <img class="logo-img logo-light" src="./images/LOGO/Logo grande lila.PNG" alt="KomboAI">
+    </a>
     <div class="nav-links">
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="product">Product<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="resources">Resources<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="company">Company<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <button type="button" class="nav-trigger" aria-expanded="false" data-menu="connect">Connect<svg class="nav-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
-    <a href="#" class="nav-cta">Get started</a>
+    <div class="nav-end">
+      <button type="button" class="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a href="#" class="nav-cta">Get started</a>
+    </div>
   </div>
 </nav>
 
@@ -928,7 +1017,10 @@
   <div class="container">
     <div class="footer-grid">
       <div class="col">
-        <div class="logo"><div class="logo-mark"></div>komboai</div>
+        <a href="./index.html" class="logo">
+      <img class="logo-img logo-dark" src="./images/LOGO/Logo grande blanco.PNG" alt="KomboAI">
+      <img class="logo-img logo-light" src="./images/LOGO/Logo grande lila.PNG" alt="KomboAI">
+    </a>
         <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
       </div>
       <div class="col">
@@ -961,6 +1053,22 @@
 
 
 <script>
+// Theme toggle
+(function() {
+  const root = document.documentElement;
+  const stored = localStorage.getItem('v9-theme');
+  if (stored) root.setAttribute('data-theme', stored);
+  const toggle = document.querySelector('.theme-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      if (next === 'dark') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', next);
+      localStorage.setItem('v9-theme', next);
+    });
+  }
+})();
+
 (function() {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll('.reveal, .fade-in').forEach(el => el.classList.add('is-visible'));
