@@ -336,8 +336,10 @@
   .visual-arrow { color: var(--mute); }
 
   /* Chapters (replaces small how-grid) */
-  .chapter { padding: 80px 0; position: relative; }
+  .chapter { padding: 140px 0; position: relative; }
   .chapter + .chapter { padding-top: 0; }
+  .chapter::after { content: ''; display: block; position: absolute; left: 50%; bottom: -2px; width: 1px; height: 56px; background: linear-gradient(to bottom, transparent, var(--line)); transform: translateX(-50%); opacity: 0.6; }
+  .chapter:last-of-type::after { display: none; }
   .chapter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
   .chapter.reverse .chapter-text { order: 2; }
   .chapter.reverse .chapter-prod { order: 1; }
@@ -450,7 +452,7 @@
     .chapter-grid { grid-template-columns: 1fr; gap: 36px; }
     .chapter.reverse .chapter-text { order: 1; }
     .chapter.reverse .chapter-prod { order: 2; }
-    .chapter { padding: 56px 0; }
+    .chapter { padding: 80px 0; }
   }
 
   /* Features grid v2 */
