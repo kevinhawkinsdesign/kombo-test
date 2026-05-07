@@ -198,11 +198,15 @@
   .test-head h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:52px;line-height:1.0;letter-spacing:-.03em;max-width:720px}
   .test-head h3 .it{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--purple)}
   .test-head .badge{font-family:'Caveat',cursive;font-weight:700;font-size:22px;color:var(--purple);transform:rotate(-3deg)}
-  .test-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .test-card{background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:28px 26px 24px;box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column;gap:18px;min-height:300px;position:relative}
-  .test-card:nth-child(1){transform:rotate(-2deg)}
-  .test-card:nth-child(2){transform:rotate(1.5deg)}
-  .test-card:nth-child(3){transform:rotate(-1deg)}
+  .test-marquee{position:relative;z-index:2;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 5%,#000 95%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 5%,#000 95%,transparent 100%);padding:18px 0 6px}
+  .test-track{display:flex;gap:24px;width:max-content;animation:test-marquee 80s linear infinite}
+  .test-marquee:hover .test-track{animation-play-state:paused}
+  @keyframes test-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.test-track{animation:none}}
+  .test-card{width:340px;flex-shrink:0;background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:26px 24px 22px;box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column;gap:18px;min-height:280px;position:relative;transition:transform .25s ease}
+  .test-card:nth-child(odd){transform:rotate(-1deg)}
+  .test-card:nth-child(even){transform:rotate(1deg)}
+  .test-card:hover{transform:rotate(0) translateY(-4px)}
   .test-card .pin{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;background:var(--hot-pink);border:2px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink)}
   .test-quote{font-size:17px;line-height:1.5;color:var(--ink);font-weight:500;flex:1}
   .test-quote .marker{background:linear-gradient(180deg,transparent 60%,var(--lime) 60%);font-weight:700;padding:0 3px}
@@ -749,12 +753,13 @@ Worth a 20-min walkthrough next week?
       <h3>Loved by sales teams<br><span class="it">worldwide.</span></h3>
       <span class="badge">↗ 5 reps to 500</span>
     </div>
-    <div class="test-grid">
+    <div class="test-marquee">
+      <div class="test-track">
       <div class="test-card">
         <div class="pin"></div>
         <p class="test-quote">"Since switching to KomboAI, our reps spend <span class="marker">60% less time</span> on manual lead research. Pipeline velocity has never been higher."</p>
         <div class="test-author">
-          <div class="t-avatar">SC</div>
+          <div class="t-avatar" style="background:var(--lavender);">SC</div>
           <div><div class="t-name">Sarah Chen</div><div class="t-role">VP of Sales · NovaTech Solutions</div></div>
         </div>
       </div>
@@ -762,7 +767,7 @@ Worth a 20-min walkthrough next week?
         <div class="pin"></div>
         <p class="test-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <span class="marker peach">jumped 40%</span>."</p>
         <div class="test-author">
-          <div class="t-avatar">JW</div>
+          <div class="t-avatar" style="background:var(--peach);">JW</div>
           <div><div class="t-name">James Whitfield</div><div class="t-role">Head of Revenue · Meridian Group</div></div>
         </div>
       </div>
@@ -770,9 +775,114 @@ Worth a 20-min walkthrough next week?
         <div class="pin"></div>
         <p class="test-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <span class="marker">from 5 reps to 50</span>."</p>
         <div class="test-author">
-          <div class="t-avatar">LF</div>
+          <div class="t-avatar" style="background:var(--lime);">LF</div>
           <div><div class="t-name">Lucia Fernández</div><div class="t-role">COO · ScaleUp Partners</div></div>
         </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"Our SDR team's outreach is now hyper-personalized at scale. <span class="marker peach">Reply rates up 38%</span> — without anyone writing more emails."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MR</div>
+          <div><div class="t-name">Marcus Reyes</div><div class="t-role">Director RevOps · Apex Revenue</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"I trust the forecast for the first time in five years. <span class="marker">94% accuracy</span> means I can plan, not pray."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lavender);">PK</div>
+          <div><div class="t-name">Priya Kumar</div><div class="t-role">CFO · PipelineCo</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"Integration took 4 minutes. Onboarded 30 reps in a day. KomboAI just plugs into Salesforce <span class="marker">and does the work</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--peach);">JO</div>
+          <div><div class="t-name">James Ortega</div><div class="t-role">CTO · Nova Analytics</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"We replaced three tools with KomboAI. Our team finally focuses on <span class="marker">selling</span> instead of stitching dashboards together."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lime);">LC</div>
+          <div><div class="t-name">Lena Chow</div><div class="t-role">CEO · Digital Spark Inc.</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI coaching changed how we ramp new hires. <span class="marker peach">Time-to-quota cut by 40%</span>. Best investment we made this year."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MT</div>
+          <div><div class="t-name">Michael Tran</div><div class="t-role">Head of Growth · Stackline</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"Since switching to KomboAI, our reps spend <span class="marker">60% less time</span> on manual lead research. Pipeline velocity has never been higher."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lavender);">SC</div>
+          <div><div class="t-name">Sarah Chen</div><div class="t-role">VP of Sales · NovaTech Solutions</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <span class="marker peach">jumped 40%</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--peach);">JW</div>
+          <div><div class="t-name">James Whitfield</div><div class="t-role">Head of Revenue · Meridian Group</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <span class="marker">from 5 reps to 50</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lime);">LF</div>
+          <div><div class="t-name">Lucia Fernández</div><div class="t-role">COO · ScaleUp Partners</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"Our SDR team's outreach is now hyper-personalized at scale. <span class="marker peach">Reply rates up 38%</span> — without anyone writing more emails."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MR</div>
+          <div><div class="t-name">Marcus Reyes</div><div class="t-role">Director RevOps · Apex Revenue</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"I trust the forecast for the first time in five years. <span class="marker">94% accuracy</span> means I can plan, not pray."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lavender);">PK</div>
+          <div><div class="t-name">Priya Kumar</div><div class="t-role">CFO · PipelineCo</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"Integration took 4 minutes. Onboarded 30 reps in a day. KomboAI just plugs into Salesforce <span class="marker">and does the work</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--peach);">JO</div>
+          <div><div class="t-name">James Ortega</div><div class="t-role">CTO · Nova Analytics</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"We replaced three tools with KomboAI. Our team finally focuses on <span class="marker">selling</span> instead of stitching dashboards together."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lime);">LC</div>
+          <div><div class="t-name">Lena Chow</div><div class="t-role">CEO · Digital Spark Inc.</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI coaching changed how we ramp new hires. <span class="marker peach">Time-to-quota cut by 40%</span>. Best investment we made this year."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MT</div>
+          <div><div class="t-name">Michael Tran</div><div class="t-role">Head of Growth · Stackline</div></div>
+        </div>
+      </div>
       </div>
     </div>
   </section>

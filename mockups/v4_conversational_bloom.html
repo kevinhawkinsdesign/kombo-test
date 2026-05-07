@@ -155,7 +155,9 @@
   .logo-marquee-track{display:flex;gap:60px;align-items:center;width:max-content;animation:logo-marquee 40s linear infinite}
   .logo-marquee:hover .logo-marquee-track{animation-play-state:paused}
   .logo-marquee-track img{height:36px;width:auto;display:block;flex-shrink:0;filter:grayscale(1) opacity(.65);transition:filter .25s}
+  .logo-marquee-track img[alt="Edicom"]{filter:invert(1) grayscale(1) opacity(.65)}
   .logo-marquee-track img:hover{filter:grayscale(0) opacity(1)}
+  .logo-marquee-track img[alt="Edicom"]:hover{filter:invert(1) grayscale(0) opacity(1)}
   @keyframes logo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   @media (prefers-reduced-motion: reduce){.logo-marquee-track{animation:none}}
 
@@ -246,13 +248,20 @@
   .testi-head h3 .hl{display:inline-block;padding:0 14px;border:1.5px solid var(--ink);border-radius:99px;background:#9DC3EE}
   .testi-head .stars{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-2);text-align:right}
   .testi-head .stars .s{color:#F5C61C;font-size:18px;letter-spacing:2px;display:block}
-  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .testi-card{background:#F7F8FB;border:1.5px solid var(--ink);border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;min-height:300px}
+  .testi-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);padding:4px 0}
+  .testi-track{display:flex;gap:18px;width:max-content;animation:testi-marquee 80s linear infinite}
+  .testi-marquee:hover .testi-track{animation-play-state:paused}
+  @keyframes testi-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.testi-track{animation:none}}
+  .testi-card{width:340px;flex-shrink:0;background:#F7F8FB;border:1.5px solid var(--ink);border-radius:20px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;min-height:280px;gap:24px}
   .testi-card.green{background:linear-gradient(160deg,#E6F5EB 0%,#C5E8C8 100%)}
   .testi-card.orange{background:linear-gradient(160deg,#FFEAD5 0%,#FFD0A0 100%)}
   .testi-card.purple{background:linear-gradient(160deg,#EDE9FE 0%,#C4B9FA 100%)}
-  .testi-quote{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:19px;line-height:1.4;letter-spacing:-.015em;color:var(--ink)}
-  .testi-author{display:flex;align-items:center;gap:12px;margin-top:24px}
+  .testi-quote{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:16px;line-height:1.45;letter-spacing:-.01em;color:var(--ink);margin:0}
+  .testi-quote b{font-weight:700;background:linear-gradient(transparent 60%,#F1F4DA 60%);padding:0 3px}
+  .testi-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .testi-author{display:flex;align-items:center;gap:12px}
+  .testi-quote-ico{color:var(--ink-2);opacity:.45;flex-shrink:0}
   .testi-av{width:42px;height:42px;border-radius:50%;background:var(--kombo-indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Inter',sans-serif}
   .testi-name{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--ink)}
   .testi-role{font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-2);margin-top:1px}
@@ -334,7 +343,7 @@
     .section{grid-template-columns:1fr;padding:48px 36px;gap:32px;min-height:0}
     h2{font-size:48px}
     .testi-block{padding:36px 28px}
-    .testi-grid{grid-template-columns:repeat(2,1fr)}
+    .testi-card{width:300px}
     .integrations{grid-template-columns:1fr;padding:36px;gap:28px}
     .below{padding:36px 28px}
     .b-head{flex-direction:column;align-items:flex-start;gap:18px}
@@ -408,7 +417,7 @@
     .testi-head{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:24px}
     .testi-head h3{font-size:30px}
     .testi-head .stars{text-align:left}
-    .testi-grid{grid-template-columns:1fr;gap:14px}
+    .testi-card{width:280px;min-height:0;padding:22px;gap:18px}
     .testi-card{min-height:0;padding:22px}
     .testi-quote{font-size:16px}
 
@@ -888,34 +897,214 @@ KomboAI</pre></div>
       <h3>Loved by <span class="hl">B2B sales</span><br>teams worldwide.</h3>
       <div class="stars"><span class="s">★★★★★</span>4.9 avg · 200+ G2 reviews</div>
     </div>
-    <div class="testi-grid">
-      <div class="testi-card green">
-        <p class="testi-quote">"Since switching to KomboAI, our reps spend 60% less time on manual lead research. Pipeline velocity has never been higher."</p>
-        <div class="testi-author">
-          <div class="testi-av">SC</div>
-          <div>
-            <div class="testi-name">Sarah Chen</div>
-            <div class="testi-role">VP of Sales, NovaTech Solutions</div>
+    <div class="testi-marquee">
+      <div class="testi-track">
+        <div class="testi-card green">
+        <p class="testi-quote">"Since switching to KomboAI, our reps spend <b>60% less time</b> on manual lead research. Pipeline velocity has never been higher."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#6B4EFF;color:#fff;">SC</div>
+            <div>
+              <div class="testi-name">Sarah Chen</div>
+              <div class="testi-role">VP of Sales · NovaTech Solutions</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
           </div>
         </div>
-      </div>
-      <div class="testi-card orange">
-        <p class="testi-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing which deals to prioritize — and our close rate jumped 40%."</p>
-        <div class="testi-author">
-          <div class="testi-av" style="background:#D45C18">JW</div>
-          <div>
-            <div class="testi-name">James Whitfield</div>
-            <div class="testi-role">Head of Revenue, Meridian Group</div>
+        <div class="testi-card orange">
+        <p class="testi-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <b>jumped 40%</b>."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#D45C18;color:#fff;">JW</div>
+            <div>
+              <div class="testi-name">James Whitfield</div>
+              <div class="testi-role">Head of Revenue · Meridian Group</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
           </div>
         </div>
-      </div>
-      <div class="testi-card purple">
-        <p class="testi-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us from 5 reps to 50."</p>
-        <div class="testi-author">
-          <div class="testi-av">LF</div>
-          <div>
-            <div class="testi-name">Lucia Fernández</div>
-            <div class="testi-role">COO, ScaleUp Partners</div>
+        <div class="testi-card purple">
+        <p class="testi-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <b>from 5 reps to 50</b>."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#6B4EFF;color:#fff;">LF</div>
+            <div>
+              <div class="testi-name">Lucia Fernández</div>
+              <div class="testi-role">COO · ScaleUp Partners</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card green">
+        <p class="testi-quote">"Our SDR team's outreach is now hyper-personalized at scale. <b>Reply rates up 38%</b> — without anyone writing more emails."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#1F5132;color:#fff;">MR</div>
+            <div>
+              <div class="testi-name">Marcus Reyes</div>
+              <div class="testi-role">Director RevOps · Apex Revenue</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card orange">
+        <p class="testi-quote">"I trust the forecast for the first time in five years. <b>94% accuracy</b> means I can plan, not pray."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#D45C18;color:#fff;">PK</div>
+            <div>
+              <div class="testi-name">Priya Kumar</div>
+              <div class="testi-role">CFO · PipelineCo</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card purple">
+        <p class="testi-quote">"Integration took 4 minutes. Onboarded 30 reps in a day. KomboAI just plugs into Salesforce <b>and does the work</b>."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#6B4EFF;color:#fff;">JO</div>
+            <div>
+              <div class="testi-name">James Ortega</div>
+              <div class="testi-role">CTO · Nova Analytics</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card green">
+        <p class="testi-quote">"We replaced three tools with KomboAI. Our team finally focuses on <b>selling</b> instead of stitching dashboards together."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#1F5132;color:#fff;">LC</div>
+            <div>
+              <div class="testi-name">Lena Chow</div>
+              <div class="testi-role">CEO · Digital Spark Inc.</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card orange">
+        <p class="testi-quote">"The AI coaching changed how we ramp new hires. <b>Time-to-quota cut by 40%</b>. Best investment we made this year."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#D45C18;color:#fff;">MT</div>
+            <div>
+              <div class="testi-name">Michael Tran</div>
+              <div class="testi-role">Head of Growth · Stackline</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card green" aria-hidden="true">
+        <p class="testi-quote">"Since switching to KomboAI, our reps spend <b>60% less time</b> on manual lead research. Pipeline velocity has never been higher."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#6B4EFF;color:#fff;">SC</div>
+            <div>
+              <div class="testi-name">Sarah Chen</div>
+              <div class="testi-role">VP of Sales · NovaTech Solutions</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card orange" aria-hidden="true">
+        <p class="testi-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <b>jumped 40%</b>."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#D45C18;color:#fff;">JW</div>
+            <div>
+              <div class="testi-name">James Whitfield</div>
+              <div class="testi-role">Head of Revenue · Meridian Group</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card purple" aria-hidden="true">
+        <p class="testi-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <b>from 5 reps to 50</b>."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#6B4EFF;color:#fff;">LF</div>
+            <div>
+              <div class="testi-name">Lucia Fernández</div>
+              <div class="testi-role">COO · ScaleUp Partners</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card green" aria-hidden="true">
+        <p class="testi-quote">"Our SDR team's outreach is now hyper-personalized at scale. <b>Reply rates up 38%</b> — without anyone writing more emails."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#1F5132;color:#fff;">MR</div>
+            <div>
+              <div class="testi-name">Marcus Reyes</div>
+              <div class="testi-role">Director RevOps · Apex Revenue</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card orange" aria-hidden="true">
+        <p class="testi-quote">"I trust the forecast for the first time in five years. <b>94% accuracy</b> means I can plan, not pray."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#D45C18;color:#fff;">PK</div>
+            <div>
+              <div class="testi-name">Priya Kumar</div>
+              <div class="testi-role">CFO · PipelineCo</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card purple" aria-hidden="true">
+        <p class="testi-quote">"Integration took 4 minutes. Onboarded 30 reps in a day. KomboAI just plugs into Salesforce <b>and does the work</b>."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#6B4EFF;color:#fff;">JO</div>
+            <div>
+              <div class="testi-name">James Ortega</div>
+              <div class="testi-role">CTO · Nova Analytics</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card green" aria-hidden="true">
+        <p class="testi-quote">"We replaced three tools with KomboAI. Our team finally focuses on <b>selling</b> instead of stitching dashboards together."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#1F5132;color:#fff;">LC</div>
+            <div>
+              <div class="testi-name">Lena Chow</div>
+              <div class="testi-role">CEO · Digital Spark Inc.</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="testi-card orange" aria-hidden="true">
+        <p class="testi-quote">"The AI coaching changed how we ramp new hires. <b>Time-to-quota cut by 40%</b>. Best investment we made this year."</p>
+        <div class="testi-foot">
+          <div class="testi-author">
+            <div class="testi-av" style="background:#D45C18;color:#fff;">MT</div>
+            <div>
+              <div class="testi-name">Michael Tran</div>
+              <div class="testi-role">Head of Growth · Stackline</div>
+              </div>
+            </div>
+          <svg class="testi-quote-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>
           </div>
         </div>
       </div>
