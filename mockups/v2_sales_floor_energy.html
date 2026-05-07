@@ -107,13 +107,16 @@
   .stat .doodle{position:absolute;top:10px;right:14px;font-family:'Caveat',cursive;font-size:22px;color:var(--purple);transform:rotate(8deg)}
 
   /* === LOGOS === */
-  .logos{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:32px 36px;box-shadow:5px 5px 0 var(--ink);position:relative}
-  .logos::before{content:"★";position:absolute;left:-18px;top:-18px;width:48px;height:48px;background:var(--lime);border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink)}
+  .logos{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:30px 0;box-shadow:5px 5px 0 var(--ink);position:relative;overflow:hidden}
+  .logos::before{content:"★";position:absolute;left:-18px;top:-18px;width:48px;height:48px;background:var(--lime);border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink);z-index:2}
   .logos-label{font-family:'Caveat',cursive;font-weight:700;font-size:24px;color:var(--purple);text-align:center;margin-bottom:18px;transform:rotate(-1deg)}
-  .logos-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
-  .logo-pill{padding:10px 20px;border:2px solid var(--ink);border-radius:99px;font-size:13.5px;font-weight:700;color:var(--ink);background:var(--cream);box-shadow:2px 2px 0 var(--ink)}
-  .logo-pill:nth-child(odd){background:var(--peach)}
-  .logo-pill:nth-child(3n){background:var(--lavender)}
+  .logo-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%)}
+  .logo-marquee-track{display:flex;gap:56px;align-items:center;width:max-content;animation:logo-marquee 38s linear infinite}
+  .logo-marquee:hover .logo-marquee-track{animation-play-state:paused}
+  .logo-marquee-track img{height:38px;width:auto;display:block;flex-shrink:0;filter:grayscale(.6) opacity(.78);transition:filter .25s,transform .25s}
+  .logo-marquee-track img:hover{filter:grayscale(0) opacity(1);transform:translateY(-2px)}
+  @keyframes logo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.logo-marquee-track{animation:none}}
 
   /* === CHAPTERS === */
   .chapter{margin-top:36px;border:2.5px solid var(--ink);border-radius:32px;padding:64px 56px;display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:center;box-shadow:7px 7px 0 var(--ink);position:relative;overflow:hidden;min-height:560px}
@@ -542,12 +545,31 @@
   <!-- LOGOS -->
   <section class="logos">
     <div class="logos-label">Trusted by fast-growing B2B sales teams ↓</div>
-    <div class="logos-row">
-      <span class="logo-pill">NovaTech Solutions</span>
-      <span class="logo-pill">Meridian Group</span>
-      <span class="logo-pill">ScaleUp Partners</span>
-      <span class="logo-pill">Apex Revenue</span>
-      <span class="logo-pill">PipelineCo</span>
+    <div class="logo-marquee">
+      <div class="logo-marquee-track">
+        <img src="./images/clients/Weekendesk.png" alt="Weekendesk" loading="lazy">
+        <img src="./images/clients/defined-ai.png" alt="Defined AI" loading="lazy">
+        <img src="./images/clients/edicom.png" alt="Edicom" loading="lazy">
+        <img src="./images/clients/fever.png" alt="Fever" loading="lazy">
+        <img src="./images/clients/fonia.webp" alt="Fonia" loading="lazy">
+        <img src="./images/clients/lucca.png" alt="Lucca" loading="lazy">
+        <img src="./images/clients/mecides.png" alt="Mecides" loading="lazy">
+        <img src="./images/clients/nuclio-talent.png" alt="Nuclio Talent" loading="lazy">
+        <img src="./images/clients/shakers.png" alt="Shakers" loading="lazy">
+        <img src="./images/clients/show2be.png" alt="Show2Be" loading="lazy">
+        <img src="./images/clients/wherex.png" alt="WhereX" loading="lazy">
+        <img src="./images/clients/Weekendesk.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/defined-ai.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/edicom.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/fever.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/fonia.webp" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/lucca.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/mecides.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/nuclio-talent.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/shakers.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/show2be.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/wherex.png" alt="" aria-hidden="true" loading="lazy">
+      </div>
     </div>
   </section>
 
