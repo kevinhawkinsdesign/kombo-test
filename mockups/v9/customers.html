@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Customers — KomboAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0E0E10;--bg-2:#141417;--surface:#1A1A1E;--surface-2:#222226;
+    --line:#2A2A30;--line-2:#34343C;--neon:#D4FF00;--neon-2:#C8FF1A;
+    --ink:#F5F5F7;--mute:#8A8A95;--mute-2:#5A5A63;
+    --purple:#A78BFA;--lavender:#B5A1FF;--lavender-soft:rgba(181,161,255,0.35);
+  }
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1180px;margin:0 auto;padding:0 28px}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
+  .logo-img{height:26px;width:auto;display:block}
+  .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  .nav-links{display:flex;gap:32px;font-size:14px;color:var(--mute)}
+  .nav-links a{transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--ink)}
+  .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+
+  .btn-neon{background:var(--neon);color:var(--bg);padding:14px 28px;border-radius:999px;font-weight:600;font-size:14px;display:inline-block;transition:transform .2s,box-shadow .2s}
+  .btn-neon:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,255,0,0.3)}
+  .btn-ghost{background:transparent;color:var(--lavender);padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender-soft);display:inline-block;transition:all .2s}
+  .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
+
+  .hero{padding:90px 0 50px;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-220px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.08) 0%,transparent 60%);animation:hero-glow-pulse 6s ease-in-out infinite}
+  @keyframes hero-glow-pulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--lavender-soft);border-radius:999px;font-size:13px;color:var(--lavender);margin-bottom:32px;background:rgba(181,161,255,0.05);position:relative;z-index:1}
+  .eyebrow .dot{width:8px;height:8px;background:var(--neon);border-radius:50%;box-shadow:0 0 12px var(--neon);animation:dot-blink 1.4s ease-in-out infinite}
+  @keyframes dot-blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .hero h1{font-size:clamp(46px,7vw,84px);font-weight:700;line-height:1.02;letter-spacing:-0.035em;margin-bottom:22px;position:relative;z-index:1}
+  .hero h1 .highlight{background:var(--neon);color:#0E0E10;padding:0 14px 4px;border-radius:6px;display:inline-block;transform:rotate(-1deg)}
+  .hero p{font-size:18px;color:var(--mute);max-width:600px;margin:0 auto 36px;line-height:1.55;position:relative;z-index:1}
+
+  /* Logo marquee */
+  .logo-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 8%,#000 92%,transparent 100%);margin-top:32px}
+  .logo-marquee-track{display:flex;gap:64px;align-items:center;width:max-content;animation:logo-marquee 40s linear infinite}
+  .logo-marquee:hover .logo-marquee-track{animation-play-state:paused}
+  .logo-marquee-track img{height:38px;width:auto;display:block;flex-shrink:0;opacity:.62;filter:brightness(0) invert(1);transition:opacity .25s}
+  .logo-marquee-track img:hover{opacity:1}
+  @keyframes logo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){.logo-marquee-track{animation:none}}
+
+  /* Stat strip */
+  .stat-strip{padding:64px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:linear-gradient(180deg,transparent 0%,rgba(212,255,0,0.02) 50%,transparent 100%)}
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:48px;text-align:center}
+  .stat-row .v{font-size:48px;font-weight:800;letter-spacing:-0.035em;color:var(--neon);line-height:1;margin-bottom:6px}
+  .stat-row .l{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:0.12em;font-weight:500}
+
+  section.std{padding:100px 0;position:relative}
+  .section-h{text-align:center;margin-bottom:60px}
+  .section-h .eb{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--neon);margin-bottom:14px}
+  .section-h h2{font-size:clamp(34px,5vw,56px);font-weight:700;line-height:1.05;letter-spacing:-0.03em;margin-bottom:16px}
+  .section-h h2 .accent{color:var(--neon)}
+  .section-h p{color:var(--mute);font-size:17px;max-width:620px;margin:0 auto;line-height:1.55}
+
+  /* Featured case */
+  .case-feat{display:grid;grid-template-columns:1fr 1.3fr;gap:0;background:radial-gradient(ellipse at 0% 0%,rgba(212,255,0,0.18) 0%,transparent 55%),linear-gradient(135deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.01) 100%),#15161A;border:1px solid rgba(212,255,0,0.18);border-radius:32px;overflow:hidden;position:relative}
+  .case-feat::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;mask-image:linear-gradient(135deg,#000 0%,transparent 65%);-webkit-mask-image:linear-gradient(135deg,#000 0%,transparent 65%)}
+  .case-feat .left{padding:60px 56px;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;gap:36px}
+  .case-feat .head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);text-transform:uppercase;letter-spacing:0.16em;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .case-feat .head .tag .dot{width:8px;height:8px;background:var(--neon);border-radius:50%;box-shadow:0 0 10px var(--neon)}
+  .case-feat .head h3{font-size:clamp(32px,4vw,42px);font-weight:700;letter-spacing:-0.025em;line-height:1.1;margin-bottom:16px}
+  .case-feat .head h3 .em{color:var(--neon)}
+  .case-feat .head p{font-size:15px;color:var(--mute);line-height:1.6;max-width:420px}
+  .case-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding-top:28px;border-top:1px dashed var(--line)}
+  .case-meta .it .l{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px}
+  .case-meta .it .v{font-size:15px;color:var(--ink);font-weight:600}
+  .case-feat .right{padding:60px 56px;display:flex;flex-direction:column;gap:24px;position:relative;z-index:1;background:linear-gradient(135deg,rgba(212,255,0,0.04) 0%,transparent 100%);border-left:1px solid rgba(212,255,0,0.12)}
+  .case-feat .right .quote{font-size:22px;font-weight:600;line-height:1.4;letter-spacing:-0.012em;color:var(--ink);margin-bottom:8px}
+  .case-feat .right .quote .marker{background:var(--neon);color:var(--bg);padding:0 8px 1px;border-radius:6px}
+  .case-feat .right .who{display:flex;align-items:center;gap:12px}
+  .case-feat .right .who .av{width:46px;height:46px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .case-feat .right .who .nm{font-size:14px;font-weight:700}
+  .case-feat .right .who .role{font-size:12px;color:var(--mute);margin-top:2px}
+  .case-feat .right .results{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px}
+  .case-feat .right .results .r{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .case-feat .right .results .r .v{font-size:32px;font-weight:800;letter-spacing:-0.03em;color:var(--neon);line-height:1;margin-bottom:6px}
+  .case-feat .right .results .r .l{font-size:11px;color:var(--mute);line-height:1.4}
+
+  /* Case grid */
+  .case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:48px}
+  .case-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:36px 32px;display:flex;flex-direction:column;gap:20px;transition:transform .25s,border-color .25s,box-shadow .25s;position:relative;overflow:hidden}
+  .case-card::before{content:'';position:absolute;top:0;right:0;width:160px;height:160px;background:radial-gradient(circle at top right,var(--glow,rgba(212,255,0,0.10)) 0%,transparent 70%);pointer-events:none;opacity:.6;transition:opacity .3s}
+  .case-card:hover{transform:translateY(-4px);border-color:var(--line-2);box-shadow:0 20px 50px -10px rgba(0,0,0,0.5)}
+  .case-card:hover::before{opacity:1}
+  .case-card.green{--glow:rgba(212,255,0,0.12)}
+  .case-card.purple{--glow:rgba(181,161,255,0.14)}
+  .case-card.blue{--glow:rgba(96,165,250,0.14)}
+  .case-card .ind{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.12em;display:flex;justify-content:space-between;align-items:center}
+  .case-card .ind .ar{color:var(--mute);transition:color .2s,transform .25s}
+  .case-card:hover .ind .ar{color:var(--neon);transform:translateX(4px)}
+  .case-card .biz{font-size:18px;font-weight:700;letter-spacing:-0.01em}
+  .case-card .biz img{height:24px;width:auto;display:block;filter:brightness(0) invert(1);opacity:.85;margin-bottom:6px}
+  .case-card .quote{font-size:16px;font-weight:500;line-height:1.5;color:var(--ink);flex:1}
+  .case-card .quote b{color:var(--neon);font-weight:700}
+  .case-card.purple .quote b{color:var(--lavender)}
+  .case-card.blue .quote b{color:#60A5FA}
+  .case-card .by{display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+  .case-card .by .av{width:36px;height:36px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+  .case-card.purple .by .av{background:var(--lavender)}
+  .case-card.blue .by .av{background:#60A5FA;color:#fff}
+  .case-card .by .nm{font-size:13px;font-weight:700}
+  .case-card .by .role{font-size:11px;color:var(--mute);margin-top:1px}
+  .case-card .res{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:14px;border-top:1px solid var(--line)}
+  .case-card .res .r .v{font-size:22px;font-weight:800;letter-spacing:-0.025em;color:var(--neon);line-height:1}
+  .case-card.purple .res .r .v{color:var(--lavender)}
+  .case-card.blue .res .r .v{color:#60A5FA}
+  .case-card .res .r .l{font-size:11px;color:var(--mute);line-height:1.3;margin-top:4px}
+
+  /* Industry filter */
+  .ind-filter{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:28px}
+  .ind-pill{background:transparent;border:1px solid var(--line);color:var(--mute);font-family:inherit;font-size:13px;padding:8px 14px;border-radius:999px;cursor:pointer;transition:all .15s}
+  .ind-pill:hover{color:var(--ink);border-color:var(--line-2)}
+  .ind-pill.active{background:var(--neon);color:var(--bg);border-color:var(--neon);font-weight:600}
+
+  /* Quote band */
+  .quote-band{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:64px 56px;text-align:center;position:relative;overflow:hidden;margin-top:32px}
+  .quote-band::before{content:'';position:absolute;top:-100px;right:-80px;width:340px;height:340px;background:radial-gradient(circle,rgba(181,161,255,0.10) 0%,transparent 60%)}
+  .quote-band p{font-size:clamp(22px,2.6vw,30px);font-weight:600;letter-spacing:-0.015em;line-height:1.3;color:var(--ink);max-width:780px;margin:0 auto 24px;position:relative;z-index:1}
+  .quote-band p .marker{background:var(--neon);color:var(--bg);padding:0 8px 1px;border-radius:6px}
+  .quote-band .who{font-size:13px;color:var(--mute);position:relative;z-index:1}
+  .quote-band .who b{color:var(--ink)}
+
+  /* Closing CTA */
+  .closing-cta{padding:80px 0 64px}
+  .cc-card{position:relative;overflow:hidden;border-radius:36px;padding:72px 64px;background:radial-gradient(ellipse at 0% 0%,rgba(181,161,255,0.30) 0%,transparent 55%),radial-gradient(ellipse at 100% 100%,rgba(212,255,0,0.18) 0%,transparent 55%),linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.01) 100%),#14131C;border:1px solid rgba(181,161,255,0.22);box-shadow:0 32px 100px -20px rgba(181,161,255,0.30),inset 0 1px 0 rgba(255,255,255,0.05)}
+  .cc-orb{position:absolute;bottom:-180px;right:-120px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(212,255,0,0.55) 0%,rgba(212,255,0,0.12) 60%,transparent 100%);pointer-events:none;filter:blur(2px)}
+  .cc-content{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end;position:relative}
+  .cc-headline h2{font-size:clamp(36px,5vw,58px);font-weight:800;line-height:1;letter-spacing:-0.035em;color:var(--ink)}
+  .cc-pill{display:inline-block;background:var(--neon);color:#0E0E10;padding:0 18px 4px;border-radius:16px;transform:rotate(-2deg)}
+  .cc-side p{font-size:16px;line-height:1.55;color:rgba(255,255,255,0.75);margin-bottom:22px;max-width:360px}
+  .cc-cta{display:flex;gap:12px;flex-wrap:wrap}
+
+  /* Footer */
+  footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:60px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
+  .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
+  .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s}
+  .footer-grid .col a:hover{color:var(--ink)}
+  .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(0.22,0.61,0.36,1),transform .8s cubic-bezier(0.22,0.61,0.36,1)}
+  .reveal.is-visible{opacity:1;transform:translateY(0)}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+
+  @media (max-width:1024px){
+    .case-feat{grid-template-columns:1fr}
+    .case-feat .right{border-left:0;border-top:1px solid rgba(212,255,0,0.12)}
+    .case-grid{grid-template-columns:1fr 1fr}
+    .stat-row{grid-template-columns:1fr 1fr;gap:32px}
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  }
+  @media (max-width:880px){
+    .nav-links{display:none}
+    .hero{padding:60px 0 30px}
+    .case-grid{grid-template-columns:1fr}
+    .case-feat .left,.case-feat .right{padding:40px 28px}
+    .stat-row{grid-template-columns:1fr 1fr}
+    .stat-row .v{font-size:36px}
+    .cc-card{padding:48px 32px;border-radius:24px}
+    .cc-content{grid-template-columns:1fr;gap:24px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-row">
+    <a href="../v9_glass_cathedral.html" class="logo">
+      <img class="logo-img" src="../images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
+    </a>
+    <div class="nav-links">
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+      <a href="./customers.html" class="active">Customers</a>
+      <a href="./changelog.html">Changelog</a>
+    </div>
+    <a href="#" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow reveal"><span class="dot"></span> 1,200+ revenue teams · 47 countries · $14B in pipeline</div>
+    <h1 class="reveal">Built for teams<br/>that <span class="highlight">close.</span></h1>
+    <p class="reveal">From 3-person founder teams to 400-rep enterprise SDR floors. Here's what they ship after 90 days on KomboAI.</p>
+    <div class="logo-marquee reveal">
+      <div class="logo-marquee-track">
+        <img src="../images/clients/Weekendesk.png" alt="Weekendesk">
+        <img src="../images/clients/defined-ai.png" alt="Defined AI">
+        <img src="../images/clients/edicom.png" alt="Edicom">
+        <img src="../images/clients/fever.png" alt="Fever">
+        <img src="../images/clients/fonia.webp" alt="Fonia">
+        <img src="../images/clients/lucca.png" alt="Lucca">
+        <img src="../images/clients/mecides.png" alt="Mecides">
+        <img src="../images/clients/nuclio-talent.png" alt="Nuclio Talent">
+        <img src="../images/clients/shakers.png" alt="Shakers">
+        <img src="../images/clients/show2be.png" alt="Show2Be">
+        <img src="../images/clients/wherex.png" alt="WhereX">
+        <img src="../images/clients/Weekendesk.png" alt="" aria-hidden="true">
+        <img src="../images/clients/defined-ai.png" alt="" aria-hidden="true">
+        <img src="../images/clients/edicom.png" alt="" aria-hidden="true">
+        <img src="../images/clients/fever.png" alt="" aria-hidden="true">
+        <img src="../images/clients/fonia.webp" alt="" aria-hidden="true">
+        <img src="../images/clients/lucca.png" alt="" aria-hidden="true">
+        <img src="../images/clients/mecides.png" alt="" aria-hidden="true">
+        <img src="../images/clients/nuclio-talent.png" alt="" aria-hidden="true">
+        <img src="../images/clients/shakers.png" alt="" aria-hidden="true">
+        <img src="../images/clients/show2be.png" alt="" aria-hidden="true">
+        <img src="../images/clients/wherex.png" alt="" aria-hidden="true">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stat-strip">
+  <div class="container">
+    <div class="stat-row">
+      <div class="reveal"><div class="v">3.4×</div><div class="l">Pipeline coverage</div></div>
+      <div class="reveal"><div class="v">62%</div><div class="l">More selling time</div></div>
+      <div class="reveal"><div class="v">28%</div><div class="l">Higher win rate</div></div>
+      <div class="reveal"><div class="v">4 min</div><div class="l">To first value</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="std">
+  <div class="container">
+    <div class="section-h reveal">
+      <div class="eb">// Featured story</div>
+      <h2>Weekendesk: from <span class="accent">17% to 56%</span><br/>quota attainment in 90 days.</h2>
+      <p>How a 60-rep travel-tech team replaced three SaaS tools and shipped a clean second-half quarter.</p>
+    </div>
+    <div class="case-feat reveal">
+      <div class="left">
+        <div class="head">
+          <div class="tag"><span class="dot"></span>Case study · Travel · 60 reps</div>
+          <h3>"We were drowning in CRM hygiene. <span class="em">KomboAI rebuilt our morning</span>."</h3>
+          <p>Weekendesk's revenue org runs across 6 European markets. Reps spent 40% of every shift on enrichment, list-building, and pipeline updates. After deploying KomboAI Growth, their AEs were back to 80% on selling time inside the first sprint.</p>
+        </div>
+        <div class="case-meta">
+          <div class="it"><div class="l">// Industry</div><div class="v">B2B Travel</div></div>
+          <div class="it"><div class="l">// Region</div><div class="v">FR / DE / ES / IT</div></div>
+          <div class="it"><div class="l">// CRM</div><div class="v">HubSpot Enterprise</div></div>
+          <div class="it"><div class="l">// Headcount</div><div class="v">60 reps · 8 managers</div></div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="quote">"In one quarter, we went from <span class="marker">17% to 56% quota</span>. Not because we hired. Because the agents handled the work nobody wanted to do."</div>
+        <div class="who">
+          <div class="av">MK</div>
+          <div><div class="nm">Maria Klein</div><div class="role">VP of Sales · Weekendesk</div></div>
+        </div>
+        <div class="results">
+          <div class="r"><div class="v">3.3×</div><div class="l">Quota attainment in 90 days</div></div>
+          <div class="r"><div class="v">62%</div><div class="l">Reduction in CRM admin</div></div>
+          <div class="r"><div class="v">€2.1M</div><div class="l">New ARR sourced by agents</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="std" style="padding-top:0">
+  <div class="container">
+    <div class="section-h reveal">
+      <div class="eb">// More stories</div>
+      <h2>Customer wins,<br/>by <span class="accent">industry.</span></h2>
+      <p>Pick your shape. We've got teams shipping in every B2B vertical.</p>
+    </div>
+    <div class="ind-filter reveal">
+      <button class="ind-pill active">All</button>
+      <button class="ind-pill">SaaS</button>
+      <button class="ind-pill">Fintech</button>
+      <button class="ind-pill">Healthcare</button>
+      <button class="ind-pill">Logistics</button>
+      <button class="ind-pill">Marketplaces</button>
+      <button class="ind-pill">Manufacturing</button>
+      <button class="ind-pill">Staffing</button>
+    </div>
+
+    <div class="case-grid">
+      <article class="case-card green reveal">
+        <div class="ind">SaaS · 28 reps<span class="ar">→</span></div>
+        <div class="biz">Fonia</div>
+        <p class="quote">"We launched a 3-week outbound sprint and <b>booked 84 demos with zero new headcount</b>. KomboAI did the prospecting we'd have hired two SDRs for."</p>
+        <div class="by"><div class="av">LR</div><div><div class="nm">Lucia Romano</div><div class="role">CRO · Fonia</div></div></div>
+        <div class="res"><div class="r"><div class="v">84</div><div class="l">Demos in 3 weeks</div></div><div class="r"><div class="v">2.6×</div><div class="l">Pipeline / rep</div></div></div>
+      </article>
+      <article class="case-card purple reveal">
+        <div class="ind">Logistics · 95 reps<span class="ar">→</span></div>
+        <div class="biz">WhereX</div>
+        <p class="quote">"We've got 95 AEs across LATAM. KomboAI's coaching agent <b>cut ramp time from 5 months to 9 weeks</b>. The forecast accuracy was the surprise."</p>
+        <div class="by"><div class="av">EM</div><div><div class="nm">Esteban Marín</div><div class="role">VP Sales · WhereX</div></div></div>
+        <div class="res"><div class="r"><div class="v">9 wks</div><div class="l">New rep ramp</div></div><div class="r"><div class="v">±6 days</div><div class="l">Forecast accuracy</div></div></div>
+      </article>
+      <article class="case-card blue reveal">
+        <div class="ind">Fintech · 14 reps<span class="ar">→</span></div>
+        <div class="biz">Mecides</div>
+        <p class="quote">"Compliance-first sales is brutal. KomboAI's audit logs let us <b>open SOC 2 + GDPR doors with no extra hires</b>. CFO loves the bill."</p>
+        <div class="by"><div class="av">JA</div><div><div class="nm">Jules Aamari</div><div class="role">Head of GTM · Mecides</div></div></div>
+        <div class="res"><div class="r"><div class="v">100%</div><div class="l">Audit-ready logs</div></div><div class="r"><div class="v">−$140k</div><div class="l">SaaS consolidated</div></div></div>
+      </article>
+      <article class="case-card green reveal">
+        <div class="ind">Marketplaces · 42 reps<span class="ar">→</span></div>
+        <div class="biz">Shakers</div>
+        <p class="quote">"Two-sided marketplace = double the sales motion. The sequencing agent <b>runs both supply &amp; demand outreach</b> from one playbook."</p>
+        <div class="by"><div class="av">PB</div><div><div class="nm">Paul Beaumont</div><div class="role">Co-founder · Shakers</div></div></div>
+        <div class="res"><div class="r"><div class="v">2.1×</div><div class="l">Reply rate</div></div><div class="r"><div class="v">38%</div><div class="l">Faster matching</div></div></div>
+      </article>
+      <article class="case-card purple reveal">
+        <div class="ind">Healthcare · 22 reps<span class="ar">→</span></div>
+        <div class="biz">Novara Health</div>
+        <p class="quote">"Long sales cycles, big committees. The coaching agent <b>flagged stalled deals 5 days before our weekly review</b> — saved 2 deals worth €380k."</p>
+        <div class="by"><div class="av">SR</div><div><div class="nm">Sara Russo</div><div class="role">Head of Sales · Novara</div></div></div>
+        <div class="res"><div class="r"><div class="v">5 days</div><div class="l">Earlier risk alerts</div></div><div class="r"><div class="v">€380k</div><div class="l">Deals saved Q1</div></div></div>
+      </article>
+      <article class="case-card blue reveal">
+        <div class="ind">Staffing · 18 reps<span class="ar">→</span></div>
+        <div class="biz">Nuclio Talent</div>
+        <p class="quote">"Recruiting is sales. KomboAI <b>found us 6× more qualified candidate-companies</b> in the first month — and our reps stopped touching spreadsheets."</p>
+        <div class="by"><div class="av">CV</div><div><div class="nm">Carla Vidal</div><div class="role">CEO · Nuclio Talent</div></div></div>
+        <div class="res"><div class="r"><div class="v">6×</div><div class="l">Qualified targets</div></div><div class="r"><div class="v">0</div><div class="l">Spreadsheets opened</div></div></div>
+      </article>
+      <article class="case-card green reveal">
+        <div class="ind">Edu / SaaS · 7 reps<span class="ar">→</span></div>
+        <div class="biz">Defined AI</div>
+        <p class="quote">"We're a 7-person GTM team. <b>KomboAI is our SDR floor</b>. We hit our Series-A milestones 2 quarters early."</p>
+        <div class="by"><div class="av">RM</div><div><div class="nm">Rohit Menon</div><div class="role">CRO · Defined AI</div></div></div>
+        <div class="res"><div class="r"><div class="v">7→7</div><div class="l">Headcount unchanged</div></div><div class="r"><div class="v">2 Q</div><div class="l">Ahead on plan</div></div></div>
+      </article>
+      <article class="case-card purple reveal">
+        <div class="ind">Mfg · 220 reps<span class="ar">→</span></div>
+        <div class="biz">Edicom</div>
+        <p class="quote">"220 reps, 11 languages, custom CRM. The Enterprise rollout <b>took 6 weeks instead of 6 months</b>. SOC 2 + EU residency closed it for procurement."</p>
+        <div class="by"><div class="av">FA</div><div><div class="nm">Fernando Aldana</div><div class="role">CIO · Edicom</div></div></div>
+        <div class="res"><div class="r"><div class="v">6 wks</div><div class="l">From signed to live</div></div><div class="r"><div class="v">11</div><div class="l">Languages handled</div></div></div>
+      </article>
+      <article class="case-card blue reveal">
+        <div class="ind">B2C events · 110 reps<span class="ar">→</span></div>
+        <div class="biz">Fever</div>
+        <p class="quote">"B2B partnership sales for a B2C giant. KomboAI <b>doubled our partner-pipeline</b> in 8 weeks while we were still onboarding new AMs."</p>
+        <div class="by"><div class="av">DG</div><div><div class="nm">Dana García</div><div class="role">VP Partnerships · Fever</div></div></div>
+        <div class="res"><div class="r"><div class="v">2×</div><div class="l">Partner pipeline</div></div><div class="r"><div class="v">8 wks</div><div class="l">To impact</div></div></div>
+      </article>
+    </div>
+
+    <div class="quote-band reveal">
+      <p>"KomboAI is the most <span class="marker">honest software contract</span> we've signed. The agents either work, or you don't pay. They worked."</p>
+      <div class="who"><b>Tom Berger</b> · CFO, Lucca · 130 reps</div>
+    </div>
+  </div>
+</section>
+
+<section class="closing-cta">
+  <div class="container">
+    <div class="cc-card reveal">
+      <div class="cc-orb"></div>
+      <div class="cc-content">
+        <div class="cc-headline">
+          <h2>Be the next<br/><span class="cc-pill">case study.</span></h2>
+        </div>
+        <div class="cc-side">
+          <p>Pick a 30-min slot. We'll show you what your team's first 90 days on KomboAI would look like — modeled on yours.</p>
+          <div class="cc-cta">
+            <a href="./contact.html" class="btn-neon">Book a demo</a>
+            <a href="./pricing.html" class="btn-ghost">See pricing →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="col">
+        <a href="../v9_glass_cathedral.html" class="logo">
+          <img class="logo-img" src="../images/LOGO/logo-icon-lila.png" alt="KomboAI">
+          <span class="logo-text">KomboAI</span>
+        </a>
+        <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+      </div>
+      <div class="col">
+        <h6>Product</h6>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./changelog.html">Changelog</a>
+      </div>
+      <div class="col">
+        <h6>Company</h6>
+        <a href="./about.html">About</a>
+        <a href="./customers.html">Customers</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+      <div class="col">
+        <h6>Legal &amp; Trust</h6>
+        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+        <a href="#">Privacy policy</a>
+        <a href="#">Terms of service</a>
+        <a href="#">DPA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 KomboAI. All rights reserved.</div>
+      <div>Less clicks. More selling.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.querySelectorAll('.reveal').forEach(el=>el.classList.add('is-visible'));return;
+    }
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}})},{threshold:0.08,rootMargin:'0px 0px -6% 0px'});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  })();
+  // Filter visual only
+  (function(){
+    const ps=document.querySelectorAll('.ind-pill');
+    ps.forEach(p=>p.addEventListener('click',()=>{ps.forEach(x=>x.classList.remove('active'));p.classList.add('active');}));
+  })();
+</script>
+
+</body>
+</html>

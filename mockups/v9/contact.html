@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Contact — KomboAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0E0E10;--bg-2:#141417;--surface:#1A1A1E;--surface-2:#222226;
+    --line:#2A2A30;--line-2:#34343C;--neon:#D4FF00;--neon-2:#C8FF1A;
+    --ink:#F5F5F7;--mute:#8A8A95;--mute-2:#5A5A63;
+    --purple:#A78BFA;--lavender:#B5A1FF;--lavender-soft:rgba(181,161,255,0.35);
+  }
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1180px;margin:0 auto;padding:0 28px}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
+  .logo-img{height:26px;width:auto;display:block}
+  .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  .nav-links{display:flex;gap:32px;font-size:14px;color:var(--mute)}
+  .nav-links a{transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--ink)}
+  .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+
+  .btn-neon{background:var(--neon);color:var(--bg);padding:14px 28px;border-radius:999px;font-weight:600;font-size:14px;display:inline-block;transition:transform .2s,box-shadow .2s;border:0;cursor:pointer;font-family:inherit}
+  .btn-neon:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,255,0,0.3)}
+  .btn-ghost{background:transparent;color:var(--lavender);padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender-soft);display:inline-block;transition:all .2s}
+  .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
+
+  .hero{padding:80px 0 30px;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-220px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.08) 0%,transparent 60%);animation:hero-glow-pulse 6s ease-in-out infinite}
+  @keyframes hero-glow-pulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--lavender-soft);border-radius:999px;font-size:13px;color:var(--lavender);margin-bottom:32px;background:rgba(181,161,255,0.05);position:relative;z-index:1}
+  .eyebrow .dot{width:8px;height:8px;background:var(--neon);border-radius:50%;box-shadow:0 0 12px var(--neon);animation:dot-blink 1.4s ease-in-out infinite}
+  @keyframes dot-blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .hero h1{font-size:clamp(46px,7vw,84px);font-weight:700;line-height:1.02;letter-spacing:-0.035em;margin-bottom:22px;position:relative;z-index:1}
+  .hero h1 .highlight{background:var(--neon);color:#0E0E10;padding:0 14px 4px;border-radius:6px;display:inline-block;transform:rotate(-1deg)}
+  .hero p{font-size:18px;color:var(--mute);max-width:580px;margin:0 auto 12px;line-height:1.55;position:relative;z-index:1}
+
+  /* Quick links row */
+  .quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:60px 0 20px}
+  .quick-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:10px;transition:border-color .25s,transform .25s,box-shadow .25s;cursor:pointer}
+  .quick-card:hover{border-color:var(--neon);transform:translateY(-3px);box-shadow:0 16px 40px -10px rgba(212,255,0,0.15)}
+  .quick-card .ic{width:38px;height:38px;border-radius:10px;background:var(--bg-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--neon);margin-bottom:6px}
+  .quick-card h5{font-size:17px;font-weight:700;letter-spacing:-0.012em}
+  .quick-card p{font-size:13.5px;color:var(--mute);line-height:1.55}
+  .quick-card .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);letter-spacing:0.06em;margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;align-items:center}
+  .quick-card .meta .ar{color:var(--mute);transition:color .2s,transform .2s}
+  .quick-card:hover .meta .ar{color:var(--neon);transform:translateX(3px)}
+
+  /* Form + sidebar */
+  section.std{padding:60px 0;position:relative}
+  .contact-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start}
+  .form-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:48px;position:relative;overflow:hidden}
+  .form-card::before{content:'';position:absolute;top:-100px;right:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(212,255,0,0.10) 0%,transparent 60%);pointer-events:none}
+  .form-card .head{position:relative;z-index:1;margin-bottom:32px}
+  .form-card .head .eb{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);text-transform:uppercase;letter-spacing:0.16em;margin-bottom:14px}
+  .form-card .head h2{font-size:30px;font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin-bottom:8px}
+  .form-card .head p{font-size:14.5px;color:var(--mute);line-height:1.55;max-width:480px}
+
+  /* Reason chips */
+  .reason-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px;position:relative;z-index:1}
+  .reason{background:transparent;border:1px solid var(--line);color:var(--mute);font-family:inherit;font-size:13px;padding:8px 14px;border-radius:999px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+  .reason:hover{color:var(--ink);border-color:var(--line-2)}
+  .reason.active{background:var(--neon);color:var(--bg);border-color:var(--neon);font-weight:600}
+  .reason .em{opacity:.6}
+  .reason.active .em{opacity:.85}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative;z-index:1}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:span 2}
+  .field label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.12em}
+  .field input,.field select,.field textarea{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:13px 14px;transition:border-color .2s,box-shadow .2s;outline:0;width:100%}
+  .field textarea{min-height:130px;resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(212,255,0,0.15)}
+  .field input::placeholder,.field textarea::placeholder{color:var(--mute-2)}
+  .field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A8A95' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:42px}
+  .field .hint{font-size:11px;color:var(--mute-2);font-family:'JetBrains Mono',monospace;letter-spacing:0.04em}
+
+  .form-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;flex-wrap:wrap;gap:16px;position:relative;z-index:1}
+  .form-foot .legal{font-size:12px;color:var(--mute-2);line-height:1.5;max-width:380px}
+  .form-foot .legal a{color:var(--lavender);text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .2s}
+  .form-foot .legal a:hover{text-decoration-color:var(--lavender)}
+
+  /* Sidebar */
+  .side-stack{display:flex;flex-direction:column;gap:14px}
+  .side-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px}
+  .side-card h6{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);text-transform:uppercase;letter-spacing:0.16em;margin-bottom:16px}
+  .side-card .who{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .side-card .who .av{width:42px;height:42px;border-radius:50%;background:var(--lavender);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .side-card .who.green .av{background:var(--neon)}
+  .side-card .who.blue .av{background:#60A5FA;color:#fff}
+  .side-card .who .nm{font-size:14px;font-weight:700}
+  .side-card .who .role{font-size:11.5px;color:var(--mute);margin-top:2px}
+  .side-card p{font-size:13.5px;color:var(--mute);line-height:1.55;margin-bottom:14px}
+  .side-card p b{color:var(--ink)}
+
+  .office{display:flex;flex-direction:column;gap:10px}
+  .office .row{display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:flex-start;font-size:13px;line-height:1.5}
+  .office .row .l{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);letter-spacing:0.08em;padding-top:2px}
+  .office .row .v{color:var(--ink)}
+  .office .row .v .sub{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+
+  .response-band{background:linear-gradient(160deg,rgba(212,255,0,0.10) 0%,rgba(212,255,0,0.02) 100%);border:1px solid rgba(212,255,0,0.22);border-radius:18px;padding:24px}
+  .response-band .hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .response-band .hdr .dot{width:8px;height:8px;background:var(--neon);border-radius:50%;box-shadow:0 0 10px var(--neon);animation:dot-blink 1.4s ease-in-out infinite}
+  .response-band .hdr .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);text-transform:uppercase;letter-spacing:0.16em}
+  .response-band p{font-size:14px;color:var(--ink);line-height:1.55;margin-bottom:0}
+  .response-band p b{color:var(--neon);font-weight:700}
+
+  /* FAQ */
+  .faq{margin-top:80px}
+  .faq-h{text-align:center;margin-bottom:36px}
+  .faq-h h3{font-size:30px;font-weight:700;letter-spacing:-0.025em;line-height:1.1;margin-bottom:8px}
+  .faq-h p{font-size:14.5px;color:var(--mute)}
+  .faq-list{max-width:780px;margin:0 auto}
+  details.q{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;transition:border-color .2s}
+  details.q[open]{border-color:rgba(212,255,0,0.25)}
+  details.q summary{padding:18px 22px;cursor:pointer;font-size:15px;font-weight:500;display:flex;justify-content:space-between;align-items:center;list-style:none}
+  details.q summary::-webkit-details-marker{display:none}
+  details.q summary::after{content:'+';font-size:22px;color:var(--mute);font-weight:300}
+  details.q[open] summary::after{content:'−';color:var(--neon)}
+  details.q .body{padding:0 22px 18px;font-size:13.5px;color:var(--mute);line-height:1.65}
+  details.q .body a{color:var(--neon)}
+
+  /* Footer */
+  footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:60px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
+  .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
+  .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s}
+  .footer-grid .col a:hover{color:var(--ink)}
+  .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(0.22,0.61,0.36,1),transform .8s cubic-bezier(0.22,0.61,0.36,1)}
+  .reveal.is-visible{opacity:1;transform:translateY(0)}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+
+  @media (max-width:1024px){
+    .quick-row{grid-template-columns:1fr}
+    .contact-grid{grid-template-columns:1fr;gap:18px}
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  }
+  @media (max-width:880px){
+    .nav-links{display:none}
+    .form-card{padding:32px 24px;border-radius:18px}
+    .form-grid{grid-template-columns:1fr}
+    .field.full{grid-column:span 1}
+    .form-foot{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-row">
+    <a href="../v9_glass_cathedral.html" class="logo">
+      <img class="logo-img" src="../images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
+    </a>
+    <div class="nav-links">
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+      <a href="./customers.html">Customers</a>
+      <a href="./changelog.html">Changelog</a>
+    </div>
+    <a href="#" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow reveal"><span class="dot"></span> Avg. reply time: 47 minutes · By a human · Mon–Fri</div>
+    <h1 class="reveal">Talk to a <span class="highlight">human.</span></h1>
+    <p class="reveal">Pick the lane that matches your question — sales, support, security, or partnerships. We promise the right person, fast.</p>
+  </div>
+</section>
+
+<section class="std" style="padding-top:0">
+  <div class="container">
+    <div class="quick-row">
+      <a class="quick-card reveal" href="#form">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg></div>
+        <h5>Book a demo</h5>
+        <p>30 minutes on your real CRM, no slides. We'll show what the four agents would do tomorrow morning.</p>
+        <div class="meta"><span>// avg slot tomorrow</span><span class="ar">→</span></div>
+      </a>
+      <a class="quick-card reveal" href="mailto:support@getkombo.ai">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <h5>Get product help</h5>
+        <p>Already a customer? Our CS team replies in under 2 hours on Growth and Enterprise plans, 24/5.</p>
+        <div class="meta"><span>// support@getkombo.ai</span><span class="ar">→</span></div>
+      </a>
+      <a class="quick-card reveal" href="https://security.getkombo.ai/" target="_blank" rel="noopener">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h5>Visit the Trust Center</h5>
+        <p>Live SOC 2 Type II + ISO 27001 reports, sub-processor list, pen-test summaries, and incident history.</p>
+        <div class="meta"><span>// security.getkombo.ai</span><span class="ar">↗</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="std" style="padding-top:24px" id="form">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="form-card reveal">
+        <div class="head">
+          <div class="eb">// Send us a message</div>
+          <h2>What brings you in?</h2>
+          <p>We route every message based on the topic you pick. Pricing &amp; demos go to GTM, security goes to Emi, partnerships go to Anna. Always a real person.</p>
+        </div>
+        <div class="reason-row" role="tablist">
+          <button type="button" class="reason active"><span class="em">→</span> Demo</button>
+          <button type="button" class="reason"><span class="em">→</span> Pricing</button>
+          <button type="button" class="reason"><span class="em">→</span> Existing customer support</button>
+          <button type="button" class="reason"><span class="em">→</span> Security &amp; compliance</button>
+          <button type="button" class="reason"><span class="em">→</span> Partnerships</button>
+          <button type="button" class="reason"><span class="em">→</span> Press</button>
+        </div>
+        <form class="form-grid" onsubmit="event.preventDefault();this.querySelector('button[type=submit]').textContent='Sent — we\\'ll reply soon ✓';">
+          <div class="field">
+            <label for="fn">First name</label>
+            <input id="fn" type="text" placeholder="Sarah" required>
+          </div>
+          <div class="field">
+            <label for="ln">Last name</label>
+            <input id="ln" type="text" placeholder="Klein" required>
+          </div>
+          <div class="field">
+            <label for="em">Work email</label>
+            <input id="em" type="email" placeholder="sarah@yourcompany.io" required>
+            <span class="hint">// We don't accept personal addresses</span>
+          </div>
+          <div class="field">
+            <label for="co">Company</label>
+            <input id="co" type="text" placeholder="Demand Kitchen Inc." required>
+          </div>
+          <div class="field">
+            <label for="role">Your role</label>
+            <select id="role">
+              <option>Founder / CEO</option>
+              <option>VP / Head of Sales</option>
+              <option>Sales Operations</option>
+              <option>Account Executive</option>
+              <option>Sales Development Rep</option>
+              <option>Revenue / RevOps</option>
+              <option>IT / Security</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="size">Sales team size</label>
+            <select id="size">
+              <option>Just me / founder-led</option>
+              <option>2–9 reps</option>
+              <option>10–24 reps</option>
+              <option>25–75 reps</option>
+              <option>76–250 reps</option>
+              <option>250+ reps</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="msg">What's on your mind?</label>
+            <textarea id="msg" placeholder="A 2–3 line summary of what you'd like to talk about. The more specific, the better the routing — and the faster the reply."></textarea>
+          </div>
+          <div class="field full">
+            <label>How did you hear about us?</label>
+            <select>
+              <option>From a colleague / referral</option>
+              <option>Search (Google, Bing)</option>
+              <option>Podcast or newsletter</option>
+              <option>LinkedIn / X</option>
+              <option>An event we hosted or sponsored</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field full">
+            <div class="form-foot">
+              <div class="legal">By submitting, you agree to our <a href="#">Privacy Policy</a> and <a href="#">Terms</a>. We'll never share your details. <a href="#">Unsubscribe</a> any time.</div>
+              <button type="submit" class="btn-neon">Send message →</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="side-stack">
+        <div class="response-band reveal">
+          <div class="hdr"><span class="dot"></span><span class="lbl">// Live · we're online</span></div>
+          <p><b>Avg reply: 47 min</b> · 09:00–19:00 CET, Mon–Fri. Out-of-hours messages get a confirmation, then a real reply by 09:30 CET next business day.</p>
+        </div>
+
+        <div class="side-card reveal">
+          <h6>// Sales — speak to a human</h6>
+          <div class="who green">
+            <div class="av">DK</div>
+            <div><div class="nm">Dieter Krug</div><div class="role">VP Sales &amp; CS · Berlin</div></div>
+          </div>
+          <p>For demos, pricing, MSA, and procurement questions. Dieter handles deals from 5–500 reps and books a 30-min demo on real customer data.</p>
+          <a href="mailto:sales@getkombo.ai" class="btn-ghost" style="padding:10px 18px;font-size:13px">sales@getkombo.ai →</a>
+        </div>
+
+        <div class="side-card reveal">
+          <h6>// Security &amp; compliance</h6>
+          <div class="who blue">
+            <div class="av">EH</div>
+            <div><div class="nm">Emi Hayashi</div><div class="role">Head of Security · Madrid</div></div>
+          </div>
+          <p>For audits, vendor reviews, custom DPAs, pen-test reports, and any "can-you-fill-this-questionnaire?" questions. SOC 2 Type II + ISO 27001 live on the <a href="https://security.getkombo.ai/" target="_blank" rel="noopener" style="color:var(--neon)">Trust Center</a>.</p>
+          <a href="https://security.getkombo.ai/" target="_blank" rel="noopener" class="btn-ghost" style="padding:10px 18px;font-size:13px">security.getkombo.ai ↗</a>
+        </div>
+
+        <div class="side-card reveal">
+          <h6>// Where we are</h6>
+          <div class="office">
+            <div class="row"><div class="l">// HQ</div><div class="v">Madrid <span class="sub">Calle Velázquez 24, 28001 · 4th floor</span></div></div>
+            <div class="row"><div class="l">// EU hub</div><div class="v">Berlin <span class="sub">Torstraße 138, 10119 · Coworking @ Mindspace</span></div></div>
+            <div class="row"><div class="l">// Remote</div><div class="v">10 time-zones <span class="sub">São Paulo · Lisbon · Toronto · Bangalore · Cape Town · …</span></div></div>
+            <div class="row"><div class="l">// Press</div><div class="v"><a href="mailto:press@getkombo.ai" style="color:var(--lavender)">press@getkombo.ai</a></div></div>
+            <div class="row"><div class="l">// Careers</div><div class="v"><a href="./about.html#open-roles" style="color:var(--lavender)">12 open roles →</a></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="faq">
+      <div class="faq-h">
+        <h3>Before you send a message…</h3>
+        <p>The 5 questions we get most. Sometimes a 30-second answer beats a callback.</p>
+      </div>
+      <div class="faq-list">
+        <details class="q" open>
+          <summary>How long does the demo really take?</summary>
+          <div class="body">30 minutes on the dot. We connect to a sandbox version of your CRM at the start, ask 4 questions about your motion, then show the four agents running on real data. No slides. No "next steps deck."</div>
+        </details>
+        <details class="q">
+          <summary>Can I get a custom DPA / MSA / SOC 2 report before our call?</summary>
+          <div class="body">Yes. Everything is on our <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center</a> — no NDA, no form. SOC 2 Type II, ISO 27001, sub-processor list, and a sample DPA are all linked from there. For custom MSAs, ping <a href="mailto:legal@getkombo.ai">legal@getkombo.ai</a>.</div>
+        </details>
+        <details class="q">
+          <summary>I'm an existing customer with an urgent issue. How do I escalate?</summary>
+          <div class="body">Open the in-product widget (bottom-right) and use the "Urgent" tag — that pages our on-call. Or email <a href="mailto:urgent@getkombo.ai">urgent@getkombo.ai</a> with your workspace ID. Enterprise customers have a dedicated CSM Slack channel.</div>
+        </details>
+        <details class="q">
+          <summary>What's your refund / try-then-buy policy?</summary>
+          <div class="body">14-day free trial on Starter and Growth, no card required. After paid onboarding, if the agents don't perform inside 30 days, we refund and unplug — no claw-backs, no NDA-walls. We've done it 9 times in 3 years.</div>
+        </details>
+        <details class="q">
+          <summary>I'm just researching for a future project — should I still reach out?</summary>
+          <div class="body">Yes. We don't run drip nurture sequences (we'd be embarrassed). We'll send 1 email confirming receipt, then check in 90 days from now if you'd like. That's it. No "just bumping this thread" emails. Promise.</div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="col">
+        <a href="../v9_glass_cathedral.html" class="logo">
+          <img class="logo-img" src="../images/LOGO/logo-icon-lila.png" alt="KomboAI">
+          <span class="logo-text">KomboAI</span>
+        </a>
+        <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+      </div>
+      <div class="col">
+        <h6>Product</h6>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./changelog.html">Changelog</a>
+      </div>
+      <div class="col">
+        <h6>Company</h6>
+        <a href="./about.html">About</a>
+        <a href="./customers.html">Customers</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+      <div class="col">
+        <h6>Legal &amp; Trust</h6>
+        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+        <a href="#">Privacy policy</a>
+        <a href="#">Terms of service</a>
+        <a href="#">DPA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 KomboAI. All rights reserved.</div>
+      <div>Less clicks. More selling.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.querySelectorAll('.reveal').forEach(el=>el.classList.add('is-visible'));return;
+    }
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}})},{threshold:0.08,rootMargin:'0px 0px -6% 0px'});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  })();
+  // Reason chips visual
+  (function(){
+    const rs=document.querySelectorAll('.reason');
+    rs.forEach(r=>r.addEventListener('click',()=>{rs.forEach(x=>x.classList.remove('active'));r.classList.add('active');}));
+  })();
+</script>
+
+</body>
+</html>
