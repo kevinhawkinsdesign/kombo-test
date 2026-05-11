@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Study: ACME Corp - Kombo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon: #D4FF00;
+      --bg-dark: #0a0e17;
+      --bg-panel: #1a1f2e;
+      --text-primary: #f0f1f3;
+      --text-secondary: #b4b8c0;
+      --border: #2a2f3e;
+      --accent: #4d5dff;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 2rem;
+      --space-xl: 3rem;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); line-height: 1.6; }
+
+    header {
+      position: sticky; top: 0; z-index: 100; background: rgba(10, 14, 23, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); padding: var(--space-md) var(--space-lg);
+    }
+
+    .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-weight: 700; font-size: 1.25rem; color: var(--text-primary); text-decoration: none; }
+    nav { display: flex; gap: var(--space-lg); align-items: center; }
+    nav a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: color 0.3s; }
+    nav a:hover, nav a.active { color: var(--neon); }
+
+    .nav-cta {
+      background: var(--neon); color: var(--bg-dark); padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-weight: 600; transition: all 0.3s;
+    }
+
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); }
+
+    .hero-section {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border: 1px solid var(--border); border-radius: 16px; padding: var(--space-xl);
+      margin-bottom: var(--space-xl);
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); align-items: center;
+    }
+
+    .hero-left h1 {
+      font-size: 2.5rem; margin-bottom: var(--space-md);
+      background: linear-gradient(135deg, var(--neon), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .hero-left p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-md); }
+
+    .company-meta {
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg);
+    }
+
+    .meta-item { background: var(--bg-panel); padding: var(--space-md); border-radius: 8px; border: 1px solid var(--border); }
+    .meta-label { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm); }
+    .meta-value { font-size: 1.25rem; font-weight: 700; color: var(--neon); }
+
+    .hero-right {
+      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: var(--space-lg);
+    }
+
+    .quote {
+      font-size: 1.3rem; font-style: italic; margin-bottom: var(--space-lg);
+      color: var(--text-primary); line-height: 1.7;
+    }
+
+    .quote-author { display: flex; align-items: center; gap: var(--space-md); }
+    .author-avatar {
+      width: 48px; height: 48px; border-radius: 50%; background: var(--neon); color: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem;
+    }
+
+    .author-info { }
+    .author-name { font-weight: 700; color: var(--text-primary); }
+    .author-role { font-size: 0.9rem; color: var(--text-secondary); }
+
+    h2 {
+      font-size: 2rem; margin: var(--space-xl) 0 var(--space-lg); color: var(--text-primary);
+    }
+
+    .section-content {
+      display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-xl); margin-bottom: var(--space-xl);
+      align-items: start;
+    }
+
+    .section-text p { margin-bottom: var(--space-md); color: var(--text-secondary); line-height: 1.8; }
+
+    .highlight-box {
+      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: var(--space-lg);
+    }
+
+    .highlight-box h4 { color: var(--neon); margin-bottom: var(--space-sm); font-size: 1rem; }
+    .highlight-box p { font-size: 0.95rem; }
+
+    .results-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); margin: var(--space-xl) 0;
+    }
+
+    .result-card {
+      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: var(--space-lg);
+      text-align: center;
+    }
+
+    .result-number {
+      font-size: 2.5rem; font-weight: 800; color: var(--neon); line-height: 1;
+      margin-bottom: var(--space-sm);
+    }
+
+    .result-label { font-size: 0.9rem; color: var(--text-secondary); }
+    .result-description { font-size: 0.85rem; color: var(--text-secondary); margin-top: var(--space-sm); }
+
+    .timeline {
+      position: relative; padding: var(--space-lg) 0 var(--space-lg) var(--space-xl);
+      border-left: 2px solid var(--border);
+    }
+
+    .timeline-item {
+      position: relative; margin-bottom: var(--space-lg); padding-left: var(--space-lg);
+    }
+
+    .timeline-item::before {
+      content: ''; position: absolute; left: -12px; top: 6px;
+      width: 20px; height: 20px; border-radius: 50%; background: var(--neon); border: 3px solid var(--bg-dark);
+    }
+
+    .timeline-date { font-weight: 700; color: var(--neon); font-size: 0.9rem; }
+    .timeline-title { font-weight: 600; margin: var(--space-sm) 0; }
+    .timeline-description { color: var(--text-secondary); font-size: 0.95rem; }
+
+    .cta-section {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border: 1px solid var(--border); border-radius: 16px; padding: var(--space-xl); text-align: center; margin-top: var(--space-xl);
+    }
+
+    .btn-neon {
+      display: inline-block; background: var(--neon); color: var(--bg-dark); padding: 1rem 2rem; border-radius: 8px;
+      font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.3s;
+    }
+
+    .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2); }
+
+    footer {
+      max-width: 1200px; margin: var(--space-xl) auto 0; padding: var(--space-xl) var(--space-lg);
+      border-top: 1px solid var(--border); display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-xl);
+    }
+
+    footer h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: var(--space-md); color: var(--text-primary); }
+    footer a { display: block; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; margin-bottom: var(--space-sm); transition: color 0.3s; }
+    footer a:hover { color: var(--neon); }
+
+    @media (max-width: 880px) {
+      nav { gap: var(--space-md); } nav a { display: none; }
+      .nav-cta { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      h1 { font-size: 2rem; }
+      .hero-section { grid-template-columns: 1fr; }
+      .section-content { grid-template-columns: 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      footer { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="./index.html" class="logo">Kombo</a>
+      <nav>
+        <a href="./features.html">Features</a>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./blog.html">Blog</a>
+        <a href="./podcast.html">Podcast</a>
+        <a href="./about.html">About</a>
+        <a href="./contact.html" class="nav-cta">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero-section">
+      <div class="hero-left">
+        <h1>ACME Corp hits 47% revenue growth with AI-powered sales</h1>
+        <p>How a mid-market SaaS company transformed their sales process and exceeded annual targets in 9 months.</p>
+        <div class="company-meta">
+          <div class="meta-item">
+            <div class="meta-label">Company Size</div>
+            <div class="meta-value">250+ employees</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Industry</div>
+            <div class="meta-value">SaaS</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">ARR Impact</div>
+            <div class="meta-value">+$8.2M</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Timeframe</div>
+            <div class="meta-value">9 months</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="quote">"Kombo transformed how our team works. We're closing bigger deals, faster, with better data. It's like we added 50 reps to our team without the headcount."</div>
+        <div class="quote-author">
+          <div class="author-avatar">SK</div>
+          <div class="author-info">
+            <div class="author-name">Sarah Kim</div>
+            <div class="author-role">VP of Sales, ACME Corp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>The Challenge</h2>
+    <div class="section-content">
+      <div class="section-text">
+        <p>ACME Corp was growing fast but hitting a wall. Their sales team was spending 60% of their time on admin work—data entry, CRM updates, searching for account information, and piecing together insights from scattered sources. Reps were using 7 different tools and manually logging deals into Salesforce.</p>
+        <p>Lead quality was declining because the team didn't have time to properly research and prioritize prospects. The sales forecast was unreliable, and the VP couldn't confidently tell the board when deals would close. They were losing deals to better-organized competitors who had visibility into their pipelines.</p>
+        <p>ACME needed a way to reduce busywork, improve lead quality, and get reliable visibility into their pipeline—without hiring more people.</p>
+      </div>
+      <div class="highlight-box">
+        <h4>The Problem</h4>
+        <p><strong>60%</strong> of rep time on admin</p>
+        <p style="margin-top: 0.75rem;"><strong>7 tools</strong> in the tech stack</p>
+        <p style="margin-top: 0.75rem;"><strong>Unknown</strong> actual pipeline health</p>
+        <p style="margin-top: 0.75rem;"><strong>Declining</strong> lead quality</p>
+      </div>
+    </div>
+
+    <h2>The Solution</h2>
+    <div class="section-content">
+      <div class="section-text">
+        <p>ACME implemented Kombo across their 40-person sales team. They started with three core features:</p>
+        <ul style="margin: var(--space-lg) 0; color: var(--text-secondary); padding-left: var(--space-lg);">
+          <li><strong>AI-powered lead ranking:</strong> Kombo analyzed their historical closed deals and identified the signals that predicted wins. Reps now prioritize leads automatically scored by buying intent.</li>
+          <li><strong>Automated deal tracking:</strong> All calls, emails, and activity auto-logged to Salesforce. No manual updates. Reps just work.</li>
+          <li><strong>Revenue forecasting:</strong> Kombo predicted close dates and probabilities with 92% accuracy, giving the VP reliable visibility.</li>
+        </ul>
+        <p>The implementation took 2 weeks. By week 3, the team was fully operational.</p>
+      </div>
+      <div class="highlight-box">
+        <h4>Implementation</h4>
+        <p><strong>2 weeks</strong> to full rollout</p>
+        <p style="margin-top: 0.75rem;"><strong>40 reps</strong> trained and active</p>
+        <p style="margin-top: 0.75rem;"><strong>Zero</strong> custom dev required</p>
+        <p style="margin-top: 0.75rem;"><strong>100%</strong> Salesforce integration</p>
+      </div>
+    </div>
+
+    <h2>Results</h2>
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-number">47%</div>
+        <div class="result-label">Revenue Growth</div>
+        <div class="result-description">Year-over-year increase in closed won deals</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">15h</div>
+        <div class="result-label">Time Saved/Rep/Month</div>
+        <div class="result-description">Reduction in manual data entry and CRM admin</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">$8.2M</div>
+        <div class="result-label">Additional ARR</div>
+        <div class="result-description">From improved productivity and deal sizing</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">31%</div>
+        <div class="result-label">Forecast Accuracy</div>
+        <div class="result-description">Improvement over previous manual forecasting</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">24%</div>
+        <div class="result-label">Sales Cycle Reduction</div>
+        <div class="result-description">Faster deal progression due to better prioritization</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">92%</div>
+        <div class="result-label">Forecast Accuracy</div>
+        <div class="result-description">Reliable close date and probability predictions</div>
+      </div>
+    </div>
+
+    <h2>Implementation Timeline</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">Week 1: Discovery & Setup</div>
+        <div class="timeline-title">Integration & Training</div>
+        <div class="timeline-description">Connected Salesforce, imported historical deal data, ran AI model on 3 years of closed deals. Trained leadership team on platform.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Week 2: Pilot</div>
+        <div class="timeline-title">First Reps On Platform</div>
+        <div class="timeline-description">5-person pilot group started using Kombo for lead scoring and deal tracking. Immediate feedback gathered and refinements made.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Week 3: Full Rollout</div>
+        <div class="timeline-title">All 40 Reps Active</div>
+        <div class="timeline-description">Entire sales org goes live. Daily standups to monitor adoption. Kombo success team embedded with ACME during launch week.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Month 2-3: Optimization</div>
+        <div class="timeline-title">Fine-Tuning & Quick Wins</div>
+        <div class="timeline-description">Lead scoring model refined based on early results. New integration with Slack for alerts. Usage hits 95% of team.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Month 4-6: Scaling</div>
+        <div class="timeline-title">Advanced Features Activated</div>
+        <div class="timeline-description">Revenue forecasting deployed. Custom alerts set up for at-risk deals. Multi-threading tracking enabled. Pipeline velocity improves 24%.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Month 9: Results</div>
+        <div class="timeline-title">Revenue Targets Exceeded</div>
+        <div class="timeline-description">Year-end close exceeds annual target by $2.1M. CFO cites Kombo as top driver of upside. Plans to expand to SMB product line next year.</div>
+      </div>
+    </div>
+
+    <h2>The Impact on the Team</h2>
+    <div class="section-content">
+      <div class="section-text">
+        <p><strong>For sales reps:</strong> They're spending 60% less time on admin work and 60% more time selling. Their pipeline is automatically researched and prioritized. They close deals 24% faster because they're focused on hot prospects instead of busywork.</p>
+        <p><strong>For sales leadership:</strong> They have 92%-accurate visibility into pipeline health and close dates. They can confidently forecast revenue. They understand which reps are on track and where to coach. They've confidently hired 3 new reps this year, knowing the platform will help them ramp fast.</p>
+        <p><strong>For the company:</strong> The 47% revenue growth speaks for itself. But beyond that, the team is happier. Turnover decreased 18%. Sales culture shifted from blame-focused forecasting to data-driven planning.</p>
+      </div>
+      <div class="highlight-box">
+        <h4>Key Metrics</h4>
+        <p><strong>Adoption:</strong> 95%+ of reps actively using Kombo daily</p>
+        <p style="margin-top: 0.75rem;"><strong>Team satisfaction:</strong> 4.8/5 on internal survey</p>
+        <p style="margin-top: 0.75rem;"><strong>Rep retention:</strong> 18% improvement year-over-year</p>
+        <p style="margin-top: 0.75rem;"><strong>ROI:</strong> 34x return in first year</p>
+      </div>
+    </div>
+
+    <h2>Key Takeaways</h2>
+    <div class="section-content">
+      <div class="section-text">
+        <p><strong>1. AI scales your best practices.</strong> Kombo learned what ACME's best reps do and applied it to the whole team. Lead scoring was based on their DNA, not generic rules.</p>
+        <p><strong>2. Fixing the process is faster than hiring.</strong> ACME got 50 new "reps" worth of productivity without the hiring, onboarding, and management overhead. The platform paid for itself in 3 months.</p>
+        <p><strong>3. Data quality drives growth.</strong> When your CRM is automatically updated with real activity, you stop guessing about pipeline health. Better data led to better decisions and 47% growth.</p>
+        <p><strong>4. Reps will adopt tools that help them sell.</strong> ACME didn't have to force adoption. Reps use Kombo because it makes them look smart and closes more deals. Engagement stayed above 95%.</p>
+      </div>
+      <div class="highlight-box">
+        <h4>By the Numbers</h4>
+        <p><strong>ROI: 34x</strong> in Year 1</p>
+        <p style="margin-top: 0.75rem;"><strong>Time saved:</strong> 600 hours/month</p>
+        <p style="margin-top: 0.75rem;"><strong>Revenue added:</strong> $8.2M ARR</p>
+        <p style="margin-top: 0.75rem;"><strong>Payback period:</strong> 3 months</p>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2 style="margin: 0 0 var(--space-md) 0;">Ready to unlock your team's potential?</h2>
+      <p style="margin: 0 0 var(--space-lg) 0;">See how Kombo can help your team close bigger deals, faster.</p>
+      <a href="./contact.html" class="btn-neon">Schedule a demo</a>
+    </div>
+  </main>
+
+  <footer>
+    <div>
+      <h3>Product</h3>
+      <a href="./features.html">Features</a>
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+    </div>
+    <div>
+      <h3>Company</h3>
+      <a href="./about.html">About</a>
+      <a href="./customers.html">Customers</a>
+      <a href="./contact.html">Contact</a>
+    </div>
+    <div>
+      <h3>Learn</h3>
+      <a href="./blog.html">Blog</a>
+      <a href="./podcast.html">Podcast</a>
+      <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+    </div>
+  </footer>
+</body>
+</html>
