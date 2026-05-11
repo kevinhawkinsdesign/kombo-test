@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revenue Forecasting - Kombo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon: #D4FF00;
+      --bg-dark: #0a0e17;
+      --bg-panel: #1a1f2e;
+      --text-primary: #f0f1f3;
+      --text-secondary: #b4b8c0;
+      --border: #2a2f3e;
+      --accent: #4d5dff;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 2rem;
+      --space-xl: 3rem;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); line-height: 1.6; }
+
+    header {
+      position: sticky; top: 0; z-index: 100; background: rgba(10, 14, 23, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); padding: var(--space-md) var(--space-lg);
+    }
+
+    .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-weight: 700; font-size: 1.25rem; color: var(--text-primary); text-decoration: none; }
+    nav { display: flex; gap: var(--space-lg); align-items: center; }
+    nav a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: color 0.3s; }
+    nav a:hover { color: var(--neon); }
+
+    .nav-cta {
+      background: var(--neon); color: var(--bg-dark); padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-weight: 600; transition: all 0.3s;
+    }
+
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); }
+
+    h1 {
+      font-size: 3rem; margin-bottom: var(--space-md);
+      background: linear-gradient(135deg, var(--neon), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .intro { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-xl); max-width: 800px; }
+
+    h2 { font-size: 2rem; margin: var(--space-xl) 0 var(--space-md); }
+    h3 { font-size: 1.25rem; margin: var(--space-lg) 0 var(--space-md); }
+    p { color: var(--text-secondary); margin-bottom: var(--space-md); line-height: 1.8; }
+
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-xl); }
+
+    .feature-card {
+      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: var(--space-lg);
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover { border-color: var(--neon); transform: translateY(-4px); }
+
+    .feature-icon { font-size: 2.5rem; margin-bottom: var(--space-md); }
+    .feature-card h3 { margin-top: 0; }
+
+    .benefit-list { list-style: none; margin-bottom: var(--space-lg); }
+    .benefit-list li { margin-bottom: var(--space-md); padding-left: var(--space-lg); position: relative; color: var(--text-secondary); }
+    .benefit-list li:before { content: '✓'; position: absolute; left: 0; color: var(--neon); font-weight: 700; }
+
+    .cta-section {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border: 1px solid var(--border); border-radius: 12px; padding: var(--space-xl); text-align: center; margin-top: var(--space-xl);
+    }
+
+    .btn-neon {
+      display: inline-block; background: var(--neon); color: var(--bg-dark); padding: 1rem 2rem; border-radius: 8px;
+      font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.3s;
+    }
+
+    .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2); }
+
+    footer {
+      max-width: 1200px; margin: var(--space-xl) auto 0; padding: var(--space-xl) var(--space-lg);
+      border-top: 1px solid var(--border); display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-xl);
+    }
+
+    footer h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: var(--space-md); color: var(--text-primary); }
+    footer a { display: block; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; margin-bottom: var(--space-sm); transition: color 0.3s; }
+    footer a:hover { color: var(--neon); }
+
+    @media (max-width: 880px) {
+      nav { gap: var(--space-md); } nav a { display: none; }
+      .nav-cta { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      h1 { font-size: 2rem; }
+      footer { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="../index.html" class="logo">Kombo</a>
+      <nav>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./contact.html" class="nav-cta">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Forecast Revenue with 94% Accuracy</h1>
+    <p class="intro">No more guessing. Our AI learns your sales patterns and predicts revenue with best-in-class accuracy. Plan with confidence.</p>
+
+    <h2>The Problem</h2>
+    <p>Sales forecasts are notoriously wrong. Reps are overly optimistic. Deal probability estimates are guesses. You're planning a quarter based on hope, not data.</p>
+
+    <h2>The Solution</h2>
+    <p>Kombo's forecast learns from your actual closed deals. It understands which deal characteristics predict success, how long your sales cycles really are, and where deals actually slip. The result: predictions you can trust.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>94% Accuracy</h3>
+        <p>Industry-leading accuracy. Our models predict close dates and probabilities better than any sales ops team.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <h3>Learns from Your Data</h3>
+        <p>Models train on your closed deals. Every quarter, accuracy improves as we understand your unique sales patterns.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔮</div>
+        <h3>Deal Probability</h3>
+        <p>Each deal gets a realistic close probability. Not the rep's guess—based on what similar deals in your pipeline actually do.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Close Date Prediction</h3>
+        <p>When will a deal close? Our model looks at engagement, sales cycle length, and deal complexity. Accurate to within weeks.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚠️</div>
+        <h3>Slip Risk Alerts</h3>
+        <p>Which deals are slipping? Get early warnings before deals miss their close date. Intervene before it's too late.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Scenario Planning</h3>
+        <p>"What if we close 80% vs 90%?" Model different scenarios for better quarterly and annual planning.</p>
+      </div>
+    </div>
+
+    <h2>The Results</h2>
+    <ul class="benefit-list">
+      <li>Reduce forecast error by 60%+. Stop over-forecasting and under-delivering</li>
+      <li>Plan accurately. CFO meetings become easier with trustworthy numbers</li>
+      <li>Catch slip risks early. Intervene before deals miss date</li>
+      <li>Compare teams fairly. Understand which regions and reps are actually on track</li>
+    </ul>
+
+    <div class="cta-section">
+      <h2 style="margin: 0 0 var(--space-md) 0;">Forecast you can actually trust</h2>
+      <p>See how 94% accuracy works for your sales org.</p>
+      <a href="./contact.html" class="btn-neon">Schedule a demo</a>
+    </div>
+  </main>
+
+  <footer>
+    <div>
+      <h3>Product</h3>
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+    </div>
+    <div>
+      <h3>Company</h3>
+      <a href="./about.html">About</a>
+      <a href="./customers.html">Customers</a>
+      <a href="./contact.html">Contact</a>
+    </div>
+    <div>
+      <h3>Learn</h3>
+      <a href="./blog.html">Blog</a>
+      <a href="./podcast.html">Podcast</a>
+      <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+    </div>
+  </footer>
+</body>
+</html>
