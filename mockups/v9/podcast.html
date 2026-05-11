@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podcast - Kombo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon: #D4FF00;
+      --bg-dark: #0a0e17;
+      --bg-panel: #1a1f2e;
+      --text-primary: #f0f1f3;
+      --text-secondary: #b4b8c0;
+      --border: #2a2f3e;
+      --accent: #4d5dff;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 2rem;
+      --space-xl: 3rem;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 14, 23, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    nav {
+      display: flex;
+      gap: var(--space-lg);
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: var(--neon);
+    }
+
+    .nav-cta {
+      background: var(--neon);
+      color: var(--bg-dark);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2);
+    }
+
+    .hero {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-lg);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: var(--space-md);
+      background: linear-gradient(135deg, var(--neon), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .featured-episode {
+      max-width: 1400px;
+      margin: 0 auto var(--space-xl);
+      padding: var(--space-lg);
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+      align-items: center;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .episode-artwork {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--accent), var(--neon));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .episode-details h2 {
+      font-size: 2rem;
+      margin-bottom: var(--space-md);
+    }
+
+    .episode-meta {
+      display: flex;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .episode-meta span {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .episode-description {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+      line-height: 1.8;
+    }
+
+    .btn-neon {
+      display: inline-block;
+      background: var(--neon);
+      color: var(--bg-dark);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1rem;
+    }
+
+    .btn-neon:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2);
+    }
+
+    .btn-ghost {
+      display: inline-block;
+      background: transparent;
+      color: var(--text-primary);
+      padding: 1rem 2rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1rem;
+      margin-left: var(--space-md);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--neon);
+      color: var(--neon);
+    }
+
+    .filters {
+      max-width: 1400px;
+      margin: var(--space-xl) auto;
+      padding: 0 var(--space-lg);
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .filter-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: var(--neon);
+      color: var(--neon);
+      background: rgba(212, 255, 0, 0.1);
+    }
+
+    .episodes-grid {
+      max-width: 1400px;
+      margin: 0 auto var(--space-xl);
+      padding: 0 var(--space-lg);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .episode-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-lg);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .episode-card:hover {
+      border-color: var(--neon);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(212, 255, 0, 0.1);
+    }
+
+    .episode-card-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--neon);
+      margin-bottom: var(--space-sm);
+    }
+
+    .episode-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: var(--space-sm);
+    }
+
+    .episode-card-meta {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-md);
+    }
+
+    .episode-card p {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-md);
+      line-height: 1.6;
+    }
+
+    .episode-card-guests {
+      font-size: 0.9rem;
+      color: var(--accent);
+      margin-top: var(--space-md);
+    }
+
+    .stats {
+      max-width: 1400px;
+      margin: var(--space-xl) auto;
+      padding: var(--space-lg);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .stat-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-lg);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--neon);
+      margin-bottom: var(--space-sm);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .subscribe-cta {
+      max-width: 1400px;
+      margin: var(--space-xl) auto;
+      padding: var(--space-xl) var(--space-lg);
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.2), rgba(212, 255, 0, 0.1));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .subscribe-cta h2 {
+      font-size: 2rem;
+      margin-bottom: var(--space-md);
+    }
+
+    .subscribe-form {
+      display: flex;
+      gap: var(--space-md);
+      max-width: 500px;
+      margin: var(--space-lg) auto 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .subscribe-form input {
+      flex: 1;
+      min-width: 250px;
+      padding: 1rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+
+    .subscribe-form input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .subscribe-form button {
+      padding: 1rem 2rem;
+      background: var(--neon);
+      color: var(--bg-dark);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .subscribe-form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2);
+    }
+
+    footer {
+      max-width: 1400px;
+      margin: var(--space-xl) auto 0;
+      padding: var(--space-xl) var(--space-lg);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-xl);
+    }
+
+    footer h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+      color: var(--text-primary);
+    }
+
+    footer a {
+      display: block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: var(--space-sm);
+      transition: color 0.3s;
+    }
+
+    footer a:hover {
+      color: var(--neon);
+    }
+
+    @media (max-width: 1024px) {
+      .featured-episode {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .episodes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+    }
+
+    @media (max-width: 880px) {
+      nav {
+        gap: var(--space-md);
+      }
+
+      nav a {
+        display: none;
+      }
+
+      .nav-cta {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .episodes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .subscribe-form {
+        flex-direction: column;
+      }
+
+      .subscribe-form input {
+        min-width: auto;
+      }
+
+      footer {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="../index.html" class="logo">Kombo</a>
+      <nav>
+        <a href="./features.html">Features</a>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./blog.html">Blog</a>
+        <a href="./podcast.html" class="active">Podcast</a>
+        <a href="./about.html">About</a>
+        <a href="./contact.html" class="nav-cta">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>El Podcast de las Ventas</h1>
+      <p>Conversaciones con expertos en ventas, líderes de IA y los innovadores que están transformando el futuro de la experiencia de ventas</p>
+    </section>
+
+    <section class="featured-episode">
+      <div class="episode-artwork">🎙️</div>
+      <div class="episode-details">
+        <div style="color: var(--neon); font-size: 0.9rem; font-weight: 600; margin-bottom: var(--space-sm);">FEATURED EPISODE</div>
+        <h2>Presentando Kombo AI: Una Nueva Era en Ventas</h2>
+        <div class="episode-meta">
+          <span>Episode 1</span>
+          <span>48 min</span>
+          <span>con Ignacio Gaminde y Alessandro Pintaudi</span>
+        </div>
+        <p class="episode-description">En este episodio inaugural, Ignacio Gaminde, cofundador de Kombo AI, y Alessandro Pintaudi exploran cómo la inteligencia artificial está revolucionando las ventas modernas. Descubre cómo Kombo AI ayuda a los equipos de ventas a ahorrar tiempo en tareas administrativas y enfocarse en lo que realmente importa: vender.</p>
+        <a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" class="btn-neon">Escuchar en Spotify</a>
+        <a href="https://www.youtube.com/@KomboAI" class="btn-ghost">Ver en YouTube →</a>
+      </div>
+    </section>
+
+    <section class="filters">
+      <span style="color: var(--text-secondary);">Filter by:</span>
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Product</button>
+      <button class="filter-btn">Industry</button>
+      <button class="filter-btn">Leadership</button>
+      <button class="filter-btn">Deep Dives</button>
+    </section>
+
+    <section class="episodes-grid">
+      <div class="episode-card">
+        <div class="episode-card-number">2</div>
+        <h3>El Futuro de la Inteligencia Artificial en Ventas</h3>
+        <div class="episode-card-meta">Conversación profunda • 52 min</div>
+        <p>Exploramos cómo la IA está transformando el panorama de ventas moderna. Desde la automatización del outreach hasta la predicción de ingresos, descubre las tendencias que están moldeando el futuro de la profesión.</p>
+        <div class="episode-card-guests">Especial de dos partes</div>
+      </div>
+
+      <div class="episode-card">
+        <div class="episode-card-number">3</div>
+        <h3>De 0 a 1 Millón: El Secreto de las Ventas</h3>
+        <div class="episode-card-meta">Casos de Éxito • 45 min</div>
+        <p>Historias reales de cómo empresas escalaron sus ingresos usando estrategias innovadoras y herramientas de IA. Descubre qué funcionó, qué no funcionó, y cómo puedes aplicarlo a tu negocio.</p>
+        <div class="episode-card-guests">con Emprendedores Exitosos</div>
+      </div>
+
+      <div class="episode-card">
+        <div class="episode-card-number">4</div>
+        <h3>Automatización sin Perder la Conexión Humana</h3>
+        <div class="episode-card-meta">Buenas Prácticas • 48 min</div>
+        <p>¿Cómo mantener la confianza y las relaciones cuando automatizas el outreach? Exploramos el balance perfecto entre eficiencia y conexión genuina con prospectos.</p>
+        <div class="episode-card-guests">Panel de Expertos</div>
+      </div>
+
+      <div class="episode-card">
+        <div class="episode-card-number">5</div>
+        <h3>Datos de Intención: El Nuevo Oro del Sales</h3>
+        <div class="episode-card-meta">Tendencias • 41 min</div>
+        <p>Los datos de intención son el nuevo secreto para identificar oportunidades de ventas. Aprende cómo usarlos efectivamente para mejorar tu tasa de conversión.</p>
+        <div class="episode-card-guests">con Especialistas en Data</div>
+      </div>
+
+      <div class="episode-card">
+        <div class="episode-card-number">6</div>
+        <h3>Cumplimiento Legal en la Era de la IA</h3>
+        <div class="episode-card-meta">Regulación • 56 min</div>
+        <p>GDPR, CAN-SPAM, CASL y más. Entendemos el paisaje legal complejo de las comunicaciones automatizadas y cómo mantener tu empresa compliant.</p>
+        <div class="episode-card-guests">con Abogados Especializados</div>
+      </div>
+
+      <div class="episode-card">
+        <div class="episode-card-number">7</div>
+        <h3>Medición de ROI en Soluciones de IA</h3>
+        <div class="episode-card-meta">Métricas • 44 min</div>
+        <p>¿Cómo demostrar el valor real de tus inversiones en IA? Aprende a medir y comunicar el impacto en ingresos, productividad y retención de clientes.</p>
+        <div class="episode-card-guests">con Líderes de Revenue</div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-number">15K+</div>
+        <div class="stat-label">Oyentes Mensuales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">7+</div>
+        <div class="stat-label">Episodios Publicados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">20+</div>
+        <div class="stat-label">Expertos en Ventas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">🌎</div>
+        <div class="stat-label">Público Hispanohablante</div>
+      </div>
+    </section>
+
+    <section class="subscribe-cta">
+      <h2>No te pierdas ningún episodio</h2>
+      <p style="color: var(--text-secondary);">Escucha en tu plataforma favorita</p>
+      <div class="subscribe-form" style="flex-direction: row; gap: 1rem;">
+        <a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" style="display: inline-block; padding: 1rem 2rem; background: var(--neon); color: var(--bg-dark); border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(212, 255, 0, 0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Spotify</a>
+        <a href="https://www.youtube.com/@KomboAI" style="display: inline-block; padding: 1rem 2rem; background: transparent; color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--neon)'; this.style.color='var(--neon)'" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-primary)'">YouTube</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <h3>Product</h3>
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+      <a href="./changelog.html">Changelog</a>
+    </div>
+    <div>
+      <h3>Company</h3>
+      <a href="./about.html">About</a>
+      <a href="./customers.html">Customers</a>
+      <a href="./podcast.html">Podcast</a>
+      <a href="./contact.html">Contact</a>
+    </div>
+    <div>
+      <h3>Legal</h3>
+      <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of service</a>
+      <a href="#">DPA</a>
+    </div>
+  </footer>
+</body>
+</html>

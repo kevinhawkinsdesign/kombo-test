@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brand Guidelines - Kombo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon: #D4FF00;
+      --bg-dark: #0a0e17;
+      --bg-panel: #1a1f2e;
+      --text-primary: #f0f1f3;
+      --text-secondary: #b4b8c0;
+      --border: #2a2f3e;
+      --accent: #4d5dff;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 2rem;
+      --space-xl: 3rem;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 14, 23, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    nav {
+      display: flex;
+      gap: var(--space-lg);
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: var(--neon);
+    }
+
+    .nav-cta {
+      background: var(--neon);
+      color: var(--bg-dark);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2);
+    }
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-lg);
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: var(--space-md);
+      background: linear-gradient(135deg, var(--neon), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin: var(--space-xl) 0 var(--space-md);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+
+    h2:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: var(--space-lg);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin: var(--space-lg) 0 var(--space-md);
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-md);
+      line-height: 1.8;
+    }
+
+    .intro {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xl);
+      max-width: 800px;
+    }
+
+    section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .logo-section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .logo-display {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .logo-item {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.2), rgba(212, 255, 0, 0.1));
+      border-radius: 8px;
+      padding: var(--space-lg);
+      text-align: center;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .color-palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .color-item {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .color-swatch {
+      width: 100%;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .color-info {
+      background: var(--bg-panel);
+      padding: var(--space-md);
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    .color-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .color-value {
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .typography-sample {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .font-family {
+      font-size: 1rem;
+      margin-bottom: var(--space-md);
+      color: var(--text-secondary);
+    }
+
+    .font-sizes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .size-item {
+      border-left: 3px solid var(--neon);
+      padding-left: var(--space-md);
+    }
+
+    .size-item p:first-child {
+      font-size: 2rem;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .size-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .component-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .component-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-lg);
+    }
+
+    .component-preview {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border-radius: 8px;
+      padding: var(--space-lg);
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+
+    .btn-preview {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-neon {
+      background: var(--neon);
+      color: var(--bg-dark);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .dos-donts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+
+    .do-section, .dont-section {
+      background: var(--bg-panel);
+      border-radius: 12px;
+      padding: var(--space-lg);
+    }
+
+    .do-section {
+      border: 2px solid rgba(212, 255, 0, 0.3);
+    }
+
+    .dont-section {
+      border: 2px solid rgba(255, 100, 100, 0.3);
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin-bottom: var(--space-md);
+      font-size: 1.1rem;
+    }
+
+    .do-section .section-title {
+      color: var(--neon);
+    }
+
+    .dont-section .section-title {
+      color: #ff6464;
+    }
+
+    .item-list {
+      list-style: none;
+    }
+
+    .item-list li {
+      margin-bottom: var(--space-md);
+      padding-left: var(--space-lg);
+      position: relative;
+      color: var(--text-secondary);
+    }
+
+    .item-list li:before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--neon);
+      font-weight: 700;
+    }
+
+    .dont-section .item-list li:before {
+      content: '✗';
+      color: #ff6464;
+    }
+
+    .download-section {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-lg);
+      text-align: center;
+      margin-top: var(--space-xl);
+    }
+
+    .download-btn {
+      display: inline-block;
+      background: var(--neon);
+      color: var(--bg-dark);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: var(--space-md);
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2);
+    }
+
+    footer {
+      max-width: 1400px;
+      margin: var(--space-xl) auto 0;
+      padding: var(--space-xl) var(--space-lg);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-xl);
+    }
+
+    footer h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+      color: var(--text-primary);
+    }
+
+    footer a {
+      display: block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: var(--space-sm);
+      transition: color 0.3s;
+    }
+
+    footer a:hover {
+      color: var(--neon);
+    }
+
+    @media (max-width: 1024px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      .dos-donts {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 880px) {
+      nav {
+        gap: var(--space-md);
+      }
+
+      nav a {
+        display: none;
+      }
+
+      .nav-cta {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      footer {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="../index.html" class="logo">Kombo</a>
+      <nav>
+        <a href="./features.html">Features</a>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./blog.html">Blog</a>
+        <a href="./podcast.html">Podcast</a>
+        <a href="./about.html">About</a>
+        <a href="./contact.html" class="nav-cta">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Brand Guidelines</h1>
+    <p class="intro">Our brand is built on clarity, boldness, and humanity. These guidelines help maintain consistency across all touchpoints. Download our complete brand kit or reference specific elements below.</p>
+
+    <section>
+      <h2>Logo</h2>
+      <p>The Kombo logo is the cornerstone of our visual identity. Always use the approved logo files and maintain clear space around the mark.</p>
+
+      <div class="logo-section">
+        <h3>Primary Logo</h3>
+        <div class="logo-display">
+          <div class="logo-item">K</div>
+          <div class="logo-item">K</div>
+          <div class="logo-item">K</div>
+        </div>
+
+        <h3>Logo Dos & Don'ts</h3>
+        <ul class="item-list" style="margin-bottom: 0;">
+          <li>Always maintain adequate clear space around the logo</li>
+          <li>Use approved color variations only</li>
+          <li>Scale proportionally; never stretch or distort</li>
+          <li>Never rotate the logo</li>
+          <li>Never add effects like drop shadows or outlines</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Color Palette</h2>
+      <p>Our color palette is bold, modern, and intentional. The neon yellow (#D4FF00) is our signature accent. Use it to highlight, emphasize, and draw attention.</p>
+
+      <div class="color-palette">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #D4FF00;"></div>
+          <div class="color-info">
+            <div class="color-name">Neon Yellow</div>
+            <div class="color-value">#D4FF00</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #4d5dff;"></div>
+          <div class="color-info">
+            <div class="color-name">Accent Blue</div>
+            <div class="color-value">#4d5dff</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #0a0e17;"></div>
+          <div class="color-info">
+            <div class="color-name">Dark Background</div>
+            <div class="color-value">#0a0e17</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #1a1f2e;"></div>
+          <div class="color-info">
+            <div class="color-name">Panel Background</div>
+            <div class="color-value">#1a1f2e</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #f0f1f3;"></div>
+          <div class="color-info">
+            <div class="color-name">Text Primary</div>
+            <div class="color-value">#f0f1f3</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #b4b8c0;"></div>
+          <div class="color-info">
+            <div class="color-name">Text Secondary</div>
+            <div class="color-value">#b4b8c0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Typography</h2>
+      <p>We use Inter for all interface and marketing text. It's clean, modern, and highly legible across all sizes and weights.</p>
+
+      <div class="typography-sample">
+        <div class="font-family">Font: Inter, sans-serif</div>
+
+        <h3>Font Sizes</h3>
+        <div class="font-sizes">
+          <div class="size-item">
+            <p>Heading 1</p>
+            <div class="size-label">3.5rem / 700 weight</div>
+          </div>
+          <div class="size-item">
+            <p style="font-size: 2rem;">Heading 2</p>
+            <div class="size-label">2rem / 700 weight</div>
+          </div>
+          <div class="size-item">
+            <p style="font-size: 1.25rem;">Body Text</p>
+            <div class="size-label">1rem / 400 weight</div>
+          </div>
+          <div class="size-item">
+            <p style="font-size: 0.9rem;">Small Text</p>
+            <div class="size-label">0.9rem / 500 weight</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Components</h2>
+      <p>Our components are modular and flexible. These are the primary patterns used across all Kombo properties.</p>
+
+      <div class="component-showcase">
+        <div class="component-card">
+          <h3>Primary Button</h3>
+          <div class="component-preview">
+            <button class="btn-preview btn-neon">See a demo</button>
+          </div>
+          <div class="font-family" style="color: var(--text-secondary);">Use for primary CTAs and actions</div>
+        </div>
+
+        <div class="component-card">
+          <h3>Secondary Button</h3>
+          <div class="component-preview">
+            <button class="btn-preview btn-ghost">Learn more →</button>
+          </div>
+          <div class="font-family" style="color: var(--text-secondary);">Use for secondary actions</div>
+        </div>
+
+        <div class="component-card">
+          <h3>Badge</h3>
+          <div class="component-preview">
+            <span style="display: inline-block; background: rgba(77, 93, 255, 0.2); color: #4d5dff; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">New Feature</span>
+          </div>
+          <div class="font-family" style="color: var(--text-secondary);">For labels and tags</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Voice & Tone</h2>
+      <p>Our writing is conversational, confident, and human-first. We avoid jargon and always put the user first.</p>
+
+      <div class="dos-donts">
+        <div class="do-section">
+          <div class="section-title">✓ Do</div>
+          <ul class="item-list">
+            <li>Be conversational and approachable</li>
+            <li>Use active voice</li>
+            <li>Focus on user benefit</li>
+            <li>Be honest and transparent</li>
+            <li>Use simple, clear language</li>
+          </ul>
+        </div>
+
+        <div class="dont-section">
+          <div class="section-title">✗ Don't</div>
+          <ul class="item-list">
+            <li>Use corporate jargon</li>
+            <li>Be overly formal or stuffy</li>
+            <li>Make unsupported claims</li>
+            <li>Use passive voice</li>
+            <li>Assume user knowledge</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Usage Patterns</h2>
+
+      <div class="dos-donts">
+        <div class="do-section">
+          <div class="section-title">✓ Effective Usage</div>
+          <ul class="item-list">
+            <li>Use neon yellow to highlight key information</li>
+            <li>Maintain high contrast for accessibility</li>
+            <li>Keep layouts spacious and uncluttered</li>
+            <li>Use consistent border radius (8px minimum)</li>
+            <li>Apply animations sparingly and purposefully</li>
+          </ul>
+        </div>
+
+        <div class="dont-section">
+          <div class="section-title">✗ Common Mistakes</div>
+          <ul class="item-list">
+            <li>Using neon colors for body text</li>
+            <li>Overcrowding the layout</li>
+            <li>Inconsistent rounded corners</li>
+            <li>Low contrast text on dark backgrounds</li>
+            <li>Overusing animations</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="download-section">
+      <h2 style="margin: 0 0 var(--space-md) 0; border: none; padding: 0;">Download Brand Assets</h2>
+      <p style="margin-bottom: var(--space-md);">Get our complete brand kit including logos, color swatches, typography guidelines, and more.</p>
+      <button class="download-btn">Download Brand Kit (5.2 MB)</button>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <h3>Product</h3>
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+      <a href="./changelog.html">Changelog</a>
+    </div>
+    <div>
+      <h3>Company</h3>
+      <a href="./about.html">About</a>
+      <a href="./customers.html">Customers</a>
+      <a href="./contact.html">Contact</a>
+      <a href="./brand-guidelines.html">Brand</a>
+    </div>
+    <div>
+      <h3>Legal</h3>
+      <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of service</a>
+      <a href="#">DPA</a>
+    </div>
+  </footer>
+</body>
+</html>
