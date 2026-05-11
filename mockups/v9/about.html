@@ -26,9 +26,17 @@
   .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
   .logo-img{height:26px;width:auto;display:block}
   .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
-  .nav-links{display:flex;gap:32px;font-size:14px;color:var(--mute)}
-  .nav-links a{transition:color .2s}
-  .nav-links a:hover,.nav-links a.active{color:var(--ink)}
+  .nav-links{display:flex;gap:16px;font-size:14px;color:var(--mute);align-items:center}
+  .nav-dropdown{position:relative;display:inline-block}
+  .nav-dropdown>button{background:transparent;border:1px solid transparent;color:var(--mute);padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500}
+  .nav-dropdown>button:hover{color:var(--lavender);border-color:var(--lavender-soft)}
+  .nav-dropdown>button.active,.nav-dropdown:focus-within>button{color:var(--lavender);border-color:var(--lavender-soft)}
+  .dropdown-menu{position:absolute;top:100%;left:0;margin-top:4px;background:rgba(20,20,23,0.96);border:1px solid var(--line);border-radius:12px;min-width:160px;padding:8px 0;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;pointer-events:none;z-index:40}
+  .nav-dropdown:hover .dropdown-menu,.nav-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  .dropdown-menu a{display:block;padding:10px 16px;color:var(--mute);transition:color .15s;font-size:13px}
+  .dropdown-menu a:hover{color:var(--ink)}
+  .nav-links>a{transition:color .2s}
+  .nav-links>a:hover,.nav-links>a.active{color:var(--ink)}
   .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s}
   .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
 
@@ -190,13 +198,43 @@
       <span class="logo-text">KomboAI</span>
     </a>
     <div class="nav-links">
-      <a href="./features.html">Features</a>
-      <a href="./how-it-works.html">How it works</a>
-      <a href="./pricing.html">Pricing</a>
-      <a href="./integrations.html">Integrations</a>
-      <a href="./blog.html">Blog</a>
-      <a href="./about.html" class="active">About</a>
-      <a href="./contact.html">Contact</a>
+      <div class="nav-dropdown">
+        <button>Product</button>
+        <div class="dropdown-menu">
+          <a href="./features.html">Features</a>
+          <a href="./how-it-works.html">How it works</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./integrations.html">Integrations</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Resources</button>
+        <div class="dropdown-menu">
+          <a href="./customers.html">Customers</a>
+          <a href="./podcast.html">Podcast</a>
+          <a href="./blog.html">Blog</a>
+          <a href="#">Newsletter</a>
+          <a href="#">ROI Calculator</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button class="active">Company</button>
+        <div class="dropdown-menu">
+          <a href="./about.html" class="active">About</a>
+          <a href="./team.html">Team</a>
+          <a href="./contact.html">Contact</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Connect</button>
+        <div class="dropdown-menu">
+          <a href="#">LinkedIn</a>
+          <a href="#">YouTube</a>
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+          <a href="#">Spotify</a>
+        </div>
+      </div>
     </div>
     <a href="./contact.html" class="nav-cta">Get started</a>
   </div>
@@ -321,95 +359,6 @@
   </div>
 </section>
 
-<section class="std" style="padding-top:0">
-  <div class="container">
-    <div class="team-head">
-      <div class="reveal">
-        <div class="eb">// The team</div>
-        <h2>Sixty-four humans.<br/><span class="accent">Four agents.</span></h2>
-      </div>
-      <div class="meta reveal">
-        Co-founded by a sales operator and an ML researcher. The leadership team has built and shipped at <b>Pipedrive, Intercom, Stripe, GitHub, and Anthropic</b>. We hire for clarity over credentials.
-      </div>
-    </div>
-
-    <div class="team-grid">
-      <div class="team-card green reveal">
-        <div class="team-av">MA</div>
-        <div class="who"><div class="nm">Matías Aguilera</div><div class="role">// Co-founder · CEO</div></div>
-        <div class="bio">Sold the first 200 deals himself. Ex-Pipedrive sales lead. Lives in Madrid. Tweets at 7am.</div>
-        <div class="links"><a href="#">LI</a><a href="#">X</a></div>
-      </div>
-      <div class="team-card purple reveal">
-        <div class="team-av">AV</div>
-        <div class="who"><div class="nm">Anna Vasquez</div><div class="role">// Co-founder · CTO</div></div>
-        <div class="bio">Wrote the first agent framework in 9 days. Ex-Anthropic, ex-Hugging Face. Builds in public.</div>
-        <div class="links"><a href="#">LI</a><a href="#">GitHub</a></div>
-      </div>
-      <div class="team-card blue reveal">
-        <div class="team-av">RJ</div>
-        <div class="who"><div class="nm">Renu Joshi</div><div class="role">// VP Engineering</div></div>
-        <div class="bio">Scaled trust &amp; safety at Stripe. Owns the platform team. Ships every Thursday by lunch.</div>
-        <div class="links"><a href="#">LI</a></div>
-      </div>
-      <div class="team-card orange reveal">
-        <div class="team-av">DK</div>
-        <div class="who"><div class="nm">Dieter Krug</div><div class="role">// VP Sales &amp; CS</div></div>
-        <div class="bio">Built the original sequencing agent's prompt library. Ex-Outreach. Lives in Berlin.</div>
-        <div class="links"><a href="#">LI</a></div>
-      </div>
-      <div class="team-card purple reveal">
-        <div class="team-av">SO</div>
-        <div class="who"><div class="nm">Sofía Ortega</div><div class="role">// VP Design</div></div>
-        <div class="bio">Designed the Approve-in-Batch flow. Ex-Linear, ex-Vercel. Cares about kerning.</div>
-        <div class="links"><a href="#">LI</a><a href="#">Read.cv</a></div>
-      </div>
-      <div class="team-card green reveal">
-        <div class="team-av">TC</div>
-        <div class="who"><div class="nm">Tomás Costa</div><div class="role">// VP Marketing</div></div>
-        <div class="bio">Wrote 80% of the public docs. Ex-Intercom growth. Argues about copy at standup.</div>
-        <div class="links"><a href="#">LI</a></div>
-      </div>
-      <div class="team-card blue reveal">
-        <div class="team-av">EH</div>
-        <div class="who"><div class="nm">Emi Hayashi</div><div class="role">// Head of Security</div></div>
-        <div class="bio">Owns the Trust Center. CISSP. Wrote our SOC 2 controls top-to-bottom.</div>
-        <div class="links"><a href="#">LI</a></div>
-      </div>
-      <div class="team-card orange reveal">
-        <div class="team-av">+57</div>
-        <div class="who"><div class="nm">+ 57 more</div><div class="role">// Engineers · GTM · Ops</div></div>
-        <div class="bio">Madrid · Berlin · São Paulo · Lisbon · Toronto · Bangalore · Cape Town. Ten time-zones. One Slack.</div>
-        <div class="links"><a href="./contact.html">Meet us →</a></div>
-      </div>
-    </div>
-
-    <div class="team-extra">
-      <div class="investors reveal">
-        <h5>// Backed by</h5>
-        <p><b>$61.4M raised</b> across pre-seed, A, and B. The cap table prefers mission over markups. We've turned down term sheets 3×.</p>
-        <div class="investor-pills">
-          <span>Sequoia</span><span>Atomico</span><span>Point Nine</span><span>Lenny Rachitsky</span><span>Des Traynor</span><span>Tope Awotona</span><span>Pipedrive founders</span><span>Lattice founders</span>
-        </div>
-      </div>
-      <div class="careers-card reveal">
-        <div class="top">
-          <div class="eb">// Open roles</div>
-          <h4>We're hiring across <span class="em">eng, GTM, design.</span></h4>
-          <p>Remote-first, with optional hubs in Madrid and Berlin. Compensation is published before round one. Every offer includes 0.1% minimum equity.</p>
-        </div>
-        <div class="careers-list">
-          <div class="careers-row"><div class="l">Senior ML Engineer · Forecasting</div><div class="r">Madrid / Remote · EUR <span class="ar">→</span></div></div>
-          <div class="careers-row"><div class="l">Staff Product Designer</div><div class="r">Berlin / Remote · EUR <span class="ar">→</span></div></div>
-          <div class="careers-row"><div class="l">Enterprise AE · DACH</div><div class="r">Berlin · EUR <span class="ar">→</span></div></div>
-          <div class="careers-row"><div class="l">Lead Solutions Engineer</div><div class="r">Remote · USD <span class="ar">→</span></div></div>
-          <div class="careers-row"><div class="l">Security Engineer (SOC2/ISO)</div><div class="r">Remote · EUR <span class="ar">→</span></div></div>
-        </div>
-        <a href="#" class="btn-neon" style="align-self:flex-start">See all 12 roles</a>
-      </div>
-    </div>
-  </div>
-</section>
 
 <section class="std" style="padding-top:0">
   <div class="container">
@@ -462,6 +411,7 @@
       <div class="col">
         <h6>Company</h6>
         <a href="./about.html">About</a>
+        <a href="./team.html">Team</a>
         <a href="./customers.html">Customers</a>
         <a href="./contact.html">Contact</a>
       </div>
