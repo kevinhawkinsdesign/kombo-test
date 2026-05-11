@@ -33,6 +33,9 @@
   nav{display:flex;align-items:center;justify-content:space-between;padding:24px 14px}
   .logo{display:inline-flex;align-items:center;gap:10px;font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--ink)}
   .nav-links{display:flex;gap:28px;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .nav-links a{display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:opacity .2s}
+  .nav-links a:hover{opacity:.7}
+  .nav-links a::after{content:"▾";font-size:10px;opacity:.55}
   .pill{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border:2px solid var(--ink);border-radius:99px;background:#fff;color:var(--ink);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .15s, box-shadow .15s}
   .pill:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
   .pill.dark{background:var(--ink);color:#fff}
@@ -104,13 +107,18 @@
   .stat .doodle{position:absolute;top:10px;right:14px;font-family:'Caveat',cursive;font-size:22px;color:var(--purple);transform:rotate(8deg)}
 
   /* === LOGOS === */
-  .logos{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:32px 36px;box-shadow:5px 5px 0 var(--ink);position:relative}
-  .logos::before{content:"★";position:absolute;left:-18px;top:-18px;width:48px;height:48px;background:var(--lime);border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink)}
+  .logos{margin-top:36px;background:#fff;border:2.5px solid var(--ink);border-radius:22px;padding:30px 0;box-shadow:5px 5px 0 var(--ink);position:relative;overflow:hidden}
+  .logos::before{content:"★";position:absolute;left:-18px;top:-18px;width:48px;height:48px;background:var(--lime);border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);transform:rotate(-12deg);box-shadow:3px 3px 0 var(--ink);z-index:2}
   .logos-label{font-family:'Caveat',cursive;font-weight:700;font-size:24px;color:var(--purple);text-align:center;margin-bottom:18px;transform:rotate(-1deg)}
-  .logos-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
-  .logo-pill{padding:10px 20px;border:2px solid var(--ink);border-radius:99px;font-size:13.5px;font-weight:700;color:var(--ink);background:var(--cream);box-shadow:2px 2px 0 var(--ink)}
-  .logo-pill:nth-child(odd){background:var(--peach)}
-  .logo-pill:nth-child(3n){background:var(--lavender)}
+  .logo-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%)}
+  .logo-marquee-track{display:flex;gap:56px;align-items:center;width:max-content;animation:logo-marquee 38s linear infinite}
+  .logo-marquee:hover .logo-marquee-track{animation-play-state:paused}
+  .logo-marquee-track img{height:38px;width:auto;display:block;flex-shrink:0;filter:grayscale(.6) opacity(.78);transition:filter .25s,transform .25s}
+  .logo-marquee-track img[alt="HubSpot"]{filter:invert(1) grayscale(.6) opacity(.78)}
+  .logo-marquee-track img:hover{filter:grayscale(0) opacity(1);transform:translateY(-2px)}
+  .logo-marquee-track img[alt="HubSpot"]:hover{filter:invert(1) grayscale(0) opacity(1);transform:translateY(-2px)}
+  @keyframes logo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.logo-marquee-track{animation:none}}
 
   /* === CHAPTERS === */
   .chapter{margin-top:36px;border:2.5px solid var(--ink);border-radius:32px;padding:64px 56px;display:grid;grid-template-columns:.95fr 1.05fr;gap:48px;align-items:center;box-shadow:7px 7px 0 var(--ink);position:relative;overflow:hidden;min-height:560px}
@@ -192,11 +200,15 @@
   .test-head h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:52px;line-height:1.0;letter-spacing:-.03em;max-width:720px}
   .test-head h3 .it{font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--purple)}
   .test-head .badge{font-family:'Caveat',cursive;font-weight:700;font-size:22px;color:var(--purple);transform:rotate(-3deg)}
-  .test-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .test-card{background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:28px 26px 24px;box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column;gap:18px;min-height:300px;position:relative}
-  .test-card:nth-child(1){transform:rotate(-2deg)}
-  .test-card:nth-child(2){transform:rotate(1.5deg)}
-  .test-card:nth-child(3){transform:rotate(-1deg)}
+  .test-marquee{position:relative;z-index:2;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 5%,#000 95%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 5%,#000 95%,transparent 100%);padding:18px 0 6px}
+  .test-track{display:flex;gap:24px;width:max-content;animation:test-marquee 80s linear infinite}
+  .test-marquee:hover .test-track{animation-play-state:paused}
+  @keyframes test-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.test-track{animation:none}}
+  .test-card{width:340px;flex-shrink:0;background:#fff;border:2.5px solid var(--ink);border-radius:18px;padding:26px 24px 22px;box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column;gap:18px;min-height:280px;position:relative;transition:transform .25s ease}
+  .test-card:nth-child(odd){transform:rotate(-1deg)}
+  .test-card:nth-child(even){transform:rotate(1deg)}
+  .test-card:hover{transform:rotate(0) translateY(-4px)}
   .test-card .pin{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;background:var(--hot-pink);border:2px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink)}
   .test-quote{font-size:17px;line-height:1.5;color:var(--ink);font-weight:500;flex:1}
   .test-quote .marker{background:linear-gradient(180deg,transparent 60%,var(--lime) 60%);font-weight:700;padding:0 3px}
@@ -373,7 +385,7 @@
   <!-- NAV -->
   <nav>
     <a class="logo" href="./index.html">
-      <svg width="30" height="30" viewBox="0 0 30 30"><rect width="30" height="30" rx="9" fill="#6B4EFF" stroke="#171326" stroke-width="2"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+      <img src="./images/LOGO/logo-icon-lila.png" alt="" style="height:30px;width:auto;display:block;">
       KomboAI
     </a>
     <div class="nav-links"><a>Product</a><a>Resources</a><a>Company</a><a>Connect</a></div>
@@ -508,14 +520,6 @@
           <p style="font-size:14px;color:rgba(0,0,0,0.6);line-height:1.55;">AI listens to calls, identifies patterns, and coaches reps with insights from your top performers.</p>
         </div>
       </div>
-      <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);border-radius:16px;overflow:hidden;">
-        <img src="./images/Get-AI-Insights-2.webp" alt="Get AI insights" style="width:100%;height:auto;display:block;background:#fff;" loading="lazy">
-        <div style="padding:24px 28px;">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(0,0,0,0.5);font-weight:700;margin-bottom:8px;">CRM Integration</div>
-          <h3 style="font-size:18px;font-weight:700;color:rgba(0,0,0,0.92);margin-bottom:6px;">An AI-native co-pilot that sits on top of your CRM</h3>
-          <p style="font-size:14px;color:rgba(0,0,0,0.6);line-height:1.55;">Works inside HubSpot, Salesforce, LinkedIn, and Dynamics. Your data stays where it is.</p>
-        </div>
-      </div>
     </div>
     <div style="margin-top:56px;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);border-radius:20px;padding:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;text-align:center;">
       <div>
@@ -547,12 +551,33 @@
   <!-- LOGOS -->
   <section class="logos">
     <div class="logos-label">Trusted by fast-growing B2B sales teams ↓</div>
-    <div class="logos-row">
-      <span class="logo-pill">NovaTech Solutions</span>
-      <span class="logo-pill">Meridian Group</span>
-      <span class="logo-pill">ScaleUp Partners</span>
-      <span class="logo-pill">Apex Revenue</span>
-      <span class="logo-pill">PipelineCo</span>
+    <div class="logo-marquee">
+      <div class="logo-marquee-track">
+        <img src="./images/clients/Weekendesk.png" alt="Weekendesk" loading="lazy">
+        <img src="./images/clients/defined-ai.png" alt="Defined AI" loading="lazy">
+        <img src="./images/clients/edicom.png" alt="Edicom" loading="lazy">
+        <img src="./images/clients/fever.png" alt="Fever" loading="lazy">
+        <img src="./images/clients/fonia.webp" alt="Fonia" loading="lazy">
+        <img src="./images/clients/lucca.png" alt="Lucca" loading="lazy">
+        <img src="./images/clients/mecides.png" alt="Mecides" loading="lazy">
+        <img src="./images/clients/nuclio-talent.png" alt="Nuclio Talent" loading="lazy">
+        <img src="./images/clients/shakers.png" alt="Shakers" loading="lazy">
+        <img src="./images/clients/show2be.png" alt="Show2Be" loading="lazy">
+        <img src="./images/clients/wherex.png" alt="WhereX" loading="lazy">
+        <img src="./images/logo-hubspot.png" alt="HubSpot" loading="lazy">
+        <img src="./images/clients/Weekendesk.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/defined-ai.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/edicom.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/fever.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/fonia.webp" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/lucca.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/mecides.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/nuclio-talent.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/shakers.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/show2be.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/clients/wherex.png" alt="" aria-hidden="true" loading="lazy">
+        <img src="./images/logo-hubspot.png" alt="" aria-hidden="true" loading="lazy">
+      </div>
     </div>
   </section>
 
@@ -732,12 +757,13 @@ Worth a 20-min walkthrough next week?
       <h3>Loved by sales teams<br><span class="it">worldwide.</span></h3>
       <span class="badge">↗ 5 reps to 500</span>
     </div>
-    <div class="test-grid">
+    <div class="test-marquee">
+      <div class="test-track">
       <div class="test-card">
         <div class="pin"></div>
         <p class="test-quote">"Since switching to KomboAI, our reps spend <span class="marker">60% less time</span> on manual lead research. Pipeline velocity has never been higher."</p>
         <div class="test-author">
-          <div class="t-avatar">SC</div>
+          <div class="t-avatar" style="background:var(--lavender);">SC</div>
           <div><div class="t-name">Sarah Chen</div><div class="t-role">VP of Sales · NovaTech Solutions</div></div>
         </div>
       </div>
@@ -745,7 +771,7 @@ Worth a 20-min walkthrough next week?
         <div class="pin"></div>
         <p class="test-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <span class="marker peach">jumped 40%</span>."</p>
         <div class="test-author">
-          <div class="t-avatar">JW</div>
+          <div class="t-avatar" style="background:var(--peach);">JW</div>
           <div><div class="t-name">James Whitfield</div><div class="t-role">Head of Revenue · Meridian Group</div></div>
         </div>
       </div>
@@ -753,9 +779,114 @@ Worth a 20-min walkthrough next week?
         <div class="pin"></div>
         <p class="test-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <span class="marker">from 5 reps to 50</span>."</p>
         <div class="test-author">
-          <div class="t-avatar">LF</div>
+          <div class="t-avatar" style="background:var(--lime);">LF</div>
           <div><div class="t-name">Lucia Fernández</div><div class="t-role">COO · ScaleUp Partners</div></div>
         </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"Our SDR team's outreach is now hyper-personalized at scale. <span class="marker peach">Reply rates up 38%</span> — without anyone writing more emails."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MR</div>
+          <div><div class="t-name">Marcus Reyes</div><div class="t-role">Director RevOps · Apex Revenue</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"I trust the forecast for the first time in five years. <span class="marker">94% accuracy</span> means I can plan, not pray."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lavender);">PK</div>
+          <div><div class="t-name">Priya Kumar</div><div class="t-role">CFO · PipelineCo</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"Integration took 4 minutes. Onboarded 30 reps in a day. KomboAI just plugs into Salesforce <span class="marker">and does the work</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--peach);">JO</div>
+          <div><div class="t-name">James Ortega</div><div class="t-role">CTO · Nova Analytics</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"We replaced three tools with KomboAI. Our team finally focuses on <span class="marker">selling</span> instead of stitching dashboards together."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lime);">LC</div>
+          <div><div class="t-name">Lena Chow</div><div class="t-role">CEO · Digital Spark Inc.</div></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI coaching changed how we ramp new hires. <span class="marker peach">Time-to-quota cut by 40%</span>. Best investment we made this year."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MT</div>
+          <div><div class="t-name">Michael Tran</div><div class="t-role">Head of Growth · Stackline</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"Since switching to KomboAI, our reps spend <span class="marker">60% less time</span> on manual lead research. Pipeline velocity has never been higher."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lavender);">SC</div>
+          <div><div class="t-name">Sarah Chen</div><div class="t-role">VP of Sales · NovaTech Solutions</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI lead scoring is a game-changer. We went from guessing to knowing — and our close rate <span class="marker peach">jumped 40%</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--peach);">JW</div>
+          <div><div class="t-name">James Whitfield</div><div class="t-role">Head of Revenue · Meridian Group</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"As a growing startup, we needed a sales tool that could scale. KomboAI's pipeline insights grew with us <span class="marker">from 5 reps to 50</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lime);">LF</div>
+          <div><div class="t-name">Lucia Fernández</div><div class="t-role">COO · ScaleUp Partners</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"Our SDR team's outreach is now hyper-personalized at scale. <span class="marker peach">Reply rates up 38%</span> — without anyone writing more emails."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MR</div>
+          <div><div class="t-name">Marcus Reyes</div><div class="t-role">Director RevOps · Apex Revenue</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"I trust the forecast for the first time in five years. <span class="marker">94% accuracy</span> means I can plan, not pray."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lavender);">PK</div>
+          <div><div class="t-name">Priya Kumar</div><div class="t-role">CFO · PipelineCo</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"Integration took 4 minutes. Onboarded 30 reps in a day. KomboAI just plugs into Salesforce <span class="marker">and does the work</span>."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--peach);">JO</div>
+          <div><div class="t-name">James Ortega</div><div class="t-role">CTO · Nova Analytics</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"We replaced three tools with KomboAI. Our team finally focuses on <span class="marker">selling</span> instead of stitching dashboards together."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--lime);">LC</div>
+          <div><div class="t-name">Lena Chow</div><div class="t-role">CEO · Digital Spark Inc.</div></div>
+        </div>
+      </div>
+      <div class="test-card" aria-hidden="true">
+        <div class="pin"></div>
+        <p class="test-quote">"The AI coaching changed how we ramp new hires. <span class="marker peach">Time-to-quota cut by 40%</span>. Best investment we made this year."</p>
+        <div class="test-author">
+          <div class="t-avatar" style="background:var(--hot-pink);">MT</div>
+          <div><div class="t-name">Michael Tran</div><div class="t-role">Head of Growth · Stackline</div></div>
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -779,7 +910,7 @@ Worth a 20-min walkthrough next week?
     <div class="footer-grid">
       <div class="footer-brand">
         <a class="logo" href="./index.html">
-          <svg width="30" height="30" viewBox="0 0 30 30"><rect width="30" height="30" rx="9" fill="#6B4EFF" stroke="#171326" stroke-width="2"/><path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white"/></svg>
+          <img src="./images/LOGO/logo-icon-lila.png" alt="" style="height:30px;width:auto;display:block;">
           KomboAI
         </a>
         <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>

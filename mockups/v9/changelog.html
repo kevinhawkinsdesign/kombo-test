@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Changelog — KomboAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0E0E10;--bg-2:#141417;--surface:#1A1A1E;--surface-2:#222226;
+    --line:#2A2A30;--line-2:#34343C;--neon:#D4FF00;--neon-2:#C8FF1A;
+    --ink:#F5F5F7;--mute:#8A8A95;--mute-2:#5A5A63;
+    --purple:#A78BFA;--lavender:#B5A1FF;--lavender-soft:rgba(181,161,255,0.35);
+  }
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1180px;margin:0 auto;padding:0 28px}
+  .container.narrow{max-width:880px}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
+  .logo-img{height:26px;width:auto;display:block}
+  .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  .nav-links{display:flex;gap:32px;font-size:14px;color:var(--mute)}
+  .nav-links a{transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--ink)}
+  .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+
+  .btn-neon{background:var(--neon);color:var(--bg);padding:14px 28px;border-radius:999px;font-weight:600;font-size:14px;display:inline-block;transition:transform .2s,box-shadow .2s}
+  .btn-neon:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,255,0,0.3)}
+  .btn-ghost{background:transparent;color:var(--lavender);padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender-soft);display:inline-block;transition:all .2s}
+  .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
+
+  .hero{padding:90px 0 50px;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-220px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.08) 0%,transparent 60%);animation:hero-glow-pulse 6s ease-in-out infinite}
+  @keyframes hero-glow-pulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--lavender-soft);border-radius:999px;font-size:13px;color:var(--lavender);margin-bottom:32px;background:rgba(181,161,255,0.05);position:relative;z-index:1}
+  .eyebrow .dot{width:8px;height:8px;background:var(--neon);border-radius:50%;box-shadow:0 0 12px var(--neon);animation:dot-blink 1.4s ease-in-out infinite}
+  @keyframes dot-blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .hero h1{font-size:clamp(46px,7vw,84px);font-weight:700;line-height:1.02;letter-spacing:-0.035em;margin-bottom:22px;position:relative;z-index:1}
+  .hero h1 .highlight{background:var(--neon);color:#0E0E10;padding:0 14px 4px;border-radius:6px;display:inline-block;transform:rotate(-1deg)}
+  .hero p{font-size:18px;color:var(--mute);max-width:580px;margin:0 auto 30px;line-height:1.55;position:relative;z-index:1}
+  .hero .sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.16em;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;position:relative;z-index:1}
+  .hero .sub a{color:var(--lavender)}
+
+  /* Filter strip */
+  .filter-strip{position:sticky;top:65px;z-index:40;padding:18px 0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin-bottom:60px}
+  .filter-row{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+  .filter-tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .filter-tab{background:transparent;border:1px solid var(--line);color:var(--mute);font-family:inherit;font-size:12px;padding:7px 13px;border-radius:999px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+  .filter-tab .swatch{width:8px;height:8px;border-radius:2px}
+  .filter-tab:hover{color:var(--ink);border-color:var(--line-2)}
+  .filter-tab.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .filter-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);letter-spacing:0.06em}
+  .filter-info b{color:var(--neon)}
+
+  /* Timeline */
+  .changelog{padding:0 0 60px;position:relative}
+  .changelog::before{content:'';position:absolute;left:170px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--neon) 0%,var(--line) 4%,var(--line) 96%,transparent 100%)}
+  .entry{display:grid;grid-template-columns:170px 1fr;gap:40px;padding:40px 0;position:relative}
+  .entry-side{padding-top:6px;text-align:right}
+  .entry-side .ver{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--ink);letter-spacing:0.04em}
+  .entry-side .date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:0.08em;margin-top:4px;text-transform:uppercase}
+  .entry-side .day{font-size:34px;font-weight:800;letter-spacing:-0.025em;color:var(--ink);line-height:1;margin-top:8px}
+  .entry-side .month{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.16em;margin-top:6px}
+  .entry-dot{position:absolute;left:166px;top:48px;width:9px;height:9px;background:var(--neon);border-radius:50%;box-shadow:0 0 0 4px var(--bg),0 0 0 5px var(--line),0 0 14px rgba(212,255,0,0.6);z-index:1}
+  .entry.major .entry-dot{background:var(--lavender);box-shadow:0 0 0 4px var(--bg),0 0 0 5px var(--line),0 0 14px rgba(181,161,255,0.6)}
+  .entry-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s}
+  .entry-card:hover{border-color:var(--line-2);transform:translateY(-2px);box-shadow:0 16px 40px -10px rgba(0,0,0,0.5)}
+  .entry.major .entry-card{background:radial-gradient(ellipse at 0% 0%,rgba(212,255,0,0.10) 0%,transparent 55%),linear-gradient(135deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%),#15161A;border-color:rgba(212,255,0,0.18)}
+  .entry-tags{padding:18px 28px 0;display:flex;gap:6px;flex-wrap:wrap}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .tag .sw{width:6px;height:6px;border-radius:2px}
+  .tag.feature{background:rgba(212,255,0,0.12);color:var(--neon)}
+  .tag.feature .sw{background:var(--neon)}
+  .tag.improve{background:rgba(96,165,250,0.12);color:#60A5FA}
+  .tag.improve .sw{background:#60A5FA}
+  .tag.fix{background:rgba(255,170,90,0.12);color:#FFAA5A}
+  .tag.fix .sw{background:#FFAA5A}
+  .tag.security{background:rgba(167,139,250,0.16);color:var(--lavender)}
+  .tag.security .sw{background:var(--lavender)}
+  .tag.api{background:rgba(255,255,255,0.05);color:var(--ink)}
+  .tag.api .sw{background:var(--ink)}
+  .entry-card h3{font-size:24px;font-weight:700;letter-spacing:-0.018em;line-height:1.2;padding:14px 28px 6px}
+  .entry-card h3 .em{color:var(--neon)}
+  .entry-card .lede{font-size:15px;color:var(--mute);line-height:1.6;padding:0 28px 22px;max-width:680px}
+  .entry-shot{position:relative;background:var(--bg-2);padding:28px;margin:0 28px 22px;border:1px solid var(--line);border-radius:16px}
+  .entry-shot .shot-bar{display:flex;align-items:center;gap:8px;padding-bottom:14px;border-bottom:1px dashed var(--line);margin-bottom:14px}
+  .entry-shot .shot-bar .d{width:8px;height:8px;border-radius:50%;background:var(--line-2)}
+  .entry-shot .shot-bar .url{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);margin-left:8px}
+  .entry-shot pre{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+  .entry-shot pre .com{color:var(--mute-2)}
+  .entry-shot pre .key{color:var(--lavender)}
+  .entry-shot pre .str{color:var(--neon)}
+  .entry-shot pre .neg{color:#FF8585}
+  .entry-shot pre .pos{color:var(--neon)}
+  .entry-shot.preview{background:#FFF;color:#0E0E10;border-color:#E5E6EB}
+  .entry-shot.preview .shot-bar .d{background:#D1D2D9}
+  .entry-shot.preview .shot-bar{border-bottom-color:#E5E6EB}
+  .entry-shot.preview .shot-bar .url{color:#5A5A63}
+  .entry-shot .preview-row{display:flex;align-items:center;gap:14px;padding:10px;border:1px solid #E5E6EB;border-radius:10px;margin-bottom:8px;background:#FFF}
+  .entry-shot .preview-row .av{width:32px;height:32px;border-radius:50%;background:#D4FF00;color:#0E0E10;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .entry-shot .preview-row .body{flex:1}
+  .entry-shot .preview-row .body .nm{font-size:12px;font-weight:600;color:#0E0E10}
+  .entry-shot .preview-row .body .reason{font-size:11px;color:#5A5A63;font-family:'JetBrains Mono',monospace;margin-top:2px}
+  .entry-shot .preview-row .score{padding:3px 9px;background:#0E0E10;color:#D4FF00;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+  .entry-bullets{list-style:none;padding:0 28px 22px;margin:0;display:flex;flex-direction:column;gap:10px}
+  .entry-bullets li{font-size:14px;color:var(--ink);line-height:1.55;display:flex;align-items:flex-start;gap:10px}
+  .entry-bullets li::before{content:'+';color:var(--neon);font-family:'JetBrains Mono',monospace;font-weight:700;flex-shrink:0;width:14px}
+  .entry-bullets li.fix::before{content:'·';color:#FFAA5A;font-size:18px;line-height:.8}
+  .entry-foot{padding:18px 28px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute-2);letter-spacing:0.06em}
+  .entry-foot .meta{display:flex;gap:18px;flex-wrap:wrap}
+  .entry-foot .meta b{color:var(--ink)}
+  .entry-foot a{color:var(--lavender)}
+  .entry-foot a:hover{color:var(--neon)}
+
+  /* Footer */
+  footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:60px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
+  .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
+  .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s}
+  .footer-grid .col a:hover{color:var(--ink)}
+  .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(0.22,0.61,0.36,1),transform .8s cubic-bezier(0.22,0.61,0.36,1)}
+  .reveal.is-visible{opacity:1;transform:translateY(0)}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+
+  @media (max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
+  @media (max-width:880px){
+    .nav-links{display:none}
+    .hero{padding:60px 0 30px}
+    .filter-strip{position:static}
+    .changelog::before{left:14px}
+    .entry{grid-template-columns:1fr;gap:14px;padding:30px 0 30px 32px}
+    .entry-side{text-align:left;padding-top:0;display:flex;align-items:baseline;gap:12px}
+    .entry-side .day,.entry-side .month{display:none}
+    .entry-dot{left:10px;top:38px}
+    .entry-shot{margin:0 18px 18px;padding:20px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-row">
+    <a href="./index.html" class="logo">
+      <img class="logo-img" src="../images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
+    </a>
+    <div class="nav-links">
+      <a href="./features.html">Features</a>
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+      <a href="./blog.html">Blog</a>
+      <a href="./about.html">About</a>
+      <a href="./contact.html">Contact</a>
+    </div>
+    <a href="./contact.html" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow reveal"><span class="dot"></span> Shipping every Thursday since v0.1</div>
+    <h1 class="reveal">What we just<br/><span class="highlight">shipped.</span></h1>
+    <p class="reveal">Every release. Every fix. Every breaking change called out by name. Subscribe and we'll DM you a 90-second weekly digest on Slack.</p>
+    <div class="sub reveal">
+      <span>v2.14.0</span>
+      <span>·</span>
+      <span>Last release Thu 7 May 2026</span>
+      <span>·</span>
+      <a href="#">Subscribe via Slack →</a>
+      <span>·</span>
+      <a href="#">RSS</a>
+    </div>
+  </div>
+</section>
+
+<div class="filter-strip">
+  <div class="container">
+    <div class="filter-row">
+      <div class="filter-tabs">
+        <button class="filter-tab active">All</button>
+        <button class="filter-tab"><span class="swatch" style="background:#D4FF00"></span> Features</button>
+        <button class="filter-tab"><span class="swatch" style="background:#60A5FA"></span> Improvements</button>
+        <button class="filter-tab"><span class="swatch" style="background:#FFAA5A"></span> Fixes</button>
+        <button class="filter-tab"><span class="swatch" style="background:#B5A1FF"></span> Security</button>
+        <button class="filter-tab"><span class="swatch" style="background:#F5F5F7"></span> API</button>
+      </div>
+      <div class="filter-info">// <b>146</b> entries · 24 months</div>
+    </div>
+  </div>
+</div>
+
+<section class="changelog">
+  <div class="container narrow">
+
+    <article class="entry major reveal">
+      <div class="entry-side">
+        <div class="ver">v2.14.0</div>
+        <div class="date">May 2026</div>
+        <div class="day">07</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag feature"><span class="sw"></span>Major feature</span><span class="tag api"><span class="sw"></span>API</span></div>
+        <h3>Forecasting agent <span class="em">(GA)</span></h3>
+        <p class="lede">Our 4th specialised agent ships GA today. It re-scores every deal nightly, fuses CRM stage with call sentiment + reply cadence, and drops a Slack DM to your CRO when confidence drops &gt; 15 points week-over-week. Trained on 2.4M closed-won/lost deals.</p>
+        <ul class="entry-bullets">
+          <li>Per-deal confidence score, plain-English reasoning</li>
+          <li>Predicts close date within ±6 days at P50 (±11 at P90)</li>
+          <li>One-click "what would change this score?" simulator</li>
+          <li>Salesforce + HubSpot custom-fields write-back, idempotent</li>
+        </ul>
+        <div class="entry-foot">
+          <div class="meta"><span>commit <b>a14d99c</b></span><span>shipped by <b>@matias</b></span><span>1.2k LOC</span></div>
+          <a href="#">Read the design doc →</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.13.4</div>
+        <div class="date">May 2026</div>
+        <div class="day">02</div>
+        <div class="month">Sat</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag improve"><span class="sw"></span>Improvement</span></div>
+        <h3>Score reasons now show in &lt; 80ms</h3>
+        <p class="lede">We re-architected the explanation pipeline so the "why is this account a 94?" tooltip pre-renders during the morning batch. Reps no longer wait when expanding a row.</p>
+        <div class="entry-shot preview">
+          <div class="shot-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="url">prospect/today · explain on hover</span></div>
+          <div class="preview-row">
+            <div class="av">DK</div>
+            <div class="body"><div class="nm">Demand Kitchen — score 94</div><div class="reason">// 9 closed-won lookalikes · expanding HQ · funded Q1</div></div>
+            <div class="score">94</div>
+          </div>
+          <div class="preview-row">
+            <div class="av" style="background:#A78BFA;color:#fff">SF</div>
+            <div class="body"><div class="nm">SafeFlow GmbH — score 81</div><div class="reason">// hired 8 SDRs in Q1 · no inbound yet · 2 mutual partners</div></div>
+            <div class="score">81</div>
+          </div>
+        </div>
+        <div class="entry-foot">
+          <div class="meta"><span>commit <b>5a32e71</b></span><span>p95 latency <b>−72%</b></span></div>
+          <a href="#">Benchmarks →</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.13.3</div>
+        <div class="date">Apr 2026</div>
+        <div class="day">25</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag feature"><span class="sw"></span>Feature</span><span class="tag improve"><span class="sw"></span>Improvement</span></div>
+        <h3>LinkedIn Sales Navigator — native list sync</h3>
+        <p class="lede">Sales Nav lists now sync into KomboAI like first-class accounts. Score, sequence, coach, and forecast against your saved searches without leaving the platform. Real-time, no ZIP exports.</p>
+        <ul class="entry-bullets">
+          <li>Saved Searches → KomboAI lists in &lt; 30s</li>
+          <li>Account &amp; Lead-list parity</li>
+          <li>Connection-degree as a scoring signal</li>
+          <li>InMail templates approved through KomboAI sequence flow</li>
+        </ul>
+        <div class="entry-foot"><div class="meta"><span>commit <b>9be03f2</b></span><span>integrations team</span></div><a href="#">Setup guide →</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.13.2</div>
+        <div class="date">Apr 2026</div>
+        <div class="day">17</div>
+        <div class="month">Wed</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag security"><span class="sw"></span>Security</span></div>
+        <h3>SOC 2 Type II + ISO 27001 — renewed</h3>
+        <p class="lede">Our annual audit closed on April 12 with zero exceptions across 142 controls. The full report and sub-processor list are live on our <a href="https://security.getkombo.ai/" target="_blank" rel="noopener" style="color:var(--neon)">Trust Center</a>.</p>
+        <ul class="entry-bullets">
+          <li>SOC 2 Type II — covering Security, Availability, Confidentiality</li>
+          <li>ISO 27001:2022 — multi-region scope</li>
+          <li>GDPR + EU data residency on Growth and above</li>
+          <li>Pen-test summary published Q2</li>
+        </ul>
+        <div class="entry-foot"><div class="meta"><span>auditor <b>Sprinto</b></span><span>scope <b>+12 controls</b></span></div><a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.13.1</div>
+        <div class="date">Apr 2026</div>
+        <div class="day">11</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag api"><span class="sw"></span>API</span></div>
+        <h3>Public Webhooks v2 — typed payloads &amp; signed delivery</h3>
+        <p class="lede">Every action an agent takes now fires a typed webhook with HMAC-SHA256 signing, retry-with-backoff, and a 7-day replay window. v1 webhooks remain supported until Q4 2026.</p>
+        <div class="entry-shot">
+          <div class="shot-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="url">POST  /your-webhook</span></div>
+<pre><span class="com">// Lead scored → routed in &lt; 200ms</span>
+<span class="key">x-kombo-event:</span>  <span class="str">lead.scored</span>
+<span class="key">x-kombo-version:</span><span class="str">2</span>
+<span class="key">x-kombo-signature:</span> <span class="str">v2,t=1714423800,v1=…</span>
+
+{
+  <span class="key">"lead_id":</span> <span class="str">"led_01HW7…"</span>,
+  <span class="key">"score":</span> <span class="pos">94</span>,
+  <span class="key">"reasons":</span> [<span class="str">"closed_won_lookalike"</span>, <span class="str">"hq_expansion"</span>],
+  <span class="key">"routed_to":</span> <span class="str">"marco@weekendesk.com"</span>
+}</pre>
+        </div>
+        <div class="entry-foot"><div class="meta"><span>commit <b>3c81a09</b></span><span>breaking <b>+ deprecation</b></span></div><a href="#">Migration guide →</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.13.0</div>
+        <div class="date">Apr 2026</div>
+        <div class="day">04</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag feature"><span class="sw"></span>Feature</span></div>
+        <h3>Coaching agent — multi-language</h3>
+        <p class="lede">The coaching agent now reads transcripts in 11 languages and benchmarks against region-specific champion patterns. French and Spanish moved out of beta this week; Portuguese, Italian, German, and Dutch follow next sprint.</p>
+        <div class="entry-foot"><div class="meta"><span>commit <b>e771ba2</b></span><span>+8 langs</span></div><a href="#">Coverage matrix →</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.12.6</div>
+        <div class="date">Mar 2026</div>
+        <div class="day">28</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag fix"><span class="sw"></span>Fix</span></div>
+        <h3>Pipeline review — stale-deal banner</h3>
+        <p class="lede">Fixed a regression where the stale-deal banner could double-fire if a rep changed deal-stage and amount in the same minute. Banner is now debounced (30s) and idempotent on stage transitions.</p>
+        <ul class="entry-bullets">
+          <li class="fix">No more duplicate Slack alerts in pipeline review</li>
+          <li class="fix">Manager digest now reflects only the most-recent state</li>
+          <li class="fix">Fixed timezone bug in EU customers' "stalled &gt; 5d" badge</li>
+        </ul>
+        <div class="entry-foot"><div class="meta"><span>commit <b>fa10c47</b></span><span>regression hot-fix</span></div><a href="#">Incident notes →</a></div>
+      </div>
+    </article>
+
+    <article class="entry major reveal">
+      <div class="entry-side">
+        <div class="ver">v2.12.0</div>
+        <div class="date">Mar 2026</div>
+        <div class="day">14</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag feature"><span class="sw"></span>Major feature</span><span class="tag improve"><span class="sw"></span>Improvement</span></div>
+        <h3>Approve-in-Batch — review 25 sequences in &lt; 3 minutes</h3>
+        <p class="lede">Reps were spending 18 minutes/day approving agent-drafted touches. We rebuilt the review surface with keyboard-only flow, side-by-side personalisation diffs, and bulk-edit. Average approval time fell to 11s per sequence.</p>
+        <div class="entry-shot">
+          <div class="shot-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="url">approve · keyboard-only</span></div>
+<pre><span class="com">// Keystrokes · 92% of users complete via keyboard alone</span>
+<span class="key">J / K</span>      <span class="com">→ next / prev sequence</span>
+<span class="key">A</span>          <span class="com">→ approve as-is</span>
+<span class="key">E</span>          <span class="com">→ edit (Cmd-S to save &amp; advance)</span>
+<span class="key">S</span>          <span class="com">→ skip + reschedule</span>
+<span class="key">Shift-A</span>    <span class="com">→ approve all in segment</span>
+<span class="key">⌥+ R</span>       <span class="com">→ ask agent for variant ("warmer", "shorter", …)</span></pre>
+        </div>
+        <div class="entry-foot"><div class="meta"><span>commit <b>0a91dde</b></span><span>review time <b>−70%</b></span></div><a href="#">Read the launch post →</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.11.7</div>
+        <div class="date">Mar 2026</div>
+        <div class="day">07</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag improve"><span class="sw"></span>Improvement</span></div>
+        <h3>Salesforce sync — custom-objects + opportunity teams</h3>
+        <p class="lede">Salesforce customers can now map any custom object into KomboAI's account graph. Opportunity teams flow through to the forecasting agent for shared-credit attribution.</p>
+        <div class="entry-foot"><div class="meta"><span>commit <b>4d11c58</b></span><span>req'd by <b>3 enterprise customers</b></span></div><a href="#">Mapping guide →</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.11.4</div>
+        <div class="date">Feb 2026</div>
+        <div class="day">22</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag fix"><span class="sw"></span>Fix</span><span class="tag security"><span class="sw"></span>Security</span></div>
+        <h3>Patched: SAML re-binding edge case</h3>
+        <p class="lede">A bug allowed a stale SAML assertion to be replayed within a 90-second window after IdP-initiated SSO if the rep had two browser tabs open. Patched in 2.11.4. No customers affected per our audit logs.</p>
+        <ul class="entry-bullets">
+          <li class="fix">Assertion replay window reduced to 5s</li>
+          <li class="fix">Per-tab nonce binding</li>
+          <li class="fix">Disclosed to security@ partners on Feb 14</li>
+        </ul>
+        <div class="entry-foot"><div class="meta"><span>commit <b>cve-2026-0142</b></span><span>severity <b>low</b></span></div><a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Advisory ↗</a></div>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-side">
+        <div class="ver">v2.11.0</div>
+        <div class="date">Feb 2026</div>
+        <div class="day">06</div>
+        <div class="month">Thu</div>
+      </div>
+      <span class="entry-dot"></span>
+      <div class="entry-card">
+        <div class="entry-tags"><span class="tag feature"><span class="sw"></span>Feature</span></div>
+        <h3>Slack — &amp; Microsoft Teams parity</h3>
+        <p class="lede">Daily digests, deal-risk alerts, and slash commands now ship at parity on Slack and Microsoft Teams. Adaptive cards on Teams render the same data as Slack blocks — coach digest, risk alerts, and pipeline summaries.</p>
+        <div class="entry-foot"><div class="meta"><span>commit <b>72eef1a</b></span><span>connectors team</span></div><a href="#">Channel setup →</a></div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="col">
+        <a href="../v9_glass_cathedral.html" class="logo">
+          <img class="logo-img" src="../images/LOGO/logo-icon-lila.png" alt="KomboAI">
+          <span class="logo-text">KomboAI</span>
+        </a>
+        <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+      </div>
+      <div class="col">
+        <h6>Product</h6>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./changelog.html">Changelog</a>
+      </div>
+      <div class="col">
+        <h6>Company</h6>
+        <a href="./about.html">About</a>
+        <a href="./customers.html">Customers</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+      <div class="col">
+        <h6>Legal &amp; Trust</h6>
+        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+        <a href="#">Privacy policy</a>
+        <a href="#">Terms of service</a>
+        <a href="#">DPA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 KomboAI. All rights reserved.</div>
+      <div>Less clicks. More selling.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.querySelectorAll('.reveal').forEach(el=>el.classList.add('is-visible'));return;
+    }
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}})},{threshold:0.08,rootMargin:'0px 0px -6% 0px'});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  })();
+  (function(){
+    const ts=document.querySelectorAll('.filter-tab');
+    ts.forEach(t=>t.addEventListener('click',()=>{ts.forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
+  })();
+</script>
+
+</body>
+</html>
