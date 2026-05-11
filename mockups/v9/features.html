@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features - Kombo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --neon: #D4FF00;
+      --bg-dark: #0a0e17;
+      --bg-panel: #1a1f2e;
+      --text-primary: #f0f1f3;
+      --text-secondary: #b4b8c0;
+      --border: #2a2f3e;
+      --accent: #4d5dff;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 2rem;
+      --space-xl: 3rem;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); line-height: 1.6; }
+
+    header {
+      position: sticky; top: 0; z-index: 100; background: rgba(10, 14, 23, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); padding: var(--space-md) var(--space-lg);
+    }
+
+    .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-weight: 700; font-size: 1.25rem; color: var(--text-primary); text-decoration: none; }
+    nav { display: flex; gap: var(--space-lg); align-items: center; }
+    nav a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: color 0.3s; }
+    nav a:hover, nav a.active { color: var(--neon); }
+
+    .nav-cta {
+      background: var(--neon); color: var(--bg-dark); padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-weight: 600; transition: all 0.3s;
+    }
+
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); }
+
+    h1 {
+      font-size: 3rem; margin-bottom: var(--space-md);
+      background: linear-gradient(135deg, var(--neon), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .intro { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-xl); max-width: 800px; }
+
+    h2 { font-size: 2rem; margin: var(--space-xl) 0 var(--space-md); }
+    h3 { font-size: 1.25rem; margin: var(--space-lg) 0 var(--space-md); }
+    p { color: var(--text-secondary); margin-bottom: var(--space-md); line-height: 1.8; }
+
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-xl); }
+
+    .feature-section {
+      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: var(--space-lg);
+      transition: all 0.3s;
+    }
+
+    .feature-section:hover { border-color: var(--neon); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(212, 255, 0, 0.15); }
+
+    .feature-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .feature-icon { font-size: 2.5rem; flex-shrink: 0; }
+    .feature-header h3 { margin: 0; }
+    .feature-description { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+
+    .feature-link {
+      display: inline-block; margin-top: var(--space-md);
+      color: var(--neon); text-decoration: none; font-weight: 600;
+      transition: transform 0.3s;
+    }
+
+    .feature-link:hover { transform: translateX(4px); }
+
+    .benefits-section {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border: 1px solid var(--border); border-radius: 16px; padding: var(--space-xl);
+      margin: var(--space-xl) 0;
+    }
+
+    .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+
+    .benefit-card {
+      background: rgba(26, 31, 46, 0.5); padding: var(--space-lg); border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .benefit-card h4 { color: var(--neon); margin-bottom: var(--space-sm); font-size: 1.1rem; }
+    .benefit-card p { font-size: 0.95rem; }
+
+    .cta-section {
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
+      border: 1px solid var(--border); border-radius: 16px; padding: var(--space-xl); text-align: center; margin-top: var(--space-xl);
+    }
+
+    .btn-neon {
+      display: inline-block; background: var(--neon); color: var(--bg-dark); padding: 1rem 2rem; border-radius: 8px;
+      font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.3s;
+    }
+
+    .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2); }
+
+    footer {
+      max-width: 1200px; margin: var(--space-xl) auto 0; padding: var(--space-xl) var(--space-lg);
+      border-top: 1px solid var(--border); display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-xl);
+    }
+
+    footer h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: var(--space-md); color: var(--text-primary); }
+    footer a { display: block; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; margin-bottom: var(--space-sm); transition: color 0.3s; }
+    footer a:hover { color: var(--neon); }
+
+    @media (max-width: 880px) {
+      nav { gap: var(--space-md); } nav a { display: none; }
+      .nav-cta { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      h1 { font-size: 2rem; }
+      footer { grid-template-columns: 1fr; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="./index.html" class="logo">Kombo</a>
+      <nav>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+        <a href="./blog.html">Blog</a>
+        <a href="./podcast.html">Podcast</a>
+        <a href="./about.html">About</a>
+        <a href="./contact.html" class="nav-cta">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Everything your team needs to win</h1>
+    <p class="intro">Kombo is built for modern sales teams. We've bundled our most powerful AI features into one platform so you can run better campaigns, close bigger deals, and hit quota.</p>
+
+    <div class="feature-grid">
+      <div class="feature-section">
+        <div class="feature-header">
+          <div class="feature-icon">🎯</div>
+          <h3>Lead Ranking</h3>
+        </div>
+        <p class="feature-description">Rank every lead by buying signal. Our AI learns what buying intent looks like in your market and automatically scores every lead in real-time.</p>
+        <a href="./feature-lead-ranking.html" class="feature-link">Learn more →</a>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-header">
+          <div class="feature-icon">📧</div>
+          <h3>Email Personalization</h3>
+        </div>
+        <p class="feature-description">Send 1,000 emails that feel like 1. Our AI writes subject lines, bodies, and CTAs tailored to each recipient's role, company, and behavior.</p>
+        <a href="./feature-email-personalization.html" class="feature-link">Learn more →</a>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-header">
+          <div class="feature-icon">🤖</div>
+          <h3>CRM Intelligence</h3>
+        </div>
+        <p class="feature-description">Your CRM, finally smart. Stop manual data entry. Let AI handle the busywork so your team can sell.</p>
+        <a href="./feature-crm-intelligence.html" class="feature-link">Learn more →</a>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-header">
+          <div class="feature-icon">📊</div>
+          <h3>Revenue Forecasting</h3>
+        </div>
+        <p class="feature-description">Forecast revenue with 94% accuracy. No more guessing. Our AI learns your sales patterns and predicts revenue with best-in-class accuracy.</p>
+        <a href="./feature-forecasting.html" class="feature-link">Learn more →</a>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-header">
+          <div class="feature-icon">💡</div>
+          <h3>Revenue Insights</h3>
+        </div>
+        <p class="feature-description">Your revenue analyst on speed dial. Get instant answers about your pipeline, forecast, and deal status in natural language.</p>
+        <a href="./feature-revenue-insights.html" class="feature-link">Learn more →</a>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-header">
+          <div class="feature-icon">🔌</div>
+          <h3>Deep Integrations</h3>
+        </div>
+        <p class="feature-description">Multi-channel sequences, 60+ data sources, AI enrichment with 191 providers, CRM sync, unified inbox, real-time alerts, and coaching-as-a-service.</p>
+        <a href="./integrations.html" class="feature-link">Explore integrations →</a>
+      </div>
+    </div>
+
+    <div class="benefits-section">
+      <h2>Why teams choose Kombo</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <h4>Multi-channel sequences</h4>
+          <p>Run campaigns across email, LinkedIn, phone, and more. One platform. No context switching.</p>
+        </div>
+        <div class="benefit-card">
+          <h4>60+ data sources</h4>
+          <p>We've integrated with the best data providers. Enrich leads with company news, funding activity, job changes, and more.</p>
+        </div>
+        <div class="benefit-card">
+          <h4>AI enrichment</h4>
+          <p>Connect with 191 AI providers. Personalize at scale. Write better emails. Score leads smarter.</p>
+        </div>
+        <div class="benefit-card">
+          <h4>CRM sync & deduplication</h4>
+          <p>Everything syncs to Salesforce automatically. No manual updates. No duplicate records. Just clean data.</p>
+        </div>
+        <div class="benefit-card">
+          <h4>Unified inbox</h4>
+          <p>All messages in one place. Reply to emails, LinkedIn, calls, and more without leaving Kombo.</p>
+        </div>
+        <div class="benefit-card">
+          <h4>Real-time alerts</h4>
+          <p>Get notified when your ICP shows buying signals. Act fast on hot leads before competitors do.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2 style="margin: 0 0 var(--space-md) 0;">Ready to transform your sales process?</h2>
+      <p>Get started with Kombo today and start winning more deals.</p>
+      <a href="./contact.html" class="btn-neon">Schedule a demo</a>
+    </div>
+  </main>
+
+  <footer>
+    <div>
+      <h3>Product</h3>
+      <a href="./features.html">Features</a>
+      <a href="./how-it-works.html">How it works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./integrations.html">Integrations</a>
+    </div>
+    <div>
+      <h3>Company</h3>
+      <a href="./about.html">About</a>
+      <a href="./customers.html">Customers</a>
+      <a href="./contact.html">Contact</a>
+    </div>
+    <div>
+      <h3>Learn</h3>
+      <a href="./blog.html">Blog</a>
+      <a href="./podcast.html">Podcast</a>
+      <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+    </div>
+  </footer>
+</body>
+</html>
