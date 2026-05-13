@@ -158,6 +158,7 @@
     transform: rotate(-1deg);
   }
   .hero p { font-size: 18px; color: var(--mute); max-width: 580px; margin: 0 auto 36px; line-height: 1.55; position: relative; z-index: 1; }
+  .hero p b { color: var(--ink); font-weight: 700; }
 
   /* Closing CTA */
   .closing-cta { padding: 80px 0 64px; }
@@ -430,7 +431,7 @@
   .chapter-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
     background: var(--card-bg, transparent);
-    padding: 96px 72px;
+    padding: 96px 96px;
     border-radius: 36px;
     position: relative;
     overflow: hidden;
@@ -615,7 +616,7 @@
   .crm-action .ic { font-weight: 700; color: #6B4EFF; flex-shrink: 0; }
 
   @media (max-width: 980px) {
-    .chapter-grid { grid-template-columns: 1fr; gap: 36px; padding: 64px 28px; border-radius: 24px; }
+    .chapter-grid { grid-template-columns: 1fr; gap: 36px; padding: 64px 48px; border-radius: 24px; }
     .chapter.reverse .chapter-text { order: 1; }
     .chapter.reverse .chapter-prod { order: 2; }
     .chapter { padding: 28px 0; }
@@ -969,7 +970,7 @@
   <div class="container">
     <div class="eyebrow reveal"><span class="dot"></span> Stop losing pipeline to manual work AI could do for you</div>
     <h1 class="reveal">Less clicks.<br/>More <span class="highlight">selling.</span></h1>
-    <p class="reveal">KomboAI sits on top of your CRM and helps your SDRs and AEs prospect, launch sequences, and get coached faster.</p>
+    <p class="reveal">KomboAI <b>sits on top of your CRM</b> and helps your SDRs and AEs <b>prospect,</b> <b>launch sequences,</b> and <b>get coached</b> faster.</p>
     <div class="hero-cta-row reveal">
       <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="btn-neon">Book a demo</a>
       <a href="./contact.html" class="btn-ghost">Ask a question →</a>
