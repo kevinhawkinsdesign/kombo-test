@@ -157,7 +157,8 @@
   .hero{position:relative;overflow:hidden}
   .hero .container{position:relative;z-index:2}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(0,0,0,0.3))}
+  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;mix-blend-mode:screen}
+  img.dood[src*="arrows-scribbles"]{filter:invert(1)}
   .dood.d1{top:5%;left:1%;width:158px;transform:rotate(-8deg);animation-delay:0s;opacity:0.55}
   .dood.d2{top:4%;right:2%;width:122px;transform:rotate(4deg);animation-delay:0.6s;opacity:0.45}
   .dood.d3{top:40%;left:0%;width:104px;transform:rotate(-7deg);animation-delay:1.0s;opacity:0.4}
