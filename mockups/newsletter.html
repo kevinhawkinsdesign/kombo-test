@@ -101,9 +101,10 @@
   .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
   .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
   .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
-  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s}
+  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s;text-decoration:none}
   .footer-grid .col a:hover{color:var(--ink)}
   .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+  @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 
   @media(max-width:1024px){
     .editions-grid{grid-template-columns:repeat(2,1fr)}
@@ -120,6 +121,55 @@
     .signup-form input{width:100%}
     .signup-form button{width:100%;border-radius:12px}
   }
+  nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink);text-decoration:none}
+  .logo-img{height:26px;width:auto;display:block}
+  .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  .nav-links{display:flex;gap:16px;font-size:14px;color:var(--mute);align-items:center}
+  .nav-dropdown{position:relative;display:inline-block}
+  .nav-dropdown>button{background:transparent;border:1px solid transparent;color:var(--mute);padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
+  .nav-dropdown>button:hover{color:var(--lavender);border-color:var(--lavender-soft)}
+  .nav-dropdown>button.active,.nav-dropdown:focus-within>button{color:var(--lavender);border-color:var(--lavender-soft)}
+  .dropdown-menu{position:absolute;top:100%;left:0;margin-top:4px;background:rgba(20,20,23,0.96);border:1px solid var(--line);border-radius:12px;min-width:160px;padding:8px 0;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;pointer-events:none;z-index:40}
+  .nav-dropdown:hover .dropdown-menu,.nav-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  .dropdown-menu a{display:block;padding:10px 16px;color:var(--mute);transition:color .15s;font-size:13px;text-decoration:none}
+  .dropdown-menu a:hover,.dropdown-menu a.active{color:var(--ink);font-weight:600}
+  .nav-links>a{transition:color .2s;text-decoration:none}
+  .nav-links>a:hover,.nav-links>a.active{color:var(--ink)}
+  .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s;text-decoration:none}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+  @media(max-width:880px){.nav-links{display:none}}
+</style>
+<style>
+  .container{max-width:1180px;margin:0 auto;padding:0 28px}
+  nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink);text-decoration:none}
+  .logo-img{height:26px;width:auto;display:block}
+  .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  .nav-links{display:flex;gap:16px;font-size:14px;color:var(--mute);align-items:center}
+  .nav-dropdown{position:relative;display:inline-block}
+  .nav-dropdown>button{background:transparent;border:1px solid transparent;color:var(--mute);padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
+  .nav-dropdown>button:hover{color:var(--lavender);border-color:var(--lavender-soft)}
+  .nav-dropdown>button.active,.nav-dropdown:focus-within>button{color:var(--lavender);border-color:var(--lavender-soft)}
+  .dropdown-menu{position:absolute;top:100%;left:0;margin-top:4px;background:rgba(20,20,23,0.96);border:1px solid var(--line);border-radius:12px;min-width:160px;padding:8px 0;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;pointer-events:none;z-index:40}
+  .nav-dropdown:hover .dropdown-menu,.nav-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  .dropdown-menu a{display:block;padding:10px 16px;color:var(--mute);transition:color .15s;font-size:13px;text-decoration:none}
+  .dropdown-menu a:hover,.dropdown-menu a.active{color:var(--ink);font-weight:600}
+  .nav-links>a{transition:color .2s;text-decoration:none}
+  .nav-links>a:hover,.nav-links>a.active{color:var(--ink)}
+  .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s;text-decoration:none}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+  @media(max-width:880px){.nav-links{display:none}}
+  footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:60px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
+  .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
+  .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s;text-decoration:none}
+  .footer-grid .col a:hover{color:var(--ink)}
+  .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+  @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 </style>
 </head>
 <body>
@@ -156,7 +206,7 @@
           <a href="./about.html">About</a>
           <a href="./team.html">Team</a>
           <a href="./contact.html">Contact</a>
-          <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs &#8599;</a>
+          <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
         </div>
       </div>
       <div class="nav-dropdown">
