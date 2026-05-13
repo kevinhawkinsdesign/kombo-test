@@ -75,7 +75,7 @@
     background: radial-gradient(ellipse at center, rgba(212,255,0,0.08) 0%, transparent 60%);
     pointer-events: none;
   }
-  .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--lavender-soft); border-radius: 999px; font-size: 13px; color: var(--lavender); margin-bottom: 32px; position: relative; z-index: 1; background: rgba(181,161,255,0.05); }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--lavender-soft); border-radius: 999px; font-size: 13px; color: var(--lavender); margin-bottom: 40px; position: relative; z-index: 1; background: rgba(181,161,255,0.05); }
   .eyebrow .dot { width: 8px; height: 8px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 12px var(--neon); animation: dot-blink 1.4s ease-in-out infinite; }
   @keyframes dot-blink {
     0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--neon); }
@@ -142,11 +142,11 @@
     .eyebrow .dot { animation: none; }
   }
   .hero h1 {
-    font-size: clamp(48px, 7.5vw, 92px);
+    font-size: clamp(56px, 9.5vw, 120px);
     font-weight: 700;
-    line-height: 1.02;
-    letter-spacing: -0.035em;
-    margin-bottom: 24px;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    margin-bottom: 36px;
     position: relative; z-index: 1;
   }
   .hero h1 .highlight {
@@ -157,7 +157,7 @@
     display: inline-block;
     transform: rotate(-1deg);
   }
-  .hero p { font-size: 18px; color: var(--mute); max-width: 580px; margin: 0 auto 36px; line-height: 1.55; position: relative; z-index: 1; }
+  .hero p { font-size: 18px; color: var(--mute); max-width: 580px; margin: 0 auto 48px; line-height: 1.55; position: relative; z-index: 1; }
   .hero p b { color: var(--ink); font-weight: 700; }
 
   /* Closing CTA */
@@ -308,7 +308,7 @@
     pointer-events: none; opacity: 0; transition: opacity 0.25s;
   }
   .video-frame.is-ended .yt-end-mask { opacity: 1; }
-  .hero-cta-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 80px; position: relative; z-index: 1; }
+  .hero-cta-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 120px; position: relative; z-index: 1; }
   .btn-neon { background: var(--neon); color: var(--bg); padding: 14px 28px; border-radius: 999px; font-weight: 600; font-size: 14px; transition: transform .2s, box-shadow .2s; }
   .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,255,0,0.3); }
   .btn-ghost { background: transparent; color: var(--lavender); padding: 14px 24px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid var(--lavender-soft); transition: border-color .2s, color .2s, box-shadow .2s, transform .2s, background .2s; }
