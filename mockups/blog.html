@@ -180,22 +180,20 @@
   @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 </style>
 <style>
-  /* Hero decorations - hands + doodles */
+/* Hero decorations – unique per page */
   .hero{position:relative;overflow:hidden}
   .hero .container{position:relative;z-index:2}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
   .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(0,0,0,0.3))}
-  .dood.d1{top:6%;left:1%;width:170px;transform:rotate(-8deg);animation-delay:0s;opacity:0.55}
-  .dood.d2{top:4%;right:2%;width:180px;transform:rotate(6deg);animation-delay:0.7s;opacity:0.55}
-  .dood.d3{top:42%;left:0%;width:100px;transform:rotate(-12deg);animation-delay:1.1s;opacity:0.4}
-  .dood.d4{top:36%;right:1%;width:100px;transform:rotate(8deg);animation-delay:1.5s;opacity:0.4}
-  .dood.d5{bottom:8%;left:3%;width:140px;transform:rotate(9deg);animation-delay:1.9s;opacity:0.5}
-  .dood.d6{bottom:6%;right:4%;width:150px;transform:rotate(-7deg);animation-delay:2.3s;opacity:0.5}
+  .dood.d1{top:6%;left:1%;width:168px;transform:rotate(-6deg);animation-delay:0s;opacity:0.55}
+  .dood.d2{top:5%;right:2%;width:118px;transform:rotate(5deg);animation-delay:0.6s;opacity:0.45}
+  .dood.d3{top:43%;left:0%;width:88px;transform:rotate(12deg);animation-delay:1.0s;opacity:0.5}
+  .dood.d4{top:36%;right:1%;width:104px;transform:rotate(-9deg);animation-delay:1.4s;opacity:0.4}
+  .dood.d5{bottom:8%;right:3%;width:110px;transform:rotate(4deg);animation-delay:1.8s;opacity:0.4}
   @keyframes dood-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
-  .hero-asterisk{position:absolute;top:14%;left:10%;font-size:56px;font-weight:900;color:var(--neon);line-height:1;z-index:1;pointer-events:none;animation:dood-float 8s ease-in-out infinite;animation-delay:0.4s;text-shadow:0 0 40px rgba(212,255,0,0.5)}
-  .hero-arch{position:absolute;bottom:-30px;right:4%;width:130px;height:130px;border:24px solid var(--neon);border-radius:50%;clip-path:inset(0 0 50% 0);z-index:0;pointer-events:none;opacity:0.7;filter:drop-shadow(0 0 18px rgba(212,255,0,0.4))}
-  @media(max-width:1180px){.dood.d3,.dood.d4{display:none}.hero-asterisk{font-size:40px;left:5%}.hero-arch{width:90px;height:90px;border-width:18px}}
-  @media(max-width:900px){.hero-doodles,.hero-asterisk,.hero-arch{display:none}}
+  .hero-asterisk{position:absolute;top:18%;left:8%;font-size:56px;font-weight:900;color:var(--neon);line-height:1;z-index:1;pointer-events:none;animation:dood-float 8s ease-in-out infinite;animation-delay:0.4s;text-shadow:0 0 40px rgba(212,255,0,0.5)}
+  @media(max-width:1180px){.dood.d3,.dood.d4{display:none}.hero-asterisk{font-size:40px;left:5%}}
+  @media(max-width:900px){.hero-doodles,.hero-asterisk{display:none}}
   @media(prefers-reduced-motion:reduce){.dood,.hero-asterisk{animation:none}}
 </style>
 </head>
@@ -254,15 +252,13 @@
 <div class="container">
   <section class="hero">
   <div class="hero-doodles" aria-hidden="true">
-    <img src="./images/Hands/dark mode/02.png" class="dood d1" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/17.png" class="dood d2" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 7.png" class="dood d3" alt="" loading="lazy">
-    <img src="./images/doodles/white/Group 11.png" class="dood d4" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/12.png" class="dood d5" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/22.png" class="dood d6" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/07.png" class="dood d1" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-8.png" class="dood d2" alt="" loading="lazy" style="filter:brightness(0) invert(1)">
+    <img src="./images/Hands/dark mode/20.png" class="dood d3" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 12.png" class="dood d4" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-61.png" class="dood d5" alt="" loading="lazy" style="filter:brightness(0) invert(1) sepia(1) saturate(8) hue-rotate(45deg)">
   </div>
   <div class="hero-asterisk" aria-hidden="true">✳</div>
-  <div class="hero-arch" aria-hidden="true"></div>
     <div class="eyebrow">
       <span class="dot"></span>
       <span>Insights &amp; Ideas</span>
