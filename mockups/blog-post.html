@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The CRM Is Where Context Goes to Die — KomboAI Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0E0E10;--bg-2:#141417;--surface:#1A1A1E;--surface-2:#222226;
+    --line:#2A2A30;--line-2:#34343C;--neon:#D4FF00;--neon-2:#C8FF1A;
+    --ink:#F5F5F7;--mute:#8A8A95;--mute-2:#5A5A63;
+    --purple:#A78BFA;--lavender:#B5A1FF;--lavender-soft:rgba(181,161,255,0.35);
+  }
+  html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1180px;margin:0 auto;padding:0 28px}
+  .container.narrow{max-width:760px}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
+  .logo-img{height:26px;width:auto;display:block}
+  .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  .nav-links{display:flex;gap:16px;font-size:14px;color:var(--mute);align-items:center}
+  .nav-dropdown{position:relative;display:inline-block}
+  .nav-dropdown>button{background:transparent;border:1px solid transparent;color:var(--mute);padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500}
+  .nav-dropdown>button:hover{color:var(--lavender);border-color:var(--lavender-soft)}
+  .nav-dropdown>button.active,.nav-dropdown:focus-within>button{color:var(--lavender);border-color:var(--lavender-soft)}
+  .dropdown-menu{position:absolute;top:100%;left:0;margin-top:4px;background:rgba(20,20,23,0.96);border:1px solid var(--line);border-radius:12px;min-width:160px;padding:8px 0;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;pointer-events:none;z-index:40}
+  .nav-dropdown:hover .dropdown-menu,.nav-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  .dropdown-menu a{display:block;padding:10px 16px;color:var(--mute);transition:color .15s;font-size:13px}
+  .dropdown-menu a:hover{color:var(--ink)}
+  .dropdown-menu a.active{color:var(--ink)}
+  .nav-links>a{transition:color .2s}
+  .nav-links>a:hover,.nav-links>a.active{color:var(--ink)}
+  .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+
+  .btn-neon{background:var(--neon);color:var(--bg);padding:14px 28px;border-radius:999px;font-weight:600;font-size:14px;display:inline-block;transition:transform .2s,box-shadow .2s}
+  .btn-neon:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,255,0,0.3)}
+  .btn-ghost{background:transparent;color:var(--lavender);padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender-soft);display:inline-block;transition:all .2s}
+  .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
+
+  /* Article hero */
+  .article-hero{padding:80px 0 0}
+  .article-back{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);margin-bottom:36px;transition:color .2s}
+  .article-back:hover{color:var(--ink)}
+  .article-back svg{transition:transform .2s}
+  .article-back:hover svg{transform:translateX(-3px)}
+  .article-category{display:inline-block;font-size:12px;font-weight:600;color:var(--neon);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px;font-family:'JetBrains Mono',monospace}
+  .article-title{font-size:clamp(34px,5.5vw,62px);font-weight:800;line-height:1.05;letter-spacing:-0.035em;max-width:840px;margin-bottom:28px}
+  .article-meta{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:48px}
+  .article-author{display:flex;align-items:center;gap:12px}
+  .author-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,rgba(212,255,0,0.3),rgba(181,161,255,0.3));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--ink);flex-shrink:0}
+  .author-info .name{font-size:14px;font-weight:600;color:var(--ink)}
+  .author-info .role{font-size:12px;color:var(--mute)}
+  .meta-divider{width:4px;height:4px;border-radius:50%;background:var(--mute-2)}
+  .meta-item{font-size:13px;color:var(--mute)}
+
+  /* Hero image */
+  .hero-image{width:100%;aspect-ratio:16/7;border-radius:20px;overflow:hidden;margin-bottom:80px;position:relative;background:radial-gradient(ellipse at 20% 50%,rgba(212,255,0,0.15) 0%,transparent 55%),radial-gradient(ellipse at 80% 30%,rgba(181,161,255,0.18) 0%,transparent 50%),var(--surface);border:1px solid var(--line)}
+  .hero-image img{width:100%;height:100%;object-fit:cover;display:block}
+  .hero-image-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+  .hero-image-placeholder .icon{font-size:64px;opacity:0.4}
+  .hero-image-placeholder .label{font-size:13px;color:var(--mute-2);font-family:'JetBrains Mono',monospace}
+
+  /* Article body */
+  .article-body{padding-bottom:80px}
+  .article-content{max-width:760px}
+  .article-content p{font-size:17px;line-height:1.75;color:rgba(245,245,247,0.88);margin-bottom:28px}
+  .article-content h2{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-0.025em;line-height:1.2;margin:56px 0 20px;color:var(--ink)}
+  .article-content h3{font-size:20px;font-weight:600;letter-spacing:-0.015em;line-height:1.3;margin:40px 0 16px;color:var(--ink)}
+  .article-content blockquote{border-left:3px solid var(--neon);padding:4px 0 4px 28px;margin:36px 0;font-size:20px;font-style:italic;color:var(--ink);line-height:1.55;letter-spacing:-0.01em}
+  .article-content ul,
+  .article-content ol{padding-left:24px;margin-bottom:28px}
+  .article-content li{font-size:17px;line-height:1.7;color:rgba(245,245,247,0.88);margin-bottom:10px}
+  .article-content strong{color:var(--ink);font-weight:600}
+  .article-content .callout{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 32px;margin:36px 0}
+  .article-content .callout p{margin-bottom:0;font-size:15px}
+  .article-content .callout .callout-label{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--neon);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px}
+
+  /* Tag row */
+  .article-tags{display:flex;gap:8px;flex-wrap:wrap;margin:48px 0 64px;padding-top:48px;border-top:1px solid var(--line)}
+  .tag{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+
+  /* Related articles */
+  .related{padding:80px 0}
+  .related-head{margin-bottom:40px}
+  .related-head .eb{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);text-transform:uppercase;letter-spacing:0.16em;margin-bottom:12px}
+  .related-head h2{font-size:32px;font-weight:700;letter-spacing:-0.025em}
+  .related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .related-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:12px;transition:all .2s}
+  .related-card:hover{transform:translateY(-3px);border-color:var(--line-2)}
+  .related-card .rc-cat{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--neon);text-transform:uppercase;letter-spacing:0.1em}
+  .related-card h3{font-size:16px;font-weight:600;line-height:1.35;letter-spacing:-0.01em}
+  .related-card p{font-size:13px;color:var(--mute);line-height:1.5}
+  .related-card .rc-meta{font-size:12px;color:var(--mute-2);margin-top:auto;padding-top:16px;border-top:1px solid var(--line)}
+
+  /* Closing CTA */
+  .closing-cta{padding:80px 0 64px}
+  .cc-card{position:relative;overflow:hidden;border-radius:36px;padding:72px 64px;background:radial-gradient(ellipse at 0% 0%,rgba(181,161,255,0.30) 0%,transparent 55%),radial-gradient(ellipse at 100% 100%,rgba(212,255,0,0.18) 0%,transparent 55%),linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.01) 100%),#14131C;border:1px solid rgba(181,161,255,0.22);box-shadow:0 32px 100px -20px rgba(181,161,255,0.30),inset 0 1px 0 rgba(255,255,255,0.05)}
+  .cc-orb{position:absolute;bottom:-180px;right:-120px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(212,255,0,0.55) 0%,rgba(212,255,0,0.12) 60%,transparent 100%);pointer-events:none;filter:blur(2px)}
+  .cc-content{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end;position:relative;z-index:1}
+  .cc-headline h2{font-size:clamp(36px,5vw,58px);font-weight:800;line-height:1;letter-spacing:-0.035em;color:var(--ink)}
+  .cc-pill{display:inline-block;background:var(--neon);color:#0E0E10;padding:0 18px 4px;border-radius:16px;transform:rotate(-2deg)}
+  .cc-side p{font-size:16px;line-height:1.55;color:rgba(255,255,255,0.75);margin-bottom:22px;max-width:360px}
+  .cc-links{display:flex;gap:12px;flex-wrap:wrap}
+
+  /* Footer */
+  footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:60px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
+  .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
+  .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+  .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s}
+  .footer-grid .col a:hover{color:var(--ink)}
+  .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+
+  @media(max-width:1024px){
+    .related-grid{grid-template-columns:repeat(2,1fr)}
+    .cc-content{grid-template-columns:1fr;gap:36px}
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  }
+  @media(max-width:880px){
+    .nav-links{display:none}
+    .article-title{font-size:30px}
+    .hero-image{aspect-ratio:4/3;margin-bottom:48px}
+    .article-content p{font-size:15px}
+    .article-content h2{font-size:22px}
+    .article-content blockquote{font-size:17px;padding-left:20px}
+    .related-grid{grid-template-columns:1fr}
+    .cc-card{padding:48px 32px;border-radius:24px}
+    .cc-headline h2{font-size:32px}
+    .footer-grid{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-row">
+    <a href="./index.html" class="logo">
+      <img class="logo-img" src="./images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
+    </a>
+    <div class="nav-links">
+      <div class="nav-dropdown">
+        <button>Product</button>
+        <div class="dropdown-menu">
+          <a href="./features.html">Features</a>
+          <a href="./how-it-works.html">How it works</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./integrations.html">Integrations</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button class="active">Resources</button>
+        <div class="dropdown-menu">
+          <a href="./customers.html">Customers</a>
+          <a href="./podcast.html">Podcast</a>
+          <a href="./blog.html" class="active">Blog</a>
+          <a href="#">Newsletter</a>
+          <a href="#">ROI Calculator</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Company</button>
+        <div class="dropdown-menu">
+          <a href="./about.html">About</a>
+          <a href="./team.html">Team</a>
+          <a href="./contact.html">Contact</a>
+          <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Connect</button>
+        <div class="dropdown-menu">
+          <a href="#">LinkedIn</a>
+          <a href="#">YouTube</a>
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+          <a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" target="_blank" rel="noopener">Spotify</a>
+        </div>
+      </div>
+    </div>
+    <a href="./contact.html" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="article-hero">
+    <a href="./blog.html" class="article-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Back to Blog
+    </a>
+    <div class="article-category">Industry Trends</div>
+    <h1 class="article-title">The CRM Is Where Context Goes to Die</h1>
+    <div class="article-meta">
+      <div class="article-author">
+        <div class="author-avatar">SC</div>
+        <div class="author-info">
+          <div class="name">Sarah Chen</div>
+          <div class="role">Head of Research, KomboAI</div>
+        </div>
+      </div>
+      <div class="meta-divider"></div>
+      <span class="meta-item">May 10, 2026</span>
+      <div class="meta-divider"></div>
+      <span class="meta-item">12 min read</span>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <div class="hero-image">
+    <img src="./images/Get-AI-Insights-2.webp" alt="CRM context visualization" loading="lazy" onerror="this.parentElement.innerHTML='<div class=&quot;hero-image-placeholder&quot;><div class=&quot;icon&quot;>🗄️</div><div class=&quot;label&quot;>Hero image</div></div>'">
+  </div>
+</div>
+
+<div class="container">
+  <div class="article-body">
+    <div class="article-content">
+
+      <p>Every sales team has a story like this. A rep spends three calls building trust with a prospect. They learn about the company's real pain point — not the one in the brief, but the one the CFO actually cares about. They discover that the champion is nervous about the board. They find out there's a competitive evaluation happening quietly in the background.</p>
+
+      <p>Then the rep goes on holiday. Or gets promoted. Or just forgets to log the call.</p>
+
+      <p>The context evaporates. The next rep who picks up the account sees a CRM entry that says: <em>"Good call. Moving forward."</em> Three weeks of trust-building — gone.</p>
+
+      <blockquote>"Good call. Moving forward." Three weeks of relationship-building summarized in four words.</blockquote>
+
+      <p>This is the dirty secret of modern sales tech: the CRM, built to capture everything, has become the place where the most important things disappear.</p>
+
+      <h2>The logging paradox</h2>
+
+      <p>CRMs were designed with a simple premise: if you capture every interaction, you have a complete picture of the deal. But the premise was always flawed. Logging takes time. Reps are optimizing for selling, not writing. And the fields in most CRMs were designed for reporting dashboards, not for the kind of nuanced narrative that actually helps the next rep pick up where the last one left off.</p>
+
+      <p>The result is a system filled with the wrong information. Stage updates. Close dates. Deal values. All the structured data that makes a VP of Sales feel in control — and almost none of the unstructured context that actually wins deals.</p>
+
+      <div class="callout">
+        <div class="callout-label">Key finding</div>
+        <p>Our analysis of 500+ B2B sales teams found that <strong>reps spend an average of 4.6 hours per week logging CRM data</strong> — yet 68% report that the notes they find when picking up a colleague's deal are insufficient to continue the relationship effectively.</p>
+      </div>
+
+      <p>You're paying reps to write bad notes, then suffering the consequences of those bad notes. It's a system that optimizes for compliance theater over actual knowledge transfer.</p>
+
+      <h2>Why context is so hard to capture</h2>
+
+      <p>The problem isn't that reps don't care. It's that context is inherently lossy when compressed into structured fields. The things that actually matter in a deal — the buyer's anxieties, their internal politics, the off-hand comment that revealed the real objection — don't fit in a dropdown menu.</p>
+
+      <p>Consider everything that happens in a single discovery call:</p>
+
+      <ul>
+        <li>The prospect pauses when you mention price — not concern, just mental math</li>
+        <li>They mention their previous vendor "let them down at a critical moment"</li>
+        <li>Their VP joined unexpectedly for the last 10 minutes and asked only about security</li>
+        <li>They used the word "partnership" three times — signal of how they want to buy</li>
+        <li>They're under board pressure to show AI adoption by Q3</li>
+      </ul>
+
+      <p>Every one of those signals shapes how you should approach the next touchpoint. None of them fit neatly in a CRM field. And after a 30-minute call, a rep under quota pressure is going to type "Good call. Sent follow-up." and move on.</p>
+
+      <h2>The handoff problem is worse than it looks</h2>
+
+      <p>Deal handoffs are where context loss becomes catastrophic. When an SDR passes to an AE, the AE rarely gets more than a quick Slack message and a CRM record. When an AE goes on leave, their deals float in limbo until someone gets brave enough to pick them up.</p>
+
+      <p>The average enterprise deal involves 7–8 stakeholders on the buyer side and often 3–4 on the selling side across SDR, AE, SE, and CSM. Each transition is a context cliff. Each new person who touches the deal has to rebuild understanding from scratch — or worse, makes assumptions based on incomplete notes.</p>
+
+      <blockquote>Every handoff is a bet that the next person can reconstruct 6 weeks of relationship-building from 200 words of CRM notes.</blockquote>
+
+      <p>This isn't just inefficient — it actively destroys deals. Buyers notice when they have to repeat themselves. They notice when the AE doesn't remember what they told the SDR. Every gap in context signals: <em>we don't actually care about your specific situation</em>.</p>
+
+      <h2>The AI opportunity nobody is talking about</h2>
+
+      <p>Here's what's strange: in an era of large language models that can summarize a 90-minute call into precise, actionable notes in seconds, most sales teams are still relying on reps to type their own summaries after a long day of calls.</p>
+
+      <p>The opportunity isn't just automation. It's a fundamentally different model of how context moves through a revenue organization. Instead of asking reps to compress and log, you let the system capture everything — call transcripts, email threads, LinkedIn interactions, product usage — and synthesize it into a living deal narrative that updates automatically.</p>
+
+      <p>When the new AE opens that account, they don't see "Good call. Moving forward." They see:</p>
+
+      <div class="callout">
+        <div class="callout-label">AI deal summary</div>
+        <p><strong>Champion:</strong> Maria Flores, VP RevOps. Motivated by reducing manual reporting burden. Strong internal advocate — mentioned she has budget authority.<br><br>
+        <strong>Key objection:</strong> Security review required by IT (contact: Thomas Becker). Specific concern is SOC 2 Type II audit trail.<br><br>
+        <strong>Timing pressure:</strong> Board wants AI tool live before Q3 close. Hard deadline is June 30.<br><br>
+        <strong>Competitor:</strong> Also evaluating Outreach. Maria implied pricing is not the differentiator — she cares more about onboarding speed.</p>
+      </div>
+
+      <p>That's the deal intelligence that actually moves deals forward. And it exists in every conversation — it just never makes it into the CRM.</p>
+
+      <h2>What this means for how teams need to buy</h2>
+
+      <p>If you're evaluating sales tools in 2026, the question to ask isn't "does it integrate with our CRM?" It's "does it make our CRM smarter?" A tool that adds another tab to a rep's workflow hasn't solved the problem — it's deepened it.</p>
+
+      <p>The right architecture puts AI at the point of capture, not the point of retrieval. Automatic call summaries, enriched with sentiment and stakeholder mapping, synced to the CRM record in real time. Email threads analyzed for buying signals. Meeting notes generated and cross-referenced with everything else the team knows about the account.</p>
+
+      <p>When done right, the CRM stops being a graveyard and starts being a brain.</p>
+
+      <h2>The reps who win in this environment</h2>
+
+      <p>The best reps already do a version of this manually. They keep personal notes. They brief their AEs before handoff. They make the 10-minute call to the CSM before the customer goes live. They preserve context by sheer force of diligence.</p>
+
+      <p>But diligence doesn't scale. A rep who spends 40 hours a week in the flow of selling shouldn't also have to spend 5 hours being a knowledge management system. That's the tax that broken CRM habits impose — and it falls disproportionately on the reps who care most.</p>
+
+      <p>The teams that will win the next three years aren't the ones with the biggest SDR headcount or the most aggressive dialing targets. They're the ones that figure out how to preserve and transfer context at scale — so every rep, every handoff, every customer interaction starts from intelligence rather than ignorance.</p>
+
+      <p>The CRM doesn't have to be where context goes to die. But fixing it requires treating context as a first-class citizen of your revenue stack — not an afterthought logged at the end of a long Thursday.</p>
+
+      <div class="article-tags">
+        <span class="tag">CRM</span>
+        <span class="tag">AI Sales Tools</span>
+        <span class="tag">Revenue Operations</span>
+        <span class="tag">Sales Productivity</span>
+        <span class="tag">Industry Trends</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <section class="related">
+    <div class="related-head">
+      <div class="eb">More from the blog</div>
+      <h2>Keep reading</h2>
+    </div>
+    <div class="related-grid">
+      <a href="#" class="related-card">
+        <div class="rc-cat">Product Updates</div>
+        <h3>Introducing Smart Pause: Let Conversations Breathe</h3>
+        <p>Our new feature automatically adjusts timing between outreach messages based on recipient engagement patterns.</p>
+        <div class="rc-meta">by Marcus Liu · 7 min read</div>
+      </a>
+      <a href="#" class="related-card">
+        <div class="rc-cat">Case Studies</div>
+        <h3>How Insight Tech Scaled to $50M ARR</h3>
+        <p>The exact playbook they used to automate outreach while maintaining a 98% positive response rate.</p>
+        <div class="rc-meta">by Jennifer Ko · 14 min read</div>
+      </a>
+      <a href="#" class="related-card">
+        <div class="rc-cat">How-To</div>
+        <h3>The Complete Guide to Persona-Based Messaging</h3>
+        <p>Seven frameworks for crafting messages that resonate with different buyer personas.</p>
+        <div class="rc-meta">by David Park · 11 min read</div>
+      </a>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <section class="closing-cta">
+    <div class="cc-card">
+      <div class="cc-orb"></div>
+      <div class="cc-content">
+        <div class="cc-headline">
+          <h2>Stop losing context.<br>Start <span class="cc-pill">winning</span> more.</h2>
+        </div>
+        <div class="cc-side">
+          <p>KomboAI captures every conversation signal and surfaces the context your reps need — automatically, at every stage of the deal.</p>
+          <div class="cc-links">
+            <a href="./contact.html" class="btn-neon">See a demo</a>
+            <a href="./features.html" class="btn-ghost">Explore features →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="col">
+        <a href="./index.html" class="logo">
+          <img class="logo-img" src="./images/LOGO/logo-icon-lila.png" alt="KomboAI">
+          <span class="logo-text">KomboAI</span>
+        </a>
+        <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+      </div>
+      <div class="col">
+        <h6>Product</h6>
+        <a href="./features.html">Features</a>
+        <a href="./how-it-works.html">How it works</a>
+        <a href="./pricing.html">Pricing</a>
+        <a href="./integrations.html">Integrations</a>
+      </div>
+      <div class="col">
+        <h6>Company</h6>
+        <a href="./about.html">About</a>
+        <a href="./team.html">Team</a>
+        <a href="./contact.html">Contact</a>
+        <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
+      </div>
+      <div class="col">
+        <h6>Resources</h6>
+        <a href="./blog.html">Blog</a>
+        <a href="./podcast.html">Podcast</a>
+        <a href="./customers.html">Customers</a>
+        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 KomboAI. All rights reserved.</div>
+      <div>Less clicks. More selling.</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

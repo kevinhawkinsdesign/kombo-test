@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog - Kombo</title>
+  <title>Customer Stories - Kombo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -121,33 +121,11 @@
       margin-right: auto;
     }
 
-    .search-container {
-      max-width: 1400px;
-      margin: 0 auto var(--space-xl);
-      padding: 0 var(--space-lg);
-      display: flex;
-      gap: var(--space-md);
-    }
-
-    .search-input {
-      flex: 1;
-      padding: 1rem;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-family: inherit;
-    }
-
-    .search-input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .featured-post {
+    .featured-case {
       max-width: 1400px;
       margin: 0 auto var(--space-xl);
       padding: var(--space-lg);
-      background: var(--bg-panel);
+      background: linear-gradient(135deg, rgba(77, 93, 255, 0.1), rgba(212, 255, 0, 0.05));
       border: 1px solid var(--border);
       border-radius: 16px;
       display: grid;
@@ -168,7 +146,7 @@
       }
     }
 
-    .featured-image {
+    .case-image {
       width: 100%;
       aspect-ratio: 4/3;
       background: linear-gradient(135deg, var(--accent), var(--neon));
@@ -179,39 +157,53 @@
       font-size: 3rem;
     }
 
-    .featured-content h2 {
+    .case-content h2 {
       font-size: 2rem;
       margin-bottom: var(--space-md);
     }
 
-    .post-meta {
-      display: flex;
+    .case-company {
+      color: var(--neon);
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: var(--space-sm);
+    }
+
+    .case-quote {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--text-primary);
+      margin-bottom: var(--space-lg);
+      padding: var(--space-md);
+      background: rgba(212, 255, 0, 0.05);
+      border-left: 3px solid var(--neon);
+      border-radius: 4px;
+    }
+
+    .case-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: var(--space-md);
       margin-bottom: var(--space-lg);
-      font-size: 0.9rem;
-      color: var(--text-secondary);
     }
 
-    .post-category {
-      display: inline-block;
-      background: rgba(77, 93, 255, 0.2);
-      color: var(--accent);
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
+    .metric {
+      padding: var(--space-md);
+      background: var(--bg-panel);
+      border-radius: 8px;
+      border: 1px solid var(--border);
     }
 
-    .featured-excerpt {
-      color: var(--text-secondary);
-      margin-bottom: var(--space-lg);
-      line-height: 1.8;
+    .metric-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--neon);
+      margin-bottom: var(--space-xs);
     }
 
-    .read-time {
+    .metric-label {
       color: var(--text-secondary);
       font-size: 0.9rem;
-      margin-bottom: var(--space-lg);
     }
 
     .btn-neon {
@@ -231,6 +223,35 @@
     .btn-neon:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 30px rgba(212, 255, 0, 0.2);
+    }
+
+    .stats-overview {
+      max-width: 1400px;
+      margin: var(--space-xl) auto;
+      padding: 0 var(--space-lg);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .stat-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-lg);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--neon);
+      margin-bottom: var(--space-sm);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
     }
 
     .filters {
@@ -262,94 +283,69 @@
       background: rgba(212, 255, 0, 0.1);
     }
 
-    .posts-grid {
+    .testimonials-grid {
       max-width: 1400px;
       margin: 0 auto var(--space-xl);
       padding: 0 var(--space-lg);
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: var(--space-lg);
     }
 
-    .post-card {
+    .testimonial-card {
       background: var(--bg-panel);
       border: 1px solid var(--border);
       border-radius: 12px;
-      overflow: hidden;
+      padding: var(--space-lg);
       transition: all 0.3s;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
     }
 
-    .post-card:hover {
+    .testimonial-card:hover {
       border-color: var(--neon);
       transform: translateY(-4px);
       box-shadow: 0 20px 40px rgba(212, 255, 0, 0.1);
     }
 
-    .post-card-image {
-      width: 100%;
-      height: 200px;
-      background: linear-gradient(135deg, rgba(77, 93, 255, 0.3), rgba(212, 255, 0, 0.1));
+    .stars {
+      color: var(--neon);
+      margin-bottom: var(--space-md);
+      font-size: 1.1rem;
+    }
+
+    .testimonial-text {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: var(--space-lg);
+      line-height: 1.7;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .author-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--neon));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
+      font-weight: 700;
+      flex-shrink: 0;
     }
 
-    .post-card-content {
-      padding: var(--space-lg);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+    .author-details h4 {
+      margin-bottom: var(--space-xs);
+      font-size: 0.95rem;
     }
 
-    .post-card-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-md);
+    .author-details p {
+      color: var(--text-secondary);
       font-size: 0.85rem;
-    }
-
-    .post-card-category {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .post-card-date {
-      color: var(--text-secondary);
-    }
-
-    .post-card h3 {
-      font-size: 1.25rem;
-      margin-bottom: var(--space-sm);
-      line-height: 1.4;
-    }
-
-    .post-card p {
-      color: var(--text-secondary);
-      margin-bottom: auto;
-      line-height: 1.6;
-      flex: 1;
-    }
-
-    .post-card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: var(--space-md);
-      padding-top: var(--space-md);
-      border-top: 1px solid var(--border);
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .post-card-author {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
     }
 
     footer {
@@ -383,7 +379,7 @@
     }
 
     @media (max-width: 1024px) {
-      .featured-post {
+      .featured-case {
         grid-template-columns: 1fr;
       }
 
@@ -391,8 +387,12 @@
         font-size: 2.5rem;
       }
 
-      .posts-grid {
+      .testimonials-grid {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+
+      .case-metrics {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -418,11 +418,7 @@
         font-size: 1rem;
       }
 
-      .search-container {
-        flex-direction: column;
-      }
-
-      .posts-grid {
+      .testimonials-grid {
         grid-template-columns: 1fr;
       }
 
@@ -435,13 +431,13 @@
 <body>
   <header>
     <div class="header-content">
-      <a href="../index.html" class="logo">Kombo</a>
+      <a href="./index.html" class="logo">Kombo</a>
       <nav>
         <a href="./features.html">Features</a>
         <a href="./how-it-works.html">How it works</a>
         <a href="./pricing.html">Pricing</a>
         <a href="./integrations.html">Integrations</a>
-        <a href="./blog.html" class="active">Blog</a>
+        <a href="./blog.html">Blog</a>
         <a href="./podcast.html">Podcast</a>
         <a href="./about.html">About</a>
         <a href="./contact.html" class="nav-cta">Get started</a>
@@ -451,131 +447,135 @@
 
   <main>
     <section class="hero">
-      <h1>Kombo Blog</h1>
-      <p>Insights on AI, sales strategy, and the future of business communication</p>
+      <h1>Customer Stories</h1>
+      <p>See how leading companies are transforming their outreach with Kombo</p>
     </section>
 
-    <section class="search-container">
-      <input type="text" class="search-input" placeholder="Search articles...">
-    </section>
-
-    <section class="featured-post">
-      <div class="featured-image">📝</div>
-      <div class="featured-content">
-        <span class="post-category">Industry Trends</span>
-        <h2>The ROI of AI-Powered Outreach in 2026</h2>
-        <div class="post-meta">
-          <span>May 10, 2026</span>
-          <span>12 min read</span>
-          <span>By Sarah Chen</span>
+    <section class="featured-case">
+      <div class="case-image">🚀</div>
+      <div class="case-content">
+        <div class="case-company">FEATURED CASE STUDY</div>
+        <h2>Insight Tech Scales to $50M ARR</h2>
+        <p class="case-quote">"Kombo didn't just automate our outreach—it gave us back 15 hours per week per rep. That's 750 hours a year we can now spend on actual selling."</p>
+        <div class="case-metrics">
+          <div class="metric">
+            <div class="metric-number">340%</div>
+            <div class="metric-label">Pipeline increase</div>
+          </div>
+          <div class="metric">
+            <div class="metric-number">2.8x</div>
+            <div class="metric-label">Sales cycle acceleration</div>
+          </div>
+          <div class="metric">
+            <div class="metric-number">$50M</div>
+            <div class="metric-label">ARR achieved</div>
+          </div>
+          <div class="metric">
+            <div class="metric-number">98%</div>
+            <div class="metric-label">Positive sentiment rate</div>
+          </div>
         </div>
-        <p class="featured-excerpt">We analyzed outreach data from 500+ companies to understand what's actually driving ROI. The results might surprise you—and they're reshaping how teams approach modern sales.</p>
-        <a href="#" class="btn-neon">Read Article</a>
+        <a href="#" class="btn-neon">Read Full Case Study</a>
+      </div>
+    </section>
+
+    <section class="stats-overview">
+      <div class="stat-card">
+        <div class="stat-number">500+</div>
+        <div class="stat-label">Companies Trust Kombo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">2.4M+</div>
+        <div class="stat-label">Conversations Facilitated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">$2.3B</div>
+        <div class="stat-label">Pipeline Generated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4.9/5</div>
+        <div class="stat-label">Average Rating</div>
       </div>
     </section>
 
     <section class="filters">
-      <span style="color: var(--text-secondary);">Filter by:</span>
+      <span style="color: var(--text-secondary);">Filter by industry:</span>
       <button class="filter-btn active">All</button>
-      <button class="filter-btn">Product Updates</button>
-      <button class="filter-btn">Industry Trends</button>
-      <button class="filter-btn">Case Studies</button>
-      <button class="filter-btn">How-To</button>
+      <button class="filter-btn">SaaS</button>
+      <button class="filter-btn">Finance</button>
+      <button class="filter-btn">Tech</button>
+      <button class="filter-btn">Enterprise</button>
     </section>
 
-    <section class="posts-grid">
-      <div class="post-card">
-        <div class="post-card-image">🤖</div>
-        <div class="post-card-content">
-          <div class="post-card-meta">
-            <span class="post-card-category">Product Updates</span>
-            <span class="post-card-date">May 5, 2026</span>
-          </div>
-          <h3>Introducing Smart Pause: Let Conversations Breathe</h3>
-          <p>Our new Smart Pause feature automatically adjusts timing between outreach messages based on recipient engagement patterns, improving response rates by up to 34%.</p>
-          <div class="post-card-footer">
-            <span class="post-card-author">by Marcus Liu</span>
-            <span>7 min</span>
+    <section class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"The personalization feels so genuine that it doesn't feel like automation at all. Our response rates went from 8% to 34% in three months."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">AM</div>
+          <div class="author-details">
+            <h4>Alex Martinez</h4>
+            <p>Head of Sales, TechFlow</p>
           </div>
         </div>
       </div>
 
-      <div class="post-card">
-        <div class="post-card-image">💼</div>
-        <div class="post-card-content">
-          <div class="post-card-meta">
-            <span class="post-card-category">Case Studies</span>
-            <span class="post-card-date">Apr 28, 2026</span>
-          </div>
-          <h3>How Insight Tech Scaled to $50M ARR</h3>
-          <p>From 0-100 with Kombo. Discover the exact playbook they used to automate outreach while maintaining a 98% positive response rate.</p>
-          <div class="post-card-footer">
-            <span class="post-card-author">by Jennifer Ko</span>
-            <span>14 min</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"We were skeptical about AI-powered outreach at first. But the results speak for themselves. Kombo made us true believers in intelligent automation."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">JC</div>
+          <div class="author-details">
+            <h4>Jennifer Chang</h4>
+            <p>VP of Business Development, DataCore</p>
           </div>
         </div>
       </div>
 
-      <div class="post-card">
-        <div class="post-card-image">🎯</div>
-        <div class="post-card-content">
-          <div class="post-card-meta">
-            <span class="post-card-category">How-To</span>
-            <span class="post-card-date">Apr 21, 2026</span>
-          </div>
-          <h3>The Complete Guide to Persona-Based Messaging</h3>
-          <p>Seven frameworks for crafting messages that resonate with different buyer personas. Includes templates, examples, and anti-patterns to avoid.</p>
-          <div class="post-card-footer">
-            <span class="post-card-author">by David Park</span>
-            <span>11 min</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"Compliance was a huge concern for us. Kombo's built-in governance and audit trails made it easy to meet all our regulatory requirements."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">RC</div>
+          <div class="author-details">
+            <h4>Robert Chen</h4>
+            <p>Compliance Officer, FinanceHub</p>
           </div>
         </div>
       </div>
 
-      <div class="post-card">
-        <div class="post-card-image">📊</div>
-        <div class="post-card-content">
-          <div class="post-card-meta">
-            <span class="post-card-category">Industry Trends</span>
-            <span class="post-card-date">Apr 14, 2026</span>
-          </div>
-          <h3>The State of B2B Sales: 2026 Report</h3>
-          <p>Our annual benchmarking report reveals shifts in buyer behavior, channel preferences, and what actually converts in today's market.</p>
-          <div class="post-card-footer">
-            <span class="post-card-author">by Sarah Chen</span>
-            <span>16 min</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"The ROI was immediate. We paid for our annual subscription within the first month. Every renewal is a no-brainer."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">SG</div>
+          <div class="author-details">
+            <h4>Sam Greenfield</h4>
+            <p>Sales Director, Growth Labs</p>
           </div>
         </div>
       </div>
 
-      <div class="post-card">
-        <div class="post-card-image">🔐</div>
-        <div class="post-card-content">
-          <div class="post-card-meta">
-            <span class="post-card-category">Best Practices</span>
-            <span class="post-card-date">Apr 7, 2026</span>
-          </div>
-          <h3>GDPR and AI: Compliance Without Friction</h3>
-          <p>A practical guide to GDPR compliance when deploying AI in your outreach. Includes checklists and compliance audits.</p>
-          <div class="post-card-footer">
-            <span class="post-card-author">by Elena Rossi</span>
-            <span>9 min</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"The customer support is exceptional. Every question gets answered within hours, and they're genuinely interested in our success."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MP</div>
+          <div class="author-details">
+            <h4>Maya Patel</h4>
+            <p>Operations Manager, CloudSoft</p>
           </div>
         </div>
       </div>
 
-      <div class="post-card">
-        <div class="post-card-image">🚀</div>
-        <div class="post-card-content">
-          <div class="post-card-meta">
-            <span class="post-card-category">Product Updates</span>
-            <span class="post-card-date">Mar 31, 2026</span>
-          </div>
-          <h3>Kombo API v2: Faster, Smarter, More Powerful</h3>
-          <p>We rebuilt our API from the ground up. Faster response times, 10x throughput increase, and new batch processing capabilities.</p>
-          <div class="post-card-footer">
-            <span class="post-card-author">by James Wilson</span>
-            <span>8 min</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"We cut our sales cycle from 90 days to 35. That's game-changing for our business. The data insights are incredible too."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">KW</div>
+          <div class="author-details">
+            <h4>Kevin Williams</h4>
+            <p>CEO, Accelerate Inc</p>
           </div>
         </div>
       </div>
@@ -593,9 +593,8 @@
     <div>
       <h3>Company</h3>
       <a href="./about.html">About</a>
-      <a href="./team.html">Team</a>
       <a href="./customers.html">Customers</a>
-      <a href="./blog.html">Blog</a>
+      <a href="./testimonials.html">Stories</a>
       <a href="./contact.html">Contact</a>
       <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
     </div>
