@@ -89,7 +89,8 @@
   .hero{position:relative;overflow:hidden}
   .hero .container{position:relative;z-index:2}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(0,0,0,0.3))}
+  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;mix-blend-mode:screen}
+  img.dood[src*="arrows-scribbles"]{filter:invert(1)}
   .dood.d1{top:6%;left:1%;width:163px;transform:rotate(-6deg);animation-delay:0s;opacity:0.55}
   .dood.d2{top:4%;right:1%;width:168px;transform:rotate(10deg);animation-delay:0.8s;opacity:0.55}
   .dood.d3{top:41%;left:0%;width:100px;transform:rotate(7deg);animation-delay:1.2s;opacity:0.4}

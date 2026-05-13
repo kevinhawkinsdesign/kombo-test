@@ -42,7 +42,7 @@
 
   .btn-neon{background:var(--neon);color:var(--bg);padding:14px 28px;border-radius:999px;font-weight:600;font-size:14px;display:inline-block;transition:transform .2s,box-shadow .2s}
   .btn-neon:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,255,0,0.3)}
-  .btn-ghost{background:transparent;color:var(--lavender);padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender-soft);display:inline-block;transition:all .2s}
+  .btn-ghost{background:var(--lavender);color:#0E0E10;padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender);display:inline-block;transition:all .2s}
   .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
 
   .hero{padding:90px 0 60px;text-align:center;position:relative;overflow:hidden}
@@ -183,7 +183,8 @@
   .hero{position:relative;overflow:hidden}
   .hero .container{position:relative;z-index:2}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(0,0,0,0.3))}
+  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;mix-blend-mode:screen}
+  img.dood[src*="arrows-scribbles"]{filter:invert(1)}
   .dood.d1{top:7%;left:1%;width:113px;transform:rotate(-9deg);animation-delay:0s;opacity:0.45}
   .dood.d2{top:3%;right:2%;width:168px;transform:rotate(7deg);animation-delay:0.8s;opacity:0.55}
   .dood.d3{top:42%;left:1%;width:94px;transform:rotate(12deg);animation-delay:1.2s;opacity:0.4}
