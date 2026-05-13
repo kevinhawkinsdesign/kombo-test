@@ -45,6 +45,16 @@
   .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
 
   .hero{padding:80px 0 30px;text-align:center;position:relative;overflow:hidden}
+  .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .dood{position:absolute;mix-blend-mode:screen}
+  img.dood[src*="arrows-scribbles"]{filter:invert(1)}
+  .dood.d1{top:4%;left:1%;width:152px;transform:rotate(-9deg);opacity:0.55}
+  .dood.d2{top:3%;right:2%;width:164px;transform:rotate(7deg);opacity:0.55}
+  .dood.d3{top:48%;left:1%;width:98px;transform:rotate(5deg);opacity:0.4}
+  .dood.d4{top:38%;right:0%;width:96px;transform:rotate(-8deg);opacity:0.4}
+  .hero-asterisk{position:absolute;top:16%;left:10%;font-size:56px;font-weight:900;color:var(--neon);line-height:1;z-index:1;pointer-events:none;text-shadow:0 0 40px rgba(212,255,0,0.5)}
+  @media(max-width:1180px){.dood.d3,.dood.d4{display:none}.hero-asterisk{font-size:40px;left:4%}}
+  @media(max-width:900px){.hero-doodles,.hero-asterisk{display:none}}
   .hero::before{content:'';position:absolute;top:-220px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.08) 0%,transparent 60%);animation:hero-glow-pulse 6s ease-in-out infinite}
   @keyframes hero-glow-pulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
   .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--lavender-soft);border-radius:999px;font-size:13px;color:var(--lavender);margin-bottom:32px;background:rgba(181,161,255,0.05);position:relative;z-index:1}
@@ -273,6 +283,13 @@
 </nav>
 
 <section class="hero">
+  <div class="hero-doodles" aria-hidden="true">
+    <img src="./images/Hands/dark mode/01.png" class="dood d1" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/15.png" class="dood d2" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-11.png" class="dood d3" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-22.png" class="dood d4" alt="" loading="lazy">
+  </div>
+  <div class="hero-asterisk" aria-hidden="true">✳</div>
   <div class="container">
     <div class="eyebrow reveal"><span class="dot"></span> Avg. reply time: 47 minutes · By a human · Mon–Fri</div>
     <h1 class="reveal">Talk to a <span class="highlight">human.</span></h1>
