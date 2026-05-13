@@ -221,8 +221,12 @@
   .hero{position:relative;overflow:hidden}
   .hero .container{position:relative;z-index:2}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-  .dood{position:absolute;animation:dood-float 7s ease-in-out infinite;mix-blend-mode:screen}
+  .dood{position:absolute;mix-blend-mode:screen}
   img.dood[src*="arrows-scribbles"]{filter:invert(1)}
+  .sec-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .sec-dood{position:absolute;mix-blend-mode:screen}
+  img.sec-dood[src*="arrows-scribbles"]{filter:invert(1)}
+  @media(max-width:1180px){.sec-dood{display:none}}
   .dood.d1{top:7%;left:0%;width:98px;transform:rotate(-5deg);animation-delay:0s;opacity:0.45}
   .dood.d2{top:4%;right:1%;width:173px;transform:rotate(9deg);animation-delay:0.7s;opacity:0.55}
   .dood.d3{top:41%;left:1%;width:108px;transform:rotate(11deg);animation-delay:1.1s;opacity:0.45}
@@ -316,6 +320,10 @@
 </section>
 
 <section class="std">
+  <div class="sec-doodles" aria-hidden="true">
+    <img src="./images/Hands/dark mode/26.png"       class="sec-dood" style="top:5%;left:-20px;width:140px;transform:rotate(-9deg);opacity:0.3;" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-56.png" class="sec-dood" style="bottom:5%;right:-10px;width:110px;transform:rotate(7deg);opacity:0.28;" alt="" loading="lazy">
+  </div>
   <div class="container">
     <div class="cat-tabs reveal">
       <button class="cat-tab active" data-cat="all">All <span class="ct">1,028</span></button>
@@ -410,6 +418,10 @@
 </section>
 
 <section class="std" style="padding-top:0">
+  <div class="sec-doodles" aria-hidden="true">
+    <img src="./images/Hands/dark mode/43.png"       class="sec-dood" style="top:8%;right:-15px;width:130px;transform:rotate(10deg);opacity:0.3;" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-31.png" class="sec-dood" style="bottom:8%;left:-10px;width:100px;transform:rotate(-6deg);opacity:0.28;" alt="" loading="lazy">
+  </div>
   <div class="container">
     <div class="api-band reveal">
       <div class="text">
@@ -441,7 +453,11 @@
   </div>
 </section>
 
-<section class="closing-cta">
+<section class="closing-cta" style="position:relative;overflow:hidden;">
+  <div class="sec-doodles" aria-hidden="true">
+    <img src="./images/Hands/dark mode/06.png"       class="sec-dood" style="top:10%;left:-15px;width:130px;transform:rotate(-11deg);opacity:0.28;" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-79.png" class="sec-dood" style="bottom:10%;right:-10px;width:100px;transform:rotate(8deg);opacity:0.25;" alt="" loading="lazy">
+  </div>
   <div class="container">
     <div class="cc-card reveal">
       <div class="cc-orb"></div>
