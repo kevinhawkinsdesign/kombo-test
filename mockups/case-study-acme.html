@@ -44,6 +44,14 @@
 
   /* Hero */
   .cs-hero{padding:72px 0 56px;position:relative;overflow:hidden}
+  .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .dood{position:absolute;mix-blend-mode:screen}
+  img.dood[src*="arrows-scribbles"]{filter:invert(1)}
+  .dood.d1{top:5%;left:0%;width:148px;transform:rotate(-9deg);opacity:0.5}
+  .dood.d2{top:4%;right:1%;width:160px;transform:rotate(7deg);opacity:0.5}
+  .dood.d3{bottom:5%;left:1%;width:90px;transform:rotate(5deg);opacity:0.35}
+  .dood.d4{bottom:4%;right:1%;width:96px;transform:rotate(-8deg);opacity:0.35}
+  @media(max-width:900px){.hero-doodles{display:none}}
   .cs-hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.07) 0%,transparent 60%);pointer-events:none}
   .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-bottom:32px;transition:color .2s}
   .back-link:hover{color:var(--ink)}
@@ -167,7 +175,13 @@
 </nav>
 
 <section class="cs-hero">
-  <div class="container">
+  <div class="hero-doodles" aria-hidden="true">
+    <img src="./images/Hands/dark mode/05.png"       class="dood d1" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/23.png"       class="dood d2" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-31.png" class="dood d3" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-56.png" class="dood d4" alt="" loading="lazy">
+  </div>
+  <div class="container" style="position:relative;z-index:1;">
     <a href="./customers.html" class="back-link">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7H2M6 3L2 7l4 4"/></svg>
       All case studies
