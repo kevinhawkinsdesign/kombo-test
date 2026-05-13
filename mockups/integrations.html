@@ -159,6 +159,26 @@
     .cc-card{padding:48px 32px;border-radius:24px}
     .cc-content{grid-template-columns:1fr;gap:24px}
   }
+
+  /* Canonical sticky nav */
+  nav.site-nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid #2A2A30}
+  nav.site-nav .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;max-width:1180px;margin:0 auto}
+  nav.site-nav .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:#F5F5F7;text-decoration:none}
+  nav.site-nav .logo-img{height:26px;width:auto;display:block}
+  nav.site-nav .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  nav.site-nav .nav-links{display:flex;gap:16px;font-size:14px;color:#8A8A95;align-items:center}
+  nav.site-nav .nav-dropdown{position:relative;display:inline-block}
+  nav.site-nav .nav-dropdown>button{background:transparent;border:1px solid transparent;color:#8A8A95;padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
+  nav.site-nav .nav-dropdown>button:hover{color:#B5A1FF;border-color:rgba(181,161,255,0.35)}
+  nav.site-nav .nav-dropdown>button.active,nav.site-nav .nav-dropdown:focus-within>button{color:#B5A1FF;border-color:rgba(181,161,255,0.35)}
+  nav.site-nav .dropdown-menu{position:absolute;top:100%;left:0;margin-top:4px;background:rgba(20,20,23,0.96);border:1px solid #2A2A30;border-radius:12px;min-width:160px;padding:8px 0;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;pointer-events:none;z-index:40}
+  nav.site-nav .nav-dropdown:hover .dropdown-menu,nav.site-nav .nav-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  nav.site-nav .dropdown-menu a{display:block;padding:10px 16px;color:#8A8A95;transition:color .15s;font-size:13px;text-decoration:none}
+  nav.site-nav .dropdown-menu a:hover{color:#F5F5F7}
+  nav.site-nav .dropdown-menu a.active{color:#F5F5F7}
+  nav.site-nav .nav-cta{background:#D4FF00;color:#0E0E10;padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s;text-decoration:none}
+  nav.site-nav .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+  @media(max-width:880px){nav.site-nav .nav-links{display:none}}
 </style>
 </head>
 <body>
@@ -178,7 +198,7 @@
       <a href="./about.html">About</a>
       <a href="./contact.html">Contact</a>
     </div>
-    <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="nav-cta">Get started</a>
+    <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="nav-cta">Book a demo</a>
   </div>
 </nav>
 
