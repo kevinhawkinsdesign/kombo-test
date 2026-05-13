@@ -167,6 +167,9 @@
   .nav-links>a:hover,.nav-links>a.active{color:var(--ink)}
   .nav-cta{background:var(--neon);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s;text-decoration:none}
   .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+  .nav-dropdown>button{display:inline-flex;align-items:center;gap:6px}
+  .nav-dropdown>button .caret{transition:transform .2s;opacity:0.7}
+  .nav-dropdown:hover>button .caret,.nav-dropdown:focus-within>button .caret{transform:rotate(180deg);opacity:1}
   @media(max-width:880px){.nav-links{display:none}}
 </style>
 <style>
@@ -210,7 +213,7 @@
     </a>
     <div class="nav-links">
       <div class="nav-dropdown">
-        <button class="active">Product</button>
+        <button class="active">Product<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="./features.html">Features</a>
           <a href="./how-it-works.html">How it works</a>
@@ -219,7 +222,7 @@
         </div>
       </div>
       <div class="nav-dropdown">
-        <button>Resources</button>
+        <button>Resources<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="./customers.html">Customers</a>
           <a href="./podcast.html">Podcast</a>
@@ -229,7 +232,7 @@
         </div>
       </div>
       <div class="nav-dropdown">
-        <button>Company</button>
+        <button>Company<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="./about.html">About</a>
           <a href="./team.html">Team</a>
@@ -238,7 +241,7 @@
         </div>
       </div>
       <div class="nav-dropdown">
-        <button>Connect</button>
+        <button>Connect<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="#">LinkedIn</a>
           <a href="#">YouTube</a>
