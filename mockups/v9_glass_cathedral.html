@@ -204,8 +204,6 @@
   }
   /* Neon asterisk accent */
   .hero-asterisk { position: absolute; top: 12%; left: 8%; font-size: 80px; font-weight: 900; color: var(--neon); line-height: 1; z-index: 0; pointer-events: none; text-shadow: 0 0 40px rgba(212,255,0,0.5); }
-  /* Neon arch (bottom-right) */
-  .hero-arch { position: absolute; bottom: -30px; right: 3%; width: 180px; height: 180px; border: 32px solid var(--neon); border-radius: 50%; clip-path: inset(0 0 50% 0); z-index: 0; pointer-events: none; opacity: 0.9; filter: drop-shadow(0 0 20px rgba(212,255,0,0.45)); }
   @media (max-width: 1180px) {
     .dood.d3, .dood.d4, .dood.d5, .dood.d6 { display: none; }
     .sec-dood { display: none; }
@@ -214,7 +212,7 @@
   @media (max-width: 900px) {
     .hero-doodles { display: none; }
     .hero-asterisk { display: none; }
-    .hero-arch { display: none; }
+
   }
   @media (prefers-reduced-motion: reduce) {
     .dood { animation: none; }
@@ -993,7 +991,7 @@
     <img src="./images/arrows-scribbles/icon-19.png" class="dood d6" alt="" loading="lazy">
   </div>
   <div class="hero-asterisk" aria-hidden="true">✳</div>
-  <div class="hero-arch" aria-hidden="true"></div>
+
   <div class="container">
     <div class="eyebrow reveal"><span class="dot"></span> Stop losing pipeline to manual work AI could do for you</div>
     <h1 class="reveal">Less clicks.<br/>More <span class="highlight">selling.</span></h1>
