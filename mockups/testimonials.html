@@ -426,24 +426,78 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+  
+  /* Canonical sticky nav */
+  nav.site-nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid #2A2A30}
+  nav.site-nav .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;max-width:1180px;margin:0 auto}
+  nav.site-nav .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:#F5F5F7;text-decoration:none}
+  nav.site-nav .logo-img{height:26px;width:auto;display:block}
+  nav.site-nav .logo-text{font-weight:700;font-size:17px;letter-spacing:-0.01em}
+  nav.site-nav .nav-links{display:flex;gap:16px;font-size:14px;color:#8A8A95;align-items:center}
+  nav.site-nav .nav-dropdown{position:relative;display:inline-block}
+  nav.site-nav .nav-dropdown>button{background:transparent;border:1px solid transparent;color:#8A8A95;padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
+  nav.site-nav .nav-dropdown>button:hover{color:#B5A1FF;border-color:rgba(181,161,255,0.35)}
+  nav.site-nav .nav-dropdown>button.active,nav.site-nav .nav-dropdown:focus-within>button{color:#B5A1FF;border-color:rgba(181,161,255,0.35)}
+  nav.site-nav .dropdown-menu{position:absolute;top:100%;left:0;margin-top:4px;background:rgba(20,20,23,0.96);border:1px solid #2A2A30;border-radius:12px;min-width:160px;padding:8px 0;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;pointer-events:none;z-index:40}
+  nav.site-nav .nav-dropdown:hover .dropdown-menu,nav.site-nav .nav-dropdown:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  nav.site-nav .dropdown-menu a{display:block;padding:10px 16px;color:#8A8A95;transition:color .15s;font-size:13px;text-decoration:none}
+  nav.site-nav .dropdown-menu a:hover{color:#F5F5F7}
+  nav.site-nav .dropdown-menu a.active{color:#F5F5F7}
+  nav.site-nav .nav-cta{background:#D4FF00;color:#0E0E10;padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s;text-decoration:none}
+  nav.site-nav .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
+  @media(max-width:880px){nav.site-nav .nav-links{display:none}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="header-content">
-      <a href="./v9_glass_cathedral.html" class="logo">Kombo</a>
-      <nav>
-        <a href="./features.html">Features</a>
-        <a href="./how-it-works.html">How it works</a>
-        <a href="./pricing.html">Pricing</a>
-        <a href="./integrations.html">Integrations</a>
-        <a href="./blog.html">Blog</a>
-        <a href="./podcast.html">Podcast</a>
-        <a href="./about.html">About</a>
-        <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="nav-cta">Book a demo</a>
-      </nav>
+  <nav class="site-nav">
+  <div class="nav-row">
+    <a href="./v9_glass_cathedral.html" class="logo">
+      <img class="logo-img" src="./images/LOGO/logo-icon-lila.png" alt="KomboAI">
+      <span class="logo-text">KomboAI</span>
+    </a>
+    <div class="nav-links">
+      <div class="nav-dropdown">
+        <button>Product</button>
+        <div class="dropdown-menu">
+          <a href="./features.html">Features</a>
+          <a href="./how-it-works.html">How it works</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./integrations.html">Integrations</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button class="active">Resources</button>
+        <div class="dropdown-menu">
+          <a href="./customers.html">Customers</a>
+          <a href="./podcast.html">Podcast</a>
+          <a href="./blog.html">Blog</a>
+          <a href="./newsletter.html">Newsletter</a>
+          <a href="#">ROI Calculator</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Company</button>
+        <div class="dropdown-menu">
+          <a href="./about.html">About</a>
+          <a href="./team.html">Team</a>
+          <a href="./contact.html">Contact</a>
+          <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs &#8599;</a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button>Connect</button>
+        <div class="dropdown-menu">
+          <a href="#">LinkedIn</a>
+          <a href="#">YouTube</a>
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+          <a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" target="_blank" rel="noopener">Spotify</a>
+        </div>
+      </div>
     </div>
-  </header>
+    <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="nav-cta">Book a demo</a>
+  </div>
+</nav>
 
   <main>
     <section class="hero">
