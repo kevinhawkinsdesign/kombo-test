@@ -182,21 +182,28 @@
     .cc-orb { width: 320px; height: 320px; bottom: -140px; right: -120px; }
   }
 
-  /* Hero doodles — hand illustrations */
+  /* Hero doodles — mix of hand illustrations + scribble doodles */
   .hero-doodles { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
   .dood { position: absolute; animation: dood-float 7s ease-in-out infinite; }
-  /* d1: top-left thumbs up */
-  .dood.d1 { top: 5%; left: 2%; width: 220px; transform: rotate(-8deg); animation-delay: 0s; opacity: 0.75; }
-  /* d2: top-right pointing hand */
-  .dood.d2 { top: 4%; right: 2%; width: 240px; transform: rotate(6deg); animation-delay: 0.7s; opacity: 0.75; }
-  /* d3: mid-left hand */
-  .dood.d3 { top: 42%; left: 1%; width: 200px; transform: rotate(4deg); animation-delay: 1.3s; opacity: 0.6; }
-  /* d4: mid-right hand */
-  .dood.d4 { top: 38%; right: 1%; width: 190px; transform: rotate(-6deg); animation-delay: 1.9s; opacity: 0.6; }
-  /* d5: bottom-left hand */
-  .dood.d5 { bottom: 8%; left: 5%; width: 160px; transform: rotate(10deg); animation-delay: 2.5s; opacity: 0.5; }
-  /* d6: bottom-right hand */
-  .dood.d6 { bottom: 6%; right: 5%; width: 180px; transform: rotate(-9deg); animation-delay: 3.1s; opacity: 0.5; }
+  /* Top row */
+  .dood.d1  { top: 4%;   left: 1%;   width: 200px; transform: rotate(-8deg);  animation-delay: 0s;    opacity: 0.75; }
+  .dood.d2  { top: 9%;   left: 14%;  width: 85px;  transform: rotate(6deg);   animation-delay: 0.4s;  opacity: 0.55; }
+  .dood.d3  { top: 3%;   right: 1%;  width: 210px; transform: rotate(8deg);   animation-delay: 0.7s;  opacity: 0.75; }
+  .dood.d4  { top: 11%;  right: 13%; width: 95px;  transform: rotate(-12deg); animation-delay: 1.0s;  opacity: 0.55; }
+  /* Middle row */
+  .dood.d5  { top: 36%;  left: 0%;   width: 180px; transform: rotate(4deg);   animation-delay: 1.3s;  opacity: 0.65; }
+  .dood.d6  { top: 30%;  left: 11%;  width: 100px; transform: rotate(14deg);  animation-delay: 1.6s;  opacity: 0.5;  }
+  .dood.d7  { top: 38%;  right: 0%;  width: 175px; transform: rotate(-7deg);  animation-delay: 1.9s;  opacity: 0.65; }
+  .dood.d8  { top: 32%;  right: 11%; width: 90px;  transform: rotate(-9deg);  animation-delay: 2.2s;  opacity: 0.5;  }
+  /* Lower row */
+  .dood.d9  { bottom: 18%; left: 2%;   width: 160px; transform: rotate(11deg);  animation-delay: 2.5s; opacity: 0.55; }
+  .dood.d10 { bottom: 28%; left: 13%;  width: 90px;  transform: rotate(-8deg);  animation-delay: 2.8s; opacity: 0.45; }
+  .dood.d11 { bottom: 18%; right: 2%;  width: 170px; transform: rotate(-10deg); animation-delay: 3.1s; opacity: 0.55; }
+  .dood.d12 { bottom: 28%; right: 13%; width: 85px;  transform: rotate(7deg);   animation-delay: 3.4s; opacity: 0.45; }
+  /* Bottom corners */
+  .dood.d13 { bottom: 3%;  left: 9%;   width: 75px;  transform: rotate(18deg);  animation-delay: 3.7s; opacity: 0.4;  }
+  .dood.d14 { bottom: 1%;  right: 8%;  width: 130px; transform: rotate(-14deg); animation-delay: 4.0s; opacity: 0.5;  }
+  .dood.d15 { top: 18%;  left: 6%;   width: 70px;  transform: rotate(-5deg);  animation-delay: 4.3s; opacity: 0.45; }
   @keyframes dood-float {
     0%, 100% { translate: 0 0; }
     50% { translate: 0 -12px; }
@@ -206,7 +213,7 @@
   /* Neon arch (bottom-right) */
   .hero-arch { position: absolute; bottom: -30px; right: 3%; width: 180px; height: 180px; border: 32px solid var(--neon); border-radius: 50%; clip-path: inset(0 0 50% 0); z-index: 0; pointer-events: none; opacity: 0.9; filter: drop-shadow(0 0 20px rgba(212,255,0,0.45)); }
   @media (max-width: 1180px) {
-    .dood.d3, .dood.d4 { display: none; }
+    .dood.d2, .dood.d4, .dood.d6, .dood.d8, .dood.d10, .dood.d12, .dood.d13, .dood.d15 { display: none; }
     .hero-asterisk { font-size: 56px; left: 4%; }
   }
   @media (max-width: 900px) {
@@ -945,12 +952,21 @@
 
 <section class="hero">
   <div class="hero-doodles" aria-hidden="true">
-    <img src="./images/Hands/dark mode/01.png" class="dood d1" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/07.png" class="dood d2" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/14.png" class="dood d3" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/19.png" class="dood d4" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/03.png" class="dood d5" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/10.png" class="dood d6" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/02.png" class="dood d1" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 7.png" class="dood d2" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/17.png" class="dood d3" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 11.png" class="dood d4" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/28.png" class="dood d5" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 9.png" class="dood d6" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/22.png" class="dood d7" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 14.png" class="dood d8" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/12.png" class="dood d9" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 17.png" class="dood d10" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/34.png" class="dood d11" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 19.png" class="dood d12" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 22.png" class="dood d13" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/08.png" class="dood d14" alt="" loading="lazy">
+    <img src="./images/doodles/white/Group 6.png" class="dood d15" alt="" loading="lazy">
   </div>
   <div class="hero-asterisk" aria-hidden="true">✳</div>
   <div class="hero-arch" aria-hidden="true"></div>
