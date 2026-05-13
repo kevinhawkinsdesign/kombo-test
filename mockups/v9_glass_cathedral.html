@@ -766,6 +766,31 @@
   [class*="card"] { transition: transform 0.3s; }
   [class*="card"]:hover { transform: translateY(-4px); }
 
+  /* Security section */
+  .security-band { padding: 80px 0; }
+  .security-card { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; display: grid; grid-template-columns: 1.5fr 1fr 1fr; align-items: stretch; position: relative; overflow: hidden; }
+  .sec-main { padding: 56px 56px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--line); position: relative; }
+  .sec-main::before { content: ''; position: absolute; top: -80px; left: -80px; width: 360px; height: 360px; background: radial-gradient(circle, rgba(212,255,0,0.07) 0%, transparent 65%); pointer-events: none; }
+  .sec-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--neon); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 20px; }
+  .sec-dot { width: 6px; height: 6px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 8px var(--neon); flex-shrink: 0; }
+  .sec-main h3 { font-size: clamp(20px, 2vw, 28px); font-weight: 700; line-height: 1.2; letter-spacing: -0.022em; margin-bottom: 28px; color: var(--ink); }
+  .sec-main h3 .sec-em { font-weight: 400; color: var(--mute); }
+  .sec-cert { padding: 48px 36px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid var(--line); }
+  .sec-cert:last-child { border-right: none; }
+  .cert-badge { margin-bottom: 20px; }
+  .cert-name { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.01em; }
+  .cert-desc { font-size: 13px; color: var(--mute); line-height: 1.55; max-width: 180px; }
+  @media (max-width: 1024px) {
+    .security-card { grid-template-columns: 1fr 1fr; }
+    .sec-main { grid-column: span 2; border-right: none; border-bottom: 1px solid var(--line); padding: 40px 36px; }
+    .sec-cert:first-of-type { border-right: 1px solid var(--line); }
+  }
+  @media (max-width: 640px) {
+    .security-card { grid-template-columns: 1fr; }
+    .sec-main { grid-column: auto; padding: 36px 28px; }
+    .sec-cert { padding: 36px 28px; border-right: none !important; border-top: 1px solid var(--line); }
+  }
+
 </style>
 </head>
 <body>
@@ -972,28 +997,43 @@
       <p style="font-size:17px;color:rgba(255,255,255,0.65);max-width:640px;margin:0 auto;line-height:1.55;">From prospecting to coaching, KomboAI replaces the patchwork of tools your reps juggle every day.</p>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;">
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
-        <img src="./images/Find-Your-Leads.webp" alt="Find your leads" style="width:100%;height:auto;display:block;background:#fff;" loading="lazy">
-        <div style="padding:24px 28px;">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.5);font-weight:700;margin-bottom:8px;">Prospecting</div>
-          <h3 style="font-size:18px;font-weight:700;color:rgba(255,255,255,0.95);margin-bottom:6px;">Real personalization at scale</h3>
-          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.55;">AI matches your ideal customer profile to find lookalikes that actually convert.</p>
+      <!-- Card 1: Neon/green tint -->
+      <div style="background:linear-gradient(160deg,rgba(212,255,0,0.12) 0%,rgba(212,255,0,0.03) 100%);border:1px solid rgba(212,255,0,0.25);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 48px rgba(212,255,0,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="position:relative;overflow:hidden;">
+          <img src="./images/Find-Your-Leads.webp" alt="Find your leads" style="width:100%;height:auto;display:block;" loading="lazy">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(212,255,0,0.08) 0%,transparent 50%);pointer-events:none;"></div>
+          <div style="position:absolute;top:14px;right:14px;background:rgba(212,255,0,0.15);border:1px solid rgba(212,255,0,0.4);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#D4FF00;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;">3.2× match rate</div>
+        </div>
+        <div style="padding:28px 30px;flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#D4FF00;font-weight:700;font-family:'JetBrains Mono',monospace;">Prospecting</div>
+          <h3 style="font-size:19px;font-weight:700;color:#F5F5F7;line-height:1.2;letter-spacing:-0.015em;">Real personalization<br>at scale</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;margin-top:4px;">AI matches your ideal customer profile to find lookalikes that actually convert.</p>
         </div>
       </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
-        <img src="./images/Enricj-them-with-30-data-points.webp" alt="Enrich with data points" style="width:100%;height:auto;display:block;background:#fff;" loading="lazy">
-        <div style="padding:24px 28px;">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.5);font-weight:700;margin-bottom:8px;">Data Enrichment</div>
-          <h3 style="font-size:18px;font-weight:700;color:rgba(255,255,255,0.95);margin-bottom:6px;">Contact data others can't find</h3>
-          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.55;">30+ data points per contact, including verified emails, direct dials, and intent signals.</p>
+      <!-- Card 2: Purple tint -->
+      <div style="background:linear-gradient(160deg,rgba(167,139,250,0.18) 0%,rgba(167,139,250,0.04) 100%);border:1px solid rgba(167,139,250,0.3);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 48px rgba(167,139,250,0.22)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="position:relative;overflow:hidden;">
+          <img src="./images/Enricj-them-with-30-data-points.webp" alt="Enrich with data points" style="width:100%;height:auto;display:block;" loading="lazy">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(167,139,250,0.1) 0%,transparent 50%);pointer-events:none;"></div>
+          <div style="position:absolute;top:14px;right:14px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.4);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#B5A1FF;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;">30+ data points</div>
+        </div>
+        <div style="padding:28px 30px;flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#B5A1FF;font-weight:700;font-family:'JetBrains Mono',monospace;">Data Enrichment</div>
+          <h3 style="font-size:19px;font-weight:700;color:#F5F5F7;line-height:1.2;letter-spacing:-0.015em;">Contact data others<br>can't find</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;margin-top:4px;">Verified emails, direct dials, and intent signals — all without leaving your workflow.</p>
         </div>
       </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
-        <img src="./images/Improve-Your-Skills.webp" alt="Improve your skills" style="width:100%;height:auto;display:block;background:#fff;" loading="lazy">
-        <div style="padding:24px 28px;">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.5);font-weight:700;margin-bottom:8px;">Coaching</div>
-          <h3 style="font-size:18px;font-weight:700;color:rgba(255,255,255,0.95);margin-bottom:6px;">Real-time coaching to level up every rep</h3>
-          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.55;">AI listens to calls, identifies patterns, and coaches reps with insights from your top performers.</p>
+      <!-- Card 3: Blue tint -->
+      <div style="background:linear-gradient(160deg,rgba(96,165,250,0.18) 0%,rgba(96,165,250,0.04) 100%);border:1px solid rgba(96,165,250,0.3);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 48px rgba(96,165,250,0.22)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="position:relative;overflow:hidden;">
+          <img src="./images/Improve-Your-Skills.webp" alt="Improve your skills" style="width:100%;height:auto;display:block;" loading="lazy">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(96,165,250,0.1) 0%,transparent 50%);pointer-events:none;"></div>
+          <div style="position:absolute;top:14px;right:14px;background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.4);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#60A5FA;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;">40% faster ramp</div>
+        </div>
+        <div style="padding:28px 30px;flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:#60A5FA;font-weight:700;font-family:'JetBrains Mono',monospace;">Coaching</div>
+          <h3 style="font-size:19px;font-weight:700;color:#F5F5F7;line-height:1.2;letter-spacing:-0.015em;">Real-time coaching to<br>level up every rep</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;margin-top:4px;">AI listens to calls, spots patterns, and coaches reps with insights from your top performers.</p>
         </div>
       </div>
     </div>
@@ -1595,6 +1635,51 @@ KomboAI</pre></div></div>
           <a href="./v9/pricing.html" class="price-cta">Launch a play</a>
           <div class="price-note">No credit card required to start.</div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="security-band reveal">
+  <div class="container">
+    <div class="security-card">
+      <div class="sec-main">
+        <div class="sec-eyebrow"><span class="sec-dot"></span>Security certifications</div>
+        <h3>Enterprise-Grade Security.<br><span class="sec-em">Certified to meet industry&#8209;leading standards.</span></h3>
+        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener" class="btn-ghost" style="display:inline-block;align-self:flex-start;padding:12px 22px;font-size:14px;border-radius:999px;">Visit Trust Center →</a>
+      </div>
+      <div class="sec-cert">
+        <div class="cert-badge">
+          <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="44" cy="10" r="3" fill="#5A5A63"/>
+            <circle cx="61" cy="15" r="3" fill="#5A5A63"/>
+            <circle cx="73" cy="27" r="3" fill="#5A5A63"/>
+            <circle cx="78" cy="44" r="3" fill="#5A5A63"/>
+            <circle cx="73" cy="61" r="3" fill="#5A5A63"/>
+            <circle cx="61" cy="73" r="3" fill="#5A5A63"/>
+            <circle cx="44" cy="78" r="3" fill="#5A5A63"/>
+            <circle cx="27" cy="73" r="3" fill="#5A5A63"/>
+            <circle cx="15" cy="61" r="3" fill="#5A5A63"/>
+            <circle cx="10" cy="44" r="3" fill="#5A5A63"/>
+            <circle cx="15" cy="27" r="3" fill="#5A5A63"/>
+            <circle cx="27" cy="15" r="3" fill="#5A5A63"/>
+            <text x="44" y="49" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#8A8A95" letter-spacing="1">GDPR</text>
+          </svg>
+        </div>
+        <div class="cert-name">GDPR Compliant</div>
+        <div class="cert-desc">Compliant with EU data protection regulations.</div>
+      </div>
+      <div class="sec-cert">
+        <div class="cert-badge">
+          <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="8" y="8" width="72" height="72" rx="12" stroke="#2A2A30" stroke-width="1.5"/>
+            <text x="44" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="22" font-weight="700" fill="#8A8A95">ISO</text>
+            <text x="44" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#5A5A63" letter-spacing="1">27001</text>
+          </svg>
+        </div>
+        <div class="cert-name">ISO 27001 Compliant</div>
+        <div class="cert-desc">Independently audited and certified to ISO 27001.</div>
       </div>
     </div>
   </div>
