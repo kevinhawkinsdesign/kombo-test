@@ -1,18 +1,55 @@
 # Kombo
 
-Two independent projects in one repo:
+Three things in one repo:
 
-- **Repo root** — the static KomboAI marketing site (`index.html`, `about.html`, …, `styles.css`, `script.js`). No build step; open `index.html` in a browser or serve the directory with anything that serves static files.
-- **[`cms/`](./cms/)** — a Payload 3 + Next.js app, fully isolated. Has its own `package.json`, dependencies, dev server, admin panel, MCP wiring, and SQLite database.
+- **[`mockups/`](./mockups/)** — the active design workspace. `v9_glass_cathedral.html` is the chosen direction and is now a full multi-page website. All other pages (team, about, podcast, features, pricing, etc.) are built on the same design system.
+- **Repo root** — the original static KomboAI marketing site (`index.html`, `about.html`, …). Kept as reference; `mockups/` is the living version.
+- **[`cms/`](./cms/)** — a Payload 3 + Next.js app, fully isolated. Admin panel, MCP wiring, SQLite database.
 
-## Static site
+## Mockups — v9 Glass Cathedral
+
+`v9_glass_cathedral.html` is the homepage. The full site lives in `mockups/`:
+
+| Page | File |
+|---|---|
+| Homepage | `v9_glass_cathedral.html` |
+| About | `about.html` |
+| Team | `team.html` |
+| Podcast | `podcast.html` |
+| Features | `features.html` |
+| Pricing | `pricing.html` |
+| Integrations | `integrations.html` |
+| Customers | `customers.html` |
+| Blog | `blog.html` |
+| Blog post | `blog-post.html` |
+| How it works | `how-it-works.html` |
+| Contact | `contact.html` |
+| Changelog | `changelog.html` |
+| Brand guidelines | `brand-guidelines.html` |
+| Feature: CRM Intelligence | `feature-crm-intelligence.html` |
+| Feature: Email Personalization | `feature-email-personalization.html` |
+| Feature: Forecasting | `feature-forecasting.html` |
+| Feature: Lead Ranking | `feature-lead-ranking.html` |
+| Feature: Revenue Insights | `feature-revenue-insights.html` |
+
+All pages share the v9 design system: dark background (`#080808`), neon green (`#00ff88`) accents, JetBrains Mono, glass/blur card surfaces, and a consistent nav/footer.
+
+**Team page** includes real headshots for the core team (Ignacio, Ale, Michel, David) and advisors/investors (Ernest, Roger, Charles, Alvaro, Tom, Merce, Stephane). Photos live in `mockups/images/team/`.
+
+**Homepage variants** v1–v12 are preserved in `mockups/` for reference. v9 is the active one.
 
 ```bash
-# any static server works; here's a one-liner with Python
-python3 -m http.server 8080
+# Serve mockups locally
+python3 -m http.server 8080 --directory mockups
+# then open http://localhost:8080/v9_glass_cathedral.html
 ```
 
-Then open <http://localhost:8080>.
+## Original static site (root)
+
+```bash
+python3 -m http.server 8080
+# then open http://localhost:8080
+```
 
 ## Payload CMS
 
@@ -23,8 +60,4 @@ npm install
 npm run dev
 ```
 
-Admin panel: <http://localhost:3000/admin>. See [`cms/README.md`](./cms/README.md) for the full setup, including the MCP plugin and the `bootstrap-mcp.sh` helper for wiring Claude Code.
-
-## Why both?
-
-The static site is the public marketing surface — fast, hostable anywhere, no runtime. The CMS is a separate workspace where content can be modeled, edited in an admin UI, and exposed over MCP. They don't share code; if/when the static site is replaced by the Payload-rendered frontend, this README will move.
+Admin panel: <http://localhost:3000/admin>. See [`cms/README.md`](./cms/README.md) for full setup.
