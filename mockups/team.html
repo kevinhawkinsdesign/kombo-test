@@ -58,7 +58,8 @@
   .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
   .team-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;gap:0;transition:border-color .2s,transform .25s}
   .team-card:hover{transform:translateY(-2px);border-color:var(--line-2)}
-  .team-av{width:100%;aspect-ratio:1;border-radius:0;background:linear-gradient(160deg,var(--c1) 0%,var(--c2) 100%);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--bg)}
+  .team-av{width:100%;aspect-ratio:1;border-radius:0;background:linear-gradient(160deg,var(--c1) 0%,var(--c2) 100%);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--bg);overflow:hidden}
+  .team-av img{width:100%;height:100%;object-fit:cover;display:block}
   .team-card.green{--c1:#D4FF00;--c2:#A4D000}
   .team-card.purple{--c1:#B5A1FF;--c2:#8366E0}
   .team-card.blue{--c1:#60A5FA;--c2:#2563EB}
@@ -220,7 +221,7 @@
 
 <section class="hero">
   <div class="container">
-    <div class="eyebrow"><span class="dot"></span> 64 humans across Madrid and Berlin</div>
+    <div class="eyebrow"><span class="dot"></span> Barcelona · Founded 2023 · Built for sales teams</div>
     <h1>We've got passion and the talent to <span class="highlight">make it possible</span></h1>
     <p>Meet the team building the future of AI-powered sales. From engineers to go-to-market strategists, every person here is obsessed with making reps' lives better.</p>
   </div>
@@ -230,14 +231,14 @@
   <div class="container">
     <div class="team-grid">
       <div class="team-card green">
-        <div class="team-av">IG</div>
+        <div class="team-av"><img src="./images/team/ignacio.webp" alt="Ignacio Gaminde"></div>
         <div class="info">
           <div class="nm">Ignacio Gaminde</div>
           <div class="role">Co-Founder &amp; CRO</div>
         </div>
       </div>
       <div class="team-card purple">
-        <div class="team-av">AP</div>
+        <div class="team-av"><img src="./images/team/ale.webp" alt="Ale Pintaudi"></div>
         <div class="info">
           <div class="nm">Ale Pintaudi</div>
           <div class="role">Co-Founder &amp; CEO</div>
@@ -265,14 +266,14 @@
         </div>
       </div>
       <div class="team-card cyan">
-        <div class="team-av">MB</div>
+        <div class="team-av"><img src="./images/team/michel.webp" alt="Michel Estopiñales Blay"></div>
         <div class="info">
           <div class="nm">Michel Estopiñales Blay</div>
           <div class="role">Senior Product Engineer</div>
         </div>
       </div>
       <div class="team-card green">
-        <div class="team-av">DR</div>
+        <div class="team-av"><img src="./images/team/david.webp" alt="David Redondo"></div>
         <div class="info">
           <div class="nm">David Redondo</div>
           <div class="role">Founding AI Product Engineer</div>
@@ -334,6 +335,63 @@
 
 <section class="std">
   <div class="container">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);text-transform:uppercase;letter-spacing:0.16em;margin-bottom:36px;" class="reveal">// Advisors &amp; Investors</div>
+    <div class="team-grid">
+      <div class="team-card green reveal">
+        <div class="team-av"><img src="./images/team/ernest.webp" alt="Ernest Sanchez"></div>
+        <div class="info">
+          <div class="nm">Ernest Sanchez</div>
+          <div class="role">Partner &amp; Advisor</div>
+        </div>
+      </div>
+      <div class="team-card purple reveal">
+        <div class="team-av"><img src="./images/team/roger.webp" alt="Roger Sindreu"></div>
+        <div class="info">
+          <div class="nm">Roger Sindreu</div>
+          <div class="role">AI Advisor &amp; Investor</div>
+        </div>
+      </div>
+      <div class="team-card blue reveal">
+        <div class="team-av"><img src="./images/team/charles.webp" alt="Charles Simonetti"></div>
+        <div class="info">
+          <div class="nm">Charles Simonetti</div>
+          <div class="role">Advisor &amp; Investor</div>
+        </div>
+      </div>
+      <div class="team-card orange reveal">
+        <div class="team-av"><img src="./images/team/alvaro.webp" alt="Alvaro Callejo"></div>
+        <div class="info">
+          <div class="nm">Alvaro Callejo</div>
+          <div class="role">Advisor &amp; Investor</div>
+        </div>
+      </div>
+      <div class="team-card pink reveal">
+        <div class="team-av"><img src="./images/team/tom.webp" alt="Tom Horsey"></div>
+        <div class="info">
+          <div class="nm">Tom Horsey</div>
+          <div class="role">Investor</div>
+        </div>
+      </div>
+      <div class="team-card cyan reveal">
+        <div class="team-av"><img src="./images/team/merce.webp" alt="Merce Tell"></div>
+        <div class="info">
+          <div class="nm">Merce Tell</div>
+          <div class="role">Investor</div>
+        </div>
+      </div>
+      <div class="team-card green reveal">
+        <div class="team-av"><img src="./images/team/stephane.png" alt="Stephane Roy"></div>
+        <div class="info">
+          <div class="nm">Stephane Roy</div>
+          <div class="role">Advisor &amp; Investor</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="std">
+  <div class="container">
     <div class="testimonials">
       <div class="testimonial">
         <div class="testimonial-quote">"KomboAI was a great discovery! It is the greatest discovery as a sales tool."</div>
@@ -359,11 +417,16 @@
     <div class="clients">
       <h3>Trusted by teams inside these great companies</h3>
       <div class="clients-grid">
-        <img src="./images/logos/shakers.png" alt="Shakers">
-        <img src="./images/logos/edicom.png" alt="Edicom">
-        <img src="./images/logos/fever.png" alt="Fever">
-        <img src="./images/logos/weekendesk.png" alt="Weekendesk">
-        <img src="./images/logos/whereix.png" alt="WhereIX">
+        <img src="./images/clients/shakers.png" alt="Shakers">
+        <img src="./images/clients/edicom.png" alt="Edicom">
+        <img src="./images/clients/fever.png" alt="Fever">
+        <img src="./images/clients/Weekendesk.png" alt="Weekendesk">
+        <img src="./images/clients/wherex.png" alt="WhereX">
+        <img src="./images/clients/fonia.webp" alt="Fonia">
+        <img src="./images/clients/lucca.png" alt="Lucca">
+        <img src="./images/clients/nuclio-talent.png" alt="Nuclio Talent">
+        <img src="./images/clients/show2be.png" alt="Show2Be">
+        <img src="./images/clients/defined-ai.png" alt="Defined AI">
       </div>
     </div>
   </div>
