@@ -794,6 +794,24 @@
   [class*="card"] { transition: transform 0.3s; }
   [class*="card"]:hover { transform: translateY(-4px); }
 
+  /* Learn from the Best — podcast shorts */
+  .learn-best .section-h { text-align: center; margin-bottom: 56px; }
+  .learn-best .section-h .eyebrow { display: inline-flex; }
+  .shorts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; max-width: 920px; margin: 0 auto; }
+  .short-card { position: relative; transition: transform .3s ease; }
+  .short-card:hover { transform: translateY(-6px); }
+  .short-card:nth-child(1) { transform: rotate(-2deg); }
+  .short-card:nth-child(1):hover { transform: rotate(-2deg) translateY(-6px); }
+  .short-card:nth-child(3) { transform: rotate(2deg); }
+  .short-card:nth-child(3):hover { transform: rotate(2deg) translateY(-6px); }
+  .short-frame { position: relative; aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; background: #000; border: 1px solid var(--line); box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6); }
+  .short-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  @media (max-width: 880px) {
+    .shorts-grid { grid-template-columns: 1fr; max-width: 320px; gap: 24px; }
+    .short-card, .short-card:nth-child(1), .short-card:nth-child(3) { transform: none; }
+    .short-card:hover, .short-card:nth-child(1):hover, .short-card:nth-child(3):hover { transform: translateY(-4px); }
+  }
+
   /* Security section */
   .security-band { padding: 80px 0; }
   .security-card { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; display: grid; grid-template-columns: 1.5fr 1fr 1fr; align-items: stretch; position: relative; overflow: hidden; }
@@ -1987,6 +2005,37 @@ KomboAI</pre></div></div>
           <div class="price-note">No credit card required to start.</div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEARN FROM THE BEST -->
+<section class="learn-best reveal" style="padding:96px 24px;">
+  <div class="container">
+    <div class="section-h">
+      <span class="eyebrow" style="margin-bottom:24px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon);"></span>Podcast</span>
+      <h2>Learn from the <span class="accent">best</span></h2>
+      <p>Our methodologies and insights are extracted from the best sales leaders out there.</p>
+    </div>
+    <div class="shorts-grid">
+      <div class="short-card">
+        <div class="short-frame">
+          <iframe src="https://www.youtube.com/embed/dmYBkvgtbag" title="KomboAI podcast clip" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="short-card">
+        <div class="short-frame">
+          <iframe src="https://www.youtube.com/embed/BPqW7CplKco" title="KomboAI podcast clip" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="short-card">
+        <div class="short-frame">
+          <iframe src="https://www.youtube.com/embed/TwHbwAfueb8" title="KomboAI podcast clip" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:48px;">
+      <a href="./podcast.html" class="btn-ghost">Watch the podcast →</a>
     </div>
   </div>
 </section>
