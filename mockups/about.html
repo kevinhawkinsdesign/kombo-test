@@ -164,6 +164,19 @@
   .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
   @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 
+  /* Founders photo */
+  .founders-block{padding:60px 0 0;text-align:center}
+  .founders-img{width:100%;max-width:860px;border-radius:28px;display:block;margin:0 auto;object-fit:cover;max-height:480px}
+  .founders-caption{font-size:13px;color:var(--mute);margin-top:16px;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em}
+
+  /* Mission / Vision */
+  .mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:60px}
+  .mv-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:36px}
+  .mv-card.active{background:var(--surface-2);border-color:var(--line-2)}
+  .mv-card h4{font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--ink)}
+  .mv-card p{font-size:15px;color:var(--mute);line-height:1.6}
+  @media(max-width:768px){.mv-grid{grid-template-columns:1fr}}
+
   .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(0.22,0.61,0.36,1),transform .8s cubic-bezier(0.22,0.61,0.36,1)}
   .reveal.is-visible{opacity:1;transform:translateY(0)}
   @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
@@ -314,28 +327,34 @@
 <section class="hero">
   <div class="hero-doodles" aria-hidden="true">
     <img src="./images/Hands/dark mode/05.png" class="dood d1" alt="" loading="lazy">
-    <img src="./images/Hands/dark mode/14.png" class="dood d2" alt="" loading="lazy">
-    <img src="./images/arrows-scribbles/icon-3.png" class="dood d3" alt="" loading="lazy" style="filter:brightness(0) invert(1)">
-    <img style="filter:brightness(0) invert(1)" src="./images/arrows-scribbles/icon-2.png" class="dood d4" alt="" loading="lazy">
+    <img src="./images/Hands/dark mode/33.png" class="dood d2" alt="" loading="lazy">
+    <img src="./images/arrows-scribbles/icon-3.png" class="dood d3" alt="" loading="lazy" >
+    <img  src="./images/arrows-scribbles/icon-2.png" class="dood d4" alt="" loading="lazy">
     <img src="./images/Hands/dark mode/25.png" class="dood d5" alt="" loading="lazy">
   </div>
   <div class="hero-asterisk" aria-hidden="true">✳</div>
   <div class="container">
-    <div class="eyebrow reveal"><span class="dot"></span> Founded 2023 · Barcelona</div>
-    <h1 class="reveal">We build the agents<br/>your reps would <span class="highlight">hire themselves.</span></h1>
-    <p class="reveal">KomboAI exists because the modern revenue stack has 47 tools, 12 dashboards, and 0 leverage. We're rebuilding the sales motion as one workflow — agent-first, CRM-native, human-coached.</p>
+    <div class="eyebrow reveal"><span class="dot"></span> About</div>
+    <h1 class="reveal">We believe sales<br/>should be <span class="highlight">smarter.</span></h1>
+    <p class="reveal">KomboAI was born from a simple frustration: sales teams waste too much time on the wrong leads. We're building AI that fixes that — so reps can focus on what they do best: selling.</p>
   </div>
 </section>
 
 <section class="std" style="padding-top:0">
   <div class="container">
-    <div class="manifesto reveal">
-      <p class="lede">Software for sales hasn't moved in 15 years. <span class="em">We think that's the point.</span></p>
-      <p>Reps spend <span class="strike">60% of their day selling</span> 60% of their day fighting their CRM. The tools they need don't ship: they get bought.</p>
-      <p>So enterprise sales got more dashboards. More notification noise. More "single panes of glass" stacked on top of more single panes of glass.</p>
-      <p>We started KomboAI with a simple bet: if AI can read your CRM, your calendar, your inbox, your calls — it can <span class="em">do the work</span>, not just describe it.</p>
-      <p>Four agents. One workflow. The tab your reps already have open.</p>
-      <p class="tag">// signed, <b>Ignacio Gaminde + Ale Pintaudi</b> · co-founders</p>
+    <div class="founders-block reveal">
+      <img class="founders-img" src="./images/team/founders.webp" alt="Ignacio Gaminde and Ale Pintaudi, co-founders of KomboAI">
+      <p class="founders-caption">Ignacio Gaminde &amp; Ale Pintaudi · Co-founders · Barcelona</p>
+    </div>
+    <div class="mv-grid">
+      <div class="mv-card active reveal">
+        <h4>Mission</h4>
+        <p>Give every SDR and AE the intelligence of a 20-year veteran and the efficiency of an AI-powered machine — without replacing the human element that closes deals.</p>
+      </div>
+      <div class="mv-card reveal">
+        <h4>Vision</h4>
+        <p>A world where no SDR or AE wastes time on a deal that won't close — where AI surfaces the right lead, at the right time, with the right approach.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -344,40 +363,31 @@
   <div class="container">
     <div class="story">
       <div class="story-side reveal">
-        <div class="eb">// The story so far</div>
-        <h2>From a co-working space in Barcelona<br/>to <span class="accent">teams across Europe</span> and beyond.</h2>
-        <p>Three years of building in the trenches — rewrites, real customers, and a product that keeps getting sharper. Here's the timeline as we lived it.</p>
+        <div class="eb">// Our journey</div>
+        <h2>Built in Barcelona,<br/>used by teams<br/><span class="accent">across the world.</span></h2>
+        <p>From two founders frustrated by guesswork-driven selling to an AI platform trusted by hundreds of SDRs and AEs.</p>
       </div>
       <div class="story-list">
         <div class="story-item reveal">
-          <div class="yr">Mar 2023</div>
-          <div class="body"><h5>Two friends, one Notion doc</h5><p>Ignacio Gaminde and Ale Pintaudi write the first KomboAI manifesto in a Barcelona co-working space. The bet: AI can do the work, not just describe it.</p></div>
+          <div class="yr">2023</div>
+          <div class="body"><h5>KomboAI founded <span class="badge">origin</span></h5><p>Two ex-sales leaders frustrated by guesswork-driven selling. They set out to build the co-pilot every rep deserves.</p></div>
         </div>
         <div class="story-item minor reveal">
-          <div class="yr">Oct 2023</div>
-          <div class="body"><h5>First customers onboard <span class="badge">launch</span></h5><p>The product works. Design partners from Shakers, Edicom, and Fever start using KomboAI daily. We hire our first engineers.</p></div>
+          <div class="yr">2024</div>
+          <div class="body"><h5>AI lead scoring ships</h5><p>Launched AI lead scoring and personality detection. First 100 teams onboarded. Reps wake up to a prioritised queue every morning.</p></div>
         </div>
         <div class="story-item reveal">
-          <div class="yr">Feb 2024</div>
-          <div class="body"><h5>Lead Scoring ships</h5><p>The first agent does exactly what we promised. Reps wake up to a ranked queue every morning. Reply rates jump on day one.</p></div>
-        </div>
-        <div class="story-item minor reveal">
-          <div class="yr">Jul 2024</div>
-          <div class="body"><h5>100+ customers</h5><p>Word spreads across Barcelona's startup scene. Teams at Fever, Weekendesk, and Lucca bring KomboAI into their daily motion.</p></div>
+          <div class="yr">2025</div>
+          <div class="body"><h5>CRM integrations go live</h5><p>HubSpot and Salesforce integrations ship. 500+ SDRs and AEs active. Enterprise compliance with GDPR and ISO 27001.</p></div>
         </div>
         <div class="story-item reveal">
-          <div class="yr">Jan 2025</div>
-          <div class="body"><h5>Sequencing agent ships</h5><p>Approve-in-Batch hits production. Reply rates on customer accounts jump 2.1×. We learn the shape of compounding leverage.</p></div>
-        </div>
-        <div class="story-item minor reveal">
-          <div class="yr">Sep 2025</div>
-          <div class="body"><h5>GDPR compliant</h5><p>We close our first enterprise deals. Full compliance across EU data regulations. The Trust Center goes live.</p></div>
-        </div>
-        <div class="story-item reveal">
-          <div class="yr">May 2026</div>
-          <div class="body"><h5>Forecasting agent — GA <span class="badge">today</span></h5><p>The 4th agent ships. The product is now four specialists working as one team. Still in Barcelona. Still obsessed with making reps' lives better.</p></div>
+          <div class="yr">2026</div>
+          <div class="body"><h5>KomboAI 2.0 <span class="badge">today</span></h5><p>Pipeline intelligence, automated outreach, and a natural-language sales assistant. The platform reps open first every morning.</p></div>
         </div>
       </div>
+    </div>
+    <div style="text-align:center;margin-top:40px" class="reveal">
+      <a href="./team.html" class="btn-ghost" style="padding:12px 24px;font-size:14px">Meet the Team →</a>
     </div>
   </div>
 </section>
@@ -438,9 +448,9 @@
 <section class="std" style="padding-top:0">
   <div class="container">
     <div class="stat-band reveal">
-      <div class="it"><div class="v">3x</div><div class="l">Your conversion rate</div></div>
-      <div class="it"><div class="v">120</div><div class="l">Daily minutes saved</div></div>
-      <div class="it"><div class="v">10x</div><div class="l">Faster response time</div></div>
+      <div class="it"><div class="v">1000+</div><div class="l">SDRs &amp; AEs active</div></div>
+      <div class="it"><div class="v">3.2×</div><div class="l">Avg. match rate lift</div></div>
+      <div class="it"><div class="v">500+</div><div class="l">Teams onboarded</div></div>
       <div class="it"><div class="v">2023</div><div class="l">Founded in Barcelona</div></div>
     </div>
   </div>
@@ -452,13 +462,13 @@
       <div class="cc-orb"></div>
       <div class="cc-content">
         <div class="cc-headline">
-          <h2>Build with us.<br/>Or sell with <span class="cc-pill">us.</span></h2>
+          <h2>Ready to hit quota <span class="cc-pill">faster?</span></h2>
         </div>
         <div class="cc-side">
-          <p>If you're a sales team that believes the work itself can be better — talk to us. If you're a builder who wants to ship every Thursday — apply.</p>
+          <p>Join 1000+ SDRs and AEs using KomboAI. Setup in 1 day, white-glove onboarding, CRM integration in minutes.</p>
           <div class="cc-cta">
-            <a href="./contact.html" class="btn-neon">Talk to us</a>
-            <a href="#" class="btn-ghost">Open roles →</a>
+            <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="btn-neon">See a Demo</a>
+            <a href="./contact.html" class="btn-ghost">Ask a Question →</a>
           </div>
         </div>
       </div>
