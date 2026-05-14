@@ -18,8 +18,8 @@
   html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
   .container{max-width:1180px;margin:0 auto;padding:0 28px}
-  .container.narrow{max-width:860px}
 
+  /* ─── Nav ─── */
   nav{position:sticky;top:0;background:rgba(14,14,16,0.85);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid var(--line)}
   .nav-row{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
   .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
@@ -42,8 +42,8 @@
   .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
   @media(max-width:880px){.nav-links{display:none}}
 
-  /* Hero */
-  .cs-hero{padding:72px 0 56px;position:relative;overflow:hidden}
+  /* ─── Hero ─── */
+  .cs-hero{padding:64px 0 56px;position:relative;overflow:hidden}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
   .dood{position:absolute;mix-blend-mode:screen}
   img.dood[src*="arrows-scribbles"]{filter:invert(1)}
@@ -53,71 +53,146 @@
   .dood.d4{bottom:4%;right:1%;width:96px;transform:rotate(-8deg);opacity:0.35}
   @media(max-width:900px){.hero-doodles{display:none}}
   .cs-hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.07) 0%,transparent 60%);pointer-events:none}
-  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-bottom:32px;transition:color .2s}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-bottom:36px;transition:color .2s}
   .back-link:hover{color:var(--ink)}
   .back-link svg{transition:transform .2s}
   .back-link:hover svg{transform:translateX(-3px)}
+
+  /* Hero two-column split */
+  .hero-inner{display:grid;grid-template-columns:1fr 320px;gap:56px;align-items:start}
   .cs-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--neon);margin-bottom:20px}
-  .cs-hero h1{font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.08;letter-spacing:-0.03em;margin-bottom:20px;max-width:840px}
+  .cs-hero h1{font-size:clamp(30px,4.5vw,52px);font-weight:700;line-height:1.08;letter-spacing:-0.03em;margin-bottom:18px;max-width:780px}
   .cs-hero h1 .em{color:var(--neon)}
-  .cs-hero .sub{font-size:17px;color:var(--mute);line-height:1.6;max-width:680px;margin-bottom:48px}
-
-  /* Stats bar */
-  .stat-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:48px}
-  .stat-bar .s{background:var(--surface);padding:28px 32px}
-  .stat-bar .s .v{font-size:40px;font-weight:800;letter-spacing:-0.035em;color:var(--neon);line-height:1;margin-bottom:6px}
-  .stat-bar .s .l{font-size:12px;color:var(--mute);line-height:1.4}
-
-  /* Meta tags */
-  .cs-meta{display:flex;flex-wrap:wrap;gap:10px}
-  .cs-tag{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;color:var(--mute)}
+  .cs-hero .sub{font-size:16px;color:var(--mute);line-height:1.65;max-width:640px;margin-bottom:28px}
+  .cs-meta{display:flex;flex-wrap:wrap;gap:8px}
+  .cs-tag{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--mute)}
   .cs-tag.use-case{color:var(--neon);border-color:rgba(212,255,0,0.2);background:rgba(212,255,0,0.05)}
 
-  /* Article body */
-  section.std{padding:72px 0}
-  section.std+section.std{padding-top:0}
-  .section-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--neon);margin-bottom:16px}
-  .section-title{font-size:clamp(22px,3vw,32px);font-weight:700;letter-spacing:-0.025em;line-height:1.15;margin-bottom:20px;color:var(--ink)}
-  .body-text p{font-size:16px;color:var(--mute);line-height:1.75;margin-bottom:18px}
+  /* Featured voices chips */
+  .hero-voices{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+  .voice-chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 14px}
+  .voice-av{width:34px;height:34px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+  .voice-av.av-lu{background:var(--lavender)}
+  .voice-av.av-rq{background:rgba(212,255,0,0.7)}
+  .voice-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.2}
+  .voice-role{font-size:11px;color:var(--mute);margin-top:1px}
+
+  /* Hero company card (right column) */
+  .hero-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px;margin-top:8px}
+  .hc-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--mute-2);margin-bottom:12px}
+  .hc-name{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-0.02em}
+  .hc-meta{font-size:13px;color:var(--mute);line-height:1.55;margin-bottom:24px}
+  .hc-div{border:none;border-top:1px solid var(--line);margin-bottom:24px}
+  .hc-stat .v{font-size:52px;font-weight:800;letter-spacing:-0.04em;color:var(--neon);line-height:1;margin-bottom:6px}
+  .hc-stat .l{font-size:13px;color:var(--mute);line-height:1.4}
+
+  /* ─── Video section (Enginy style) ─── */
+  .cs-video-section{padding:0 0 72px}
+  .video-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:20px;overflow:hidden;cursor:pointer;background:var(--surface)}
+  .video-wrap img.poster{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+  .video-wrap:hover img.poster{transform:scale(1.02)}
+  .play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,0.94);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 40px rgba(0,0,0,0.55),0 0 0 6px rgba(255,255,255,0.15);transition:transform .2s ease,box-shadow .2s ease;pointer-events:none}
+  .video-wrap:hover .play-btn{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 12px 52px rgba(0,0,0,0.65),0 0 0 8px rgba(255,255,255,0.12)}
+  .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .video-wrap.playing img.poster,.video-wrap.playing .play-btn{display:none}
+  .video-caption{text-align:center;font-size:13px;color:var(--mute);margin-top:14px}
+
+  /* ─── Two-column body ─── */
+  .cs-body{padding:16px 0 0}
+  .cs-layout{display:grid;grid-template-columns:240px 1fr;gap:72px;align-items:start}
+
+  /* Sidebar */
+  .cs-sidebar{position:sticky;top:96px}
+  .sidebar-section{margin-bottom:20px}
+  .sidebar-key{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--mute-2);margin-bottom:5px}
+  .sidebar-val{font-size:13px;color:var(--mute);line-height:1.5}
+  .sidebar-divider{border:none;border-top:1px solid var(--line);margin:24px 0}
+  .sidebar-stats{display:flex;flex-direction:column;gap:22px;margin-bottom:28px}
+  .ss .v{font-size:34px;font-weight:800;letter-spacing:-0.03em;color:var(--neon);line-height:1;margin-bottom:4px}
+  .ss .l{font-size:12px;color:var(--mute);line-height:1.4}
+  .sidebar-cta{display:block;text-align:center;background:var(--neon);color:var(--bg);padding:13px 20px;border-radius:999px;font-weight:600;font-size:13px;transition:transform .2s,box-shadow .2s}
+  .sidebar-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,255,0,0.3)}
+
+  /* Article */
+  .cs-article{min-width:0;padding-bottom:80px}
+  .cs-section{padding-bottom:52px;border-bottom:1px solid var(--line);margin-bottom:52px}
+  .cs-section:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+  .section-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--neon);margin-bottom:14px}
+  .section-title{font-size:clamp(20px,2.5vw,28px);font-weight:700;letter-spacing:-0.025em;line-height:1.18;margin-bottom:18px;color:var(--ink)}
+  .body-text p{font-size:15px;color:var(--mute);line-height:1.8;margin-bottom:16px}
   .body-text p:last-child{margin-bottom:0}
 
-  /* Pull quote */
-  .pull-quote{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--neon);border-radius:0 16px 16px 0;padding:28px 32px;margin:36px 0}
-  .pull-quote p{font-size:17px;font-weight:500;color:var(--ink);line-height:1.55;margin-bottom:16px;font-style:italic}
-  .pull-quote .attr{display:flex;align-items:center;gap:10px}
+  /* Pull quote (Clay-style: large open quote mark) */
+  .pull-quote{position:relative;padding:32px 36px 28px;margin:36px 0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .pull-quote::before{content:'"';position:absolute;top:-8px;left:20px;font-size:96px;line-height:1;color:var(--neon);opacity:0.18;font-family:'Inter',sans-serif;font-weight:800;pointer-events:none}
+  .pull-quote p{font-size:18px;font-weight:500;color:var(--ink);line-height:1.6;margin-bottom:20px;font-style:italic;position:relative}
+  .pull-quote .attr{display:flex;align-items:center;gap:10px;position:relative}
   .pull-quote .av{width:34px;height:34px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
   .pull-quote .nm{font-size:13px;font-weight:700;color:var(--ink)}
   .pull-quote .role{font-size:12px;color:var(--mute);margin-top:2px}
 
-  /* Closing CTA */
+  /* ─── More case studies ─── */
+  .more-studies{padding:72px 0 0}
+  .more-studies-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:32px}
+  .more-studies-header h2{font-size:clamp(20px,2.5vw,28px);font-weight:700;letter-spacing:-0.025em}
+  .more-studies-header a{font-size:14px;color:var(--mute);transition:color .2s}
+  .more-studies-header a:hover{color:var(--ink)}
+  .ms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .ms-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s,transform .2s}
+  .ms-card:hover{border-color:rgba(181,161,255,0.35);transform:translateY(-3px)}
+  .ms-card-tag{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--neon)}
+  .ms-card-name{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;line-height:1.2}
+  .ms-card-industry{font-size:13px;color:var(--mute);line-height:1.45}
+  .ms-card-soon{display:inline-block;background:rgba(181,161,255,0.12);border:1px solid rgba(181,161,255,0.25);border-radius:999px;padding:4px 12px;font-size:11px;color:var(--lavender);font-weight:600;margin-top:4px}
+  .ms-card-link{font-size:13px;font-weight:600;color:var(--lavender);margin-top:auto;padding-top:8px;transition:color .2s}
+  .ms-card:hover .ms-card-link{color:var(--ink)}
+  @media(max-width:860px){.ms-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.ms-grid{grid-template-columns:1fr}}
+
+  /* ─── Closing CTA ─── */
   .closing-cta{padding:80px 0 64px}
   .cc-card{position:relative;overflow:hidden;border-radius:36px;padding:72px 64px;background:radial-gradient(ellipse at 0% 0%,rgba(181,161,255,0.25) 0%,transparent 55%),radial-gradient(ellipse at 100% 100%,rgba(212,255,0,0.18) 0%,transparent 55%),linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.01) 100%),#14131C;border:1px solid rgba(181,161,255,0.22)}
   .cc-orb{position:absolute;bottom:-180px;right:-120px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(212,255,0,0.55) 0%,rgba(212,255,0,0.12) 60%,transparent 100%);pointer-events:none;filter:blur(2px)}
   .cc-content{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end;position:relative}
   .cc-headline h2{font-size:clamp(36px,5vw,58px);font-weight:800;line-height:1;letter-spacing:-0.035em}
   .cc-pill{display:inline-block;background:var(--neon);color:#0E0E10;padding:0 18px 4px;border-radius:16px;transform:rotate(-2deg)}
-  .cc-side p{font-size:16px;line-height:1.55;color:rgba(255,255,255,0.75);margin-bottom:22px;max-width:360px}
+  .cc-side p{font-size:16px;line-height:1.55;color:var(--ink);margin-bottom:22px;max-width:360px}
   .cc-cta{display:flex;gap:12px;flex-wrap:wrap}
   .btn-neon{display:inline-block;background:var(--neon);color:var(--bg);padding:14px 28px;border-radius:999px;font-weight:600;font-size:14px;transition:transform .2s,box-shadow .2s}
   .btn-neon:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,255,0,0.3)}
   .btn-ghost{background:var(--lavender);color:#0E0E10;padding:14px 24px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--lavender);display:inline-block;transition:all .2s}
   .btn-ghost:hover{border-color:var(--lavender);color:#fff;background:rgba(181,161,255,0.08);transform:translateY(-2px)}
 
-  /* Footer */
-  footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:60px}
+  /* ─── Footer ─── */
+  footer{padding:80px 0 50px;border-top:1px solid var(--line)}
   .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
   .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
   .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
   .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s}
   .footer-grid .col a:hover{color:var(--ink)}
   .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute)}
-  @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 
-  @media(max-width:880px){
-    .stat-bar{grid-template-columns:1fr}
+  /* ─── Responsive ─── */
+  @media(max-width:1024px){
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+    .cs-layout{grid-template-columns:200px 1fr;gap:48px}
+  }
+  @media(max-width:860px){
+    .hero-inner{grid-template-columns:1fr}
+    .hero-card{display:none}
+    .cs-layout{grid-template-columns:1fr;gap:0}
+    .cs-sidebar{position:static;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 0 40px;border-bottom:1px solid var(--line);margin-bottom:40px}
+    .sidebar-section{display:none}
+    .sidebar-divider{display:none}
+    .sidebar-cta{grid-column:1/-1}
+    .sidebar-stats{flex-direction:row;flex-wrap:wrap;gap:16px}
+    .ss{flex:1;min-width:80px}
     .cc-card{padding:48px 32px;border-radius:24px}
     .cc-content{grid-template-columns:1fr;gap:24px}
     .cs-hero{padding:48px 0 36px}
+    .pull-quote{padding:24px 24px 20px}
+    .pull-quote::before{font-size:72px;top:-6px}
+    .pull-quote p{font-size:16px}
   }
 </style>
 </head>
@@ -156,7 +231,7 @@
           <a href="./team.html">Team</a>
           <a href="./contact.html">Contact</a>
           <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
-        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+          <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
         </div>
       </div>
       <div class="nav-dropdown">
@@ -174,6 +249,7 @@
   </div>
 </nav>
 
+<!-- ── Hero ─────────────────────────────────────────────── -->
 <section class="cs-hero">
   <div class="hero-doodles" aria-hidden="true">
     <img src="./images/Hands/dark mode/05.png"       class="dood d1" alt="" loading="lazy">
@@ -181,115 +257,247 @@
     <img src="./images/arrows-scribbles/icon-31.png" class="dood d3" alt="" loading="lazy">
     <img src="./images/arrows-scribbles/icon-56.png" class="dood d4" alt="" loading="lazy">
   </div>
-  <div class="container" style="position:relative;z-index:1;">
+  <div class="container" style="position:relative;z-index:1">
     <a href="./customers.html" class="back-link">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7H2M6 3L2 7l4 4"/></svg>
       All case studies
     </a>
-    <div class="cs-eyebrow">// Case study · E-commerce Logistics · Spain</div>
-    <h1>How Amphora Logistics increased conversions by <span class="em">30%</span> with KomboAI</h1>
-    <p class="sub">The leading e-commerce logistics company centralised its prospecting tools, eliminated manual processes, and helped every SDR hit their targets.</p>
-
-    <div class="stat-bar">
-      <div class="s"><div class="v">+30%</div><div class="l">Call conversion rate</div></div>
-      <div class="s"><div class="v">60%</div><div class="l">Of all booked demos sourced through KomboAI</div></div>
-      <div class="s"><div class="v">100%</div><div class="l">SDRs hitting monthly targets</div></div>
-    </div>
-
-    <div class="cs-meta">
-      <span class="cs-tag">Spain · international warehouses</span>
-      <span class="cs-tag">E-commerce Logistics &amp; Fulfillment</span>
-      <span class="cs-tag">201–500 employees</span>
-      <span class="cs-tag use-case">Centralised prospecting</span>
-      <span class="cs-tag use-case">Direct phone enrichment</span>
-      <span class="cs-tag use-case">Call scoring &amp; coaching</span>
-    </div>
-  </div>
-</section>
-
-<section class="std">
-  <div class="container narrow">
-    <div class="section-label">// About Amphora Logistics</div>
-    <h2 class="section-title">An e-commerce logistics operator with two complementary business models.</h2>
-    <div class="body-text">
-      <p>Amphora Logistics is a logistics company specialising in e-commerce with two business models. On one hand, they offer full logistics outsourcing — warehousing, picking, packing, and shipping — through an extensive network of warehouses in Spain and internationally.</p>
-      <p>On the other, they operate Alenva, their own software that is installed in third-party warehouses to optimise the entire logistics chain.</p>
-    </div>
-  </div>
-</section>
-
-<section class="std">
-  <div class="container narrow">
-    <div class="section-label">// The Problem</div>
-    <h2 class="section-title">Manual lists, scattered tools, and unreliable contact data were holding the team back.</h2>
-    <div class="body-text">
-      <p>Before KomboAI, Amphora's sales team relied entirely on manual processes. They used Excel lists that took hours to prepare, and contact information — emails and phone numbers — was unreliable. They had scattered tools like Apollo and Lusha for different tasks: some for prospecting, others for contact lookup, with no integrated strategy.</p>
-      <p>The Revenue Market team spent countless hours generating lists that turned out to be of little use. SDRs wasted valuable time searching for contact data instead of focusing on what truly matters: starting conversations and booking meetings.</p>
-    </div>
-    <div class="pull-quote">
-      <p>"Our day-to-day was quite manual. We mostly used lists and spreadsheets — it took us many hours to pull them together, and on top of that, all the contact information we extracted — emails and phone numbers — wasn't reliable."</p>
-      <div class="attr">
-        <div class="av">JA</div>
-        <div><div class="nm">Jasna</div><div class="role">SDR Manager · Amphora Logistics</div></div>
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="cs-eyebrow">// Case study · E-commerce Logistics · Spain</div>
+        <h1>How Amphora Logistics increased conversions by <span class="em">30%</span> with KomboAI</h1>
+        <p class="sub">The leading e-commerce logistics company centralised its prospecting tools, eliminated manual processes, and helped every SDR hit their targets.</p>
+        <div class="hero-voices">
+          <div class="voice-chip">
+            <div class="voice-av">JA</div>
+            <div><div class="voice-name">Jasna</div><div class="voice-role">SDR Manager · Amphora Logistics</div></div>
+          </div>
+          <div class="voice-chip">
+            <div class="voice-av av-lu">LU</div>
+            <div><div class="voice-name">Luis</div><div class="voice-role">Revenue Operations · Amphora Logistics</div></div>
+          </div>
+          <div class="voice-chip">
+            <div class="voice-av av-rq">RQ</div>
+            <div><div class="voice-name">Raquel</div><div class="voice-role">Sales Manager · Amphora Logistics</div></div>
+          </div>
+        </div>
+        <div class="cs-meta">
+          <span class="cs-tag">Spain · International warehouses</span>
+          <span class="cs-tag">E-commerce Logistics &amp; Fulfillment</span>
+          <span class="cs-tag">201–500 employees</span>
+          <span class="cs-tag use-case">Centralised prospecting</span>
+          <span class="cs-tag use-case">Direct phone enrichment</span>
+          <span class="cs-tag use-case">Call scoring &amp; coaching</span>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-card">
+          <div class="hc-label">Customer</div>
+          <div class="hc-name">Amphora Logistics</div>
+          <div class="hc-meta">E-commerce Logistics &amp; Fulfillment<br>Spain · 201–500 employees</div>
+          <hr class="hc-div">
+          <div class="hc-stat">
+            <div class="v">+30%</div>
+            <div class="l">Call conversion rate after adopting KomboAI</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="std">
-  <div class="container narrow">
-    <div class="section-label">// The Solution</div>
-    <h2 class="section-title">One centralised platform for prospecting, calling, and call intelligence.</h2>
-    <div class="body-text">
-      <p>With KomboAI, Amphora centralised all its prospecting tools into a single platform. The integration was straightforward — connected in just a couple of clicks — and the team adopted the tool immediately.</p>
-      <p>The daily workflow was completely transformed. Every morning from 9am, SDRs build lists directly in KomboAI, get direct phone numbers, and start calling as a team. They no longer rely on scattered data or manual processes: they find the contact, grab the number in two clicks, and jump straight into the conversation.</p>
-      <p>Additionally, the leadership team has integrated call scoring, which allows them to analyse all SDR calls, evaluate pitch quality, and get a full picture of team performance — across both emails and calls.</p>
+<!-- ── Video preview (Enginy style) ──────────────────────── -->
+<section class="cs-video-section">
+  <div class="container">
+    <div class="video-wrap" id="csVideo" onclick="this.classList.add('playing');document.getElementById('cvf').src='https://www.youtube.com/embed/G7leMLRWJx8?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&loop=1&playlist=G7leMLRWJx8'">
+      <img class="poster" src="https://img.youtube.com/vi/G7leMLRWJx8/maxresdefault.jpg" alt="KomboAI — Watch how the Amphora team works" loading="lazy">
+      <button class="play-btn" tabindex="-1" aria-label="Play video">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 5.5L23 14L8 22.5V5.5Z" fill="#0E0E10"/></svg>
+      </button>
+      <iframe id="cvf" src="" allow="autoplay;encrypted-media" allowfullscreen></iframe>
     </div>
-    <div class="pull-quote">
-      <p>"If I had to describe what KomboAI is giving me in one word, it would be time."</p>
-      <div class="attr">
-        <div class="av">LU</div>
-        <div><div class="nm">Luis</div><div class="role">Revenue Operations · Amphora Logistics</div></div>
-      </div>
+    <p class="video-caption">Watch how the Amphora Logistics team uses KomboAI every day</p>
+  </div>
+</section>
+
+<!-- ── Body: sidebar + article ───────────────────────────── -->
+<div class="cs-body">
+  <div class="container">
+    <div class="cs-layout">
+
+      <!-- Sidebar -->
+      <aside class="cs-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-key">Voices in this story</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="voice-av" style="width:30px;height:30px;font-size:10px;flex-shrink:0">JA</div>
+              <div><div class="voice-name">Jasna</div><div class="voice-role">SDR Manager</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="voice-av av-lu" style="width:30px;height:30px;font-size:10px;flex-shrink:0">LU</div>
+              <div><div class="voice-name">Luis</div><div class="voice-role">Revenue Operations</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="voice-av av-rq" style="width:30px;height:30px;font-size:10px;flex-shrink:0">RQ</div>
+              <div><div class="voice-name">Raquel</div><div class="voice-role">Sales Manager</div></div>
+            </div>
+          </div>
+        </div>
+        <hr class="sidebar-divider">
+        <div class="sidebar-section">
+          <div class="sidebar-key">Company</div>
+          <div class="sidebar-val">Amphora Logistics</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-key">Industry</div>
+          <div class="sidebar-val">E-commerce Logistics &amp; Fulfillment</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-key">Location</div>
+          <div class="sidebar-val">Spain · International warehouses</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-key">Company size</div>
+          <div class="sidebar-val">201–500 employees</div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-key">Use cases</div>
+          <div class="sidebar-val">Centralised prospecting · Direct phone enrichment · Call scoring &amp; coaching</div>
+        </div>
+        <hr class="sidebar-divider">
+        <div class="sidebar-stats">
+          <div class="ss">
+            <div class="v">+30%</div>
+            <div class="l">Call conversion rate</div>
+          </div>
+          <div class="ss">
+            <div class="v">60%</div>
+            <div class="l">Of demos sourced through KomboAI</div>
+          </div>
+          <div class="ss">
+            <div class="v">100%</div>
+            <div class="l">SDRs hitting monthly targets</div>
+          </div>
+        </div>
+        <hr class="sidebar-divider">
+        <a href="https://calendly.com/d/cvvt-6t5-664/demo-con-komboai" class="sidebar-cta">Book a demo →</a>
+      </aside>
+
+      <!-- Article -->
+      <main class="cs-article">
+
+        <div class="cs-section">
+          <div class="section-label">// About Amphora Logistics</div>
+          <h2 class="section-title">An e-commerce logistics operator with two complementary business models.</h2>
+          <div class="body-text">
+            <p>Amphora Logistics is a logistics company specialising in e-commerce with two business models. On one hand, they offer full logistics outsourcing — warehousing, picking, packing, and shipping — through an extensive network of warehouses in Spain and internationally.</p>
+            <p>On the other, they operate Alenva, their own software that is installed in third-party warehouses to optimise the entire logistics chain.</p>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <div class="section-label">// The Problem</div>
+          <h2 class="section-title">Manual lists, scattered tools, and unreliable contact data were holding the team back.</h2>
+          <div class="body-text">
+            <p>Before KomboAI, Amphora's sales team relied entirely on manual processes. They used Excel lists that took hours to prepare, and contact information — emails and phone numbers — was unreliable. They had scattered tools like Apollo and Lusha for different tasks: some for prospecting, others for contact lookup, with no integrated strategy.</p>
+            <p>The Revenue Market team spent countless hours generating lists that turned out to be of little use. SDRs wasted valuable time searching for contact data instead of focusing on what truly matters: starting conversations and booking meetings.</p>
+          </div>
+          <div class="pull-quote">
+            <p>"Our day-to-day was quite manual. We mostly used lists and spreadsheets — it took us many hours to pull them together, and on top of that, all the contact information we extracted — emails and phone numbers — wasn't reliable."</p>
+            <div class="attr">
+              <div class="av">JA</div>
+              <div><div class="nm">Jasna</div><div class="role">SDR Manager · Amphora Logistics</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <div class="section-label">// The Solution</div>
+          <h2 class="section-title">One centralised platform for prospecting, calling, and call intelligence.</h2>
+          <div class="body-text">
+            <p>With KomboAI, Amphora centralised all its prospecting tools into a single platform. The integration was straightforward — connected in just a couple of clicks — and the team adopted the tool immediately.</p>
+            <p>The daily workflow was completely transformed. Every morning from 9am, SDRs build lists directly in KomboAI, get direct phone numbers, and start calling as a team. They no longer rely on scattered data or manual processes: they find the contact, grab the number in two clicks, and jump straight into the conversation.</p>
+            <p>Additionally, the leadership team has integrated call scoring, which allows them to analyse all SDR calls, evaluate pitch quality, and get a full picture of team performance — across both emails and calls.</p>
+          </div>
+          <div class="pull-quote">
+            <p>"If I had to describe what KomboAI is giving me in one word, it would be time."</p>
+            <div class="attr">
+              <div class="av">LU</div>
+              <div><div class="nm">Luis</div><div class="role">Revenue Operations · Amphora Logistics</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <div class="section-label">// The Results</div>
+          <h2 class="section-title">Direct phone numbers transformed call dynamics and conversation quality.</h2>
+          <div class="body-text">
+            <p>The impact was immediate and measurable. Thanks to the direct phone numbers provided by KomboAI, SDRs no longer go through receptionists — they speak directly with the prospect. This completely changed the dynamics of calls and the quality of conversations.</p>
+            <p>Today: +30% increase in conversion rate, 60% of all booked demos sourced through KomboAI, and 100% of SDRs meeting their monthly targets.</p>
+          </div>
+          <div class="pull-quote">
+            <p>"With KomboAI's tool, because we can pull much more direct phone numbers, we've increased our conversion rate by up to 30%. The demos we're booking are also much better qualified."</p>
+            <div class="attr">
+              <div class="av">RQ</div>
+              <div><div class="nm">Raquel</div><div class="role">Sales Manager · Amphora Logistics</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <div class="section-label">// The Partnership</div>
+          <h2 class="section-title">A tailored platform built side-by-side with the Amphora team.</h2>
+          <div class="body-text">
+            <p>Amphora was one of KomboAI's earliest users, and that close relationship has been key. The KomboAI team adapted the platform to fit the way Amphora works, creating a completely tailored experience.</p>
+          </div>
+          <div class="pull-quote">
+            <p>"What would I tell another Team Lead who doesn't have KomboAI? That they're already behind. KomboAI has been like an extra team member for me. I think a Team Lead should have KomboAI from the very beginning of their sales process. It will help you grow three times faster."</p>
+            <div class="attr">
+              <div class="av">JA</div>
+              <div><div class="nm">Jasna</div><div class="role">SDR Manager · Amphora Logistics</div></div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- ── More case studies ─────────────────────────────────── -->
+<section class="more-studies">
+  <div class="container">
+    <div class="more-studies-header">
+      <h2>More case studies</h2>
+      <a href="./customers.html">All case studies →</a>
+    </div>
+    <div class="ms-grid">
+      <a href="./case-study-joblanders.html" class="ms-card">
+        <div class="ms-card-tag">// Recruitment Tech · Spain</div>
+        <div class="ms-card-name">Joblanders</div>
+        <div class="ms-card-industry">How Joblanders automated outbound prospecting and doubled their demo rate with KomboAI.</div>
+        <span class="ms-card-soon">Case study coming soon</span>
+        <div class="ms-card-link">Read case study →</div>
+      </a>
+      <a href="./case-study-viajes-eci.html" class="ms-card">
+        <div class="ms-card-tag">// Travel & Leisure · Spain</div>
+        <div class="ms-card-name">Viajes El Corte Inglés</div>
+        <div class="ms-card-industry">How one of Spain's largest travel companies scaled corporate sales with AI-assisted prospecting.</div>
+        <span class="ms-card-soon">Case study coming soon</span>
+        <div class="ms-card-link">Read case study →</div>
+      </a>
+      <a href="./customers.html" class="ms-card">
+        <div class="ms-card-tag">// All industries</div>
+        <div class="ms-card-name">Explore all customers</div>
+        <div class="ms-card-industry">See how sales teams across Europe are using KomboAI to hit targets and book more qualified demos.</div>
+        <div class="ms-card-link" style="margin-top:auto;padding-top:8px">View all stories →</div>
+      </a>
     </div>
   </div>
 </section>
 
-<section class="std">
-  <div class="container narrow">
-    <div class="section-label">// The Results</div>
-    <h2 class="section-title">Direct phone numbers transformed call dynamics and conversation quality.</h2>
-    <div class="body-text">
-      <p>The impact was immediate and measurable. Thanks to the direct phone numbers provided by KomboAI, SDRs no longer go through receptionists — they speak directly with the prospect. This completely changed the dynamics of calls and the quality of conversations.</p>
-      <p>Today: +30% increase in conversion rate, 60% of all booked demos sourced through KomboAI, and 100% of SDRs meeting their monthly targets.</p>
-    </div>
-    <div class="pull-quote">
-      <p>"With KomboAI's tool, because we can pull much more direct phone numbers, we've increased our conversion rate by up to 30%. The demos we're booking are also much better qualified."</p>
-      <div class="attr">
-        <div class="av">RQ</div>
-        <div><div class="nm">Raquel</div><div class="role">Sales Manager · Amphora Logistics</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="std">
-  <div class="container narrow">
-    <div class="section-label">// The Partnership</div>
-    <h2 class="section-title">A tailored platform built side-by-side with the Amphora team.</h2>
-    <div class="body-text">
-      <p>Amphora was one of KomboAI's earliest users, and that close relationship has been key. The KomboAI team adapted the platform to fit the way Amphora works, creating a completely tailored experience.</p>
-    </div>
-    <div class="pull-quote">
-      <p>"What would I tell another Team Lead who doesn't have KomboAI? That they're already behind. KomboAI has been like an extra team member for me. I think a Team Lead should have KomboAI from the very beginning of their sales process. It will help you grow three times faster."</p>
-      <div class="attr">
-        <div class="av">JA</div>
-        <div><div class="nm">Jasna</div><div class="role">SDR Manager · Amphora Logistics</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
+<!-- ── Closing CTA ────────────────────────────────────────── -->
 <section class="closing-cta">
   <div class="container">
     <div class="cc-card">
