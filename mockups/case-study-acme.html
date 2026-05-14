@@ -42,8 +42,8 @@
   .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,255,0,0.25)}
   @media(max-width:880px){.nav-links{display:none}}
 
-  /* ─── Hero ─── */
-  .cs-hero{padding:64px 0 56px;position:relative;overflow:hidden}
+  /* ─── Hero (Clay-style lock-up) ─── */
+  .cs-hero{padding:44px 0 64px;position:relative;overflow:hidden}
   .hero-doodles{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
   .dood{position:absolute;mix-blend-mode:screen}
   img.dood[src*="arrows-scribbles"]{filter:invert(1)}
@@ -53,56 +53,49 @@
   .dood.d4{bottom:4%;right:1%;width:96px;transform:rotate(-8deg);opacity:0.35}
   @media(max-width:900px){.hero-doodles{display:none}}
   .cs-hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse at center,rgba(212,255,0,0.07) 0%,transparent 60%);pointer-events:none}
-  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-bottom:36px;transition:color .2s}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-bottom:28px;transition:color .2s}
   .back-link:hover{color:var(--ink)}
   .back-link svg{transition:transform .2s}
   .back-link:hover svg{transform:translateX(-3px)}
+  .cs-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--neon);margin-bottom:14px}
 
-  /* Hero two-column split */
-  .hero-inner{display:grid;grid-template-columns:1fr 320px;gap:56px;align-items:start}
-  .cs-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--neon);margin-bottom:20px}
-  .cs-hero h1{font-size:clamp(30px,4.5vw,52px);font-weight:700;line-height:1.08;letter-spacing:-0.03em;margin-bottom:18px;max-width:780px}
-  .cs-hero h1 .em{color:var(--neon)}
-  .cs-hero .sub{font-size:16px;color:var(--mute);line-height:1.65;max-width:640px;margin-bottom:28px}
-  .cs-meta{display:flex;flex-wrap:wrap;gap:8px}
-  .cs-tag{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--mute)}
-  .cs-tag.use-case{color:var(--neon);border-color:rgba(212,255,0,0.2);background:rgba(212,255,0,0.05)}
+  /* Giant company name */
+  .hero-bigname{font-size:clamp(44px,8vw,104px);font-weight:800;letter-spacing:-0.04em;line-height:0.95;color:var(--ink)}
+  .hero-divider{border:none;border-top:1px solid var(--line);margin:36px 0 44px}
+
+  /* Two-column lock-up: video left, content right */
+  .hero-lockup{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+  .hero-lockup-right h1{font-size:clamp(24px,2.5vw,34px);font-weight:700;line-height:1.2;letter-spacing:-0.025em;margin-bottom:24px}
+  .hero-lockup-right h1 .em{color:var(--neon)}
+  .hero-didlabel{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--mute-2);margin:26px 0 18px;padding-top:24px;border-top:1px solid var(--line)}
+  .hero-stats{display:flex;gap:32px;flex-wrap:wrap}
+  .hero-stats .hs .v{font-size:clamp(28px,3vw,40px);font-weight:800;letter-spacing:-0.03em;color:var(--neon);line-height:1;margin-bottom:6px}
+  .hero-stats .hs .l{font-size:12px;color:var(--mute);line-height:1.4;max-width:150px}
 
   /* Featured voices chips */
-  .hero-voices{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
-  .voice-chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 14px}
-  .voice-av{width:34px;height:34px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+  .hero-voices{display:flex;flex-wrap:wrap;gap:10px}
+  .voice-chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 13px}
+  .voice-av{width:32px;height:32px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
   .voice-av.av-lu{background:var(--lavender)}
   .voice-av.av-rq{background:rgba(212,255,0,0.7)}
   .voice-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.2}
   .voice-role{font-size:11px;color:var(--mute);margin-top:1px}
 
-  /* Hero company card (right column) */
-  .hero-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px;margin-top:8px}
-  .hc-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--mute-2);margin-bottom:12px}
-  .hc-name{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-0.02em}
-  .hc-meta{font-size:13px;color:var(--mute);line-height:1.55;margin-bottom:24px}
-  .hc-div{border:none;border-top:1px solid var(--line);margin-bottom:24px}
-  .hc-stat .v{font-size:52px;font-weight:800;letter-spacing:-0.04em;color:var(--neon);line-height:1;margin-bottom:6px}
-  .hc-stat .l{font-size:13px;color:var(--mute);line-height:1.4}
-
-  /* ─── Video section (Enginy style) ─── */
-  .cs-video-section{padding:0 0 72px}
-  .video-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:20px;overflow:hidden;cursor:pointer;background:var(--surface)}
+  /* ─── Video preview (Enginy style) ─── */
+  .video-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;cursor:pointer;background:var(--surface);border:1px solid var(--line)}
   .video-wrap img.poster{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
   .video-wrap:hover img.poster{transform:scale(1.02)}
   .play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,0.94);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 40px rgba(0,0,0,0.55),0 0 0 6px rgba(255,255,255,0.15);transition:transform .2s ease,box-shadow .2s ease;pointer-events:none}
   .video-wrap:hover .play-btn{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 12px 52px rgba(0,0,0,0.65),0 0 0 8px rgba(255,255,255,0.12)}
   .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .video-wrap.playing img.poster,.video-wrap.playing .play-btn{display:none}
-  .video-caption{text-align:center;font-size:13px;color:var(--mute);margin-top:14px}
 
   /* ─── Two-column body ─── */
   .cs-body{padding:16px 0 0}
   .cs-layout{display:grid;grid-template-columns:240px 1fr;gap:72px;align-items:start}
 
-  /* Sidebar */
-  .cs-sidebar{position:sticky;top:96px}
+  /* Sidebar (not sticky — scrolls with the page) */
+  .cs-sidebar{align-self:start}
   .sidebar-section{margin-bottom:20px}
   .sidebar-key{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--mute-2);margin-bottom:5px}
   .sidebar-val{font-size:13px;color:var(--mute);line-height:1.5}
@@ -178,8 +171,7 @@
     .cs-layout{grid-template-columns:200px 1fr;gap:48px}
   }
   @media(max-width:860px){
-    .hero-inner{grid-template-columns:1fr}
-    .hero-card{display:none}
+    .hero-lockup{grid-template-columns:1fr;gap:32px}
     .cs-layout{grid-template-columns:1fr;gap:0}
     .cs-sidebar{position:static;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 0 40px;border-bottom:1px solid var(--line);margin-bottom:40px}
     .sidebar-section{display:none}
@@ -237,10 +229,10 @@
       <div class="nav-dropdown">
         <button>Connect<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
-          <a href="#">LinkedIn</a>
-          <a href="#">YouTube</a>
-          <a href="#">Instagram</a>
-          <a href="#">TikTok</a>
+          <a href="https://www.linkedin.com/company/kombo-ai/" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://www.youtube.com/@KomboAI" target="_blank" rel="noopener">YouTube</a>
+          <a href="https://www.instagram.com/kombo.ai/" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://www.tiktok.com/@kombo.ai" target="_blank" rel="noopener">TikTok</a>
           <a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" target="_blank" rel="noopener">Spotify</a>
         </div>
       </div>
@@ -249,7 +241,7 @@
   </div>
 </nav>
 
-<!-- ── Hero ─────────────────────────────────────────────── -->
+<!-- ── Hero (Clay-style lock-up) ───────────────────────────── -->
 <section class="cs-hero">
   <div class="hero-doodles" aria-hidden="true">
     <img src="./images/Hands/dark mode/05.png"       class="dood d1" alt="" loading="lazy">
@@ -262,61 +254,43 @@
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7H2M6 3L2 7l4 4"/></svg>
       All case studies
     </a>
-    <div class="hero-inner">
-      <div class="hero-left">
-        <div class="cs-eyebrow">// Case study · E-commerce Logistics · Spain</div>
+    <div class="cs-eyebrow">// Case study · E-commerce Logistics · Spain</div>
+    <h2 class="hero-bigname">Amphora Logistics</h2>
+    <hr class="hero-divider">
+    <div class="hero-lockup">
+      <div class="hero-lockup-left">
+        <div class="video-wrap" id="csVideo" onclick="this.classList.add('playing');document.getElementById('cvf').src='https://www.youtube.com/embed/G7leMLRWJx8?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&loop=1&playlist=G7leMLRWJx8'">
+          <img class="poster" src="https://img.youtube.com/vi/G7leMLRWJx8/maxresdefault.jpg" alt="KomboAI — Watch how the Amphora team works" loading="lazy">
+          <button class="play-btn" tabindex="-1" aria-label="Play video">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 5.5L23 14L8 22.5V5.5Z" fill="#0E0E10"/></svg>
+          </button>
+          <iframe id="cvf" src="" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="hero-lockup-right">
         <h1>How Amphora Logistics increased conversions by <span class="em">30%</span> with KomboAI</h1>
-        <p class="sub">The leading e-commerce logistics company centralised its prospecting tools, eliminated manual processes, and helped every SDR hit their targets.</p>
         <div class="hero-voices">
           <div class="voice-chip">
             <div class="voice-av">JA</div>
-            <div><div class="voice-name">Jasna</div><div class="voice-role">SDR Manager · Amphora Logistics</div></div>
+            <div><div class="voice-name">Jasna</div><div class="voice-role">SDR Manager</div></div>
           </div>
           <div class="voice-chip">
             <div class="voice-av av-lu">LU</div>
-            <div><div class="voice-name">Luis</div><div class="voice-role">Revenue Operations · Amphora Logistics</div></div>
+            <div><div class="voice-name">Luis</div><div class="voice-role">Revenue Operations</div></div>
           </div>
           <div class="voice-chip">
             <div class="voice-av av-rq">RQ</div>
-            <div><div class="voice-name">Raquel</div><div class="voice-role">Sales Manager · Amphora Logistics</div></div>
+            <div><div class="voice-name">Raquel</div><div class="voice-role">Sales Manager</div></div>
           </div>
         </div>
-        <div class="cs-meta">
-          <span class="cs-tag">Spain · International warehouses</span>
-          <span class="cs-tag">E-commerce Logistics &amp; Fulfillment</span>
-          <span class="cs-tag">201–500 employees</span>
-          <span class="cs-tag use-case">Centralised prospecting</span>
-          <span class="cs-tag use-case">Direct phone enrichment</span>
-          <span class="cs-tag use-case">Call scoring &amp; coaching</span>
-        </div>
-      </div>
-      <div class="hero-right">
-        <div class="hero-card">
-          <div class="hc-label">Customer</div>
-          <div class="hc-name">Amphora Logistics</div>
-          <div class="hc-meta">E-commerce Logistics &amp; Fulfillment<br>Spain · 201–500 employees</div>
-          <hr class="hc-div">
-          <div class="hc-stat">
-            <div class="v">+30%</div>
-            <div class="l">Call conversion rate after adopting KomboAI</div>
-          </div>
+        <div class="hero-didlabel">What KomboAI delivered</div>
+        <div class="hero-stats">
+          <div class="hs"><div class="v">+30%</div><div class="l">Call conversion rate</div></div>
+          <div class="hs"><div class="v">60%</div><div class="l">Of demos sourced through KomboAI</div></div>
+          <div class="hs"><div class="v">100%</div><div class="l">SDRs hitting monthly targets</div></div>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ── Video preview (Enginy style) ──────────────────────── -->
-<section class="cs-video-section">
-  <div class="container">
-    <div class="video-wrap" id="csVideo" onclick="this.classList.add('playing');document.getElementById('cvf').src='https://www.youtube.com/embed/G7leMLRWJx8?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&loop=1&playlist=G7leMLRWJx8'">
-      <img class="poster" src="https://img.youtube.com/vi/G7leMLRWJx8/maxresdefault.jpg" alt="KomboAI — Watch how the Amphora team works" loading="lazy">
-      <button class="play-btn" tabindex="-1" aria-label="Play video">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 5.5L23 14L8 22.5V5.5Z" fill="#0E0E10"/></svg>
-      </button>
-      <iframe id="cvf" src="" allow="autoplay;encrypted-media" allowfullscreen></iframe>
-    </div>
-    <p class="video-caption">Watch how the Amphora Logistics team uses KomboAI every day</p>
   </div>
 </section>
 
@@ -527,6 +501,13 @@
           <span class="logo-text">KomboAI</span>
         </a>
         <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+        <div class="footer-social" style="display:flex;gap:16px;align-items:center;margin-top:18px;">
+          <a href="https://www.instagram.com/kombo.ai/" target="_blank" rel="noopener" aria-label="Instagram" style="display:inline-flex;padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.43-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.31-1.46.72-2.13 1.38C1.35 2.68.94 3.35.63 4.14.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13.67.66 1.34 1.07 2.13 1.38.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.31 1.46-.72 2.13-1.38.66-.67 1.07-1.34 1.38-2.13.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91-.31-.79-.72-1.46-1.38-2.13-.67-.66-1.34-1.07-2.13-1.38-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0zm0 5.84A6.16 6.16 0 1 0 18.16 12 6.16 6.16 0 0 0 12 5.84zM12 16a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm6.41-10.85a1.44 1.44 0 1 0 1.44 1.44 1.44 1.44 0 0 0-1.44-1.44z"/></svg></a>
+          <a href="https://www.linkedin.com/company/kombo-ai/" target="_blank" rel="noopener" aria-label="LinkedIn" style="display:inline-flex;padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg></a>
+          <a href="https://www.youtube.com/@KomboAI" target="_blank" rel="noopener" aria-label="YouTube" style="display:inline-flex;padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.08 0 12 0 12s0 3.92.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.92 24 12 24 12s0-3.92-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>
+          <a href="https://www.tiktok.com/@kombo.ai" target="_blank" rel="noopener" aria-label="TikTok" style="display:inline-flex;padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.3 0 .6.05.88.13V9.4a6.33 6.33 0 0 0-1-.05A6.34 6.34 0 0 0 5.6 20.87a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.64-.27z"/></svg></a>
+          <a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" target="_blank" rel="noopener" aria-label="Spotify" style="display:inline-flex;padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.5 17.31c-.21.35-.67.46-1.02.24-2.8-1.71-6.32-2.1-10.47-1.15a.75.75 0 0 1-.33-1.46c4.54-1.04 8.43-.59 11.57 1.33.36.22.47.68.25 1.04zm1.47-3.27c-.27.44-.85.58-1.29.31-3.2-1.97-8.08-2.54-11.87-1.39a1 1 0 0 1-.58-1.91c4.33-1.31 9.71-.68 13.39 1.59.43.27.57.85.35 1.4zm.13-3.4C15.78 8.31 9.4 8.08 5.67 9.21a1.2 1.2 0 1 1-.7-2.29c4.28-1.3 11.33-1.05 15.4 1.37a1.2 1.2 0 1 1-1.27 2.07z"/></svg></a>
+        </div>
       </div>
       <div class="col">
         <h6>Product</h6>
