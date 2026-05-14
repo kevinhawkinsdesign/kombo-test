@@ -87,8 +87,9 @@
   .video-wrap:hover img.poster{transform:scale(1.02)}
   .play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,0.94);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 40px rgba(0,0,0,0.55),0 0 0 6px rgba(255,255,255,0.15);transition:transform .2s ease,box-shadow .2s ease;pointer-events:none}
   .video-wrap:hover .play-btn{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 12px 52px rgba(0,0,0,0.65),0 0 0 8px rgba(255,255,255,0.12)}
-  .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
   .video-wrap.playing img.poster,.video-wrap.playing .play-btn{display:none}
+  .video-wrap.playing iframe{pointer-events:auto}
 
   /* ─── Two-column body ─── */
   .cs-body{padding:16px 0 0}
@@ -259,12 +260,12 @@
     <hr class="hero-divider">
     <div class="hero-lockup">
       <div class="hero-lockup-left">
-        <div class="video-wrap" id="csVideo" onclick="this.classList.add('playing');document.getElementById('cvf').src='https://www.youtube.com/embed/G7leMLRWJx8?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&loop=1&playlist=G7leMLRWJx8'">
-          <img class="poster" src="https://img.youtube.com/vi/G7leMLRWJx8/maxresdefault.jpg" alt="KomboAI — Watch how the Amphora team works" loading="lazy">
+        <div class="video-wrap" id="csVideo" onclick="this.classList.add('playing');document.getElementById('cvf').src='https://www.youtube-nocookie.com/embed/G7leMLRWJx8?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0&showinfo=0&cc_load_policy=0&loop=1&playlist=G7leMLRWJx8'">
+          <img class="poster" src="https://img.youtube.com/vi/G7leMLRWJx8/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/G7leMLRWJx8/hqdefault.jpg'" alt="KomboAI — Watch how the Amphora team works" loading="lazy">
           <button class="play-btn" tabindex="-1" aria-label="Play video">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 5.5L23 14L8 22.5V5.5Z" fill="#0E0E10"/></svg>
           </button>
-          <iframe id="cvf" src="" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+          <iframe id="cvf" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
       <div class="hero-lockup-right">
