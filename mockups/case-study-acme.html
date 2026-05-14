@@ -72,27 +72,14 @@
   .hero-stats .hs .v{font-size:clamp(28px,3vw,40px);font-weight:800;letter-spacing:-0.03em;color:var(--neon);line-height:1;margin-bottom:6px}
   .hero-stats .hs .l{font-size:12px;color:var(--mute);line-height:1.4;max-width:150px}
 
-  /* Featured voices (sidebar) */
+  /* Featured voices chips */
+  .hero-voices{display:flex;flex-wrap:wrap;gap:10px}
+  .voice-chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 13px}
   .voice-av{width:32px;height:32px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
   .voice-av.av-lu{background:var(--lavender)}
   .voice-av.av-rq{background:rgba(212,255,0,0.7)}
   .voice-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.2}
   .voice-role{font-size:11px;color:var(--mute);margin-top:1px}
-
-  /* "In conversation with" band */
-  .hero-convo{display:flex;justify-content:space-between;align-items:flex-start;gap:40px;flex-wrap:wrap;margin-top:52px;padding-top:34px;border-top:1px solid var(--line)}
-  .hc-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--mute-2);margin-bottom:18px}
-  .hc-list{display:flex;flex-wrap:wrap;gap:16px 36px}
-  .hc-person{display:flex;align-items:center;gap:12px}
-  .hc-av{width:46px;height:46px;border-radius:50%;background:var(--neon);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
-  .hc-av.av-lu{background:var(--lavender)}
-  .hc-av.av-rq{background:rgba(212,255,0,0.7)}
-  .hc-name{font-size:15px;font-weight:700;color:var(--ink);line-height:1.25}
-  .hc-role{font-size:12.5px;color:var(--mute);margin-top:2px}
-  .hc-role b{color:var(--ink);font-weight:600}
-  .hero-convo-dates{display:flex;flex-direction:column;gap:9px}
-  .hc-date{font-size:13px;color:var(--ink)}
-  .hc-date span{display:inline-block;min-width:72px;color:var(--mute-2);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em}
 
   /* ─── Video preview (Enginy style) ─── */
   .video-wrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;cursor:pointer;background:var(--surface);border:1px solid var(--line)}
@@ -283,45 +270,26 @@
       </div>
       <div class="hero-lockup-right">
         <h1>How Amphora Logistics increased conversions by <span class="em">30%</span> with KomboAI</h1>
+        <div class="hero-voices">
+          <div class="voice-chip">
+            <div class="voice-av">JA</div>
+            <div><div class="voice-name">Jasna</div><div class="voice-role">SDR Manager</div></div>
+          </div>
+          <div class="voice-chip">
+            <div class="voice-av av-lu">LU</div>
+            <div><div class="voice-name">Luis</div><div class="voice-role">Revenue Operations</div></div>
+          </div>
+          <div class="voice-chip">
+            <div class="voice-av av-rq">RQ</div>
+            <div><div class="voice-name">Raquel</div><div class="voice-role">Sales Manager</div></div>
+          </div>
+        </div>
         <div class="hero-didlabel">What KomboAI delivered</div>
         <div class="hero-stats">
           <div class="hs"><div class="v">+30%</div><div class="l">Call conversion rate</div></div>
           <div class="hs"><div class="v">60%</div><div class="l">Of demos sourced through KomboAI</div></div>
           <div class="hs"><div class="v">100%</div><div class="l">SDRs hitting monthly targets</div></div>
         </div>
-      </div>
-    </div>
-
-    <div class="hero-convo">
-      <div>
-        <div class="hc-label">In conversation with</div>
-        <div class="hc-list">
-          <div class="hc-person">
-            <div class="hc-av">JA</div>
-            <div>
-              <div class="hc-name">Jasna</div>
-              <div class="hc-role">SDR Manager at <b>Amphora Logistics</b></div>
-            </div>
-          </div>
-          <div class="hc-person">
-            <div class="hc-av av-lu">LU</div>
-            <div>
-              <div class="hc-name">Luis</div>
-              <div class="hc-role">Revenue Operations at <b>Amphora Logistics</b></div>
-            </div>
-          </div>
-          <div class="hc-person">
-            <div class="hc-av av-rq">RQ</div>
-            <div>
-              <div class="hc-name">Raquel</div>
-              <div class="hc-role">Sales Manager at <b>Amphora Logistics</b></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="hero-convo-dates">
-        <div class="hc-date"><span>Published</span> March 4, 2026</div>
-        <div class="hc-date"><span>Updated</span> May 12, 2026</div>
       </div>
     </div>
   </div>
