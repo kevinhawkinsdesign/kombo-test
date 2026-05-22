@@ -6,7 +6,8 @@
   <title>Team — KomboAI</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    .team-avatar { width:52px;height:52px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:1.1rem;font-weight:600;display:flex;align-items:center;justify-content:center;margin-bottom:16px; }
+    .team-avatar { width:72px;height:72px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:1.3rem;font-weight:600;display:flex;align-items:center;justify-content:center;margin-bottom:16px;overflow:hidden; }
+    .team-avatar img { width:100%;height:100%;object-fit:cover;display:block; }
     .team-role { font-size:.875rem;font-weight:600;color:var(--primary);display:block;margin-bottom:10px; }
     .team-card p { font-size:.9rem;color:var(--muted);line-height:1.65;margin-bottom:16px; }
     .team-linkedin { font-size:.8125rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px;text-decoration:none; }
@@ -97,7 +98,7 @@
 
         <!-- Ignacio Gaminde -->
         <div class="card team-card">
-          <div class="team-avatar">I</div>
+          <div class="team-avatar"><img src="mockups/images/team/ignacio.webp" alt="Ignacio Gaminde"></div>
           <h3>Ignacio Gaminde</h3>
           <span class="team-role">Co-Founder &amp; CEO</span>
           <p>Former Sales Director with 10+ years in B2B. Built and scaled sales teams across Europe and LATAM. Obsessed with making reps more effective through AI.</p>
@@ -107,10 +108,10 @@
           </a>
         </div>
 
-        <!-- Co-Founder & CTO -->
+        <!-- Charles -->
         <div class="card team-card">
-          <div class="team-avatar">C</div>
-          <h3>Co-Founder &amp; CTO</h3>
+          <div class="team-avatar"><img src="mockups/images/team/charles.webp" alt="Charles"></div>
+          <h3>Charles</h3>
           <span class="team-role">Co-Founder &amp; CTO</span>
           <p>Engineering leader with deep expertise in machine learning and NLP. Previously built ML pipelines processing millions of data points daily.</p>
           <a href="#" class="team-linkedin">
@@ -119,10 +120,10 @@
           </a>
         </div>
 
-        <!-- Head of Product -->
+        <!-- Alvaro -->
         <div class="card team-card">
-          <div class="team-avatar">H</div>
-          <h3>Head of Product</h3>
+          <div class="team-avatar"><img src="mockups/images/team/alvaro.webp" alt="Alvaro"></div>
+          <h3>Alvaro</h3>
           <span class="team-role">Head of Product</span>
           <p>Product strategist who's shipped tools used by thousands of sales professionals. Bridges the gap between AI capability and rep usability.</p>
           <a href="#" class="team-linkedin">
@@ -131,12 +132,96 @@
           </a>
         </div>
 
-        <!-- Head of Growth -->
+        <!-- Michel -->
         <div class="card team-card">
-          <div class="team-avatar">H</div>
-          <h3>Head of Growth</h3>
+          <div class="team-avatar"><img src="mockups/images/team/michel.webp" alt="Michel"></div>
+          <h3>Michel</h3>
           <span class="team-role">Head of Growth</span>
           <p>Growth operator who's helped multiple B2B SaaS companies scale from seed to Series B. Data-driven and customer-obsessed.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- David -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/david.webp" alt="David"></div>
+          <h3>David</h3>
+          <span class="team-role">VP of Engineering</span>
+          <p>Full-stack engineer and architect with a background in distributed systems. Ensures KomboAI's infrastructure scales reliably as the team grows.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- Tom -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/tom.webp" alt="Tom"></div>
+          <h3>Tom</h3>
+          <span class="team-role">Head of Sales</span>
+          <p>Enterprise sales veteran who's closed seven-figure deals across EMEA. Brings a practitioner's lens to everything KomboAI builds for reps.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- Roger -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/roger.webp" alt="Roger"></div>
+          <h3>Roger</h3>
+          <span class="team-role">Revenue Operations</span>
+          <p>RevOps specialist who turns messy CRM data into actionable pipeline insights. Keeps the sales machine running cleanly end-to-end.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- Ale -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/ale.webp" alt="Ale"></div>
+          <h3>Ale</h3>
+          <span class="team-role">Customer Success Lead</span>
+          <p>Keeps customers at the centre of everything. Champions onboarding, adoption, and renewal — making sure every team gets value from day one.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- Ernest -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/ernest.webp" alt="Ernest"></div>
+          <h3>Ernest</h3>
+          <span class="team-role">ML Engineer</span>
+          <p>Builds the models that power KomboAI's intelligence layer. Specialises in fine-tuning LLMs for sales-specific tasks and reducing hallucinations.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- Merce -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/merce.webp" alt="Merce"></div>
+          <h3>Merce</h3>
+          <span class="team-role">Marketing Lead</span>
+          <p>Drives brand and demand generation across all channels. Turns KomboAI's technical capabilities into stories that resonate with sales leaders.</p>
+          <a href="#" class="team-linkedin">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+            LinkedIn
+          </a>
+        </div>
+
+        <!-- Stephane -->
+        <div class="card team-card">
+          <div class="team-avatar"><img src="mockups/images/team/stephane.png" alt="Stephane"></div>
+          <h3>Stéphane</h3>
+          <span class="team-role">Enterprise Account Executive</span>
+          <p>Manages key enterprise relationships across France and the Benelux. Deep domain knowledge in financial services and professional services verticals.</p>
           <a href="#" class="team-linkedin">
             <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
             LinkedIn
