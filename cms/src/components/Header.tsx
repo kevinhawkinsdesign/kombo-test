@@ -73,7 +73,7 @@ export function Header() {
       <div className="nav-bar">
         <div className="container nav-inner">
           <a className="nav-logo" href="/">
-            <img src="/api/media/file/LOGO_logo-icon-lila.png" alt="KomboAI" className="logo-img" width="32" height="32" />
+            <img src="/icon-green.svg" alt="KomboAI" className="logo-img" width="32" height="32" />
             <span className="logo-text">KomboAI</span>
           </a>
 
@@ -212,7 +212,7 @@ export function Header() {
       <nav className="mobile-menu" aria-label="Mobile navigation">
         <div className="mobile-menu-header">
           <a className="nav-logo" href="/">
-            <img src="/api/media/file/LOGO_logo-icon-lila.png" alt="KomboAI" className="logo-img" width="32" height="32" />
+            <img src="/icon-green.svg" alt="KomboAI" className="logo-img" width="32" height="32" />
             <span className="logo-text">KomboAI</span>
           </a>
           <button className="mobile-close" aria-label="Close menu">

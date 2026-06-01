@@ -5,10 +5,7 @@ export function Footer() {
         <div className="footer-inner">
           <div className="footer-brand">
             <a href="/" className="nav-logo" style={{ display: 'inline-flex' }}>
-              <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
-                <rect width="30" height="30" rx="8" fill="#6366f1" />
-                <path d="M9 8h3v6l5-6h4l-6 7 6 7h-4l-5-6v6H9V8z" fill="white" />
-              </svg>
+              <img src="/icon-green.svg" alt="KomboAI" width="32" height="32" />
               KomboAI
             </a>
             <p>AI-powered sales intelligence for B2B teams. Close more deals, faster.</p>

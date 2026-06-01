@@ -7,6 +7,7 @@ import './styles.css'
 
 export const metadata = {
   description: 'AI-powered sales intelligence for B2B teams.',
+  icons: { icon: '/icon-green.svg' },
   title: 'KomboAI',
 }
 
