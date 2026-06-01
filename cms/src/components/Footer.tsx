@@ -14,47 +14,59 @@ export function Footer() {
             <h4>Product</h4>
             <ul>
               <li><a href="/features">Features</a></li>
-              <li><a href="/integrations">Integrations</a></li>
+              <li><a href="/how-it-works">How it works</a></li>
+              <li><a href="/security">Security</a></li>
+              <li><a href="/crm-cleanup">CRM Cleanup</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Solutions</h4>
+            <ul>
+              <li><a href="/for-sales-reps">Sales Reps</a></li>
+              <li><a href="/for-sales-leaders">Managers</a></li>
+              <li><a href="/for-revenue-operations">Ops</a></li>
+              <li><a href="/for-startups">Startups</a></li>
+              <li><a href="/for-enterprises">Enterprise</a></li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>Resources</h4>
             <ul>
               <li><a href="/customers">Customers</a></li>
+              <li><a href="/blog">Blog</a></li>
               <li><a href="/podcast">Podcast</a></li>
               <li><a href="/newsletter">Newsletter</a></li>
-              <li><a href="/blog">Blog</a></li>
+              <li><a href="/community">Community</a></li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>Company</h4>
             <ul>
-              <li><a href="/contact">Contact</a></li>
-              <li><a href="/team">Team</a></li>
               <li><a href="/about">About</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="https://www.linkedin.com/company/kombo-ai/jobs/" rel="noopener noreferrer" target="_blank">Jobs</a></li>
+              <li><a href="https://security.getkombo.ai/" rel="noopener noreferrer" target="_blank">Trust Center</a></li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>Connect</h4>
             <ul>
-              <li><a href="#">LinkedIn</a></li>
-              <li><a href="#">X</a></li>
-              <li><a href="#">YouTube</a></li>
-              <li><a href="#">Instagram</a></li>
-              <li><a href="#">TikTok</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h4>Legal</h4>
-            <ul>
-              <li><a href="#">Terms &amp; Conditions</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Referral Programme</a></li>
+              <li><a href="https://www.linkedin.com/company/kombo-ai/" rel="noopener noreferrer" target="_blank">LinkedIn</a></li>
+              <li><a href="https://www.youtube.com/@KomboAI" rel="noopener noreferrer" target="_blank">YouTube</a></li>
+              <li><a href="https://www.instagram.com/kombo.ai/" rel="noopener noreferrer" target="_blank">Instagram</a></li>
+              <li><a href="https://www.tiktok.com/@kombo.ai" rel="noopener noreferrer" target="_blank">TikTok</a></li>
+              <li><a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" rel="noopener noreferrer" target="_blank">Spotify</a></li>
             </ul>
           </div>
         </div>
         <div className="footer-bottom">
           <span className="footer-copy">&copy; 2026 KomboAI. All rights reserved.</span>
+          <nav className="footer-legal" aria-label="Legal">
+            <a href="/terms">Terms &amp; Conditions</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/cookies">Cookie Policy</a>
+            <a href="/referral">Referral Programme</a>
+          </nav>
           <span className="footer-lang">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="8" cy="8" r="6" />

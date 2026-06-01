@@ -455,8 +455,11 @@ footer { border-top: 1px solid var(--border); padding: 56px 0 32px; }
 .footer-col ul { display: flex; flex-direction: column; gap: 10px; }
 .footer-col ul a { font-size: 0.875rem; color: var(--muted); transition: color .15s; }
 .footer-col ul a:hover { color: var(--text); }
-.footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid var(--border); }
-.footer-copy { font-size: 0.8125rem; color: var(--muted); }
+.footer-bottom { display: flex; align-items: center; gap: 24px; padding-top: 24px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.footer-copy { font-size: 0.8125rem; color: var(--muted); margin-right: auto; }
+.footer-legal { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.footer-legal a { font-size: 0.8125rem; color: var(--muted); transition: color .15s; }
+.footer-legal a:hover { color: var(--text); }
 .footer-lang { font-size: 0.8125rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .footer-lang svg { width: 14px; height: 14px; }
 
