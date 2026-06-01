@@ -64,10 +64,10 @@
   .mega-layout { display: grid; grid-template-columns: 1fr 1fr 280px; gap: 32px; align-items: start; }
   .mega-col { display: flex; flex-direction: column; }
   .mega-col-header { font-size: 0.6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mute-2); padding: 0 12px; margin-bottom: 8px; }
-  .mega-col-list { display: flex; flex-direction: column; gap: 1px; }
-  .mega-link { display: flex; align-items: flex-start; gap: 12px; padding: 9px 12px; border-radius: 10px; transition: background .14s; color: var(--ink); text-decoration: none; }
+  .mega-col-list { display: flex; flex-direction: column; gap: 1px; list-style: none; }
+  .mega-link { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: 10px; transition: background .14s; color: var(--ink); text-decoration: none; }
   .mega-link:hover { background: var(--surface); }
-  .mega-link-icon { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; margin-top: 2px; }
+  .mega-link-icon { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; }
   .mega-link-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .mega-link-title { font-size: 0.875rem; font-weight: 600; line-height: 1.3; color: var(--ink); }
   .mega-link-desc { font-size: 0.8rem; color: var(--mute); line-height: 1.4; }
@@ -78,12 +78,15 @@
   .mega-featured-label { font-size: 0.6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lavender); margin-bottom: 10px; }
   .mega-featured-title { font-size: 1.0625rem; font-weight: 700; line-height: 1.35; color: var(--ink); }
 
-  /* Mobile menu */
-  .mobile-menu { display: none; position: fixed; inset: 63px 0 0 0; background: rgba(14,14,16,0.98); z-index: 40; overflow-y: auto; padding: 20px 24px; border-top: 1px solid var(--line); }
-  .mobile-menu.open { display: block; }
-  .mobile-menu a { display: block; padding: 12px 0; font-size: 1rem; font-weight: 500; border-bottom: 1px solid var(--line); color: var(--mute); transition: color .15s; }
-  .mobile-menu a:hover { color: var(--ink); }
-  .mobile-btn { margin-top: 20px; display: flex; align-items: center; justify-content: center; border-bottom: none !important; }
+  /* Mobile menu — full-screen takeover */
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 100; flex-direction: column; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu-header { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 63px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+  .mobile-close { background: none; border: none; cursor: pointer; padding: 8px; color: var(--ink); }
+  .mobile-menu-body { padding: 24px 28px; overflow-y: auto; flex: 1; }
+  .mobile-menu-body a { display: block; padding: 14px 0; font-size: 1rem; font-weight: 500; border-bottom: 1px solid var(--line); color: var(--mute); transition: color .15s; }
+  .mobile-menu-body a:hover { color: var(--ink); }
+  .mobile-btn { margin-top: 24px; display: flex; align-items: center; justify-content: center; border-bottom: none !important; }
 
   /* Hero */
   .hero { padding: 100px 0 80px; text-align: center; position: relative; overflow: hidden; }
@@ -986,21 +989,21 @@
           <div class="mega-col">
             <p class="mega-col-header">FEATURES</p>
             <ul class="mega-col-list">
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">ICP finder</span><span class="mega-link-desc">Build your ideal customer profile at scale</span></span></a></li>
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">Data enrichment</span><span class="mega-link-desc">Enrich any record with 50+ data providers</span></span></a></li>
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Dynamic playlists</span><span class="mega-link-desc">Auto-updating lists that match your ICP</span></span></a></li>
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)"></span><span class="mega-link-body"><span class="mega-link-title">Buying signals</span><span class="mega-link-desc">Detect intent before your competitors do</span></span></a></li>
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">AI agents</span><span class="mega-link-desc">Research companies and people with AI</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">🎯</span><span class="mega-link-body"><span class="mega-link-title">ICP finder</span><span class="mega-link-desc">Build your ideal customer profile at scale</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)">📊</span><span class="mega-link-body"><span class="mega-link-title">Data enrichment</span><span class="mega-link-desc">Enrich any record with 50+ data providers</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)">♾️</span><span class="mega-link-body"><span class="mega-link-title">Dynamic playlists</span><span class="mega-link-desc">Auto-updating lists that match your ICP</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)">⚡</span><span class="mega-link-body"><span class="mega-link-title">Buying signals</span><span class="mega-link-desc">Detect intent before your competitors do</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)">🤖</span><span class="mega-link-body"><span class="mega-link-title">AI agents</span><span class="mega-link-desc">Research companies and people with AI</span></span></a></li>
             </ul>
           </div>
           <div class="mega-col">
             <p class="mega-col-header">AUTOMATION</p>
             <ul class="mega-col-list">
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">AI sequencer</span><span class="mega-link-desc">Personalize outreach at any volume</span></span></a></li>
-              <li><a href="./how-it-works.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">AI note taker</span><span class="mega-link-desc">Auto-capture every call, meeting, and demo</span></span></a></li>
-              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">AI coach</span><span class="mega-link-desc">Rep coaching from every conversation</span></span></a></li>
-              <li><a href="./crm-cleanup.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)"></span><span class="mega-link-body"><span class="mega-link-title">CRM cleanup</span><span class="mega-link-desc">Keep your data accurate and complete</span></span></a></li>
-              <li><a href="./security.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Security</span><span class="mega-link-desc">Enterprise-grade security and compliance</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">✉️</span><span class="mega-link-body"><span class="mega-link-title">AI sequencer</span><span class="mega-link-desc">Personalize outreach at any volume</span></span></a></li>
+              <li><a href="./how-it-works.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)">📝</span><span class="mega-link-body"><span class="mega-link-title">AI note taker</span><span class="mega-link-desc">Auto-capture every call, meeting, and demo</span></span></a></li>
+              <li><a href="./features.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)">🏋️</span><span class="mega-link-body"><span class="mega-link-title">AI coach</span><span class="mega-link-desc">Rep coaching from every conversation</span></span></a></li>
+              <li><a href="./crm-cleanup.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)">🧹</span><span class="mega-link-body"><span class="mega-link-title">CRM cleanup</span><span class="mega-link-desc">Keep your data accurate and complete</span></span></a></li>
+              <li><a href="./security.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)">🔒</span><span class="mega-link-body"><span class="mega-link-title">Security</span><span class="mega-link-desc">Enterprise-grade security and compliance</span></span></a></li>
             </ul>
           </div>
           <a href="./demo.html" class="mega-featured"><div class="mega-featured-bg"></div><div class="mega-featured-content"><p class="mega-featured-label">See it live</p><p class="mega-featured-title">Watch how KomboAI finds your next 100 customers in minutes</p></div></a>
@@ -1013,16 +1016,16 @@
           <div class="mega-col">
             <p class="mega-col-header">BY MOTION</p>
             <ul class="mega-col-list">
-              <li><a href="./use-cases/prospecting.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">Prospecting</span><span class="mega-link-desc">Find and prioritize your best-fit accounts</span></span></a></li>
-              <li><a href="./use-cases/signals.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">Act on signals</span><span class="mega-link-desc">Trigger outreach when the moment is right</span></span></a></li>
-              <li><a href="./use-cases/inbound.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Qualify inbound</span><span class="mega-link-desc">Score and route leads automatically</span></span></a></li>
+              <li><a href="./use-cases/prospecting.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">🔍</span><span class="mega-link-body"><span class="mega-link-title">Prospecting</span><span class="mega-link-desc">Find and prioritize your best-fit accounts</span></span></a></li>
+              <li><a href="./use-cases/signals.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)">⚡</span><span class="mega-link-body"><span class="mega-link-title">Act on signals</span><span class="mega-link-desc">Trigger outreach when the moment is right</span></span></a></li>
+              <li><a href="./use-cases/inbound.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)">✅</span><span class="mega-link-body"><span class="mega-link-title">Qualify inbound</span><span class="mega-link-desc">Score and route leads automatically</span></span></a></li>
             </ul>
           </div>
           <div class="mega-col">
             <p class="mega-col-header">BY GOAL</p>
             <ul class="mega-col-list">
-              <li><a href="./use-cases/crm-enrichment.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)"></span><span class="mega-link-body"><span class="mega-link-title">CRM enrichment</span><span class="mega-link-desc">Keep every record fresh and accurate</span></span></a></li>
-              <li><a href="./use-cases/coaching.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Coach reps</span><span class="mega-link-desc">Elevate every rep with AI-powered feedback</span></span></a></li>
+              <li><a href="./use-cases/crm-enrichment.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)">💾</span><span class="mega-link-body"><span class="mega-link-title">CRM enrichment</span><span class="mega-link-desc">Keep every record fresh and accurate</span></span></a></li>
+              <li><a href="./use-cases/coaching.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)">🏆</span><span class="mega-link-body"><span class="mega-link-title">Coach reps</span><span class="mega-link-desc">Elevate every rep with AI-powered feedback</span></span></a></li>
             </ul>
           </div>
           <a href="./customers.html" class="mega-featured"><div class="mega-featured-bg"></div><div class="mega-featured-content"><p class="mega-featured-label">Customer story</p><p class="mega-featured-title">How Kombo helped Acme Corp 3× their pipeline in 60 days</p></div></a>
@@ -1035,16 +1038,16 @@
           <div class="mega-col">
             <p class="mega-col-header">BY ROLE</p>
             <ul class="mega-col-list">
-              <li><a href="./for-sales-reps.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">For Sales Reps</span><span class="mega-link-desc">Spend more time selling, less time searching</span></span></a></li>
-              <li><a href="./for-sales-leaders.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">For Managers</span><span class="mega-link-desc">Forecast accurately and coach at scale</span></span></a></li>
-              <li><a href="./for-revenue-operations.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">For Ops</span><span class="mega-link-desc">Automate the workflows your team hates</span></span></a></li>
+              <li><a href="./for-sales-reps.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">💼</span><span class="mega-link-body"><span class="mega-link-title">For Sales Reps</span><span class="mega-link-desc">Spend more time selling, less time searching</span></span></a></li>
+              <li><a href="./for-sales-leaders.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)">📈</span><span class="mega-link-body"><span class="mega-link-title">For Managers</span><span class="mega-link-desc">Forecast accurately and coach at scale</span></span></a></li>
+              <li><a href="./for-revenue-operations.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)">⚙️</span><span class="mega-link-body"><span class="mega-link-title">For Ops</span><span class="mega-link-desc">Automate the workflows your team hates</span></span></a></li>
             </ul>
           </div>
           <div class="mega-col">
             <p class="mega-col-header">BY STAGE</p>
             <ul class="mega-col-list">
-              <li><a href="./for-startups.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)"></span><span class="mega-link-body"><span class="mega-link-title">For Startups</span><span class="mega-link-desc">Go to market faster with less manual work</span></span></a></li>
-              <li><a href="./for-enterprises.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">For Enterprise</span><span class="mega-link-desc">Security, scale, and dedicated support</span></span></a></li>
+              <li><a href="./for-startups.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)">🚀</span><span class="mega-link-body"><span class="mega-link-title">For Startups</span><span class="mega-link-desc">Go to market faster with less manual work</span></span></a></li>
+              <li><a href="./for-enterprises.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)">🏢</span><span class="mega-link-body"><span class="mega-link-title">For Enterprise</span><span class="mega-link-desc">Security, scale, and dedicated support</span></span></a></li>
             </ul>
           </div>
           <a href="./demo.html" class="mega-featured"><div class="mega-featured-bg"></div><div class="mega-featured-content"><p class="mega-featured-label">See a demo</p><p class="mega-featured-title">Get a personalized walkthrough for your team's workflow</p></div></a>
@@ -1057,17 +1060,17 @@
           <div class="mega-col">
             <p class="mega-col-header">LEARN</p>
             <ul class="mega-col-list">
-              <li><a href="./customers.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">Customers</span><span class="mega-link-desc">Real stories from teams like yours</span></span></a></li>
-              <li><a href="./blog.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">Blog</span><span class="mega-link-desc">Playbooks, guides, and GTM strategy</span></span></a></li>
-              <li><a href="./podcast.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Podcast</span><span class="mega-link-desc">Weekly conversations with revenue leaders</span></span></a></li>
+              <li><a href="./customers.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">⭐</span><span class="mega-link-body"><span class="mega-link-title">Customers</span><span class="mega-link-desc">Real stories from teams like yours</span></span></a></li>
+              <li><a href="./blog.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)">📖</span><span class="mega-link-body"><span class="mega-link-title">Blog</span><span class="mega-link-desc">Playbooks, guides, and GTM strategy</span></span></a></li>
+              <li><a href="./podcast.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)">🎙️</span><span class="mega-link-body"><span class="mega-link-title">Podcast</span><span class="mega-link-desc">Weekly conversations with revenue leaders</span></span></a></li>
             </ul>
           </div>
           <div class="mega-col">
             <p class="mega-col-header">COMMUNITY</p>
             <ul class="mega-col-list">
-              <li><a href="./community.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)"></span><span class="mega-link-body"><span class="mega-link-title">Community</span><span class="mega-link-desc">Join 10k+ sales professionals</span></span></a></li>
-              <li><a href="./newsletter.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Newsletter</span><span class="mega-link-desc">Weekly GTM insights in your inbox</span></span></a></li>
-              <li><a href="https://resources.getkombo.ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">ROI Calculator ↗</span><span class="mega-link-desc">See your expected return in minutes</span></span></a></li>
+              <li><a href="./community.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)">👥</span><span class="mega-link-body"><span class="mega-link-title">Community</span><span class="mega-link-desc">Join 10k+ sales professionals</span></span></a></li>
+              <li><a href="./newsletter.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(52,211,153,0.22)">📬</span><span class="mega-link-body"><span class="mega-link-title">Newsletter</span><span class="mega-link-desc">Weekly GTM insights in your inbox</span></span></a></li>
+              <li><a href="https://resources.getkombo.ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">💰</span><span class="mega-link-body"><span class="mega-link-title">ROI Calculator ↗</span><span class="mega-link-desc">See your expected return in minutes</span></span></a></li>
             </ul>
           </div>
           <a href="./blog.html" class="mega-featured"><div class="mega-featured-bg"></div><div class="mega-featured-content"><p class="mega-featured-label">Latest post</p><p class="mega-featured-title">The 2025 Outbound Playbook: What actually works now</p></div></a>
@@ -1080,10 +1083,10 @@
           <div class="mega-col">
             <p class="mega-col-header">OUR COMPANY</p>
             <ul class="mega-col-list">
-              <li><a href="./about.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">About</span><span class="mega-link-desc">Our mission, team, and story</span></span></a></li>
-              <li><a href="./contact.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)"></span><span class="mega-link-body"><span class="mega-link-title">Contact</span><span class="mega-link-desc">Get in touch with our team</span></span></a></li>
-              <li><a href="https://www.linkedin.com/company/kombo-ai/jobs/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)"></span><span class="mega-link-body"><span class="mega-link-title">Jobs ↗</span><span class="mega-link-desc">Join us — we're hiring</span></span></a></li>
-              <li><a href="https://security.getkombo.ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)"></span><span class="mega-link-body"><span class="mega-link-title">Trust Center ↗</span><span class="mega-link-desc">Security, privacy, and compliance docs</span></span></a></li>
+              <li><a href="./about.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(99,102,241,0.25)">🌟</span><span class="mega-link-body"><span class="mega-link-title">About</span><span class="mega-link-desc">Our mission, team, and story</span></span></a></li>
+              <li><a href="./contact.html" class="mega-link"><span class="mega-link-icon" style="background:rgba(167,139,250,0.25)">💬</span><span class="mega-link-body"><span class="mega-link-title">Contact</span><span class="mega-link-desc">Get in touch with our team</span></span></a></li>
+              <li><a href="https://www.linkedin.com/company/kombo-ai/jobs/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(236,72,153,0.22)">👋</span><span class="mega-link-body"><span class="mega-link-title">Jobs ↗</span><span class="mega-link-desc">Join us — we're hiring</span></span></a></li>
+              <li><a href="https://security.getkombo.ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(212,255,0,0.2)">🛡️</span><span class="mega-link-body"><span class="mega-link-title">Trust Center ↗</span><span class="mega-link-desc">Security, privacy, and compliance docs</span></span></a></li>
             </ul>
           </div>
           <div class="mega-col"></div>
@@ -1097,16 +1100,16 @@
           <div class="mega-col">
             <p class="mega-col-header">FOLLOW US</p>
             <ul class="mega-col-list">
-              <li><a href="https://www.linkedin.com/company/kombo-ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(0,119,181,0.35)"></span><span class="mega-link-body"><span class="mega-link-title">LinkedIn</span><span class="mega-link-desc">Company news and job posts</span></span></a></li>
-              <li><a href="https://www.youtube.com/@KomboAI" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(255,0,0,0.28)"></span><span class="mega-link-body"><span class="mega-link-title">YouTube</span><span class="mega-link-desc">Product walkthroughs and webinars</span></span></a></li>
-              <li><a href="https://www.instagram.com/kombo.ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(225,48,108,0.28)"></span><span class="mega-link-body"><span class="mega-link-title">Instagram</span><span class="mega-link-desc">Behind the scenes and culture</span></span></a></li>
+              <li><a href="https://www.linkedin.com/company/kombo-ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(0,119,181,0.35)">💼</span><span class="mega-link-body"><span class="mega-link-title">LinkedIn</span><span class="mega-link-desc">Company news and job posts</span></span></a></li>
+              <li><a href="https://www.youtube.com/@KomboAI" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(255,0,0,0.28)">▶️</span><span class="mega-link-body"><span class="mega-link-title">YouTube</span><span class="mega-link-desc">Product walkthroughs and webinars</span></span></a></li>
+              <li><a href="https://www.instagram.com/kombo.ai/" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(225,48,108,0.28)">📸</span><span class="mega-link-body"><span class="mega-link-title">Instagram</span><span class="mega-link-desc">Behind the scenes and culture</span></span></a></li>
             </ul>
           </div>
           <div class="mega-col">
             <p class="mega-col-header">MORE CHANNELS</p>
             <ul class="mega-col-list">
-              <li><a href="https://www.tiktok.com/@kombo.ai" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(255,255,255,0.1)"></span><span class="mega-link-body"><span class="mega-link-title">TikTok</span><span class="mega-link-desc">Short-form sales tips</span></span></a></li>
-              <li><a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(29,185,84,0.3)"></span><span class="mega-link-body"><span class="mega-link-title">Spotify</span><span class="mega-link-desc">Listen to the KomboAI podcast</span></span></a></li>
+              <li><a href="https://www.tiktok.com/@kombo.ai" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(255,255,255,0.1)">🎵</span><span class="mega-link-body"><span class="mega-link-title">TikTok</span><span class="mega-link-desc">Short-form sales tips</span></span></a></li>
+              <li><a href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" class="mega-link" target="_blank" rel="noopener noreferrer"><span class="mega-link-icon" style="background:rgba(29,185,84,0.3)">🎧</span><span class="mega-link-body"><span class="mega-link-title">Spotify</span><span class="mega-link-desc">Listen to the KomboAI podcast</span></span></a></li>
             </ul>
           </div>
           <a href="./podcast.html" class="mega-featured"><div class="mega-featured-bg"></div><div class="mega-featured-content"><p class="mega-featured-label">New episode</p><p class="mega-featured-title">How top reps use AI signals to book 40% more meetings</p></div></a>
@@ -1116,15 +1119,26 @@
     </div>
   </div>
 
-  <!-- Mobile menu -->
+  <!-- Mobile menu — full-screen takeover -->
   <nav class="mobile-menu" aria-label="Mobile navigation">
-    <a href="./features.html">Product</a>
-    <a href="./use-cases/prospecting.html">Use Cases</a>
-    <a href="./for-sales-reps.html">Solutions</a>
-    <a href="./blog.html">Resources</a>
-    <a href="./about.html">Company</a>
-    <a href="https://www.linkedin.com/company/kombo-ai/">Connect</a>
-    <a href="./demo.html" class="nav-cta mobile-btn">Book a demo</a>
+    <div class="mobile-menu-header">
+      <a href="./v9_glass_cathedral.html" class="logo">
+        <img class="logo-img" src="./images/LOGO/logo-icon-lila.png" alt="KomboAI">
+        <span class="logo-text">KomboAI</span>
+      </a>
+      <button class="mobile-close" aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l14 14M18 4L4 18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu-body">
+      <a href="./features.html">Product</a>
+      <a href="./use-cases/prospecting.html">Use Cases</a>
+      <a href="./for-sales-reps.html">Solutions</a>
+      <a href="./blog.html">Resources</a>
+      <a href="./about.html">Company</a>
+      <a href="https://www.linkedin.com/company/kombo-ai/">Connect</a>
+      <a href="./demo.html" class="nav-cta mobile-btn">Book a demo</a>
+    </div>
   </nav>
 </header>
 
@@ -2532,23 +2546,16 @@ KomboAI</pre></div></div>
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePanel(); });
 
-  // Mobile menu toggle
+  // Mobile menu — full-screen takeover
   var toggle     = document.querySelector('.nav-toggle');
+  var closeBtn   = document.querySelector('.mobile-close');
   var mobileMenu = document.querySelector('.mobile-menu');
   if (toggle && mobileMenu) {
-    toggle.addEventListener('click', function () {
-      mobileMenu.classList.toggle('open');
-      var open = mobileMenu.classList.contains('open');
-      toggle.setAttribute('aria-expanded', open);
-      document.body.style.overflow = open ? 'hidden' : '';
-    });
-    document.querySelectorAll('.mobile-menu a').forEach(function (a) {
-      a.addEventListener('click', function () {
-        mobileMenu.classList.remove('open');
-        toggle.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      });
-    });
+    function openMobile() { mobileMenu.classList.add('open'); toggle.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; }
+    function closeMobile() { mobileMenu.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; }
+    toggle.addEventListener('click', function () { mobileMenu.classList.contains('open') ? closeMobile() : openMobile(); });
+    if (closeBtn) closeBtn.addEventListener('click', closeMobile);
+    document.querySelectorAll('.mobile-menu-body a').forEach(function (a) { a.addEventListener('click', closeMobile); });
   }
 })();
 </script>
