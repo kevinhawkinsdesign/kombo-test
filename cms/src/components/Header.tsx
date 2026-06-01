@@ -109,14 +109,14 @@ export function Header() {
           {/* PRODUCT */}
           <div className="mega-section" data-section="product">
             <div className="container mega-layout">
-              <MegaCol header="FEATURES">
+              <MegaCol>
                 <MegaLink href="/features" label="ICP finder" desc="Build your ideal customer profile at scale" iconBg="#e0e7ff" icon="🎯" />
                 <MegaLink href="/features" label="Data enrichment" desc="Enrich any record with 50+ data providers" iconBg="#ede9fe" icon="📊" />
                 <MegaLink href="/features" label="Dynamic playlists" desc="Auto-updating lists that match your ICP" iconBg="#fce7f3" icon="♾️" />
                 <MegaLink href="/features" label="Buying signals" desc="Detect intent before your competitors do" iconBg="#fef3c7" icon="⚡" />
                 <MegaLink href="/features" label="AI agents" desc="Research companies and people with AI" iconBg="#dcfce7" icon="🤖" />
               </MegaCol>
-              <MegaCol header="AUTOMATION">
+              <MegaCol>
                 <MegaLink href="/features" label="AI sequencer" desc="Personalize outreach at any volume" iconBg="#e0e7ff" icon="✉️" />
                 <MegaLink href="/how-it-works" label="AI note taker" desc="Auto-capture every call, meeting, and demo" iconBg="#ede9fe" icon="📝" />
                 <MegaLink href="/features" label="AI coach" desc="Rep coaching from every conversation" iconBg="#fce7f3" icon="🏋️" />
@@ -130,12 +130,12 @@ export function Header() {
           {/* USE CASES */}
           <div className="mega-section" data-section="use-cases">
             <div className="container mega-layout">
-              <MegaCol header="BY MOTION">
+              <MegaCol>
                 <MegaLink href="/use-cases/prospecting" label="Prospecting" desc="Find and prioritize your best-fit accounts" iconBg="#e0e7ff" icon="🔍" />
                 <MegaLink href="/use-cases/signals" label="Act on signals" desc="Trigger outreach when the moment is right" iconBg="#ede9fe" icon="⚡" />
                 <MegaLink href="/use-cases/inbound" label="Qualify inbound" desc="Score and route leads automatically" iconBg="#fce7f3" icon="✅" />
               </MegaCol>
-              <MegaCol header="BY GOAL">
+              <MegaCol>
                 <MegaLink href="/use-cases/crm-enrichment" label="CRM enrichment" desc="Keep every record fresh and accurate" iconBg="#fef3c7" icon="💾" />
                 <MegaLink href="/use-cases/coaching" label="Coach reps" desc="Elevate every rep with AI-powered feedback" iconBg="#dcfce7" icon="🏆" />
               </MegaCol>
@@ -146,12 +146,12 @@ export function Header() {
           {/* SOLUTIONS */}
           <div className="mega-section" data-section="solutions">
             <div className="container mega-layout">
-              <MegaCol header="BY ROLE">
+              <MegaCol>
                 <MegaLink href="/for-sales-reps" label="For Sales Reps" desc="Spend more time selling, less time searching" iconBg="#e0e7ff" icon="💼" />
                 <MegaLink href="/for-sales-leaders" label="For Managers" desc="Forecast accurately and coach at scale" iconBg="#ede9fe" icon="📈" />
                 <MegaLink href="/for-revenue-operations" label="For Ops" desc="Automate the workflows your team hates" iconBg="#fce7f3" icon="⚙️" />
               </MegaCol>
-              <MegaCol header="BY STAGE">
+              <MegaCol>
                 <MegaLink href="/for-startups" label="For Startups" desc="Go to market faster with less manual work" iconBg="#fef3c7" icon="🚀" />
                 <MegaLink href="/for-enterprises" label="For Enterprise" desc="Security, scale, and dedicated support" iconBg="#dcfce7" icon="🏢" />
               </MegaCol>
@@ -162,12 +162,12 @@ export function Header() {
           {/* RESOURCES */}
           <div className="mega-section" data-section="resources">
             <div className="container mega-layout">
-              <MegaCol header="LEARN">
+              <MegaCol>
                 <MegaLink href="/customers" label="Customers" desc="Real stories from teams like yours" iconBg="#e0e7ff" icon="⭐" />
                 <MegaLink href="/blog" label="Blog" desc="Playbooks, guides, and GTM strategy" iconBg="#ede9fe" icon="📖" />
                 <MegaLink href="/podcast" label="Podcast" desc="Weekly conversations with revenue leaders" iconBg="#fce7f3" icon="🎙️" />
               </MegaCol>
-              <MegaCol header="COMMUNITY">
+              <MegaCol>
                 <MegaLink href="/community" label="Community" desc="Join 10k+ sales professionals" iconBg="#fef3c7" icon="👥" />
                 <MegaLink href="/newsletter" label="Newsletter" desc="Weekly GTM insights in your inbox" iconBg="#dcfce7" icon="📬" />
                 <MegaLink href="https://resources.getkombo.ai/" label="ROI Calculator ↗" desc="See your expected return in minutes" iconBg="#e0e7ff" icon="💰" external />
@@ -179,7 +179,7 @@ export function Header() {
           {/* COMPANY */}
           <div className="mega-section" data-section="company">
             <div className="container mega-layout">
-              <MegaCol header="OUR COMPANY">
+              <MegaCol>
                 <MegaLink href="/about" label="About" desc="Our mission, team, and story" iconBg="#e0e7ff" icon="🌟" />
                 <MegaLink href="/contact" label="Contact" desc="Get in touch with our team" iconBg="#ede9fe" icon="💬" />
                 <MegaLink href="https://www.linkedin.com/company/kombo-ai/jobs/" label="Jobs ↗" desc="Join us — we're hiring" iconBg="#fce7f3" icon="👋" external />
@@ -192,12 +192,12 @@ export function Header() {
           {/* CONNECT */}
           <div className="mega-section" data-section="connect">
             <div className="container mega-layout">
-              <MegaCol header="FOLLOW US">
+              <MegaCol>
                 <MegaLink href="https://www.linkedin.com/company/kombo-ai/" label="LinkedIn" desc="Company news and job posts" iconBg="#0077b5" icon="💼" external />
                 <MegaLink href="https://www.youtube.com/@KomboAI" label="YouTube" desc="Product walkthroughs and webinars" iconBg="#ff0000" icon="▶️" external />
                 <MegaLink href="https://www.instagram.com/kombo.ai/" label="Instagram" desc="Behind the scenes and culture" iconBg="#e1306c" icon="📸" external />
               </MegaCol>
-              <MegaCol header="MORE CHANNELS">
+              <MegaCol>
                 <MegaLink href="https://www.tiktok.com/@kombo.ai" label="TikTok" desc="Short-form sales tips" iconBg="#010101" icon="🎵" external />
                 <MegaLink href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" label="Spotify" desc="Listen to the KomboAI podcast" iconBg="#1db954" icon="🎧" external />
               </MegaCol>
