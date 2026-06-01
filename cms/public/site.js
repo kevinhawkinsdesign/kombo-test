@@ -6,9 +6,16 @@
   if (!header || !panel || !inner) return;
 
   var closeTimer = null;
+  var pendingCloseHandler = null;
 
   function openSection(id) {
     clearTimeout(closeTimer);
+
+    // Cancel any stale transitionend handler left over from a previous close
+    if (pendingCloseHandler) {
+      panel.removeEventListener('transitionend', pendingCloseHandler);
+      pendingCloseHandler = null;
+    }
 
     document.querySelectorAll('.mega-section').forEach(function (s) {
       s.classList.toggle('active', s.dataset.section === id);
@@ -27,12 +34,14 @@
       t.classList.remove('active');
     });
     panel.style.height = '0';
-    panel.addEventListener('transitionend', function handler() {
+    pendingCloseHandler = function () {
       document.querySelectorAll('.mega-section').forEach(function (s) {
         s.classList.remove('active');
       });
-      panel.removeEventListener('transitionend', handler);
-    });
+      panel.removeEventListener('transitionend', pendingCloseHandler);
+      pendingCloseHandler = null;
+    };
+    panel.addEventListener('transitionend', pendingCloseHandler);
   }
 
   document.querySelectorAll('.nav-trigger[data-nav]').forEach(function (btn) {
