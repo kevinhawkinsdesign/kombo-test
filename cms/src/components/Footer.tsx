@@ -14,7 +14,6 @@ export function Footer() {
             <h4>Product</h4>
             <ul>
               <li><a href="/features">Features</a></li>
-              <li><a href="/how-it-works">How it works</a></li>
               <li><a href="/security">Security</a></li>
               <li><a href="/crm-cleanup">CRM Cleanup</a></li>
             </ul>
