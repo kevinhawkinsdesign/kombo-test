@@ -73,7 +73,7 @@ ul { list-style: none; }
   backdrop-filter: blur(8px);
 }
 
-.nav-bar { border-bottom: 1px solid var(--border); }
+.nav-bar { border-bottom: 1px solid var(--border); padding: 10px 0; }
 
 .nav-inner {
   display: flex; align-items: center; height: var(--nav-h); gap: 8px;
