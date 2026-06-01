@@ -109,7 +109,7 @@ export function Header() {
           {/* PRODUCT */}
           <div className="mega-section" data-section="product">
             <div className="container mega-layout">
-              <MegaCol>
+              <MegaCol header="FEATURES">
                 <MegaLink href="/features" label="ICP finder" desc="Build your ideal customer profile at scale" iconBg="#e0e7ff" icon="🎯" />
                 <MegaLink href="/features" label="Data enrichment" desc="Enrich any record with 50+ data providers" iconBg="#ede9fe" icon="📊" />
                 <MegaLink href="/features" label="Dynamic playlists" desc="Auto-updating lists that match your ICP" iconBg="#fce7f3" icon="♾️" />
