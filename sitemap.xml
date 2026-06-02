@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Core pages -->
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/</loc><priority>1.0</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/v9_glass_cathedral.html</loc><priority>0.9</priority></url>
+
+  <!-- Product -->
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/features.html</loc><priority>0.8</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/how-it-works.html</loc><priority>0.8</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/integrations.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/pricing.html</loc><priority>0.8</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/changelog.html</loc><priority>0.6</priority></url>
+
+  <!-- Feature pages -->
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/feature-crm-intelligence.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/feature-email-personalization.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/feature-forecasting.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/feature-lead-ranking.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/feature-revenue-insights.html</loc><priority>0.7</priority></url>
+
+  <!-- Resources -->
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/blog.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/blog-post.html</loc><priority>0.6</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/podcast.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/newsletter.html</loc><priority>0.6</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/customers.html</loc><priority>0.8</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/case-study-acme.html</loc><priority>0.7</priority></url>
+
+  <!-- Company -->
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/about.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/team.html</loc><priority>0.6</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/contact.html</loc><priority>0.7</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/mockups/demo.html</loc><priority>0.9</priority></url>
+
+  <!-- Legacy root pages -->
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/features.html</loc><priority>0.5</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/about.html</loc><priority>0.5</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/blog.html</loc><priority>0.5</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/contact.html</loc><priority>0.5</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/customers.html</loc><priority>0.5</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/podcast.html</loc><priority>0.5</priority></url>
+  <url><loc>https://kevinhawkinsdesign.github.io/kombo-test/newsletter.html</loc><priority>0.5</priority></url>
+
+</urlset>
