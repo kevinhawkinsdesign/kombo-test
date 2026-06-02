@@ -78,7 +78,7 @@ export function Header() {
           </a>
 
           <div className="nav-links">
-            {(['product', 'use-cases', 'solutions', 'resources', 'company', 'connect'] as const).map((id) => (
+            {(['product', 'use-cases', 'solutions', 'resources', 'company'] as const).map((id) => (
               <button key={id} type="button" className="nav-trigger" data-nav={id}>
                 {id === 'use-cases' ? 'Use Cases' : id.charAt(0).toUpperCase() + id.slice(1)}
                 <CaretIcon />
@@ -181,27 +181,16 @@ export function Header() {
             <div className="container mega-layout">
               <MegaCol>
                 <MegaLink href="/about" label="About" desc="Our mission, team, and story" iconBg="#e0e7ff" icon="🌟" />
-                <MegaLink href="/contact" label="Contact" desc="Get in touch with our team" iconBg="#ede9fe" icon="💬" />
-                <MegaLink href="https://www.linkedin.com/company/kombo-ai/jobs/" label="Jobs ↗" desc="Join us — we're hiring" iconBg="#fce7f3" icon="👋" external />
-                <MegaLink href="https://security.getkombo.ai/" label="Trust Center ↗" desc="Security, privacy, and compliance docs" iconBg="#fef3c7" icon="🛡️" external />
+                <MegaLink href="https://www.linkedin.com/company/kombo-ai/jobs/" label="Careers ↗" desc="Join us — we're hiring" iconBg="#fce7f3" icon="👋" external />
+                <MegaLink href="https://www.linkedin.com/company/kombo-ai/" label="LinkedIn ↗" desc="Company news and job posts" iconBg="#0077b5" icon="💼" external />
+                <MegaLink href="https://www.youtube.com/@KomboAI" label="YouTube ↗" desc="Product walkthroughs and webinars" iconBg="#ff0000" icon="▶️" external />
+              </MegaCol>
+              <MegaCol>
+                <MegaLink href="https://www.instagram.com/kombo.ai/" label="Instagram ↗" desc="Behind the scenes and culture" iconBg="#e1306c" icon="📸" external />
+                <MegaLink href="https://www.tiktok.com/@kombo.ai" label="TikTok ↗" desc="Short-form sales tips" iconBg="#010101" icon="🎵" external />
+                <MegaLink href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" label="Spotify ↗" desc="Listen to the KomboAI podcast" iconBg="#1db954" icon="🎧" external />
               </MegaCol>
               <FeaturedCard label="We're hiring" title="Help build the future of AI-powered sales intelligence" href="https://www.linkedin.com/company/kombo-ai/jobs/" external />
-            </div>
-          </div>
-
-          {/* CONNECT */}
-          <div className="mega-section" data-section="connect">
-            <div className="container mega-layout">
-              <MegaCol>
-                <MegaLink href="https://www.linkedin.com/company/kombo-ai/" label="LinkedIn" desc="Company news and job posts" iconBg="#0077b5" icon="💼" external />
-                <MegaLink href="https://www.youtube.com/@KomboAI" label="YouTube" desc="Product walkthroughs and webinars" iconBg="#ff0000" icon="▶️" external />
-                <MegaLink href="https://www.instagram.com/kombo.ai/" label="Instagram" desc="Behind the scenes and culture" iconBg="#e1306c" icon="📸" external />
-              </MegaCol>
-              <MegaCol>
-                <MegaLink href="https://www.tiktok.com/@kombo.ai" label="TikTok" desc="Short-form sales tips" iconBg="#010101" icon="🎵" external />
-                <MegaLink href="https://open.spotify.com/show/4jgyK2kED9Gv8fiqD2n1re" label="Spotify" desc="Listen to the KomboAI podcast" iconBg="#1db954" icon="🎧" external />
-              </MegaCol>
-              <FeaturedCard label="New episode" title="How top reps use AI signals to book 40% more meetings" href="/podcast" />
             </div>
           </div>
 
@@ -228,7 +217,6 @@ export function Header() {
             { label: 'Solutions', href: '/for-sales-reps' },
             { label: 'Resources', href: '/blog' },
             { label: 'Company', href: '/about' },
-            { label: 'Connect', href: 'https://www.linkedin.com/company/kombo-ai/' },
           ].map(({ label, href }) => (
             <a key={label} href={href}>{label}</a>
           ))}
