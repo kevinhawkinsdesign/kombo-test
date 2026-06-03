@@ -400,7 +400,38 @@
   .pill-status.warm { background: rgba(167,139,250,0.15); color: var(--purple); }
   .pill-status.cold { background: rgba(138,138,149,0.15); color: var(--mute); }
 
-  /* Trust */
+  /* Prospect search dashboard */
+  .dash-body-3col { grid-template-columns: 200px 1fr 264px !important; }
+  .prospect-card { display:flex; gap:14px; padding:14px 16px; border:1px solid var(--line); border-radius:10px; margin-bottom:10px; background:var(--bg-2); }
+  .prospect-card.p-active { border-color:rgba(212,255,0,0.4); background:rgba(212,255,0,0.03); }
+  .p-avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; margin-top:2px; }
+  .p-info { flex:1; min-width:0; }
+  .p-name { font-size:13px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+  .p-badge { font-size:10px; color:var(--neon); background:rgba(212,255,0,0.12); padding:2px 8px; border-radius:999px; font-weight:600; }
+  .p-role { font-size:11px; color:var(--mute); margin-bottom:7px; }
+  .p-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+  .p-chip { font-size:10px; padding:3px 8px; background:var(--surface); border:1px solid var(--line-2); border-radius:999px; color:var(--mute); white-space:nowrap; }
+  .p-actions { display:flex; gap:5px; flex-wrap:wrap; }
+  .p-action { font-size:10px; padding:4px 9px; border:1px solid var(--line-2); border-radius:6px; color:var(--mute); background:var(--surface); }
+  .p-action.p-neon { background:var(--neon); border-color:var(--neon); color:#000; font-weight:600; }
+  /* AI assistant panel */
+  .ai-panel { border-left:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
+  .ai-panel-head { padding:12px 14px; border-bottom:1px solid var(--line); background:var(--bg-2); }
+  .ai-panel-crumb { font-size:10px; color:var(--mute); margin-bottom:4px; }
+  .ai-panel-title { font-size:13px; font-weight:600; color:var(--ink); display:flex; justify-content:space-between; align-items:center; }
+  .ai-restart { font-size:10px; color:var(--mute); padding:3px 8px; border:1px solid var(--line); border-radius:6px; }
+  .ai-messages { flex:1; padding:14px; display:flex; flex-direction:column; gap:10px; overflow:hidden; }
+  .ai-msg-bot, .ai-msg-user { display:flex; flex-direction:column; }
+  .ai-msg-user { align-items:flex-end; }
+  .ai-sender { font-size:10px; color:var(--mute-2); margin-bottom:3px; }
+  .ai-bubble { padding:9px 11px; font-size:11.5px; line-height:1.5; max-width:210px; }
+  .ai-bubble.bot { background:var(--surface-2); border:1px solid var(--line); color:var(--ink); border-radius:10px 10px 10px 2px; }
+  .ai-bubble.user { background:var(--neon); color:#000; font-weight:500; border-radius:10px 10px 2px 10px; }
+  .ai-input-row { padding:10px 12px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; background:var(--bg-2); }
+  .ai-input-box { flex:1; font-size:11px; color:var(--mute); padding:7px 10px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }
+  .ai-send { width:26px; height:26px; border-radius:7px; background:var(--neon); display:flex; align-items:center; justify-content:center; font-size:12px; color:#000; font-weight:700; flex-shrink:0; }
+
+
   .trust { padding: 50px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; }
   .trust-label { text-align: center; font-size: 12px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 28px; }
   .trust-row { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 30px; opacity: 0.7; }
@@ -1165,16 +1196,17 @@
       <div class="dash-bar">
         <div class="dash-dots"><span></span><span></span><span></span></div>
         <div class="dash-tabs">
-          <div class="dash-tab active">Pipeline</div>
-          <div class="dash-tab">Outreach</div>
-          <div class="dash-tab">Forecast</div>
+          <div class="dash-tab active">Prospects</div>
+          <div class="dash-tab">Sequences</div>
+          <div class="dash-tab">Pipeline</div>
         </div>
-        <div class="dash-search">⌕  search accounts</div>
+        <div class="dash-search">⌕&nbsp; search accounts</div>
       </div>
-      <div class="dash-body">
+      <div class="dash-body dash-body-3col">
+        <!-- Sidebar -->
         <div class="dash-sidebar">
           <div class="dash-side-label">Workspace</div>
-          <div class="dash-nav-item active"><div class="ico"></div>Pipeline</div>
+          <div class="dash-nav-item active"><div class="ico"></div>Prospects</div>
           <div class="dash-nav-item"><div class="ico"></div>Accounts</div>
           <div class="dash-nav-item"><div class="ico"></div>Sequences</div>
           <div class="dash-nav-item"><div class="ico"></div>Inbox</div>
@@ -1183,73 +1215,113 @@
           <div class="dash-nav-item"><div class="ico"></div>Reports</div>
           <div class="dash-nav-item"><div class="ico"></div>Playbooks</div>
         </div>
+
+        <!-- Search results -->
         <div class="dash-main">
-          <div class="dash-h">
-            <h3>Q2 Pipeline</h3>
+          <div class="dash-h" style="margin-bottom:16px;">
+            <div>
+              <h3>ICP Search</h3>
+              <div style="font-size:11px;color:var(--mute);margin-top:4px;">Results (47) &nbsp;·&nbsp; <span style="color:var(--ink);font-weight:500;">VP Sales · SaaS · Series B+</span></div>
+            </div>
             <div class="dash-h-actions">
-              <div class="dash-pill">Last 30d</div>
-              <div class="dash-pill neon">+ New rule</div>
+              <div class="dash-pill">Save list</div>
+              <div class="dash-pill neon">+ Add to sequence</div>
             </div>
           </div>
 
-          <div class="metrics-row">
-            <div class="metric">
-              <div class="metric-label">Close rate</div>
-              <div class="metric-val">40%</div>
-              <div class="metric-trend">↗ +12.4%</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Pipeline</div>
-              <div class="metric-val">$2.4M</div>
-              <div class="metric-trend">↗ +28.1%</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Time saved</div>
-              <div class="metric-val">60%</div>
-              <div class="metric-trend">↗ +6 hrs/wk</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">Forecast</div>
-              <div class="metric-val">94%</div>
-              <div class="metric-trend">↗ accuracy</div>
+          <div class="prospect-card p-active">
+            <div class="p-avatar" style="background:rgba(212,255,0,0.15);color:var(--neon);border:1.5px solid rgba(212,255,0,0.3)">JS</div>
+            <div class="p-info">
+              <div class="p-name">Jordan Simmons <span class="p-badge">✦ Enrich</span></div>
+              <div class="p-role">VP Sales · CloudStack Inc. · Present</div>
+              <div class="p-chips">
+                <span class="p-chip">✉️ j.simmons@cloudstack.io</span>
+                <span class="p-chip">📍 Austin, TX</span>
+                <span class="p-chip">💰 $4.2M</span>
+                <span class="p-chip">👥 120–200</span>
+              </div>
+              <div class="p-actions">
+                <span class="p-action">Find Number</span>
+                <span class="p-action">Find Email</span>
+                <span class="p-action">Add to List</span>
+                <span class="p-action p-neon">+ Add to Sequence</span>
+              </div>
             </div>
           </div>
 
-          <div class="chart-row">
-            <div class="chart-h">
-              <div class="title">Won vs forecast</div>
-              <div class="legend"><span style="color: var(--neon);">● Won</span><span>○ Forecast</span></div>
-            </div>
-            <div class="chart-bars">
-              <div class="bar-pair"><div class="bar lit" style="height: 40%;"></div><div class="bar" style="height: 50%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 55%;"></div><div class="bar" style="height: 60%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 35%;"></div><div class="bar" style="height: 45%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 70%;"></div><div class="bar" style="height: 65%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 80%;"></div><div class="bar" style="height: 75%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 65%;"></div><div class="bar" style="height: 70%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 92%;"></div><div class="bar" style="height: 80%;"></div></div>
-              <div class="bar-pair"><div class="bar lit" style="height: 78%;"></div><div class="bar" style="height: 85%;"></div></div>
+          <div class="prospect-card">
+            <div class="p-avatar" style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1.5px solid rgba(167,139,250,0.3)">MR</div>
+            <div class="p-info">
+              <div class="p-name">Maya Rodriguez <span class="p-badge">✦ Enrich</span></div>
+              <div class="p-role">Head of Sales · Finlo Systems · Sep 2023 – Present</div>
+              <div class="p-chips">
+                <span class="p-chip">📍 New York, NY</span>
+                <span class="p-chip">💰 $8.9M</span>
+                <span class="p-chip">👥 57–114</span>
+              </div>
+              <div class="p-actions">
+                <span class="p-action">Find Number</span>
+                <span class="p-action">Find Email</span>
+                <span class="p-action">Add to List</span>
+                <span class="p-action p-neon">+ Add to Sequence</span>
+              </div>
             </div>
           </div>
 
-          <div class="table-row">
-            <div class="row head">
-              <div>Account</div><div>Stage</div><div>Amount</div><div>Status</div>
-            </div>
-            <div class="row">
-              <div>Northwind Logistics</div><div>Negotiation</div><div>$148,000</div><div><span class="pill-status live">Hot</span></div>
-            </div>
-            <div class="row">
-              <div>Meridian Robotics</div><div>Demo Booked</div><div>$72,400</div><div><span class="pill-status warm">Warm</span></div>
-            </div>
-            <div class="row">
-              <div>Apex Industries</div><div>Discovery</div><div>$95,000</div><div><span class="pill-status warm">Warm</span></div>
-            </div>
-            <div class="row">
-              <div>Pipeline Co.</div><div>Reactivation</div><div>$28,500</div><div><span class="pill-status cold">Cold</span></div>
+          <div class="prospect-card">
+            <div class="p-avatar" style="background:rgba(251,146,60,0.12);color:#fb923c;border:1.5px solid rgba(251,146,60,0.25)">DK</div>
+            <div class="p-info">
+              <div class="p-name">Daniel Kim</div>
+              <div class="p-role">VP of Revenue · Stackline · Jan 2022 – Present</div>
+              <div class="p-chips">
+                <span class="p-chip">📍 Seattle, WA</span>
+                <span class="p-chip">💰 $22M</span>
+                <span class="p-chip">👥 200–500</span>
+              </div>
+              <div class="p-actions">
+                <span class="p-action">Find Number</span>
+                <span class="p-action">Find Email</span>
+                <span class="p-action">Add to List</span>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- AI Search Assistant -->
+        <div class="ai-panel">
+          <div class="ai-panel-head">
+            <div class="ai-panel-crumb">← ICP Search</div>
+            <div class="ai-panel-title">
+              <span>Search Assistant</span>
+              <span class="ai-restart">↺ Start over</span>
+            </div>
+          </div>
+          <div class="ai-messages">
+            <div class="ai-msg-bot">
+              <div class="ai-sender">Assistant · now</div>
+              <div class="ai-bubble bot">Hi! I'll help you build your ICP list. What role or persona are you targeting?</div>
+            </div>
+            <div class="ai-msg-user">
+              <div class="ai-bubble user">VP Sales or Head of Sales at B2B SaaS</div>
+            </div>
+            <div class="ai-msg-bot">
+              <div class="ai-sender">Assistant · now</div>
+              <div class="ai-bubble bot">Got it. Any preference on company size or funding stage?</div>
+            </div>
+            <div class="ai-msg-user">
+              <div class="ai-bubble user">Series B+, 50–500 employees</div>
+            </div>
+            <div class="ai-msg-bot">
+              <div class="ai-sender">Assistant · now</div>
+              <div class="ai-bubble bot">Found <b>47 prospects</b> matching your ICP. Highest-fit leads shown first. <span style="color:var(--neon)">Add to a sequence?</span></div>
+            </div>
+          </div>
+          <div class="ai-input-row">
+            <div class="ai-input-box">Refine your search…</div>
+            <div class="ai-send">↑</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
