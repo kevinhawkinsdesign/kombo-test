@@ -25,371 +25,185 @@
   --purple: #A78BFA;
   --lavender: #B5A1FF;
   --lavender-soft: rgba(181,161,255,0.35);
-  --card-from: #3730A3;
-  --card-to: #5B21B6;
 }
-html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
 a { color: inherit; text-decoration: none; }
-.container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+.hidden { display: none !important; }
 
 /* ── Nav ── */
-.site-header { position: sticky; top: 0; background: rgba(14,14,16,0.9); backdrop-filter: blur(16px); z-index: 50; }
+.site-header { position: sticky; top: 0; background: rgba(14,14,16,0.92); backdrop-filter: blur(16px); z-index: 50; }
 .nav-bar { border-bottom: 1px solid var(--line); }
-.nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--ink); text-decoration: none; }
-.logo-img { height: 26px; width: auto; display: block; }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+.logo { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.logo-img { height: 26px; width: auto; }
 .logo-text { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
-.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-links { display: flex; gap: 4px; }
 .nav-trigger { background: transparent; border: 0; color: var(--mute); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; padding: 8px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; transition: color .18s, background .15s; }
 .nav-trigger:hover { color: var(--ink); background: var(--surface); }
-.nav-end { display: flex; align-items: center; gap: 12px; }
+.nav-end { display: flex; align-items: center; gap: 10px; }
+.lang-btn { background: none; border: 1px solid var(--line-2); color: var(--mute); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: color .15s, border-color .15s; letter-spacing: 0.06em; }
+.lang-btn.active, .lang-btn:hover { color: var(--lavender); border-color: var(--lavender); }
 .nav-cta { background: var(--neon); color: var(--bg); padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 13px; transition: transform .2s, box-shadow .2s; }
 .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212,255,0,0.25); }
 .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; color: var(--ink); }
 @media (max-width: 880px) { .nav-links { display: none; } .nav-toggle { display: flex; } }
 
-/* ── Hero ── */
-.hero {
-  padding: 72px 0 52px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute; top: -140px; left: 50%; transform: translateX(-50%);
+/* ── Page hero ── */
+.page-hero { text-align: center; padding: 52px 24px 36px; position: relative; overflow: hidden; }
+.page-hero::before {
+  content: ''; position: fixed; top: -160px; left: 50%; transform: translateX(-50%);
   width: 700px; height: 480px;
-  background: radial-gradient(ellipse at center, rgba(167,139,250,0.1) 0%, transparent 62%);
+  background: radial-gradient(ellipse at center, rgba(167,139,250,0.09) 0%, transparent 62%);
   pointer-events: none;
 }
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 7px 14px; border: 1px solid var(--lavender-soft); border-radius: 999px;
-  font-size: 12px; color: var(--lavender); margin-bottom: 22px;
-  position: relative; z-index: 1; background: rgba(181,161,255,0.06);
-  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase;
-}
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--lavender-soft); border-radius: 999px; font-size: 11px; color: var(--lavender); margin-bottom: 20px; background: rgba(181,161,255,0.06); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
 .eyebrow .dot { width: 7px; height: 7px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon); animation: dot-blink 1.4s ease-in-out infinite; }
 @keyframes dot-blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-.hero h1 { font-size: clamp(32px,5.5vw,60px); font-weight: 800; line-height: 1.06; letter-spacing: -0.035em; color: var(--ink); margin-bottom: 16px; position: relative; z-index: 1; }
-.hero h1 .hl { color: var(--neon); }
-.hero p { font-size: 16px; color: var(--mute); max-width: 500px; margin: 0 auto; line-height: 1.65; position: relative; z-index: 1; }
+.page-hero h1 { font-size: clamp(26px,4.5vw,44px); font-weight: 800; line-height: 1.1; letter-spacing: -0.035em; margin-bottom: 12px; }
+.page-hero h1 .hl { color: var(--neon); }
+.page-hero p { font-size: 15px; color: var(--mute); line-height: 1.65; max-width: 480px; margin: 0 auto; }
 
-/* ── Calc layout ── */
-.calc-section { max-width: 1060px; margin: 0 auto; padding: 0 28px 100px; }
+/* ── Main calculator layout ── */
+.calc-layout { display: grid; grid-template-columns: 360px 1fr; gap: 20px; max-width: 1140px; margin: 0 auto 28px; padding: 0 24px; align-items: start; }
+@media (max-width: 900px) { .calc-layout { grid-template-columns: 1fr; } }
+
+/* ── Left column: inputs ── */
+.inputs-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px 24px; position: sticky; top: 80px; }
+.inputs-panel-head { margin-bottom: 22px; }
+.inputs-panel-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.inputs-panel-desc { font-size: 12px; color: var(--mute); line-height: 1.5; }
+
+.field { margin-bottom: 16px; }
+.field:last-of-type { margin-bottom: 0; }
+.field label { display: block; font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 7px; letter-spacing: -0.005em; }
+.field .field-help { font-size: 11px; color: var(--mute-2); margin-top: 5px; line-height: 1.4; }
+.input-row { display: flex; align-items: stretch; background: var(--surface-2); border: 1.5px solid var(--line-2); border-radius: 10px; overflow: hidden; transition: border-color .18s; }
+.input-row:focus-within { border-color: #6D28D9; }
+.input-affix { padding: 0 10px; font-size: 13px; font-weight: 700; color: var(--mute-2); background: rgba(255,255,255,0.04); display: flex; align-items: center; border-right: 1px solid var(--line-2); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+.input-affix.suffix { border-right: none; border-left: 1px solid var(--line-2); }
+.input-row input { flex: 1; padding: 10px 12px; background: transparent; border: none; outline: none; font-size: 14px; font-weight: 600; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+.input-row input::-webkit-inner-spin-button, .input-row input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* ── Right column: results ── */
+.results-col { display: flex; flex-direction: column; gap: 16px; }
 
 /* Result cards */
-.result-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.result-card {
-  background: linear-gradient(140deg, #3730A3 0%, #5B21B6 100%);
-  border-radius: 20px;
-  padding: 32px 32px 28px;
-  position: relative;
-  overflow: hidden;
-}
-.result-card::before {
-  content: '';
-  position: absolute; top: -60px; right: -60px;
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 65%);
-  pointer-events: none;
-}
-.rc-label {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7);
-  margin-bottom: 18px; letter-spacing: 0.01em;
-}
-.rc-label svg { opacity: 0.7; }
-.rc-big {
-  font-size: clamp(36px, 5vw, 54px);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: #fff;
-  line-height: 1;
-  margin-bottom: 6px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.rc-sub {
-  font-size: 12px;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 24px;
-}
-.rc-range-label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-.rc-range-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.rc-range-lo, .rc-range-hi {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.7);
-  white-space: nowrap;
-  font-family: 'JetBrains Mono', monospace;
-}
-.rc-bar-wrap {
-  flex: 1;
-  height: 4px;
-  background: rgba(255,255,255,0.18);
-  border-radius: 999px;
-  position: relative;
-}
-.rc-bar-fill {
-  position: absolute;
-  left: 20%; right: 20%;
-  top: 0; height: 100%;
-  background: rgba(255,255,255,0.65);
-  border-radius: 999px;
-}
-.rc-divider {
-  text-align: center;
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  margin-top: 18px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-}
+.result-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .result-cards { grid-template-columns: 1fr; } }
+.result-card { background: linear-gradient(140deg,#3730A3 0%,#5B21B6 100%); border-radius: 18px; padding: 24px 22px 18px; position: relative; overflow: hidden; }
+.result-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 65%); pointer-events: none; }
+.rc-label { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 12px; }
+.rc-big { font-size: clamp(28px,3.5vw,42px); font-weight: 800; letter-spacing: -0.04em; color: #fff; line-height: 1; margin-bottom: 3px; font-family: 'JetBrains Mono', monospace; }
+.rc-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.rc-range-lbl { font-size: 10px; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
+.rc-range-row { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
+.rc-lo, .rc-hi { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+.rc-track { flex: 1; height: 3px; background: rgba(255,255,255,0.18); border-radius: 999px; position: relative; }
+.rc-fill { position: absolute; left: 20%; right: 20%; top: 0; height: 100%; background: rgba(255,255,255,0.62); border-radius: 999px; }
+.rc-footer { padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; }
+.rc-footer-lbl { font-size: 10px; color: rgba(255,255,255,0.45); }
 
 /* Breakdown panels */
-.breakdown-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.breakdown-panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 32px 30px 28px;
-}
-.bp-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 6px;
-}
-.bp-desc {
-  font-size: 13px;
-  color: var(--mute);
-  line-height: 1.5;
-  margin-bottom: 28px;
-}
+.breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .breakdown-grid { grid-template-columns: 1fr; } }
+.breakdown-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px 22px; }
+.bp-title { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.bp-desc { font-size: 11px; color: var(--mute); line-height: 1.5; margin-bottom: 20px; }
 
-/* Slider rows in breakdown */
-.sr { margin-bottom: 22px; }
+/* Slider rows */
+.sr { margin-bottom: 18px; }
 .sr:last-of-type { margin-bottom: 0; }
-.sr-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-.sr-label {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--ink);
-}
-.sr-hint {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 1px solid var(--line-2); color: var(--mute-2);
-  font-size: 10px; font-weight: 700; display: inline-flex;
-  align-items: center; justify-content: center; cursor: default;
-  flex-shrink: 0;
-}
-.sr-val {
-  font-size: 14px; font-weight: 700;
-  color: var(--lavender);
-  font-family: 'JetBrains Mono', monospace;
-}
+.sr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; }
+.sr-label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ink); min-width: 0; flex: 1; }
+.sr-hint { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line-2); color: var(--mute-2); font-size: 9px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: help; }
+.sr-val { font-size: 12px; font-weight: 700; color: var(--lavender); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+.sr-val.readonly { color: var(--mute-2); }
+.calc-range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 999px; background: var(--line-2); outline: none; cursor: pointer; }
+.calc-range[disabled] { cursor: default; opacity: 1; }
+.calc-range::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #6D28D9; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.35); transition: transform .15s, box-shadow .15s; }
+.calc-range::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(109,40,217,.2); }
+.calc-range[disabled]::-webkit-slider-thumb { background: var(--surface-2); border-color: var(--line-2); cursor: default; transform: none; box-shadow: none; }
+.calc-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #6D28D9; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.calc-range[disabled]::-moz-range-thumb { background: var(--surface-2); border-color: var(--line-2); cursor: default; }
+.sr-readonly-note { font-size: 10px; color: var(--mute-2); margin-top: 5px; cursor: pointer; text-decoration: underline; }
+.sr-readonly-note:hover { color: var(--lavender); }
 
-/* Custom range slider */
-.calc-range {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--line-2);
-  outline: none;
-  cursor: pointer;
-}
-.calc-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid #6D28D9;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-  transition: transform .15s, box-shadow .15s;
-}
-.calc-range::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 5px rgba(109,40,217,0.25);
-}
-.calc-range::-moz-range-thumb {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid #6D28D9;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-}
+/* Contributing factors toggle btn */
+.toggle-factors-btn { display: block; width: 100%; text-align: center; margin-top: 16px; font-size: 11px; color: var(--mute); text-decoration: underline; background: none; border: none; cursor: pointer; font-family: inherit; transition: color .15s; padding: 4px 0; }
+.toggle-factors-btn:hover { color: var(--lavender); }
 
-/* "Modify" link */
-.modify-link {
-  display: block;
-  text-align: center;
-  margin-top: 24px;
-  font-size: 13px;
-  color: var(--mute);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  transition: color .18s;
-  background: none;
-  border: none;
-  width: 100%;
-  font-family: inherit;
-}
-.modify-link:hover { color: var(--lavender); }
+/* Factors panel */
+.factors-panel { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px; margin-top: 12px; }
+.factors-panel-head { margin-bottom: 14px; }
+.factors-panel-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+.factors-panel-desc { font-size: 10px; color: var(--mute); line-height: 1.5; }
+.factor-row { margin-bottom: 12px; }
+.factor-row:last-child { margin-bottom: 0; }
+.factor-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.factor-label { font-size: 11px; color: var(--mute); }
+.factor-val { font-size: 11px; font-weight: 700; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+.factor-range { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; border-radius: 999px; background: var(--line-2); outline: none; cursor: pointer; }
+.factor-range::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #7C3AED; cursor: pointer; border: none; transition: transform .15s; }
+.factor-range::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.factor-range::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: #7C3AED; cursor: pointer; border: none; }
 
-/* ── Settings overlay ── */
-.settings-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  z-index: 200;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity .22s;
-}
-.settings-overlay.open { opacity: 1; pointer-events: auto; }
+/* Before/After */
+.before-after { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.ba-side { flex: 1; text-align: center; }
+.ba-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mute-2); margin-bottom: 2px; }
+.ba-desc { font-size: 9px; color: var(--mute-2); margin-bottom: 3px; }
+.ba-val { font-size: 20px; font-weight: 800; color: var(--lavender); font-family: 'JetBrains Mono', monospace; }
+.ba-sublabel { font-size: 9px; color: var(--mute-2); margin-top: 2px; }
+.ba-arrow { color: var(--mute); font-size: 16px; }
 
-.settings-modal {
-  background: var(--bg-2);
-  border: 1px solid var(--line-2);
-  border-radius: 20px;
-  padding: 36px 36px 32px;
-  width: 100%;
-  max-width: 480px;
-  margin: 16px;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
-  transform: translateY(12px) scale(0.98);
-  transition: transform .22s cubic-bezier(0.22,0.61,0.36,1);
-}
-.settings-overlay.open .settings-modal { transform: translateY(0) scale(1); }
+/* Summary card */
+.summary-section { max-width: 1140px; margin: 0 auto 12px; padding: 0 24px; }
+.summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; }
+.summary-head { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+.summary-text { font-size: 13px; color: var(--mute); line-height: 1.7; margin-bottom: 14px; }
+.summary-factors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+@media (max-width: 600px) { .summary-factors { grid-template-columns: 1fr; } }
+.summary-factor-box { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.sfb-head { display: flex; align-items: center; gap: 5px; margin-bottom: 7px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--lavender); }
+.sfb-item { font-size: 10px; color: var(--mute); line-height: 1.55; display: flex; align-items: flex-start; gap: 5px; margin-bottom: 2px; }
+.sfb-dot { width: 4px; height: 4px; background: #6D28D9; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.summary-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .15s, border-color .15s; }
+.btn-sm-outline { background: none; border: 1px solid var(--line-2); color: var(--mute); }
+.btn-sm-outline:hover { border-color: var(--lavender); color: var(--lavender); }
 
-.settings-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 6px;
-}
-.settings-head h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
-.settings-close {
-  background: none; border: none; cursor: pointer;
-  color: var(--mute); padding: 4px; border-radius: 6px;
-  transition: color .15s;
-}
-.settings-close:hover { color: var(--ink); }
-.settings-desc { font-size: 13px; color: var(--mute); margin-bottom: 28px; line-height: 1.5; }
+/* ── Sticky CTA ── */
+.sticky-cta { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(14,14,16,0.95); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sticky-cta p { font-size: 14px; color: var(--mute); }
+.sticky-cta a { background: linear-gradient(135deg,#4F46E5,#7C3AED); color: #fff; padding: 10px 22px; border-radius: 10px; font-size: 13px; font-weight: 700; white-space: nowrap; transition: transform .15s, box-shadow .15s; }
+.sticky-cta a:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(109,40,217,0.4); }
+@media (max-width: 500px) { .sticky-cta p { display: none; } .sticky-cta a { flex: 1; text-align: center; } }
 
-.settings-field { margin-bottom: 18px; }
-.settings-field label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
-.settings-field .field-hint { font-size: 11px; color: var(--mute-2); margin-top: 5px; line-height: 1.4; }
-.input-wrap {
-  display: flex; align-items: center;
-  background: var(--surface-2); border: 1px solid var(--line-2);
-  border-radius: 10px; overflow: hidden;
-  transition: border-color .18s;
-}
-.input-wrap:focus-within { border-color: #6D28D9; }
-.input-prefix {
-  padding: 0 12px;
-  font-size: 13px; font-weight: 600; color: var(--mute-2);
-  border-right: 1px solid var(--line-2);
-  background: var(--surface);
-  display: flex; align-items: center;
-  height: 44px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.input-suffix {
-  padding: 0 12px;
-  font-size: 13px; font-weight: 600; color: var(--mute-2);
-  border-left: 1px solid var(--line-2);
-  background: var(--surface);
-  display: flex; align-items: center;
-  height: 44px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.input-wrap input {
-  flex: 1; padding: 0 14px; height: 44px;
-  background: transparent; border: none; outline: none;
-  font-size: 14px; font-weight: 600; color: var(--ink);
-  font-family: 'JetBrains Mono', monospace;
-}
-.input-wrap input::-webkit-inner-spin-button,
-.input-wrap input::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-.settings-save {
-  width: 100%; padding: 14px;
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
-  border: none; border-radius: 12px;
-  color: #fff; font-size: 14px; font-weight: 700;
-  cursor: pointer; margin-top: 8px;
-  transition: transform .18s, box-shadow .18s;
-  font-family: inherit;
-}
-.settings-save:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(109,40,217,0.4); }
-
-/* ── CTA ── */
-.cta-section { max-width: 1060px; margin: 0 auto 100px; padding: 0 28px; }
-.cta-card {
-  background: linear-gradient(135deg, rgba(212,255,0,0.06) 0%, rgba(167,139,250,0.08) 100%);
-  border: 1px solid rgba(212,255,0,0.15);
-  border-radius: 20px; padding: 52px 56px;
-  text-align: center; position: relative; overflow: hidden;
-}
-.cta-card::before {
-  content: '';
-  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
-  width: 400px; height: 300px;
-  background: radial-gradient(ellipse, rgba(212,255,0,0.09) 0%, transparent 65%);
-  pointer-events: none;
-}
-.cta-card h3 { font-size: clamp(22px,3vw,32px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; position: relative; }
-.cta-card p { font-size: 15px; color: var(--mute); margin-bottom: 30px; position: relative; }
-.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
-.btn-neon { background: var(--neon); color: var(--bg); padding: 13px 26px; border-radius: 999px; font-weight: 700; font-size: 14px; transition: transform .2s, box-shadow .2s; }
-.btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,255,0,0.3); }
-.btn-ghost { background: transparent; color: var(--ink); padding: 13px 26px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid var(--line-2); transition: border-color .2s, color .2s; }
-.btn-ghost:hover { border-color: var(--lavender); color: var(--lavender); }
+/* ── FAQ ── */
+.faq-section { max-width: 700px; margin: 16px auto 100px; padding: 0 24px; }
+.faq-head { font-size: clamp(20px,3vw,28px); font-weight: 800; letter-spacing: -0.03em; text-align: center; margin-bottom: 24px; }
+.faq-item { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.faq-q { width: 100%; background: none; border: none; padding: 16px 20px; text-align: left; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: inherit; }
+.faq-q .faq-icon { font-size: 18px; color: var(--mute); font-weight: 300; transition: transform .2s; flex-shrink: 0; }
+.faq-q[aria-expanded="true"] .faq-icon { transform: rotate(45deg); }
+.faq-a { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height .3s cubic-bezier(.4,0,.2,1), padding .3s; font-size: 13px; color: var(--mute); line-height: 1.65; }
+.faq-a.open { max-height: 200px; padding: 0 20px 16px; }
 
 /* ── Footer ── */
-footer { padding: 80px 0 50px; border-top: 1px solid var(--line); }
-.footer-grid { display: grid; grid-template-columns: 1.4fr repeat(6,1fr); gap: 24px; margin-bottom: 50px; }
-.footer-grid .col p { font-size: 13px; color: var(--mute); line-height: 1.55; max-width: 280px; margin-top: 14px; }
-.footer-grid .col h6 { font-size: 12px; color: var(--mute-2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
-.footer-grid .col a { display: block; padding: 6px 0; font-size: 14px; color: var(--mute); transition: color .2s; }
+footer { padding: 56px 0 120px; border-top: 1px solid var(--line); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr repeat(3,1fr); gap: 24px; margin-bottom: 32px; }
+.footer-grid .col h6 { font-size: 11px; color: var(--mute-2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+.footer-grid .col a { display: block; padding: 4px 0; font-size: 13px; color: var(--mute); transition: color .2s; }
 .footer-grid .col a:hover { color: var(--ink); }
-.footer-bottom { padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); flex-wrap: wrap; gap: 8px; align-items: center; }
+.footer-grid .col p { font-size: 13px; color: var(--mute); line-height: 1.55; margin-top: 10px; }
+.footer-bottom { padding-top: 18px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); flex-wrap: wrap; gap: 8px; }
 
-@media (max-width: 760px) {
-  .result-cards, .breakdown-panels { grid-template-columns: 1fr; }
-  .cta-card { padding: 36px 24px; }
-  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
-  .settings-modal { padding: 28px 22px 24px; }
-}
-@media (max-width: 480px) {
-  .footer-grid { grid-template-columns: 1fr; }
+@media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+@media print {
+  .site-header, .sticky-cta, .summary-actions, .toggle-factors-btn { display: none !important; }
+  .result-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
 </head>
@@ -410,7 +224,12 @@ footer { padding: 80px 0 50px; border-top: 1px solid var(--line); }
         <button type="button" class="nav-trigger">Company <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <div class="nav-end">
-        <a href="./demo.html" class="nav-cta">Book a demo</a>
+        <div id="lang-switcher" style="display:flex;gap:4px">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="es">ES</button>
+          <button class="lang-btn" data-lang="it">IT</button>
+        </div>
+        <a href="./demo.html" class="nav-cta" data-t="stickyCtaButton">See a Demo</a>
         <button class="nav-toggle" aria-label="Open menu">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
         </button>
@@ -420,131 +239,259 @@ footer { padding: 80px 0 50px; border-top: 1px solid var(--line); }
 </header>
 
 <!-- Hero -->
-<section class="hero">
-  <div class="container">
-    <div class="eyebrow"><span class="dot"></span> ROI Calculator</div>
-    <h1>See your <span class="hl">return</span><br>before you sign</h1>
-    <p>Plug in your numbers and see exactly how much revenue KomboAI adds — and how many hours your team gets back.</p>
+<div class="page-hero">
+  <div class="eyebrow"><span class="dot"></span> <span data-t="eyebrow">ROI Calculator</span></div>
+  <h1 data-t="heroHeadline">Calculate Your <span class="hl">Outbound</span> Potential</h1>
+  <p data-t="heroSubheadline">Input your current sales numbers and see exactly what's possible with KomboAI.</p>
+</div>
+
+<!-- Calculator: two-column layout -->
+<div class="calc-layout">
+
+  <!-- Left: inputs -->
+  <div class="inputs-panel">
+    <div class="inputs-panel-head">
+      <div class="inputs-panel-title" data-t="inputFormTitle">Your Sales Numbers</div>
+      <div class="inputs-panel-desc" data-t="inputFormSubtitle">Edit any field — results update instantly.</div>
+    </div>
+
+    <div class="field">
+      <label data-t="conversionRateInputLabel">Cold Contact Conversion Rate</label>
+      <div class="input-row">
+        <input type="number" id="fi-conv" min="0.1" max="50" step="0.1" value="1">
+        <span class="input-affix suffix">%</span>
+      </div>
+      <div class="field-help" data-t="conversionRateInputHelp">What % of cold contacts become paying customers today?</div>
+    </div>
+
+    <div class="field">
+      <label data-t="automationHoursInputLabel">Daily Admin Hours Per Rep</label>
+      <div class="input-row">
+        <input type="number" id="fi-admin" min="0.5" max="12" step="0.5" value="6">
+        <span class="input-affix suffix">h</span>
+      </div>
+      <div class="field-help" data-t="automationHoursInputHelp">Hours each day reps burn on admin tasks that could be automated.</div>
+    </div>
+
+    <div class="field">
+      <label data-t="acvInputLabel">Annual Contract Value</label>
+      <div class="input-row">
+        <span class="input-affix">€</span>
+        <input type="number" id="fi-acv" min="100" max="500000" step="100" value="10000">
+      </div>
+      <div class="field-help" data-t="acvInputHelp">Average yearly revenue per closed deal.</div>
+    </div>
+
+    <div class="field">
+      <label data-t="salesRepsInputLabel">Number of Sales Reps</label>
+      <div class="input-row">
+        <input type="number" id="fi-reps" min="1" max="500" step="1" value="10">
+      </div>
+      <div class="field-help" data-t="salesRepsInputHelp">How many reps are actively prospecting?</div>
+    </div>
+
+    <div class="field">
+      <label data-t="hourlyRateInputLabel">Hourly Rate</label>
+      <div class="input-row">
+        <span class="input-affix">€</span>
+        <input type="number" id="fi-rate" min="5" max="500" step="1" value="20">
+      </div>
+      <div class="field-help" data-t="hourlyRateInputHelp">Average fully-loaded cost per rep, per hour.</div>
+    </div>
   </div>
-</section>
 
-<!-- Calculator -->
-<div class="calc-section">
+  <!-- Right: results -->
+  <div class="results-col">
 
-  <!-- Result cards -->
-  <div class="result-cards">
-    <div class="result-card">
-      <div class="rc-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        Yearly Revenue Estimate
+    <!-- Result cards -->
+    <div class="result-cards">
+      <div class="result-card">
+        <div class="rc-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <span data-t="revenueImpactEstimate">Yearly Revenue Estimate</span>
+        </div>
+        <div class="rc-big" id="rc-rev">€0</div>
+        <div class="rc-sub" data-t="bestEstimate">Best Estimate</div>
+        <div class="rc-range-lbl" data-t="rangeLabel">Range (+/- 20%)</div>
+        <div class="rc-range-row">
+          <span class="rc-lo" id="rc-rev-lo">€0</span>
+          <div class="rc-track"><div class="rc-fill"></div></div>
+          <span class="rc-hi" id="rc-rev-hi">€0</span>
+        </div>
+        <div class="rc-footer">
+          <span class="rc-footer-lbl" data-t="monthlyRevenue">yearly revenue</span>
+        </div>
       </div>
-      <div class="rc-big" id="res-yearly-rev">€1,440,000</div>
-      <div class="rc-sub">Best Estimate</div>
-      <div class="rc-range-label">Range (+/− 20%)</div>
-      <div class="rc-range-row">
-        <span class="rc-range-lo" id="res-rev-lo">€1,152,000</span>
-        <div class="rc-bar-wrap"><div class="rc-bar-fill"></div></div>
-        <span class="rc-range-hi" id="res-rev-hi">€1,728,000</span>
+      <div class="result-card">
+        <div class="rc-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span data-t="timeSavingsEstimate">Yearly Time Savings Estimate</span>
+        </div>
+        <div class="rc-big" id="rc-time">€0</div>
+        <div class="rc-sub" data-t="bestEstimate">Best Estimate</div>
+        <div class="rc-range-lbl" data-t="rangeLabel">Range (+/- 20%)</div>
+        <div class="rc-range-row">
+          <span class="rc-lo" id="rc-time-lo">€0</span>
+          <div class="rc-track"><div class="rc-fill"></div></div>
+          <span class="rc-hi" id="rc-time-hi">€0</span>
+        </div>
+        <div class="rc-footer">
+          <span class="rc-footer-lbl" data-t="monthlyTimeSavings">yearly time savings</span>
+        </div>
       </div>
-      <div class="rc-divider">yearly revenue</div>
     </div>
-    <div class="result-card">
-      <div class="rc-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Yearly Time Savings Estimate
+
+    <!-- Breakdown panels -->
+    <div class="breakdown-grid">
+
+      <!-- Revenue breakdown -->
+      <div class="breakdown-panel">
+        <div class="bp-title" data-t="scopeTitle">Revenue Breakdown</div>
+        <div class="bp-desc" data-t="scopeExplainer">How KomboAI grows your yearly revenue.</div>
+
+        <div class="sr">
+          <div class="sr-top">
+            <span class="sr-label"><span data-t="pages">Monthly Leads Processed</span> <span class="sr-hint" title="Leads you process through KomboAI each month">?</span></span>
+            <span class="sr-val" id="lbl-leads">500</span>
+          </div>
+          <input class="calc-range" type="range" id="sl-leads" min="100" max="10000" step="100" value="500">
+        </div>
+
+        <div class="sr">
+          <div class="sr-top">
+            <span class="sr-label"><span data-t="dbEntities">Annual Contract Value</span> <span class="sr-hint" title="Synced from your sales numbers on the left">?</span></span>
+            <span class="sr-val" id="lbl-acv">€10,000</span>
+          </div>
+          <input class="calc-range" type="range" id="sl-acv" min="500" max="150000" step="500" value="10000">
+        </div>
+
+        <div class="sr">
+          <div class="sr-top">
+            <span class="sr-label"><span data-t="conversionRate">Conversion Rate w/ KomboAI</span> <span class="sr-hint" title="Derived from your base rate × the 6 conversion multipliers below">?</span></span>
+            <span class="sr-val readonly" id="lbl-conv">3.33%</span>
+          </div>
+          <input class="calc-range" type="range" id="sl-conv" min="0.01" max="20" step="0.01" value="3.33" disabled>
+          <div class="sr-readonly-note" onclick="app.toggleFactors('left')" data-t="modifyLink">Modify my sales team stats</div>
+        </div>
+
+        <!-- Contributing factors (left) -->
+        <div class="factors-panel hidden" id="factors-left">
+          <div class="factors-panel-head">
+            <div class="factors-panel-title" data-t="conversionMaturityTitle">How It Lifts Your Conversions</div>
+            <div class="factors-panel-desc" data-t="conversionMaturityDesc">Improvements multiply each other.</div>
+          </div>
+          <div id="factors-left-list"></div>
+          <div class="before-after">
+            <div class="ba-side">
+              <div class="ba-tag" data-t="beforeKombo">Before Kombo</div>
+              <div class="ba-desc" data-t="beforeKomboDesc">With your current headcount</div>
+              <div class="ba-val" id="ba-before-conv">1%</div>
+              <div class="ba-sublabel" data-t="coldContactConversion">Cold Contact to Customer</div>
+            </div>
+            <div class="ba-arrow">→</div>
+            <div class="ba-side">
+              <div class="ba-tag" data-t="afterKombo">After Kombo</div>
+              <div class="ba-desc" data-t="afterKomboDesc">Without adding headcount</div>
+              <div class="ba-val" id="ba-after-conv">3.33%</div>
+              <div class="ba-sublabel" data-t="coldContactConversion">Cold Contact to Customer</div>
+            </div>
+          </div>
+        </div>
+        <button class="toggle-factors-btn" id="toggle-factors-left" onclick="app.toggleFactors('left')">
+          <span data-t="viewContributingFactors">Modify my sales team stats</span>
+        </button>
       </div>
-      <div class="rc-big" id="res-yearly-time">€105,600</div>
-      <div class="rc-sub">Best Estimate</div>
-      <div class="rc-range-label">Range (+/− 20%)</div>
-      <div class="rc-range-row">
-        <span class="rc-range-lo" id="res-time-lo">€84,480</span>
-        <div class="rc-bar-wrap"><div class="rc-bar-fill"></div></div>
-        <span class="rc-range-hi" id="res-time-hi">€126,720</span>
+
+      <!-- Time savings breakdown -->
+      <div class="breakdown-panel">
+        <div class="bp-title" data-t="timeSavingsTitle">Time Savings Breakdown</div>
+        <div class="bp-desc" data-t="timeSavingsExplainer">How KomboAI saves your team time.</div>
+
+        <div class="sr">
+          <div class="sr-top">
+            <span class="sr-label"><span data-t="apiEndpoints">Sales Reps</span> <span class="sr-hint" title="Synced from your sales numbers on the left">?</span></span>
+            <span class="sr-val" id="lbl-reps">10</span>
+          </div>
+          <input class="calc-range" type="range" id="sl-reps" min="1" max="200" step="1" value="10">
+        </div>
+
+        <div class="sr">
+          <div class="sr-top">
+            <span class="sr-label"><span data-t="aiFeatures">Hourly Rate</span> <span class="sr-hint" title="Synced from your sales numbers on the left">?</span></span>
+            <span class="sr-val" id="lbl-rate">€20</span>
+          </div>
+          <input class="calc-range" type="range" id="sl-rate" min="5" max="200" step="5" value="20">
+        </div>
+
+        <div class="sr">
+          <div class="sr-top">
+            <span class="sr-label"><span data-t="languages">Daily Time Saved Per Rep</span> <span class="sr-hint" title="Derived from the 6 automation savings below">?</span></span>
+            <span class="sr-val readonly" id="lbl-time">2.2 h</span>
+          </div>
+          <input class="calc-range" type="range" id="sl-time" min="0.1" max="12" step="0.1" value="2.2" disabled>
+          <div class="sr-readonly-note" onclick="app.toggleFactors('right')" data-t="modifyLink">Modify my sales team stats</div>
+        </div>
+
+        <!-- Contributing factors (right) -->
+        <div class="factors-panel hidden" id="factors-right">
+          <div class="factors-panel-head">
+            <div class="factors-panel-title" data-t="salesAutomationTitle">How It Saves Your Team Time</div>
+            <div class="factors-panel-desc" data-t="salesAutomationDesc">Improvements add up.</div>
+          </div>
+          <div id="factors-right-list"></div>
+          <div class="before-after">
+            <div class="ba-side">
+              <div class="ba-tag" data-t="beforeKombo">Before Kombo</div>
+              <div class="ba-desc" data-t="beforeKomboDesc">With your current headcount</div>
+              <div class="ba-val" id="ba-before-time">6h</div>
+              <div class="ba-sublabel" data-t="dailyTimeLost">Time Spent on Admin</div>
+            </div>
+            <div class="ba-arrow">→</div>
+            <div class="ba-side">
+              <div class="ba-tag" data-t="afterKombo">After Kombo</div>
+              <div class="ba-desc" data-t="afterKomboDesc">Without adding headcount</div>
+              <div class="ba-val" id="ba-after-time">3.8h</div>
+              <div class="ba-sublabel" data-t="dailyTimeSaved">Time Spent on Admin</div>
+            </div>
+          </div>
+        </div>
+        <button class="toggle-factors-btn" id="toggle-factors-right" onclick="app.toggleFactors('right')">
+          <span data-t="viewContributingFactors">Modify my sales team stats</span>
+        </button>
       </div>
-      <div class="rc-divider">yearly time savings</div>
+
     </div>
+    <!-- end breakdown-grid -->
+
   </div>
+  <!-- end results-col -->
 
-  <!-- Breakdown panels -->
-  <div class="breakdown-panels">
+</div>
+<!-- end calc-layout -->
 
-    <!-- Revenue breakdown -->
-    <div class="breakdown-panel">
-      <div class="bp-title">Yearly Revenue Breakdown</div>
-      <div class="bp-desc">Find out how much revenue you can expect to make per year by using KomboAI.</div>
-
-      <div class="sr">
-        <div class="sr-top">
-          <span class="sr-label">Monthly Leads Processed <span class="sr-hint" title="Leads your team works each month">?</span></span>
-          <span class="sr-val" id="lbl-leads">500</span>
-        </div>
-        <input class="calc-range" type="range" id="sl-leads" min="100" max="10000" step="100" value="500">
-      </div>
-
-      <div class="sr">
-        <div class="sr-top">
-          <span class="sr-label">Annual Contract Value <span class="sr-hint" title="Average yearly revenue per closed deal">?</span></span>
-          <span class="sr-val" id="lbl-acv">€10,000</span>
-        </div>
-        <input class="calc-range" type="range" id="sl-acv" min="1000" max="150000" step="1000" value="10000">
-      </div>
-
-      <div class="sr">
-        <div class="sr-top">
-          <span class="sr-label">Conversion Rate Using KomboAI <span class="sr-hint" title="Your projected close rate with KomboAI (typically 3× your baseline)">?</span></span>
-          <span class="sr-val" id="lbl-conv">3.33%</span>
-        </div>
-        <input class="calc-range" type="range" id="sl-conv" min="0.5" max="15" step="0.01" value="3.33">
-      </div>
-
-      <button class="modify-link" onclick="openSettings()">Modify my sales team stats</button>
+<!-- Summary card -->
+<div class="summary-section">
+  <div class="summary-card">
+    <div class="summary-head" data-t="summaryTitle">Summary</div>
+    <p class="summary-text" id="summary-text"></p>
+    <div class="summary-factors" id="summary-factors" style="display:none"></div>
+    <div class="summary-actions">
+      <button class="btn-sm btn-sm-outline" onclick="app.copySummary()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span data-t="copyAiSummary">Copy summary</span>
+      </button>
+      <button class="btn-sm btn-sm-outline" onclick="window.print()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <span data-t="exportPdf">Export PDF</span>
+      </button>
     </div>
-
-    <!-- Time breakdown -->
-    <div class="breakdown-panel">
-      <div class="bp-title">Yearly Time Savings Breakdown</div>
-      <div class="bp-desc">Find out how much time your sales team can save per year by using KomboAI.</div>
-
-      <div class="sr">
-        <div class="sr-top">
-          <span class="sr-label">Sales Reps <span class="sr-hint" title="Reps actively prospecting">?</span></span>
-          <span class="sr-val" id="lbl-reps">10</span>
-        </div>
-        <input class="calc-range" type="range" id="sl-reps" min="1" max="200" step="1" value="10">
-      </div>
-
-      <div class="sr">
-        <div class="sr-top">
-          <span class="sr-label">Hourly Rate <span class="sr-hint" title="Average fully-loaded cost per rep, per hour">?</span></span>
-          <span class="sr-val" id="lbl-rate">€20</span>
-        </div>
-        <input class="calc-range" type="range" id="sl-rate" min="10" max="200" step="5" value="20">
-      </div>
-
-      <div class="sr">
-        <div class="sr-top">
-          <span class="sr-label">Daily Time Saved Per Rep <span class="sr-hint" title="Hours freed by automating admin, data entry, and follow-ups">?</span></span>
-          <span class="sr-val" id="lbl-timesaved">2.2 h</span>
-        </div>
-        <input class="calc-range" type="range" id="sl-timesaved" min="0.5" max="8" step="0.1" value="2.2">
-      </div>
-
-      <button class="modify-link" onclick="openSettings()">Modify my sales team stats</button>
-    </div>
-
   </div>
 </div>
 
-<!-- CTA -->
-<div class="cta-section">
-  <div class="cta-card">
-    <h3>Ready to capture this revenue?</h3>
-    <p>Join 500+ B2B sales teams using KomboAI. Live in your CRM in under 10 minutes.</p>
-    <div class="cta-btns">
-      <a href="./demo.html" class="btn-neon">Book a demo →</a>
-      <a href="./contact.html" class="btn-ghost">Talk to sales</a>
-    </div>
-  </div>
+<!-- FAQ -->
+<div class="faq-section">
+  <h2 class="faq-head" data-t="faqTitle">Frequently Asked Questions</h2>
+  <div id="faq-list"></div>
 </div>
 
 <!-- Footer -->
@@ -556,52 +503,22 @@ footer { padding: 80px 0 50px; border-top: 1px solid var(--line); }
           <img class="logo-img" src="./images/LOGO/icon-green.svg" alt="KomboAI">
           <span class="logo-text">KomboAI</span>
         </a>
-        <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+        <p data-t="footerDisclaimer">Improve your sales skills and start creating meaningful connections with your prospects.</p>
       </div>
       <div class="col">
         <h6>Product</h6>
         <a href="./features.html">ICP Finder</a>
         <a href="./features.html">Data Enrichment</a>
-        <a href="./features.html">Dynamic Playlists</a>
-        <a href="./features.html">Buying Signals</a>
-        <a href="./features.html">AI Agents</a>
         <a href="./features.html">AI Sequencer</a>
-        <a href="./how-it-works.html">AI Note Taker</a>
-        <a href="./features.html">AI Coach</a>
-        <a href="./crm-cleanup.html">CRM Cleanup</a>
+        <a href="./features.html">Buying Signals</a>
         <a href="./security.html">Security</a>
-      </div>
-      <div class="col">
-        <h6>Use Cases</h6>
-        <a href="./use-cases/prospecting.html">Prospecting</a>
-        <a href="./use-cases/signals.html">Act on Signals</a>
-        <a href="./use-cases/inbound.html">Qualify Inbound</a>
-        <a href="./use-cases/crm-enrichment.html">CRM Enrichment</a>
-        <a href="./use-cases/coaching.html">Coach Reps</a>
-      </div>
-      <div class="col">
-        <h6>Solutions</h6>
-        <a href="./for-sales-reps.html">Sales Reps</a>
-        <a href="./for-sales-leaders.html">Managers</a>
-        <a href="./for-revenue-operations.html">Ops</a>
-        <a href="./for-startups.html">Startups</a>
-        <a href="./for-enterprises.html">Enterprise</a>
-      </div>
-      <div class="col">
-        <h6>Resources</h6>
-        <a href="./customers.html">Customers</a>
-        <a href="./blog.html">Blog</a>
-        <a href="./podcast.html">Podcast</a>
-        <a href="./community.html">Community</a>
-        <a href="./newsletter.html">Newsletter</a>
-        <a href="./roi-calculator.html" style="color:var(--neon)">ROI Calculator</a>
       </div>
       <div class="col">
         <h6>Company</h6>
         <a href="./about.html">About</a>
         <a href="./contact.html">Contact</a>
+        <a href="./customers.html">Customers</a>
         <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
-        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
       </div>
       <div class="col">
         <h6>Legal</h6>
@@ -612,187 +529,503 @@ footer { padding: 80px 0 50px; border-top: 1px solid var(--line); }
       </div>
     </div>
     <div class="footer-bottom">
-      <div>© 2026 KomboAI. All rights reserved.</div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-        <a href="./terms.html" style="color:var(--mute);font-size:12px">Terms &amp; Conditions</a>
-        <a href="./privacy.html" style="color:var(--mute);font-size:12px">Privacy Policy</a>
-        <a href="./cookies.html" style="color:var(--mute);font-size:12px">Cookie Policy</a>
-        <a href="./referral.html" style="color:var(--mute);font-size:12px">Referral Programme</a>
-      </div>
+      <span>© 2026 KomboAI. All rights reserved.</span>
+      <span style="color:var(--mute-2)">support@getkombo.ai</span>
     </div>
   </div>
 </footer>
 
-<!-- Settings overlay -->
-<div class="settings-overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-label="Sales team settings">
-  <div class="settings-modal">
-    <div class="settings-head">
-      <h3>Your Sales Numbers</h3>
-      <button class="settings-close" onclick="closeSettings()" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <p class="settings-desc">Fill in your actuals. We'll use these to pre-set the calculator and show you what's possible with KomboAI.</p>
-
-    <div class="settings-field">
-      <label for="si-conv">Cold Contact Conversion Rate</label>
-      <div class="input-wrap">
-        <input type="number" id="si-conv" min="0.1" max="50" step="0.1" value="1" placeholder="1">
-        <span class="input-suffix">%</span>
-      </div>
-      <div class="field-hint">What % of cold contacts become paying customers today?</div>
-    </div>
-
-    <div class="settings-field">
-      <label for="si-adminhours">Daily Admin Hours Per Rep</label>
-      <div class="input-wrap">
-        <input type="number" id="si-adminhours" min="0.5" max="12" step="0.5" value="6" placeholder="6">
-        <span class="input-suffix">h</span>
-      </div>
-      <div class="field-hint">Hours each day reps burn on admin tasks that could be automated.</div>
-    </div>
-
-    <div class="settings-field">
-      <label for="si-acv">Annual Contract Value</label>
-      <div class="input-wrap">
-        <span class="input-prefix">€</span>
-        <input type="number" id="si-acv" min="100" max="1000000" step="100" value="10000" placeholder="10000">
-      </div>
-      <div class="field-hint">Average yearly revenue per closed deal.</div>
-    </div>
-
-    <div class="settings-field">
-      <label for="si-reps">Number of Sales Reps</label>
-      <div class="input-wrap">
-        <input type="number" id="si-reps" min="1" max="500" step="1" value="10" placeholder="10">
-      </div>
-      <div class="field-hint">How many reps are actively prospecting?</div>
-    </div>
-
-    <div class="settings-field">
-      <label for="si-rate">Hourly Rate</label>
-      <div class="input-wrap">
-        <span class="input-prefix">€</span>
-        <input type="number" id="si-rate" min="5" max="500" step="1" value="20" placeholder="20">
-      </div>
-      <div class="field-hint">Average fully-loaded cost per rep, per hour.</div>
-    </div>
-
-    <button class="settings-save" onclick="applySettings()">Apply to calculator →</button>
-  </div>
+<!-- Sticky CTA -->
+<div class="sticky-cta">
+  <p data-t="stickyCtaText">Want to see KomboAI in action? Let's talk!</p>
+  <a href="./demo.html" data-t="stickyCtaButton">See A Demo</a>
 </div>
 
 <script>
-(function () {
-  /* ── Slider fill ── */
-  function fill(el) {
-    const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
-    el.style.background = `linear-gradient(90deg,#6D28D9 ${pct}%,#34343C ${pct}%)`;
+/* ════════════════════════════════════════
+   TRANSLATIONS
+════════════════════════════════════════ */
+const T = {
+  en: {
+    eyebrow:'ROI Calculator',
+    heroHeadline:'Calculate Your <span class="hl">Outbound</span> Potential',
+    heroSubheadline:"Input your current sales numbers and see exactly what's possible with KomboAI.",
+    inputFormTitle:'Your Sales Numbers',
+    inputFormSubtitle:'Edit any field — results update instantly.',
+    conversionRateInputLabel:'Cold Contact Conversion Rate',
+    conversionRateInputHelp:'What % of cold contacts become paying customers today?',
+    automationHoursInputLabel:'Daily Admin Hours Per Rep',
+    automationHoursInputHelp:'Hours each day reps burn on admin tasks that could be automated.',
+    acvInputLabel:'Annual Contract Value', acvInputHelp:'Average yearly revenue per closed deal.',
+    salesRepsInputLabel:'Number of Sales Reps', salesRepsInputHelp:'How many reps are actively prospecting?',
+    hourlyRateInputLabel:'Hourly Rate', hourlyRateInputHelp:'Average fully-loaded cost per rep, per hour.',
+    revenueImpactEstimate:'Yearly Revenue Estimate', timeSavingsEstimate:'Yearly Time Savings Estimate',
+    bestEstimate:'Best Estimate', rangeLabel:'Range (+/- 20%)',
+    monthlyRevenue:'yearly revenue', monthlyTimeSavings:'yearly time savings',
+    viewContributingFactors:'Modify my sales team stats', hideContributingFactors:'Hide my sales team stats',
+    modifyLink:'Modify my sales team stats',
+    scopeTitle:'Revenue Breakdown', scopeExplainer:'How KomboAI grows your yearly revenue.',
+    pages:'Monthly Leads Processed in KomboAI', dbEntities:'Annual Contract Value', conversionRate:'Conversion Rate w/ KomboAI',
+    timeSavingsTitle:'Time Savings Breakdown', timeSavingsExplainer:'How KomboAI saves your team time.',
+    apiEndpoints:'Sales Reps', aiFeatures:'Hourly Rate', languages:'Daily Time Saved Per Rep',
+    conversionMaturityTitle:'How It Lifts Your Conversions',
+    conversionMaturityDesc:'Adjustments to your conversion rate. Improvements multiply each other.',
+    salesAutomationTitle:'How It Saves Your Team Time',
+    salesAutomationDesc:'Adjustments to daily time saved. Improvements add up.',
+    beforeKombo:'Before Kombo', afterKombo:'After Kombo',
+    beforeKomboDesc:'With your current headcount', afterKomboDesc:'Without adding headcount',
+    coldContactConversion:'Cold Contact to Customer', dailyTimeLost:'Time Spent on Admin', dailyTimeSaved:'Time Spent on Admin',
+    summaryTitle:'Summary', copyAiSummary:'Copy summary', exportPdf:'Export PDF',
+    stickyCtaText:"Want to see KomboAI in action? Let's talk!", stickyCtaButton:'See A Demo',
+    faqTitle:'Frequently Asked Questions',
+    faqs:[
+      {q:'Can I see KomboAI in action before purchasing?',a:'You can plan a demo with us any time and run live tests to see the full power of KomboAI.'},
+      {q:'Which CRM can I connect to?',a:'We are currently connected to HubSpot and Salesforce. You can also export data via CSV or request a new CRM connection.'},
+      {q:'Can I use KomboAI on different sites?',a:'You can use KomboAI in LinkedIn, SalesNavigator, LinkedIn Recruiter, HubSpot, Salesforce, Google Meet, Teams and many more.'},
+      {q:"Where do you get the data from?",a:'From trusted, GDPR-compliant third-party connections. We analyse thousands of patterns to deliver the best results.'},
+      {q:'How do you detect personality?',a:'We analysed thousands of profiles with publicly available MBTI data, labelled patterns, and built an accurate algorithm to predict new profiles.'},
+      {q:'I have an issue with my account',a:'Reach us at support@getkombo.ai — real humans answer within an hour during business hours.'},
+    ],
+    footerDisclaimer:'Improve your sales skills and start creating meaningful connections with your prospects.',
+    factorsLeft:[
+      {adj:'Contact Phone', full:'Reaching Out to Contact Phone (Vs. Company Landline)'},
+      {adj:'Data Enrichment', full:'Data Enrichment 70% (Vs. 50%)'},
+      {adj:'LinkedIn Multi-Ch.', full:'Multi Channel with LinkedIn (Vs. Email Only)'},
+      {adj:'WhatsApp Multi-Ch.', full:'Multi Channel with WhatsApp (Vs. Email Only)'},
+      {adj:'Instant Notifications', full:'Instant Notifications When Leads Answer (Vs. Manual Checks)'},
+      {adj:'Coach as a Service', full:'Coach as a Service (Vs. Manual Listening)'},
+    ],
+    factorsRight:[
+      {adj:'Research', full:'Company & Prospect Research'},
+      {adj:'CRM Filling', full:'CRM Filling'},
+      {adj:'Note Taking', full:'Note Taking During Calls'},
+      {adj:'Manual Sequences', full:'Manual Sequences'},
+      {adj:'Decision Makers', full:'Finding Decision Makers'},
+      {adj:'Follow-ups', full:'Follow-Ups to Reduce No Shows'},
+    ],
+    howItLifts:'How it lifts your conversions',
+    howItSaves:'How it saves your sales team time',
+    summaryTemplate:(rLo,rHi,tLo,tHi,convB,convA,timeA)=>
+      `You can expect between ${rLo} and ${rHi} in yearly revenue and between ${tLo} and ${tHi} per year in time savings by using KomboAI, because it lifts your cold-contact-to-customer conversion rate from ${convB}% to ${convA}% and automates up to ${timeA}h of daily manual work across your team.`,
+  },
+  es: {
+    eyebrow:'Calculadora de ROI',
+    heroHeadline:'Calcula tu Potencial de <span class="hl">Outbound</span>',
+    heroSubheadline:'Introduce tus cifras de ventas actuales y descubre lo que es posible con KomboAI.',
+    inputFormTitle:'Tus cifras de ventas',
+    inputFormSubtitle:'Edita cualquier campo — los resultados se actualizan al instante.',
+    conversionRateInputLabel:'Tasa de Conversión de Contacto Frío',
+    conversionRateInputHelp:'¿Qué % de contactos fríos se convierten en clientes hoy?',
+    automationHoursInputLabel:'Horas Admin Diarias por Comercial',
+    automationHoursInputHelp:'Horas al día que cada comercial pierde en tareas administrativas automatizables.',
+    acvInputLabel:'Valor Anual del Contrato', acvInputHelp:'Ingresos anuales medios por contrato cerrado.',
+    salesRepsInputLabel:'Número de Comerciales', salesRepsInputHelp:'¿Cuántos comerciales están prospectando activamente?',
+    hourlyRateInputLabel:'Tarifa por Hora', hourlyRateInputHelp:'Coste medio por hora por comercial.',
+    revenueImpactEstimate:'Estimación de Ingresos Anuales', timeSavingsEstimate:'Estimación de Ahorro de Tiempo Anual',
+    bestEstimate:'Mejor Estimación', rangeLabel:'Rango (+/- 20%)',
+    monthlyRevenue:'ingresos anuales', monthlyTimeSavings:'ahorro de tiempo anual',
+    viewContributingFactors:'Modificar mis datos de ventas', hideContributingFactors:'Ocultar datos de ventas',
+    modifyLink:'Modificar mis datos de ventas',
+    scopeTitle:'Desglose de Ingresos', scopeExplainer:'Cómo KomboAI hace crecer tus ingresos anuales.',
+    pages:'Leads Mensuales Procesados en KomboAI', dbEntities:'Valor Anual del Contrato', conversionRate:'Tasa de Conversión con KomboAI',
+    timeSavingsTitle:'Desglose de Ahorro de Tiempo', timeSavingsExplainer:'Cómo KomboAI ahorra tiempo a tu equipo.',
+    apiEndpoints:'Comerciales', aiFeatures:'Tarifa por Hora', languages:'Tiempo Diario Ahorrado por Comercial',
+    conversionMaturityTitle:'Cómo Aumenta Tus Conversiones',
+    conversionMaturityDesc:'Las mejoras se multiplican entre sí.',
+    salesAutomationTitle:'Cómo Ahorra Tiempo a Tu Equipo',
+    salesAutomationDesc:'Las mejoras se suman entre sí.',
+    beforeKombo:'Antes de Kombo', afterKombo:'Después de Kombo',
+    beforeKomboDesc:'Con tu plantilla actual', afterKomboDesc:'Sin ampliar plantilla',
+    coldContactConversion:'Conversión de Contacto Frío', dailyTimeLost:'Tiempo en Tareas Admin', dailyTimeSaved:'Tiempo en Tareas Admin',
+    summaryTitle:'Resumen', copyAiSummary:'Copiar resumen', exportPdf:'Exportar PDF',
+    stickyCtaText:'¿Quieres ver KomboAI en acción? ¡Hablemos!', stickyCtaButton:'Ver una Demo',
+    faqTitle:'Preguntas Frecuentes',
+    faqs:[
+      {q:'¿Puedo ver KomboAI en acción antes de comprarlo?',a:'Puedes planificar una demo con nosotros en cualquier momento.'},
+      {q:'¿A qué CRM puedo conectarme?',a:'Actualmente estamos conectados a HubSpot y Salesforce, con exportación CSV para otros CRM.'},
+      {q:'¿Puedo usar KomboAI en diferentes sitios?',a:'LinkedIn, SalesNavigator, HubSpot, Salesforce, Google Meet, Teams y muchos más.'},
+      {q:'¿De dónde obtienen los datos?',a:'De conexiones de terceros confiables y conformes con el GDPR.'},
+      {q:'¿Tienen algún soporte?',a:'Escríbenos a support@getkombo.ai — respondemos en una hora en horario laboral.'},
+    ],
+    footerDisclaimer:'Mejora tus habilidades de ventas y empieza a crear conexiones significativas.',
+    factorsLeft:[
+      {adj:'Teléfono de Contacto', full:'Contacto Directo al Teléfono (Vs. Número Fijo)'},
+      {adj:'Enriquecimiento de Datos', full:'Enriquecimiento de Datos 70% (Vs. 50%)'},
+      {adj:'Multicanal LinkedIn', full:'Multicanal con LinkedIn (Vs. Solo Email)'},
+      {adj:'Multicanal WhatsApp', full:'Multicanal con WhatsApp (Vs. Solo Email)'},
+      {adj:'Notificaciones Instantáneas', full:'Notificaciones Instantáneas Cuando los Leads Responden'},
+      {adj:'Coach como Servicio', full:'Coach como Servicio (Vs. Escucha Manual)'},
+    ],
+    factorsRight:[
+      {adj:'Investigación', full:'Investigación de Empresa y Prospecto'},
+      {adj:'Rellenar CRM', full:'Rellenar el CRM'},
+      {adj:'Toma de Notas', full:'Toma de Notas Durante Llamadas'},
+      {adj:'Secuencias Manuales', full:'Secuencias Manuales'},
+      {adj:'Decisores', full:'Búsqueda de Decisores'},
+      {adj:'Seguimientos', full:'Seguimientos para Reducir No-Shows'},
+    ],
+    howItLifts:'Cómo aumenta tus conversiones',
+    howItSaves:'Cómo ahorra tiempo a tu equipo',
+    summaryTemplate:(rLo,rHi,tLo,tHi,convB,convA,timeA)=>
+      `Puedes esperar entre ${rLo} y ${rHi} en ingresos anuales y entre ${tLo} y ${tHi} al año en ahorro de tiempo usando KomboAI, porque eleva tu tasa de conversión del ${convB}% al ${convA}% y automatiza hasta ${timeA}h de trabajo manual diario.`,
+  },
+  it: {
+    eyebrow:'Calcolatore ROI',
+    heroHeadline:'Calcola il Tuo Potenziale di <span class="hl">Outbound</span>',
+    heroSubheadline:'Inserisci i tuoi numeri di vendita attuali e scopri cosa è possibile con KomboAI.',
+    inputFormTitle:'I tuoi numeri di vendita',
+    inputFormSubtitle:'Modifica qualsiasi campo — i risultati si aggiornano istantaneamente.',
+    conversionRateInputLabel:'Tasso di Conversione Contatto Freddo',
+    conversionRateInputHelp:'Che % dei contatti freddi diventano clienti paganti oggi?',
+    automationHoursInputLabel:'Ore Admin Giornaliere per Commerciale',
+    automationHoursInputHelp:'Ore al giorno che ogni commerciale spreca in attività automatizzabili.',
+    acvInputLabel:'Valore Annuale del Contratto', acvInputHelp:'Ricavi annuali medi per contratto chiuso.',
+    salesRepsInputLabel:'Numero di Commerciali', salesRepsInputHelp:'Quanti commerciali stanno prospettando attivamente?',
+    hourlyRateInputLabel:'Tariffa Oraria', hourlyRateInputHelp:'Costo medio per ora per commerciale.',
+    revenueImpactEstimate:'Stima Ricavi Annuali', timeSavingsEstimate:'Stima Risparmio di Tempo Annuale',
+    bestEstimate:'Miglior Stima', rangeLabel:'Intervallo (+/- 20%)',
+    monthlyRevenue:'ricavi annuali', monthlyTimeSavings:'risparmio di tempo annuale',
+    viewContributingFactors:'Modifica i miei dati di vendita', hideContributingFactors:'Nascondi i dati di vendita',
+    modifyLink:'Modifica i miei dati di vendita',
+    scopeTitle:'Dettaglio Ricavi', scopeExplainer:'Come KomboAI fa crescere i tuoi ricavi annuali.',
+    pages:'Lead Mensili Processati in KomboAI', dbEntities:'Valore Annuale del Contratto', conversionRate:'Tasso di Conversione con KomboAI',
+    timeSavingsTitle:'Dettaglio Risparmio di Tempo', timeSavingsExplainer:'Come KomboAI fa risparmiare tempo al tuo team.',
+    apiEndpoints:'Commerciali', aiFeatures:'Tariffa Oraria', languages:'Tempo Giornaliero Risparmiato per Commerciale',
+    conversionMaturityTitle:'Come Aumenta le Tue Conversioni',
+    conversionMaturityDesc:'I miglioramenti si moltiplicano tra loro.',
+    salesAutomationTitle:'Come Fa Risparmiare Tempo al Tuo Team',
+    salesAutomationDesc:'I miglioramenti si sommano.',
+    beforeKombo:'Prima di Kombo', afterKombo:'Dopo Kombo',
+    beforeKomboDesc:'Con il tuo organico attuale', afterKomboDesc:"Senza aumentare l'organico",
+    coldContactConversion:'Conversione Contatto Freddo', dailyTimeLost:'Tempo in Attività Admin', dailyTimeSaved:'Tempo in Attività Admin',
+    summaryTitle:'Riepilogo', copyAiSummary:'Copia riepilogo', exportPdf:'Esporta PDF',
+    stickyCtaText:'Vuoi vedere KomboAI in azione? Parliamone!', stickyCtaButton:'Vedi una Demo',
+    faqTitle:'Domande Frequenti',
+    faqs:[
+      {q:"Posso vedere KomboAI in azione prima dell'acquisto?",a:'Puoi programmare una demo con noi in qualsiasi momento.'},
+      {q:'A quale CRM posso collegarmi?',a:'Attualmente siamo collegati a HubSpot e Salesforce. CSV disponibile per altri CRM.'},
+      {q:'Posso usare KomboAI su siti diversi?',a:'LinkedIn, SalesNavigator, HubSpot, Salesforce, Google Meet, Teams e molti altri.'},
+      {q:'Da dove prendete i dati?',a:'Da connessioni di terze parti affidabili e conformi al GDPR.'},
+      {q:'Avete supporto?',a:'Scrivici a support@getkombo.ai — risposta entro un ora in orario lavorativo.'},
+    ],
+    footerDisclaimer:'Migliora le tue competenze di vendita e crea connessioni significative con i tuoi prospect.',
+    factorsLeft:[
+      {adj:'Telefono di Contatto', full:'Contatto Diretto al Telefono (Vs. Numero Fisso)'},
+      {adj:'Arricchimento Dati', full:'Arricchimento Dati 70% (Vs. 50%)'},
+      {adj:'Multicanale LinkedIn', full:'Multicanale con LinkedIn (Vs. Solo Email)'},
+      {adj:'Multicanale WhatsApp', full:'Multicanale con WhatsApp (Vs. Solo Email)'},
+      {adj:'Notifiche Istantanee', full:'Notifiche Istantanee Quando i Lead Rispondono'},
+      {adj:'Coach come Servizio', full:'Coach come Servizio (Vs. Ascolto Manuale)'},
+    ],
+    factorsRight:[
+      {adj:'Ricerca', full:'Ricerca Azienda e Prospect'},
+      {adj:'Compilazione CRM', full:'Compilazione CRM'},
+      {adj:'Presa di Appunti', full:'Presa di Appunti Durante le Chiamate'},
+      {adj:'Sequenze Manuali', full:'Sequenze Manuali'},
+      {adj:'Decisori', full:'Ricerca dei Decisori'},
+      {adj:'Follow-up', full:'Follow-Up per Ridurre i No-Show'},
+    ],
+    howItLifts:'Come aumenta le tue conversioni',
+    howItSaves:'Come fa risparmiare tempo al tuo team',
+    summaryTemplate:(rLo,rHi,tLo,tHi,convB,convA,timeA)=>
+      `Puoi aspettarti tra ${rLo} e ${rHi} di ricavi annuali e tra ${tLo} e ${tHi} all'anno in risparmio di tempo usando KomboAI, perché eleva il tuo tasso di conversione dal ${convB}% al ${convA}% e automatizza fino a ${timeA}h di lavoro manuale giornaliero.`,
   }
+};
 
-  /* ── Formatters ── */
-  function fmtEur(n) {
-    if (n >= 1000000) return '€' + (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
-    if (n >= 1000)    return '€' + n.toLocaleString('en-GB');
-    return '€' + n;
+/* ════════════════════════════════════════
+   DEFAULTS
+════════════════════════════════════════ */
+const LEFT_DEFAULTS  = [1.30, 1.25, 1.35, 1.20, 1.15, 1.10];
+const RIGHT_DEFAULTS = [15,   30,   15,   30,   30,   10  ];
+
+/* ════════════════════════════════════════
+   APP STATE
+════════════════════════════════════════ */
+const state = {
+  lang: 'en',
+  // Base inputs (synced from input fields)
+  baseConv: 1,       // % cold contact conversion
+  baseAdmin: 6,      // h/day admin
+  acv: 10000,        // €
+  reps: 10,
+  hourlyRate: 20,    // €/h
+  // Factor arrays
+  leftMults: [...LEFT_DEFAULTS],
+  rightMins: [...RIGHT_DEFAULTS],
+  // Breakdown slider overrides
+  leads: 500,
+  // UI
+  showFactorsLeft: false,
+  showFactorsRight: false,
+};
+
+/* ════════════════════════════════════════
+   COMPUTED
+════════════════════════════════════════ */
+function derivedConvRate() {
+  let m = 1;
+  state.leftMults.forEach(v => m *= v);
+  return Math.min(100, Math.round(state.baseConv * m * 100) / 100);
+}
+function derivedTimeSaved() {
+  const mins = state.rightMins.reduce((a, b) => a + b, 0);
+  const h = Math.round((mins / 60) * 10) / 10;
+  return Math.min(h, state.baseAdmin);
+}
+
+/* ════════════════════════════════════════
+   CALCULATION
+════════════════════════════════════════ */
+const WORKING_DAYS = 240;
+function calcROI() {
+  const conv = derivedConvRate() / 100;
+  const timeSaved = derivedTimeSaved();
+  const rev  = Math.round(state.leads * state.acv * conv * 12);
+  const time = Math.round(state.reps * state.hourlyRate * timeSaved * WORKING_DAYS);
+  return {
+    rev,  revLo: Math.round(rev * 0.8),  revHi: Math.round(rev * 1.2),
+    time, timeLo: Math.round(time * 0.8), timeHi: Math.round(time * 1.2),
+  };
+}
+
+/* ════════════════════════════════════════
+   FORMAT
+════════════════════════════════════════ */
+function fmtEur(n) {
+  if (n >= 1000000) return '€' + (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  return '€' + n.toLocaleString('en-GB');
+}
+
+/* ════════════════════════════════════════
+   SLIDER FILL
+════════════════════════════════════════ */
+function fill(el, color) {
+  const c = color || '#6D28D9';
+  const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+  el.style.background = `linear-gradient(90deg,${c} ${pct}%,#34343C ${pct}%)`;
+}
+
+/* ════════════════════════════════════════
+   RENDER FACTOR LISTS
+════════════════════════════════════════ */
+function renderFactorList(side) {
+  const t = T[state.lang];
+  const isLeft = side === 'left';
+  const items = isLeft ? t.factorsLeft : t.factorsRight;
+  const vals  = isLeft ? state.leftMults : state.rightMins;
+  const min   = isLeft ? 1 : 0;
+  const max   = isLeft ? 2 : 60;
+  const step  = isLeft ? 0.05 : 5;
+  const container = document.getElementById(`factors-${side}-list`);
+  container.innerHTML = '';
+  items.forEach((item, i) => {
+    const val = vals[i];
+    const display = isLeft ? val.toFixed(2) + '×' : Math.round(val) + 'min';
+    const div = document.createElement('div');
+    div.className = 'factor-row';
+    div.innerHTML = `
+      <div class="factor-row-top">
+        <span class="factor-label">${item.adj}</span>
+        <span class="factor-val" id="fv-${side}-${i}">${display}</span>
+      </div>
+      <input class="factor-range" type="range" min="${min}" max="${max}" step="${step}" value="${val}" data-side="${side}" data-idx="${i}">`;
+    container.appendChild(div);
+    const inp = div.querySelector('input');
+    fill(inp, '#7C3AED');
+    inp.addEventListener('input', function() {
+      const v = parseFloat(this.value);
+      if (isLeft) state.leftMults[i] = v;
+      else state.rightMins[i] = v;
+      document.getElementById(`fv-${side}-${i}`).textContent = isLeft ? v.toFixed(2) + '×' : Math.round(v) + 'min';
+      fill(this, '#7C3AED');
+      updateResults();
+    });
+  });
+}
+
+/* ════════════════════════════════════════
+   UPDATE RESULTS
+════════════════════════════════════════ */
+function updateResults() {
+  const roi = calcROI();
+  const conv = derivedConvRate();
+  const timeSaved = derivedTimeSaved();
+  const t = T[state.lang];
+
+  document.getElementById('rc-rev').textContent    = fmtEur(roi.rev);
+  document.getElementById('rc-rev-lo').textContent = fmtEur(roi.revLo);
+  document.getElementById('rc-rev-hi').textContent = fmtEur(roi.revHi);
+  document.getElementById('rc-time').textContent    = fmtEur(roi.time);
+  document.getElementById('rc-time-lo').textContent = fmtEur(roi.timeLo);
+  document.getElementById('rc-time-hi').textContent = fmtEur(roi.timeHi);
+
+  document.getElementById('lbl-leads').textContent = state.leads.toLocaleString('en-GB');
+  document.getElementById('lbl-acv').textContent   = fmtEur(state.acv);
+  document.getElementById('lbl-conv').textContent  = conv + '%';
+  document.getElementById('lbl-reps').textContent  = state.reps;
+  document.getElementById('lbl-rate').textContent  = fmtEur(state.hourlyRate);
+  document.getElementById('lbl-time').textContent  = timeSaved + ' h';
+
+  ['sl-leads', 'sl-acv', 'sl-reps', 'sl-rate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) fill(el);
+  });
+  const slConv = document.getElementById('sl-conv');
+  slConv.value = conv;
+  fill(slConv, '#34343C');
+  const slTime = document.getElementById('sl-time');
+  slTime.value = timeSaved;
+  fill(slTime, '#34343C');
+
+  document.getElementById('ba-before-conv').textContent = state.baseConv + '%';
+  document.getElementById('ba-after-conv').textContent  = conv + '%';
+  document.getElementById('ba-before-time').textContent = state.baseAdmin + 'h';
+  document.getElementById('ba-after-time').textContent  = Math.round((state.baseAdmin - timeSaved) * 10) / 10 + 'h';
+
+  // Summary
+  document.getElementById('summary-text').textContent = t.summaryTemplate(
+    fmtEur(roi.revLo), fmtEur(roi.revHi),
+    fmtEur(roi.timeLo), fmtEur(roi.timeHi),
+    state.baseConv, conv, timeSaved
+  );
+  const activeLeft  = t.factorsLeft.filter((_, i) => state.leftMults[i] > 1).map(f => f.full);
+  const activeRight = t.factorsRight.filter((_, i) => state.rightMins[i] > 0).map(f => f.full);
+  const sfDiv = document.getElementById('summary-factors');
+  if (activeLeft.length > 0 || activeRight.length > 0) {
+    sfDiv.style.display = 'grid';
+    let html = '';
+    if (activeLeft.length) html += `<div class="summary-factor-box"><div class="sfb-head"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> ${t.howItLifts}</div>${activeLeft.map(f => `<div class="sfb-item"><span class="sfb-dot"></span>${f}</div>`).join('')}</div>`;
+    if (activeRight.length) html += `<div class="summary-factor-box"><div class="sfb-head"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${t.howItSaves}</div>${activeRight.map(f => `<div class="sfb-item"><span class="sfb-dot"></span>${f}</div>`).join('')}</div>`;
+    sfDiv.innerHTML = html;
+  } else {
+    sfDiv.style.display = 'none';
   }
-  function fmtNum(n) { return n.toLocaleString('en-GB'); }
-  function fmtPct(v) { return parseFloat(v).toFixed(2).replace(/\.?0+$/, '') + '%'; }
+}
 
-  /* ── Recalculate ── */
-  function recalc() {
-    const leads    = +document.getElementById('sl-leads').value;
-    const acv      = +document.getElementById('sl-acv').value;
-    const conv     = +document.getElementById('sl-conv').value / 100;
-    const reps     = +document.getElementById('sl-reps').value;
-    const rate     = +document.getElementById('sl-rate').value;
-    const timeSaved = +document.getElementById('sl-timesaved').value;
-
-    // Update labels
-    document.getElementById('lbl-leads').textContent    = fmtNum(leads);
-    document.getElementById('lbl-acv').textContent      = fmtEur(acv);
-    document.getElementById('lbl-conv').textContent     = fmtPct(document.getElementById('sl-conv').value);
-    document.getElementById('lbl-reps').textContent     = reps;
-    document.getElementById('lbl-rate').textContent     = fmtEur(rate);
-    document.getElementById('lbl-timesaved').textContent = parseFloat(timeSaved).toFixed(1) + ' h';
-
-    // Revenue: leads/month × conv × ACV × 12 months
-    const yearlyRev = Math.round(leads * conv * acv * 12);
-
-    // Time savings value: reps × hrs/day × rate × 240 working days
-    const yearlyTime = Math.round(reps * timeSaved * rate * 240);
-
-    // ±20% range
-    const revLo = Math.round(yearlyRev * 0.8);
-    const revHi = Math.round(yearlyRev * 1.2);
-    const timeLo = Math.round(yearlyTime * 0.8);
-    const timeHi = Math.round(yearlyTime * 1.2);
-
-    document.getElementById('res-yearly-rev').textContent  = fmtEur(yearlyRev);
-    document.getElementById('res-rev-lo').textContent      = fmtEur(revLo);
-    document.getElementById('res-rev-hi').textContent      = fmtEur(revHi);
-    document.getElementById('res-yearly-time').textContent = fmtEur(yearlyTime);
-    document.getElementById('res-time-lo').textContent     = fmtEur(timeLo);
-    document.getElementById('res-time-hi').textContent     = fmtEur(timeHi);
-
-    document.querySelectorAll('.calc-range').forEach(fill);
-  }
-
-  document.querySelectorAll('.calc-range').forEach(el => {
-    fill(el);
-    el.addEventListener('input', recalc);
+/* ════════════════════════════════════════
+   TRANSLATIONS
+════════════════════════════════════════ */
+function applyTranslations() {
+  const t = T[state.lang];
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if (t[key] !== undefined && typeof t[key] === 'string') {
+      if (key === 'heroHeadline') el.innerHTML = t[key];
+      else el.textContent = t[key];
+    }
   });
-
-  recalc();
-
-  /* ── Settings panel ── */
-  window.openSettings = function () {
-    document.getElementById('settings-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-  window.closeSettings = function () {
-    document.getElementById('settings-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-  };
-
-  // Close on backdrop click
-  document.getElementById('settings-overlay').addEventListener('click', function (e) {
-    if (e.target === this) closeSettings();
+  const faqList = document.getElementById('faq-list');
+  faqList.innerHTML = (t.faqs || []).map(f => `
+    <div class="faq-item">
+      <button class="faq-q" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');this.nextElementSibling.classList.toggle('open')">
+        ${f.q} <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">${f.a}</div>
+    </div>`).join('');
+  // Re-render factor lists if open
+  ['left', 'right'].forEach(side => {
+    if (!document.getElementById(`factors-${side}`).classList.contains('hidden')) {
+      renderFactorList(side);
+    }
   });
-  // Close on Escape
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeSettings();
+}
+
+/* ════════════════════════════════════════
+   APP ACTIONS
+════════════════════════════════════════ */
+const app = {
+  toggleFactors(side) {
+    const key = side === 'left' ? 'showFactorsLeft' : 'showFactorsRight';
+    state[key] = !state[key];
+    const panel = document.getElementById(`factors-${side}`);
+    panel.classList.toggle('hidden', !state[key]);
+    if (state[key]) renderFactorList(side);
+    updateToggleBtn(side);
+  },
+
+  copySummary() {
+    const text = document.getElementById('summary-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.summary-actions .btn-sm-outline');
+      const span = btn.querySelector('span');
+      const orig = span.textContent;
+      span.textContent = '✓ Copied!';
+      setTimeout(() => { span.textContent = orig; }, 1800);
+    });
+  },
+};
+
+function updateToggleBtn(side) {
+  const key = side === 'left' ? 'showFactorsLeft' : 'showFactorsRight';
+  const btn = document.getElementById(`toggle-factors-${side}`);
+  const t = T[state.lang];
+  btn.querySelector('span').textContent = state[key] ? t.hideContributingFactors : t.viewContributingFactors;
+}
+
+/* ════════════════════════════════════════
+   BIND INPUT FIELDS
+════════════════════════════════════════ */
+function syncFromInputs() {
+  const conv  = parseFloat(document.getElementById('fi-conv').value);
+  const admin = parseFloat(document.getElementById('fi-admin').value);
+  const acv   = parseFloat(document.getElementById('fi-acv').value);
+  const reps  = parseInt(document.getElementById('fi-reps').value);
+  const rate  = parseFloat(document.getElementById('fi-rate').value);
+
+  if (!isNaN(conv)  && conv  >= 0) state.baseConv  = conv;
+  if (!isNaN(admin) && admin >= 0) state.baseAdmin = admin;
+  if (!isNaN(acv)   && acv   >= 0) { state.acv = acv; document.getElementById('sl-acv').value = Math.min(acv, 150000); }
+  if (!isNaN(reps)  && reps  >= 1) { state.reps = reps; document.getElementById('sl-reps').value = Math.min(reps, 200); }
+  if (!isNaN(rate)  && rate  >= 0) { state.hourlyRate = rate; document.getElementById('sl-rate').value = Math.min(rate, 200); }
+
+  updateResults();
+}
+
+function bindInputFields() {
+  ['fi-conv','fi-admin','fi-acv','fi-reps','fi-rate'].forEach(id => {
+    document.getElementById(id).addEventListener('input', syncFromInputs);
   });
+}
 
-  window.applySettings = function () {
-    const coldConv   = +document.getElementById('si-conv').value;       // current conv %
-    const adminHours = +document.getElementById('si-adminhours').value; // daily admin h
-    const acv        = +document.getElementById('si-acv').value;
-    const reps       = +document.getElementById('si-reps').value;
-    const rate       = +document.getElementById('si-rate').value;
-
-    // KomboAI typically 3× conversion and saves ~35% of admin hours
-    const komboConv  = Math.min(coldConv * 3.33, 15);
-    const komboTime  = parseFloat((adminHours * 0.367).toFixed(1));
-
-    // Push to sliders
-    setSlider('sl-acv',       acv);
-    setSlider('sl-reps',      reps);
-    setSlider('sl-rate',      rate);
-    setSlider('sl-conv',      komboConv);
-    setSlider('sl-timesaved', komboTime);
-
-    recalc();
-    closeSettings();
-  };
-
-  function setSlider(id, val) {
+/* ════════════════════════════════════════
+   BIND BREAKDOWN SLIDERS
+════════════════════════════════════════ */
+function bindSliders() {
+  const bindings = [
+    ['sl-leads', v => { state.leads = +v; }],
+    ['sl-acv',   v => { state.acv = +v; document.getElementById('fi-acv').value = v; }],
+    ['sl-reps',  v => { state.reps = +v; document.getElementById('fi-reps').value = v; }],
+    ['sl-rate',  v => { state.hourlyRate = +v; document.getElementById('fi-rate').value = v; }],
+  ];
+  bindings.forEach(([id, setter]) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.value = Math.min(Math.max(val, +el.min), +el.max);
     fill(el);
-  }
-})();
+    el.addEventListener('input', function() { setter(this.value); fill(this); updateResults(); });
+  });
+}
+
+/* ════════════════════════════════════════
+   LANGUAGE SWITCHER
+════════════════════════════════════════ */
+document.getElementById('lang-switcher').addEventListener('click', function(e) {
+  const btn = e.target.closest('.lang-btn');
+  if (!btn) return;
+  state.lang = btn.dataset.lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b === btn));
+  applyTranslations();
+  updateResults();
+});
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  bindInputFields();
+  bindSliders();
+  applyTranslations();
+  updateResults();
+});
 </script>
 
 <!-- Intercom -->
