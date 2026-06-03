@@ -118,14 +118,14 @@ a { color: inherit; text-decoration: none; }
 .sr-label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ink); min-width: 0; flex: 1; }
 .sr-hint { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line-2); color: var(--mute-2); font-size: 9px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: help; }
 .sr-val { font-size: 12px; font-weight: 700; color: var(--lavender); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
-.sr-val.readonly { color: var(--mute-2); }
+.sr-val.readonly { color: var(--lavender); }
 .calc-range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 999px; background: var(--line-2); outline: none; cursor: pointer; }
 .calc-range[disabled] { cursor: default; opacity: 1; }
 .calc-range::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #6D28D9; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.35); transition: transform .15s, box-shadow .15s; }
 .calc-range::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(109,40,217,.2); }
-.calc-range[disabled]::-webkit-slider-thumb { background: var(--surface-2); border-color: var(--line-2); cursor: default; transform: none; box-shadow: none; }
+.calc-range[disabled]::-webkit-slider-thumb { background: #fff; border-color: #6D28D9; cursor: default; transform: none; }
 .calc-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #6D28D9; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
-.calc-range[disabled]::-moz-range-thumb { background: var(--surface-2); border-color: var(--line-2); cursor: default; }
+.calc-range[disabled]::-moz-range-thumb { background: #fff; border-color: #6D28D9; cursor: default; }
 .sr-readonly-note { font-size: 10px; color: var(--mute-2); margin-top: 5px; cursor: pointer; text-decoration: underline; }
 .sr-readonly-note:hover { color: var(--lavender); }
 
@@ -387,7 +387,6 @@ footer { padding: 56px 0 120px; border-top: 1px solid var(--line); }
             <span class="sr-val readonly" id="lbl-conv">3.33%</span>
           </div>
           <input class="calc-range" type="range" id="sl-conv" min="0.01" max="20" step="0.01" value="3.33" disabled>
-          <div class="sr-readonly-note" onclick="app.toggleFactors('left')" data-t="modifyLink">Modify my sales team stats</div>
         </div>
 
         <!-- Contributing factors (left) -->
@@ -445,7 +444,6 @@ footer { padding: 56px 0 120px; border-top: 1px solid var(--line); }
             <span class="sr-val readonly" id="lbl-time">2.2 h</span>
           </div>
           <input class="calc-range" type="range" id="sl-time" min="0.1" max="12" step="0.1" value="2.2" disabled>
-          <div class="sr-readonly-note" onclick="app.toggleFactors('right')" data-t="modifyLink">Modify my sales team stats</div>
         </div>
 
         <!-- Contributing factors (right) -->
@@ -870,10 +868,10 @@ function updateResults() {
   });
   const slConv = document.getElementById('sl-conv');
   slConv.value = conv;
-  fill(slConv, '#34343C');
+  fill(slConv);
   const slTime = document.getElementById('sl-time');
   slTime.value = timeSaved;
-  fill(slTime, '#34343C');
+  fill(slTime);
 
   document.getElementById('ba-before-conv').textContent = state.baseConv + '%';
   document.getElementById('ba-after-conv').textContent  = conv + '%';
