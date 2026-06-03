@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="index, follow" />
+<title>ROI Calculator — KomboAI</title>
+<link rel="icon" type="image/svg+xml" href="./images/LOGO/icon-green.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0E0E10;
+  --bg-2: #141417;
+  --surface: #1A1A1E;
+  --surface-2: #222226;
+  --line: #2A2A30;
+  --line-2: #34343C;
+  --neon: #D4FF00;
+  --ink: #F5F5F7;
+  --mute: #8A8A95;
+  --mute-2: #5A5A63;
+  --purple: #A78BFA;
+  --lavender: #B5A1FF;
+  --lavender-soft: rgba(181,161,255,0.35);
+  --card-from: #3730A3;
+  --card-to: #5B21B6;
+}
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+/* ── Nav ── */
+.site-header { position: sticky; top: 0; background: rgba(14,14,16,0.9); backdrop-filter: blur(16px); z-index: 50; }
+.nav-bar { border-bottom: 1px solid var(--line); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--ink); text-decoration: none; }
+.logo-img { height: 26px; width: auto; display: block; }
+.logo-text { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-trigger { background: transparent; border: 0; color: var(--mute); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; padding: 8px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; transition: color .18s, background .15s; }
+.nav-trigger:hover { color: var(--ink); background: var(--surface); }
+.nav-end { display: flex; align-items: center; gap: 12px; }
+.nav-cta { background: var(--neon); color: var(--bg); padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 13px; transition: transform .2s, box-shadow .2s; }
+.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(212,255,0,0.25); }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; color: var(--ink); }
+@media (max-width: 880px) { .nav-links { display: none; } .nav-toggle { display: flex; } }
+
+/* ── Hero ── */
+.hero {
+  padding: 72px 0 52px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -140px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 480px;
+  background: radial-gradient(ellipse at center, rgba(167,139,250,0.1) 0%, transparent 62%);
+  pointer-events: none;
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border: 1px solid var(--lavender-soft); border-radius: 999px;
+  font-size: 12px; color: var(--lavender); margin-bottom: 22px;
+  position: relative; z-index: 1; background: rgba(181,161,255,0.06);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.eyebrow .dot { width: 7px; height: 7px; background: var(--neon); border-radius: 50%; box-shadow: 0 0 10px var(--neon); animation: dot-blink 1.4s ease-in-out infinite; }
+@keyframes dot-blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hero h1 { font-size: clamp(32px,5.5vw,60px); font-weight: 800; line-height: 1.06; letter-spacing: -0.035em; color: var(--ink); margin-bottom: 16px; position: relative; z-index: 1; }
+.hero h1 .hl { color: var(--neon); }
+.hero p { font-size: 16px; color: var(--mute); max-width: 500px; margin: 0 auto; line-height: 1.65; position: relative; z-index: 1; }
+
+/* ── Calc layout ── */
+.calc-section { max-width: 1060px; margin: 0 auto; padding: 0 28px 100px; }
+
+/* Result cards */
+.result-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.result-card {
+  background: linear-gradient(140deg, #3730A3 0%, #5B21B6 100%);
+  border-radius: 20px;
+  padding: 32px 32px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.result-card::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+.rc-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7);
+  margin-bottom: 18px; letter-spacing: 0.01em;
+}
+.rc-label svg { opacity: 0.7; }
+.rc-big {
+  font-size: clamp(36px, 5vw, 54px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.rc-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 24px;
+}
+.rc-range-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.rc-range-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rc-range-lo, .rc-range-hi {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+.rc-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  position: relative;
+}
+.rc-bar-fill {
+  position: absolute;
+  left: 20%; right: 20%;
+  top: 0; height: 100%;
+  background: rgba(255,255,255,0.65);
+  border-radius: 999px;
+}
+.rc-divider {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 18px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* Breakdown panels */
+.breakdown-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.breakdown-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 32px 30px 28px;
+}
+.bp-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.bp-desc {
+  font-size: 13px;
+  color: var(--mute);
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+/* Slider rows in breakdown */
+.sr { margin-bottom: 22px; }
+.sr:last-of-type { margin-bottom: 0; }
+.sr-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.sr-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.sr-hint {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--line-2); color: var(--mute-2);
+  font-size: 10px; font-weight: 700; display: inline-flex;
+  align-items: center; justify-content: center; cursor: default;
+  flex-shrink: 0;
+}
+.sr-val {
+  font-size: 14px; font-weight: 700;
+  color: var(--lavender);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom range slider */
+.calc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-2);
+  outline: none;
+  cursor: pointer;
+}
+.calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #6D28D9;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.calc-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px rgba(109,40,217,0.25);
+}
+.calc-range::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #6D28D9;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+
+/* "Modify" link */
+.modify-link {
+  display: block;
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--mute);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color .18s;
+  background: none;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+}
+.modify-link:hover { color: var(--lavender); }
+
+/* ── Settings overlay ── */
+.settings-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s;
+}
+.settings-overlay.open { opacity: 1; pointer-events: auto; }
+
+.settings-modal {
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: 20px;
+  padding: 36px 36px 32px;
+  width: 100%;
+  max-width: 480px;
+  margin: 16px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  transform: translateY(12px) scale(0.98);
+  transition: transform .22s cubic-bezier(0.22,0.61,0.36,1);
+}
+.settings-overlay.open .settings-modal { transform: translateY(0) scale(1); }
+
+.settings-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.settings-head h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+.settings-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--mute); padding: 4px; border-radius: 6px;
+  transition: color .15s;
+}
+.settings-close:hover { color: var(--ink); }
+.settings-desc { font-size: 13px; color: var(--mute); margin-bottom: 28px; line-height: 1.5; }
+
+.settings-field { margin-bottom: 18px; }
+.settings-field label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.settings-field .field-hint { font-size: 11px; color: var(--mute-2); margin-top: 5px; line-height: 1.4; }
+.input-wrap {
+  display: flex; align-items: center;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color .18s;
+}
+.input-wrap:focus-within { border-color: #6D28D9; }
+.input-prefix {
+  padding: 0 12px;
+  font-size: 13px; font-weight: 600; color: var(--mute-2);
+  border-right: 1px solid var(--line-2);
+  background: var(--surface);
+  display: flex; align-items: center;
+  height: 44px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.input-suffix {
+  padding: 0 12px;
+  font-size: 13px; font-weight: 600; color: var(--mute-2);
+  border-left: 1px solid var(--line-2);
+  background: var(--surface);
+  display: flex; align-items: center;
+  height: 44px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.input-wrap input {
+  flex: 1; padding: 0 14px; height: 44px;
+  background: transparent; border: none; outline: none;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+}
+.input-wrap input::-webkit-inner-spin-button,
+.input-wrap input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.settings-save {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  border: none; border-radius: 12px;
+  color: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer; margin-top: 8px;
+  transition: transform .18s, box-shadow .18s;
+  font-family: inherit;
+}
+.settings-save:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(109,40,217,0.4); }
+
+/* ── CTA ── */
+.cta-section { max-width: 1060px; margin: 0 auto 100px; padding: 0 28px; }
+.cta-card {
+  background: linear-gradient(135deg, rgba(212,255,0,0.06) 0%, rgba(167,139,250,0.08) 100%);
+  border: 1px solid rgba(212,255,0,0.15);
+  border-radius: 20px; padding: 52px 56px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.cta-card::before {
+  content: '';
+  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 400px; height: 300px;
+  background: radial-gradient(ellipse, rgba(212,255,0,0.09) 0%, transparent 65%);
+  pointer-events: none;
+}
+.cta-card h3 { font-size: clamp(22px,3vw,32px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; position: relative; }
+.cta-card p { font-size: 15px; color: var(--mute); margin-bottom: 30px; position: relative; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+.btn-neon { background: var(--neon); color: var(--bg); padding: 13px 26px; border-radius: 999px; font-weight: 700; font-size: 14px; transition: transform .2s, box-shadow .2s; }
+.btn-neon:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,255,0,0.3); }
+.btn-ghost { background: transparent; color: var(--ink); padding: 13px 26px; border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid var(--line-2); transition: border-color .2s, color .2s; }
+.btn-ghost:hover { border-color: var(--lavender); color: var(--lavender); }
+
+/* ── Footer ── */
+footer { padding: 80px 0 50px; border-top: 1px solid var(--line); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr repeat(6,1fr); gap: 24px; margin-bottom: 50px; }
+.footer-grid .col p { font-size: 13px; color: var(--mute); line-height: 1.55; max-width: 280px; margin-top: 14px; }
+.footer-grid .col h6 { font-size: 12px; color: var(--mute-2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+.footer-grid .col a { display: block; padding: 6px 0; font-size: 14px; color: var(--mute); transition: color .2s; }
+.footer-grid .col a:hover { color: var(--ink); }
+.footer-bottom { padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); flex-wrap: wrap; gap: 8px; align-items: center; }
+
+@media (max-width: 760px) {
+  .result-cards, .breakdown-panels { grid-template-columns: 1fr; }
+  .cta-card { padding: 36px 24px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .settings-modal { padding: 28px 22px 24px; }
+}
+@media (max-width: 480px) {
+  .footer-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-bar">
+    <div class="container nav-inner">
+      <a href="./v9_glass_cathedral.html" class="logo">
+        <img class="logo-img" src="./images/LOGO/icon-green.svg" alt="KomboAI">
+        <span class="logo-text">KomboAI</span>
+      </a>
+      <div class="nav-links">
+        <button type="button" class="nav-trigger">Product <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="nav-trigger">Use Cases <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="nav-trigger">Solutions <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="nav-trigger">Resources <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="nav-trigger">Company <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="nav-end">
+        <a href="./demo.html" class="nav-cta">Book a demo</a>
+        <button class="nav-toggle" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow"><span class="dot"></span> ROI Calculator</div>
+    <h1>See your <span class="hl">return</span><br>before you sign</h1>
+    <p>Plug in your numbers and see exactly how much revenue KomboAI adds — and how many hours your team gets back.</p>
+  </div>
+</section>
+
+<!-- Calculator -->
+<div class="calc-section">
+
+  <!-- Result cards -->
+  <div class="result-cards">
+    <div class="result-card">
+      <div class="rc-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Yearly Revenue Estimate
+      </div>
+      <div class="rc-big" id="res-yearly-rev">€1,440,000</div>
+      <div class="rc-sub">Best Estimate</div>
+      <div class="rc-range-label">Range (+/− 20%)</div>
+      <div class="rc-range-row">
+        <span class="rc-range-lo" id="res-rev-lo">€1,152,000</span>
+        <div class="rc-bar-wrap"><div class="rc-bar-fill"></div></div>
+        <span class="rc-range-hi" id="res-rev-hi">€1,728,000</span>
+      </div>
+      <div class="rc-divider">yearly revenue</div>
+    </div>
+    <div class="result-card">
+      <div class="rc-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Yearly Time Savings Estimate
+      </div>
+      <div class="rc-big" id="res-yearly-time">€105,600</div>
+      <div class="rc-sub">Best Estimate</div>
+      <div class="rc-range-label">Range (+/− 20%)</div>
+      <div class="rc-range-row">
+        <span class="rc-range-lo" id="res-time-lo">€84,480</span>
+        <div class="rc-bar-wrap"><div class="rc-bar-fill"></div></div>
+        <span class="rc-range-hi" id="res-time-hi">€126,720</span>
+      </div>
+      <div class="rc-divider">yearly time savings</div>
+    </div>
+  </div>
+
+  <!-- Breakdown panels -->
+  <div class="breakdown-panels">
+
+    <!-- Revenue breakdown -->
+    <div class="breakdown-panel">
+      <div class="bp-title">Yearly Revenue Breakdown</div>
+      <div class="bp-desc">Find out how much revenue you can expect to make per year by using KomboAI.</div>
+
+      <div class="sr">
+        <div class="sr-top">
+          <span class="sr-label">Monthly Leads Processed <span class="sr-hint" title="Leads your team works each month">?</span></span>
+          <span class="sr-val" id="lbl-leads">500</span>
+        </div>
+        <input class="calc-range" type="range" id="sl-leads" min="100" max="10000" step="100" value="500">
+      </div>
+
+      <div class="sr">
+        <div class="sr-top">
+          <span class="sr-label">Annual Contract Value <span class="sr-hint" title="Average yearly revenue per closed deal">?</span></span>
+          <span class="sr-val" id="lbl-acv">€10,000</span>
+        </div>
+        <input class="calc-range" type="range" id="sl-acv" min="1000" max="150000" step="1000" value="10000">
+      </div>
+
+      <div class="sr">
+        <div class="sr-top">
+          <span class="sr-label">Conversion Rate Using KomboAI <span class="sr-hint" title="Your projected close rate with KomboAI (typically 3× your baseline)">?</span></span>
+          <span class="sr-val" id="lbl-conv">3.33%</span>
+        </div>
+        <input class="calc-range" type="range" id="sl-conv" min="0.5" max="15" step="0.01" value="3.33">
+      </div>
+
+      <button class="modify-link" onclick="openSettings()">Modify my sales team stats</button>
+    </div>
+
+    <!-- Time breakdown -->
+    <div class="breakdown-panel">
+      <div class="bp-title">Yearly Time Savings Breakdown</div>
+      <div class="bp-desc">Find out how much time your sales team can save per year by using KomboAI.</div>
+
+      <div class="sr">
+        <div class="sr-top">
+          <span class="sr-label">Sales Reps <span class="sr-hint" title="Reps actively prospecting">?</span></span>
+          <span class="sr-val" id="lbl-reps">10</span>
+        </div>
+        <input class="calc-range" type="range" id="sl-reps" min="1" max="200" step="1" value="10">
+      </div>
+
+      <div class="sr">
+        <div class="sr-top">
+          <span class="sr-label">Hourly Rate <span class="sr-hint" title="Average fully-loaded cost per rep, per hour">?</span></span>
+          <span class="sr-val" id="lbl-rate">€20</span>
+        </div>
+        <input class="calc-range" type="range" id="sl-rate" min="10" max="200" step="5" value="20">
+      </div>
+
+      <div class="sr">
+        <div class="sr-top">
+          <span class="sr-label">Daily Time Saved Per Rep <span class="sr-hint" title="Hours freed by automating admin, data entry, and follow-ups">?</span></span>
+          <span class="sr-val" id="lbl-timesaved">2.2 h</span>
+        </div>
+        <input class="calc-range" type="range" id="sl-timesaved" min="0.5" max="8" step="0.1" value="2.2">
+      </div>
+
+      <button class="modify-link" onclick="openSettings()">Modify my sales team stats</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-card">
+    <h3>Ready to capture this revenue?</h3>
+    <p>Join 500+ B2B sales teams using KomboAI. Live in your CRM in under 10 minutes.</p>
+    <div class="cta-btns">
+      <a href="./demo.html" class="btn-neon">Book a demo →</a>
+      <a href="./contact.html" class="btn-ghost">Talk to sales</a>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="col">
+        <a href="./v9_glass_cathedral.html" class="logo">
+          <img class="logo-img" src="./images/LOGO/icon-green.svg" alt="KomboAI">
+          <span class="logo-text">KomboAI</span>
+        </a>
+        <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
+      </div>
+      <div class="col">
+        <h6>Product</h6>
+        <a href="./features.html">ICP Finder</a>
+        <a href="./features.html">Data Enrichment</a>
+        <a href="./features.html">Dynamic Playlists</a>
+        <a href="./features.html">Buying Signals</a>
+        <a href="./features.html">AI Agents</a>
+        <a href="./features.html">AI Sequencer</a>
+        <a href="./how-it-works.html">AI Note Taker</a>
+        <a href="./features.html">AI Coach</a>
+        <a href="./crm-cleanup.html">CRM Cleanup</a>
+        <a href="./security.html">Security</a>
+      </div>
+      <div class="col">
+        <h6>Use Cases</h6>
+        <a href="./use-cases/prospecting.html">Prospecting</a>
+        <a href="./use-cases/signals.html">Act on Signals</a>
+        <a href="./use-cases/inbound.html">Qualify Inbound</a>
+        <a href="./use-cases/crm-enrichment.html">CRM Enrichment</a>
+        <a href="./use-cases/coaching.html">Coach Reps</a>
+      </div>
+      <div class="col">
+        <h6>Solutions</h6>
+        <a href="./for-sales-reps.html">Sales Reps</a>
+        <a href="./for-sales-leaders.html">Managers</a>
+        <a href="./for-revenue-operations.html">Ops</a>
+        <a href="./for-startups.html">Startups</a>
+        <a href="./for-enterprises.html">Enterprise</a>
+      </div>
+      <div class="col">
+        <h6>Resources</h6>
+        <a href="./customers.html">Customers</a>
+        <a href="./blog.html">Blog</a>
+        <a href="./podcast.html">Podcast</a>
+        <a href="./community.html">Community</a>
+        <a href="./newsletter.html">Newsletter</a>
+        <a href="./roi-calculator.html" style="color:var(--neon)">ROI Calculator</a>
+      </div>
+      <div class="col">
+        <h6>Company</h6>
+        <a href="./about.html">About</a>
+        <a href="./contact.html">Contact</a>
+        <a href="https://www.linkedin.com/company/kombo-ai/jobs/" target="_blank" rel="noopener">Jobs ↗</a>
+        <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
+      </div>
+      <div class="col">
+        <h6>Legal</h6>
+        <a href="./terms.html">Terms &amp; Conditions</a>
+        <a href="./privacy.html">Privacy Policy</a>
+        <a href="./cookies.html">Cookie Policy</a>
+        <a href="./referral.html">Referral Programme</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 KomboAI. All rights reserved.</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <a href="./terms.html" style="color:var(--mute);font-size:12px">Terms &amp; Conditions</a>
+        <a href="./privacy.html" style="color:var(--mute);font-size:12px">Privacy Policy</a>
+        <a href="./cookies.html" style="color:var(--mute);font-size:12px">Cookie Policy</a>
+        <a href="./referral.html" style="color:var(--mute);font-size:12px">Referral Programme</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Settings overlay -->
+<div class="settings-overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-label="Sales team settings">
+  <div class="settings-modal">
+    <div class="settings-head">
+      <h3>Your Sales Numbers</h3>
+      <button class="settings-close" onclick="closeSettings()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="settings-desc">Fill in your actuals. We'll use these to pre-set the calculator and show you what's possible with KomboAI.</p>
+
+    <div class="settings-field">
+      <label for="si-conv">Cold Contact Conversion Rate</label>
+      <div class="input-wrap">
+        <input type="number" id="si-conv" min="0.1" max="50" step="0.1" value="1" placeholder="1">
+        <span class="input-suffix">%</span>
+      </div>
+      <div class="field-hint">What % of cold contacts become paying customers today?</div>
+    </div>
+
+    <div class="settings-field">
+      <label for="si-adminhours">Daily Admin Hours Per Rep</label>
+      <div class="input-wrap">
+        <input type="number" id="si-adminhours" min="0.5" max="12" step="0.5" value="6" placeholder="6">
+        <span class="input-suffix">h</span>
+      </div>
+      <div class="field-hint">Hours each day reps burn on admin tasks that could be automated.</div>
+    </div>
+
+    <div class="settings-field">
+      <label for="si-acv">Annual Contract Value</label>
+      <div class="input-wrap">
+        <span class="input-prefix">€</span>
+        <input type="number" id="si-acv" min="100" max="1000000" step="100" value="10000" placeholder="10000">
+      </div>
+      <div class="field-hint">Average yearly revenue per closed deal.</div>
+    </div>
+
+    <div class="settings-field">
+      <label for="si-reps">Number of Sales Reps</label>
+      <div class="input-wrap">
+        <input type="number" id="si-reps" min="1" max="500" step="1" value="10" placeholder="10">
+      </div>
+      <div class="field-hint">How many reps are actively prospecting?</div>
+    </div>
+
+    <div class="settings-field">
+      <label for="si-rate">Hourly Rate</label>
+      <div class="input-wrap">
+        <span class="input-prefix">€</span>
+        <input type="number" id="si-rate" min="5" max="500" step="1" value="20" placeholder="20">
+      </div>
+      <div class="field-hint">Average fully-loaded cost per rep, per hour.</div>
+    </div>
+
+    <button class="settings-save" onclick="applySettings()">Apply to calculator →</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ── Slider fill ── */
+  function fill(el) {
+    const pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+    el.style.background = `linear-gradient(90deg,#6D28D9 ${pct}%,#34343C ${pct}%)`;
+  }
+
+  /* ── Formatters ── */
+  function fmtEur(n) {
+    if (n >= 1000000) return '€' + (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+    if (n >= 1000)    return '€' + n.toLocaleString('en-GB');
+    return '€' + n;
+  }
+  function fmtNum(n) { return n.toLocaleString('en-GB'); }
+  function fmtPct(v) { return parseFloat(v).toFixed(2).replace(/\.?0+$/, '') + '%'; }
+
+  /* ── Recalculate ── */
+  function recalc() {
+    const leads    = +document.getElementById('sl-leads').value;
+    const acv      = +document.getElementById('sl-acv').value;
+    const conv     = +document.getElementById('sl-conv').value / 100;
+    const reps     = +document.getElementById('sl-reps').value;
+    const rate     = +document.getElementById('sl-rate').value;
+    const timeSaved = +document.getElementById('sl-timesaved').value;
+
+    // Update labels
+    document.getElementById('lbl-leads').textContent    = fmtNum(leads);
+    document.getElementById('lbl-acv').textContent      = fmtEur(acv);
+    document.getElementById('lbl-conv').textContent     = fmtPct(document.getElementById('sl-conv').value);
+    document.getElementById('lbl-reps').textContent     = reps;
+    document.getElementById('lbl-rate').textContent     = fmtEur(rate);
+    document.getElementById('lbl-timesaved').textContent = parseFloat(timeSaved).toFixed(1) + ' h';
+
+    // Revenue: leads/month × conv × ACV × 12 months
+    const yearlyRev = Math.round(leads * conv * acv * 12);
+
+    // Time savings value: reps × hrs/day × rate × 240 working days
+    const yearlyTime = Math.round(reps * timeSaved * rate * 240);
+
+    // ±20% range
+    const revLo = Math.round(yearlyRev * 0.8);
+    const revHi = Math.round(yearlyRev * 1.2);
+    const timeLo = Math.round(yearlyTime * 0.8);
+    const timeHi = Math.round(yearlyTime * 1.2);
+
+    document.getElementById('res-yearly-rev').textContent  = fmtEur(yearlyRev);
+    document.getElementById('res-rev-lo').textContent      = fmtEur(revLo);
+    document.getElementById('res-rev-hi').textContent      = fmtEur(revHi);
+    document.getElementById('res-yearly-time').textContent = fmtEur(yearlyTime);
+    document.getElementById('res-time-lo').textContent     = fmtEur(timeLo);
+    document.getElementById('res-time-hi').textContent     = fmtEur(timeHi);
+
+    document.querySelectorAll('.calc-range').forEach(fill);
+  }
+
+  document.querySelectorAll('.calc-range').forEach(el => {
+    fill(el);
+    el.addEventListener('input', recalc);
+  });
+
+  recalc();
+
+  /* ── Settings panel ── */
+  window.openSettings = function () {
+    document.getElementById('settings-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeSettings = function () {
+    document.getElementById('settings-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  // Close on backdrop click
+  document.getElementById('settings-overlay').addEventListener('click', function (e) {
+    if (e.target === this) closeSettings();
+  });
+  // Close on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeSettings();
+  });
+
+  window.applySettings = function () {
+    const coldConv   = +document.getElementById('si-conv').value;       // current conv %
+    const adminHours = +document.getElementById('si-adminhours').value; // daily admin h
+    const acv        = +document.getElementById('si-acv').value;
+    const reps       = +document.getElementById('si-reps').value;
+    const rate       = +document.getElementById('si-rate').value;
+
+    // KomboAI typically 3× conversion and saves ~35% of admin hours
+    const komboConv  = Math.min(coldConv * 3.33, 15);
+    const komboTime  = parseFloat((adminHours * 0.367).toFixed(1));
+
+    // Push to sliders
+    setSlider('sl-acv',       acv);
+    setSlider('sl-reps',      reps);
+    setSlider('sl-rate',      rate);
+    setSlider('sl-conv',      komboConv);
+    setSlider('sl-timesaved', komboTime);
+
+    recalc();
+    closeSettings();
+  };
+
+  function setSlider(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = Math.min(Math.max(val, +el.min), +el.max);
+    fill(el);
+  }
+})();
+</script>
+
+<!-- Intercom -->
+<script>window.intercomSettings={app_id:"i1sg1inu"};</script>
+<script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/i1sg1inu';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();</script>
+
+</body>
+</html>
