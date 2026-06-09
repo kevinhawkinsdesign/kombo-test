@@ -125,6 +125,69 @@
   .h2h-block.us .h2h-icon{background:var(--neon)}
   @media(max-width:880px){.h2h-grid{grid-template-columns:1fr}}
 
+  /* Bundling & feature lexicon */
+  .bundle-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+  .bundle{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 18px;display:flex;flex-direction:column}
+  .bundle.featured{border-color:rgba(212,255,0,0.32);background:linear-gradient(160deg,rgba(212,255,0,0.08) 0%,rgba(212,255,0,0.02) 100%)}
+  .bundle .bname{font-size:15px;font-weight:700;letter-spacing:-0.01em;margin-bottom:10px}
+  .bundle.featured .bname{color:var(--neon)}
+  .bundle .bmodel{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--lavender);background:rgba(181,161,255,0.08);border:1px solid var(--lavender-soft);border-radius:7px;padding:5px 8px;margin-bottom:10px;line-height:1.4}
+  .bundle .bdesc{font-size:12px;color:var(--mute);line-height:1.55;margin-bottom:14px}
+  .bundle .btiers{font-size:11px;color:var(--mute-2);line-height:1.5;border-top:1px dashed var(--line-2);padding-top:12px;margin-top:auto}
+  .bundle .btiers b{color:var(--ink);font-weight:600;display:block;margin-bottom:3px;font-size:10px;text-transform:uppercase;letter-spacing:0.06em}
+  @media(max-width:1024px){.bundle-grid{grid-template-columns:1fr 1fr}.bundle.featured{grid-column:1/-1}}
+  @media(max-width:560px){.bundle-grid{grid-template-columns:1fr}.bundle.featured{grid-column:auto}}
+
+  .lex{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0;overflow:hidden;margin-bottom:14px}
+  .lex-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;background:var(--bg-2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .lex-head .lname{font-size:17px;font-weight:700;letter-spacing:-0.015em}
+  .lex.featured .lex-head .lname{color:var(--neon)}
+  .lex-head .lstyle{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:0.02em}
+  .lex-head .lstyle b{color:var(--lavender)}
+  .lex-terms{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+  .lex-term{padding:14px 26px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mute);line-height:1.5}
+  .lex-term:nth-child(odd){border-right:1px solid var(--line)}
+  .lex-term .tn{color:var(--ink);font-weight:600}
+  .lex-term .tn.brand{color:var(--lavender)}
+  .lex.featured .lex-term .tn.brand{color:var(--neon)}
+  .lex-term .td{color:var(--mute-2);font-size:12px}
+  @media(max-width:680px){.lex-terms{grid-template-columns:1fr}.lex-term:nth-child(odd){border-right:none}}
+
+  /* Feature mechanics */
+  .mech{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-bottom:14px}
+  .mech-top{margin-bottom:18px}
+  .mech-top h3{font-size:18px;font-weight:700;letter-spacing:-0.015em;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .mech-top h3 .mech-ic{width:30px;height:30px;border-radius:9px;background:rgba(181,161,255,0.12);border:1px solid var(--lavender-soft);display:flex;align-items:center;justify-content:center;color:var(--lavender);flex-shrink:0}
+  .mech-how{font-size:13.5px;color:var(--mute);line-height:1.62}
+  .mech-how b{color:var(--ink);font-weight:600}
+  .mech-how .tag{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--lavender);display:block;margin-bottom:6px}
+  .mech-rows{border-top:1px solid var(--line);padding-top:16px}
+  .mech-row{display:grid;grid-template-columns:130px 1fr;gap:16px;padding:9px 0;font-size:13px;line-height:1.55;border-bottom:1px solid var(--line)}
+  .mech-row:last-child{border-bottom:none}
+  .mech-row .co{font-weight:700;color:var(--ink);font-size:12.5px}
+  .mech-row .co.us{color:var(--neon)}
+  .mech-row .diff{color:var(--mute)}
+  .mech-row .diff b{color:var(--ink);font-weight:600}
+  @media(max-width:600px){.mech-row{grid-template-columns:1fr;gap:3px}.mech-row .co{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.06em}}
+
+  /* UX notes */
+  .ux-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .uxnote{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 22px;display:flex;flex-direction:column}
+  .uxnote.featured{border-color:rgba(212,255,0,0.32);background:linear-gradient(160deg,rgba(212,255,0,0.07) 0%,rgba(212,255,0,0.01) 100%)}
+  .uxnote .uxname{font-size:15px;font-weight:700;letter-spacing:-0.01em;margin-bottom:3px}
+  .uxnote.featured .uxname{color:var(--neon)}
+  .uxnote .uxfeel{font-size:12px;color:var(--lavender);font-style:italic;margin-bottom:14px;line-height:1.45}
+  .uxnote .uxrow{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.5;margin-bottom:9px}
+  .uxnote .uxrow:last-child{margin-bottom:0}
+  .uxnote .uxlbl{font-family:'JetBrains Mono',monospace;font-size:13px;flex-shrink:0;width:14px;text-align:center}
+  .uxnote .uxrow.plus .uxlbl{color:var(--neon)}
+  .uxnote .uxrow.minus .uxlbl{color:#FF6B6B}
+  .uxnote .uxrow.imp .uxlbl{color:var(--lavender)}
+  .uxnote .uxrow span:last-child{color:var(--mute)}
+  .uxnote .uxrow.imp span:last-child{color:var(--ink)}
+  @media(max-width:900px){.ux-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.ux-grid{grid-template-columns:1fr}}
+
   /* Competitor deep-dive profiles */
   .profile{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:0;overflow:hidden;margin-bottom:18px}
   .profile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:30px 32px 24px;border-bottom:1px solid var(--line);background:var(--bg-2);flex-wrap:wrap}
@@ -163,6 +226,41 @@
   .play .borrow{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--lavender);text-transform:uppercase;letter-spacing:0.06em;border-top:1px dashed var(--line-2);padding-top:12px}
   .play .borrow b{color:var(--ink)}
   @media(max-width:820px){.play-grid{grid-template-columns:1fr}}
+
+  /* Two-surface strategy */
+  .surface-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+  .surface{border-radius:20px;padding:30px 30px;position:relative;overflow:hidden}
+  .surface.ext{background:linear-gradient(160deg,rgba(181,161,255,0.10) 0%,rgba(181,161,255,0.02) 100%);border:1px solid var(--lavender-soft)}
+  .surface.app{background:linear-gradient(160deg,rgba(212,255,0,0.10) 0%,rgba(212,255,0,0.02) 100%);border:1px solid rgba(212,255,0,0.32)}
+  .surface-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px}
+  .surface.ext .surface-kicker{color:var(--lavender)}
+  .surface.app .surface-kicker{color:var(--neon)}
+  .surface h3{font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px}
+  .surface .lead{font-size:14px;color:var(--mute);line-height:1.6;margin-bottom:18px}
+  .surface .lead b{color:var(--ink);font-weight:600}
+  .surface ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .surface li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--mute);line-height:1.55}
+  .surface li b{color:var(--ink);font-weight:600}
+  .surface.ext li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(181,161,255,0.18);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23B5A1FF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
+  .surface.app li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(212,255,0,0.18);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23D4FF00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
+  @media(max-width:820px){.surface-grid{grid-template-columns:1fr}}
+
+  /* Persona advice */
+  .persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .persona{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 30px;transition:border-color .3s}
+  .persona:hover{border-color:var(--line-2)}
+  .persona-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .persona-ic{width:38px;height:38px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:var(--lavender);flex-shrink:0}
+  .persona h3{font-size:18px;font-weight:700;letter-spacing:-0.015em}
+  .persona .ptag{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:0.09em;color:var(--mute-2);margin-bottom:18px}
+  .persona .care{font-size:12.5px;color:var(--mute);line-height:1.6;margin-bottom:18px;padding:12px 14px;background:var(--bg-2);border-radius:10px;border-left:2px solid var(--lavender)}
+  .persona .care b{color:var(--ink);font-weight:600}
+  .persona .adv-h{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:0.09em;color:var(--neon);margin-bottom:12px}
+  .persona ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .persona li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--mute);line-height:1.55}
+  .persona li b{color:var(--ink);font-weight:600}
+  .persona li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(212,255,0,0.16);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23D4FF00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
+  @media(max-width:820px){.persona-grid{grid-template-columns:1fr}}
 
   /* When to pick */
   .pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:900px;margin:0 auto}
@@ -543,6 +641,277 @@
         </div>
       </div>
       <div class="matrix-scroll-hint">← scroll the table sideways →</div>
+    </div>
+  </div>
+</section>
+
+<!-- Bundling & feature naming -->
+<section class="std" style="padding-top:24px">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>How the field <span class="accent">bundles &amp; names</span> features</h2>
+      <p>Same raw capabilities, very different packaging. How each company splits functionality into plans — and the branded vocabulary they use to make it feel like one product.</p>
+    </div>
+
+    <!-- Bundling model cards -->
+    <div class="bundle-grid reveal">
+      <div class="bundle featured">
+        <div class="bname">KomboAI</div>
+        <div class="bmodel">Bundle by the loop</div>
+        <div class="bdesc">One copilot, packaged around the workflow — find → reach → talk → log — rather than sold as separate modules. Per-rep, generous usage.</div>
+        <div class="btiers"><b>Split by</b>Team size &amp; depth, not feature gates</div>
+      </div>
+      <div class="bundle">
+        <div class="bname">Lusha</div>
+        <div class="bmodel">Data core + modules</div>
+        <div class="bdesc">A contact-data core with sequencing and calling sold as add-on modules. Usage metered in credits per reveal.</div>
+        <div class="btiers"><b>Tiers</b>Free · Pro · Premium · Scale</div>
+      </div>
+      <div class="bundle">
+        <div class="bname">Lemlist</div>
+        <div class="bmodel">Channel-gated tiers</div>
+        <div class="bdesc">Plans gated by channel breadth — email-only at the bottom, full multichannel higher up. Extras as paid add-ons.</div>
+        <div class="btiers"><b>Tiers</b>Email Pro · Multichannel Expert · Outreach Scale</div>
+      </div>
+      <div class="bundle">
+        <div class="bname">Amplemarket</div>
+        <div class="bmodel">All-in-one suite</div>
+        <div class="bdesc">Everything in one SKU family under the AI umbrella — few gates, high floor. Differentiated mainly by contact volume.</div>
+        <div class="btiers"><b>Tiers</b>Startup · Growth · Enterprise</div>
+      </div>
+      <div class="bundle">
+        <div class="bname">Clay</div>
+        <div class="bmodel">Seats + usage credits</div>
+        <div class="bdesc">Subscription seats plus consumption — split into Data Credits and Actions. Capability scales with spend.</div>
+        <div class="btiers"><b>Tiers</b>Launch · Growth · Enterprise (+ credits)</div>
+      </div>
+    </div>
+
+    <!-- Feature lexicons -->
+    <div class="lex featured reveal">
+      <div class="lex-head">
+        <span class="lname">KomboAI</span>
+        <span class="lstyle">Naming style: <b>plain-language, loop-based</b></span>
+      </div>
+      <div class="lex-terms">
+        <div class="lex-term"><span class="tn">ICP Finder</span> <span class="td">— surfaces best-fit accounts</span></div>
+        <div class="lex-term"><span class="tn">Data Enrichment</span> <span class="td">— multi-source waterfall fill</span></div>
+        <div class="lex-term"><span class="tn">AI Sequencer</span> <span class="td">— drafts &amp; runs multichannel touches</span></div>
+        <div class="lex-term"><span class="tn">Buying Signals</span> <span class="td">— intent &amp; timing triggers</span></div>
+        <div class="lex-term"><span class="tn brand">Coach</span> <span class="td">— live call coaching (the differentiator)</span></div>
+        <div class="lex-term"><span class="tn">CRM Auto-fill</span> <span class="td">— hands-free hygiene &amp; write-back</span></div>
+      </div>
+    </div>
+
+    <div class="lex reveal">
+      <div class="lex-head">
+        <span class="lname">Lusha</span>
+        <span class="lstyle">Naming style: <b>"Lusha ___" product line</b></span>
+      </div>
+      <div class="lex-terms">
+        <div class="lex-term"><span class="tn brand">Lusha Engage</span> <span class="td">— email sequencing</span></div>
+        <div class="lex-term"><span class="tn brand">Lusha Conversations</span> <span class="td">— call recording &amp; intel</span></div>
+        <div class="lex-term"><span class="tn brand">Lusha Playlists</span> <span class="td">— live lead streaming</span></div>
+        <div class="lex-term"><span class="tn">Bulk Reveal</span> <span class="td">— mass contact lookup</span></div>
+        <div class="lex-term"><span class="tn">Buyer Intelligence</span> <span class="td">— intent &amp; funding signals</span></div>
+        <div class="lex-term"><span class="tn">Credits</span> <span class="td">— the metered currency for reveals</span></div>
+      </div>
+    </div>
+
+    <div class="lex reveal">
+      <div class="lex-head">
+        <span class="lname">Lemlist</span>
+        <span class="lstyle">Naming style: <b>playful lowercase "lem-" family</b></span>
+      </div>
+      <div class="lex-terms">
+        <div class="lex-term"><span class="tn brand">lemwarm</span> <span class="td">— inbox warm-up / deliverability network</span></div>
+        <div class="lex-term"><span class="tn brand">lemcal</span> <span class="td">— meeting scheduler &amp; booking pages</span></div>
+        <div class="lex-term"><span class="tn">Campaigns</span> <span class="td">— multichannel sequences</span></div>
+        <div class="lex-term"><span class="tn">Liquid syntax</span> <span class="td">— dynamic text/image personalization</span></div>
+        <div class="lex-term"><span class="tn">Lead Database</span> <span class="td">— 650M+ built-in records</span></div>
+        <div class="lex-term"><span class="tn">Unified Inbox</span> <span class="td">— centralized reply management</span></div>
+      </div>
+    </div>
+
+    <div class="lex reveal">
+      <div class="lex-head">
+        <span class="lname">Amplemarket</span>
+        <span class="lstyle">Naming style: <b>one AI brand, named agents</b></span>
+      </div>
+      <div class="lex-terms">
+        <div class="lex-term"><span class="tn brand">Duo</span> <span class="td">— the AI copilot umbrella brand</span></div>
+        <div class="lex-term"><span class="tn brand">Signal Agent</span> <span class="td">— 100+ contact-level intent signals</span></div>
+        <div class="lex-term"><span class="tn brand">Research Agent</span> <span class="td">— compiles prospect intelligence</span></div>
+        <div class="lex-term"><span class="tn brand">Sequence Agent</span> <span class="td">— writes &amp; optimizes outreach</span></div>
+        <div class="lex-term"><span class="tn">Deliverability Booster</span> <span class="td">— spam/validation safeguards</span></div>
+        <div class="lex-term"><span class="tn">Voice Cloning</span> <span class="td">— human-sounding AI outreach</span></div>
+      </div>
+    </div>
+
+    <div class="lex reveal">
+      <div class="lex-head">
+        <span class="lname">Clay</span>
+        <span class="lstyle">Naming style: <b>spreadsheet metaphor + "Clay-" coinages</b></span>
+      </div>
+      <div class="lex-terms">
+        <div class="lex-term"><span class="tn brand">Claygent</span> <span class="td">— AI web-research agent</span></div>
+        <div class="lex-term"><span class="tn brand">Waterfall enrichment</span> <span class="td">— cascade across 150+ providers</span></div>
+        <div class="lex-term"><span class="tn">Tables</span> <span class="td">— the spreadsheet-native workspace</span></div>
+        <div class="lex-term"><span class="tn">Enrichments</span> <span class="td">— provider columns you stack</span></div>
+        <div class="lex-term"><span class="tn brand">Data Credits / Actions</span> <span class="td">— the dual usage currencies</span></div>
+        <div class="lex-term"><span class="tn">Web Intent</span> <span class="td">— visitor &amp; signal capture</span></div>
+      </div>
+    </div>
+
+    <div class="profile-take reveal" style="border-radius:14px;border:1px solid rgba(212,255,0,0.18);margin-top:4px">
+      <b>For KomboAI</b> Lusha sells modules, Lemlist gates by channel, Amplemarket hides everything behind one high floor, and Clay meters by credits. The lesson: our packaging is itself a differentiator. Bundle around the loop, keep usage generous and predictable (no credit anxiety), and own a memorable name for the one thing none of them have — <b>Coach</b>. A clean, plain-language lexicon also wins the leaders and RevOps who have to explain the tool internally.
+    </div>
+  </div>
+</section>
+
+<!-- How the core features actually work -->
+<section class="std" style="padding-top:24px">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>How the core features <span class="accent">actually work</span></h2>
+      <p>The same five capabilities show up everywhere — but the mechanics underneath, and what each company optimizes for, are very different. Here's how each one works and where the lines fall.</p>
+    </div>
+
+    <!-- 1. Contact data & enrichment -->
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></span> Contact data &amp; enrichment</h3>
+        <div class="mech-how"><span class="tag">// how it works</span>A query (a name, domain, or LinkedIn URL) is matched against a data source to return emails, phones, and firmographics. The split is <b>own-database lookup</b> (one proprietary store, fast but fixed coverage) vs <b>waterfall enrichment</b> (cascade through many providers until one returns a verified hit — higher coverage, pay-per-attempt).</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">Waterfall across multiple sources, then <b>writes the verified result straight to CRM</b> — enrichment is an action in the workflow, not a separate lookup.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Single large <b>crowd-sourced database</b> (280M+). One-click reveal, credit per result. Fast and accurate in US tech, but coverage is what it is.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">A built-in 650M+ lead DB primarily to <b>feed its own campaigns</b>; enrichment is a means to a send, not a standalone product.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Proprietary 220M+ database with intent layered on; strong but users report <b>some stale records</b> at scale.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">The reference implementation of <b>waterfall enrichment</b> — 150+ providers stacked as columns. Best coverage, but you architect and pay per attempt.</span></div>
+      </div>
+    </div>
+
+    <!-- 2. AI personalization -->
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4 4 4 0 0 0 0 8 4 4 0 0 0 8 0 4 4 0 0 0 0-8 4 4 0 0 0-4-4z"/><path d="M12 6v12"/></svg></span> AI message personalization</h3>
+        <div class="mech-how"><span class="tag">// how it works</span>The tool pulls context (LinkedIn profile, company news, job posts, past activity) and prompts an LLM to draft an opener or full sequence. Quality hinges on <b>what context it can reach</b> and <b>how much it automates vs assists</b> — from merge-tag templating to fully agent-written outreach.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">Drafts in-context from enriched + signal data, then <b>the same engine coaches the live call</b> — personalization spans the whole conversation, not just the first email.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Lighter AI recommendations; personalization is <b>assistive</b>, bolted onto the data product rather than central.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">Personalization is the craft: <b>dynamic images/video + Liquid variables</b> make each send feel hand-made at scale. Email-first.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Its <b>Research + Sequence agents</b> auto-write outreach widely praised as the most human-sounding; voice cloning extends this to calls.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">Claygent researches the web then writes — <b>fully programmable</b>, so output is as good as the workflow you build around it.</span></div>
+      </div>
+    </div>
+
+    <!-- 3. Sequencing & deliverability -->
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span> Multichannel sequencing &amp; deliverability</h3>
+        <div class="mech-how"><span class="tag">// how it works</span>A sequence is a multi-step, multi-channel cadence (email → LinkedIn → call → WhatsApp) with branching on reply/open. <b>Deliverability</b> — landing in the inbox, not spam — is the make-or-break, handled via warm-up networks, sending limits, and domain rotation.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">Multichannel cadences that <b>continue into the call and CRM</b> — the sequence doesn't end at the reply, it hands off to coaching and logging.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Basic sequencing via Engage — <b>enough to action revealed contacts</b>, not a dedicated cadence engine.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">Best-in-class here: <b>Lemwarm</b> warm-up, granular A/B tests, and true multichannel from one campaign. Deliverability is the whole point.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Strong multichannel with deliverability safeguards, though some users report <b>spam drift after scaling</b> sends.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">Has a native sequencer, but most teams use Clay to <b>build the list and hand off</b> to a dedicated sender like Lemlist.</span></div>
+      </div>
+    </div>
+
+    <!-- 4. Intent signals -->
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span> Buying / intent signals</h3>
+        <div class="mech-how"><span class="tag">// how it works</span>Signals are events that imply readiness to buy — job changes, funding, hiring, tech installs, website visits. The tool ingests these feeds, scores them, and surfaces "reach out now" prompts. Value depends on <b>signal breadth</b> and whether it <b>triggers action automatically</b>.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">Signals don't just alert — they <b>kick off an enriched, AI-drafted sequence</b> automatically, closing the gap between trigger and touch.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Buyer Intelligence + funding signals to <b>time the reveal</b>; surfaced in-extension as prompts.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">Not a signals product — it relies on <b>your list</b>; intent comes from upstream tools.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">A core strength: the <b>Signal Agent tracks 100+ contact-level signals</b> and routes them into sequences.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">Web Intent + 150+ signal providers you <b>compose into custom scoring</b> — maximum flexibility, needs building.</span></div>
+      </div>
+    </div>
+
+    <!-- 5. Conversation coaching & CRM capture -->
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Conversation coaching &amp; CRM capture</h3>
+        <div class="mech-how"><span class="tag">// how it works</span>During and after a call, the tool transcribes, analyzes talk-tracks, suggests next-best actions, and writes notes + fields back to the CRM. This is the <b>least-served capability</b> in this set — and the one that turns a prospecting tool into a full rep copilot.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff"><b>The differentiator.</b> Live, in-call coaching inside Meet/Teams plus automatic note capture and CRM write-back — the loop none of the four close well.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Lusha Conversations records and stores calls, but it's <b>recording, not live coaching</b>.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">No coaching layer — Lemlist's world <b>ends at the reply/booked meeting</b>.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Focused on top-of-funnel; <b>no live conversation coaching</b> in the core product.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">A data/automation layer — <b>conversation intelligence is out of scope</b> entirely.</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- UX notes -->
+<section class="std" style="padding-top:24px">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>UX <span class="accent">notes</span></h2>
+      <p>The feel of each product — where it delights, where it bites — and the experience principle KomboAI should take from it. <span style="color:var(--neon)">+</span> strength · <span style="color:#FF6B6B">−</span> friction · <span style="color:var(--lavender)">→</span> for us.</p>
+    </div>
+    <div class="ux-grid">
+
+      <div class="uxnote featured reveal">
+        <div class="uxname">KomboAI</div>
+        <div class="uxfeel">"It's already where I work."</div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Principle: meet the rep in-context (extension), give the leader the rollup (web app). Never make them leave the tab to get value.</span></div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Zero-context-switch: enrich, send, coach, log without leaving LinkedIn or the call.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Keep onboarding to one install + one CRM connect — value on day one, no ops engineer.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Lusha</div>
+        <div class="uxfeel">"One click and the number's there."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Extension is fast, obvious, near-zero learning curve — reveal in a single click.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Credit anxiety: users ration clicks and hit limits mid-flow.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Borrow the one-click simplicity; drop the credit-counting friction.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Lemlist</div>
+        <div class="uxfeel">"Playful, brand-forward, fun to build in."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Personality and delight (lowercase "lem-" world); the campaign builder is genuinely enjoyable.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Power features (deliverability, multichannel) add config depth; add-ons can surprise on price.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>A little brand personality lowers the perceived learning curve — worth the investment.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Amplemarket</div>
+        <div class="uxfeel">"Polished, premium, opinionated."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Cohesive single workspace; AI output quality feels high-end. Strong support (9.3/10).</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>High floor + annual-only is a heavy first commitment before you've felt the UX.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Match the polish, but let people feel it via trial/monthly before committing.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Clay</div>
+        <div class="uxfeel">"Powerful — once you've climbed the curve."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Spreadsheet metaphor + infinite flexibility; a builder's playground.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Steep learning curve — spawned a whole "GTM Engineer" job category just to operate it.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Offer the power as guardrailed defaults, so reps win without becoming operators.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname" style="color:var(--lavender)">Cross-cutting</div>
+        <div class="uxfeel">Patterns worth standardizing on.</div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Time-to-first-value is the metric: every tool that wins starts with one fast, obvious action.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Two-surface clarity: rep does, leader sees — don't blur the extension and the web app.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Predictable pricing UX (no credit math mid-task) reduces hesitation and support load.</span></div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -928,6 +1297,82 @@
         <h4>Sell outcomes with marquee proof</h4>
         <p>Amplemarket lets logos and numbers (Deel 20×'d revenue) do the closing. We should pair <b>named case studies</b> with the ROI calculator so every prospect sees their own projected revenue lift and hours saved before the first call.</p>
         <div class="borrow">Borrowed from <b>Amplemarket</b> — logo + outcome-led trust</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Two-surface strategy: extension + web app -->
+<section class="std" style="padding-top:24px">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>Two surfaces, <span class="accent">one system</span></h2>
+      <p>Deeper advice for our two products — the Chrome extension and the upcoming web app — and how each earns its place with the buyers who sign the contract: sales leaders and RevOps.</p>
+    </div>
+
+    <div class="surface-grid reveal">
+      <div class="surface ext">
+        <div class="surface-kicker">Surface 1 · Chrome extension</div>
+        <h3>The wedge &amp; the capture layer</h3>
+        <p class="lead">The extension is where the rep already works — LinkedIn, Sales Nav, the CRM, the live call. Its job isn't just to <i>reveal</i> data like Lusha; it's to <b>capture every signal and action</b> and pipe it cleanly into the web app. Win the rep's daily habit, and you earn the team's data.</p>
+        <ul>
+          <li><b>Ship a genuinely free tier.</b> Make it the bottom-up, viral entry point — adoption from one rep becomes the leader's proof point.</li>
+          <li><b>Make it the action surface, not a lookup.</b> Enrich, sequence, capture call notes, and write to CRM in-context — so it replaces tools rather than adding one.</li>
+          <li><b>Treat every interaction as structured data.</b> Each reveal, send, and call feeds the web app's pipeline, activity, and coaching views — and a crowd-sourced data flywheel.</li>
+          <li><b>Zero-config CRM write-back.</b> The extension should keep HubSpot/Salesforce clean automatically — the hook that makes RevOps an advocate, not a gatekeeper.</li>
+        </ul>
+      </div>
+
+      <div class="surface app">
+        <div class="surface-kicker">Surface 2 · Web app (upcoming)</div>
+        <h3>The command center</h3>
+        <p class="lead">The extension wins the rep; the web app wins the <b>buyer</b>. This is where sales leaders and RevOps see the team-level picture the extension can't show — adoption, conversion lift, pipeline health, and ROI — and where governance and configuration live.</p>
+        <ul>
+          <li><b>Lead with team-level outcomes.</b> Aggregate the extension's rep-level activity into conversion, coaching adoption, and revenue-lift dashboards.</li>
+          <li><b>Make ROI self-evident.</b> Wire in the ROI calculator's logic so leaders see realized vs projected lift over time — the renewal argument writes itself.</li>
+          <li><b>Admin, governance &amp; seats.</b> Roles, permissions, data residency, audit — the table stakes that unlock mid-market and enterprise deals.</li>
+          <li><b>Workflow builder for RevOps.</b> A guardrailed slice of Clay-style automation (routing, enrichment rules, CRM hygiene) — powerful, but it shouldn't need a GTM engineer to run.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="persona-grid">
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>For Sales Leaders</h3>
+        </div>
+        <div class="ptag">VP Sales · CRO · Head of Sales</div>
+        <div class="care"><b>What they care about:</b> hitting the number, rep ramp &amp; consistency, forecast accuracy, and proof the tool actually lifts conversion — not vanity activity metrics.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>A conversion-lift story, per rep and per team</b> — before/after cold-contact-to-customer rate, tied to the coaching that drove it.</li>
+          <li><b>Coaching adoption &amp; call intelligence at a glance</b> — who's using live coaching, which behaviors move win rates. This is our moat; none of the four competitors surface it.</li>
+          <li><b>Forecast confidence &amp; pipeline health</b> — deal-risk signals and drift alerts leaders can act on in a 1:1.</li>
+          <li><b>"Replaces 3–4 tools" math</b> — a live cost/outcome view they can take to finance for budget defense.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="1"/><rect x="12" y="8" width="3" height="10" rx="1"/><rect x="17" y="5" width="3" height="13" rx="1"/></svg>
+          </div>
+          <h3>For RevOps</h3>
+        </div>
+        <div class="ptag">RevOps · Sales Ops · GTM Systems</div>
+        <div class="care"><b>What they care about:</b> CRM data quality, clean attribution, integrations that don't break, governance/admin control, and tooling that reduces — not adds — operational overhead.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>Automatic CRM hygiene as the headline.</b> Dedupe, enrich, and write-back that keeps Salesforce/HubSpot clean without manual cleanup — the pain RevOps feels daily.</li>
+          <li><b>A guardrailed workflow builder.</b> Routing, enrichment rules, and triggers with Clay-like power but no maintenance burden or per-contact cost surprises.</li>
+          <li><b>Trustworthy attribution &amp; reporting.</b> Clean activity → pipeline → revenue lineage they can defend in a board deck.</li>
+          <li><b>Admin, SSO/SAML, RBAC &amp; data residency.</b> The governance layer that makes them champion the rollout instead of blocking it.</li>
+        </ul>
       </div>
 
     </div>
