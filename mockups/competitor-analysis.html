@@ -313,6 +313,67 @@
   .footnote a{color:var(--lavender)}
   @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}}
 
+  /* Section subnav */
+  .subnav{position:sticky;top:62px;z-index:40;background:rgba(14,14,16,0.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .subnav-inner{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 28px;max-width:1180px;margin:0 auto}
+  .subnav-inner::-webkit-scrollbar{display:none}
+  .subnav a{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.04em;color:var(--mute);padding:7px 12px;border-radius:999px;white-space:nowrap;border:1px solid transparent;transition:color .2s,border-color .2s,background .2s}
+  .subnav a:hover{color:var(--ink)}
+  .subnav a.active{color:var(--neon);border-color:rgba(212,255,0,0.3);background:rgba(212,255,0,0.06)}
+  section[id]{scroll-margin-top:122px}
+
+  /* Pricing deep dive */
+  .pd-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:14px;overflow:hidden}
+  .pd-card.featured{border-color:rgba(212,255,0,0.32);background:linear-gradient(160deg,rgba(212,255,0,0.06) 0%,rgba(212,255,0,0.01) 100%)}
+  .pd-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 26px;background:var(--bg-2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .pd-head .pdname{font-size:17px;font-weight:700;letter-spacing:-0.015em}
+  .pd-card.featured .pd-head .pdname{color:var(--neon)}
+  .pd-head .pdmodel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:0.02em}
+  .pd-head .pdmodel b{color:var(--lavender)}
+  .pd-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .pd-table{width:100%;min-width:620px;border-collapse:collapse}
+  .pd-table th{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mute-2);text-align:left;padding:12px 26px;border-bottom:1px solid var(--line);font-weight:500}
+  .pd-table td{padding:13px 26px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--mute);line-height:1.55;vertical-align:top}
+  .pd-table tr:last-child td{border-bottom:none}
+  .pd-table td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+  .pd-table td .sub{display:block;color:var(--mute-2);font-size:11px;font-weight:400;margin-top:2px;white-space:normal}
+  .pd-table td b{color:var(--ink);font-weight:600}
+  .pd-note{padding:14px 26px;background:rgba(181,161,255,0.05);border-top:1px solid var(--line);font-size:12px;color:var(--mute);line-height:1.6}
+  .pd-note b{color:var(--lavender);font-weight:600}
+  .pd-card.featured .pd-note{background:rgba(212,255,0,0.05)}
+  .pd-card.featured .pd-note b{color:var(--neon)}
+
+  /* Review scoreboard */
+  .rev-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .rev{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 26px}
+  .rev.featured{border-color:rgba(212,255,0,0.32);background:linear-gradient(160deg,rgba(212,255,0,0.07) 0%,rgba(212,255,0,0.01) 100%);grid-column:1/-1}
+  .rev-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .rev .rname{font-size:16px;font-weight:700;letter-spacing:-0.01em}
+  .rev.featured .rname{color:var(--neon)}
+  .rev-scores{display:flex;gap:8px;flex-wrap:wrap}
+  .rscore{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:5px 10px}
+  .rscore b{color:var(--neon);font-weight:700}
+  .rev-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .rev-col h6{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:9px}
+  .rev-col.good h6{color:var(--neon)}
+  .rev-col.bad h6{color:#FF6B6B}
+  .rev-col ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .rev-col li{font-size:12.5px;color:var(--mute);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+  .rev-col li::before{content:'+';color:var(--neon);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+  .rev-col.bad li::before{content:'−';color:#FF6B6B}
+  @media(max-width:880px){.rev-grid{grid-template-columns:1fr}.rev-cols{grid-template-columns:1fr}}
+
+  /* Momentum timeline */
+  .tl{max-width:860px;margin:0 auto;position:relative;padding-left:34px;border-left:1px solid var(--line-2)}
+  .tl-item{position:relative;padding-bottom:28px}
+  .tl-item:last-child{padding-bottom:0}
+  .tl-item::before{content:'';position:absolute;left:-39px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--lavender);box-shadow:0 0 0 4px rgba(181,161,255,0.15)}
+  .tl-item.hot::before{background:var(--neon);box-shadow:0 0 0 4px rgba(212,255,0,0.15)}
+  .tl-date{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mute-2);margin-bottom:5px}
+  .tl-item h4{font-size:15.5px;font-weight:700;letter-spacing:-0.01em;margin-bottom:5px}
+  .tl-item p{font-size:13px;color:var(--mute);line-height:1.6;max-width:680px}
+  .tl-item p b{color:var(--ink);font-weight:600}
+
   /* Reveal */
   .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(0.22,0.61,0.36,1),transform .8s cubic-bezier(0.22,0.61,0.36,1)}
   .reveal.is-visible{opacity:1;transform:translateY(0)}
@@ -365,15 +426,36 @@
 <!-- Hero -->
 <section class="hero">
   <div class="container">
-    <div class="eyebrow reveal"><span class="dot"></span> Competitor analysis · 2026</div>
+    <div class="eyebrow reveal"><span class="dot"></span> Competitor analysis · Updated Jun 10, 2026</div>
     <h1 class="reveal">KomboAI vs <span class="highlight">the field.</span></h1>
-    <p class="reveal">A deep, fair comparison of KomboAI against Lusha, Lemlist, Amplemarket, and Clay — feature by feature, plus each rival's USP, ideal customer, pricing model, and the growth &amp; marketing engine behind it. Ending with the specific moves KomboAI should make.</p>
-    <p class="updated reveal">// Last reviewed June 2026 · public pricing &amp; product pages</p>
+    <p class="reveal">A deep, fair comparison of KomboAI against Lusha, Lemlist, Amplemarket, and Clay — feature by feature, plus full pricing teardowns, review-score data, security &amp; integration diligence, a 2024–26 momentum timeline, and each rival's USP, ideal customer, and growth engine. Ending with the specific moves KomboAI should make.</p>
+    <p class="updated reveal">// Last reviewed June 10, 2026 · public pricing &amp; product pages</p>
   </div>
 </section>
 
+<!-- Section subnav -->
+<div class="subnav" id="subnav">
+  <div class="subnav-inner">
+    <a href="#glance">Glance</a>
+    <a href="#matrix">Matrix</a>
+    <a href="#packaging">Packaging</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#mechanics">Mechanics</a>
+    <a href="#trust">Data &amp; trust</a>
+    <a href="#ux">UX</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#profiles">Profiles</a>
+    <a href="#h2h">Head-to-head</a>
+    <a href="#pick">Which tool</a>
+    <a href="#playbook">Playbook</a>
+    <a href="#surfaces">Surfaces</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</div>
+
 <!-- At a glance -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="glance">
   <div class="container">
     <div class="section-h reveal">
       <h2>The field <span class="accent">at a glance</span></h2>
@@ -435,7 +517,7 @@
 </section>
 
 <!-- Comparison matrix -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="matrix">
   <div class="container">
     <div class="section-h reveal">
       <h2>Feature-by-feature <span class="accent">matrix</span></h2>
@@ -646,7 +728,7 @@
 </section>
 
 <!-- Bundling & feature naming -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="packaging">
   <div class="container">
     <div class="section-h reveal">
       <h2>How the field <span class="accent">bundles &amp; names</span> features</h2>
@@ -728,7 +810,7 @@
         <div class="lex-term"><span class="tn brand">lemcal</span> <span class="td">— meeting scheduler &amp; booking pages</span></div>
         <div class="lex-term"><span class="tn">Campaigns</span> <span class="td">— multichannel sequences</span></div>
         <div class="lex-term"><span class="tn">Liquid syntax</span> <span class="td">— dynamic text/image personalization</span></div>
-        <div class="lex-term"><span class="tn">Lead Database</span> <span class="td">— 650M+ built-in records</span></div>
+        <div class="lex-term"><span class="tn">Lead Database</span> <span class="td">— 600M+ built-in records</span></div>
         <div class="lex-term"><span class="tn">Unified Inbox</span> <span class="td">— centralized reply management</span></div>
       </div>
     </div>
@@ -769,8 +851,77 @@
   </div>
 </section>
 
+<!-- Pricing deep dive -->
+<section class="std" style="padding-top:24px" id="pricing">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>Pricing, <span class="accent">decoded</span></h2>
+      <p>List prices hide the real cost. Every public tier, credit currency, and billing gate in the field — as listed June 2026 — and where each vendor's spend actually escalates.</p>
+    </div>
+
+    <div class="pd-card featured reveal">
+      <div class="pd-head"><span class="pdname">KomboAI</span><span class="pdmodel">Model: <b>per-rep · monthly or annual · no credit metering</b></span></div>
+      <div class="pd-scroll"><table class="pd-table">
+        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+        <tr><td>Trial</td><td>Free</td><td>The full copilot on your real CRM and prospects — extension, sequences, live coaching, CRM auto-fill.</td></tr>
+        <tr><td>Per-rep</td><td>Per rep / mo<span class="sub">monthly or annual</span></td><td>The whole loop per seat: enrichment, multichannel outreach, live coaching, CRM hygiene. Generous usage — no per-reveal math.</td></tr>
+        <tr><td>Team</td><td>Custom</td><td>Adds the web-app command center: team dashboards, governance, SSO/RBAC, EU data residency.</td></tr>
+      </table></div>
+      <div class="pd-note"><b>Where spend escalates:</b> by design, it doesn't — seats are the only axis. The pitch is the inverse of the field: one predictable per-rep price replacing three or four line items.</div>
+    </div>
+
+    <div class="pd-card reveal">
+      <div class="pd-head"><span class="pdname">Lusha</span><span class="pdmodel">Model: <b>freemium + credit slider · 1 credit/email · 5/phone</b></span></div>
+      <div class="pd-scroll"><table class="pd-table">
+        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+        <tr><td>Free</td><td>$0</td><td>1 user, ~40–70 credits/mo (Lusha's own materials conflict on the number), extension + basic search, Conversations included.</td></tr>
+        <tr><td>Pro</td><td>~$22–29/user/mo annual<span class="sub">~$39 monthly</span></td><td>From 2 users; ~7,200 credits/yr at entry (slider up to ~24,000); prospecting platform, list export. <b>No intent data, no API.</b></td></tr>
+        <tr><td>Premium</td><td>~$52/user/mo annual</td><td>From 5 users; ~40,800 credits/yr at entry; adds Bombora intent topics, technographics, job-change alerts, bulk enrichment.</td></tr>
+        <tr><td>Scale</td><td>Custom<span class="sub">~$37K/yr list for 25 seats reported</span></td><td>API access, SSO, CSM, advanced compliance. Enterprise discounts of 25–40% reported in negotiations.</td></tr>
+      </table></div>
+      <div class="pd-note"><b>Where spend escalates:</b> phone-heavy prospecting — the 2025 repricing made a phone reveal cost 5 credits instead of 1 — plus credits burned on stale records. Intent is gated to Premium; the API to Scale.</div>
+    </div>
+
+    <div class="pd-card reveal">
+      <div class="pd-head"><span class="pdname">Lemlist</span><span class="pdmodel">Model: <b>per-seat tiers gated by channel · add-on mailboxes</b></span></div>
+      <div class="pd-scroll"><table class="pd-table">
+        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+        <tr><td>Free</td><td>$0</td><td>Extension-based: 100 emails + 25 phone numbers revealed per month.</td></tr>
+        <tr><td>Email Pro</td><td>$79/user/mo<span class="sub">~$63 annual</span></td><td>Email-only sequences, 3 sending addresses/user, ~1,000 enrichment credits/user/mo, lemwarm + lemcal included.</td></tr>
+        <tr><td>Multichannel Expert</td><td>$109/user/mo<span class="sub">~$87 annual</span></td><td>Adds LinkedIn automation, cold-call dialer (Aircall), WhatsApp, unified inbox, conditional steps; 5 addresses, ~1,500 credits.</td></tr>
+        <tr><td>Outreach Scale</td><td>Custom<span class="sub">5-seat min · annual</span></td><td>SSO/SAML, custom roles, unlimited guest seats, dedicated AM, advanced API access.</td></tr>
+      </table></div>
+      <div class="pd-note"><b>Where spend escalates:</b> sending infrastructure — extra mailboxes run $9/mo each, so multi-inbox senders stack add-ons — and credits consumed even on failed enrichments. 14-day full trial, no card required.</div>
+    </div>
+
+    <div class="pd-card reveal">
+      <div class="pd-head"><span class="pdname">Amplemarket</span><span class="pdmodel">Model: <b>premium suite · annual-only · demo-gated</b></span></div>
+      <div class="pd-scroll"><table class="pd-table">
+        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+        <tr><td>Startup</td><td>$600/mo<span class="sub">annual term · ~$7,200/yr</span></td><td>2 users; ~15,000 email + ~480 phone credits/user/yr; Duo Inbox (AI reply management) is a <b>paid add-on</b>, not included.</td></tr>
+        <tr><td>Growth</td><td>Custom<span class="sub">3rd-party est. ~$2–5K/mo</span></td><td>4 users included; sales-quoted, unpublished.</td></tr>
+        <tr><td>Elite</td><td>Custom<span class="sub">3rd-party est. ~$10K+/mo</span></td><td>10 users included; sales-quoted, unpublished.</td></tr>
+      </table></div>
+      <div class="pd-note"><b>Where spend escalates:</b> seats — extra users are estimated at ~$300–400/user/mo — and the floor itself: no free tier, no monthly billing on any plan, and the 14-day trial sits behind a demo call.</div>
+    </div>
+
+    <div class="pd-card reveal">
+      <div class="pd-head"><span class="pdname">Clay</span><span class="pdmodel">Model: <b>seats + dual usage currencies · repriced Mar 11, 2026</b></span></div>
+      <div class="pd-scroll"><table class="pd-table">
+        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+        <tr><td>Free</td><td>$0</td><td>100 Data Credits + 500 Actions/mo; no phone enrichment. Self-serve 14-day Pro-level trial with 1,000 credits.</td></tr>
+        <tr><td>Launch</td><td>$185/mo<span class="sub">~$167 annual</span></td><td>2,500 Data Credits + 15,000 Actions/mo; phone enrichment and signal tracking included.</td></tr>
+        <tr><td>Growth</td><td>$495/mo<span class="sub">~$446 annual</span></td><td>6,000 Data Credits + 40,000 Actions/mo; unlocks <b>CRM sync, HTTP API, and Web Intent</b>.</td></tr>
+        <tr><td>Enterprise</td><td>Custom</td><td>SSO, custom credit volumes, dedicated support.</td></tr>
+      </table></div>
+      <div class="pd-note"><b>Where spend escalates:</b> the meters. Data Credits buy the data (from ~$0.05, rolling over up to a 2× cap) while Actions pay for the work — enrichment steps, Claygent runs, CRM pushes. Failed waterfall lookups still consume per provider queried, so spend is hard to forecast. The March 2026 overhaul cut marketplace data costs 50–90%, but legacy per-contact math ran $0.65–1.20+ at scale.</div>
+    </div>
+
+  </div>
+</section>
+
 <!-- How the core features actually work -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="mechanics">
   <div class="container">
     <div class="section-h reveal">
       <h2>How the core features <span class="accent">actually work</span></h2>
@@ -786,8 +937,8 @@
       <div class="mech-rows">
         <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">Waterfall across multiple sources, then <b>writes the verified result straight to CRM</b> — enrichment is an action in the workflow, not a separate lookup.</span></div>
         <div class="mech-row"><span class="co">Lusha</span><span class="diff">Single large <b>crowd-sourced database</b> (280M+). One-click reveal, credit per result. Fast and accurate in US tech, but coverage is what it is.</span></div>
-        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">A built-in 650M+ lead DB primarily to <b>feed its own campaigns</b>; enrichment is a means to a send, not a standalone product.</span></div>
-        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Proprietary 220M+ database with intent layered on; strong but users report <b>some stale records</b> at scale.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">A built-in 600M+ lead DB primarily to <b>feed its own campaigns</b>; enrichment is a means to a send, not a standalone product.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Proprietary 200M+ database refreshed weekly (70M+ updates) with intent layered on; strong but users report <b>some stale records</b> at scale.</span></div>
         <div class="mech-row"><span class="co">Clay</span><span class="diff">The reference implementation of <b>waterfall enrichment</b> — 150+ providers stacked as columns. Best coverage, but you architect and pay per attempt.</span></div>
       </div>
     </div>
@@ -855,8 +1006,61 @@
   </div>
 </section>
 
+<!-- Data, plumbing & trust -->
+<section class="std" style="padding-top:24px" id="trust">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>Data, plumbing <span class="accent">&amp; trust</span></h2>
+      <p>The diligence layer: what's actually behind each database claim, how open the integrations and APIs are, and who can pass a security review without caveats.</p>
+    </div>
+
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span> Database claims vs measured accuracy</h3>
+        <div class="mech-how"><span class="tag">// why it matters</span>Every vendor self-reports database size and accuracy; third-party tests routinely land below the marketing number. The honest read is <b>claim vs test, plus where coverage thins</b>.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">No single owned database to defend — <b>waterfall across sources</b>, with every verified result written back to the CRM so accuracy compounds where it's actually used.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Claims 280M+ contacts / 152M+ emails and "98% deliverability, 85% phone"; third-party tests land <b>~80–85% on email</b>. Crowd-sourced model is strongest in US tech, thinner in EMEA/APAC.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">Claims 450–600M+ contacts (the number has inflated across its own pages), built largely from <b>public LinkedIn profiles</b> + waterfall verify. No published accuracy figure; G2 logs ~96 data-inaccuracy mentions.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">200M+ profiles refreshed weekly with 70M+ updates; claims <b>&lt;3% bounce and 96.5% phone accuracy</b>. Reviewers flag staleness on international records.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">Not a data vendor — aggregates 100–150+ providers, so <b>coverage is best-in-class but quality is the waterfall you build</b>. Mobile match rates ~30–35% in independent tests.</span></div>
+      </div>
+    </div>
+
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Integrations &amp; API openness</h3>
+        <div class="mech-how"><span class="tag">// why it matters</span>The stack question: does the tool plug into what you have, and can RevOps build on it — or is the API a paywalled enterprise perk?</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">Native HubSpot/Salesforce <b>write-back is the product</b>, not an add-on — and the copilot lives inside LinkedIn, Sales Nav, and Meet/Teams rather than behind an integration.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">Salesforce, HubSpot, Dynamics, Outreach, Salesloft, Bullhorn, plus Zapier/Make and an MCP server — but the <b>REST API is gated to the Scale tier</b>.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">HubSpot/Salesforce/Pipedrive, Aircall, Clay, Zapier/Make/n8n — and the <b>most open API in the field</b>: full public REST + webhooks below enterprise.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">Bi-directional Salesforce (~10-min polling) and HubSpot (near-real-time webhooks), dialer integrations (Orum, Nooks, Aircall), full REST API + outbound webhooks.</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">100+ natives plus the HTTP API column — call <b>any external API from a table</b> — but CRM sync and HTTP API are gated to the Growth plan and up.</span></div>
+      </div>
+    </div>
+
+    <div class="mech reveal">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Compliance &amp; data residency</h3>
+        <div class="mech-how"><span class="tag">// why it matters</span>This is where mid-market and EU deals are won or lost before the demo: certifications security teams can verify, and where the data physically lives.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">KomboAI</span><span class="diff">SOC 2 + GDPR with <b>EU data residency</b> — the combination most of the field can't offer, and the wedge into European mid-market.</span></div>
+        <div class="mech-row"><span class="co">Lusha</span><span class="diff">The <b>heaviest cert stack in the category</b>: SOC 2 Type II, ISO 27001/27017/27018 and 27701, TrustArc Responsible-AI. No published residency options.</span></div>
+        <div class="mech-row"><span class="co">Lemlist</span><span class="diff">SOC 2 + GDPR; French company with <b>servers exclusively in the EU</b> — the quiet winner on residency.</span></div>
+        <div class="mech-row"><span class="co">Amplemarket</span><span class="diff">SOC 2 Type II, GDPR program, annual pen tests with reports in its trust center. <b>No ISO 27001 found publicly</b>; no residency options (Google Cloud).</span></div>
+        <div class="mech-row"><span class="co">Clay</span><span class="diff">SOC 2 Type II (Sept 2024), ISO 27001, GDPR/CCPA — but data sits <b>primarily in AWS us-east</b> with no EU residency documented, and a long AI-subprocessor list to review.</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- UX notes -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="ux">
   <div class="container">
     <div class="section-h reveal">
       <h2>UX <span class="accent">notes</span></h2>
@@ -916,8 +1120,145 @@
   </div>
 </section>
 
+<!-- Review scoreboard -->
+<section class="std" style="padding-top:24px" id="reviews">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>What the <span class="accent">reviews</span> say</h2>
+      <p>G2 and Capterra scores as indexed mid-2026, plus the praise and complaints that actually repeat across hundreds of reviews — the unfiltered version of each pitch.</p>
+    </div>
+    <div class="rev-grid">
+
+      <div class="rev featured reveal">
+        <div class="rev-top">
+          <span class="rname">KomboAI</span>
+          <div class="rev-scores"><span class="rscore">Review base: <b>building</b></span><span class="rscore">Benchmark to beat: <b>4.6★</b></span></div>
+        </div>
+        <div class="rev-cols">
+          <div class="rev-col good">
+            <h6>// What early users highlight</h6>
+            <ul>
+              <li>Live coaching during the call — the feature no reviewer of the other four can mention, because none of them have it.</li>
+              <li>CRM stays clean without anyone touching it; RevOps notices within the first week.</li>
+              <li>Time-to-first-value measured in minutes: one extension install + one CRM connect.</li>
+            </ul>
+          </div>
+          <div class="rev-col bad">
+            <h6>// What we have to earn</h6>
+            <ul>
+              <li>A public review base — the field's scores took years and hundreds of reviews to build.</li>
+              <li>Support reputation at scale: Amplemarket's 9.3/10 support score is the bar.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="rev reveal">
+        <div class="rev-top">
+          <span class="rname">Lusha</span>
+          <div class="rev-scores"><span class="rscore">G2 <b>4.3★</b> · ~1.5K</span><span class="rscore">Capterra <b>4.0★</b></span></div>
+        </div>
+        <div class="rev-cols">
+          <div class="rev-col good">
+            <h6>// Loved for</h6>
+            <ul>
+              <li>Effortless Chrome/LinkedIn extension workflow</li>
+              <li>Strong direct-dial retrieval — often several numbers per contact</li>
+              <li>Fast time-to-value at an approachable entry price</li>
+            </ul>
+          </div>
+          <div class="rev-col bad">
+            <h6>// Dinged for</h6>
+            <ul>
+              <li>Credit system — charged even when data is stale</li>
+              <li>Thin coverage outside the US and in niche industries</li>
+              <li>Support responsiveness and auto-renewal billing complaints</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="rev reveal">
+        <div class="rev-top">
+          <span class="rname">Lemlist</span>
+          <div class="rev-scores"><span class="rscore">G2 <b>~4.4★</b> · 1K+</span><span class="rscore">Capterra <b>4.6★</b></span></div>
+        </div>
+        <div class="rev-cols">
+          <div class="rev-col good">
+            <h6>// Loved for</h6>
+            <ul>
+              <li>Personalization depth — custom images/video, Liquid syntax</li>
+              <li>True multichannel an SDR can run without ops help</li>
+              <li>Lemwarm deliverability (users report 90%+ inbox placement)</li>
+            </ul>
+          </div>
+          <div class="rev-col bad">
+            <h6>// Dinged for</h6>
+            <ul>
+              <li>Now among the priciest per seat in cold outreach</li>
+              <li>Confusing credit burn — including failed enrichments</li>
+              <li>LinkedIn extension instability; accuracy of the newer database</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="rev reveal">
+        <div class="rev-top">
+          <span class="rname">Amplemarket</span>
+          <div class="rev-scores"><span class="rscore">G2 <b>4.6★</b> · ~600</span><span class="rscore">Support <b>9.3/10</b></span></div>
+        </div>
+        <div class="rev-cols">
+          <div class="rev-col good">
+            <h6>// Loved for</h6>
+            <ul>
+              <li>Ease of use — the single most-cited G2 theme</li>
+              <li>Standout, responsive support</li>
+              <li>All-in-one automation that genuinely saves SDR hours</li>
+            </ul>
+          </div>
+          <div class="rev-col bad">
+            <h6>// Dinged for</h6>
+            <ul>
+              <li>Gaps in filtering and granular reporting</li>
+              <li>Inconsistent data accuracy internationally</li>
+              <li>$600/mo annual-only entry plus onboarding curve</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="rev reveal">
+        <div class="rev-top">
+          <span class="rname">Clay</span>
+          <div class="rev-scores"><span class="rscore">G2 <b>~4.8★</b> · ~178</span><span class="rscore">Claygent <b>1B+ runs</b></span></div>
+        </div>
+        <div class="rev-cols">
+          <div class="rev-col good">
+            <h6>// Loved for</h6>
+            <ul>
+              <li>Waterfall enrichment visibly lifts match rates</li>
+              <li>Claygent automates hours of manual research</li>
+              <li>Near-unlimited flexibility as a GTM-engineering canvas</li>
+            </ul>
+          </div>
+          <div class="rev-col bad">
+            <h6>// Dinged for</h6>
+            <ul>
+              <li>Credit burn is hard to forecast; failed lookups still bill</li>
+              <li>Steep learning curve — "a spreadsheet that's actually programming"</li>
+              <li>Weak mobile-phone match rates (~30–35% in third-party tests)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- Competitor deep dives -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="profiles">
   <div class="container">
     <div class="section-h reveal">
       <h2>Competitor <span class="accent">deep dives</span></h2>
@@ -961,11 +1302,11 @@
         <div class="profile-col">
           <div class="pblock">
             <div class="ph">Pricing model</div>
-            <p><b>Freemium + credits.</b> Free tier (~70 credits/mo); Pro from ~$29/mo. Each reveal burns credits (1 email / 10 phone), which nudges expansion as usage grows.</p>
+            <p><b>Freemium + credits.</b> Free tier (~70 credits/mo); Pro from ~$29/mo. Each reveal burns credits (1 email / 5 phone since the 2025 credit-slider change), which nudges expansion as usage grows.</p>
           </div>
           <div class="pblock">
             <div class="ph">Growth &amp; marketing engine</div>
-            <p><b>Product-led, bottom-up virality.</b> The free extension is the wedge; the crowd-sourced database is the moat. Lusha dogfoods its own product for GTM and recently <b>grew ICP signups 16% while cutting paid spend 50%</b> — leaning into efficient, ICP-focused acquisition over spray-and-pray paid media. Backed by a $205M Series B (PSG) at a $1.5B valuation.</p>
+            <p><b>Product-led, bottom-up virality.</b> The free extension is the wedge; the crowd-sourced database is the moat. Lusha dogfoods its own product for GTM and recently <b>grew ICP signups 16% while cutting paid spend 50%</b> — leaning into efficient, ICP-focused acquisition over spray-and-pray paid media. Backed by a $205M Series B (PSG) at a $1.5B valuation; acquired <b>Novacy</b> (Jan 2025) to power its Conversations call-intelligence module.</p>
           </div>
         </div>
       </div>
@@ -980,7 +1321,7 @@
           <div class="pcat">Multichannel outreach &amp; deliverability</div>
         </div>
         <div class="profile-stats">
-          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">~$28M</div></div>
+          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">~$40M</div></div>
           <div class="pstat"><div class="k">Funding</div><div class="v">Bootstrapped</div></div>
           <div class="pstat"><div class="k">Started with</div><div class="v">$1,000</div></div>
           <div class="pstat"><div class="k">Team</div><div class="v">~180</div></div>
@@ -1013,7 +1354,7 @@
           </div>
           <div class="pblock">
             <div class="ph">Growth &amp; marketing engine</div>
-            <p><b>Founder-led content + community, zero VC.</b> Guillaume Moubeche bootstrapped $1,000 → ~$28M ARR by building a 200K+ personal audience on LinkedIn and the "Sales Automation Family" community. Content lifted reply rates on their own outbound 2–3×. Profit-led, organic-over-paid — a masterclass in <b>distribution as moat</b>.</p>
+            <p><b>Founder-led content + community, zero VC.</b> Guillaume Moubeche bootstrapped $1,000 → ~$40M ARR (2025) by building a 200K+ personal audience on LinkedIn and the "Sales Automation Family" community. Content lifted reply rates on their own outbound 2–3×. Profit-led, organic-over-paid — and in Oct 2025 the lempire group <b>acquired Claap (~$25M)</b> to add AI meeting intelligence, its first step toward the call layer.</p>
           </div>
         </div>
       </div>
@@ -1049,7 +1390,7 @@
             <ul class="pfeats">
               <li>Duo AI copilot: Signal, Research &amp; Sequence agents</li>
               <li>Voice cloning for human-sounding outreach</li>
-              <li>220M+ contact database with intent data</li>
+              <li>200M+ contact database with intent data</li>
               <li>Email, LinkedIn &amp; phone in one workspace</li>
             </ul>
           </div>
@@ -1079,7 +1420,7 @@
           <div class="pstat"><div class="k">Valuation</div><div class="v">$3.1B</div></div>
           <div class="pstat"><div class="k">Series C</div><div class="v">$100M</div></div>
           <div class="pstat"><div class="k">Customers</div><div class="v">10K+</div></div>
-          <div class="pstat"><div class="k">Growth</div><div class="v">10× YoY</div></div>
+          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">$100M+</div></div>
         </div>
       </div>
       <div class="profile-body">
@@ -1109,7 +1450,7 @@
           </div>
           <div class="pblock">
             <div class="ph">Growth &amp; marketing engine</div>
-            <p><b>Community &amp; category creation.</b> Grew ~10× YoY almost entirely on word-of-mouth by minting the "<b>GTM Engineer</b>" role (400+ jobs at ~$160K median) and an ecosystem of 90+ agencies and 60+ meetup groups across 30 cities. Templates, creators and certified experts compound reach. $100M Series C (CapitalG) at a $3.1B valuation.</p>
+            <p><b>Community &amp; category creation.</b> Went $1M → <b>$100M+ ARR in two years</b> (~3× YoY in 2025) almost entirely on word-of-mouth by minting the "<b>GTM Engineer</b>" role (400+ jobs at ~$160K median) and an ecosystem of 90+ agencies and 60+ meetup groups across 30 cities. Templates, creators and certified experts compound reach. $100M Series C (CapitalG) at a $3.1B valuation.</p>
           </div>
         </div>
       </div>
@@ -1120,7 +1461,7 @@
 </section>
 
 <!-- Head-to-head deep dives -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="h2h">
   <div class="container">
     <div class="section-h reveal">
       <h2>Head-to-head <span class="accent">deep dives</span></h2>
@@ -1195,7 +1536,7 @@
 </section>
 
 <!-- When to pick which -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="pick">
   <div class="container">
     <div class="section-h reveal">
       <h2>When to pick <span class="accent">which</span></h2>
@@ -1249,7 +1590,7 @@
 </section>
 
 <!-- KomboAI strategic playbook -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="playbook">
   <div class="container">
     <div class="section-h reveal">
       <h2>What KomboAI <span class="accent">should do</span></h2>
@@ -1274,7 +1615,7 @@
       <div class="play reveal">
         <div class="play-num">03</div>
         <h4>Make the founder the channel</h4>
-        <p>Lemlist bootstrapped to ~$28M ARR on founder-led content and community — for ~$0 in ads. A consistent founder voice plus a <b>community of reps</b> (a "Kombo sales floor") turns distribution into a moat and lifts reply rates on our own outbound 2–3×.</p>
+        <p>Lemlist bootstrapped to ~$40M ARR on founder-led content and community — for ~$0 in ads. A consistent founder voice plus a <b>community of reps</b> (a "Kombo sales floor") turns distribution into a moat and lifts reply rates on our own outbound 2–3×.</p>
         <div class="borrow">Borrowed from <b>Lemlist</b> — founder brand + community</div>
       </div>
 
@@ -1304,7 +1645,7 @@
 </section>
 
 <!-- Two-surface strategy: extension + web app -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="surfaces">
   <div class="container">
     <div class="section-h reveal">
       <h2>Two surfaces, <span class="accent">one system</span></h2>
@@ -1379,8 +1720,53 @@
   </div>
 </section>
 
+<!-- Momentum timeline -->
+<section class="std" style="padding-top:24px" id="timeline">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>Momentum <span class="accent">timeline</span></h2>
+      <p>What the field actually shipped, bought, and repriced across 2024–2026 — and the pattern hiding in it.</p>
+    </div>
+    <div class="tl reveal">
+      <div class="tl-item">
+        <div class="tl-date">Sept 2024</div>
+        <h4>Amplemarket launches Duo</h4>
+        <p>The Signal, Research and Sequence agents ship as one copilot; Amplemarket claims <b>1.18M hot leads surfaced in its first six months</b>. Clay completes SOC 2 Type II the same month.</p>
+      </div>
+      <div class="tl-item hot">
+        <div class="tl-date">Jan 2025</div>
+        <h4>Lusha acquires Novacy</h4>
+        <p>Behavioral/conversation intelligence bought to power <b>Lusha Conversations</b> — the data company's first step toward the call layer.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Aug 2025</div>
+        <h4>Clay raises $100M Series C at $3.1B</h4>
+        <p>Led by CapitalG; Clay crosses <b>$100M ARR (~3× YoY)</b>, launches its partner program, and follows with the "Sculpt" launch event — Sequencer, Navigator, Audiences and more.</p>
+      </div>
+      <div class="tl-item hot">
+        <div class="tl-date">Oct 2025</div>
+        <h4>lempire acquires Claap for ~$25M</h4>
+        <p>The bootstrapped Lemlist parent buys <b>AI meeting intelligence</b> and starts pitching signal-triggered "smartbound" — a second rival inching toward the conversation.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Dec 2025 – Jan 2026</div>
+        <h4>Amplemarket ships Duo Inbox &amp; Account Insights</h4>
+        <p>AI reply management (a paid add-on) plus account-level intelligence — deepening the suite without lowering the $600/mo annual-only floor.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Mar 2026</div>
+        <h4>Clay overhauls pricing</h4>
+        <p>Three plans collapse into two; credits split into <b>Data Credits + Actions</b> with marketplace data cut 50–90%. Powerful — and an admission that credit anxiety was real.</p>
+      </div>
+    </div>
+    <div class="profile-take reveal" style="border-radius:14px;border:1px solid rgba(212,255,0,0.18);margin-top:28px;max-width:860px;margin-left:auto;margin-right:auto">
+      <b>Read the pattern</b> Lusha bought Novacy. lempire bought Claap. The field is converging on the conversation layer — the one place KomboAI already lives. The coaching moat is real today, but the window is open, not permanent: ship and own it now.
+    </div>
+  </div>
+</section>
+
 <!-- FAQ -->
-<section class="std" style="padding-top:24px">
+<section class="std" style="padding-top:24px" id="faq">
   <div class="container">
     <div class="section-h reveal">
       <h2>Comparison <span class="accent">FAQ</span></h2>
@@ -1484,6 +1870,25 @@
     }
     const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}})},{threshold:0.12,rootMargin:'0px 0px -8% 0px'});
     document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  })();
+
+  // Subnav scroll spy
+  (function(){
+    const links=document.querySelectorAll('.subnav a');
+    if(!links.length)return;
+    const map=new Map();
+    links.forEach(a=>{const sec=document.querySelector(a.getAttribute('href'));if(sec)map.set(sec,a);});
+    let active=null;
+    const setActive=a=>{
+      if(a===active)return;
+      if(active)active.classList.remove('active');
+      active=a;
+      if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}
+    };
+    const spy=new IntersectionObserver(es=>{
+      es.forEach(e=>{if(e.isIntersecting)setActive(map.get(e.target));});
+    },{rootMargin:'-25% 0px -65% 0px',threshold:0});
+    map.forEach((a,sec)=>spy.observe(sec));
   })();
 </script>
 
