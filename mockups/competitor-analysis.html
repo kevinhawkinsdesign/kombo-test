@@ -25,7 +25,7 @@
   .skip-link{position:absolute;left:-9999px;top:0;z-index:100;background:var(--neon);color:var(--bg);padding:12px 20px;border-radius:0 0 12px 0;font-weight:700;font-size:14px}
   .skip-link:focus{left:0}
   @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-  .container{max-width:1180px;margin:0 auto;padding:0 28px}
+  .container{max-width:none;margin:0 auto;padding:0 clamp(28px,4vw,72px)}
   .mono{font-family:'JetBrains Mono',monospace}
 
   /* Nav */
@@ -128,10 +128,11 @@
   .h2h-icon{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .h2h-block.them .h2h-icon{background:var(--surface-2);border:1px solid var(--line-2)}
   .h2h-block.us .h2h-icon{background:var(--neon)}
+  .h2h-grid .h2h:last-child:nth-child(odd){grid-column:1/-1}
   @media(max-width:880px){.h2h-grid{grid-template-columns:1fr}}
 
   /* Bundling & feature lexicon */
-  .bundle-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+  .bundle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
   .bundle{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 18px;display:flex;flex-direction:column}
   .bundle.featured{border-color:rgba(212,255,0,0.32);background:linear-gradient(160deg,rgba(212,255,0,0.08) 0%,rgba(212,255,0,0.02) 100%)}
   .bundle .bname{font-size:15px;font-weight:700;letter-spacing:-0.01em;margin-bottom:10px}
@@ -190,6 +191,7 @@
   .uxnote .uxrow.imp .uxlbl{color:var(--lavender)}
   .uxnote .uxrow span:last-child{color:var(--mute)}
   .uxnote .uxrow.imp span:last-child{color:var(--ink)}
+  .ux-grid .uxnote:last-child:nth-child(3n+1){grid-column:1/-1}
   @media(max-width:900px){.ux-grid{grid-template-columns:1fr 1fr}}
   @media(max-width:600px){.ux-grid{grid-template-columns:1fr}}
 
@@ -322,7 +324,7 @@
 
   /* Section subnav */
   .subnav{position:sticky;top:62px;z-index:40;background:rgba(14,14,16,0.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-  .subnav-inner{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 28px;max-width:1180px;margin:0 auto}
+  .subnav-inner{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px clamp(28px,4vw,72px);max-width:none;margin:0 auto}
   .subnav-inner::-webkit-scrollbar{display:none}
   .subnav a{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.04em;color:var(--mute);padding:7px 12px;border-radius:999px;white-space:nowrap;border:1px solid transparent;transition:color .2s,border-color .2s,background .2s}
   .subnav a:hover{color:var(--ink)}
@@ -368,6 +370,7 @@
   .rev-col li{font-size:12.5px;color:var(--mute);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
   .rev-col li::before{content:'+';color:var(--neon);font-family:'JetBrains Mono',monospace;flex-shrink:0}
   .rev-col.bad li::before{content:'−';color:#FF6B6B}
+  .rev-grid .rev:last-child:nth-child(even){grid-column:1/-1}
   @media(max-width:880px){.rev-grid{grid-template-columns:1fr}.rev-cols{grid-template-columns:1fr}}
 
   /* Momentum timeline */
@@ -811,6 +814,12 @@
         <div class="bdesc">Subscription seats plus consumption — split into Data Credits and Actions. Capability scales with spend.</div>
         <div class="btiers"><b>Tiers</b>Launch · Growth · Enterprise (+ credits)</div>
       </div>
+      <div class="bundle">
+        <div class="bname">Enginy</div>
+        <div class="bmodel">Managed pipeline, custom quote</div>
+        <div class="bdesc">One opinionated find → enrich → engage pipeline, sold sales-led only. Spend scales on seats + enrichment volume, quoted per deal.</div>
+        <div class="btiers"><b>Tiers</b>Smart (~€799/mo) · Mid-market (custom)</div>
+      </div>
     </div>
 
     <!-- Feature lexicons -->
@@ -886,6 +895,21 @@
         <div class="lex-term"><span class="tn">Enrichments</span> <span class="td">— provider columns you stack</span></div>
         <div class="lex-term"><span class="tn brand">Data Credits / Actions</span> <span class="td">— the dual usage currencies</span></div>
         <div class="lex-term"><span class="tn">Web Intent</span> <span class="td">— visitor &amp; signal capture</span></div>
+      </div>
+    </div>
+
+    <div class="lex reveal">
+      <div class="lex-head">
+        <span class="lname">Enginy</span>
+        <span class="lstyle">Naming style: <b>plain English + "AI" prefix</b></span>
+      </div>
+      <div class="lex-terms">
+        <div class="lex-term"><span class="tn brand">AI Playbook</span> <span class="td">— "Fill with AI" ICP generation &amp; scoring</span></div>
+        <div class="lex-term"><span class="tn brand">AI Sales Agent</span> <span class="td">— autonomous replies, qualification, booking</span></div>
+        <div class="lex-term"><span class="tn">Waterfall Enrichment</span> <span class="td">— 30+ sources, cheapest-first</span></div>
+        <div class="lex-term"><span class="tn">Smart Inbox</span> <span class="td">— one inbox across email &amp; LinkedIn</span></div>
+        <div class="lex-term"><span class="tn">Blocklist</span> <span class="td">— customers/competitors excluded from campaigns</span></div>
+        <div class="lex-term"><span class="tn">ICP Quick Filter</span> <span class="td">— one-click High/Medium/Low filtering</span></div>
       </div>
     </div>
 
@@ -1245,6 +1269,14 @@
       </div>
 
       <div class="uxnote reveal">
+        <div class="uxname">Enginy</div>
+        <div class="uxfeel">"Outbound, managed — when it works."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Opinionated pipeline + autonomous reply agent: minimal building, the system runs outbound for you.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>No trial to feel it first; G2 reports bugs, HubSpot sync breakage, and tricky prompt tuning.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Agent-grade automation is wanted — but let people try it self-serve before the contract.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
         <div class="uxname" style="color:var(--lavender)">Cross-cutting</div>
         <div class="uxfeel">Patterns worth standardizing on.</div>
         <div class="uxrow imp"><span class="uxlbl">→</span><span>Time-to-first-value is the metric: every tool that wins starts with one fast, obvious action.</span></div>
@@ -1384,6 +1416,31 @@
               <li>Credit burn is hard to forecast; failed lookups still bill</li>
               <li>Steep learning curve — "a spreadsheet that's actually programming"</li>
               <li>Weak mobile-phone match rates (~30–35% in third-party tests)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="rev reveal">
+        <div class="rev-top">
+          <span class="rname">Enginy</span>
+          <div class="rev-scores"><span class="rscore">G2 <b>4.8★</b> · ~22</span><span class="rscore">Capterra <b>4.9★</b> · ~17</span></div>
+        </div>
+        <div class="rev-cols">
+          <div class="rev-col good">
+            <div class="rcol-label">// Loved for</div>
+            <ul>
+              <li>The AI agent genuinely offloads SDR reply-handling</li>
+              <li>EU data posture fits European compliance reviews</li>
+              <li>Hands-on, managed onboarding</li>
+            </ul>
+          </div>
+          <div class="rev-col bad">
+            <div class="rcol-label">// Dinged for</div>
+            <ul>
+              <li>Software bugs and HubSpot sync breakage / duplicates</li>
+              <li>Prompt tuning the agent is harder than promised</li>
+              <li>"Too expensive, I feel like I cannot leave" lock-in sentiment — tiny review base (~22)</li>
             </ul>
           </div>
         </div>
@@ -1702,6 +1759,19 @@
         <div class="h2h-block us">
           <div class="bh"><span class="h2h-icon"></span>Where KomboAI differs</div>
           <p>Clay is a builder's canvas — powerful, but it expects someone to architect and maintain it, and costs run <b>~$0.65–1.20 per contact</b> at scale. KomboAI is rep-ready out of the box: the enrichment, outreach and coaching are pre-wired, so individual sellers get value on day one without an ops engineer.</p>
+        </div>
+      </div>
+
+      <div class="h2h reveal">
+        <div class="h2h-title">KomboAI <span class="vs">vs</span> Enginy</div>
+        <div class="h2h-tag">Self-serve copilot vs managed EU AI SDR</div>
+        <div class="h2h-block them">
+          <div class="bh"><span class="h2h-icon"></span>Where Enginy wins</div>
+          <p>Hands-off outbound for European teams. An opinionated <b>find → enrich → engage</b> pipeline with an autonomous reply agent that qualifies and books meetings, GDPR-first AWS EMEA hosting, and managed onboarding — with a strong Southern-Europe footprint and 4.8★ early reviews.</p>
+        </div>
+        <div class="h2h-block us">
+          <div class="bh"><span class="h2h-icon"></span>Where KomboAI differs</div>
+          <p>Enginy is demo-gated from <b>~€799/mo with no trial</b>, stops at the booked meeting, and offers EU residency without SOC 2. KomboAI is self-serve, operates <b>in the call</b> with live coaching and instant CRM write-back, and pairs EU residency with the certification stack — beating Enginy at its own EU story.</p>
         </div>
       </div>
 
