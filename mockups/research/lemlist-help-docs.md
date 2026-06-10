@@ -14,7 +14,7 @@ Source: help.lemlist.com. Compiled June 10, 2026 from indexed help-center conten
 
 ## 2. Personalization
 
-- Full **Liquid syntax** ({% if %}) on lead attributes; case-sensitive variables. Dynamic images (text-on-image, auto website screenshots), **dynamic landing pages** (per-lead, with video, CTA, live chat).
+- Full **Liquid syntax** (`{% if %}`) on lead attributes; case-sensitive variables. Dynamic images (text-on-image, auto website screenshots), **dynamic landing pages** (per-lead, with video, CTA, live chat).
 - AI: sequence generator (campaign + list + multichannel sequence); **AI variables/columns** — reusable per-lead generation, auto-run on new leads, chainable, shareable workflow templates; **signal-triggered icebreakers** (signal → campaign push with signal variables → AI column writes opener). Same credit pool.
 
 ## 3. Deliverability
