@@ -18,8 +18,13 @@
     --ink:#F7F7FA;--mute:#A8A8B4;--mute-2:#8B8B98;
     --purple:#A78BFA;--lavender:#BDABFF;--lavender-soft:rgba(189,171,255,0.45);
   }
+  html{scroll-padding-top:122px}
   html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
+  :focus-visible{outline:2px solid var(--neon);outline-offset:2px;border-radius:4px}
+  .skip-link{position:absolute;left:-9999px;top:0;z-index:100;background:var(--neon);color:var(--bg);padding:12px 20px;border-radius:0 0 12px 0;font-weight:700;font-size:14px}
+  .skip-link:focus{left:0}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
   .container{max-width:1180px;margin:0 auto;padding:0 28px}
   .mono{font-family:'JetBrains Mono',monospace}
 
@@ -93,7 +98,7 @@
   .matrix-head .col{font-weight:700;font-size:14px;text-align:center;letter-spacing:-0.01em}
   .matrix-head .col.featured{color:var(--neon)}
   .matrix-head .col small{display:block;font-weight:400;font-size:10px;color:var(--mute-2);font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;margin-top:3px}
-  .matrix-section h6{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--lavender);padding:20px 24px 8px;background:rgba(181,161,255,0.04)}
+  .matrix-section .msec-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--lavender);padding:20px 24px 8px;background:rgba(181,161,255,0.04)}
   .matrix-row{display:grid;grid-template-columns:1.7fr repeat(5,1fr);padding:14px 24px;border-bottom:1px solid var(--line);align-items:center;font-size:13px;color:var(--mute)}
   .matrix-row:last-child{border-bottom:none}
   .matrix-row .feat{color:var(--ink);padding-right:12px}
@@ -260,6 +265,7 @@
   .persona li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--mute);line-height:1.55}
   .persona li b{color:var(--ink);font-weight:600}
   .persona li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(212,255,0,0.16);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23D4FF00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
+  .persona-grid .persona:last-child:nth-child(odd){grid-column:1/-1}
   @media(max-width:820px){.persona-grid{grid-template-columns:1fr}}
 
   /* When to pick */
@@ -305,7 +311,7 @@
   footer{padding:80px 0 50px;border-top:1px solid var(--line);margin-top:40px}
   .footer-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:40px;margin-bottom:50px}
   .footer-grid .col p{font-size:13px;color:var(--mute);line-height:1.55;max-width:280px;margin-top:14px}
-  .footer-grid .col h6{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
+  .footer-grid .col .ftitle{font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px}
   .footer-grid .col a{display:block;padding:6px 0;font-size:14px;color:var(--mute);transition:color .2s;text-decoration:none}
   .footer-grid .col a:hover{color:var(--ink)}
   .footer-bottom{padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mute);flex-wrap:wrap;gap:12px;align-items:center}
@@ -354,9 +360,9 @@
   .rscore{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:5px 10px}
   .rscore b{color:var(--neon);font-weight:700}
   .rev-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .rev-col h6{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:9px}
-  .rev-col.good h6{color:var(--neon)}
-  .rev-col.bad h6{color:#FF6B6B}
+  .rev-col .rcol-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:9px}
+  .rev-col.good .rcol-label{color:var(--neon)}
+  .rev-col.bad .rcol-label{color:#FF6B6B}
   .rev-col ul{list-style:none;display:flex;flex-direction:column;gap:7px}
   .rev-col li{font-size:12.5px;color:var(--mute);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
   .rev-col li::before{content:'+';color:var(--neon);font-family:'JetBrains Mono',monospace;flex-shrink:0}
@@ -382,7 +388,9 @@
 </head>
 <body>
 
-<nav>
+<a class="skip-link" href="#glance">Skip to content</a>
+
+<nav aria-label="Main">
   <div class="container nav-row">
     <a href="./v9_glass_cathedral.html" class="logo">
       <img class="logo-img" src="./images/LOGO/icon-green.svg" alt="KomboAI">
@@ -390,7 +398,7 @@
     </a>
     <div class="nav-links">
       <div class="nav-dropdown">
-        <button>Product<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button aria-haspopup="true">Product<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="./features.html">Features</a>
           <a href="./how-it-works.html">How it works</a>
@@ -399,7 +407,7 @@
         </div>
       </div>
       <div class="nav-dropdown">
-        <button class="active">Resources<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="active" aria-haspopup="true">Resources<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="./customers.html">Customers</a>
           <a href="./podcast.html">Podcast</a>
@@ -409,7 +417,7 @@
         </div>
       </div>
       <div class="nav-dropdown">
-        <button>Company<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button aria-haspopup="true">Company<svg class="caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 L5 7 L8.5 3.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="dropdown-menu">
           <a href="./about.html">About</a>
           <a href="./team.html">Team</a>
@@ -423,6 +431,8 @@
   </div>
 </nav>
 
+<main>
+
 <!-- Hero -->
 <section class="hero">
   <div class="container">
@@ -434,7 +444,7 @@
 </section>
 
 <!-- Section subnav -->
-<div class="subnav" id="subnav">
+<nav class="subnav" id="subnav" aria-label="Page sections">
   <div class="subnav-inner">
     <a href="#glance">Glance</a>
     <a href="#matrix">Matrix</a>
@@ -452,7 +462,7 @@
     <a href="#timeline">Timeline</a>
     <a href="#faq">FAQ</a>
   </div>
-</div>
+</nav>
 
 <!-- At a glance -->
 <section class="std" style="padding-top:24px" id="glance">
@@ -524,7 +534,7 @@
       <p>● full · <span style="color:var(--lavender)">◐</span> partial / add-on · — not offered. Scope reflects each vendor's standard product positioning.</p>
     </div>
     <div class="reveal">
-      <div class="matrix-scroll">
+      <div class="matrix-scroll" tabindex="0" role="region" aria-label="Feature comparison matrix (scrollable)">
         <div class="matrix">
           <div class="matrix-head">
             <div class="label">Capability</div>
@@ -536,7 +546,7 @@
           </div>
 
           <!-- Data & enrichment -->
-          <div class="matrix-section"><h6>Data &amp; enrichment</h6></div>
+          <div class="matrix-section"><div class="msec-label">Data &amp; enrichment</div></div>
           <div class="matrix-row">
             <div class="feat">Built-in B2B contact database<span class="hint">Verified emails + direct dials</span></div>
             <div class="cell kombo"><span class="partial">◐</span></div>
@@ -571,7 +581,7 @@
           </div>
 
           <!-- Outreach -->
-          <div class="matrix-section"><h6>Outreach &amp; sequencing</h6></div>
+          <div class="matrix-section"><div class="msec-label">Outreach &amp; sequencing</div></div>
           <div class="matrix-row">
             <div class="feat">Email sequences &amp; A/B testing</div>
             <div class="cell kombo"><span class="yes">●</span></div>
@@ -606,7 +616,7 @@
           </div>
 
           <!-- AI & automation -->
-          <div class="matrix-section"><h6>AI &amp; automation</h6></div>
+          <div class="matrix-section"><div class="msec-label">AI &amp; automation</div></div>
           <div class="matrix-row">
             <div class="feat">AI-written, personalized messaging</div>
             <div class="cell kombo"><span class="yes">●</span></div>
@@ -641,7 +651,7 @@
           </div>
 
           <!-- Workflow & CRM -->
-          <div class="matrix-section"><h6>Workflow &amp; CRM</h6></div>
+          <div class="matrix-section"><div class="msec-label">Workflow &amp; CRM</div></div>
           <div class="matrix-row">
             <div class="feat">Native HubSpot / Salesforce sync</div>
             <div class="cell kombo"><span class="yes">●</span></div>
@@ -668,7 +678,7 @@
           </div>
 
           <!-- Pricing & access -->
-          <div class="matrix-section"><h6>Pricing &amp; access</h6></div>
+          <div class="matrix-section"><div class="msec-label">Pricing &amp; access</div></div>
           <div class="matrix-row">
             <div class="feat">Free tier</div>
             <div class="cell kombo"><span class="text">Trial</span></div>
@@ -703,7 +713,7 @@
           </div>
 
           <!-- Compliance -->
-          <div class="matrix-section"><h6>Trust &amp; compliance</h6></div>
+          <div class="matrix-section"><div class="msec-label">Trust &amp; compliance</div></div>
           <div class="matrix-row">
             <div class="feat">SOC 2 / GDPR compliant</div>
             <div class="cell kombo"><span class="yes">●</span></div>
@@ -861,8 +871,8 @@
 
     <div class="pd-card featured reveal">
       <div class="pd-head"><span class="pdname">KomboAI</span><span class="pdmodel">Model: <b>per-rep · monthly or annual · no credit metering</b></span></div>
-      <div class="pd-scroll"><table class="pd-table">
-        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+      <div class="pd-scroll" tabindex="0" role="region" aria-label="KomboAI pricing table (scrollable)"><table class="pd-table">
+        <tr><th scope="col">Plan</th><th scope="col">Price</th><th scope="col">What's included</th></tr>
         <tr><td>Trial</td><td>Free</td><td>The full copilot on your real CRM and prospects — extension, sequences, live coaching, CRM auto-fill.</td></tr>
         <tr><td>Per-rep</td><td>Per rep / mo<span class="sub">monthly or annual</span></td><td>The whole loop per seat: enrichment, multichannel outreach, live coaching, CRM hygiene. Generous usage — no per-reveal math.</td></tr>
         <tr><td>Team</td><td>Custom</td><td>Adds the web-app command center: team dashboards, governance, SSO/RBAC, EU data residency.</td></tr>
@@ -872,8 +882,8 @@
 
     <div class="pd-card reveal">
       <div class="pd-head"><span class="pdname">Lusha</span><span class="pdmodel">Model: <b>freemium + credit slider · 1 credit/email · 5/phone</b></span></div>
-      <div class="pd-scroll"><table class="pd-table">
-        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+      <div class="pd-scroll" tabindex="0" role="region" aria-label="Lusha pricing table (scrollable)"><table class="pd-table">
+        <tr><th scope="col">Plan</th><th scope="col">Price</th><th scope="col">What's included</th></tr>
         <tr><td>Free</td><td>$0</td><td>1 user, ~40–70 credits/mo (Lusha's own materials conflict on the number), extension + basic search, Conversations included.</td></tr>
         <tr><td>Pro</td><td>~$22–29/user/mo annual<span class="sub">~$39 monthly</span></td><td>From 2 users; ~7,200 credits/yr at entry (slider up to ~24,000); prospecting platform, list export. <b>No intent data, no API.</b></td></tr>
         <tr><td>Premium</td><td>~$52/user/mo annual</td><td>From 5 users; ~40,800 credits/yr at entry; adds Bombora intent topics, technographics, job-change alerts, bulk enrichment.</td></tr>
@@ -884,8 +894,8 @@
 
     <div class="pd-card reveal">
       <div class="pd-head"><span class="pdname">Lemlist</span><span class="pdmodel">Model: <b>per-seat tiers gated by channel · add-on mailboxes</b></span></div>
-      <div class="pd-scroll"><table class="pd-table">
-        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+      <div class="pd-scroll" tabindex="0" role="region" aria-label="Lemlist pricing table (scrollable)"><table class="pd-table">
+        <tr><th scope="col">Plan</th><th scope="col">Price</th><th scope="col">What's included</th></tr>
         <tr><td>Free</td><td>$0</td><td>Extension-based: 100 emails + 25 phone numbers revealed per month.</td></tr>
         <tr><td>Email Pro</td><td>$79/user/mo<span class="sub">~$63 annual</span></td><td>Email-only sequences, 3 sending addresses/user, ~1,000 enrichment credits/user/mo, lemwarm + lemcal included.</td></tr>
         <tr><td>Multichannel Expert</td><td>$109/user/mo<span class="sub">~$87 annual</span></td><td>Adds LinkedIn automation, cold-call dialer (Aircall), WhatsApp, unified inbox, conditional steps; 5 addresses, ~1,500 credits.</td></tr>
@@ -896,8 +906,8 @@
 
     <div class="pd-card reveal">
       <div class="pd-head"><span class="pdname">Amplemarket</span><span class="pdmodel">Model: <b>premium suite · annual-only · demo-gated</b></span></div>
-      <div class="pd-scroll"><table class="pd-table">
-        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+      <div class="pd-scroll" tabindex="0" role="region" aria-label="Amplemarket pricing table (scrollable)"><table class="pd-table">
+        <tr><th scope="col">Plan</th><th scope="col">Price</th><th scope="col">What's included</th></tr>
         <tr><td>Startup</td><td>$600/mo<span class="sub">annual term · ~$7,200/yr</span></td><td>2 users; ~15,000 email + ~480 phone credits/user/yr; Duo Inbox (AI reply management) is a <b>paid add-on</b>, not included.</td></tr>
         <tr><td>Growth</td><td>Custom<span class="sub">3rd-party est. ~$2–5K/mo</span></td><td>4 users included; sales-quoted, unpublished.</td></tr>
         <tr><td>Elite</td><td>Custom<span class="sub">3rd-party est. ~$10K+/mo</span></td><td>10 users included; sales-quoted, unpublished.</td></tr>
@@ -907,8 +917,8 @@
 
     <div class="pd-card reveal">
       <div class="pd-head"><span class="pdname">Clay</span><span class="pdmodel">Model: <b>seats + dual usage currencies · repriced Mar 11, 2026</b></span></div>
-      <div class="pd-scroll"><table class="pd-table">
-        <tr><th>Plan</th><th>Price</th><th>What's included</th></tr>
+      <div class="pd-scroll" tabindex="0" role="region" aria-label="Clay pricing table (scrollable)"><table class="pd-table">
+        <tr><th scope="col">Plan</th><th scope="col">Price</th><th scope="col">What's included</th></tr>
         <tr><td>Free</td><td>$0</td><td>100 Data Credits + 500 Actions/mo; no phone enrichment. Self-serve 14-day Pro-level trial with 1,000 credits.</td></tr>
         <tr><td>Launch</td><td>$185/mo<span class="sub">~$167 annual</span></td><td>2,500 Data Credits + 15,000 Actions/mo; phone enrichment and signal tracking included.</td></tr>
         <tr><td>Growth</td><td>$495/mo<span class="sub">~$446 annual</span></td><td>6,000 Data Credits + 40,000 Actions/mo; unlocks <b>CRM sync, HTTP API, and Web Intent</b>.</td></tr>
@@ -931,7 +941,7 @@
     <!-- 1. Contact data & enrichment -->
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></span> Contact data &amp; enrichment</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></span> Contact data &amp; enrichment</h3>
         <div class="mech-how"><span class="tag">// how it works</span>A query (a name, domain, or LinkedIn URL) is matched against a data source to return emails, phones, and firmographics. The split is <b>own-database lookup</b> (one proprietary store, fast but fixed coverage) vs <b>waterfall enrichment</b> (cascade through many providers until one returns a verified hit — higher coverage, pay-per-attempt).</div>
       </div>
       <div class="mech-rows">
@@ -946,7 +956,7 @@
     <!-- 2. AI personalization -->
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4 4 4 0 0 0 0 8 4 4 0 0 0 8 0 4 4 0 0 0 0-8 4 4 0 0 0-4-4z"/><path d="M12 6v12"/></svg></span> AI message personalization</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4 4 4 0 0 0 0 8 4 4 0 0 0 8 0 4 4 0 0 0 0-8 4 4 0 0 0-4-4z"/><path d="M12 6v12"/></svg></span> AI message personalization</h3>
         <div class="mech-how"><span class="tag">// how it works</span>The tool pulls context (LinkedIn profile, company news, job posts, past activity) and prompts an LLM to draft an opener or full sequence. Quality hinges on <b>what context it can reach</b> and <b>how much it automates vs assists</b> — from merge-tag templating to fully agent-written outreach.</div>
       </div>
       <div class="mech-rows">
@@ -961,7 +971,7 @@
     <!-- 3. Sequencing & deliverability -->
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span> Multichannel sequencing &amp; deliverability</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span> Multichannel sequencing &amp; deliverability</h3>
         <div class="mech-how"><span class="tag">// how it works</span>A sequence is a multi-step, multi-channel cadence (email → LinkedIn → call → WhatsApp) with branching on reply/open. <b>Deliverability</b> — landing in the inbox, not spam — is the make-or-break, handled via warm-up networks, sending limits, and domain rotation.</div>
       </div>
       <div class="mech-rows">
@@ -976,7 +986,7 @@
     <!-- 4. Intent signals -->
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span> Buying / intent signals</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span> Buying / intent signals</h3>
         <div class="mech-how"><span class="tag">// how it works</span>Signals are events that imply readiness to buy — job changes, funding, hiring, tech installs, website visits. The tool ingests these feeds, scores them, and surfaces "reach out now" prompts. Value depends on <b>signal breadth</b> and whether it <b>triggers action automatically</b>.</div>
       </div>
       <div class="mech-rows">
@@ -991,7 +1001,7 @@
     <!-- 5. Conversation coaching & CRM capture -->
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Conversation coaching &amp; CRM capture</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Conversation coaching &amp; CRM capture</h3>
         <div class="mech-how"><span class="tag">// how it works</span>During and after a call, the tool transcribes, analyzes talk-tracks, suggests next-best actions, and writes notes + fields back to the CRM. This is the <b>least-served capability</b> in this set — and the one that turns a prospecting tool into a full rep copilot.</div>
       </div>
       <div class="mech-rows">
@@ -1016,7 +1026,7 @@
 
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span> Database claims vs measured accuracy</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span> Database claims vs measured accuracy</h3>
         <div class="mech-how"><span class="tag">// why it matters</span>Every vendor self-reports database size and accuracy; third-party tests routinely land below the marketing number. The honest read is <b>claim vs test, plus where coverage thins</b>.</div>
       </div>
       <div class="mech-rows">
@@ -1030,7 +1040,7 @@
 
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Integrations &amp; API openness</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Integrations &amp; API openness</h3>
         <div class="mech-how"><span class="tag">// why it matters</span>The stack question: does the tool plug into what you have, and can RevOps build on it — or is the API a paywalled enterprise perk?</div>
       </div>
       <div class="mech-rows">
@@ -1044,7 +1054,7 @@
 
     <div class="mech reveal">
       <div class="mech-top">
-        <h3><span class="mech-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Compliance &amp; data residency</h3>
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Compliance &amp; data residency</h3>
         <div class="mech-how"><span class="tag">// why it matters</span>This is where mid-market and EU deals are won or lost before the demo: certifications security teams can verify, and where the data physically lives.</div>
       </div>
       <div class="mech-rows">
@@ -1136,7 +1146,7 @@
         </div>
         <div class="rev-cols">
           <div class="rev-col good">
-            <h6>// What early users highlight</h6>
+            <div class="rcol-label">// What early users highlight</div>
             <ul>
               <li>Live coaching during the call — the feature no reviewer of the other four can mention, because none of them have it.</li>
               <li>CRM stays clean without anyone touching it; RevOps notices within the first week.</li>
@@ -1144,7 +1154,7 @@
             </ul>
           </div>
           <div class="rev-col bad">
-            <h6>// What we have to earn</h6>
+            <div class="rcol-label">// What we have to earn</div>
             <ul>
               <li>A public review base — the field's scores took years and hundreds of reviews to build.</li>
               <li>Support reputation at scale: Amplemarket's 9.3/10 support score is the bar.</li>
@@ -1160,7 +1170,7 @@
         </div>
         <div class="rev-cols">
           <div class="rev-col good">
-            <h6>// Loved for</h6>
+            <div class="rcol-label">// Loved for</div>
             <ul>
               <li>Effortless Chrome/LinkedIn extension workflow</li>
               <li>Strong direct-dial retrieval — often several numbers per contact</li>
@@ -1168,7 +1178,7 @@
             </ul>
           </div>
           <div class="rev-col bad">
-            <h6>// Dinged for</h6>
+            <div class="rcol-label">// Dinged for</div>
             <ul>
               <li>Credit system — charged even when data is stale</li>
               <li>Thin coverage outside the US and in niche industries</li>
@@ -1185,7 +1195,7 @@
         </div>
         <div class="rev-cols">
           <div class="rev-col good">
-            <h6>// Loved for</h6>
+            <div class="rcol-label">// Loved for</div>
             <ul>
               <li>Personalization depth — custom images/video, Liquid syntax</li>
               <li>True multichannel an SDR can run without ops help</li>
@@ -1193,7 +1203,7 @@
             </ul>
           </div>
           <div class="rev-col bad">
-            <h6>// Dinged for</h6>
+            <div class="rcol-label">// Dinged for</div>
             <ul>
               <li>Now among the priciest per seat in cold outreach</li>
               <li>Confusing credit burn — including failed enrichments</li>
@@ -1210,7 +1220,7 @@
         </div>
         <div class="rev-cols">
           <div class="rev-col good">
-            <h6>// Loved for</h6>
+            <div class="rcol-label">// Loved for</div>
             <ul>
               <li>Ease of use — the single most-cited G2 theme</li>
               <li>Standout, responsive support</li>
@@ -1218,7 +1228,7 @@
             </ul>
           </div>
           <div class="rev-col bad">
-            <h6>// Dinged for</h6>
+            <div class="rcol-label">// Dinged for</div>
             <ul>
               <li>Gaps in filtering and granular reporting</li>
               <li>Inconsistent data accuracy internationally</li>
@@ -1235,7 +1245,7 @@
         </div>
         <div class="rev-cols">
           <div class="rev-col good">
-            <h6>// Loved for</h6>
+            <div class="rcol-label">// Loved for</div>
             <ul>
               <li>Waterfall enrichment visibly lifts match rates</li>
               <li>Claygent automates hours of manual research</li>
@@ -1243,7 +1253,7 @@
             </ul>
           </div>
           <div class="rev-col bad">
-            <h6>// Dinged for</h6>
+            <div class="rcol-label">// Dinged for</div>
             <ul>
               <li>Credit burn is hard to forecast; failed lookups still bill</li>
               <li>Steep learning curve — "a spreadsheet that's actually programming"</li>
@@ -1649,7 +1659,7 @@
   <div class="container">
     <div class="section-h reveal">
       <h2>Two surfaces, <span class="accent">one system</span></h2>
-      <p>Deeper advice for our two products — the Chrome extension and the upcoming web app — and how each earns its place with the buyers who sign the contract: sales leaders and RevOps.</p>
+      <p>Deeper advice for our two products — the Chrome extension and the upcoming web app — and how each earns its place with our five target audiences: sales reps, managers, ops, startups, and enterprise.</p>
     </div>
 
     <div class="surface-grid reveal">
@@ -1683,36 +1693,85 @@
       <div class="persona reveal">
         <div class="persona-head">
           <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
           </div>
-          <h3>For Sales Leaders</h3>
+          <h3>For Sales Reps</h3>
         </div>
-        <div class="ptag">VP Sales · CRO · Head of Sales</div>
-        <div class="care"><b>What they care about:</b> hitting the number, rep ramp &amp; consistency, forecast accuracy, and proof the tool actually lifts conversion — not vanity activity metrics.</div>
-        <div class="adv-h">// What the web app should give them</div>
+        <div class="ptag">Spend more time selling, less time searching</div>
+        <div class="care"><b>What they care about:</b> hitting quota without drowning in tabs — finding the right contact fast, knowing what to say, and never doing CRM data entry at 7pm.</div>
+        <div class="adv-h">// What the extension should give them</div>
         <ul>
-          <li><b>A conversion-lift story, per rep and per team</b> — before/after cold-contact-to-customer rate, tied to the coaching that drove it.</li>
-          <li><b>Coaching adoption &amp; call intelligence at a glance</b> — who's using live coaching, which behaviors move win rates. This is our moat; none of the four competitors surface it.</li>
-          <li><b>Forecast confidence &amp; pipeline health</b> — deal-risk signals and drift alerts leaders can act on in a 1:1.</li>
-          <li><b>"Replaces 3–4 tools" math</b> — a live cost/outcome view they can take to finance for budget defense.</li>
+          <li><b>One-click enrich-and-sequence</b> from LinkedIn or Sales Nav — Lusha's speed, but the contact lands in a running cadence, not a CSV.</li>
+          <li><b>Live coaching in the call</b> — objection prompts and next-best questions inside Meet/Teams, the feature none of the four rivals has.</li>
+          <li><b>Zero admin work.</b> Notes, fields, and activity write themselves to the CRM — the rep's reward for adopting the tool.</li>
         </ul>
       </div>
 
       <div class="persona reveal">
         <div class="persona-head">
           <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="1"/><rect x="12" y="8" width="3" height="10" rx="1"/><rect x="17" y="5" width="3" height="13" rx="1"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
-          <h3>For RevOps</h3>
+          <h3>For Managers</h3>
         </div>
-        <div class="ptag">RevOps · Sales Ops · GTM Systems</div>
+        <div class="ptag">Forecast accurately and coach at scale</div>
+        <div class="care"><b>What they care about:</b> hitting the number, rep ramp &amp; consistency, forecast accuracy, and proof the tool actually lifts conversion — not vanity activity metrics.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>A conversion-lift story, per rep and per team</b> — before/after cold-contact-to-customer rate, tied to the coaching that drove it.</li>
+          <li><b>Coaching adoption &amp; call intelligence at a glance</b> — who's using live coaching, which behaviors move win rates. This is our moat; none of the four competitors surface it.</li>
+          <li><b>Forecast confidence &amp; pipeline health</b> — deal-risk signals and drift alerts managers can act on in a 1:1.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <h3>For Ops</h3>
+        </div>
+        <div class="ptag">Automate the workflows your team hates</div>
         <div class="care"><b>What they care about:</b> CRM data quality, clean attribution, integrations that don't break, governance/admin control, and tooling that reduces — not adds — operational overhead.</div>
         <div class="adv-h">// What the web app should give them</div>
         <ul>
-          <li><b>Automatic CRM hygiene as the headline.</b> Dedupe, enrich, and write-back that keeps Salesforce/HubSpot clean without manual cleanup — the pain RevOps feels daily.</li>
+          <li><b>Automatic CRM hygiene as the headline.</b> Dedupe, enrich, and write-back that keeps Salesforce/HubSpot clean without manual cleanup — the pain ops feels daily.</li>
           <li><b>A guardrailed workflow builder.</b> Routing, enrichment rules, and triggers with Clay-like power but no maintenance burden or per-contact cost surprises.</li>
           <li><b>Trustworthy attribution &amp; reporting.</b> Clean activity → pipeline → revenue lineage they can defend in a board deck.</li>
-          <li><b>Admin, SSO/SAML, RBAC &amp; data residency.</b> The governance layer that makes them champion the rollout instead of blocking it.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+          </div>
+          <h3>For Startups</h3>
+        </div>
+        <div class="ptag">Go to market faster with less manual work</div>
+        <div class="care"><b>What they care about:</b> pipeline this quarter with two founders and maybe one SDR — no budget for an Amplemarket floor, no headcount for a Clay operator, no patience for a four-tool stack.</div>
+        <div class="adv-h">// What both surfaces should give them</div>
+        <ul>
+          <li><b>Day-one value, self-serve.</b> Free trial, monthly billing, one extension install + one CRM connect — the inverse of Amplemarket's $600/mo demo-gated annual contract.</li>
+          <li><b>The whole loop in one line item.</b> Data, outreach, coaching and CRM hygiene for less than a Lemlist-plus-Lusha stack, with no credit math to budget around.</li>
+          <li><b>Founder-as-seller defaults.</b> Pre-built ICP finders, sequences and coaching playbooks — so people who've never run outbound get competent fast.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
+          </div>
+          <h3>For Enterprise</h3>
+        </div>
+        <div class="ptag">Security, scale, and dedicated support</div>
+        <div class="care"><b>What they care about:</b> passing security review before anyone sees a demo — certifications, data residency, SSO, admin control — then proof the tool works at hundreds of seats with someone to call when it doesn't.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>SOC 2 + GDPR with EU data residency</b> — the combination most of the field can't offer; lead the deck with it, the way Lusha leads with its ISO stack.</li>
+          <li><b>SSO/SAML, RBAC, audit logs &amp; seat governance</b> — the table stakes that turn security from a blocker into a champion.</li>
+          <li><b>Dedicated support &amp; rollout playbooks.</b> Amplemarket's 9.3/10 support score is the competitive bar — match it with a named CSM and ramp plan per team.</li>
         </ul>
       </div>
 
@@ -1817,6 +1876,8 @@
   </div>
 </section>
 
+</main>
+
 <!-- Footer -->
 <footer>
   <div class="container">
@@ -1829,14 +1890,14 @@
         <p>Revenue automation for sales teams that want fewer tabs and more closed deals.</p>
       </div>
       <div class="col">
-        <h6>Product</h6>
+        <div class="ftitle">Product</div>
         <a href="./features.html">Features</a>
         <a href="./how-it-works.html">How it works</a>
         <a href="./pricing.html">Pricing</a>
         <a href="./integrations.html">Integrations</a>
       </div>
       <div class="col">
-        <h6>Company</h6>
+        <div class="ftitle">Company</div>
         <a href="./about.html">About</a>
         <a href="./team.html">Team</a>
         <a href="./contact.html">Contact</a>
@@ -1844,7 +1905,7 @@
         <a href="https://security.getkombo.ai/" target="_blank" rel="noopener">Trust Center ↗</a>
       </div>
       <div class="col">
-        <h6>Resources</h6>
+        <div class="ftitle">Resources</div>
         <a href="./blog.html">Blog</a>
         <a href="./podcast.html">Podcast</a>
         <a href="./customers.html">Customers</a>
