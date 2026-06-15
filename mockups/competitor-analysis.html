@@ -84,6 +84,8 @@
   .gcard-cat{font-family:'JetBrains Mono',monospace;font-size:11.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--mute-2);margin-bottom:16px}
   .gcard-desc{font-size:15px;color:var(--mute);line-height:1.55;margin-bottom:18px;flex:1}
   .gcard-meta{border-top:1px dashed var(--line-2);padding-top:14px;display:flex;flex-direction:column;gap:8px}
+  .gcard-meta .row:last-child .k{color:var(--neon);font-size:10px}
+  .gcard-meta .row:last-child .v{color:var(--mute);font-style:italic}
   .gcard-meta .row{display:flex;flex-direction:column;gap:2px}
   .gcard-meta .k{font-size:11.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mute-2)}
   .gcard-meta .v{font-size:14.5px;color:var(--ink);font-weight:500;line-height:1.5}
@@ -113,6 +115,8 @@
 
 
   /* Feature mechanics */
+  .mech-subhead{margin:40px 0 8px}
+  .sub-h{font-size:18px;font-weight:700;color:var(--mute);letter-spacing:-0.01em;border-bottom:1px solid var(--line);padding-bottom:12px}
   .mech{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-bottom:14px}
   .mech-top{margin-bottom:18px}
   .mech-top h3{font-size:20.5px;font-weight:700;letter-spacing:-0.015em;margin-bottom:8px;display:flex;align-items:center;gap:10px}
@@ -359,10 +363,10 @@
 <!-- Hero -->
 <section class="hero">
   <div class="container">
-    <div class="eyebrow reveal"><span class="dot"></span> Competitor analysis · Updated Jun 15, 2026 (rev 3)</div>
+    <div class="eyebrow reveal"><span class="dot"></span> Internal reference · Competitor analysis · Updated Jun 15, 2026</div>
     <h1 class="reveal">KomboAI vs <span class="highlight">the field.</span></h1>
-    <p class="reveal">A deep, fair comparison of KomboAI against Lusha, Lemlist, Amplemarket, Clay, Enginy, Apollo, and LinkedIn Sales Navigator — feature by feature, what their own help docs reveal, plus full pricing teardowns, review-score data, security &amp; integration diligence, a 2024–26 momentum timeline, and each rival's <abbr title="Unique Selling Proposition">USP</abbr>, ideal customer, and growth engine. Starting with the specific moves KomboAI should make.</p>
-    <p class="updated reveal">// Last reviewed June 15, 2026 (WCAG 2.2 AAA pass) · public pricing &amp; product pages</p>
+    <p class="reveal">A deep, fair comparison of KomboAI against Lusha, Lemlist, Amplemarket, Clay, Enginy, Apollo, and LinkedIn Sales Navigator — feature by feature, what their own help docs reveal, plus full pricing teardowns, review-score data, security &amp; integration diligence, a 2024–26 momentum timeline, and each rival's <abbr title="Unique Selling Proposition">USP</abbr>, ideal customer, and growth engine. Internal use only — not for distribution outside the Kombo team.</p>
+    <p class="updated reveal">// Internal document · Last reviewed June 15, 2026 · Not indexed or discoverable</p>
   </div>
 </section>
 
@@ -373,14 +377,9 @@
     <a href="#playbook">Playbook</a>
     <a href="#matrix">Matrix</a>
     <a href="#pricing">Pricing</a>
-    <a href="#mechanics">Mechanics</a>
-    <a href="#trust">Data &amp; trust</a>
-    <a href="#helpdocs">Help docs</a>
-    <a href="#ux">UX</a>
+    <a href="#mechanics">Under the hood</a>
     <a href="#extension">Extensions</a>
-    <a href="#reviews">Reviews</a>
-    <a href="#profiles">Profiles</a>
-    <a href="#surfaces">Surfaces</a>
+    <a href="#reviews">Market view</a>
     <a href="#timeline">Timeline</a>
     <a href="#faq">FAQ</a>
   </div>
@@ -412,6 +411,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">Finding contact data fast</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">Free tier · Pro ~$29/mo</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">280M+ verified contacts</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">A free viral extension is the proven wedge — crowd-sourced data flywheels compound. The gap: Lusha stops at data.</span></div>
         </div>
       </div>
       <div class="gcard">
@@ -422,6 +423,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">Cold email &amp; deliverability</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">~$63–87/user/mo (annual)</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">Personalized sends at scale</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">Founder-led content + community is the cheapest durable distribution. The gap: Lemlist ends at the reply.</span></div>
         </div>
       </div>
       <div class="gcard">
@@ -432,6 +435,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">Funded teams wanting one suite</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">~$600/mo · annual only</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">Human-sounding AI outreach</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">Marquee logos + hard outcome numbers build enterprise trust fast. The gap: $600 annual-only floor leaves the accessible, coaching-led lane open.</span></div>
         </div>
       </div>
       <div class="gcard">
@@ -442,6 +447,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">Technical GTM / RevOps builders</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">~$185–495/mo + credits</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">Best-coverage enrichment</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">Category creation + partner/creator ecosystem is the highest-leverage GTM play here. The gap: Clay needs an operator — we win the rep who wants value on day one.</span></div>
         </div>
       </div>
       <div class="gcard">
@@ -452,6 +459,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">EU mid-market teams wanting managed outbound</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">~€799/mo · sales-led, no trial</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">Autonomous AI <abbr title="Sales Development Representative">SDR</abbr> for Europe</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">EU "all-in-one, GDPR-resident" story sells — but demo-gated at €799/mo with no call intelligence or SOC 2. Self-serve + live coaching undercuts it in its own market.</span></div>
         </div>
       </div>
       <div class="gcard">
@@ -462,6 +471,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">Price-conscious teams wanting everything in one</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">Free tier · ~$49/user/mo</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">Cheapest credible all-in-one</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">Bundling at value price wins volume — but ceiling is data accuracy (~65%) and a banned LinkedIn extension. Live coaching and a LinkedIn-safe surface are our wedges.</span></div>
         </div>
       </div>
       <div class="gcard">
@@ -472,6 +483,8 @@
           <div class="row"><span class="k">Best for</span><span class="v">Relationship-led prospecting on the network</span></div>
           <div class="row"><span class="k">Starts at</span><span class="v">~$90/seat/mo (annual)</span></div>
           <div class="row"><span class="k">Core bet</span><span class="v">The walled-garden identity graph</span></div>
+        
+          <div class="row"><span class="k">Our take</span><span class="v">Not a rival to displace — the substrate we ride. Build strictly assistive (no scraping, no auto-actions); win by adding what the garden withholds.</span></div>
         </div>
       </div>
     </div>
@@ -482,8 +495,8 @@
 <section class="std" style="padding-top:24px" id="playbook">
   <div class="container">
     <div class="section-h reveal">
-      <h2>What KomboAI <span class="accent">should do</span></h2>
-      <p>The conclusions up front: specific, borrowed-from-the-best moves — each lifted from a rival's proven playbook (detailed below) and pointed at our unfair advantage: the full find→reach→talk→log loop with live coaching.</p>
+      <h2>Our <span class="accent">playbook</span></h2>
+      <p>Six strategic moves to make, each borrowed from a rival's proven playbook and pointed at our unfair advantage: the full find→reach→talk→log loop with live call coaching. Then: how to build the two surfaces that deliver it, and what each of our five buyer personas needs from each one.</p>
     </div>
     <div class="play-grid">
 
@@ -527,6 +540,123 @@
         <h4>Sell outcomes with marquee proof</h4>
         <p>Amplemarket lets logos and numbers (Deel 20×'d revenue) do the closing. We should pair <b>named case studies</b> with the ROI calculator so every prospect sees their own projected revenue lift and hours saved before the first call.</p>
         <div class="borrow">Borrowed from <b>Amplemarket</b> — logo + outcome-led trust</div>
+      </div>
+
+    </div>
+  
+
+    <div class="mech-subhead reveal"><h3 class="sub-h">Two surfaces, one system</h3></div>
+<div class="surface-grid reveal">
+      <div class="surface ext">
+        <div class="surface-kicker">Surface 1 · Chrome extension</div>
+        <h3>The wedge &amp; the capture layer</h3>
+        <p class="lead">The extension is where the rep already works — LinkedIn, Sales Nav, the CRM, the live call. Its job isn't just to <i>reveal</i> data like Lusha; it's to <b>capture every signal and action</b> and pipe it cleanly into the web app. Win the rep's daily habit, and you earn the team's data.</p>
+        <ul>
+          <li><b>Ship a genuinely free tier.</b> Make it the bottom-up, viral entry point — adoption from one rep becomes the leader's proof point.</li>
+          <li><b>Make it the action surface, not a lookup.</b> Enrich, sequence, capture call notes, and write to CRM in-context — so it replaces tools rather than adding one.</li>
+          <li><b>Treat every interaction as structured data.</b> Each reveal, send, and call feeds the web app's pipeline, activity, and coaching views — and a crowd-sourced data flywheel.</li>
+          <li><b>Zero-config CRM write-back.</b> The extension should keep HubSpot/Salesforce clean automatically — the hook that makes RevOps an advocate, not a gatekeeper.</li>
+        </ul>
+      </div>
+
+      <div class="surface app">
+        <div class="surface-kicker">Surface 2 · Web app (upcoming)</div>
+        <h3>The command center</h3>
+        <p class="lead">The extension wins the rep; the web app wins the <b>buyer</b>. This is where sales leaders and RevOps see the team-level picture the extension can't show — adoption, conversion lift, pipeline health, and ROI — and where governance and configuration live.</p>
+        <ul>
+          <li><b>Lead with team-level outcomes.</b> Aggregate the extension's rep-level activity into conversion, coaching adoption, and revenue-lift dashboards.</li>
+          <li><b>Make ROI self-evident.</b> Wire in the ROI calculator's logic so leaders see realized vs projected lift over time — the renewal argument writes itself.</li>
+          <li><b>Admin, governance &amp; seats.</b> Roles, permissions, data residency, audit — the table stakes that unlock mid-market and enterprise deals.</li>
+          <li><b>Workflow builder for RevOps.</b> A guardrailed slice of Clay-style automation (routing, enrichment rules, CRM hygiene) — powerful, but it shouldn't need a GTM engineer to run.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="persona-grid">
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <h3>For Sales Reps</h3>
+        </div>
+        <div class="ptag">Spend more time selling, less time searching</div>
+        <div class="care"><b>What they care about:</b> hitting quota without drowning in tabs — finding the right contact fast, knowing what to say, and never doing CRM data entry at 7pm.</div>
+        <div class="adv-h">// What the extension should give them</div>
+        <ul>
+          <li><b>One-click enrich-and-sequence</b> from LinkedIn or Sales Nav — Lusha's speed, but the contact lands in a running cadence, not a CSV.</li>
+          <li><b>Live coaching in the call</b> — objection prompts and next-best questions inside Meet/Teams, the feature none of the four rivals has.</li>
+          <li><b>Zero admin work.</b> Notes, fields, and activity write themselves to the CRM — the rep's reward for adopting the tool.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>For Managers</h3>
+        </div>
+        <div class="ptag">Forecast accurately and coach at scale</div>
+        <div class="care"><b>What they care about:</b> hitting the number, rep ramp &amp; consistency, forecast accuracy, and proof the tool actually lifts conversion — not vanity activity metrics.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>A conversion-lift story, per rep and per team</b> — before/after cold-contact-to-customer rate, tied to the coaching that drove it.</li>
+          <li><b>Coaching adoption &amp; call intelligence at a glance</b> — who's using live coaching, which behaviors move win rates. This is our moat; none of the four competitors surface it.</li>
+          <li><b>Forecast confidence &amp; pipeline health</b> — deal-risk signals and drift alerts managers can act on in a 1:1.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <h3>For Ops</h3>
+        </div>
+        <div class="ptag">Automate the workflows your team hates</div>
+        <div class="care"><b>What they care about:</b> CRM data quality, clean attribution, integrations that don't break, governance/admin control, and tooling that reduces — not adds — operational overhead.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>Automatic CRM hygiene as the headline.</b> Dedupe, enrich, and write-back that keeps Salesforce/HubSpot clean without manual cleanup — the pain ops feels daily.</li>
+          <li><b>A guardrailed workflow builder.</b> Routing, enrichment rules, and triggers with Clay-like power but no maintenance burden or per-contact cost surprises.</li>
+          <li><b>Trustworthy attribution &amp; reporting.</b> Clean activity → pipeline → revenue lineage they can defend in a board deck.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+          </div>
+          <h3>For Startups</h3>
+        </div>
+        <div class="ptag">Go to market faster with less manual work</div>
+        <div class="care"><b>What they care about:</b> pipeline this quarter with two founders and maybe one SDR — no budget for an Amplemarket floor, no headcount for a Clay operator, no patience for a four-tool stack.</div>
+        <div class="adv-h">// What both surfaces should give them</div>
+        <ul>
+          <li><b>Day-one value, low commitment.</b> Core at 348€/mo covers a 3-person team with 15K credits — billed monthly via Stripe, cancellable on 30 days' notice, one extension install + one CRM connect.</li>
+          <li><b>The whole loop in one line item.</b> Data, outreach, coaching and CRM hygiene for less than a Lemlist-plus-Lusha stack, with no credit math to budget around.</li>
+          <li><b>Founder-as-seller defaults.</b> Pre-built ICP finders, sequences and coaching playbooks — so people who've never run outbound get competent fast.</li>
+        </ul>
+      </div>
+
+      <div class="persona reveal">
+        <div class="persona-head">
+          <div class="persona-ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
+          </div>
+          <h3>For Enterprise</h3>
+        </div>
+        <div class="ptag">Security, scale, and dedicated support</div>
+        <div class="care"><b>What they care about:</b> passing security review before anyone sees a demo — certifications, data residency, SSO, admin control — then proof the tool works at hundreds of seats with someone to call when it doesn't.</div>
+        <div class="adv-h">// What the web app should give them</div>
+        <ul>
+          <li><b>SOC 2 + GDPR with EU data residency</b> — the combination most of the field can't offer; lead the deck with it, the way Lusha leads with its ISO stack.</li>
+          <li><b>SSO/SAML, RBAC, audit logs &amp; seat governance</b> — the table stakes that turn security from a blocker into a champion.</li>
+          <li><b>Dedicated support &amp; rollout playbooks.</b> Amplemarket's 9.3/10 support score is the competitive bar — match it with a named CSM and ramp plan per team.</li>
+        </ul>
       </div>
 
     </div>
@@ -917,8 +1047,8 @@
 <section class="std" style="padding-top:24px" id="mechanics">
   <div class="container">
     <div class="section-h reveal">
-      <h2>How the core features <span class="accent">actually work</span></h2>
-      <p>The same five capabilities show up everywhere — but the mechanics underneath, and what each company optimizes for, are very different. Here's how each one works and where the lines fall.</p>
+      <h2>Under the <span class="accent">hood</span></h2>
+      <p>How the core capabilities actually work, what's behind each vendor's database claims, integration and API reality, compliance posture, billing fine print, and what each "AI copilot" does when you read the configuration docs instead of the homepage.</p>
     </div>
 
     <!-- 1. Contact data & enrichment -->
@@ -1011,18 +1141,10 @@
       </div>
     </div>
 
-  </div>
-</section>
+  
 
-<!-- Data, plumbing & trust -->
-<section class="std" style="padding-top:24px" id="trust">
-  <div class="container">
-    <div class="section-h reveal">
-      <h2>Data, plumbing <span class="accent">&amp; trust</span></h2>
-      <p>The diligence layer: what's actually behind each database claim, how open the integrations and APIs are, and who can pass a security review without caveats.</p>
-    </div>
-
-    <div class="mech reveal">
+    <div class="mech-subhead reveal"><h3 class="sub-h">Database, integrations &amp; compliance</h3></div>
+<div class="mech reveal">
       <div class="mech-top">
         <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span> Database claims vs measured accuracy</h3>
         <div class="mech-how"><span class="tag">// why it matters</span>Every vendor self-reports database size and accuracy; third-party tests routinely land below the marketing number. The honest read is <b>claim vs test, plus where coverage thins</b>.</div>
@@ -1073,18 +1195,8 @@
       </div>
     </div>
 
-  </div>
-</section>
-
-<!-- What the help docs reveal -->
-<section class="std" style="padding-top:24px" id="helpdocs">
-  <div class="container">
-    <div class="section-h reveal">
-      <h2>What the <span class="accent">help docs</span> reveal</h2>
-      <p>We crawled the rivals' support sites and docs — the documented limits, caps, and fine print that never make the marketing page. Full research dossiers are <a href="https://github.com/kevinhawkinsdesign/kombo-test/tree/main/mockups/research" style="color:var(--neon)">preserved in the repo →</a></p>
-    </div>
-
-    <div class="mech reveal">
+    <div class="mech-subhead reveal"><h3 class="sub-h">Billing fine print, caps &amp; AI agents</h3></div>
+<div class="mech reveal">
       <div class="mech-top">
         <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Credit &amp; billing fine print</h3>
         <div class="mech-how"><span class="tag">// from the support docs</span>Every vendor's credit system has documented rules its pricing page omits. This is where the real cost-per-contact hides.</div>
@@ -1158,91 +1270,9 @@
   </div>
 </section>
 
+<!-- Data, plumbing & trust -->
+<!-- What the help docs reveal -->
 <!-- UX notes -->
-<section class="std" style="padding-top:24px" id="ux">
-  <div class="container">
-    <div class="section-h reveal">
-      <h2>UX <span class="accent">notes</span></h2>
-      <p>The feel of each product — where it delights, where it bites — and the experience principle KomboAI should take from it. <span style="color:var(--neon)">+</span> strength · <span style="color:#FF8080">−</span> friction · <span style="color:var(--lavender)">→</span> for us.</p>
-    </div>
-    <div class="ux-grid">
-
-      <div class="uxnote featured reveal">
-        <div class="uxname">KomboAI</div>
-        <div class="uxfeel">"It's already where I work."</div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Principle: meet the rep in-context (extension), give the leader the rollup (web app). Never make them leave the tab to get value.</span></div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Zero-context-switch: enrich, send, coach, log without leaving LinkedIn or the call.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Keep onboarding to one install + one CRM connect — value on day one, no ops engineer.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Lusha</div>
-        <div class="uxfeel">"One click and the number's there."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Extension is fast, obvious, near-zero learning curve — reveal in a single click.</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>Credit anxiety: users ration clicks and hit limits mid-flow.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Borrow the one-click simplicity; drop the credit-counting friction.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Lemlist</div>
-        <div class="uxfeel">"Playful, brand-forward, fun to build in."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Personality and delight (lowercase "lem-" world); the campaign builder is genuinely enjoyable.</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>Power features (deliverability, multichannel) add config depth; add-ons can surprise on price.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>A little brand personality lowers the perceived learning curve — worth the investment.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Amplemarket</div>
-        <div class="uxfeel">"Polished, premium, opinionated."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Cohesive single workspace; AI output quality feels high-end. Strong support (9.3/10).</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>High floor + annual-only is a heavy first commitment before you've felt the UX.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Match the polish, but let people feel it via trial/monthly before committing.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Clay</div>
-        <div class="uxfeel">"Powerful — once you've climbed the curve."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Spreadsheet metaphor + infinite flexibility; a builder's playground.</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>Steep learning curve — spawned a whole "GTM Engineer" job category just to operate it.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Offer the power as guardrailed defaults, so reps win without becoming operators.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Enginy</div>
-        <div class="uxfeel">"Outbound, managed — when it works."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Opinionated pipeline + autonomous reply agent: minimal building, the system runs outbound for you.</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>No trial to feel it first; G2 reports bugs, HubSpot sync breakage, and tricky prompt tuning.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Agent-grade automation is wanted — but let people try it self-serve before the contract.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Apollo</div>
-        <div class="uxfeel">"Everything's here — somewhere."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Unbeatable breadth-per-dollar; the free tier makes starting frictionless.</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>Cluttered, overwhelming UI; opaque credit math; support thin below the top tier.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Bundling must never cost clarity — one loop beats forty modules.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname">Sales Navigator</div>
-        <div class="uxfeel">"The network is the product."</div>
-        <div class="uxrow plus"><span class="uxlbl">+</span><span>Alerts and intent from real activity feel alive — job changes update themselves.</span></div>
-        <div class="uxrow minus"><span class="uxlbl">−</span><span>Expensive, clunky messaging UX, and everything is locked in: no emails, no export.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Live where the relationships are — and never make users risk their LinkedIn account to get value.</span></div>
-      </div>
-
-      <div class="uxnote reveal">
-        <div class="uxname" style="color:var(--lavender)">Cross-cutting</div>
-        <div class="uxfeel">Patterns worth standardizing on.</div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Time-to-first-value is the metric: every tool that wins starts with one fast, obvious action.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Two-surface clarity: rep does, leader sees — don't blur the extension and the web app.</span></div>
-        <div class="uxrow imp"><span class="uxlbl">→</span><span>Predictable pricing UX (no credit math mid-task) reduces hesitation and support load.</span></div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
 <!-- Chrome extension landscape -->
 <section class="std" style="padding-top:24px" id="extension">
   <div class="container">
@@ -1395,8 +1425,8 @@
 <section class="std" style="padding-top:24px" id="reviews">
   <div class="container">
     <div class="section-h reveal">
-      <h2>What the <span class="accent">reviews</span> say</h2>
-      <p>G2 and Capterra scores as of mid-2026, plus the most-cited praise and complaints from real reviews.</p>
+      <h2>Market <span class="accent">view</span></h2>
+      <p>G2 and Capterra scores as of mid-2026, plus how each product actually feels to use — and the lessons for KomboAI.</p>
     </div>
     <div class="rev-grid">
 
@@ -1600,279 +1630,90 @@
       </div>
 
     </div>
+  
+
+    <div class="mech-subhead reveal"><h3 class="sub-h">UX feel &amp; lessons</h3></div>
+<div class="ux-grid">
+
+      <div class="uxnote featured reveal">
+        <div class="uxname">KomboAI</div>
+        <div class="uxfeel">"It's already where I work."</div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Principle: meet the rep in-context (extension), give the leader the rollup (web app). Never make them leave the tab to get value.</span></div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Zero-context-switch: enrich, send, coach, log without leaving LinkedIn or the call.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Keep onboarding to one install + one CRM connect — value on day one, no ops engineer.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Lusha</div>
+        <div class="uxfeel">"One click and the number's there."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Extension is fast, obvious, near-zero learning curve — reveal in a single click.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Credit anxiety: users ration clicks and hit limits mid-flow.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Borrow the one-click simplicity; drop the credit-counting friction.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Lemlist</div>
+        <div class="uxfeel">"Playful, brand-forward, fun to build in."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Personality and delight (lowercase "lem-" world); the campaign builder is genuinely enjoyable.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Power features (deliverability, multichannel) add config depth; add-ons can surprise on price.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>A little brand personality lowers the perceived learning curve — worth the investment.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Amplemarket</div>
+        <div class="uxfeel">"Polished, premium, opinionated."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Cohesive single workspace; AI output quality feels high-end. Strong support (9.3/10).</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>High floor + annual-only is a heavy first commitment before you've felt the UX.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Match the polish, but let people feel it via trial/monthly before committing.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Clay</div>
+        <div class="uxfeel">"Powerful — once you've climbed the curve."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Spreadsheet metaphor + infinite flexibility; a builder's playground.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Steep learning curve — spawned a whole "GTM Engineer" job category just to operate it.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Offer the power as guardrailed defaults, so reps win without becoming operators.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Enginy</div>
+        <div class="uxfeel">"Outbound, managed — when it works."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Opinionated pipeline + autonomous reply agent: minimal building, the system runs outbound for you.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>No trial to feel it first; G2 reports bugs, HubSpot sync breakage, and tricky prompt tuning.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Agent-grade automation is wanted — but let people try it self-serve before the contract.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Apollo</div>
+        <div class="uxfeel">"Everything's here — somewhere."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Unbeatable breadth-per-dollar; the free tier makes starting frictionless.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Cluttered, overwhelming UI; opaque credit math; support thin below the top tier.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Bundling must never cost clarity — one loop beats forty modules.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname">Sales Navigator</div>
+        <div class="uxfeel">"The network is the product."</div>
+        <div class="uxrow plus"><span class="uxlbl">+</span><span>Alerts and intent from real activity feel alive — job changes update themselves.</span></div>
+        <div class="uxrow minus"><span class="uxlbl">−</span><span>Expensive, clunky messaging UX, and everything is locked in: no emails, no export.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Live where the relationships are — and never make users risk their LinkedIn account to get value.</span></div>
+      </div>
+
+      <div class="uxnote reveal">
+        <div class="uxname" style="color:var(--lavender)">Cross-cutting</div>
+        <div class="uxfeel">Patterns worth standardizing on.</div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Time-to-first-value is the metric: every tool that wins starts with one fast, obvious action.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Two-surface clarity: rep does, leader sees — don't blur the extension and the web app.</span></div>
+        <div class="uxrow imp"><span class="uxlbl">→</span><span>Predictable pricing UX (no credit math mid-task) reduces hesitation and support load.</span></div>
+      </div>
+
+    </div>
   </div>
 </section>
 
 <!-- Competitor deep dives -->
-<section class="std" style="padding-top:24px" id="profiles">
-  <div class="container">
-    <div class="section-h reveal">
-      <h2>Competitor <span class="accent">deep dives</span></h2>
-      <p>For each rival: their unique selling proposition, ideal customer, signature features, pricing model, and the growth &amp; marketing engine that got them here — plus what it means for us.</p>
-    </div>
-
-    <!-- Lusha -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">Lusha</div>
-          <div class="pcat">B2B contact data &amp; sales intelligence</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">$64M</div></div>
-          <div class="pstat"><div class="k">Valuation</div><div class="v">$1.5B</div></div>
-          <div class="pstat"><div class="k">Raised</div><div class="v">~$245M</div></div>
-          <div class="pstat"><div class="k">Community</div><div class="v">800K+</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">The fastest one-click reveal of <b>verified emails and direct dials</b>, powered by a crowd-sourced data community of 800K+ sales pros — a give-to-get network effect that compounds coverage and accuracy (80–90% email accuracy in 2026 testing).</p>
-
-      <div class="profile-take"><b>For KomboAI</b> A free, viral extension tier is a proven wedge — and a crowd-sourced data flywheel is genuinely defensible. The gap: Lusha stops at data. We act on it.</div>
-    </div>
-
-    <!-- Lemlist -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">Lemlist</div>
-          <div class="pcat">Multichannel outreach &amp; deliverability</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">~$40M</div></div>
-          <div class="pstat"><div class="k">Funding</div><div class="v">Bootstrapped</div></div>
-          <div class="pstat"><div class="k">Started with</div><div class="v">$1,000</div></div>
-          <div class="pstat"><div class="k">Team</div><div class="v">~180</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">Outbound that doesn't look like outbound: <b>image &amp; video hyper-personalization</b> plus the <b>Lemwarm</b> deliverability network, now spanning email, LinkedIn, calls, WhatsApp &amp; SMS from a single campaign.</p>
-
-      <div class="profile-take"><b>For KomboAI</b> Founder-led content + community is the cheapest durable distribution there is. The gap: Lemlist ends at the reply — we carry the deal through the call and the CRM.</div>
-    </div>
-
-    <!-- Amplemarket -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">Amplemarket</div>
-          <div class="pcat">All-in-one AI sales copilot</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">Funding</div><div class="v">$12M</div></div>
-          <div class="pstat"><div class="k">G2 rating</div><div class="v">4.6★</div></div>
-          <div class="pstat"><div class="k">Entry</div><div class="v">~$600/mo</div></div>
-          <div class="pstat"><div class="k">Backers</div><div class="v">Comcast</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">One premium workspace where <b>Duo AI agents</b> (Signal, Research, Sequence) plus voice cloning produce outreach that <b>sounds genuinely human</b> — fed by 100+ contact-level intent signals.</p>
-
-      <div class="profile-take"><b>For KomboAI</b> Marquee logos + hard outcome numbers are the fastest enterprise trust-builder. The gap: their ~$600 annual-only floor leaves the accessible, monthly, coaching-led lane wide open.</div>
-    </div>
-
-    <!-- Clay -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">Clay</div>
-          <div class="pcat">GTM data &amp; automation environment</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">Valuation</div><div class="v">$3.1B</div></div>
-          <div class="pstat"><div class="k">Series C</div><div class="v">$100M</div></div>
-          <div class="pstat"><div class="k">Customers</div><div class="v">10K+</div></div>
-          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">$100M+</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">A <b>GTM development environment</b>: waterfall enrichment across 150+ providers for unmatched coverage, the Claygent AI research agent, and programmable spreadsheet-style workflows that turn any growth idea into a running system.</p>
-
-      <div class="profile-take"><b>For KomboAI</b> Category creation + a partner/creator ecosystem is the highest-leverage GTM play on this list. The gap: Clay needs an operator to build it — we win the reps who want value on day one.</div>
-    </div>
-
-    <!-- Enginy -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">Enginy</div>
-          <div class="pcat">EU AI-native sales platform (ex-Genesy AI)</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">ARR (2025)</div><div class="v">~€3M</div></div>
-          <div class="pstat"><div class="k">Seed (2025)</div><div class="v">€5M</div></div>
-          <div class="pstat"><div class="k">Clients</div><div class="v">500+</div></div>
-          <div class="pstat"><div class="k">Founded</div><div class="v">2023 · BCN</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">An <b>autonomous AI SDR for Europe</b>: one opinionated find → enrich → engage pipeline — waterfall enrichment across 30+ providers, AI-generated ICP playbooks with High/Medium/Low scoring, and an AI agent that continues conversations: handling objections, qualifying, and booking meetings on the rep's calendar.</p>
-
-      <div class="profile-take"><b>For KomboAI</b> Enginy proves the EU "all-in-one, GDPR-resident" story sells — but it's demo-gated at €799/mo with no call intelligence, no extension, and no SOC 2. A self-serve trial plus live coaching undercuts it in its own home market.</div>
-    </div>
-
-    <!-- Apollo -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">Apollo</div>
-          <div class="pcat">All-in-one GTM platform</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">ARR (2026)</div><div class="v">~$200M</div></div>
-          <div class="pstat"><div class="k">Valuation</div><div class="v">$1.6B</div></div>
-          <div class="pstat"><div class="k">Raised</div><div class="v">$251M</div></div>
-          <div class="pstat"><div class="k">G2 reviews</div><div class="v">9K+</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">The <b>cheapest credible all-in-one</b>: a 275M+ contact database, sequences, dialer, intent, and the agentic AI Assistant in one self-serve platform — powered by a crowdsourced data flywheel of 2M+ contributors who feed contact data back from their own mailboxes.</p>
-
-      <div class="profile-take"><b>For KomboAI</b> Apollo proves bundling at a value price wins volume — but its ceiling is the data flywheel itself (~65% accuracy, 15–25% bounces), coaching is post-call only, and LinkedIn has banned its extension. Accuracy, live coaching, and a LinkedIn-safe surface are our wedges.</div>
-    </div>
-
-    <!-- Sales Navigator -->
-    <div class="profile reveal">
-      <div class="profile-top">
-        <div class="profile-id">
-          <div class="pname">LinkedIn Sales Navigator</div>
-          <div class="pcat">B2B network, identity graph &amp; signals (Microsoft)</div>
-        </div>
-        <div class="profile-stats">
-          <div class="pstat"><div class="k">Members</div><div class="v">1.2B</div></div>
-          <div class="pstat"><div class="k">Subscribers</div><div class="v">1M+</div></div>
-          <div class="pstat"><div class="k">Est. ARR</div><div class="v">$1.5–2B</div></div>
-          <div class="pstat"><div class="k">LinkedIn rev</div><div class="v">~$20B/yr</div></div>
-        </div>
-      </div>
-            <p class="profile-usp">The <b>canonical, self-maintaining B2B identity graph</b> — 1.2B members who update their own job changes — plus the only first-party behavioral intent in the industry (180+ signals from real LinkedIn activity). The walled garden is the business model: no emails, no export, no automation, at any price.</p>
-
-      <div class="profile-take"><b>For KomboAI</b> Not a rival to displace — the substrate we ride. Our extension must stay strictly assistive (no scraping, no auto-actions) to keep users' accounts safe, and we win by adding exactly what the garden withholds: contact data, sequencing, live coaching, and CRM hygiene.</div>
-    </div>
-
-  </div>
-</section>
-
 <!-- Head-to-head deep dives -->
 <!-- Two-surface strategy: extension + web app -->
-<section class="std" style="padding-top:24px" id="surfaces">
-  <div class="container">
-    <div class="section-h reveal">
-      <h2>Two surfaces, <span class="accent">one system</span></h2>
-      <p>Deeper advice for our two products — the Chrome extension and the upcoming web app — and how each earns its place with our five target audiences: sales reps, managers, ops, startups, and enterprise.</p>
-    </div>
-
-    <div class="surface-grid reveal">
-      <div class="surface ext">
-        <div class="surface-kicker">Surface 1 · Chrome extension</div>
-        <h3>The wedge &amp; the capture layer</h3>
-        <p class="lead">The extension is where the rep already works — LinkedIn, Sales Nav, the CRM, the live call. Its job isn't just to <i>reveal</i> data like Lusha; it's to <b>capture every signal and action</b> and pipe it cleanly into the web app. Win the rep's daily habit, and you earn the team's data.</p>
-        <ul>
-          <li><b>Ship a genuinely free tier.</b> Make it the bottom-up, viral entry point — adoption from one rep becomes the leader's proof point.</li>
-          <li><b>Make it the action surface, not a lookup.</b> Enrich, sequence, capture call notes, and write to CRM in-context — so it replaces tools rather than adding one.</li>
-          <li><b>Treat every interaction as structured data.</b> Each reveal, send, and call feeds the web app's pipeline, activity, and coaching views — and a crowd-sourced data flywheel.</li>
-          <li><b>Zero-config CRM write-back.</b> The extension should keep HubSpot/Salesforce clean automatically — the hook that makes RevOps an advocate, not a gatekeeper.</li>
-        </ul>
-      </div>
-
-      <div class="surface app">
-        <div class="surface-kicker">Surface 2 · Web app (upcoming)</div>
-        <h3>The command center</h3>
-        <p class="lead">The extension wins the rep; the web app wins the <b>buyer</b>. This is where sales leaders and RevOps see the team-level picture the extension can't show — adoption, conversion lift, pipeline health, and ROI — and where governance and configuration live.</p>
-        <ul>
-          <li><b>Lead with team-level outcomes.</b> Aggregate the extension's rep-level activity into conversion, coaching adoption, and revenue-lift dashboards.</li>
-          <li><b>Make ROI self-evident.</b> Wire in the ROI calculator's logic so leaders see realized vs projected lift over time — the renewal argument writes itself.</li>
-          <li><b>Admin, governance &amp; seats.</b> Roles, permissions, data residency, audit — the table stakes that unlock mid-market and enterprise deals.</li>
-          <li><b>Workflow builder for RevOps.</b> A guardrailed slice of Clay-style automation (routing, enrichment rules, CRM hygiene) — powerful, but it shouldn't need a GTM engineer to run.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="persona-grid">
-
-      <div class="persona reveal">
-        <div class="persona-head">
-          <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          </div>
-          <h3>For Sales Reps</h3>
-        </div>
-        <div class="ptag">Spend more time selling, less time searching</div>
-        <div class="care"><b>What they care about:</b> hitting quota without drowning in tabs — finding the right contact fast, knowing what to say, and never doing CRM data entry at 7pm.</div>
-        <div class="adv-h">// What the extension should give them</div>
-        <ul>
-          <li><b>One-click enrich-and-sequence</b> from LinkedIn or Sales Nav — Lusha's speed, but the contact lands in a running cadence, not a CSV.</li>
-          <li><b>Live coaching in the call</b> — objection prompts and next-best questions inside Meet/Teams, the feature none of the four rivals has.</li>
-          <li><b>Zero admin work.</b> Notes, fields, and activity write themselves to the CRM — the rep's reward for adopting the tool.</li>
-        </ul>
-      </div>
-
-      <div class="persona reveal">
-        <div class="persona-head">
-          <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <h3>For Managers</h3>
-        </div>
-        <div class="ptag">Forecast accurately and coach at scale</div>
-        <div class="care"><b>What they care about:</b> hitting the number, rep ramp &amp; consistency, forecast accuracy, and proof the tool actually lifts conversion — not vanity activity metrics.</div>
-        <div class="adv-h">// What the web app should give them</div>
-        <ul>
-          <li><b>A conversion-lift story, per rep and per team</b> — before/after cold-contact-to-customer rate, tied to the coaching that drove it.</li>
-          <li><b>Coaching adoption &amp; call intelligence at a glance</b> — who's using live coaching, which behaviors move win rates. This is our moat; none of the four competitors surface it.</li>
-          <li><b>Forecast confidence &amp; pipeline health</b> — deal-risk signals and drift alerts managers can act on in a 1:1.</li>
-        </ul>
-      </div>
-
-      <div class="persona reveal">
-        <div class="persona-head">
-          <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </div>
-          <h3>For Ops</h3>
-        </div>
-        <div class="ptag">Automate the workflows your team hates</div>
-        <div class="care"><b>What they care about:</b> CRM data quality, clean attribution, integrations that don't break, governance/admin control, and tooling that reduces — not adds — operational overhead.</div>
-        <div class="adv-h">// What the web app should give them</div>
-        <ul>
-          <li><b>Automatic CRM hygiene as the headline.</b> Dedupe, enrich, and write-back that keeps Salesforce/HubSpot clean without manual cleanup — the pain ops feels daily.</li>
-          <li><b>A guardrailed workflow builder.</b> Routing, enrichment rules, and triggers with Clay-like power but no maintenance burden or per-contact cost surprises.</li>
-          <li><b>Trustworthy attribution &amp; reporting.</b> Clean activity → pipeline → revenue lineage they can defend in a board deck.</li>
-        </ul>
-      </div>
-
-      <div class="persona reveal">
-        <div class="persona-head">
-          <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
-          </div>
-          <h3>For Startups</h3>
-        </div>
-        <div class="ptag">Go to market faster with less manual work</div>
-        <div class="care"><b>What they care about:</b> pipeline this quarter with two founders and maybe one SDR — no budget for an Amplemarket floor, no headcount for a Clay operator, no patience for a four-tool stack.</div>
-        <div class="adv-h">// What both surfaces should give them</div>
-        <ul>
-          <li><b>Day-one value, low commitment.</b> Core at 348€/mo covers a 3-person team with 15K credits — billed monthly via Stripe, cancellable on 30 days' notice, one extension install + one CRM connect.</li>
-          <li><b>The whole loop in one line item.</b> Data, outreach, coaching and CRM hygiene for less than a Lemlist-plus-Lusha stack, with no credit math to budget around.</li>
-          <li><b>Founder-as-seller defaults.</b> Pre-built ICP finders, sequences and coaching playbooks — so people who've never run outbound get competent fast.</li>
-        </ul>
-      </div>
-
-      <div class="persona reveal">
-        <div class="persona-head">
-          <div class="persona-ic">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
-          </div>
-          <h3>For Enterprise</h3>
-        </div>
-        <div class="ptag">Security, scale, and dedicated support</div>
-        <div class="care"><b>What they care about:</b> passing security review before anyone sees a demo — certifications, data residency, SSO, admin control — then proof the tool works at hundreds of seats with someone to call when it doesn't.</div>
-        <div class="adv-h">// What the web app should give them</div>
-        <ul>
-          <li><b>SOC 2 + GDPR with EU data residency</b> — the combination most of the field can't offer; lead the deck with it, the way Lusha leads with its ISO stack.</li>
-          <li><b>SSO/SAML, RBAC, audit logs &amp; seat governance</b> — the table stakes that turn security from a blocker into a champion.</li>
-          <li><b>Dedicated support &amp; rollout playbooks.</b> Amplemarket's 9.3/10 support score is the competitive bar — match it with a named CSM and ramp plan per team.</li>
-        </ul>
-      </div>
-
-    </div>
-  </div>
-</section>
-
 <!-- Momentum timeline -->
 <section class="std" style="padding-top:24px" id="timeline">
   <div class="container">
@@ -1964,20 +1805,19 @@
   </div>
 </section>
 
-<!-- Closing CTA -->
+<!-- Internal note -->
 <section class="closing-cta">
   <div class="container">
     <div class="cc-card reveal">
       <div class="cc-orb"></div>
       <div class="cc-content">
         <div class="cc-headline">
-          <h2>Fewer tools.<br/>More <span class="cc-pill">pipeline.</span></h2>
+          <h2>Internal<br/><span class="cc-pill">reference.</span></h2>
         </div>
         <div class="cc-side">
-          <p>See how much of your stack KomboAI can fold into one copilot — on your real CRM, in 30 minutes.</p>
+          <p>This document is for Kombo team use only. Keep it current as the competitive landscape shifts — flag any stale data or missing players to the team.</p>
           <div class="cc-cta">
-            <a href="./demo.html" class="btn-neon">Book a demo</a>
-            <a href="./roi-calculator.html" class="btn-ghost">Calculate ROI →</a>
+            <a href="https://github.com/kevinhawkinsdesign/kombo-test/tree/main/mockups/research" class="btn-ghost">Research dossiers →</a>
           </div>
         </div>
       </div>
