@@ -117,7 +117,11 @@
   /* Feature mechanics */
   .mech-subhead{margin:40px 0 8px}
   .sub-h{font-size:18px;font-weight:700;color:var(--mute);letter-spacing:-0.01em;border-bottom:1px solid var(--line);padding-bottom:12px}
-  .mech{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-bottom:14px}
+  .mech{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-bottom:0}
+  .mech-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .mech-grid>.mech-subhead{grid-column:1/-1}
+  .mech-grid>.profile-take{grid-column:1/-1}
+  @media(max-width:900px){.mech-grid{grid-template-columns:1fr}}
   .mech-top{margin-bottom:18px}
   .mech-top h3{font-size:20.5px;font-weight:700;letter-spacing:-0.015em;margin-bottom:8px;display:flex;align-items:center;gap:10px}
   .mech-top h3 .mech-ic{width:30px;height:30px;border-radius:9px;background:rgba(181,161,255,0.12);border:1px solid var(--lavender-soft);display:flex;align-items:center;justify-content:center;color:var(--lavender);flex-shrink:0}
@@ -222,7 +226,7 @@
   .surface .lead{font-size:16px;color:var(--mute);line-height:1.6;margin-bottom:18px}
   .surface .lead b{color:var(--ink);font-weight:600}
   .surface ul{list-style:none;display:flex;flex-direction:column;gap:11px}
-  .surface li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;color:var(--mute);line-height:1.55}
+  .surface li{display:grid;grid-template-columns:auto clamp(120px,30%,200px) 1fr;gap:10px;align-items:start;font-size:15.5px;color:var(--mute);line-height:1.55}
   .surface li b{color:var(--ink);font-weight:600}
   .surface.ext li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(181,161,255,0.18);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23B5A1FF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
   .surface.app li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(212,255,0,0.18);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23D4FF00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
@@ -240,7 +244,7 @@
   .persona .care b{color:var(--ink);font-weight:600}
   .persona .adv-h{font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.09em;color:var(--neon);margin-bottom:12px}
   .persona ul{list-style:none;display:flex;flex-direction:column;gap:11px}
-  .persona li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;color:var(--mute);line-height:1.55}
+  .persona li{display:grid;grid-template-columns:auto clamp(120px,30%,200px) 1fr;gap:10px;align-items:start;font-size:15.5px;color:var(--mute);line-height:1.55}
   .persona li b{color:var(--ink);font-weight:600}
   .persona li::before{content:'';width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;background:rgba(212,255,0,0.16);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23D4FF00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center}
   .persona-grid .persona:last-child:nth-child(odd){grid-column:1/-1}
@@ -282,7 +286,7 @@
 
   /* Section subnav */
   .subnav{position:sticky;top:0;z-index:40;background:rgba(14,14,16,0.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-  .subnav-inner{display:flex;gap:4px;justify-content:safe center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px clamp(28px,4vw,72px);max-width:none;margin:0 auto}
+  .subnav-inner{display:flex;gap:4px;width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px clamp(28px,4vw,72px);margin:0 auto}
   .subnav-inner::-webkit-scrollbar{display:none}
   .subnav a{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:0.04em;color:var(--mute);padding:7px 12px;border-radius:999px;white-space:nowrap;border:1px solid transparent;transition:color .2s,border-color .2s,background .2s;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
   .subnav a:hover{color:var(--ink)}
@@ -290,7 +294,9 @@
   section[id]{scroll-margin-top:64px}
 
   /* Pricing deep dive */
-  .pd-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:14px;overflow:hidden}
+  .pd-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:0;overflow:hidden}
+  .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  @media(max-width:1200px){.pd-grid{grid-template-columns:1fr}}
   .pd-card.featured{border-color:rgba(212,255,0,0.32);background:linear-gradient(160deg,rgba(212,255,0,0.06) 0%,rgba(212,255,0,0.01) 100%)}
   .pd-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 26px;background:var(--bg-2);border-bottom:1px solid var(--line);flex-wrap:wrap}
   .pd-head .pdname{font-size:19.5px;font-weight:700;letter-spacing:-0.015em}
@@ -948,6 +954,7 @@
       <h2>Pricing, <span class="accent">decoded</span></h2>
       <p>List prices hide the real cost. Every public tier, credit currency, and billing gate in the field — as listed June 2026 — and where each vendor's spend actually escalates.</p>
     </div>
+    <div class="pd-grid">
 
     <div class="pd-card featured reveal">
       <div class="pd-head"><span class="pdname">KomboAI</span><span class="pdmodel">Model: <b>team bundles · users + credits included · annual contract, billed monthly (Stripe)</b></span></div>
@@ -1039,7 +1046,7 @@
       </table></div>
       <div class="pd-note"><b>Where spend escalates:</b> the tier ladder — meaningful CRM integration sits only in the custom-priced top tier, prices have been raised repeatedly (latest restructure late 2025), and the seat buys identity data only: emails, export, and automation aren't available at any price.</div>
     </div>
-
+    </div>
   </div>
 </section>
 
@@ -1050,6 +1057,7 @@
       <h2>Under the <span class="accent">hood</span></h2>
       <p>How the core capabilities actually work, what's behind each vendor's database claims, integration and API reality, compliance posture, billing fine print, and what each "AI copilot" does when you read the configuration docs instead of the homepage.</p>
     </div>
+    <div class="mech-grid">
 
     <!-- 1. Contact data & enrichment -->
     <div class="mech reveal">
@@ -1266,6 +1274,7 @@
 
     <div class="profile-take reveal" style="border-radius:14px;border:1px solid rgba(212,255,0,0.18);margin-top:4px">
       <b>Six implications</b> (1) The conversation layer is still open — across seven rivals' docs, nobody coaches live in the call (Apollo's is post-call; LinkedIn's assistant drafts, it doesn't coach). (2) Credit anxiety is universal ammunition; only Lemlist charges on success — Apollo's expiring, double-billing credits are the worst offender. (3) Truly real-time CRM sync doesn't exist in this field — ours is provable. (4) MCP servers are becoming table stakes (Lusha, Clay, Enginy ship them) — roadmap it. (5) Enginy is an EU positioning threat, not a feature threat: self-serve + live coaching beats demo-gated €799/mo on its home turf. (6) LinkedIn is the substrate, not a rival to displace — build assistive, never scraping or auto-acting: enforcement now runs suspension-first and our users' accounts are the asset we protect.
+    </div>
     </div>
   </div>
 </section>
