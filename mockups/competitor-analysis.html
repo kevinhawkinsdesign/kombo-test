@@ -192,6 +192,38 @@
   .uxnote .uxrow span:last-child{color:var(--mute)}
   .uxnote .uxrow.imp span:last-child{color:var(--ink)}
   .ux-grid .uxnote:last-child:nth-child(3n+1){grid-column:1/-1}
+
+  /* Chrome extension comparison */
+  .ext-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;margin-top:32px}
+  .extcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px}
+  .extcard.featured{border-color:rgba(212,255,0,0.35);background:linear-gradient(160deg,rgba(212,255,0,0.06) 0%,rgba(212,255,0,0.01) 100%)}
+  .extcard.banned{border-color:rgba(255,80,80,0.35);background:rgba(255,80,80,0.03)}
+  .extcard-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .extco{font-size:17px;font-weight:700;letter-spacing:-0.01em}
+  .extcard.featured .extco{color:var(--neon)}
+  .extcard.banned .extco{color:#FF6060}
+  .ext-badge{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .ext-badge.safe{background:rgba(0,200,100,0.12);color:#00C864;border:1px solid rgba(0,200,100,0.3)}
+  .ext-badge.caution{background:rgba(255,180,0,0.12);color:#FFB400;border:1px solid rgba(255,180,0,0.3)}
+  .ext-badge.danger{background:rgba(255,80,80,0.13);color:#FF5050;border:1px solid rgba(255,80,80,0.3)}
+  .extcard-where{font-size:12.5px;color:var(--mute);font-family:'JetBrains Mono',monospace;letter-spacing:.02em;line-height:1.55}
+  .ext-list{padding-left:1.15em;margin:0;display:flex;flex-direction:column;gap:7px}
+  .ext-list li{font-size:14.5px;line-height:1.6;color:var(--mute)}
+  .ext-list li b{color:var(--ink);font-weight:600}
+  .ext-risk{background:rgba(255,255,255,0.04);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;margin-top:auto;border:1px solid var(--line)}
+  .extcard.banned .ext-risk{background:rgba(255,80,80,0.06);border-color:rgba(255,80,80,0.2)}
+  .risk-lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--mute-2)}
+  .risk-txt{font-size:13.5px;line-height:1.55;color:var(--mute)}
+  .risk-txt.ok{color:#00C864}
+  .risk-txt.warn{color:#FFB400}
+  .risk-txt.bad{color:#FF5050}
+  .noext-note{margin-top:44px;padding:24px 28px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,0.02)}
+  .noext-note h3{font-size:15px;font-weight:600;color:var(--mute-2);letter-spacing:.03em;margin-bottom:18px;text-transform:uppercase}
+  .noext-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+  .noext-item{display:flex;flex-direction:column;gap:7px}
+  .noext-co{font-size:14.5px;font-weight:700;color:var(--mute)}
+  .noext-item p{font-size:13.5px;line-height:1.6;color:var(--mute-2);margin:0}
+  @media(max-width:700px){.ext-grid{grid-template-columns:1fr}}
   @media(max-width:900px){.ux-grid{grid-template-columns:1fr 1fr}}
   @media(max-width:600px){.ux-grid{grid-template-columns:1fr}}
 
@@ -399,10 +431,10 @@
 <!-- Hero -->
 <section class="hero">
   <div class="container">
-    <div class="eyebrow reveal"><span class="dot"></span> Competitor analysis · Updated Jun 10, 2026</div>
+    <div class="eyebrow reveal"><span class="dot"></span> Competitor analysis · Updated Jun 15, 2026</div>
     <h1 class="reveal">KomboAI vs <span class="highlight">the field.</span></h1>
     <p class="reveal">A deep, fair comparison of KomboAI against Lusha, Lemlist, Amplemarket, Clay, Enginy, Apollo, and LinkedIn Sales Navigator — feature by feature, what their own help docs reveal, plus full pricing teardowns, review-score data, security &amp; integration diligence, a 2024–26 momentum timeline, and each rival's USP, ideal customer, and growth engine. Starting with the specific moves KomboAI should make.</p>
-    <p class="updated reveal">// Last reviewed June 10, 2026 · public pricing &amp; product pages</p>
+    <p class="updated reveal">// Last reviewed June 15, 2026 · public pricing &amp; product pages</p>
   </div>
 </section>
 
@@ -418,6 +450,7 @@
     <a href="#trust">Data &amp; trust</a>
     <a href="#helpdocs">Help docs</a>
     <a href="#ux">UX</a>
+    <a href="#extension">Extensions</a>
     <a href="#reviews">Reviews</a>
     <a href="#profiles">Profiles</a>
     <a href="#h2h">Head-to-head</a>
@@ -1468,6 +1501,153 @@
       </div>
 
     </div>
+  </div>
+</section>
+
+<!-- Chrome extension landscape -->
+<section class="std" style="padding-top:24px" id="extension">
+  <div class="container">
+    <div class="section-h reveal">
+      <h2>Chrome extensions <span class="accent">compared</span></h2>
+      <p>Five of the eight vendors ship a Chrome extension. What each one actually does in-browser, where it works, and — critically — which ones put a rep's LinkedIn account at risk under LinkedIn's Q1 2026 suspension-first enforcement.</p>
+    </div>
+
+    <div class="ext-grid">
+
+      <!-- KomboAI -->
+      <div class="extcard featured reveal">
+        <div class="extcard-head">
+          <div class="extco">KomboAI</div>
+          <div class="ext-badge safe">LinkedIn safe</div>
+        </div>
+        <div class="extcard-where">// LinkedIn · Sales Navigator · Google Meet / Teams · HubSpot · Salesforce</div>
+        <ul class="ext-list">
+          <li><b>Action surface, not just a lookup.</b> Enrich, sequence, coach, and write to CRM in-context — without leaving the tab.</li>
+          <li><b>Live in-call coaching</b> inside Google Meet and Teams — objection prompts and next-best questions the moment you need them. No competitor in this set does this.</li>
+          <li><b>Automatic CRM write-back</b> on call end — notes, fields, and activity logged to HubSpot / Salesforce with zero manual work.</li>
+          <li>Strictly assistive architecture: <b>no DOM modification, no automation of LinkedIn actions</b> — the rep's account is never put at risk.</li>
+        </ul>
+        <div class="ext-risk">
+          <div class="risk-lbl">LinkedIn account risk</div>
+          <div class="risk-txt ok">None — reads public profile data and meeting context; never writes to or automates LinkedIn. Durable under suspension-first enforcement.</div>
+        </div>
+      </div>
+
+      <!-- Lusha -->
+      <div class="extcard reveal">
+        <div class="extcard-head">
+          <div class="extco">Lusha</div>
+          <div class="ext-badge safe">LinkedIn safe</div>
+        </div>
+        <div class="extcard-where">// LinkedIn · Sales Navigator · any website (broad permission)</div>
+        <ul class="ext-list">
+          <li><b>"Lusha Everywhere"</b> — reveals emails and direct phones on any page, not just LinkedIn profiles.</li>
+          <li>Bulk reveal from Sales Navigator search result pages.</li>
+          <li>One-click reveal: email + mobile + work phone + company data in a side panel.</li>
+          <li>Requires <b>"read and change all your data on websites you visit"</b> — a broad all-sites permission that enterprise IT teams frequently flag.</li>
+          <li>Programmatic API access gated to Scale tier ($199+/mo).</li>
+        </ul>
+        <div class="ext-risk">
+          <div class="risk-lbl">LinkedIn account risk</div>
+          <div class="risk-txt ok">Low — reads public profile data passively; does not automate LinkedIn actions. Broad browser permission is a trust friction, not a LinkedIn ToS issue.</div>
+        </div>
+      </div>
+
+      <!-- Amplemarket -->
+      <div class="extcard reveal">
+        <div class="extcard-head">
+          <div class="extco">Amplemarket</div>
+          <div class="ext-badge caution">Use with care</div>
+        </div>
+        <div class="extcard-where">// LinkedIn · Sales Navigator · Gmail sidebar</div>
+        <ul class="ext-list">
+          <li>Imports LinkedIn profiles and list pages directly into Amplemarket sequences in one click.</li>
+          <li>Reveals contact data (email + phone) and routes contacts into active cadences simultaneously.</li>
+          <li><b>LinkedIn voice messages</b> sent via the desktop extension.</li>
+          <li>Gmail sidebar: inline pipeline view and sequence management without leaving email.</li>
+          <li>LinkedIn action caps enforced by the extension: <b>50 connection requests/day, ~250 total actions/day</b>; stale pending requests auto-withdrawn.</li>
+        </ul>
+        <div class="ext-risk">
+          <div class="risk-lbl">LinkedIn account risk</div>
+          <div class="risk-txt warn">Moderate — the extension automates LinkedIn actions (invites, messages, visits) within capped daily limits. Those caps are Amplemarket's guardrails, not LinkedIn's. Monitor for policy changes under Q1 2026 suspension-first enforcement.</div>
+        </div>
+      </div>
+
+      <!-- Lemlist -->
+      <div class="extcard reveal">
+        <div class="extcard-head">
+          <div class="extco">Lemlist</div>
+          <div class="ext-badge caution">Use with care</div>
+        </div>
+        <div class="extcard-where">// LinkedIn (profiles + search) · Sales Navigator (search results only)</div>
+        <ul class="ext-list">
+          <li>Imports up to <b>999 leads</b> from LinkedIn profile and search pages into lemlist campaigns.</li>
+          <li>Imports up to <b>2,500 leads</b> from a Sales Navigator search result page.</li>
+          <li>Push-to-campaign: contacts land in a running sequence, not just a static list.</li>
+          <li>Session-based — uses the rep's active LinkedIn login cookie. <b>Disconnections are a documented support theme</b> and leave in-flight sequences stuck.</li>
+          <li>LinkedIn Recruiter pages and event pages are not supported.</li>
+        </ul>
+        <div class="ext-risk">
+          <div class="risk-lbl">LinkedIn account risk</div>
+          <div class="risk-txt warn">Moderate — session-based scraping of LinkedIn search results. LinkedIn's ToS prohibits automated data extraction regardless of pace. Not on LinkedIn's public banned-software list as of June 2026, but the mechanism is the same class of activity.</div>
+        </div>
+      </div>
+
+      <!-- Apollo -->
+      <div class="extcard banned reveal">
+        <div class="extcard-head">
+          <div class="extco">Apollo</div>
+          <div class="ext-badge danger">LinkedIn banned</div>
+        </div>
+        <div class="extcard-where">// LinkedIn · Gmail sidebar · Salesforce · HubSpot CRM overlay</div>
+        <ul class="ext-list">
+          <li>Reveals contact data on LinkedIn profiles and exports them to Apollo sequences.</li>
+          <li>Batch-executes LinkedIn sequence tasks — visits, connection requests, messages — in bulk directly from LinkedIn.</li>
+          <li>Gmail sidebar: Apollo contact card, deal stage, and sequence controls inline.</li>
+          <li>CRM overlay: Apollo enrichment panels injected into Salesforce and HubSpot record views.</li>
+          <li>Credits deducted per reveal even when using the extension; mobile credits run at 8× the email rate.</li>
+        </ul>
+        <div class="ext-risk">
+          <div class="risk-lbl">LinkedIn account risk</div>
+          <div class="risk-txt bad"><b>High. LinkedIn has formally listed Apollo's extension as prohibited scraping software.</b> Reps who install it risk account restriction or full suspension — under Q1 2026 enforcement, suspicious sessions are flagged within ~48 hours. Apollo's extension is the single riskiest piece of software a rep can run while logged into LinkedIn.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Vendors without an extension -->
+    <div class="noext-note reveal">
+      <h3>No Chrome extension</h3>
+      <div class="noext-grid">
+        <div class="noext-item">
+          <div class="noext-co">Clay</div>
+          <p>Workflow builder that runs in-browser as a web app, not a browser extension. Prospecting logic lives in Clay tables and API integrations — a Chrome extension doesn't fit the "GTM engineer builds it once" operating model.</p>
+        </div>
+        <div class="noext-item">
+          <div class="noext-co">Enginy</div>
+          <p>LinkedIn import is handled natively via list uploads and API; the outbound agent runs from the web app. No extension exists or is documented on the roadmap.</p>
+        </div>
+        <div class="noext-item">
+          <div class="noext-co">Sales Navigator</div>
+          <p>Sales Nav is the target surface that others extend, not an extension itself. LinkedIn's own Sales Assistant (agentic beta → 2026 rollout) builds a copilot layer <i>inside</i> the product — it's LinkedIn's answer to the extension market, and it compresses the assistive niche from above.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategic read-out -->
+    <div class="mech reveal" style="margin-top:40px">
+      <div class="mech-top">
+        <h3><span class="mech-ic"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></span> What this means for KomboAI</h3>
+        <div class="mech-how"><span class="tag">// the opportunity</span>The extension market splits into three camps: <b>data revealers</b> (Lusha — fast, safe, single purpose), <b>session scrapers</b> (Lemlist, Amplemarket — automate actions at varying risk), and <b>Apollo</b> — which tries to do everything and paid for it with a LinkedIn ban. The open space is an extension that acts as the rep's <b>in-context copilot across the full sales motion</b> — not just lookup, but live coaching, note capture, and CRM write-back — while staying strictly on the right side of LinkedIn's ToS.</div>
+      </div>
+      <div class="mech-rows">
+        <div class="mech-row"><span class="co us">Live coaching</span><span class="diff">KomboAI is the only extension in this set that works <b>inside the video call</b>. That's not a features gap the others are closing — it requires a fundamentally different product surface (meeting tab, not LinkedIn DOM).</span></div>
+        <div class="mech-row"><span class="co">Safety moat</span><span class="diff">Apollo's ban makes the risk real and legible. An extension architected to be <b>strictly assistive</b> — reading context, never writing to or automating LinkedIn — is a genuine differentiator in enterprise sales cycles where IT security reviews extension permissions.</span></div>
+        <div class="mech-row"><span class="co">Permission scope</span><span class="diff">Lusha's "all websites" permission is a procurement friction — security teams flag it immediately. Requesting <b>only LinkedIn, Sales Nav, and the specific CRM/meeting tool</b> makes the extension easier to approve and signals architectural intentionality.</span></div>
+        <div class="mech-row"><span class="co">Flywheel</span><span class="diff">Every in-extension action (reveal, note, call tag) should feed the web app's pipeline, coaching, and data views — so the extension isn't a standalone feature but the <b>primary data-capture surface</b> for the whole system. That's the structural advantage Clay (no extension) and Lusha (data-only) can't replicate.</span></div>
+      </div>
+    </div>
+
   </div>
 </section>
 
