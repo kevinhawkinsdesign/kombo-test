@@ -1893,7 +1893,18 @@
       if(a===active)return;
       if(active){active.classList.remove('active');active.removeAttribute('aria-current');}
       active=a;
-      if(a){a.classList.add('active');a.setAttribute('aria-current','true');a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}
+      if(a){
+        a.classList.add('active');a.setAttribute('aria-current','true');
+        // Keep the active chip in view by scrolling ONLY the subnav strip
+        // horizontally. scrollIntoView() would also move the page vertically
+        // (the subnav is position:sticky), which fights the user's scroll.
+        const bar=a.closest('.subnav-inner');
+        if(bar){
+          const barRect=bar.getBoundingClientRect(),aRect=a.getBoundingClientRect();
+          const delta=(aRect.left-barRect.left)+aRect.width/2-bar.clientWidth/2;
+          bar.scrollTo({left:bar.scrollLeft+delta,behavior:'smooth'});
+        }
+      }
     };
     const spy=new IntersectionObserver(es=>{
       es.forEach(e=>{if(e.isIntersecting)setActive(map.get(e.target));});
