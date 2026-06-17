@@ -35,17 +35,17 @@ import { getAccount, deals } from "@/lib/mock-extra"
 import { getCompanyNews } from "@/lib/mock-depth"
 import { prospects } from "@/lib/mock-data"
 import { getRep } from "@/lib/team"
-import { initials, formatDate, relativeTime } from "@/lib/format"
+import {
+  initials,
+  formatDate,
+  relativeTime,
+  formatMoney as money,
+} from "@/lib/format"
 import type { Account, DealStage } from "@/lib/types"
 
 function nameInitials(name: string): string {
   const [first, ...rest] = name.split(" ")
   return initials(first, rest.at(-1))
-}
-
-function money(n: number): string {
-  if (n >= 1000) return `$${Math.round(n / 1000)}k`
-  return `$${(n / 1000).toFixed(1)}K`
 }
 
 function healthTone(score: number): {

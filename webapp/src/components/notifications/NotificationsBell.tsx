@@ -22,7 +22,12 @@ export function NotificationsBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+        >
           <Bell className="size-4" />
           {unread > 0 && (
             <span className="bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-medium">

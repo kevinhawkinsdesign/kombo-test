@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { Mail, Send, ExternalLink } from "lucide-react"
+import { Mail, Send, ExternalLink, ArrowLeft, Inbox as InboxIcon } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -33,6 +33,8 @@ export default function Inbox() {
   )
   const [activeId, setActiveId] = React.useState(sorted[0]?.id)
   const [reply, setReply] = React.useState("")
+  // On mobile we show either the list or the thread (master-detail).
+  const [showThreadMobile, setShowThreadMobile] = React.useState(false)
 
   const active = sorted.find((c) => c.id === activeId)
   const activeProspect = active ? getProspect(active.prospectId) : undefined
@@ -40,7 +42,12 @@ export default function Inbox() {
   return (
     <div className="flex h-[calc(100svh-4rem)]">
       {/* Conversation list */}
-      <div className="flex w-full max-w-sm flex-col border-r">
+      <div
+        className={cn(
+          "w-full flex-col border-r md:flex md:w-80 md:max-w-sm md:shrink-0",
+          showThreadMobile ? "hidden md:flex" : "flex"
+        )}
+      >
         <div className="flex h-14 items-center justify-between border-b px-4">
           <h2 className="font-semibold">Inbox</h2>
           <Badge variant="secondary" className="font-normal">
@@ -55,7 +62,10 @@ export default function Inbox() {
             return (
               <button
                 key={conv.id}
-                onClick={() => setActiveId(conv.id)}
+                onClick={() => {
+                  setActiveId(conv.id)
+                  setShowThreadMobile(true)
+                }}
                 className={cn(
                   "flex w-full gap-3 border-b px-4 py-3 text-left transition-colors",
                   conv.id === activeId ? "bg-muted/60" : "hover:bg-muted/40"
@@ -90,8 +100,22 @@ export default function Inbox() {
 
       {/* Thread */}
       {active && activeProspect ? (
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div
+          className={cn(
+            "min-w-0 flex-1 flex-col",
+            showThreadMobile ? "flex" : "hidden md:flex"
+          )}
+        >
           <div className="flex h-14 items-center gap-3 border-b px-5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="-ml-2 md:hidden"
+              onClick={() => setShowThreadMobile(false)}
+              aria-label="Back to inbox"
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
             <ProspectAvatar prospect={activeProspect} className="size-8" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
@@ -162,8 +186,16 @@ export default function Inbox() {
           </div>
         </div>
       ) : (
-        <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
-          Select a conversation
+        <div className="hidden flex-1 flex-col items-center justify-center gap-3 text-center md:flex">
+          <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+            <InboxIcon className="size-6" />
+          </span>
+          <div>
+            <p className="text-sm font-medium">Select a conversation</p>
+            <p className="text-muted-foreground text-sm">
+              Choose a thread from the list to read and reply.
+            </p>
+          </div>
         </div>
       )}
     </div>

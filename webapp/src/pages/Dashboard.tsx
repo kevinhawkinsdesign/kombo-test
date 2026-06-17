@@ -34,13 +34,8 @@ import {
   type TeamMember,
 } from "@/lib/team"
 import { useAuth } from "@/lib/auth"
-import { initials } from "@/lib/format"
+import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
-
-function money(n: number): string {
-  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K`
-  return `$${n}`
-}
 
 function Delta({ value }: { value: number }) {
   const positive = value >= 0
@@ -97,7 +92,7 @@ export default function Dashboard() {
     : `Team pipeline and forecast · quota ${money(data.quota)} this quarter`
 
   return (
-    <Page className="max-w-none">
+    <Page>
       <PageHeading
         title={title}
         description={description}

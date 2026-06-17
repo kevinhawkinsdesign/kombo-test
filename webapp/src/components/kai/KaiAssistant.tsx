@@ -155,7 +155,12 @@ export function KaiAssistant() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Message Kai…"
           />
-          <Button type="submit" size="icon" disabled={!input.trim()}>
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!input.trim()}
+            aria-label="Send message"
+          >
             <Send className="size-4" />
           </Button>
         </form>

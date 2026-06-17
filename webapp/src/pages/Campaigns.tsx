@@ -98,7 +98,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Campaign options">
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>

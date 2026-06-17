@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
+import { MobileNav } from "@/components/layout/AppSidebar"
 import { KaiAssistant } from "@/components/kai/KaiAssistant"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
@@ -38,7 +39,8 @@ export function AppHeader({ title }: { title?: string }) {
   const navigate = useNavigate()
 
   return (
-    <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-4 border-b px-4 backdrop-blur md:px-6">
+    <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur md:gap-4 md:px-6">
+      <MobileNav />
       {title && (
         <h1 className="hidden text-base font-semibold lg:block">{title}</h1>
       )}
@@ -49,6 +51,7 @@ export function AppHeader({ title }: { title?: string }) {
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
           placeholder="Search prospects, companies…"
+          aria-label="Search prospects and companies"
           className="pl-9"
           onFocus={() => navigate("/search")}
         />
