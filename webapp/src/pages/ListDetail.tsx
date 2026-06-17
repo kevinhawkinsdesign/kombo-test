@@ -1,11 +1,26 @@
 import * as React from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { ArrowLeft, Send, Download, Pencil, Trash2, X, Plus } from "lucide-react"
+import {
+  ArrowLeft,
+  Send,
+  Download,
+  Pencil,
+  Trash2,
+  X,
+  Plus,
+  Sparkles,
+  RefreshCw,
+  Zap,
+  Search,
+  Database,
+  Pause,
+} from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
@@ -30,8 +45,9 @@ import {
 } from "@/components/common/ProspectBits"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import { getProspect } from "@/lib/mock-data"
+import { getProspect, getCampaign } from "@/lib/mock-data"
 import { useLists, useProspects, listStore } from "@/lib/store"
+import { formatDate } from "@/lib/format"
 import type { Prospect, ProspectList } from "@/lib/types"
 
 export default function ListDetail() {
@@ -111,7 +127,10 @@ export default function ListDetail() {
         </div>
       </div>
 
-      <div className="mb-3 flex justify-end">
+      {list.dynamic && <DynamicPlaylistPanel list={list} />}
+
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Prospects</h3>
         <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
           <Plus className="size-4" />
           Add prospects
@@ -119,6 +138,7 @@ export default function ListDetail() {
       </div>
 
       <Card className="overflow-hidden p-0">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -188,6 +208,7 @@ export default function ListDetail() {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
@@ -208,6 +229,127 @@ export default function ListDetail() {
 
       <AddProspectsDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
     </Page>
+  )
+}
+
+function DynamicPlaylistPanel({ list }: { list: ProspectList }) {
+  const campaign = list.campaignId ? getCampaign(list.campaignId) : undefined
+  const criteriaChips = list.criteria
+    ? [
+        ...list.criteria.titles,
+        ...list.criteria.seniority,
+        ...list.criteria.industries,
+        ...list.criteria.headcount,
+        ...list.criteria.locations,
+        ...list.criteria.signals,
+      ]
+    : []
+  const shown = criteriaChips.slice(0, 6)
+  const extra = criteriaChips.length - shown.length
+
+  return (
+    <Card className="border-primary/20 from-primary/[0.04] to-card mb-6 gap-0 overflow-hidden bg-gradient-to-br p-0">
+      <div className="flex flex-wrap items-center gap-2 border-b p-4">
+        <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
+          <Sparkles className="size-4" />
+        </span>
+        <span className="font-medium">Dynamic playlist</span>
+        <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+          <span className="relative flex size-1.5">
+            <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+            <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
+          </span>
+          Live
+        </Badge>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-auto"
+          onClick={() => toast("Inflow paused — no new prospects will be added")}
+        >
+          <Pause className="size-4" />
+          Pause inflow
+        </Button>
+      </div>
+
+      <div className="grid gap-4 p-4 sm:grid-cols-3">
+        <div className="space-y-2">
+          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+            <Search className="size-3.5" />
+            Audience
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {shown.map((c) => (
+              <Badge key={c} variant="secondary" className="font-normal">
+                {c}
+              </Badge>
+            ))}
+            {extra > 0 && (
+              <Badge variant="outline" className="font-normal">
+                +{extra}
+              </Badge>
+            )}
+            {shown.length === 0 && (
+              <span className="text-muted-foreground text-sm">
+                {list.criteria?.keywords || "All prospects"}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+            <Database className="size-3.5" />
+            Enrichment
+          </p>
+          <p className="flex items-center gap-1.5 text-sm font-medium">
+            <RefreshCw className="text-primary size-3.5" />
+            {list.enrichment === "continuous"
+              ? "Kept fresh continuously"
+              : "Enriched once on add"}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+            <Send className="size-3.5" />
+            Outreach
+          </p>
+          {campaign ? (
+            <p className="text-sm">
+              <Link
+                to={`/campaigns/${campaign.id}`}
+                className="font-medium hover:underline"
+              >
+                {campaign.name}
+              </Link>
+              <span className="text-muted-foreground block text-xs">
+                {list.sendMode === "continuous"
+                  ? "Auto-enrolls new prospects"
+                  : "One-time send"}
+              </span>
+            </p>
+          ) : (
+            <p className="text-muted-foreground text-sm">No sequence attached</p>
+          )}
+        </div>
+      </div>
+
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 border-t px-4 py-2.5 text-xs">
+        {typeof list.newPerWeek === "number" && (
+          <span className="text-foreground flex items-center gap-1 font-medium">
+            <Zap className="text-chart-4 size-3.5" />~{list.newPerWeek} new
+            prospects / week
+          </span>
+        )}
+        {list.lastSyncedAt && (
+          <>
+            <span>·</span>
+            <span>Last synced {formatDate(list.lastSyncedAt)}</span>
+          </>
+        )}
+      </div>
+    </Card>
   )
 }
 

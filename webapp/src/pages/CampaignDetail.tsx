@@ -384,7 +384,7 @@ export default function CampaignDetail() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="text-muted-foreground text-sm">
                             Wait
                           </span>
@@ -428,7 +428,7 @@ export default function CampaignDetail() {
 
                         <Separator />
 
-                        <div className="flex gap-6 text-xs">
+                        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
                           <span className="text-muted-foreground">
                             Sent{" "}
                             <span className="text-foreground font-medium tabular-nums">

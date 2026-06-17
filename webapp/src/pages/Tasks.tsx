@@ -1,10 +1,19 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { Phone, Mail, CornerUpRight, Pencil, Trash2, Plus } from "lucide-react"
+import {
+  Phone,
+  Mail,
+  CornerUpRight,
+  Pencil,
+  Trash2,
+  Plus,
+  CheckSquare,
+} from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -98,6 +107,19 @@ export default function Tasks() {
             New task
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="tasks"
+        icon={CheckSquare}
+        title="Stay on top of every follow-up"
+        description="Your prioritized daily list of calls, emails, and LinkedIn touches."
+        points={[
+          "Tasks auto-created from your sequences",
+          "A clean due-today view",
+          "Complete touches without context-switching",
+        ]}
+        className="mb-6"
       />
 
       <p className="text-muted-foreground mb-4 text-sm tabular-nums">

@@ -1,10 +1,22 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { Plus, Mail, Play, Pause, MoreHorizontal, Clock } from "lucide-react"
+import {
+  Plus,
+  Mail,
+  Play,
+  Pause,
+  MoreHorizontal,
+  Clock,
+  Send,
+  Workflow,
+  Sparkles,
+  RefreshCw,
+} from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
@@ -32,9 +44,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import { useCampaigns, campaignStore } from "@/lib/store"
+import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { formatDate } from "@/lib/format"
 import type { Campaign, CampaignStatus } from "@/lib/types"
+
+interface CampaignAudience {
+  id: string
+  name: string
+  continuous: boolean
+}
 
 const STATUS_VARIANT: Record<
   CampaignStatus,
@@ -57,10 +75,12 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 
 function CampaignCard({
   campaign,
+  audience,
   onDuplicate,
   onDelete,
 }: {
   campaign: Campaign
+  audience?: CampaignAudience
   onDuplicate: (campaign: Campaign) => void
   onDelete: (campaign: Campaign) => void
 }) {
@@ -103,6 +123,25 @@ function CampaignCard({
             Created {formatDate(campaign.createdAt)} · {campaign.steps.length}{" "}
             steps
           </p>
+          {audience && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              <Link to={`/lists/${audience.id}`}>
+                <Badge variant="secondary" className="gap-1 font-normal">
+                  <Sparkles className="size-3" />
+                  Fed by {audience.name}
+                </Badge>
+              </Link>
+              {audience.continuous && (
+                <Badge
+                  variant="secondary"
+                  className="text-chart-1 gap-1 font-normal"
+                >
+                  <RefreshCw className="size-3" />
+                  Continuous
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <Button variant="outline" size="sm" onClick={toggleStatus}>
@@ -255,10 +294,26 @@ function CreateCampaignDialog({
 
 export default function Campaigns() {
   const campaigns = useCampaigns()
+  const lists = useLists()
   const [createOpen, setCreateOpen] = React.useState(false)
   const [pendingDelete, setPendingDelete] = React.useState<Campaign | null>(
     null
   )
+
+  // Map each campaign to the playlist that feeds it (if any).
+  const audienceByCampaign = React.useMemo(() => {
+    const map = new Map<string, CampaignAudience>()
+    for (const list of lists) {
+      if (list.campaignId && !map.has(list.campaignId)) {
+        map.set(list.campaignId, {
+          id: list.id,
+          name: list.name,
+          continuous: list.sendMode === "continuous",
+        })
+      }
+    }
+    return map
+  }, [lists])
 
   function handleDuplicate(campaign: Campaign) {
     campaignStore.create({ ...campaign, name: `${campaign.name} (copy)` })
@@ -277,17 +332,39 @@ export default function Campaigns() {
         title="Campaigns"
         description="Multi-channel sequences across email and LinkedIn."
         action={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="size-4" />
-            New campaign
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/sequence-builder">
+                <Workflow className="size-4" />
+                Build sequence
+              </Link>
+            </Button>
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="size-4" />
+              New campaign
+            </Button>
+          </div>
         }
+      />
+      <FeatureIntro
+        featureKey="campaigns"
+        icon={Send}
+        title="Run multi-step sequences"
+        description="Reach prospects across email and LinkedIn with timing that earns replies."
+        points={[
+          "Multi-channel, multi-step sequences",
+          "A/B test your messaging",
+          "Auto-pause the moment someone replies",
+          "Track opens, replies & meetings booked",
+        ]}
+        className="mb-6"
       />
       <div className="grid gap-4 lg:grid-cols-2">
         {campaigns.map((c) => (
           <CampaignCard
             key={c.id}
             campaign={c}
+            audience={audienceByCampaign.get(c.id)}
             onDuplicate={handleDuplicate}
             onDelete={setPendingDelete}
           />

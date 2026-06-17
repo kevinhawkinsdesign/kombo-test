@@ -1,7 +1,8 @@
-import { Plus, Eye, MoreHorizontal } from "lucide-react"
+import { Plus, Eye, MoreHorizontal, Users } from "lucide-react"
 import { toast } from "sonner"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
   Card,
   CardContent,
@@ -69,6 +70,19 @@ export default function Team() {
             Invite member
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="team"
+        icon={Users}
+        title="Manage your team"
+        description="Invite reps, set roles, and see who's driving pipeline."
+        points={[
+          "Invite teammates & assign roles",
+          "Per-rep performance at a glance",
+          "Impersonate to see a rep's exact view",
+        ]}
+        className="mb-6"
       />
 
       {/* Summary */}

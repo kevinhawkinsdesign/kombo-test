@@ -8,9 +8,11 @@ import {
   Frown,
   CheckCircle2,
   ArrowRight,
+  GraduationCap,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
   Card,
   CardContent,
@@ -21,15 +23,22 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { ScoreBadge } from "@/components/common/ProspectBits"
 import { coachRecordings } from "@/lib/mock-data"
+import { getScorecard } from "@/lib/mock-coaching"
 import { formatDate } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { CoachRecording } from "@/lib/types"
 
 const SENTIMENT = {
   positive: { icon: Smile, className: "text-chart-1", label: "Positive" },
   neutral: { icon: Meh, className: "text-chart-4", label: "Neutral" },
   negative: { icon: Frown, className: "text-destructive", label: "Negative" },
+}
+
+function scorePillClass(score: number): string {
+  if (score >= 80) return "bg-chart-1/15 text-chart-1"
+  if (score >= 65) return "bg-chart-4/15 text-chart-4"
+  return "bg-destructive/15 text-destructive"
 }
 
 const avgScore = Math.round(
@@ -42,6 +51,19 @@ export default function Coach() {
       <PageHeading
         title="Call Coach"
         description="AI analysis of your sales calls with actionable feedback."
+      />
+
+      <FeatureIntro
+        featureKey="coach"
+        icon={GraduationCap}
+        title="Coach every call"
+        description="AI-analyzed call recordings surface talk ratio, topics, and the next best step."
+        points={[
+          "Automatic call transcription",
+          "Talk-ratio & sentiment analysis",
+          "Coaching scorecards you can share",
+        ]}
+        className="mb-6"
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -83,10 +105,14 @@ export default function Coach() {
 function RecordingCard({ rec }: { rec: CoachRecording }) {
   const sentiment = SENTIMENT[rec.sentiment]
   const SentimentIcon = sentiment.icon
+  const scorecard = getScorecard(rec.id)
+  const criticalNote =
+    scorecard.headline ||
+    scorecard.sections.find((s) => s.grade === "weak")?.critique
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between">
-        <div className="flex items-start gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           <Button
             size="icon"
             variant="outline"
@@ -97,7 +123,7 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
               <Play className="size-4" />
             </Link>
           </Button>
-          <div>
+          <div className="min-w-0">
             <CardTitle className="text-base">
               <Link to={`/coach/${rec.id}`} className="hover:text-primary">
                 {rec.title}
@@ -117,9 +143,23 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
                 {sentiment.label}
               </span>
             </div>
+            {criticalNote && (
+              <p className="text-muted-foreground mt-2 text-sm">
+                {criticalNote}
+              </p>
+            )}
           </div>
         </div>
-        <ScoreBadge score={rec.score} className="text-sm" />
+        <span
+          className={cn(
+            "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-0.5 text-sm font-semibold tabular-nums",
+            scorePillClass(scorecard.overall)
+          )}
+          title="Call score"
+        >
+          <span className="bg-current size-1.5 rounded-full opacity-80" />
+          Call score {scorecard.overall}
+        </span>
       </CardHeader>
       <CardContent className="grid gap-6 md:grid-cols-2">
         <div>

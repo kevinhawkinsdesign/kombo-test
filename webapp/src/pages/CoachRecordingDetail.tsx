@@ -25,6 +25,7 @@ import {
   ThumbsDown,
 } from "lucide-react"
 
+import { InfoHint } from "@/components/common/InfoHint"
 import { Page } from "@/components/layout/Page"
 import {
   Card,
@@ -41,7 +42,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { CallScorecard } from "@/components/coach/CoachScorecard"
 import { coachRecordings } from "@/lib/mock-data"
+import { getScorecard } from "@/lib/mock-coaching"
 import { recordingDetails } from "@/lib/mock-depth"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -203,10 +206,12 @@ export default function CoachRecordingDetail() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          <CallScorecard scorecard={getScorecard(rec.id)} />
+
           <Card>
             <CardContent>
               <Tabs defaultValue="transcript">
-                <TabsList className="mb-4">
+                <TabsList className="mb-4 max-w-full overflow-x-auto">
                   <TabsTrigger value="transcript">Transcript</TabsTrigger>
                   <TabsTrigger value="moments">Key moments</TabsTrigger>
                   <TabsTrigger value="participants">Participants</TabsTrigger>
@@ -342,6 +347,10 @@ export default function CoachRecordingDetail() {
                   <span className="text-muted-foreground flex items-center gap-1">
                     <TrendingUp className="size-3.5" />
                     Talk ratio
+                    <InfoHint label="What is talk ratio?">
+                      The share of the call you (the rep) spoke versus the
+                      prospect. Lower is usually better — let them talk.
+                    </InfoHint>
                   </span>
                   <span className="font-medium tabular-nums">
                     You {repRatio}% / Prospect {prospectRatio}%

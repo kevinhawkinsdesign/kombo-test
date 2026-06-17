@@ -1,8 +1,9 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { ArrowUp, ArrowDown, Mail, Plus, Trash2 } from "lucide-react"
+import { ArrowUp, ArrowDown, BookOpen, Mail, Plus, Trash2 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
@@ -296,6 +297,19 @@ export default function Playbook() {
       <PageHeading
         title="Outreach Playbook"
         description="Configure the products, value props, and templates Kai uses to draft outreach."
+      />
+
+      <FeatureIntro
+        featureKey="playbook"
+        icon={BookOpen}
+        title="Your team's sales playbook"
+        description="Codify what works — messaging, objection handling, and qualification — in one shared place."
+        points={[
+          "Standardize discovery & qualification",
+          "Objection-handling guidance",
+          "Keep the whole team on-message",
+        ]}
+        className="mb-6"
       />
 
       <Tabs defaultValue="products">

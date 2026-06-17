@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { ImpactBand } from "@/components/common/ImpactBand"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import {
   Card,
@@ -119,6 +120,8 @@ export default function GetStarted() {
       />
 
       <div className="space-y-4">
+        <ImpactBand />
+
         {/* Progress */}
         <Card>
           <CardHeader>

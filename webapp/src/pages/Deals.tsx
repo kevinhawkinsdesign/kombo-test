@@ -1,8 +1,16 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { CalendarDays, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
+import {
+  Briefcase,
+  CalendarDays,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
   Card,
   CardDescription,
@@ -182,6 +190,19 @@ export default function Deals() {
             New deal
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="deals"
+        icon={Briefcase}
+        title="Manage your pipeline"
+        description="Track every open deal through your stages and forecast with confidence."
+        points={[
+          "Drag deals across stages",
+          "Weighted forecast by win probability",
+          "Spot stalled deals before they slip",
+        ]}
+        className="mb-6"
       />
 
       <div className="grid gap-4 sm:grid-cols-3">

@@ -1,9 +1,10 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { HandHeart, Users, GraduationCap, Briefcase } from "lucide-react"
+import { HandHeart, Users, GraduationCap, Briefcase, Waypoints } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -89,6 +90,19 @@ export default function WarmIntros() {
             How it works
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="intros"
+        icon={Waypoints}
+        title="Get introduced — don't cold-call"
+        description="Find the warmest path into an account through your team's combined network."
+        points={[
+          "See who on your team already knows a prospect",
+          "Paths ranked by relationship strength",
+          "Request an intro in one click",
+        ]}
+        className="mb-6"
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">

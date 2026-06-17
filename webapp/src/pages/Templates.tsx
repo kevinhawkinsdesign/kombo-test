@@ -3,6 +3,7 @@ import { toast } from "sonner"
 import { Plus, Mail, Trash2 } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
@@ -217,6 +218,19 @@ export default function Templates() {
             New template
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="templates"
+        icon={Mail}
+        title="Reusable message templates"
+        description="Save your best-performing copy and personalize it at scale."
+        points={[
+          "Merge variables for personalization",
+          "See reply rate per template",
+          "Share winners with your team",
+        ]}
+        className="mb-6"
       />
 
       <div className="space-y-8">

@@ -245,6 +245,7 @@ export default function CompanyDetail() {
             </CardHeader>
             <CardContent>
               {openDeals.length > 0 ? (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
@@ -276,6 +277,7 @@ export default function CompanyDetail() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               ) : (
                 <p className="text-muted-foreground text-sm">No open deals</p>
               )}

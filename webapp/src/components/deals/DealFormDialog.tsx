@@ -144,7 +144,7 @@ export function DealFormDialog({
               id="deal-name"
               value={form.name}
               onChange={(event) => setField("name", event.target.value)}
-              placeholder="e.g. Northwind — Platform expansion"
+              placeholder="e.g. Fever — Platform expansion"
             />
           </div>
 

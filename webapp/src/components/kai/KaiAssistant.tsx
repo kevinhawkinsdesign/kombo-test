@@ -33,14 +33,14 @@ function answerFor(prompt: string): KaiReply {
   if (q.includes("top") && q.includes("prospect")) {
     return {
       content:
-        "Your highest-scoring prospects right now are **Aisha Khan** (CRO, Lumen Health — score 95), **Grace Liu** (COO, Meridian Bank — 90) and **Sarah Chen** (VP Sales, Northwind — 92, who just replied). I'd prioritize Sarah today since she's asking for meeting times.",
+        "Your highest-scoring prospects right now are **Aisha Khan** (CRO, Clarity AI — score 95), **Grace Liu** (COO, Betterfly — 90) and **Sarah Chen** (VP Sales, Fever — 92, who just replied). I'd prioritize Sarah today since she's asking for meeting times.",
       tools: ["HubSpot MCP", "Web Search"],
     }
   }
   if (q.includes("book") || q.includes("meeting") || q.includes("calendar")) {
     return {
       content:
-        "I checked your calendar — you're open Tue 2:00 PM and Wed 10:00 AM. I've drafted an invite to **Grace Liu** for Tue 2:00 PM (\"Meridian Bank × Kombo — intro\") and a short email to send it. Want me to send both?",
+        "I checked your calendar — you're open Tue 2:00 PM and Wed 10:00 AM. I've drafted an invite to **Grace Liu** for Tue 2:00 PM (\"Betterfly × Kombo — intro\") and a short email to send it. Want me to send both?",
       tools: ["Google Calendar", "Gmail"],
     }
   }
@@ -54,7 +54,7 @@ function answerFor(prompt: string): KaiReply {
   if (q.includes("risk") || q.includes("deal")) {
     return {
       content:
-        "Two deals look at risk: **Atlas — Pilot** ($95K, only 20% and no activity in 3 days) and **Harbor Financial — Pilot** ($70K, 15%, still in Lead). **Meridian Bank** ($320K) is healthy at 55% in Proposal. Want a re-engagement sequence for the two stalled ones?",
+        "Two deals look at risk: **Edicom — Pilot** ($95K, only 20% and no activity in 3 days) and **Viajes El Corte Inglés — Pilot** ($70K, 15%, still in Lead). **Betterfly** ($320K) is healthy at 55% in Proposal. Want a re-engagement sequence for the two stalled ones?",
       tools: ["HubSpot MCP"],
     }
   }

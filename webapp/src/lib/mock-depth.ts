@@ -60,7 +60,7 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
     callType: "Discovery",
     participants: [
       { name: "Maya Patel", role: "rep", title: "Account Executive", talkPct: 42 },
-      { name: "Wei Zhang", role: "prospect", title: "Head of Sales · Quantum Edge", talkPct: 58 },
+      { name: "Wei Zhang", role: "prospect", title: "Head of Sales · Criteo", talkPct: 58 },
     ],
     personality: {
       disc: "Conscientious (C)",
@@ -110,7 +110,7 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
     callType: "Demo",
     participants: [
       { name: "Jordan Lee", role: "rep", title: "Account Executive", talkPct: 58 },
-      { name: "Marcus Riley", role: "prospect", title: "Head of RevOps · BrightPeak", talkPct: 42 },
+      { name: "Marcus Riley", role: "prospect", title: "Head of RevOps · Softonic", talkPct: 42 },
     ],
     personality: {
       disc: "Influence (I)",
@@ -151,7 +151,7 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
     callType: "Intro",
     participants: [
       { name: "Ethan Wright", role: "rep", title: "Account Executive", talkPct: 67 },
-      { name: "Diego Fernández", role: "prospect", title: "Sales Director · Atlas Manufacturing", talkPct: 33 },
+      { name: "Diego Fernández", role: "prospect", title: "Sales Director · Edicom", talkPct: 33 },
     ],
     personality: {
       disc: "Dominance (D)",
@@ -188,17 +188,17 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
 // --- Company news ---
 export const companyNews: Record<string, NewsItem[]> = {
   acc_1: [
-    { id: "nw_1", title: "Northwind Logistics raises $40M Series C", source: "TechCrunch", date: "2026-06-10T00:00:00Z", sentiment: "positive" },
-    { id: "nw_2", title: "Northwind opens new West Coast distribution hub", source: "Supply Chain Dive", date: "2026-05-28T00:00:00Z", sentiment: "positive" },
-    { id: "nw_3", title: "Northwind names new VP of Sales", source: "LinkedIn", date: "2026-05-15T00:00:00Z", sentiment: "neutral" },
+    { id: "nw_1", title: "Fever raises $40M Series C", source: "TechCrunch", date: "2026-06-10T00:00:00Z", sentiment: "positive" },
+    { id: "nw_2", title: "Fever opens new West Coast distribution hub", source: "Supply Chain Dive", date: "2026-05-28T00:00:00Z", sentiment: "positive" },
+    { id: "nw_3", title: "Fever names new VP of Sales", source: "LinkedIn", date: "2026-05-15T00:00:00Z", sentiment: "neutral" },
   ],
   acc_3: [
-    { id: "nw_4", title: "Lumen Health appoints new Chief Revenue Officer", source: "Business Wire", date: "2026-06-12T00:00:00Z", sentiment: "positive" },
-    { id: "nw_5", title: "Lumen Health expands GTM team by 30%", source: "LinkedIn", date: "2026-06-01T00:00:00Z", sentiment: "positive" },
+    { id: "nw_4", title: "Clarity AI appoints new Chief Revenue Officer", source: "Business Wire", date: "2026-06-12T00:00:00Z", sentiment: "positive" },
+    { id: "nw_5", title: "Clarity AI expands GTM team by 30%", source: "LinkedIn", date: "2026-06-01T00:00:00Z", sentiment: "positive" },
   ],
   acc_6: [
-    { id: "nw_6", title: "Meridian Bank announces digital transformation initiative", source: "American Banker", date: "2026-06-05T00:00:00Z", sentiment: "positive" },
-    { id: "nw_7", title: "Meridian Bank Q2 earnings beat estimates", source: "Reuters", date: "2026-05-20T00:00:00Z", sentiment: "positive" },
+    { id: "nw_6", title: "Betterfly announces digital transformation initiative", source: "American Banker", date: "2026-06-05T00:00:00Z", sentiment: "positive" },
+    { id: "nw_7", title: "Betterfly Q2 earnings beat estimates", source: "Reuters", date: "2026-05-20T00:00:00Z", sentiment: "positive" },
   ],
 }
 
