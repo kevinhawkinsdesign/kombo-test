@@ -46,7 +46,11 @@ const CRM_FIELD_OPTIONS = [
   SKIP_FIELD,
 ] as const
 
-type DupChoice = "update" | "create"
+// A duplicate choice is a matched record id, or "create" for a new record.
+type DupChoice = string
+
+const CREATE_NEW = "create"
+const DEFAULT_DUP = "match_1"
 
 const STEP_COUNT = 4
 
@@ -128,7 +132,7 @@ export function AddToCrmDialog({
   const [mapping, setMapping] = React.useState<Record<string, string>>(() =>
     buildDefaultMapping(fields)
   )
-  const [dupChoice, setDupChoice] = React.useState<DupChoice>("update")
+  const [dupChoice, setDupChoice] = React.useState<DupChoice>(DEFAULT_DUP)
 
   // Reset the wizard whenever it transitions to open. Adjusting state during
   // render (the React-recommended pattern) avoids a cascading-render effect.
@@ -139,7 +143,7 @@ export function AddToCrmDialog({
       setStep(0)
       setProviderId(firstConnectedProviderId)
       setMapping(buildDefaultMapping(fields))
-      setDupChoice("update")
+      setDupChoice(DEFAULT_DUP)
     }
   }
 
@@ -152,6 +156,24 @@ export function AddToCrmDialog({
   const selectedConnected = provider?.connected ?? false
   const hasDuplicate = providerId === "hubspot"
   const kindLabel = kind === "company" ? "company" : "prospect"
+
+  // Simulated existing matches the CRM returned for this record.
+  const dupMatches = React.useMemo(
+    () => [
+      {
+        id: "match_1",
+        name: recordName,
+        detail: "Owner: Maya Patel · last activity 12d ago",
+      },
+      {
+        id: "match_2",
+        name: recordName,
+        detail: "Owner: unassigned · imported from CSV · 3mo ago",
+      },
+    ],
+    [recordName]
+  )
+  const chosenMatch = dupMatches.find((m) => m.id === dupChoice)
 
   function selectProvider(candidate: CrmProvider) {
     if (!candidate.connected) {
@@ -190,9 +212,9 @@ export function AddToCrmDialog({
   const showBack = step !== 0 && step !== 3
 
   const actionSummary =
-    !hasDuplicate || dupChoice === "create"
+    !hasDuplicate || dupChoice === CREATE_NEW
       ? `Created a new ${provider?.objectName ?? "record"}`
-      : `Updated the existing ${provider?.objectName ?? "record"}`
+      : `Updated the existing ${provider?.objectName ?? "record"} (${chosenMatch?.detail ?? ""})`
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -314,21 +336,28 @@ export function AddToCrmDialog({
             {hasDuplicate ? (
               <div className="border-chart-4/40 bg-chart-4/10 space-y-3 rounded-lg border p-4">
                 <div>
-                  <p className="text-sm font-medium">Possible duplicate found</p>
+                  <p className="text-sm font-medium">
+                    {dupMatches.length} possible duplicates found
+                  </p>
                   <p className="text-muted-foreground text-sm">
-                    {recordName} · existing {provider.objectName}
+                    Choose a {provider.objectName} to update, or create a new
+                    one.
                   </p>
                 </div>
                 <div className="space-y-2">
+                  {dupMatches.map((match) => (
+                    <DupOption
+                      key={match.id}
+                      label={match.name}
+                      detail={match.detail}
+                      selected={dupChoice === match.id}
+                      onSelect={() => setDupChoice(match.id)}
+                    />
+                  ))}
                   <DupOption
-                    label="Update existing record"
-                    selected={dupChoice === "update"}
-                    onSelect={() => setDupChoice("update")}
-                  />
-                  <DupOption
-                    label="Create new record"
-                    selected={dupChoice === "create"}
-                    onSelect={() => setDupChoice("create")}
+                    label="Create a new record instead"
+                    selected={dupChoice === CREATE_NEW}
+                    onSelect={() => setDupChoice(CREATE_NEW)}
                   />
                 </div>
               </div>
@@ -373,10 +402,12 @@ export function AddToCrmDialog({
 
 function DupOption({
   label,
+  detail,
   selected,
   onSelect,
 }: {
   label: string
+  detail?: string
   selected: boolean
   onSelect: () => void
 }) {
@@ -397,7 +428,14 @@ function DupOption({
       >
         {selected && <span className="bg-primary size-2 rounded-full" />}
       </span>
-      {label}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{label}</span>
+        {detail && (
+          <span className="text-muted-foreground block truncate text-xs">
+            {detail}
+          </span>
+        )}
+      </span>
     </button>
   )
 }

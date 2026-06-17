@@ -1,5 +1,5 @@
+import * as React from "react"
 import { Zap } from "lucide-react"
-import { toast } from "sonner"
 
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
@@ -20,10 +20,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useCredits } from "@/lib/credits"
+import { TopUpDialog } from "@/components/credits/TopUpDialog"
 import { relativeTime } from "@/lib/format"
 
 export default function Usage() {
   const { balance, monthlyAllowance, usage } = useCredits()
+  const [topUpOpen, setTopUpOpen] = React.useState(false)
 
   const used = monthlyAllowance - balance
   const usedPct = Math.min(100, Math.max(0, (used / monthlyAllowance) * 100))
@@ -40,7 +42,7 @@ export default function Usage() {
         title="Usage & credits"
         description="Track your credit balance and consumption."
         action={
-          <Button onClick={() => toast.info("Top-up flow — coming soon")}>
+          <Button onClick={() => setTopUpOpen(true)}>
             <Zap className="size-4" />
             Top up credits
           </Button>
@@ -100,17 +102,27 @@ export default function Usage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {usage.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.label}</TableCell>
-                  <TableCell className="text-destructive/80 text-right tabular-nums">
-                    -{item.amount.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-right tabular-nums">
-                    {relativeTime(item.timestamp)}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {usage.map((item) => {
+                const added = item.amount < 0 // negative = credits added
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.label}</TableCell>
+                    <TableCell
+                      className={
+                        added
+                          ? "text-chart-1 text-right tabular-nums"
+                          : "text-destructive/80 text-right tabular-nums"
+                      }
+                    >
+                      {added ? "+" : "-"}
+                      {Math.abs(item.amount).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-right tabular-nums">
+                      {relativeTime(item.timestamp)}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -120,6 +132,8 @@ export default function Usage() {
         Credits are consumed when revealing contact info, enriching, and
         exporting prospects.
       </p>
+
+      <TopUpDialog open={topUpOpen} onOpenChange={setTopUpOpen} />
     </Page>
   )
 }

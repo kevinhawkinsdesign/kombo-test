@@ -18,6 +18,7 @@ import Campaigns from "@/pages/Campaigns"
 import CampaignDetail from "@/pages/CampaignDetail"
 import Channels from "@/pages/Channels"
 import Templates from "@/pages/Templates"
+import Playbook from "@/pages/Playbook"
 import Tasks from "@/pages/Tasks"
 import Deals from "@/pages/Deals"
 import Analytics from "@/pages/Analytics"
@@ -79,6 +80,7 @@ function App() {
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
         <Route path="/channels" element={<Channels />} />
         <Route path="/templates" element={<Templates />} />
+        <Route path="/playbook" element={<Playbook />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/deals" element={<Deals />} />
         <Route path="/analytics" element={<Analytics />} />

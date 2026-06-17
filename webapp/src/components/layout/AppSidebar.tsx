@@ -22,9 +22,10 @@ import {
   Waypoints,
   Radio,
   Rocket,
+  BookOpen,
 } from "lucide-react"
 
-import { KomboLogo } from "@/components/KomboLogo"
+import { KomboLockup } from "@/components/KomboLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -74,6 +75,7 @@ const sections: NavSection[] = [
       },
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
+      { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
       { to: "/channels", labelKey: "nav.channels", icon: Radio },
       { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
     ],
@@ -141,7 +143,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-5">
-        <KomboLogo />
+        <KomboLockup className="h-7" />
       </div>
 
       <div className="px-3">
@@ -193,7 +195,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppSidebar() {
   return (
-    <aside className="bg-sidebar border-sidebar-border hidden w-64 shrink-0 flex-col border-r md:flex">
+    <aside className="bg-sidebar border-sidebar-border sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r md:flex">
       <SidebarContent />
     </aside>
   )

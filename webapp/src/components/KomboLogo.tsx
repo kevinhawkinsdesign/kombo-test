@@ -1,4 +1,18 @@
+import lockupUrl from "@/assets/kombo-lockup.svg"
+
 import { cn } from "@/lib/utils"
+
+/** Full brand lockup (icon + wordmark). Built for dark backgrounds. */
+export function KomboLockup({ className }: { className?: string }) {
+  return (
+    <img
+      src={lockupUrl}
+      alt="Kombo"
+      className={cn("h-7 w-auto select-none", className)}
+      draggable={false}
+    />
+  )
+}
 
 export function KomboMark({ className }: { className?: string }) {
   return (
