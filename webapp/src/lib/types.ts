@@ -136,3 +136,95 @@ export interface ActivityItem {
   detail: string
   timestamp: string
 }
+
+export type AccountTier = "Enterprise" | "Mid-market" | "SMB"
+
+export interface Account {
+  id: string
+  name: string
+  domain: string
+  industry: string
+  employees: string
+  revenue: string
+  location: string
+  logoColor: string
+  tier: AccountTier
+  healthScore: number // 0-100
+  openDeals: number
+  pipeline: number // $
+  contacts: number
+  ownerId: string
+  lastActivity: string
+  about: string
+  signals: string[]
+  keyExecutives: { name: string; title: string }[]
+}
+
+export type DealStage =
+  | "lead"
+  | "qualified"
+  | "proposal"
+  | "negotiation"
+  | "won"
+  | "lost"
+
+export interface Deal {
+  id: string
+  name: string
+  accountId: string
+  ownerId: string
+  stage: DealStage
+  value: number
+  probability: number // %
+  closeDate: string
+  createdAt: string
+  contactName: string
+}
+
+export interface EmailTemplate {
+  id: string
+  name: string
+  folder: string
+  channel: Channel
+  subject: string
+  body: string
+  sent: number
+  replyRate: number // %
+  updatedAt: string
+  tags: string[]
+}
+
+export type TaskType = "call" | "email" | "linkedin" | "follow_up"
+
+export interface Task {
+  id: string
+  title: string
+  type: TaskType
+  prospectId?: string
+  ownerId: string
+  dueDate: string
+  done: boolean
+  priority: "high" | "medium" | "low"
+}
+
+export type NotificationType =
+  | "reply"
+  | "meeting"
+  | "deal"
+  | "mention"
+  | "system"
+
+export interface NotificationItem {
+  id: string
+  type: NotificationType
+  title: string
+  body: string
+  timestamp: string
+  read: boolean
+}
+
+export interface KaiMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+}

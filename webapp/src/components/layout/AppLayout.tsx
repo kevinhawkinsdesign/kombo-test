@@ -7,17 +7,25 @@ import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 const TITLES: Record<string, string> = {
   "/": "Dashboard",
   "/search": "Prospect Search",
+  "/companies": "Companies",
   "/lists": "Lists",
   "/inbox": "Inbox",
   "/campaigns": "Campaigns",
+  "/templates": "Templates",
+  "/tasks": "Tasks",
+  "/deals": "Deals",
+  "/analytics": "Analytics",
   "/coach": "Coach",
+  "/team": "Team",
   "/integrations": "Integrations",
   "/settings": "Settings",
+  "/notifications": "Notifications",
 }
 
 function titleForPath(path: string): string {
   if (TITLES[path]) return TITLES[path]
   if (path.startsWith("/prospects")) return "Prospect"
+  if (path.startsWith("/companies/")) return "Company"
   if (path.startsWith("/lists/")) return "List"
   return "Kombo"
 }

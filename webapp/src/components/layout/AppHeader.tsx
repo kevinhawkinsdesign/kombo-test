@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
+import { KaiAssistant } from "@/components/kai/KaiAssistant"
+import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
 import { initials } from "@/lib/format"
@@ -39,10 +41,14 @@ export function AppHeader({ title }: { title?: string }) {
         />
       </div>
 
+      <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <KaiAssistant />
+        <NotificationsBell />
+      </div>
+
       <Button
         variant="ghost"
         size="icon"
-        className="ml-auto md:ml-0"
         onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         aria-label="Toggle theme"
       >
