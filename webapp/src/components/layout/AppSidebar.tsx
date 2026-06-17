@@ -2,10 +2,16 @@ import { NavLink } from "react-router-dom"
 import {
   LayoutDashboard,
   Search,
+  Building2,
   FolderKanban,
   Inbox,
   Send,
+  Mail,
+  CheckSquare,
+  Briefcase,
+  BarChart3,
   GraduationCap,
+  Users,
   Plug,
   Settings,
   Sparkles,
@@ -24,20 +30,49 @@ interface NavItem {
   badge?: string
 }
 
+interface NavSection {
+  label: string
+  items: NavItem[]
+}
+
 const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
-const mainNav: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/search", label: "Prospect Search", icon: Search },
-  { to: "/lists", label: "Lists", icon: FolderKanban },
+const sections: NavSection[] = [
   {
-    to: "/inbox",
-    label: "Inbox",
-    icon: Inbox,
-    badge: unread ? String(unread) : undefined,
+    label: "Workspace",
+    items: [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/search", label: "Prospect Search", icon: Search },
+      { to: "/companies", label: "Companies", icon: Building2 },
+      { to: "/lists", label: "Lists", icon: FolderKanban },
+    ],
   },
-  { to: "/campaigns", label: "Campaigns", icon: Send },
-  { to: "/coach", label: "Coach", icon: GraduationCap },
+  {
+    label: "Engage",
+    items: [
+      {
+        to: "/inbox",
+        label: "Inbox",
+        icon: Inbox,
+        badge: unread ? String(unread) : undefined,
+      },
+      { to: "/campaigns", label: "Campaigns", icon: Send },
+      { to: "/templates", label: "Templates", icon: Mail },
+      { to: "/tasks", label: "Tasks", icon: CheckSquare },
+    ],
+  },
+  {
+    label: "Revenue",
+    items: [
+      { to: "/deals", label: "Deals", icon: Briefcase },
+      { to: "/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/coach", label: "Coach", icon: GraduationCap },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [{ to: "/team", label: "Team", icon: Users }],
+  },
 ]
 
 const bottomNav: NavItem[] = [
@@ -79,21 +114,27 @@ export function AppSidebar() {
       </div>
 
       <div className="px-3">
-        <Button className="w-full justify-start gap-2" size="sm">
-          <Sparkles className="size-4" />
-          New prospect search
+        <Button className="w-full justify-start gap-2" size="sm" asChild>
+          <NavLink to="/search">
+            <Sparkles className="size-4" />
+            New prospect search
+          </NavLink>
         </Button>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 p-3">
-        <p className="text-sidebar-foreground/50 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
-          Workspace
-        </p>
-        {mainNav.map((item) => (
-          <NavRow key={item.to} item={item} />
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+        {sections.map((section) => (
+          <div key={section.label} className="mb-1">
+            <p className="text-sidebar-foreground/50 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
+              {section.label}
+            </p>
+            {section.items.map((item) => (
+              <NavRow key={item.to} item={item} />
+            ))}
+          </div>
         ))}
 
-        <div className="mt-auto flex flex-col gap-1">
+        <div className="mt-auto flex flex-col gap-1 pt-2">
           {bottomNav.map((item) => (
             <NavRow key={item.to} item={item} />
           ))}

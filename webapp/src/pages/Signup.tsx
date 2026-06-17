@@ -21,7 +21,7 @@ export default function Signup() {
     e.preventDefault()
     setLoading(true)
     await signup(name, email, password)
-    navigate("/")
+    navigate("/onboarding")
   }
 
   return (
