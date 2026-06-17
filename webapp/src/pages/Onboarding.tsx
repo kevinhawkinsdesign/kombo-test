@@ -7,6 +7,7 @@ import { KomboLogo } from "@/components/KomboLogo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useSetup } from "@/lib/setup"
 import { cn } from "@/lib/utils"
 
 const ROLES = [
@@ -32,10 +33,13 @@ export default function Onboarding() {
   const [industry, setIndustry] = React.useState("B2B SaaS")
   const [titles, setTitles] = React.useState("VP Sales, CRO, Head of RevOps")
 
+  const setup = useSetup()
   const isLast = step === STEPS.length - 1
 
   function next() {
     if (isLast) {
+      setup.setProfile(role, `Focus: ${industry} · ${titles}`)
+      if (crm !== "None yet") setup.complete("crm")
       toast.success("You're all set — welcome to Kombo!")
       navigate("/")
       return

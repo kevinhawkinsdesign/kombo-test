@@ -10,11 +10,13 @@ import Search from "@/pages/Search"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
 import CompanyDetail from "@/pages/CompanyDetail"
+import WarmIntros from "@/pages/WarmIntros"
 import Lists from "@/pages/Lists"
 import ListDetail from "@/pages/ListDetail"
 import Inbox from "@/pages/Inbox"
 import Campaigns from "@/pages/Campaigns"
 import CampaignDetail from "@/pages/CampaignDetail"
+import Channels from "@/pages/Channels"
 import Templates from "@/pages/Templates"
 import Tasks from "@/pages/Tasks"
 import Deals from "@/pages/Deals"
@@ -26,6 +28,7 @@ import Referral from "@/pages/Referral"
 import Usage from "@/pages/Usage"
 import Integrations from "@/pages/Integrations"
 import Settings from "@/pages/Settings"
+import GetStarted from "@/pages/GetStarted"
 import NotificationsPage from "@/pages/Notifications"
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -68,11 +71,13 @@ function App() {
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />
+        <Route path="/intros" element={<WarmIntros />} />
         <Route path="/lists" element={<Lists />} />
         <Route path="/lists/:id" element={<ListDetail />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
+        <Route path="/channels" element={<Channels />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/deals" element={<Deals />} />
@@ -84,6 +89,7 @@ function App() {
         <Route path="/usage" element={<Usage />} />
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/get-started" element={<GetStarted />} />
         <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
 

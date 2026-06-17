@@ -8,9 +8,11 @@ const TITLES: Record<string, string> = {
   "/": "Dashboard",
   "/search": "Prospect Search",
   "/companies": "Companies",
+  "/intros": "Warm Intros",
   "/lists": "Lists",
   "/inbox": "Inbox",
   "/campaigns": "Campaigns",
+  "/channels": "Sending Channels",
   "/templates": "Templates",
   "/tasks": "Tasks",
   "/deals": "Deals",
@@ -21,6 +23,7 @@ const TITLES: Record<string, string> = {
   "/usage": "Usage & credits",
   "/integrations": "Integrations",
   "/settings": "Settings",
+  "/get-started": "Get started",
   "/notifications": "Notifications",
 }
 

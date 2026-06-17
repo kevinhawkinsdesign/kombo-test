@@ -5,6 +5,8 @@ import {
   Sparkles,
   Trophy,
   Eye,
+  Rocket,
+  X,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -26,6 +28,7 @@ import {
 } from "@/components/charts/Charts"
 import { Funnel } from "@/components/charts/Funnel"
 import { useView } from "@/lib/view-context"
+import { useSetup } from "@/lib/setup"
 import {
   getViewData,
   leaderboard,
@@ -53,6 +56,39 @@ function Delta({ value }: { value: number }) {
       )}
       {Math.abs(value)}%
     </span>
+  )
+}
+
+function SetupBanner() {
+  const { progress, dismissed, dismiss } = useSetup()
+  if (dismissed || progress >= 100) return null
+  return (
+    <Card className="border-primary/30 bg-primary/5 mb-6">
+      <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+        <span className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-full">
+          <Rocket className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-medium">Finish setting up your workspace</p>
+          <p className="text-muted-foreground text-sm">
+            Connect your tools, invite your team, and set your goals —{" "}
+            {progress}% complete.
+          </p>
+          <Progress value={progress} className="mt-2 max-w-xs" />
+        </div>
+        <Button asChild>
+          <Link to="/get-started">Continue setup</Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={dismiss}
+          aria-label="Dismiss setup banner"
+        >
+          <X className="size-4" />
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -105,6 +141,8 @@ export default function Dashboard() {
           </Button>
         }
       />
+
+      <SetupBanner />
 
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

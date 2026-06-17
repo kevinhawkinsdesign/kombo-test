@@ -227,6 +227,7 @@ export interface KaiMessage {
   id: string
   role: "user" | "assistant"
   content: string
+  tools?: string[] // MCP tools the assistant used to answer
 }
 
 // --- Depth: campaigns ---
