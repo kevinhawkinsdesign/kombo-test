@@ -20,6 +20,7 @@ import {
   UserPlus,
   StickyNote,
   PhoneCall,
+  Waypoints,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -35,6 +36,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Tabs,
@@ -70,9 +72,10 @@ import {
   type HistoryType,
   type ProspectNote,
 } from "@/lib/mock-prospect-depth"
+import { getIntroPaths, type IntroStrength } from "@/lib/mock-network"
 import { useCredits } from "@/lib/credits"
 import { useAuth } from "@/lib/auth"
-import { relativeTime } from "@/lib/format"
+import { initials, relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Prospect } from "@/lib/types"
 
@@ -259,6 +262,7 @@ export default function ProspectProfile() {
 
         <div className="space-y-6">
           <ContactCard prospect={prospect} onAddToCrm={() => setCrmOpen(true)} />
+          <WarmIntroCard prospect={prospect} />
           <QualificationCard prospect={prospect} />
           <EnrichmentCard prospect={prospect} onAddToCrm={() => setCrmOpen(true)} />
         </div>
@@ -509,6 +513,89 @@ function QualificationCard({ prospect }: { prospect: Prospect }) {
             </li>
           ))}
         </ul>
+      </CardContent>
+    </Card>
+  )
+}
+
+/* ----------------------------- Warm intros ----------------------------- */
+
+const INTRO_VARIANT: Record<
+  IntroStrength,
+  "success" | "secondary" | "outline"
+> = {
+  strong: "success",
+  medium: "secondary",
+  weak: "outline",
+}
+
+function WarmIntroCard({ prospect }: { prospect: Prospect }) {
+  const paths = getIntroPaths(prospect.id)
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Waypoints className="text-primary size-4" />
+          Warm intros
+        </CardTitle>
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/intros">All</Link>
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {paths.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            No warm paths yet.{" "}
+            <Link to="/intros" className="text-primary">
+              Explore your network
+            </Link>
+          </p>
+        ) : (
+          paths.slice(0, 2).map((path) => (
+            <div key={path.id} className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Avatar className="size-7">
+                  <AvatarFallback
+                    style={{ backgroundColor: path.connectorAvatarColor, color: "white" }}
+                    className="text-[10px]"
+                  >
+                    {initials(
+                      path.connectorName.split(" ")[0],
+                      path.connectorName.split(" ")[1]
+                    )}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {path.connectorName}
+                  </p>
+                  <p className="text-muted-foreground truncate text-xs">
+                    {path.connectorTitle}
+                  </p>
+                </div>
+                <Badge
+                  variant={INTRO_VARIANT[path.strength]}
+                  className="capitalize"
+                >
+                  {path.strength}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground text-xs">{path.via}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() =>
+                  toast.success(`Intro requested via ${path.connectorName}`)
+                }
+              >
+                {path.connectorIsTeam
+                  ? `Ask ${path.connectorName.split(" ")[0]}`
+                  : "Request intro"}
+              </Button>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   )

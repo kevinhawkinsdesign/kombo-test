@@ -19,6 +19,9 @@ import {
   Gift,
   Zap,
   Menu,
+  Waypoints,
+  Radio,
+  Rocket,
 } from "lucide-react"
 
 import { KomboLogo } from "@/components/KomboLogo"
@@ -33,6 +36,7 @@ import {
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
 import { useLocale } from "@/lib/locale"
+import { useSetup } from "@/lib/setup"
 
 interface NavItem {
   to: string
@@ -55,6 +59,7 @@ const sections: NavSection[] = [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
       { to: "/search", labelKey: "nav.search", icon: Search },
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
+      { to: "/intros", labelKey: "nav.intros", icon: Waypoints },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
     ],
   },
@@ -69,6 +74,7 @@ const sections: NavSection[] = [
       },
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
+      { to: "/channels", labelKey: "nav.channels", icon: Radio },
       { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
     ],
   },
@@ -131,6 +137,7 @@ function NavRow({
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useLocale()
+  const { progress } = useSetup()
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-5">
@@ -145,6 +152,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         </Button>
       </div>
+
+      {progress < 100 && (
+        <div className="px-3 pt-2">
+          <NavLink
+            to="/get-started"
+            onClick={onNavigate}
+            className="border-primary/30 bg-primary/5 hover:bg-primary/10 flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+          >
+            <Rocket className="text-primary size-4 shrink-0" />
+            <span className="flex-1">{t("nav.getStarted")}</span>
+            <Badge variant="secondary" className="tabular-nums">
+              {progress}%
+            </Badge>
+          </NavLink>
+        </div>
+      )}
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
         {sections.map((section) => (
