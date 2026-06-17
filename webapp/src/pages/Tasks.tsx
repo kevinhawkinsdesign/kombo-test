@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { Phone, Mail, CornerUpRight } from "lucide-react"
+import { Phone, Mail, CornerUpRight, Pencil, Trash2, Plus } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -9,7 +9,10 @@ import { Page, PageHeading } from "@/components/layout/Page"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { tasks as initialTasks } from "@/lib/mock-extra"
+import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
+import { useTasks, taskStore } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { useView } from "@/lib/view-context"
 import { relativeTime } from "@/lib/format"
@@ -35,7 +38,13 @@ const PRIORITY_VARIANT: Record<
 
 export default function Tasks() {
   const { impersonatingId } = useView()
-  const [tasks, setTasks] = React.useState<Task[]>(initialTasks)
+  const tasks = useTasks()
+
+  const [formOpen, setFormOpen] = React.useState(false)
+  const [editingTask, setEditingTask] = React.useState<Task | undefined>(
+    undefined
+  )
+  const [deletingTask, setDeletingTask] = React.useState<Task | null>(null)
 
   const visible = React.useMemo(
     () =>
@@ -57,15 +66,25 @@ export default function Tasks() {
   const openCount = visible.filter((t) => !t.done).length
   const doneCount = visible.length - openCount
 
-  const toggle = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t
-        const next = { ...t, done: !t.done }
-        if (next.done) toast.success("Task completed")
-        return next
-      })
-    )
+  function toggle(task: Task) {
+    taskStore.toggle(task.id)
+    if (!task.done) toast.success("Task completed")
+  }
+
+  function openCreate() {
+    setEditingTask(undefined)
+    setFormOpen(true)
+  }
+
+  function openEdit(task: Task) {
+    setEditingTask(task)
+    setFormOpen(true)
+  }
+
+  function confirmDelete() {
+    if (!deletingTask) return
+    taskStore.remove(deletingTask.id)
+    toast.success("Task deleted")
   }
 
   return (
@@ -73,6 +92,12 @@ export default function Tasks() {
       <PageHeading
         title="Tasks"
         description="Your follow-ups and to-dos."
+        action={
+          <Button onClick={openCreate}>
+            <Plus />
+            New task
+          </Button>
+        }
       />
 
       <p className="text-muted-foreground mb-4 text-sm tabular-nums">
@@ -97,7 +122,7 @@ export default function Tasks() {
               >
                 <Checkbox
                   checked={task.done}
-                  onCheckedChange={() => toggle(task.id)}
+                  onCheckedChange={() => toggle(task)}
                   aria-label={
                     task.done ? "Mark task as open" : "Mark task as done"
                   }
@@ -141,11 +166,54 @@ export default function Tasks() {
                 <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
                   {relativeTime(task.dueDate)}
                 </span>
+
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={`Edit task: ${task.title}`}
+                    onClick={() => openEdit(task)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive size-8"
+                    aria-label={`Delete task: ${task.title}`}
+                    onClick={() => setDeletingTask(task)}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
               </div>
             )
           })
         )}
       </Card>
+
+      <TaskFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        task={editingTask}
+      />
+
+      <ConfirmDialog
+        open={deletingTask !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingTask(null)
+        }}
+        title="Delete task?"
+        description={
+          deletingTask
+            ? `"${deletingTask.title}" will be permanently removed.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDelete}
+      />
     </Page>
   )
 }

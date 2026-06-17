@@ -7,6 +7,7 @@ import {
   Plus,
   Send,
   Sparkles,
+  Trash2,
   X,
   Bell,
 } from "lucide-react"
@@ -38,7 +39,9 @@ import {
   StatusBadge,
 } from "@/components/common/ProspectBits"
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
-import { prospects } from "@/lib/mock-data"
+import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { useProspects, prospectStore } from "@/lib/store"
 import { useView } from "@/lib/view-context"
 import { useSubscriptions } from "@/lib/subscriptions"
 import { ownerOf } from "@/lib/team"
@@ -47,8 +50,6 @@ import type { Prospect } from "@/lib/types"
 
 const ALL = "all"
 
-const industries = [ALL, ...new Set(prospects.map((p) => p.industry))]
-const seniorities = [ALL, ...new Set(prospects.map((p) => p.seniority))]
 const statuses: (Prospect["status"] | typeof ALL)[] = [
   ALL,
   "new",
@@ -60,6 +61,7 @@ const statuses: (Prospect["status"] | typeof ALL)[] = [
 
 export default function Search() {
   const navigate = useNavigate()
+  const prospects = useProspects()
   const { impersonating, impersonatingId } = useView()
   const { prospects: tracked } = useSubscriptions()
   const [query, setQuery] = React.useState("")
@@ -69,13 +71,24 @@ export default function Search() {
   const [trackedOnly, setTrackedOnly] = React.useState(false)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [addOpen, setAddOpen] = React.useState(false)
+  const [createOpen, setCreateOpen] = React.useState(false)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
+
+  const industries = React.useMemo(
+    () => [ALL, ...new Set(prospects.map((p) => p.industry))],
+    [prospects]
+  )
+  const seniorities = React.useMemo(
+    () => [ALL, ...new Set(prospects.map((p) => p.seniority))],
+    [prospects]
+  )
 
   const source = React.useMemo(
     () =>
       impersonatingId
         ? prospects.filter((p) => ownerOf(p.id) === impersonatingId)
         : prospects,
-    [impersonatingId]
+    [prospects, impersonatingId]
   )
 
   const results = React.useMemo(() => {
@@ -130,6 +143,13 @@ export default function Search() {
     setTrackedOnly(false)
   }
 
+  function deleteSelected() {
+    const count = selected.size
+    selected.forEach((id) => prospectStore.remove(id))
+    setSelected(new Set())
+    toast.success(`${count} prospects deleted`)
+  }
+
   const hasFilters =
     query ||
     industry !== ALL ||
@@ -147,10 +167,16 @@ export default function Search() {
             : "Find and qualify your best-fit leads with AI scoring."
         }
         action={
-          <Button variant="outline">
-            <Sparkles className="size-4" />
-            AI lookalikes
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline">
+              <Sparkles className="size-4" />
+              AI lookalikes
+            </Button>
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="size-4" />
+              Add prospect
+            </Button>
+          </div>
         }
       />
 
@@ -218,6 +244,14 @@ export default function Search() {
             <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
               <Plus className="size-4" />
               Add to list
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="size-4" />
+              Delete
             </Button>
             <Button
               size="sm"
@@ -331,6 +365,18 @@ export default function Search() {
           toast.success(`${selected.size} prospects added to “${listName}”`)
           setSelected(new Set())
         }}
+      />
+
+      <ProspectFormDialog open={createOpen} onOpenChange={setCreateOpen} />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={`Delete ${selected.size} ${selected.size === 1 ? "prospect" : "prospects"}?`}
+        description="This will permanently remove the selected prospects and remove them from any lists. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={deleteSelected}
       />
     </Page>
   )

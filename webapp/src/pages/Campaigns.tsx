@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom"
+import * as React from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Plus, Mail, Play, Pause, MoreHorizontal, Clock } from "lucide-react"
 
@@ -11,8 +12,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import {
   DropdownMenu,
@@ -20,7 +31,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { campaigns } from "@/lib/mock-data"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { useCampaigns, campaignStore } from "@/lib/store"
 import { formatDate } from "@/lib/format"
 import type { Campaign, CampaignStatus } from "@/lib/types"
 
@@ -43,10 +55,30 @@ function Metric({ label, value }: { label: string; value: string | number }) {
   )
 }
 
-function CampaignCard({ campaign }: { campaign: Campaign }) {
+function CampaignCard({
+  campaign,
+  onDuplicate,
+  onDelete,
+}: {
+  campaign: Campaign
+  onDuplicate: (campaign: Campaign) => void
+  onDelete: (campaign: Campaign) => void
+}) {
   const replyRate = campaign.enrolled
     ? Math.round((campaign.replied / campaign.enrolled) * 100)
     : 0
+
+  function toggleStatus() {
+    const nextStatus: CampaignStatus =
+      campaign.status === "active" ? "paused" : "active"
+    campaignStore.update(campaign.id, { status: nextStatus })
+    toast.success(
+      nextStatus === "paused"
+        ? `${campaign.name} paused`
+        : `${campaign.name} activated`
+    )
+  }
+
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between">
@@ -73,17 +105,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
           </p>
         </div>
         <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              toast.success(
-                campaign.status === "active"
-                  ? `${campaign.name} paused`
-                  : `${campaign.name} activated`
-              )
-            }
-          >
+          <Button variant="outline" size="sm" onClick={toggleStatus}>
             {campaign.status === "active" ? (
               <>
                 <Pause className="size-4" />
@@ -106,12 +128,12 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
               <DropdownMenuItem asChild>
                 <Link to={`/campaigns/${campaign.id}`}>Edit sequence</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info("Duplicated")}>
+              <DropdownMenuItem onClick={() => onDuplicate(campaign)}>
                 Duplicate
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
-                onClick={() => toast.info("Archived")}
+                onClick={() => onDelete(campaign)}
               >
                 Archive
               </DropdownMenuItem>
@@ -159,14 +181,103 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
   )
 }
 
+function CreateCampaignDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const navigate = useNavigate()
+  const [name, setName] = React.useState("")
+
+  // Reset the form whenever the dialog transitions to open. Adjusting state
+  // during render is the React-recommended pattern over a cascading effect.
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setName("")
+    }
+  }
+
+  const trimmedName = name.trim()
+
+  function handleCreate() {
+    if (!trimmedName) return
+    const campaign = campaignStore.create({ name: trimmedName })
+    toast.success("Campaign created")
+    onOpenChange(false)
+    navigate(`/campaigns/${campaign.id}`)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>New campaign</DialogTitle>
+          <DialogDescription>
+            Give your campaign a name to get started.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            handleCreate()
+          }}
+          className="space-y-2"
+        >
+          <Label htmlFor="campaign-name">Campaign name</Label>
+          <Input
+            id="campaign-name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Q3 outbound — VP Sales"
+            autoFocus
+          />
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!trimmedName}>
+              Create
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function Campaigns() {
+  const campaigns = useCampaigns()
+  const [createOpen, setCreateOpen] = React.useState(false)
+  const [pendingDelete, setPendingDelete] = React.useState<Campaign | null>(
+    null
+  )
+
+  function handleDuplicate(campaign: Campaign) {
+    campaignStore.create({ ...campaign, name: `${campaign.name} (copy)` })
+    toast.success("Campaign duplicated")
+  }
+
+  function handleDelete() {
+    if (!pendingDelete) return
+    campaignStore.remove(pendingDelete.id)
+    toast.success("Campaign deleted")
+  }
+
   return (
     <Page>
       <PageHeading
         title="Campaigns"
         description="Multi-channel sequences across email and LinkedIn."
         action={
-          <Button onClick={() => toast.info("New campaign — coming soon")}>
+          <Button onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" />
             New campaign
           </Button>
@@ -174,9 +285,31 @@ export default function Campaigns() {
       />
       <div className="grid gap-4 lg:grid-cols-2">
         {campaigns.map((c) => (
-          <CampaignCard key={c.id} campaign={c} />
+          <CampaignCard
+            key={c.id}
+            campaign={c}
+            onDuplicate={handleDuplicate}
+            onDelete={setPendingDelete}
+          />
         ))}
       </div>
+
+      <CreateCampaignDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null)
+        }}
+        title="Delete campaign?"
+        description={
+          pendingDelete
+            ? `"${pendingDelete.name}" and its sequence will be permanently removed.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+      />
     </Page>
   )
 }

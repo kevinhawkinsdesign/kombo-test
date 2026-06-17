@@ -174,7 +174,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
         {sections.map((section) => (
           <div key={section.labelKey} className="mb-1">
-            <p className="text-sidebar-foreground/50 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
+            <p className="text-sidebar-foreground/65 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
               {t(section.labelKey)}
             </p>
             {section.items.map((item) => (

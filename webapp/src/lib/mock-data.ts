@@ -711,13 +711,33 @@ export const recentActivity: ActivityItem[] = [
   },
 ]
 
+// Live references kept in sync by the data store (src/lib/store.ts) so these
+// accessors always return the current (possibly user-edited) collections.
+let liveProspects: Prospect[] = prospects
+let liveLists: ProspectList[] = prospectLists
+let liveCampaigns: Campaign[] = campaigns
+
+export function setLiveProspects(next: Prospect[]): void {
+  liveProspects = next
+}
+export function setLiveLists(next: ProspectList[]): void {
+  liveLists = next
+}
+export function setLiveCampaigns(next: Campaign[]): void {
+  liveCampaigns = next
+}
+
 // Helpers
 export function getProspect(id: string): Prospect | undefined {
-  return prospects.find((p) => p.id === id)
+  return liveProspects.find((p) => p.id === id)
 }
 
 export function getList(id: string): ProspectList | undefined {
-  return prospectLists.find((l) => l.id === id)
+  return liveLists.find((l) => l.id === id)
+}
+
+export function getCampaign(id: string): Campaign | undefined {
+  return liveCampaigns.find((c) => c.id === id)
 }
 
 export function getConversationProspect(conv: Conversation): Prospect | undefined {

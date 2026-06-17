@@ -482,6 +482,30 @@ export function getAccount(id: string): Account | undefined {
   return accounts.find((a) => a.id === id)
 }
 
+// Live references kept in sync by the data store (src/lib/store.ts).
+let liveDeals: Deal[] = deals
+let liveTasks: Task[] = tasks
+let liveTemplates: EmailTemplate[] = emailTemplates
+
+export function setLiveDeals(next: Deal[]): void {
+  liveDeals = next
+}
+export function setLiveTasks(next: Task[]): void {
+  liveTasks = next
+}
+export function setLiveTemplates(next: EmailTemplate[]): void {
+  liveTemplates = next
+}
+export function getDeal(id: string): Deal | undefined {
+  return liveDeals.find((d) => d.id === id)
+}
+export function getTemplate(id: string): EmailTemplate | undefined {
+  return liveTemplates.find((t) => t.id === id)
+}
+export function getTask(id: string): Task | undefined {
+  return liveTasks.find((t) => t.id === id)
+}
+
 export const DEAL_STAGES: { key: Deal["stage"]; label: string }[] = [
   { key: "lead", label: "Lead" },
   { key: "qualified", label: "Qualified" },

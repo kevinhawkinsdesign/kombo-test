@@ -156,3 +156,27 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* --- WCAG 2.2 AA --- */
+
+/* 2.4.7 / 2.4.13 Focus Appearance: a visible keyboard-focus indicator on
+   every interactive element (covers hand-rolled buttons/links/cards too). */
+@layer base {
+  :where(a, button, input, select, textarea, summary, [role="button"], [role="tab"], [role="menuitem"], [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

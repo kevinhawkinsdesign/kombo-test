@@ -45,7 +45,8 @@ import {
 } from "@/components/ui/table"
 import { CampaignDailyChart } from "@/components/charts/Charts"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
-import { campaigns, getProspect } from "@/lib/mock-data"
+import { getProspect } from "@/lib/mock-data"
+import { useCampaigns, campaignStore } from "@/lib/store"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime } from "@/lib/format"
 import type {
@@ -117,6 +118,7 @@ function newStepId(): string {
 
 export default function CampaignDetail() {
   const { id } = useParams()
+  const campaigns = useCampaigns()
   const campaign = campaigns.find((c) => c.id === id)
 
   const [steps, setSteps] = React.useState<CampaignStep[]>(
@@ -218,13 +220,16 @@ export default function CampaignDetail() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            onClick={() =>
+            onClick={() => {
+              const nextStatus: CampaignStatus =
+                campaign.status === "active" ? "paused" : "active"
+              campaignStore.update(campaign.id, { status: nextStatus })
               toast.success(
-                campaign.status === "active"
+                nextStatus === "paused"
                   ? `${campaign.name} paused`
                   : `${campaign.name} activated`
               )
-            }
+            }}
           >
             {campaign.status === "active" ? (
               <>
@@ -454,7 +459,12 @@ export default function CampaignDetail() {
                   <Plus className="size-4" />
                   Add step
                 </Button>
-                <Button onClick={() => toast.success("Sequence saved")}>
+                <Button
+                  onClick={() => {
+                    campaignStore.update(campaign.id, { steps })
+                    toast.success("Sequence saved")
+                  }}
+                >
                   Save sequence
                 </Button>
               </div>
