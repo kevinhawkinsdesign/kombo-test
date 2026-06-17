@@ -1,11 +1,12 @@
 import * as React from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   ArrowLeft,
   Mail,
   Phone,
   Plus,
+  Pencil,
   Send,
   Sparkles,
   Building2,
@@ -17,6 +18,9 @@ import {
   MailOpen,
   Reply,
   CalendarCheck,
+  CheckCircle2,
+  MoreHorizontal,
+  Trash2,
   UserPlus,
   StickyNote,
   PhoneCall,
@@ -58,10 +62,19 @@ import {
   StatusBadge,
 } from "@/components/common/ProspectBits"
 import { TrackButton } from "@/components/common/TrackButton"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
+import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
 import { ComposeDialog } from "@/components/prospect/ComposeDialog"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
-import { getProspect, conversations } from "@/lib/mock-data"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { conversations } from "@/lib/mock-data"
+import { useProspects, prospectStore } from "@/lib/store"
 import {
   callPrep,
   emailPrep,
@@ -81,10 +94,14 @@ import type { Prospect } from "@/lib/types"
 
 export default function ProspectProfile() {
   const { id } = useParams()
-  const prospect = id ? getProspect(id) : undefined
+  const navigate = useNavigate()
+  const prospects = useProspects()
+  const prospect = id ? prospects.find((p) => p.id === id) : undefined
   const [addOpen, setAddOpen] = React.useState(false)
   const [composeOpen, setComposeOpen] = React.useState(false)
   const [crmOpen, setCrmOpen] = React.useState(false)
+  const [editOpen, setEditOpen] = React.useState(false)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
 
   if (!prospect) {
     return (
@@ -142,11 +159,35 @@ export default function ProspectProfile() {
               <Plus className="size-4" />
               Add to list
             </Button>
+            <Button variant="outline" onClick={() => setEditOpen(true)}>
+              <Pencil className="size-4" />
+              Edit
+            </Button>
             <TrackButton
               kind="prospect"
               id={prospect.id}
               name={prospect.firstName}
             />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Prospect actions"
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                  Delete prospect
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
@@ -295,6 +336,24 @@ export default function ProspectProfile() {
           { label: "Job title", value: prospect.title },
         ]}
       />
+      <ProspectFormDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        prospect={prospect}
+      />
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete prospect?"
+        description={`This will permanently remove ${prospect.firstName} ${prospect.lastName} and remove them from any lists. This action cannot be undone.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => {
+          prospectStore.remove(prospect.id)
+          toast.success("Prospect deleted")
+          navigate("/search")
+        }}
+      />
     </Page>
   )
 }
@@ -339,12 +398,18 @@ function ContactCard({
           <div className="flex items-center gap-3">
             <Mail className="text-muted-foreground size-4 shrink-0" />
             {emailShown ? (
-              <a
-                href={`mailto:${prospect.email}`}
-                className="hover:text-primary truncate"
-              >
-                {prospect.email}
-              </a>
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <a
+                  href={`mailto:${prospect.email}`}
+                  className="hover:text-primary truncate"
+                >
+                  {prospect.email}
+                </a>
+                <span className="text-chart-1 flex shrink-0 items-center gap-1 text-xs font-medium">
+                  <CheckCircle2 className="size-3.5" />
+                  Verified
+                </span>
+              </div>
             ) : (
               <button
                 onClick={() => setConfirm("email")}

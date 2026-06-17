@@ -1,10 +1,20 @@
+import * as React from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { ArrowLeft, Send, Download } from "lucide-react"
+import { ArrowLeft, Send, Download, Pencil, Trash2, X, Plus } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Table,
   TableBody,
@@ -18,12 +28,21 @@ import {
   ScoreBadge,
   StatusBadge,
 } from "@/components/common/ProspectBits"
-import { getList, getProspect } from "@/lib/mock-data"
+import { ListFormDialog } from "@/components/lists/ListFormDialog"
+import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { getProspect } from "@/lib/mock-data"
+import { useLists, useProspects, listStore } from "@/lib/store"
+import type { Prospect, ProspectList } from "@/lib/types"
 
 export default function ListDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const list = id ? getList(id) : undefined
+  const lists = useLists()
+  const list = id ? lists.find((l) => l.id === id) : undefined
+
+  const [editOpen, setEditOpen] = React.useState(false)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
+  const [addOpen, setAddOpen] = React.useState(false)
 
   if (!list) {
     return (
@@ -65,7 +84,19 @@ export default function ListDetail() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setEditOpen(true)}>
+            <Pencil className="size-4" />
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            className="text-destructive hover:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="size-4" />
+            Delete list
+          </Button>
           <Button
             variant="outline"
             onClick={() => toast.success("Exported to CSV")}
@@ -80,6 +111,13 @@ export default function ListDetail() {
         </div>
       </div>
 
+      <div className="mb-3 flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
+          <Plus className="size-4" />
+          Add prospects
+        </Button>
+      </div>
+
       <Card className="overflow-hidden p-0">
         <Table>
           <TableHeader>
@@ -88,6 +126,7 @@ export default function ListDetail() {
               <TableHead className="hidden md:table-cell">Company</TableHead>
               <TableHead>Score</TableHead>
               <TableHead className="hidden sm:table-cell">Status</TableHead>
+              <TableHead className="w-12 pr-4" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -120,11 +159,177 @@ export default function ListDetail() {
                 <TableCell className="hidden sm:table-cell">
                   <StatusBadge status={p.status} />
                 </TableCell>
+                <TableCell className="pr-4">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Remove ${p.firstName} ${p.lastName} from list`}
+                    className="text-muted-foreground hover:text-destructive size-8"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      listStore.removeProspect(list.id, p.id)
+                      toast.success("Removed from list")
+                    }}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
+            {members.length === 0 && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell
+                  colSpan={5}
+                  className="text-muted-foreground py-10 text-center text-sm"
+                >
+                  No prospects yet. Add some to get started.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Card>
+
+      <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete list?"
+        description={`"${list.name}" will be permanently removed. Prospects stay in your workspace.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => {
+          listStore.remove(list.id)
+          toast.success("List deleted")
+          navigate("/lists")
+        }}
+      />
+
+      <AddProspectsDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
     </Page>
+  )
+}
+
+function AddProspectsDialog({
+  open,
+  onOpenChange,
+  list,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  list: ProspectList
+}) {
+  const prospects = useProspects()
+  const [selected, setSelected] = React.useState<Set<string>>(new Set())
+
+  // Reset the selection whenever the dialog transitions to open (adjusting
+  // state during render — the React-recommended pattern).
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setSelected(new Set())
+  }
+
+  const memberIds = React.useMemo(
+    () => new Set(list.prospectIds),
+    [list.prospectIds]
+  )
+  const candidates = React.useMemo(
+    () => prospects.filter((p) => !memberIds.has(p.id)),
+    [prospects, memberIds]
+  )
+
+  function toggle(id: string) {
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function handleAdd() {
+    const ids = Array.from(selected)
+    if (ids.length === 0) return
+    listStore.addProspects(list.id, ids)
+    toast.success(
+      `${ids.length} ${ids.length === 1 ? "prospect" : "prospects"} added`
+    )
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add prospects</DialogTitle>
+          <DialogDescription>
+            Select prospects to add to “{list.name}”.
+          </DialogDescription>
+        </DialogHeader>
+
+        {candidates.length === 0 ? (
+          <p className="text-muted-foreground py-8 text-center text-sm">
+            Every prospect is already in this list.
+          </p>
+        ) : (
+          <div className="-mx-1 max-h-80 space-y-1 overflow-y-auto px-1">
+            {candidates.map((p) => (
+              <ProspectRow
+                key={p.id}
+                prospect={p}
+                checked={selected.has(p.id)}
+                onToggle={() => toggle(p.id)}
+              />
+            ))}
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleAdd} disabled={selected.size === 0}>
+            Add selected
+            {selected.size > 0 ? ` (${selected.size})` : ""}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ProspectRow({
+  prospect,
+  checked,
+  onToggle,
+}: {
+  prospect: Prospect
+  checked: boolean
+  onToggle: () => void
+}) {
+  const checkboxId = `add-prospect-${prospect.id}`
+  return (
+    <label
+      htmlFor={checkboxId}
+      className="hover:bg-muted/60 flex cursor-pointer items-center gap-3 rounded-md px-2 py-2"
+    >
+      <Checkbox
+        id={checkboxId}
+        checked={checked}
+        onCheckedChange={onToggle}
+      />
+      <ProspectAvatar prospect={prospect} className="size-8" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">
+          {prospect.firstName} {prospect.lastName}
+        </p>
+        <p className="text-muted-foreground truncate text-xs">
+          {prospect.title} · {prospect.company}
+        </p>
+      </div>
+      <ScoreBadge score={prospect.score} />
+    </label>
   )
 }
