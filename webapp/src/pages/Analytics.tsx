@@ -23,13 +23,8 @@ import { TrendChart, ReplyRateChart } from "@/components/charts/Charts"
 import { Funnel } from "@/components/charts/Funnel"
 import { useView } from "@/lib/view-context"
 import { getViewData, leaderboard, MONTHS, WEEKS, team } from "@/lib/team"
-import { initials } from "@/lib/format"
+import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
-
-function money(n: number): string {
-  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K`
-  return `$${n}`
-}
 
 // Activity volume by channel (derived from team size for a believable mix).
 const CHANNELS = [
@@ -57,7 +52,7 @@ export default function Analytics() {
   ]
 
   return (
-    <Page className="max-w-none">
+    <Page>
       <PageHeading
         title="Analytics"
         description={

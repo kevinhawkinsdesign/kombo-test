@@ -14,13 +14,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useView } from "@/lib/view-context"
 import { deals, getAccount, DEAL_STAGES } from "@/lib/mock-extra"
 import { getRep } from "@/lib/team"
-import { initials, formatDate } from "@/lib/format"
+import { initials, formatDate, formatMoney as money } from "@/lib/format"
 import type { Deal } from "@/lib/types"
-
-function money(n: number): string {
-  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K`
-  return `$${n}`
-}
 
 function OwnerAvatar({ ownerId }: { ownerId: string }) {
   const rep = getRep(ownerId)
@@ -97,7 +92,7 @@ export default function Deals() {
   ]
 
   return (
-    <Page className="max-w-none">
+    <Page>
       <PageHeading
         title="Deals"
         description="Your pipeline by stage."

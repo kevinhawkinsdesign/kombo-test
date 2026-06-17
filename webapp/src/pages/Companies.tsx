@@ -18,7 +18,7 @@ import {
 import { accounts } from "@/lib/mock-extra"
 import { getRep } from "@/lib/team"
 import { useView } from "@/lib/view-context"
-import { initials } from "@/lib/format"
+import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Account, AccountTier } from "@/lib/types"
 
@@ -29,14 +29,6 @@ const TIERS: (AccountTier | typeof ALL)[] = [
   "Mid-market",
   "SMB",
 ]
-
-function money(n: number): string {
-  if (n >= 1000) {
-    const k = n / 1000
-    return Number.isInteger(k) ? `$${k}k` : `$${k.toFixed(1)}K`
-  }
-  return `$${n}`
-}
 
 function healthTone(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"

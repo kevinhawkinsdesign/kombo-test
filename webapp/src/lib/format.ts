@@ -36,3 +36,15 @@ export function scoreTone(score: number): "high" | "mid" | "low" {
   if (score >= 70) return "mid"
   return "low"
 }
+
+/** Canonical compact currency formatter, e.g. $184K, $1.5K, $2.0M, $940. */
+export function formatMoney(n: number): string {
+  const abs = Math.abs(n)
+  if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (abs >= 1000) {
+    const k = n / 1000
+    const value = k >= 100 ? String(Math.round(k)) : k.toFixed(1).replace(/\.0$/, "")
+    return `$${value}K`
+  }
+  return `$${n}`
+}

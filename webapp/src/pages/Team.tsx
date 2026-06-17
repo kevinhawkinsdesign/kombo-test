@@ -29,12 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useView } from "@/lib/view-context"
 import { team, leaderboard, type TeamMember } from "@/lib/team"
-import { initials } from "@/lib/format"
-
-function money(n: number): string {
-  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K`
-  return `$${n}`
-}
+import { initials, formatMoney as money } from "@/lib/format"
 
 function repInitials(name: string): string {
   const [first, last] = name.split(" ")
@@ -64,7 +59,7 @@ export default function Team() {
   }
 
   return (
-    <Page className="max-w-none">
+    <Page>
       <PageHeading
         title="Team"
         description="Manage reps and view their performance."

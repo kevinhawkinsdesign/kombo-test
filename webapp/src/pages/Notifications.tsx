@@ -39,6 +39,17 @@ export default function Notifications() {
       />
 
       <Card className="divide-border divide-y p-0">
+        {items.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-14 text-center">
+            <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+              <CheckCheck className="size-6" />
+            </span>
+            <p className="text-sm font-medium">You're all caught up</p>
+            <p className="text-muted-foreground text-sm">
+              New replies, meetings, and deal updates will show up here.
+            </p>
+          </div>
+        )}
         {items.map((n) => {
           const meta = NOTIFICATION_META[n.type]
           const Icon = meta.icon

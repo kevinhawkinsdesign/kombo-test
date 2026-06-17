@@ -1,3 +1,4 @@
+import * as React from "react"
 import { NavLink } from "react-router-dom"
 import {
   LayoutDashboard,
@@ -17,11 +18,18 @@ import {
   Sparkles,
   Gift,
   Zap,
+  Menu,
 } from "lucide-react"
 
 import { KomboLogo } from "@/components/KomboLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
 import { useLocale } from "@/lib/locale"
@@ -87,13 +95,20 @@ const bottomNav: NavItem[] = [
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ]
 
-function NavRow({ item }: { item: NavItem }) {
+function NavRow({
+  item,
+  onNavigate,
+}: {
+  item: NavItem
+  onNavigate?: () => void
+}) {
   const { t } = useLocale()
   const Icon = item.icon
   return (
     <NavLink
       to={item.to}
       end={item.to === "/"}
+      onClick={onNavigate}
       className={({ isActive }) =>
         cn(
           "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
@@ -114,17 +129,17 @@ function NavRow({ item }: { item: NavItem }) {
   )
 }
 
-export function AppSidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useLocale()
   return (
-    <aside className="bg-sidebar border-sidebar-border hidden w-64 shrink-0 flex-col border-r md:flex">
+    <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-5">
         <KomboLogo />
       </div>
 
       <div className="px-3">
         <Button className="w-full justify-start gap-2" size="sm" asChild>
-          <NavLink to="/search">
+          <NavLink to="/search" onClick={onNavigate}>
             <Sparkles className="size-4" />
             {t("nav.newSearch")}
           </NavLink>
@@ -138,17 +153,47 @@ export function AppSidebar() {
               {t(section.labelKey)}
             </p>
             {section.items.map((item) => (
-              <NavRow key={item.to} item={item} />
+              <NavRow key={item.to} item={item} onNavigate={onNavigate} />
             ))}
           </div>
         ))}
 
         <div className="mt-auto flex flex-col gap-1 pt-2">
           {bottomNav.map((item) => (
-            <NavRow key={item.to} item={item} />
+            <NavRow key={item.to} item={item} onNavigate={onNavigate} />
           ))}
         </div>
       </nav>
+    </div>
+  )
+}
+
+export function AppSidebar() {
+  return (
+    <aside className="bg-sidebar border-sidebar-border hidden w-64 shrink-0 flex-col border-r md:flex">
+      <SidebarContent />
     </aside>
+  )
+}
+
+export function MobileNav() {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="size-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="bg-sidebar w-72 p-0">
+        <SheetTitle className="sr-only">Navigation</SheetTitle>
+        <SidebarContent onNavigate={() => setOpen(false)} />
+      </SheetContent>
+    </Sheet>
   )
 }

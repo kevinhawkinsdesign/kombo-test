@@ -121,7 +121,7 @@ export default function Search() {
     query || industry !== ALL || seniority !== ALL || status !== ALL
 
   return (
-    <Page className="max-w-none">
+    <Page>
       <PageHeading
         title="Prospect Search"
         description={
