@@ -1,5 +1,14 @@
 import { useNavigate } from "react-router-dom"
-import { Search, Moon, Sun, LogOut, User, CreditCard } from "lucide-react"
+import {
+  Search,
+  Moon,
+  Sun,
+  LogOut,
+  User,
+  CreditCard,
+  Zap,
+  Check,
+} from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -17,11 +26,15 @@ import { KaiAssistant } from "@/components/kai/KaiAssistant"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
+import { useCredits } from "@/lib/credits"
+import { useLocale } from "@/lib/locale"
 import { initials } from "@/lib/format"
 
 export function AppHeader({ title }: { title?: string }) {
   const { resolvedTheme, setTheme } = useTheme()
   const { user, logout } = useAuth()
+  const { balance } = useCredits()
+  const { locale, setLocale } = useLocale()
   const navigate = useNavigate()
 
   return (
@@ -42,6 +55,14 @@ export function AppHeader({ title }: { title?: string }) {
       </div>
 
       <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <button
+          onClick={() => navigate("/usage")}
+          className="hover:bg-muted text-foreground hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors sm:flex"
+          title="Credits remaining"
+        >
+          <Zap className="text-chart-4 size-3.5" />
+          <span className="tabular-nums">{balance.toLocaleString()}</span>
+        </button>
         <KaiAssistant />
         <NotificationsBell />
       </div>
@@ -88,6 +109,18 @@ export function AppHeader({ title }: { title?: string }) {
           <DropdownMenuItem onClick={() => navigate("/settings")}>
             <CreditCard className="size-4" />
             Plan &amp; billing
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
+            Language
+          </DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => setLocale("en")}>
+            <span className="flex-1">English</span>
+            {locale === "en" && <Check className="size-4" />}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setLocale("es")}>
+            <span className="flex-1">Español</span>
+            {locale === "es" && <Check className="size-4" />}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={logout}>
