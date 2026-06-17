@@ -267,6 +267,21 @@ export interface KeyMoment {
   type: "positive" | "risk" | "action" | "question"
 }
 
+export type CallType = "Discovery" | "Demo" | "Intro" | "Negotiation" | "Follow-up"
+
+export interface CallParticipant {
+  name: string
+  role: "rep" | "prospect"
+  title: string
+  talkPct: number
+}
+
+export interface Personality {
+  disc: string // e.g. "Driver (D)"
+  summary: string
+  tips: string[]
+}
+
 export interface RecordingAnalysis {
   longestMonologueMin: number
   questionsAsked: number
@@ -277,6 +292,9 @@ export interface RecordingAnalysis {
   actionItems: string[]
   coachingTips: string[]
   transcript: TranscriptTurn[]
+  callType?: CallType
+  participants?: CallParticipant[]
+  personality?: Personality
 }
 
 // --- Depth: company intelligence ---

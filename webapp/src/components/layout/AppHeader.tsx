@@ -8,6 +8,7 @@ import {
   CreditCard,
   Zap,
   Check,
+  LifeBuoy,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -124,6 +125,17 @@ export function AppHeader({ title }: { title?: string }) {
           <DropdownMenuItem onClick={() => setLocale("es")}>
             <span className="flex-1">Español</span>
             {locale === "es" && <Check className="size-4" />}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <a
+              href="https://info.getkombo.ai/en/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <LifeBuoy className="size-4" />
+              Help center
+            </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={logout}>

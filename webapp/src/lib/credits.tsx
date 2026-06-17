@@ -13,6 +13,7 @@ interface CreditsState {
   monthlyAllowance: number
   usage: CreditUsage[]
   spend: (amount: number, label: string) => boolean
+  topUp: (amount: number, label?: string) => void
 }
 
 const INITIAL_USAGE: CreditUsage[] = [
@@ -60,9 +61,23 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     []
   )
 
+  const topUp = React.useCallback((amount: number, label = "Credit top-up") => {
+    setBalance((b) => b + amount)
+    idRef.current += 1
+    setUsage((u) => [
+      {
+        id: `cu_topup_${idRef.current}`,
+        label,
+        amount: -amount, // negative amount = credit added
+        timestamp: new Date().toISOString(),
+      },
+      ...u,
+    ])
+  }, [])
+
   const value = React.useMemo(
-    () => ({ balance, monthlyAllowance, usage, spend }),
-    [balance, monthlyAllowance, usage, spend]
+    () => ({ balance, monthlyAllowance, usage, spend, topUp }),
+    [balance, monthlyAllowance, usage, spend, topUp]
   )
 
   return (

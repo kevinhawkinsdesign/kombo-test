@@ -18,6 +18,11 @@ import {
   CheckCircle2,
   Circle,
   GraduationCap,
+  Users,
+  Brain,
+  Star,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -87,6 +92,8 @@ export default function CoachRecordingDetail() {
 
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
+  const [rating, setRating] = React.useState(0)
+  const [helpful, setHelpful] = React.useState<boolean | null>(null)
 
   if (!rec) {
     return (
@@ -140,6 +147,9 @@ export default function CoachRecordingDetail() {
                 <SentimentIcon className="size-3" />
                 {sentiment.label}
               </Badge>
+              {analysis?.callType && (
+                <Badge variant="secondary">{analysis.callType}</Badge>
+              )}
             </div>
             <p className="text-muted-foreground mt-1 text-sm">
               {rec.prospectName} · {rec.company} · {formatDate(rec.date)} ·{" "}
@@ -199,6 +209,7 @@ export default function CoachRecordingDetail() {
                 <TabsList className="mb-4">
                   <TabsTrigger value="transcript">Transcript</TabsTrigger>
                   <TabsTrigger value="moments">Key moments</TabsTrigger>
+                  <TabsTrigger value="participants">Participants</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="transcript">
@@ -266,6 +277,52 @@ export default function CoachRecordingDetail() {
                   ) : (
                     <p className="text-muted-foreground py-6 text-center text-sm">
                       No key moments captured.
+                    </p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="participants">
+                  {analysis?.participants && analysis.participants.length > 0 ? (
+                    <div className="space-y-4">
+                      {analysis.participants.map((p) => (
+                        <div key={p.name}>
+                          <div className="mb-1 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Users className="text-muted-foreground size-4" />
+                              <span className="text-sm font-medium">
+                                {p.name}
+                              </span>
+                              <Badge
+                                variant={
+                                  p.role === "rep" ? "default" : "secondary"
+                                }
+                                className="capitalize"
+                              >
+                                {p.role === "rep" ? "You" : "Prospect"}
+                              </Badge>
+                            </div>
+                            <span className="text-muted-foreground text-sm tabular-nums">
+                              {p.talkPct}% talk time
+                            </span>
+                          </div>
+                          <p className="text-muted-foreground mb-1.5 text-xs">
+                            {p.title}
+                          </p>
+                          <div className="bg-muted h-2 overflow-hidden rounded-full">
+                            <div
+                              className={cn(
+                                "h-full rounded-full",
+                                p.role === "rep" ? "bg-primary" : "bg-chart-2"
+                              )}
+                              style={{ width: `${p.talkPct}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground py-6 text-center text-sm">
+                      No participant data.
                     </p>
                   )}
                 </TabsContent>
@@ -461,6 +518,96 @@ export default function CoachRecordingDetail() {
               </CardContent>
             </Card>
           )}
+
+          {analysis?.personality && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Brain className="text-primary size-4" />
+                  Personality read
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Badge variant="secondary">{analysis.personality.disc}</Badge>
+                <p className="text-muted-foreground text-sm">
+                  {analysis.personality.summary}
+                </p>
+                <Separator />
+                <ul className="space-y-1.5">
+                  {analysis.personality.tips.map((tip) => (
+                    <li
+                      key={tip}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Rate this analysis</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      setRating(n)
+                      toast.success("Thanks for the feedback")
+                    }}
+                    aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+                  >
+                    <Star
+                      className={cn(
+                        "size-6 transition-colors",
+                        n <= rating
+                          ? "fill-chart-4 text-chart-4"
+                          : "text-muted-foreground/40"
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-sm">
+                  Was this helpful?
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant={helpful === true ? "default" : "outline"}
+                    size="icon"
+                    className="size-8"
+                    aria-label="Helpful"
+                    onClick={() => {
+                      setHelpful(true)
+                      toast.success("Glad it helped")
+                    }}
+                  >
+                    <ThumbsUp className="size-4" />
+                  </Button>
+                  <Button
+                    variant={helpful === false ? "default" : "outline"}
+                    size="icon"
+                    className="size-8"
+                    aria-label="Not helpful"
+                    onClick={() => {
+                      setHelpful(false)
+                      toast.info("Thanks — we'll improve")
+                    }}
+                  >
+                    <ThumbsDown className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Page>

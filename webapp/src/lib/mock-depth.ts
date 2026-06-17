@@ -57,6 +57,20 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
     longestMonologueMin: 2.1,
     questionsAsked: 14,
     patience: 1.4,
+    callType: "Discovery",
+    participants: [
+      { name: "Maya Patel", role: "rep", title: "Account Executive", talkPct: 42 },
+      { name: "Wei Zhang", role: "prospect", title: "Head of Sales · Quantum Edge", talkPct: 58 },
+    ],
+    personality: {
+      disc: "Conscientious (C)",
+      summary: "Analytical and detail-oriented — wants proof, security, and a clear plan before committing.",
+      tips: [
+        "Lead with data and references, not hype.",
+        "Send written follow-ups (docs, timelines) — he evaluates carefully.",
+        "Address risk (security, onboarding) proactively.",
+      ],
+    },
     topics: [
       { label: "Discovery", pct: 38 },
       { label: "Pricing", pct: 22 },
@@ -93,6 +107,20 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
     longestMonologueMin: 4.3,
     questionsAsked: 6,
     patience: 0.7,
+    callType: "Demo",
+    participants: [
+      { name: "Jordan Lee", role: "rep", title: "Account Executive", talkPct: 58 },
+      { name: "Marcus Riley", role: "prospect", title: "Head of RevOps · BrightPeak", talkPct: 42 },
+    ],
+    personality: {
+      disc: "Influence (I)",
+      summary: "Relationship-driven and big-picture — responds to vision and social proof, less to feature detail.",
+      tips: [
+        "Open with outcomes and peer stories, not a feature tour.",
+        "Keep the energy high and the demo tight.",
+        "Confirm next steps in writing — optimistic but can drift.",
+      ],
+    },
     topics: [
       { label: "Product demo", pct: 52 },
       { label: "Pricing", pct: 20 },
@@ -120,6 +148,20 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
     longestMonologueMin: 5.8,
     questionsAsked: 3,
     patience: 0.4,
+    callType: "Intro",
+    participants: [
+      { name: "Ethan Wright", role: "rep", title: "Account Executive", talkPct: 67 },
+      { name: "Diego Fernández", role: "prospect", title: "Sales Director · Atlas Manufacturing", talkPct: 33 },
+    ],
+    personality: {
+      disc: "Dominance (D)",
+      summary: "Direct, results-focused, and skeptical — wants ROI and to control the agenda.",
+      tips: [
+        "Get to the point fast and quantify impact.",
+        "Ask sharp qualifying questions; don't pitch over him.",
+        "Bring a concrete ROI case to re-engage.",
+      ],
+    },
     topics: [
       { label: "Pitch", pct: 60 },
       { label: "Pricing", pct: 25 },

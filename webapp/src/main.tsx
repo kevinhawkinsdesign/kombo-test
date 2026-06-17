@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import "./index.css"
 import App from "./App.tsx"
+import { bootIntercom } from "@/lib/intercom"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
 import { ViewProvider } from "@/lib/view-context"
@@ -23,6 +24,9 @@ const queryClient = new QueryClient({
 // Use hash routing for static hosting (e.g. GitHub Pages preview),
 // browser routing everywhere else. Controlled at build time.
 const Router = import.meta.env.VITE_ROUTER === "hash" ? HashRouter : BrowserRouter
+
+// Load Intercom Messenger if an app id is configured (no-op otherwise).
+bootIntercom()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
