@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
 import { initials } from "@/lib/format"
@@ -24,10 +25,12 @@ export function AppHeader({ title }: { title?: string }) {
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-4 border-b px-4 backdrop-blur md:px-6">
       {title && (
-        <h1 className="text-base font-semibold md:text-lg">{title}</h1>
+        <h1 className="hidden text-base font-semibold lg:block">{title}</h1>
       )}
 
-      <div className="relative ml-auto hidden w-full max-w-sm md:block">
+      <ViewSwitcher />
+
+      <div className="relative ml-auto hidden w-full max-w-xs md:block">
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
           placeholder="Search prospects, companies…"

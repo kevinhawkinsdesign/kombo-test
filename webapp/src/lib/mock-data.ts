@@ -14,7 +14,7 @@ export const currentUser: CurrentUser = {
   id: "u_1",
   name: "Kevin Hawkins",
   email: "kevin@getkombo.ai",
-  role: "Account Executive",
+  role: "VP of Sales",
   company: "Kombo AI",
   plan: "Scale",
   avatarColor: "#7c3aed",

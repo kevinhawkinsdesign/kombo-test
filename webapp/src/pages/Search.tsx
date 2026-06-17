@@ -38,6 +38,8 @@ import {
 } from "@/components/common/ProspectBits"
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { prospects } from "@/lib/mock-data"
+import { useView } from "@/lib/view-context"
+import { ownerOf } from "@/lib/team"
 import type { Prospect } from "@/lib/types"
 
 const ALL = "all"
@@ -55,6 +57,7 @@ const statuses: (Prospect["status"] | typeof ALL)[] = [
 
 export default function Search() {
   const navigate = useNavigate()
+  const { impersonating, impersonatingId } = useView()
   const [query, setQuery] = React.useState("")
   const [industry, setIndustry] = React.useState(ALL)
   const [seniority, setSeniority] = React.useState(ALL)
@@ -62,9 +65,17 @@ export default function Search() {
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [addOpen, setAddOpen] = React.useState(false)
 
+  const source = React.useMemo(
+    () =>
+      impersonatingId
+        ? prospects.filter((p) => ownerOf(p.id) === impersonatingId)
+        : prospects,
+    [impersonatingId]
+  )
+
   const results = React.useMemo(() => {
     const q = query.trim().toLowerCase()
-    return prospects.filter((p) => {
+    return source.filter((p) => {
       const matchesQuery =
         !q ||
         `${p.firstName} ${p.lastName} ${p.title} ${p.company} ${p.industry}`
@@ -75,7 +86,7 @@ export default function Search() {
       const matchesStatus = status === ALL || p.status === status
       return matchesQuery && matchesIndustry && matchesSeniority && matchesStatus
     })
-  }, [query, industry, seniority, status])
+  }, [source, query, industry, seniority, status])
 
   const allSelected = results.length > 0 && results.every((p) => selected.has(p.id))
 
@@ -113,7 +124,11 @@ export default function Search() {
     <Page className="max-w-none">
       <PageHeading
         title="Prospect Search"
-        description="Find and qualify your best-fit leads with AI scoring."
+        description={
+          impersonating
+            ? `Viewing ${impersonating.name.split(" ")[0]}'s prospects · AI-scored`
+            : "Find and qualify your best-fit leads with AI scoring."
+        }
         action={
           <Button variant="outline">
             <Sparkles className="size-4" />

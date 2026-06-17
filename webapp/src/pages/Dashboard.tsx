@@ -2,12 +2,9 @@ import { Link } from "react-router-dom"
 import {
   ArrowUpRight,
   ArrowDownRight,
-  MessageSquareReply,
-  CalendarCheck,
   Sparkles,
-  UserPlus,
-  MailOpen,
-  ChevronRight,
+  Trophy,
+  Eye,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -20,35 +17,90 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import {
-  dashboardStats,
-  recentActivity,
-  prospects,
-  campaigns,
-} from "@/lib/mock-data"
-import { relativeTime } from "@/lib/format"
-import type { ActivityItem } from "@/lib/types"
+  TrendChart,
+  ReplyRateChart,
+  AttainmentDoughnut,
+} from "@/components/charts/Charts"
+import { Funnel } from "@/components/charts/Funnel"
+import { useView } from "@/lib/view-context"
+import {
+  getViewData,
+  leaderboard,
+  MONTHS,
+  WEEKS,
+  type TeamMember,
+} from "@/lib/team"
+import { useAuth } from "@/lib/auth"
+import { initials } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
-const ACTIVITY_ICON: Record<ActivityItem["type"], React.ComponentType<{ className?: string }>> =
-  {
-    reply: MessageSquareReply,
-    meeting: CalendarCheck,
-    enriched: Sparkles,
-    added: UserPlus,
-    opened: MailOpen,
-  }
+function money(n: number): string {
+  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K`
+  return `$${n}`
+}
+
+function Delta({ value }: { value: number }) {
+  const positive = value >= 0
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-0.5 text-xs font-medium",
+        positive ? "text-chart-1" : "text-destructive"
+      )}
+    >
+      {positive ? (
+        <ArrowUpRight className="size-3.5" />
+      ) : (
+        <ArrowDownRight className="size-3.5" />
+      )}
+      {Math.abs(value)}%
+    </span>
+  )
+}
 
 export default function Dashboard() {
-  const topProspects = [...prospects].sort((a, b) => b.score - a.score).slice(0, 5)
-  const activeCampaigns = campaigns.filter((c) => c.status === "active")
+  const { user } = useAuth()
+  const { impersonating, impersonatingId, impersonate } = useView()
+  const data = getViewData(impersonatingId)
+
+  const kpis = [
+    {
+      label: "Open pipeline",
+      value: money(data.kpis.pipeline),
+      delta: data.deltas.pipeline,
+    },
+    {
+      label: "Closed won (QTD)",
+      value: money(data.kpis.won),
+      delta: data.deltas.won,
+    },
+    {
+      label: "Meetings booked",
+      value: String(data.kpis.meetings),
+      delta: data.deltas.meetings,
+    },
+    {
+      label: "Reply rate",
+      value: `${data.kpis.replyRate}%`,
+      delta: data.deltas.replyRate,
+    },
+  ]
+
+  const title = impersonating
+    ? `${impersonating.name.split(" ")[0]}'s performance`
+    : `Welcome back, ${user?.name.split(" ")[0]}`
+  const description = impersonating
+    ? `${impersonating.role} · quota ${money(data.quota)} this quarter`
+    : `Team pipeline and forecast · quota ${money(data.quota)} this quarter`
 
   return (
-    <Page>
+    <Page className="max-w-none">
       <PageHeading
-        title="Good morning, Kevin"
-        description="Here's what's happening across your pipeline today."
+        title={title}
+        description={description}
         action={
           <Button asChild>
             <Link to="/search">
@@ -59,147 +111,204 @@ export default function Dashboard() {
         }
       />
 
+      {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {dashboardStats.map((stat) => {
-          const positive = stat.delta >= 0
-          return (
-            <Card key={stat.label}>
-              <CardHeader>
-                <CardDescription>{stat.label}</CardDescription>
-                <CardTitle className="text-2xl tabular-nums">
-                  {stat.value}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-xs">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-0.5 font-medium",
-                      positive ? "text-chart-1" : "text-destructive"
-                    )}
-                  >
-                    {positive ? (
-                      <ArrowUpRight className="size-3.5" />
-                    ) : (
-                      <ArrowDownRight className="size-3.5" />
-                    )}
-                    {Math.abs(stat.delta)}%
-                  </span>
-                  <span className="text-muted-foreground">{stat.hint}</span>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+        {kpis.map((stat) => (
+          <Card key={stat.label}>
+            <CardHeader>
+              <CardDescription>{stat.label}</CardDescription>
+              <CardTitle className="text-2xl tabular-nums">
+                {stat.value}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Delta value={stat.delta} />
+                <span className="text-muted-foreground text-xs">
+                  vs. last quarter
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
+      {/* Trend + funnel */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader className="flex-row items-center justify-between">
-            <div>
-              <CardTitle>Top prospects to action</CardTitle>
-              <CardDescription>
-                Highest AI lead scores in your pipeline
-              </CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/search">
-                View all <ChevronRight className="size-4" />
-              </Link>
-            </Button>
+          <CardHeader>
+            <CardTitle>Pipeline &amp; forecast</CardTitle>
+            <CardDescription>
+              Created pipeline vs. closed won over the last 6 months
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-1">
-            {topProspects.map((p) => (
-              <Link
-                key={p.id}
-                to={`/prospects/${p.id}`}
-                className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors"
-              >
-                <ProspectAvatar prospect={p} className="size-9" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {p.firstName} {p.lastName}
-                  </p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {p.title} · {p.company}
-                  </p>
-                </div>
-                <ScoreBadge score={p.score} />
-              </Link>
-            ))}
+          <CardContent>
+            <div className="h-72">
+              <TrendChart
+                labels={MONTHS}
+                pipeline={data.monthlyPipeline}
+                won={data.monthlyWon}
+              />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
-            <CardDescription>Across your workspace</CardDescription>
+            <CardTitle>Conversion funnel</CardTitle>
+            <CardDescription>Prospect → closed won</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {recentActivity.map((item) => {
-              const Icon = ACTIVITY_ICON[item.type]
-              return (
-                <div key={item.id} className="flex gap-3">
-                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
-                    <Icon className="size-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-snug">
-                      <span className="font-medium">{item.prospectName}</span>{" "}
-                      {item.detail}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {relativeTime(item.timestamp)}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
+          <CardContent>
+            <Funnel data={data.funnel} />
           </CardContent>
         </Card>
       </div>
 
-      <div className="mt-6">
-        <Card>
+      {/* Reply rate + attainment */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Active campaigns</CardTitle>
-            <CardDescription>Performance over the last 30 days</CardDescription>
+            <CardTitle>Reply rate trend</CardTitle>
+            <CardDescription>Across outbound channels, weekly</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            {activeCampaigns.map((c) => {
-              const replyRate = Math.round((c.replied / c.enrolled) * 100)
-              return (
-                <Link
-                  key={c.id}
-                  to="/campaigns"
-                  className="hover:border-primary/40 rounded-lg border p-4 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium">{c.name}</p>
-                    <span className="text-muted-foreground text-xs">
-                      {c.enrolled} enrolled
-                    </span>
-                  </div>
-                  <div className="mt-3 space-y-1.5">
-                    <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>Reply rate</span>
-                      <span className="text-foreground font-medium tabular-nums">
-                        {replyRate}%
-                      </span>
-                    </div>
-                    <Progress value={replyRate} />
-                  </div>
-                  <div className="text-muted-foreground mt-3 flex gap-4 text-xs">
-                    <span>{c.opened} opened</span>
-                    <span>{c.replied} replied</span>
-                    <span>{c.meetings} meetings</span>
-                  </div>
-                </Link>
-              )
-            })}
+          <CardContent>
+            <div className="h-56">
+              <ReplyRateChart labels={WEEKS} values={data.weeklyReplyRate} />
+            </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quota attainment</CardTitle>
+            <CardDescription>Closed won vs. quota</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-44">
+              <AttainmentDoughnut won={data.kpis.won} quota={data.quota} />
+            </div>
+            <div className="text-muted-foreground mt-2 flex justify-between text-xs">
+              <span>{money(data.kpis.won)} won</span>
+              <span>{money(data.quota)} quota</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Leaderboard (team view) or rep callout (impersonating) */}
+      <div className="mt-6">
+        {impersonating ? (
+          <Card>
+            <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+              <Eye className="text-primary size-5" />
+              <p className="text-sm">
+                You're viewing{" "}
+                <span className="font-medium">{impersonating.name}</span>'s
+                workspace. Search, lists, and inbox are scoped to their
+                prospects.
+              </p>
+              <Button variant="outline" size="sm" asChild className="ml-auto">
+                <Link to="/search">Open their prospects</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Leaderboard onImpersonate={impersonate} />
+        )}
       </div>
     </Page>
+  )
+}
+
+function Leaderboard({
+  onImpersonate,
+}: {
+  onImpersonate: (id: string) => void
+}) {
+  const reps = leaderboard()
+  const topPipeline = Math.max(...reps.map((r) => r.metrics.pipeline))
+
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="text-chart-4 size-4" />
+            Team leaderboard
+          </CardTitle>
+          <CardDescription>
+            Ranked by quota attainment · click a rep to view their workspace
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {reps.map((rep, i) => (
+          <LeaderboardRow
+            key={rep.id}
+            rep={rep}
+            rank={i + 1}
+            topPipeline={topPipeline}
+            onImpersonate={onImpersonate}
+          />
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+function LeaderboardRow({
+  rep,
+  rank,
+  topPipeline,
+  onImpersonate,
+}: {
+  rep: TeamMember
+  rank: number
+  topPipeline: number
+  onImpersonate: (id: string) => void
+}) {
+  const attainment = Math.round((rep.metrics.won / rep.quota) * 100)
+  return (
+    <button
+      onClick={() => onImpersonate(rep.id)}
+      className="hover:bg-muted/60 -mx-2 flex w-full items-center gap-4 rounded-lg px-2 py-2.5 text-left transition-colors"
+    >
+      <span className="text-muted-foreground w-4 text-sm font-medium tabular-nums">
+        {rank}
+      </span>
+      <Avatar className="size-9">
+        <AvatarFallback
+          style={{ backgroundColor: rep.avatarColor, color: "white" }}
+          className="text-xs"
+        >
+          {initials(rep.name.split(" ")[0], rep.name.split(" ")[1])}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-[1.2]">
+        <p className="truncate text-sm font-medium">{rep.name}</p>
+        <p className="text-muted-foreground truncate text-xs">{rep.role}</p>
+      </div>
+      <div className="hidden flex-1 sm:block">
+        <div className="text-muted-foreground mb-1 flex justify-between text-xs">
+          <span>{money(rep.metrics.pipeline)}</span>
+          <span>pipeline</span>
+        </div>
+        <Progress value={(rep.metrics.pipeline / topPipeline) * 100} />
+      </div>
+      <div className="hidden w-16 text-right text-sm font-medium tabular-nums md:block">
+        {rep.metrics.meetings}
+        <span className="text-muted-foreground block text-xs font-normal">
+          meetings
+        </span>
+      </div>
+      <div className="w-16 text-right">
+        <Badge
+          variant={attainment >= 60 ? "success" : "secondary"}
+          className="tabular-nums"
+        >
+          {attainment}%
+        </Badge>
+      </div>
+    </button>
   )
 }

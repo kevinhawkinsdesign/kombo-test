@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom"
 
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { AppHeader } from "@/components/layout/AppHeader"
+import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 
 const TITLES: Record<string, string> = {
   "/": "Dashboard",
@@ -28,6 +29,7 @@ export function AppLayout() {
     <div className="bg-muted/30 flex min-h-svh">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
+        <ImpersonationBanner />
         <AppHeader title={titleForPath(pathname)} />
         <main className="flex-1">
           <Outlet />
