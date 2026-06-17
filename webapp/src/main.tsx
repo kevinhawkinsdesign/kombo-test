@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
 import { ViewProvider } from "@/lib/view-context"
 import { CreditsProvider } from "@/lib/credits"
+import { SubscriptionsProvider } from "@/lib/subscriptions"
 import { LocaleProvider } from "@/lib/locale"
 import { Toaster } from "@/components/ui/sonner"
 
@@ -30,10 +31,12 @@ createRoot(document.getElementById("root")!).render(
           <AuthProvider>
             <ViewProvider>
               <CreditsProvider>
-                <Router>
-                  <App />
-                  <Toaster richColors position="bottom-right" />
-                </Router>
+                <SubscriptionsProvider>
+                  <Router>
+                    <App />
+                    <Toaster richColors position="bottom-right" />
+                  </Router>
+                </SubscriptionsProvider>
               </CreditsProvider>
             </ViewProvider>
           </AuthProvider>

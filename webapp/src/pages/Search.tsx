@@ -8,6 +8,7 @@ import {
   Send,
   Sparkles,
   X,
+  Bell,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -39,7 +40,9 @@ import {
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { prospects } from "@/lib/mock-data"
 import { useView } from "@/lib/view-context"
+import { useSubscriptions } from "@/lib/subscriptions"
 import { ownerOf } from "@/lib/team"
+import { cn } from "@/lib/utils"
 import type { Prospect } from "@/lib/types"
 
 const ALL = "all"
@@ -58,10 +61,12 @@ const statuses: (Prospect["status"] | typeof ALL)[] = [
 export default function Search() {
   const navigate = useNavigate()
   const { impersonating, impersonatingId } = useView()
+  const { prospects: tracked } = useSubscriptions()
   const [query, setQuery] = React.useState("")
   const [industry, setIndustry] = React.useState(ALL)
   const [seniority, setSeniority] = React.useState(ALL)
   const [status, setStatus] = React.useState<string>(ALL)
+  const [trackedOnly, setTrackedOnly] = React.useState(false)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [addOpen, setAddOpen] = React.useState(false)
 
@@ -84,9 +89,16 @@ export default function Search() {
       const matchesIndustry = industry === ALL || p.industry === industry
       const matchesSeniority = seniority === ALL || p.seniority === seniority
       const matchesStatus = status === ALL || p.status === status
-      return matchesQuery && matchesIndustry && matchesSeniority && matchesStatus
+      const matchesTracked = !trackedOnly || tracked.has(p.id)
+      return (
+        matchesQuery &&
+        matchesIndustry &&
+        matchesSeniority &&
+        matchesStatus &&
+        matchesTracked
+      )
     })
-  }, [source, query, industry, seniority, status])
+  }, [source, query, industry, seniority, status, trackedOnly, tracked])
 
   const allSelected = results.length > 0 && results.every((p) => selected.has(p.id))
 
@@ -115,10 +127,15 @@ export default function Search() {
     setIndustry(ALL)
     setSeniority(ALL)
     setStatus(ALL)
+    setTrackedOnly(false)
   }
 
   const hasFilters =
-    query || industry !== ALL || seniority !== ALL || status !== ALL
+    query ||
+    industry !== ALL ||
+    seniority !== ALL ||
+    status !== ALL ||
+    trackedOnly
 
   return (
     <Page>
@@ -170,6 +187,16 @@ export default function Search() {
               placeholder="Status"
               capitalize
             />
+            <Button
+              variant={trackedOnly ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => setTrackedOnly((v) => !v)}
+              aria-pressed={trackedOnly}
+              className={cn(trackedOnly && "text-primary")}
+            >
+              <Bell className="size-4" />
+              Tracked
+            </Button>
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters}>
                 <X className="size-4" />

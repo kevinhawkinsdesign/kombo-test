@@ -30,6 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
+import { TrackButton } from "@/components/common/TrackButton"
+import { CompanyMetrics } from "@/components/company/CompanyMetrics"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { getAccount, deals } from "@/lib/mock-extra"
 import { getCompanyNews } from "@/lib/mock-depth"
@@ -147,6 +149,7 @@ export default function CompanyDetail() {
               <Building2 className="size-4" />
               Add to CRM
             </Button>
+            <TrackButton kind="account" id={account.id} name={account.name} />
             <Button
               variant="outline"
               onClick={() => toast.info("Add a contact to this company")}
@@ -170,6 +173,8 @@ export default function CompanyDetail() {
               </p>
             </CardContent>
           </Card>
+
+          <CompanyMetrics accountId={account.id} />
 
           <Card>
             <CardHeader>
