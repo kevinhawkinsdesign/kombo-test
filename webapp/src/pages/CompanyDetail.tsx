@@ -1,6 +1,15 @@
+import * as React from "react"
 import { Link, useParams } from "react-router-dom"
 import { toast } from "sonner"
-import { ArrowLeft, Building2, Plus, Sparkles } from "lucide-react"
+import {
+  ArrowLeft,
+  Building2,
+  Plus,
+  Sparkles,
+  Newspaper,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
 import {
@@ -21,10 +30,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
+import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { getAccount, deals } from "@/lib/mock-extra"
+import { getCompanyNews } from "@/lib/mock-depth"
 import { prospects } from "@/lib/mock-data"
 import { getRep } from "@/lib/team"
-import { initials, formatDate } from "@/lib/format"
+import { initials, formatDate, relativeTime } from "@/lib/format"
 import type { Account, DealStage } from "@/lib/types"
 
 function nameInitials(name: string): string {
@@ -63,6 +74,7 @@ const STAGE_VARIANT: Record<
 export default function CompanyDetail() {
   const { id } = useParams()
   const account: Account | undefined = id ? getAccount(id) : undefined
+  const [crmOpen, setCrmOpen] = React.useState(false)
 
   if (!account) {
     return (
@@ -131,9 +143,9 @@ export default function CompanyDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => toast.success("Synced to HubSpot")}>
+            <Button onClick={() => setCrmOpen(true)}>
               <Building2 className="size-4" />
-              Sync to CRM
+              Add to CRM
             </Button>
             <Button
               variant="outline"
@@ -176,6 +188,49 @@ export default function CompanyDetail() {
                   {s}
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Newspaper className="text-muted-foreground size-4" />
+                Recent news
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {getCompanyNews(account.id).length > 0 ? (
+                getCompanyNews(account.id).map((n) => (
+                  <div
+                    key={n.id}
+                    className="flex items-start gap-3 rounded-md px-2 py-2"
+                  >
+                    <span
+                      className={
+                        n.sentiment === "negative"
+                          ? "text-destructive mt-0.5"
+                          : "text-chart-1 mt-0.5"
+                      }
+                    >
+                      {n.sentiment === "negative" ? (
+                        <TrendingDown className="size-4" />
+                      ) : (
+                        <TrendingUp className="size-4" />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">{n.title}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {n.source} · {relativeTime(n.date)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No recent news for this account.
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -322,6 +377,20 @@ export default function CompanyDetail() {
           </Card>
         </div>
       </div>
+
+      <AddToCrmDialog
+        open={crmOpen}
+        onOpenChange={setCrmOpen}
+        kind="company"
+        recordName={account.name}
+        fields={[
+          { label: "Company", value: account.name },
+          { label: "Website", value: account.domain },
+          { label: "Industry", value: account.industry },
+          { label: "Employees", value: account.employees },
+          { label: "Location", value: account.location },
+        ]}
+      />
     </Page>
   )
 }

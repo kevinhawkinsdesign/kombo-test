@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import {
   Play,
   TrendingUp,
@@ -6,6 +7,7 @@ import {
   Meh,
   Frown,
   CheckCircle2,
+  ArrowRight,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -89,11 +91,18 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
             size="icon"
             variant="outline"
             className="size-10 shrink-0 rounded-full"
+            asChild
           >
-            <Play className="size-4" />
+            <Link to={`/coach/${rec.id}`} aria-label="Play recording">
+              <Play className="size-4" />
+            </Link>
           </Button>
           <div>
-            <CardTitle className="text-base">{rec.title}</CardTitle>
+            <CardTitle className="text-base">
+              <Link to={`/coach/${rec.id}`} className="hover:text-primary">
+                {rec.title}
+              </Link>
+            </CardTitle>
             <CardDescription>
               {rec.prospectName} · {rec.company}
             </CardDescription>
@@ -153,9 +162,17 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
               </div>
             ))}
           </div>
-          <Badge variant="secondary" className="mt-3 font-normal">
-            AI generated
-          </Badge>
+          <div className="mt-3 flex items-center justify-between">
+            <Badge variant="secondary" className="font-normal">
+              AI generated
+            </Badge>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to={`/coach/${rec.id}`}>
+                View full analysis
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

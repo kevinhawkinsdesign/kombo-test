@@ -27,6 +27,8 @@ function titleForPath(path: string): string {
   if (path.startsWith("/prospects")) return "Prospect"
   if (path.startsWith("/companies/")) return "Company"
   if (path.startsWith("/lists/")) return "List"
+  if (path.startsWith("/campaigns/")) return "Campaign"
+  if (path.startsWith("/coach/")) return "Call analysis"
   return "Kombo"
 }
 
