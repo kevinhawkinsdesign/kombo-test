@@ -55,6 +55,7 @@ import {
   ScoreBadge,
   StatusBadge,
 } from "@/components/common/ProspectBits"
+import { TrackButton } from "@/components/common/TrackButton"
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { ComposeDialog } from "@/components/prospect/ComposeDialog"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
@@ -138,6 +139,11 @@ export default function ProspectProfile() {
               <Plus className="size-4" />
               Add to list
             </Button>
+            <TrackButton
+              kind="prospect"
+              id={prospect.id}
+              name={prospect.firstName}
+            />
           </div>
         </CardContent>
       </Card>

@@ -173,3 +173,88 @@ export const CRM_PROVIDERS: CrmProvider[] = [
   { id: "monday", name: "monday.com", logoColor: "#ff3d57", connected: false, objectName: "Item" },
   { id: "dynamics", name: "MS Dynamics", logoColor: "#002050", connected: false, objectName: "Contact" },
 ]
+
+// --- Company growth metrics (headcount, departments, hiring) ---
+export interface AccountMetrics {
+  headcount: number[] // 12 monthly points
+  growthYoY: number // %
+  openRoles: number
+  salesHires: number // open sales/GTM roles
+  departments: { label: string; pct: number }[]
+}
+
+export const HEADCOUNT_MONTHS = [
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+]
+
+function buildHeadcount(base: number, monthlyGrowth: number): number[] {
+  const out: number[] = []
+  let v = base
+  for (let i = 0; i < 12; i++) {
+    out.push(Math.round(v))
+    v *= 1 + monthlyGrowth
+  }
+  return out
+}
+
+function metrics(
+  base: number,
+  monthlyGrowth: number,
+  openRoles: number,
+  salesHires: number,
+  departments: { label: string; pct: number }[]
+): AccountMetrics {
+  const headcount = buildHeadcount(base, monthlyGrowth)
+  const first = headcount[0]
+  const last = headcount[headcount.length - 1]
+  const growthYoY = Math.round(((last - first) / first) * 100)
+  return { headcount, growthYoY, openRoles, salesHires, departments }
+}
+
+const DEFAULT_DEPTS = [
+  { label: "Sales", pct: 28 },
+  { label: "Engineering", pct: 34 },
+  { label: "Marketing", pct: 14 },
+  { label: "Operations", pct: 16 },
+  { label: "Other", pct: 8 },
+]
+
+export const accountMetrics: Record<string, AccountMetrics> = {
+  acc_1: metrics(620, 0.018, 18, 7, [
+    { label: "Sales", pct: 32 },
+    { label: "Operations", pct: 26 },
+    { label: "Engineering", pct: 20 },
+    { label: "Marketing", pct: 12 },
+    { label: "Other", pct: 10 },
+  ]),
+  acc_2: metrics(300, 0.012, 9, 3, DEFAULT_DEPTS),
+  acc_3: metrics(1200, 0.022, 26, 11, [
+    { label: "Sales", pct: 24 },
+    { label: "Clinical", pct: 30 },
+    { label: "Engineering", pct: 22 },
+    { label: "Marketing", pct: 12 },
+    { label: "Other", pct: 12 },
+  ]),
+  acc_4: metrics(260, 0.02, 14, 6, DEFAULT_DEPTS),
+  acc_5: metrics(2100, 0.004, 8, 2, [
+    { label: "Manufacturing", pct: 44 },
+    { label: "Sales", pct: 16 },
+    { label: "Engineering", pct: 18 },
+    { label: "Operations", pct: 14 },
+    { label: "Other", pct: 8 },
+  ]),
+  acc_6: metrics(5200, 0.006, 31, 9, [
+    { label: "Retail banking", pct: 38 },
+    { label: "Technology", pct: 22 },
+    { label: "Sales", pct: 16 },
+    { label: "Operations", pct: 16 },
+    { label: "Other", pct: 8 },
+  ]),
+  acc_7: metrics(120, 0.026, 11, 4, DEFAULT_DEPTS),
+  acc_8: metrics(90, 0.03, 7, 3, DEFAULT_DEPTS),
+}
+
+export function getAccountMetrics(accountId: string): AccountMetrics | undefined {
+  return accountMetrics[accountId]
+}

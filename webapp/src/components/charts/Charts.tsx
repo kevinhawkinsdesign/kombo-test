@@ -343,3 +343,66 @@ export function AttainmentDoughnut({
     </div>
   )
 }
+
+export function HeadcountChart({
+  labels,
+  values,
+}: {
+  labels: string[]
+  values: number[]
+}) {
+  const t = useChartTheme()
+
+  const options: ChartOptions<"line"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: t.tooltipBg,
+        titleColor: t.tooltipTitle,
+        bodyColor: t.tooltipBody,
+        borderColor: t.border,
+        borderWidth: 1,
+        padding: 10,
+        callbacks: {
+          label: (c) => ` ${(c.parsed.y ?? 0).toLocaleString()} employees`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: t.ticks },
+      },
+      y: {
+        grid: { color: t.grid },
+        border: { display: false },
+        ticks: { color: t.ticks, precision: 0 },
+      },
+    },
+  }
+
+  return (
+    <Line
+      options={options}
+      data={{
+        labels,
+        datasets: [
+          {
+            label: "Headcount",
+            data: values,
+            borderColor: t.primary,
+            backgroundColor: hexAlpha(t.primary, 0.12),
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+          },
+        ],
+      }}
+    />
+  )
+}
