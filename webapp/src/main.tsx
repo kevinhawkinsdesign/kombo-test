@@ -8,6 +8,8 @@ import App from "./App.tsx"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
 import { ViewProvider } from "@/lib/view-context"
+import { CreditsProvider } from "@/lib/credits"
+import { LocaleProvider } from "@/lib/locale"
 import { Toaster } from "@/components/ui/sonner"
 
 const queryClient = new QueryClient({
@@ -24,14 +26,18 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="light">
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ViewProvider>
-            <Router>
-              <App />
-              <Toaster richColors position="bottom-right" />
-            </Router>
-          </ViewProvider>
-        </AuthProvider>
+        <LocaleProvider>
+          <AuthProvider>
+            <ViewProvider>
+              <CreditsProvider>
+                <Router>
+                  <App />
+                  <Toaster richColors position="bottom-right" />
+                </Router>
+              </CreditsProvider>
+            </ViewProvider>
+          </AuthProvider>
+        </LocaleProvider>
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>

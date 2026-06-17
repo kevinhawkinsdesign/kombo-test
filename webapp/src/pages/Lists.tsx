@@ -1,12 +1,14 @@
+import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { Plus, Users, FolderKanban } from "lucide-react"
+import { Plus, Users, FolderKanban, Upload } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
+import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { prospectLists, getProspect } from "@/lib/mock-data"
 import { formatDate } from "@/lib/format"
 
@@ -18,16 +20,24 @@ const SOURCE_LABELS: Record<string, string> = {
 }
 
 export default function Lists() {
+  const [importOpen, setImportOpen] = React.useState(false)
+
   return (
     <Page>
       <PageHeading
         title="Lists"
         description="Organize prospects into targeted lists for outreach."
         action={
-          <Button onClick={() => toast.info("New list — coming soon")}>
-            <Plus className="size-4" />
-            New list
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="size-4" />
+              Import CSV
+            </Button>
+            <Button onClick={() => toast.info("New list — coming soon")}>
+              <Plus className="size-4" />
+              New list
+            </Button>
+          </div>
         }
       />
 
@@ -89,6 +99,14 @@ export default function Lists() {
           )
         })}
       </div>
+
+      <ImportCsvDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImported={(count) =>
+          toast.success(`${count} prospects imported into a new list`)
+        }
+      />
     </Page>
   )
 }

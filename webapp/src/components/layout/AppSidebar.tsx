@@ -15,6 +15,8 @@ import {
   Plug,
   Settings,
   Sparkles,
+  Gift,
+  Zap,
 } from "lucide-react"
 
 import { KomboLogo } from "@/components/KomboLogo"
@@ -22,16 +24,17 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
+import { useLocale } from "@/lib/locale"
 
 interface NavItem {
   to: string
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string
 }
 
 interface NavSection {
-  label: string
+  labelKey: string
   items: NavItem[]
 }
 
@@ -39,48 +42,53 @@ const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
 const sections: NavSection[] = [
   {
-    label: "Workspace",
+    labelKey: "nav.workspace",
     items: [
-      { to: "/", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/search", label: "Prospect Search", icon: Search },
-      { to: "/companies", label: "Companies", icon: Building2 },
-      { to: "/lists", label: "Lists", icon: FolderKanban },
+      { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+      { to: "/search", labelKey: "nav.search", icon: Search },
+      { to: "/companies", labelKey: "nav.companies", icon: Building2 },
+      { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
     ],
   },
   {
-    label: "Engage",
+    labelKey: "nav.engage",
     items: [
       {
         to: "/inbox",
-        label: "Inbox",
+        labelKey: "nav.inbox",
         icon: Inbox,
         badge: unread ? String(unread) : undefined,
       },
-      { to: "/campaigns", label: "Campaigns", icon: Send },
-      { to: "/templates", label: "Templates", icon: Mail },
-      { to: "/tasks", label: "Tasks", icon: CheckSquare },
+      { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
+      { to: "/templates", labelKey: "nav.templates", icon: Mail },
+      { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
     ],
   },
   {
-    label: "Revenue",
+    labelKey: "nav.revenue",
     items: [
-      { to: "/deals", label: "Deals", icon: Briefcase },
-      { to: "/analytics", label: "Analytics", icon: BarChart3 },
-      { to: "/coach", label: "Coach", icon: GraduationCap },
+      { to: "/deals", labelKey: "nav.deals", icon: Briefcase },
+      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+      { to: "/coach", labelKey: "nav.coach", icon: GraduationCap },
     ],
   },
   {
-    label: "Manage",
-    items: [{ to: "/team", label: "Team", icon: Users }],
+    labelKey: "nav.manage",
+    items: [
+      { to: "/team", labelKey: "nav.team", icon: Users },
+      { to: "/usage", labelKey: "nav.usage", icon: Zap },
+      { to: "/referrals", labelKey: "nav.referrals", icon: Gift },
+    ],
   },
 ]
 
 const bottomNav: NavItem[] = [
-  { to: "/integrations", label: "Integrations", icon: Plug },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/integrations", labelKey: "nav.integrations", icon: Plug },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ]
 
 function NavRow({ item }: { item: NavItem }) {
+  const { t } = useLocale()
   const Icon = item.icon
   return (
     <NavLink
@@ -96,7 +104,7 @@ function NavRow({ item }: { item: NavItem }) {
       }
     >
       <Icon className="size-4 shrink-0" />
-      <span className="flex-1">{item.label}</span>
+      <span className="flex-1">{t(item.labelKey)}</span>
       {item.badge && (
         <Badge className="h-5 min-w-5 justify-center px-1.5">
           {item.badge}
@@ -107,6 +115,7 @@ function NavRow({ item }: { item: NavItem }) {
 }
 
 export function AppSidebar() {
+  const { t } = useLocale()
   return (
     <aside className="bg-sidebar border-sidebar-border hidden w-64 shrink-0 flex-col border-r md:flex">
       <div className="flex h-16 items-center px-5">
@@ -117,16 +126,16 @@ export function AppSidebar() {
         <Button className="w-full justify-start gap-2" size="sm" asChild>
           <NavLink to="/search">
             <Sparkles className="size-4" />
-            New prospect search
+            {t("nav.newSearch")}
           </NavLink>
         </Button>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
         {sections.map((section) => (
-          <div key={section.label} className="mb-1">
+          <div key={section.labelKey} className="mb-1">
             <p className="text-sidebar-foreground/50 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
-              {section.label}
+              {t(section.labelKey)}
             </p>
             {section.items.map((item) => (
               <NavRow key={item.to} item={item} />

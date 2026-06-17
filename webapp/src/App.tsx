@@ -22,6 +22,8 @@ import Analytics from "@/pages/Analytics"
 import Coach from "@/pages/Coach"
 import CoachRecordingDetail from "@/pages/CoachRecordingDetail"
 import Team from "@/pages/Team"
+import Referral from "@/pages/Referral"
+import Usage from "@/pages/Usage"
 import Integrations from "@/pages/Integrations"
 import Settings from "@/pages/Settings"
 import NotificationsPage from "@/pages/Notifications"
@@ -78,6 +80,8 @@ function App() {
         <Route path="/coach" element={<Coach />} />
         <Route path="/coach/:id" element={<CoachRecordingDetail />} />
         <Route path="/team" element={<Team />} />
+        <Route path="/referrals" element={<Referral />} />
+        <Route path="/usage" element={<Usage />} />
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/notifications" element={<NotificationsPage />} />

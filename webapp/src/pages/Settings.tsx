@@ -21,8 +21,11 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
+import { team } from "@/lib/team"
+import { initials } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 const THEME_OPTIONS = [
@@ -280,6 +283,53 @@ export default function Settings() {
                   Upgrade plan
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-4">
+            <CardHeader className="flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Team seats</CardTitle>
+                <CardDescription>
+                  {team.length} of {team.length} seats used
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toast.info("Invite sent — coming soon")}
+              >
+                Invite member
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {team.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 rounded-md px-2 py-2"
+                >
+                  <Avatar className="size-8">
+                    <AvatarFallback
+                      style={{ backgroundColor: member.avatarColor, color: "white" }}
+                      className="text-xs"
+                    >
+                      {initials(
+                        member.name.split(" ")[0],
+                        member.name.split(" ")[1]
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{member.name}</p>
+                    <p className="text-muted-foreground truncate text-xs">
+                      {member.email}
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="font-normal">
+                    {member.role}
+                  </Badge>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
