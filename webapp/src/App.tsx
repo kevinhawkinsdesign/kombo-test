@@ -6,6 +6,7 @@ import Login from "@/pages/Login"
 import Signup from "@/pages/Signup"
 import Onboarding from "@/pages/Onboarding"
 import Dashboard from "@/pages/Dashboard"
+import Copilot from "@/pages/Copilot"
 import Search from "@/pages/Search"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
@@ -16,6 +17,7 @@ import ListDetail from "@/pages/ListDetail"
 import Inbox from "@/pages/Inbox"
 import Campaigns from "@/pages/Campaigns"
 import CampaignDetail from "@/pages/CampaignDetail"
+import SequenceBuilderPage from "@/pages/SequenceBuilder"
 import Channels from "@/pages/Channels"
 import Templates from "@/pages/Templates"
 import Playbook from "@/pages/Playbook"
@@ -68,6 +70,7 @@ function App() {
         }
       >
         <Route path="/" element={<Dashboard />} />
+        <Route path="/copilot" element={<Copilot />} />
         <Route path="/search" element={<Search />} />
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
@@ -78,6 +81,7 @@ function App() {
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
+        <Route path="/sequence-builder" element={<SequenceBuilderPage />} />
         <Route path="/channels" element={<Channels />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/playbook" element={<Playbook />} />

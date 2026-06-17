@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
+import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
 
@@ -58,6 +59,12 @@ const sections: NavSection[] = [
     labelKey: "nav.workspace",
     items: [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+      {
+        to: "/copilot",
+        labelKey: "nav.copilot",
+        icon: Sparkles,
+        badge: String(copilotActions.length),
+      },
       { to: "/search", labelKey: "nav.search", icon: Search },
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
       { to: "/intros", labelKey: "nav.intros", icon: Waypoints },

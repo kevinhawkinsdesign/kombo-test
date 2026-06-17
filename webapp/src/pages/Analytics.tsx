@@ -1,6 +1,7 @@
-import { Phone, Mail, TrendingUp } from "lucide-react"
+import { Phone, Mail, TrendingUp, BarChart3 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
   Card,
   CardContent,
@@ -60,6 +61,19 @@ export default function Analytics() {
             ? `Activity insights for ${impersonating.name} · this quarter`
             : "Activity insights across your team · this quarter"
         }
+      />
+
+      <FeatureIntro
+        featureKey="analytics"
+        icon={BarChart3}
+        title="Measure what's working"
+        description="From first touch to closed revenue — see the funnel, conversion, and forecast in one place."
+        points={[
+          "Full-funnel conversion rates",
+          "Channel & rep performance",
+          "Weighted pipeline forecast",
+        ]}
+        className="mb-6"
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

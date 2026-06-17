@@ -10,12 +10,14 @@ import { useLocale } from "@/lib/locale"
 // fall back to plain labels.
 const TITLE_KEYS: Record<string, string> = {
   "/": "nav.dashboard",
+  "/copilot": "nav.copilot",
   "/search": "nav.search",
   "/companies": "nav.companies",
   "/intros": "nav.intros",
   "/lists": "nav.lists",
   "/inbox": "nav.inbox",
   "/campaigns": "nav.campaigns",
+  "/sequence-builder": "Sequence builder",
   "/channels": "nav.channels",
   "/templates": "nav.templates",
   "/playbook": "nav.playbook",

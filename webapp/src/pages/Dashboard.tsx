@@ -27,6 +27,10 @@ import {
   AttainmentDoughnut,
 } from "@/components/charts/Charts"
 import { Funnel } from "@/components/charts/Funnel"
+import { InfoHint } from "@/components/common/InfoHint"
+import { ImpactBand } from "@/components/common/ImpactBand"
+import { KaiSuggestion } from "@/components/kai/KaiSuggestion"
+import { copilotActions } from "@/lib/mock-copilot"
 import { useView } from "@/lib/view-context"
 import { useSetup } from "@/lib/setup"
 import {
@@ -102,21 +106,25 @@ export default function Dashboard() {
       label: "Open pipeline",
       value: money(data.kpis.pipeline),
       delta: data.deltas.pipeline,
+      hint: "The total value of open deals you're working toward closing.",
     },
     {
       label: "Closed won (QTD)",
       value: money(data.kpis.won),
       delta: data.deltas.won,
+      hint: "Revenue from deals you've won this quarter (quarter-to-date).",
     },
     {
       label: "Meetings booked",
       value: String(data.kpis.meetings),
       delta: data.deltas.meetings,
+      hint: "Qualified sales meetings booked from your outreach.",
     },
     {
       label: "Reply rate",
       value: `${data.kpis.replyRate}%`,
       delta: data.deltas.replyRate,
+      hint: "The share of contacted prospects who reply to your outreach.",
     },
   ]
 
@@ -144,12 +152,32 @@ export default function Dashboard() {
 
       <SetupBanner />
 
+      {!impersonating && copilotActions.length > 0 && (
+        <KaiSuggestion
+          className="mb-6"
+          title={`Kai spotted ${copilotActions.length} signals worth acting on`}
+          action={
+            <Button asChild size="sm">
+              <Link to="/copilot">Review in Copilot</Link>
+            </Button>
+          }
+        >
+          Replies, job changes, and intent signals across your accounts — each
+          with a recommended next move.
+        </KaiSuggestion>
+      )}
+
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((stat) => (
           <Card key={stat.label}>
             <CardHeader>
-              <CardDescription>{stat.label}</CardDescription>
+              <CardDescription className="flex items-center gap-1.5">
+                {stat.label}
+                <InfoHint label={`What is ${stat.label}?`}>
+                  {stat.hint}
+                </InfoHint>
+              </CardDescription>
               <CardTitle className="text-2xl tabular-nums">
                 {stat.value}
               </CardTitle>
@@ -165,6 +193,8 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {!impersonating && <ImpactBand className="mt-6" />}
 
       {/* Trend + funnel */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">

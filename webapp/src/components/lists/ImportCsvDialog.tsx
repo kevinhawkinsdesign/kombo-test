@@ -70,9 +70,9 @@ interface SampleRow {
 }
 
 const SAMPLE_ROWS: SampleRow[] = [
-  { name: "Ava Bennett", email: "ava@northwind.io", company: "Northwind" },
+  { name: "Ava Bennett", email: "ava@northwind.io", company: "Fever" },
   { name: "Liam Carter", email: "liam@brightloop.com", company: "Brightloop" },
-  { name: "Maya Singh", email: "maya@vertexlabs.co", company: "Vertex Labs" },
+  { name: "Maya Singh", email: "maya@vertexlabs.co", company: "Product Hackers" },
 ]
 
 const STEP_TITLES: Record<number, string> = {

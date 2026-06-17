@@ -12,32 +12,34 @@
 :root {
   --radius: 0.625rem;
 
-  --background: oklch(0.994 0.002 325);
-  --foreground: oklch(0.22 0.013 308);
+  /* Refined, near-neutral gray scale (Ramp-grade): crisp borders, calm
+     surfaces, and higher-contrast secondary text for legibility + AA. */
+  --background: oklch(0.994 0.0015 286);
+  --foreground: oklch(0.205 0.006 286);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.013 308);
+  --card-foreground: oklch(0.205 0.006 286);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.013 308);
+  --popover-foreground: oklch(0.205 0.006 286);
 
   --primary: oklch(0.541 0.246 293);
   --primary-foreground: oklch(0.985 0.004 308);
 
-  --secondary: oklch(0.967 0.006 313);
-  --secondary-foreground: oklch(0.31 0.02 300);
+  --secondary: oklch(0.97 0.003 286);
+  --secondary-foreground: oklch(0.3 0.008 286);
 
-  --muted: oklch(0.967 0.006 313);
-  --muted-foreground: oklch(0.552 0.018 307);
+  --muted: oklch(0.97 0.003 286);
+  --muted-foreground: oklch(0.505 0.01 286);
 
-  --accent: oklch(0.951 0.018 305);
-  --accent-foreground: oklch(0.31 0.03 293);
+  --accent: oklch(0.955 0.004 286);
+  --accent-foreground: oklch(0.3 0.01 286);
 
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0.004 308);
 
-  --border: oklch(0.917 0.008 315);
-  --input: oklch(0.917 0.008 315);
+  --border: oklch(0.913 0.004 286);
+  --input: oklch(0.913 0.004 286);
   --ring: oklch(0.541 0.246 293);
 
   --chart-1: oklch(0.768 0.204 131);
@@ -153,7 +155,32 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "cv11" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Crisp, tightly-tracked headings — the modern fintech/SaaS register. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.014em;
+  }
+
+  /* Numeric figures align in tables and KPIs. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+}
+
+/* Subtle, layered elevation for raised surfaces (popovers, menus, sheets).
+   Closer to Ramp's barely-there depth than a hard drop shadow. */
+@layer utilities {
+  .shadow-elevated {
+    box-shadow:
+      0 1px 2px -1px oklch(0.2 0.01 286 / 8%),
+      0 4px 12px -2px oklch(0.2 0.01 286 / 8%);
   }
 }
 

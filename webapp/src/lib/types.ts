@@ -39,6 +39,19 @@ export interface Prospect {
   signals: string[] // buying / intent signals
 }
 
+export interface SavedSearchCriteria {
+  titles: string[]
+  seniority: string[]
+  industries: string[]
+  headcount: string[]
+  locations: string[]
+  keywords: string
+  signals: string[]
+}
+
+export type EnrichmentMode = "once" | "continuous"
+export type SendMode = "once" | "continuous"
+
 export interface ProspectList {
   id: string
   name: string
@@ -47,6 +60,74 @@ export interface ProspectList {
   createdAt: string
   color: string
   source: "linkedin" | "salesnav" | "csv" | "search"
+  // Dynamic "playlist" automation. Static lists omit these; a dynamic list is
+  // fed by a saved search that keeps adding matching prospects over time.
+  dynamic?: boolean
+  criteria?: SavedSearchCriteria
+  enrichment?: EnrichmentMode
+  newPerWeek?: number // estimated inflow from the saved search
+  campaignId?: string // campaign new prospects auto-enroll into
+  sendMode?: SendMode
+  lastSyncedAt?: string
+}
+
+// --- Sequence / diagram builder ---
+export type SequenceChannelType =
+  | "email"
+  | "linkedin"
+  | "whatsapp"
+  | "call"
+  | "ai_call"
+  | "wait"
+
+export type StepTriggerType =
+  | "delay" // after N days
+  | "on_open" // when a prior email is opened
+  | "on_no_reply" // when no reply by the delay
+  | "on_reply" // when the prospect replies
+  | "on_signal" // when a data point / intent signal fires
+  | "on_click" // when a link is clicked
+  | "manual" // wait for the rep to action
+
+export interface StepTrigger {
+  type: StepTriggerType
+  days?: number
+  label?: string // the data point / signal description, when relevant
+}
+
+export interface BuilderStep {
+  id: string
+  channel: SequenceChannelType
+  title: string
+  subtitle?: string
+  trigger: StepTrigger
+  parallel?: boolean // runs alongside the previous step (fan-out)
+  branch?: "reply" | "no_reply" // conditional branch label
+}
+
+// --- Coaching scorecard (critical, actionable) ---
+export type SectionGrade = "strong" | "okay" | "weak"
+
+export interface CoachSection {
+  label: string
+  grade: SectionGrade
+  score: number // 0-100
+  quote: string
+  critique: string
+}
+
+export interface StartStopContinue {
+  start: string[]
+  stop: string[]
+  continue: string[]
+}
+
+export interface CoachScorecard {
+  overall: number // 0-100
+  headline: string
+  sections: CoachSection[]
+  startStopContinue: StartStopContinue
+  risks: string[]
 }
 
 export interface Message {

@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -180,6 +181,20 @@ export default function Search() {
         }
       />
 
+      <FeatureIntro
+        featureKey="search"
+        icon={SearchIcon}
+        title="Find your next best prospects"
+        description="Search millions of verified contacts and filter by the signals that predict a deal — role, company, tech stack, and buying intent."
+        points={[
+          "Filter by title, seniority, industry & company size",
+          "Verified work emails and direct dials",
+          "Save results to a list in one click",
+          "Push straight into a sequence",
+        ]}
+        className="mb-6"
+      />
+
       <Card className="mb-4 gap-0 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
@@ -233,7 +248,7 @@ export default function Search() {
         </div>
       </Card>
 
-      <div className="mb-2 flex h-9 items-center justify-between px-1">
+      <div className="mb-2 flex min-h-9 flex-wrap items-center justify-between gap-2 px-1">
         <p className="text-muted-foreground text-sm">
           <span className="text-foreground font-medium">{results.length}</span>{" "}
           prospects
@@ -267,6 +282,7 @@ export default function Search() {
       </div>
 
       <Card className="overflow-hidden p-0">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -355,6 +371,7 @@ export default function Search() {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       <AddToListDialog

@@ -1,7 +1,9 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Mail, Plus } from "lucide-react"
+import { Mail, Plus, Radio } from "lucide-react"
 
+import { FeatureIntro } from "@/components/common/FeatureIntro"
+import { InfoHint } from "@/components/common/InfoHint"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
@@ -104,7 +106,13 @@ function ChannelCard({
         {channel.status === "warming" && (
           <div>
             <div className="mb-1.5 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Warmup</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                Warmup
+                <InfoHint label="What is warmup?">
+                  Gradually ramping a new mailbox's send volume so inbox
+                  providers trust it and your emails avoid spam.
+                </InfoHint>
+              </span>
               <span className="tabular-nums">{channel.warmupPct}%</span>
             </div>
             <Progress value={channel.warmupPct} />
@@ -112,7 +120,13 @@ function ChannelCard({
         )}
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Health</span>
+          <span className="text-muted-foreground flex items-center gap-1">
+            Health
+            <InfoHint label="What is sender health?">
+              A measure of deliverability — how likely this account's messages
+              are to land in the inbox rather than spam or bounce.
+            </InfoHint>
+          </span>
           <span
             className={cn(
               "rounded-md px-2 py-0.5 text-xs font-medium tabular-nums",
@@ -181,6 +195,19 @@ export default function Channels() {
             Connect channel
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="channels"
+        icon={Radio}
+        title="Connect your sending channels"
+        description="Add the mailboxes and LinkedIn accounts your campaigns send from — and keep them healthy."
+        points={[
+          "Warm up new mailboxes automatically",
+          "Monitor deliverability & sender health",
+          "Set per-channel daily limits",
+        ]}
+        className="mb-6"
       />
 
       {/* Summary */}

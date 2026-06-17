@@ -1,9 +1,10 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { Search as SearchIcon, Plus, Briefcase, Users } from "lucide-react"
+import { Search as SearchIcon, Plus, Briefcase, Users, Building2 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -71,6 +72,20 @@ export default function Companies() {
             Add company
           </Button>
         }
+      />
+
+      <FeatureIntro
+        featureKey="companies"
+        icon={Building2}
+        title="Target the accounts that fit"
+        description="Track companies that match your ICP and get notified when something changes that's worth a call."
+        points={[
+          "See headcount, funding & tech stack",
+          "Subscribe to hiring and growth signals",
+          "Find the full buying committee",
+          "Add a whole account to a list",
+        ]}
+        className="mb-6"
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">

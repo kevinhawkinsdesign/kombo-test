@@ -145,16 +145,14 @@ export function useTemplates(): EmailTemplate[] {
 export const listStore = {
   create(
     data: Pick<ProspectList, "name" | "description" | "color"> &
-      Partial<Pick<ProspectList, "prospectIds" | "source">>
+      Partial<Omit<ProspectList, "id" | "createdAt">>
   ): ProspectList {
     const list: ProspectList = {
+      ...data,
       id: uid("ls"),
-      name: data.name,
-      description: data.description,
-      color: data.color,
+      createdAt: nowISO(),
       prospectIds: data.prospectIds ?? [],
       source: data.source ?? "search",
-      createdAt: nowISO(),
     }
     setState({ lists: [list, ...state.lists] })
     return list

@@ -9,9 +9,13 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Sparkles,
+  RefreshCw,
+  Zap,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +28,7 @@ import {
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
+import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { getProspect } from "@/lib/mock-data"
 import { useLists, listStore } from "@/lib/store"
@@ -34,13 +39,38 @@ const SOURCE_LABELS: Record<string, string> = {
   linkedin: "LinkedIn",
   salesnav: "Sales Navigator",
   csv: "CSV import",
-  search: "Prospect search",
+  search: "Saved search",
+}
+
+function DynamicChips({ list }: { list: ProspectList }) {
+  if (!list.dynamic) return null
+  const autoSend = Boolean(list.campaignId) && list.sendMode === "continuous"
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 px-6">
+      {typeof list.newPerWeek === "number" && (
+        <Badge variant="secondary" className="gap-1 font-normal">
+          <RefreshCw className="size-3" />~{list.newPerWeek}/week
+        </Badge>
+      )}
+      <Badge variant="secondary" className="gap-1 font-normal">
+        <Sparkles className="size-3" />
+        {list.enrichment === "continuous" ? "Auto-enriched" : "Enriched once"}
+      </Badge>
+      {autoSend && (
+        <Badge variant="secondary" className="text-chart-1 gap-1 font-normal">
+          <Zap className="size-3" />
+          Auto-sending
+        </Badge>
+      )}
+    </div>
+  )
 }
 
 export default function Lists() {
   const lists = useLists()
   const [importOpen, setImportOpen] = React.useState(false)
   const [formOpen, setFormOpen] = React.useState(false)
+  const [wizardOpen, setWizardOpen] = React.useState(false)
   const [editingList, setEditingList] = React.useState<ProspectList | undefined>(
     undefined
   )
@@ -58,27 +88,56 @@ export default function Lists() {
     setFormOpen(true)
   }
 
+  // Dynamic "playlists" lead — they're the flagship way to work.
+  const sortedLists = [...lists].sort(
+    (a, b) => Number(Boolean(b.dynamic)) - Number(Boolean(a.dynamic))
+  )
+
   return (
     <Page>
       <PageHeading
-        title="Lists"
-        description="Organize prospects into targeted lists for outreach."
+        title="Lists & playlists"
+        description="The home base for your prospects — and the engine that keeps them flowing."
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" onClick={() => setImportOpen(true)}>
               <Upload className="size-4" />
               Import CSV
             </Button>
-            <Button onClick={openCreate}>
+            <Button variant="outline" onClick={openCreate}>
               <Plus className="size-4" />
               New list
+            </Button>
+            <Button onClick={() => setWizardOpen(true)}>
+              <Sparkles className="size-4" />
+              Build a playlist
             </Button>
           </div>
         }
       />
 
+      <FeatureIntro
+        featureKey="lists"
+        icon={Sparkles}
+        title="Playlists: lists that fill, enrich, and reach out on their own"
+        description="A playlist is a saved search that keeps adding matching prospects, enriches them, and auto-enrolls them into outreach — so your pipeline builds itself."
+        points={[
+          "Saved search drips in new matching prospects",
+          "Enrich once or keep data fresh continuously",
+          "Auto-enroll new prospects into a sequence",
+          "Or build a simple static list or CSV import",
+        ]}
+        action={
+          <Button size="sm" onClick={() => setWizardOpen(true)}>
+            <Sparkles className="size-4" />
+            Build a playlist
+          </Button>
+        }
+        className="mb-6"
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {lists.map((list) => {
+        {sortedLists.map((list) => {
           const members = list.prospectIds
             .map(getProspect)
             .filter((p): p is NonNullable<typeof p> => Boolean(p))
@@ -131,17 +190,29 @@ export default function Lists() {
                     className="flex size-9 items-center justify-center rounded-lg"
                     style={{ backgroundColor: `${list.color}1a` }}
                   >
-                    <FolderKanban
-                      className="size-4"
-                      style={{ color: list.color }}
-                    />
+                    {list.dynamic ? (
+                      <Sparkles className="size-4" style={{ color: list.color }} />
+                    ) : (
+                      <FolderKanban
+                        className="size-4"
+                        style={{ color: list.color }}
+                      />
+                    )}
                   </span>
-                  <Badge
-                    variant="secondary"
-                    className="mr-8 ml-auto font-normal"
-                  >
-                    {SOURCE_LABELS[list.source]}
-                  </Badge>
+                  <div className="mr-8 ml-auto flex items-center gap-1.5">
+                    {list.dynamic && (
+                      <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+                        <span className="relative flex size-1.5">
+                          <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+                          <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
+                        </span>
+                        Live
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="font-normal">
+                      {SOURCE_LABELS[list.source]}
+                    </Badge>
+                  </div>
                 </div>
                 <div>
                   <p className="font-semibold">{list.name}</p>
@@ -170,13 +241,18 @@ export default function Lists() {
                   {list.prospectIds.length}
                 </div>
               </CardContent>
+              <DynamicChips list={list} />
               <div className="text-muted-foreground px-6 text-xs">
-                Created {formatDate(list.createdAt)}
+                {list.dynamic && list.lastSyncedAt
+                  ? `Synced ${formatDate(list.lastSyncedAt)}`
+                  : `Created ${formatDate(list.createdAt)}`}
               </div>
             </Card>
           )
         })}
       </div>
+
+      <PlaylistWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
       <ListFormDialog
         open={formOpen}
