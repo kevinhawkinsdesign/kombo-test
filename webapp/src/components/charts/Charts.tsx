@@ -11,7 +11,7 @@ import {
   Filler,
   type ChartOptions,
 } from "chart.js"
-import { Line, Doughnut } from "react-chartjs-2"
+import { Line, Doughnut, Bar } from "react-chartjs-2"
 
 import { useTheme } from "@/components/theme-provider"
 
@@ -202,6 +202,96 @@ export function ReplyRateChart({
             borderWidth: 2,
             pointRadius: 0,
             pointHoverRadius: 4,
+          },
+        ],
+      }}
+    />
+  )
+}
+
+export function CampaignDailyChart({
+  labels,
+  sent,
+  opened,
+  replied,
+}: {
+  labels: string[]
+  sent: number[]
+  opened: number[]
+  replied: number[]
+}) {
+  const t = useChartTheme()
+
+  const options: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: {
+        position: "top",
+        align: "end",
+        labels: {
+          color: t.ticks,
+          usePointStyle: true,
+          pointStyle: "circle",
+          boxWidth: 6,
+          boxHeight: 6,
+          padding: 16,
+        },
+      },
+      tooltip: {
+        backgroundColor: t.tooltipBg,
+        titleColor: t.tooltipTitle,
+        bodyColor: t.tooltipBody,
+        borderColor: t.border,
+        borderWidth: 1,
+        padding: 10,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: t.ticks },
+        stacked: false,
+      },
+      y: {
+        grid: { color: t.grid },
+        border: { display: false },
+        ticks: { color: t.ticks, precision: 0 },
+      },
+    },
+  }
+
+  return (
+    <Bar
+      options={options}
+      data={{
+        labels,
+        datasets: [
+          {
+            label: "Sent",
+            data: sent,
+            backgroundColor: hexAlpha(t.ticks, 0.35),
+            borderRadius: 4,
+            categoryPercentage: 0.6,
+            barPercentage: 0.9,
+          },
+          {
+            label: "Opened",
+            data: opened,
+            backgroundColor: hexAlpha(t.primary, 0.85),
+            borderRadius: 4,
+            categoryPercentage: 0.6,
+            barPercentage: 0.9,
+          },
+          {
+            label: "Replied",
+            data: replied,
+            backgroundColor: t.accent,
+            borderRadius: 4,
+            categoryPercentage: 0.6,
+            barPercentage: 0.9,
           },
         ],
       }}

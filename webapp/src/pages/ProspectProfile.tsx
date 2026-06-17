@@ -33,6 +33,7 @@ import {
 } from "@/components/common/ProspectBits"
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { ComposeDialog } from "@/components/prospect/ComposeDialog"
+import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { getProspect, conversations } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/format"
 
@@ -41,6 +42,7 @@ export default function ProspectProfile() {
   const prospect = id ? getProspect(id) : undefined
   const [addOpen, setAddOpen] = React.useState(false)
   const [composeOpen, setComposeOpen] = React.useState(false)
+  const [crmOpen, setCrmOpen] = React.useState(false)
 
   if (!prospect) {
     return (
@@ -247,10 +249,10 @@ export default function ProspectProfile() {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() => toast.success("Synced to HubSpot")}
+                onClick={() => setCrmOpen(true)}
               >
                 <Building2 className="size-4" />
-                Sync to CRM
+                Add to CRM
               </Button>
             </CardContent>
           </Card>
@@ -269,6 +271,20 @@ export default function ProspectProfile() {
         open={composeOpen}
         onOpenChange={setComposeOpen}
         prospect={prospect}
+      />
+      <AddToCrmDialog
+        open={crmOpen}
+        onOpenChange={setCrmOpen}
+        kind="prospect"
+        recordName={`${prospect.firstName} ${prospect.lastName}`}
+        fields={[
+          { label: "First name", value: prospect.firstName },
+          { label: "Last name", value: prospect.lastName },
+          { label: "Email", value: prospect.email },
+          { label: "Phone", value: prospect.phone ?? "—" },
+          { label: "Company", value: prospect.company },
+          { label: "Job title", value: prospect.title },
+        ]}
       />
     </Page>
   )

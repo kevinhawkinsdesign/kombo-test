@@ -14,11 +14,13 @@ import Lists from "@/pages/Lists"
 import ListDetail from "@/pages/ListDetail"
 import Inbox from "@/pages/Inbox"
 import Campaigns from "@/pages/Campaigns"
+import CampaignDetail from "@/pages/CampaignDetail"
 import Templates from "@/pages/Templates"
 import Tasks from "@/pages/Tasks"
 import Deals from "@/pages/Deals"
 import Analytics from "@/pages/Analytics"
 import Coach from "@/pages/Coach"
+import CoachRecordingDetail from "@/pages/CoachRecordingDetail"
 import Team from "@/pages/Team"
 import Integrations from "@/pages/Integrations"
 import Settings from "@/pages/Settings"
@@ -68,11 +70,13 @@ function App() {
         <Route path="/lists/:id" element={<ListDetail />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/campaigns" element={<Campaigns />} />
+        <Route path="/campaigns/:id" element={<CampaignDetail />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/deals" element={<Deals />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/coach" element={<Coach />} />
+        <Route path="/coach/:id" element={<CoachRecordingDetail />} />
         <Route path="/team" element={<Team />} />
         <Route path="/integrations" element={<Integrations />} />
         <Route path="/settings" element={<Settings />} />

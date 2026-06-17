@@ -46,6 +46,8 @@ export default function Settings() {
         <TabsList className="mb-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          <TabsTrigger value="ai">AI &amp; data</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="billing">Plan &amp; billing</TabsTrigger>
         </TabsList>
 
@@ -137,6 +139,107 @@ export default function Settings() {
                 title="AI suggestions"
                 description="Surface recommended prospects and next steps."
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Ideal customer profile</CardTitle>
+              <CardDescription>
+                Kombo uses this to score and recommend prospects.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="icp-industry">Target industry</Label>
+                  <Input id="icp-industry" defaultValue="B2B SaaS" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="icp-size">Company size</Label>
+                  <Input id="icp-size" defaultValue="50–1000 employees" />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="icp-titles">Target titles</Label>
+                  <Input
+                    id="icp-titles"
+                    defaultValue="VP Sales, CRO, Head of RevOps"
+                  />
+                </div>
+              </div>
+              <Separator />
+              <PreferenceRow
+                title="Auto-enrich new prospects"
+                description="Enrich the moment a prospect is added to a list."
+                defaultChecked
+              />
+              <PreferenceRow
+                title="Two-way CRM sync"
+                description="Keep prospect and activity data in sync with your CRM."
+                defaultChecked
+              />
+              <PreferenceRow
+                title="AI email drafting"
+                description="Let Kai draft first-touch emails using your templates."
+                defaultChecked
+              />
+              <div className="space-y-2">
+                <Label htmlFor="kai-persona">Kai writing tone</Label>
+                <Input id="kai-persona" defaultValue="Concise, consultative" />
+              </div>
+              <Separator />
+              <div className="flex justify-end">
+                <Button onClick={() => toast.success("AI settings saved")}>
+                  Save changes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Notifications</CardTitle>
+              <CardDescription>
+                Choose what you get notified about.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <PreferenceRow
+                title="Prospect replies"
+                description="When a prospect replies to your outreach."
+                defaultChecked
+              />
+              <PreferenceRow
+                title="Meetings booked"
+                description="When a meeting is booked from a sequence."
+                defaultChecked
+              />
+              <PreferenceRow
+                title="Deal stage changes"
+                description="When a deal moves stage in the pipeline."
+                defaultChecked
+              />
+              <PreferenceRow
+                title="Mentions"
+                description="When a teammate @mentions you."
+                defaultChecked
+              />
+              <PreferenceRow
+                title="Weekly digest"
+                description="A Monday summary of team performance."
+              />
+              <Separator />
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => toast.success("Notification settings saved")}
+                >
+                  Save changes
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

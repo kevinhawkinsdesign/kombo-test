@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import { Plus, Mail, Play, Pause, MoreHorizontal, Clock } from "lucide-react"
 
@@ -51,7 +52,14 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
       <CardHeader className="flex-row items-start justify-between">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-base">{campaign.name}</CardTitle>
+            <CardTitle className="text-base">
+              <Link
+                to={`/campaigns/${campaign.id}`}
+                className="hover:text-primary"
+              >
+                {campaign.name}
+              </Link>
+            </CardTitle>
             <Badge
               variant={STATUS_VARIANT[campaign.status]}
               className="capitalize"
@@ -95,8 +103,8 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => toast.info("Edit sequence")}>
-                Edit sequence
+              <DropdownMenuItem asChild>
+                <Link to={`/campaigns/${campaign.id}`}>Edit sequence</Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.info("Duplicated")}>
                 Duplicate

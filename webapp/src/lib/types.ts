@@ -228,3 +228,70 @@ export interface KaiMessage {
   role: "user" | "assistant"
   content: string
 }
+
+// --- Depth: campaigns ---
+export interface CampaignDailyStat {
+  date: string // ISO
+  sent: number
+  opened: number
+  replied: number
+}
+
+export type EnrollmentStatus =
+  | "active"
+  | "replied"
+  | "completed"
+  | "bounced"
+  | "paused"
+
+export interface CampaignEnrollment {
+  prospectId: string
+  currentStep: number // 1-based
+  status: EnrollmentStatus
+  lastTouch: string // ISO
+}
+
+// --- Depth: coaching ---
+export interface TranscriptTurn {
+  id: string
+  speaker: "rep" | "prospect"
+  name: string
+  time: string // mm:ss
+  text: string
+}
+
+export interface KeyMoment {
+  time: string // mm:ss
+  label: string
+  type: "positive" | "risk" | "action" | "question"
+}
+
+export interface RecordingAnalysis {
+  longestMonologueMin: number
+  questionsAsked: number
+  patience: number // seconds avg pause before responding
+  topics: { label: string; pct: number }[]
+  objections: string[]
+  keyMoments: KeyMoment[]
+  actionItems: string[]
+  coachingTips: string[]
+  transcript: TranscriptTurn[]
+}
+
+// --- Depth: company intelligence ---
+export interface NewsItem {
+  id: string
+  title: string
+  source: string
+  date: string // ISO
+  sentiment: "positive" | "neutral" | "negative"
+}
+
+// --- Depth: CRM add-to-record ---
+export interface CrmProvider {
+  id: string
+  name: string
+  logoColor: string
+  connected: boolean
+  objectName: string // e.g. "Contact", "Lead"
+}
