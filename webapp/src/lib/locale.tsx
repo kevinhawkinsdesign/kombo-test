@@ -42,10 +42,13 @@ const en: Dict = {
   "menu.billing": "Plan & billing",
   "menu.logout": "Log out",
   "view.as": "View workspace as",
+  "view.org": "Whole organization",
   "view.wholeTeam": "Whole team",
+  "view.teams": "Teams & clients",
   "view.impersonate": "Impersonate a rep",
   "view.viewingAs": "Viewing as",
   "banner.viewingAs": "You are viewing the workspace as",
+  "banner.viewingTeam": "You are viewing the team",
   "kai.suggests": "Kai suggests",
 }
 
@@ -87,10 +90,13 @@ const es: Dict = {
   "menu.billing": "Plan y facturación",
   "menu.logout": "Cerrar sesión",
   "view.as": "Ver el espacio como",
+  "view.org": "Toda la organización",
   "view.impersonate": "Ver como representante",
   "view.wholeTeam": "Todo el equipo",
+  "view.teams": "Equipos y clientes",
   "view.viewingAs": "Viendo como",
   "banner.viewingAs": "Estás viendo el espacio como",
+  "banner.viewingTeam": "Estás viendo el equipo",
   "kai.suggests": "Kai sugiere",
 }
 
