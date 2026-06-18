@@ -145,7 +145,7 @@ export default function CompanyDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setCrmOpen(true)}>
+            <Button variant="volt" onClick={() => setCrmOpen(true)}>
               <Building2 className="size-4" />
               Add to CRM
             </Button>

@@ -152,10 +152,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <div className="px-3">
-        <Button className="w-full justify-start gap-2" size="sm" asChild>
-          <NavLink to="/search" onClick={onNavigate}>
-            <Sparkles className="size-4" />
-            {t("nav.newSearch")}
+        <Button
+          variant="volt"
+          className="w-full justify-start gap-2"
+          size="sm"
+          asChild
+        >
+          <NavLink to="/campaigns" onClick={onNavigate}>
+            <Send className="size-4" />
+            {t("nav.newCampaign")}
           </NavLink>
         </Button>
       </div>
@@ -165,11 +170,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <NavLink
             to="/get-started"
             onClick={onNavigate}
-            className="border-primary/30 bg-primary/5 hover:bg-primary/10 flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+            className="border-volt/40 bg-volt/10 hover:bg-volt/15 text-sidebar-foreground flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
           >
-            <Rocket className="text-primary size-4 shrink-0" />
+            <Rocket className="text-volt size-4 shrink-0" />
             <span className="flex-1">{t("nav.getStarted")}</span>
-            <Badge variant="secondary" className="tabular-nums">
+            <Badge className="bg-sidebar-foreground/15 text-sidebar-foreground border-transparent tabular-nums">
               {progress}%
             </Badge>
           </NavLink>

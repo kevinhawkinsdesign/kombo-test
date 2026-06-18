@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import "./index.css"
 import App from "./App.tsx"
 import { bootIntercom } from "@/lib/intercom"
+import { installDemoReset } from "@/lib/demo-reset"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
 import { ViewProvider } from "@/lib/view-context"
@@ -27,6 +28,9 @@ const Router = import.meta.env.VITE_ROUTER === "hash" ? HashRouter : BrowserRout
 
 // Load Intercom Messenger if an app id is configured (no-op otherwise).
 bootIntercom()
+
+// Demo: Cmd/Ctrl+Shift+R resets dismissed banners and user-modified data.
+installDemoReset()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

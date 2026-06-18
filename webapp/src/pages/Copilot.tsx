@@ -453,7 +453,7 @@ export default function Copilot() {
               <X className="size-4" />
               Dismiss
             </Button>
-            <Button onClick={() => send(selected, prospect.firstName)}>
+            <Button variant="volt" onClick={() => send(selected, prospect.firstName)}>
               <Send className="size-4" />
               Send sequence
             </Button>

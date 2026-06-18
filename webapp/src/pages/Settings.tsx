@@ -251,6 +251,7 @@ export default function Settings() {
                 </div>
                 <Button
                   size="sm"
+                  variant="volt"
                   onClick={() => toast.success("LinkedIn connected")}
                 >
                   Connect

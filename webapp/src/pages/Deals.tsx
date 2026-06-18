@@ -185,7 +185,7 @@ export default function Deals() {
         title="Deals"
         description="Your pipeline by stage."
         action={
-          <Button onClick={openCreate}>
+          <Button variant="volt" onClick={openCreate}>
             <Plus className="size-4" />
             New deal
           </Button>

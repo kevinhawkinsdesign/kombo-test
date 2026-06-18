@@ -20,6 +20,8 @@ import type {
   Prospect,
   ProspectList,
   Campaign,
+  CampaignStep,
+  StepChannel,
   Deal,
   Task,
   EmailTemplate,
@@ -281,6 +283,131 @@ export const campaignStore = {
   },
   remove(id: string): void {
     setState({ campaigns: state.campaigns.filter((c) => c.id !== id) })
+  },
+  addStep(campaignId: string, channel: StepChannel): void {
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== campaignId) return c
+        const step: CampaignStep = {
+          id: uid("s"),
+          channel,
+          delayDays: c.steps.length === 0 ? 0 : 3,
+          subject: "",
+          body: "",
+        }
+        return { ...c, steps: [...c.steps, step] }
+      }),
+    })
+  },
+  updateStep(
+    campaignId: string,
+    stepId: string,
+    patch: Partial<CampaignStep>
+  ): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: c.steps.map((s) =>
+                s.id === stepId ? { ...s, ...patch } : s
+              ),
+            }
+          : c
+      ),
+    })
+  },
+  removeStep(campaignId: string, stepId: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? { ...c, steps: c.steps.filter((s) => s.id !== stepId) }
+          : c
+      ),
+    })
+  },
+  moveStep(campaignId: string, stepId: string, dir: -1 | 1): void {
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== campaignId) return c
+        const index = c.steps.findIndex((s) => s.id === stepId)
+        const target = index + dir
+        if (index === -1 || target < 0 || target >= c.steps.length) return c
+        const steps = [...c.steps]
+        const [moved] = steps.splice(index, 1)
+        steps.splice(target, 0, moved)
+        return { ...c, steps }
+      }),
+    })
+  },
+  attachList(campaignId: string, listId: string): void {
+    const campaign = state.campaigns.find((c) => c.id === campaignId)
+    const previousListId = campaign?.listId
+    const targetList = state.lists.find((l) => l.id === listId)
+    const conflictCampaignId = targetList?.campaignId
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id === campaignId) return { ...c, listId }
+        // The list was already linked to another campaign — clear that link.
+        if (conflictCampaignId && c.id === conflictCampaignId)
+          return { ...c, listId: undefined }
+        return c
+      }),
+      lists: state.lists.map((l) => {
+        if (l.id === listId)
+          return {
+            ...l,
+            campaignId,
+            sendMode: l.sendMode ?? "continuous",
+          }
+        // This campaign already had a different list — detach it.
+        if (previousListId && l.id === previousListId)
+          return { ...l, campaignId: undefined }
+        return l
+      }),
+    })
+  },
+  detachList(campaignId: string): void {
+    const campaign = state.campaigns.find((c) => c.id === campaignId)
+    const listId = campaign?.listId
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId ? { ...c, listId: undefined } : c
+      ),
+      lists: listId
+        ? state.lists.map((l) =>
+            l.id === listId ? { ...l, campaignId: undefined } : l
+          )
+        : state.lists,
+    })
+  },
+  addProspects(campaignId: string, ids: string[]): void {
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== campaignId) return c
+        const existing = new Set(c.enrolledIds ?? [])
+        const added = ids.filter((id) => !existing.has(id))
+        if (added.length === 0) return c
+        return {
+          ...c,
+          enrolledIds: [...(c.enrolledIds ?? []), ...added],
+          enrolled: c.enrolled + added.length,
+        }
+      }),
+    })
+  },
+  removeProspect(campaignId: string, prospectId: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== campaignId) return c
+        const had = (c.enrolledIds ?? []).includes(prospectId)
+        return {
+          ...c,
+          enrolledIds: (c.enrolledIds ?? []).filter((id) => id !== prospectId),
+          enrolled: had ? Math.max(0, c.enrolled - 1) : c.enrolled,
+        }
+      }),
+    })
   },
 }
 

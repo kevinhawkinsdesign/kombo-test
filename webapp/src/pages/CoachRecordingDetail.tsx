@@ -167,7 +167,10 @@ export default function CoachRecordingDetail() {
               <RefreshCw className="size-4" />
               Re-analyze
             </Button>
-            <Button onClick={() => toast.success("Notes added to CRM")}>
+            <Button
+              variant="volt"
+              onClick={() => toast.success("Notes added to CRM")}
+            >
               <Building2 className="size-4" />
               Add notes to CRM
             </Button>

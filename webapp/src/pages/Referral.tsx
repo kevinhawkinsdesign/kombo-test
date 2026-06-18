@@ -132,7 +132,7 @@ export default function Referral() {
         title="Refer & earn"
         description="Give 500 credits, get 500 credits when a referral activates."
         action={
-          <Button onClick={() => toast.success("Referral link copied")}>
+          <Button variant="volt" onClick={() => toast.success("Referral link copied")}>
             <Share2 className="size-4" />
             Share link
           </Button>

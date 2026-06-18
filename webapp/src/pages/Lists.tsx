@@ -108,7 +108,7 @@ export default function Lists() {
               <Plus className="size-4" />
               New list
             </Button>
-            <Button onClick={() => setWizardOpen(true)}>
+            <Button variant="volt" onClick={() => setWizardOpen(true)}>
               <Sparkles className="size-4" />
               Build a playlist
             </Button>

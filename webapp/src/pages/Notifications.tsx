@@ -31,7 +31,7 @@ export default function Notifications() {
           unread ? `${unread} unread` : "You're all caught up."
         }
         action={
-          <Button variant="outline" onClick={markAll} disabled={!unread}>
+          <Button variant="volt" onClick={markAll} disabled={!unread}>
             <CheckCheck className="size-4" />
             Mark all read
           </Button>

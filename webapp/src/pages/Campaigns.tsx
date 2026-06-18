@@ -282,7 +282,7 @@ function CreateCampaignDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!trimmedName}>
+            <Button type="submit" variant="volt" disabled={!trimmedName}>
               Create
             </Button>
           </DialogFooter>
@@ -339,7 +339,7 @@ export default function Campaigns() {
                 Build sequence
               </Link>
             </Button>
-            <Button onClick={() => setCreateOpen(true)}>
+            <Button variant="volt" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4" />
               New campaign
             </Button>

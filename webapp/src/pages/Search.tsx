@@ -173,7 +173,7 @@ export default function Search() {
               <Sparkles className="size-4" />
               AI lookalikes
             </Button>
-            <Button onClick={() => setCreateOpen(true)}>
+            <Button variant="volt" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4" />
               Add prospect
             </Button>

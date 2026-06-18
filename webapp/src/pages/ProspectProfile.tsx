@@ -151,7 +151,7 @@ export default function ProspectProfile() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setComposeOpen(true)}>
+            <Button variant="volt" onClick={() => setComposeOpen(true)}>
               <Send className="size-4" />
               Message
             </Button>

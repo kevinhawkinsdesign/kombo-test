@@ -42,7 +42,7 @@ export default function Usage() {
         title="Usage & credits"
         description="Track your credit balance and consumption."
         action={
-          <Button onClick={() => setTopUpOpen(true)}>
+          <Button variant="volt" onClick={() => setTopUpOpen(true)}>
             <Zap className="size-4" />
             Top up credits
           </Button>

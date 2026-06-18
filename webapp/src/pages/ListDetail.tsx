@@ -120,7 +120,10 @@ export default function ListDetail() {
             <Download className="size-4" />
             Export
           </Button>
-          <Button onClick={() => toast.success(`${members.length} enrolled`)}>
+          <Button
+            variant="volt"
+            onClick={() => toast.success(`${members.length} enrolled`)}
+          >
             <Send className="size-4" />
             Start campaign
           </Button>
@@ -432,7 +435,11 @@ function AddProspectsDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleAdd} disabled={selected.size === 0}>
+          <Button
+            variant="volt"
+            onClick={handleAdd}
+            disabled={selected.size === 0}
+          >
             Add selected
             {selected.size > 0 ? ` (${selected.size})` : ""}
           </Button>
