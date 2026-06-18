@@ -2,7 +2,6 @@ import * as React from "react"
 import { NavLink } from "react-router-dom"
 import {
   LayoutDashboard,
-  Search,
   Building2,
   FolderKanban,
   Inbox,
@@ -65,7 +64,6 @@ const sections: NavSection[] = [
         icon: Sparkles,
         badge: String(copilotActions.length),
       },
-      { to: "/search", labelKey: "nav.search", icon: Search },
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
       { to: "/intros", labelKey: "nav.intros", icon: Waypoints },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
