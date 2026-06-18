@@ -150,17 +150,25 @@ function derivedWon(pipeline: number[]): number[] {
   return pipeline.map((v, i) => Math.round(v * (0.32 + i * 0.015)))
 }
 
-export function teamView(): ViewData {
-  const sum = (fn: (m: TeamMember) => number) => team.reduce((a, m) => a + fn(m), 0)
-  const avg = (fn: (m: TeamMember) => number) => sum(fn) / team.length
+// Aggregate a set of reps into the shared dashboard view shape.
+function aggregate(
+  members: TeamMember[],
+  label: string,
+  subtitle: string
+): ViewData {
+  const list = members.length ? members : team
+  const sum = (fn: (m: TeamMember) => number) =>
+    list.reduce((a, m) => a + fn(m), 0)
+  const avg = (fn: (m: TeamMember) => number) => sum(fn) / list.length
 
   const monthlyPipeline = MONTHS.map((_, i) =>
-    team.reduce((a, m) => a + m.monthlyPipeline[i], 0)
+    list.reduce((a, m) => a + m.monthlyPipeline[i], 0)
   )
-  const weeklyReplyRate = WEEKS.map((_, i) =>
-    Math.round(
-      (team.reduce((a, m) => a + m.weeklyReplyRate[i], 0) / team.length) * 10
-    ) / 10
+  const weeklyReplyRate = WEEKS.map(
+    (_, i) =>
+      Math.round(
+        (list.reduce((a, m) => a + m.weeklyReplyRate[i], 0) / list.length) * 10
+      ) / 10
   )
   const funnel: FunnelCounts = {
     prospects: sum((m) => m.funnel.prospects),
@@ -172,8 +180,8 @@ export function teamView(): ViewData {
 
   return {
     scope: "team",
-    label: "Whole team",
-    subtitle: `${team.length} reps · this quarter`,
+    label,
+    subtitle,
     quota: sum((m) => m.quota),
     kpis: {
       pipeline: sum((m) => m.metrics.pipeline),
@@ -188,6 +196,10 @@ export function teamView(): ViewData {
     weeklyReplyRate,
     funnel,
   }
+}
+
+export function teamView(): ViewData {
+  return aggregate(team, "Whole team", `${team.length} reps · this quarter`)
 }
 
 export function repView(rep: TeamMember): ViewData {
@@ -224,6 +236,79 @@ export function getViewData(repId: string | null): ViewData {
 
 export function getRep(repId: string): TeamMember | undefined {
   return team.find((m) => m.id === repId)
+}
+
+// --- Agency: multiple teams / client engagements ---
+// An agency runs outbound for several clients; each client is a "team" of reps.
+export interface SalesTeam {
+  id: string
+  name: string
+  client?: string // client/brand this team sells for (client engagements)
+  type: "internal" | "client"
+  repIds: string[]
+}
+
+export const teams: SalesTeam[] = [
+  {
+    id: "tm_house",
+    name: "House accounts",
+    type: "internal",
+    repIds: ["rep_1", "rep_2"],
+  },
+  {
+    id: "tm_fever",
+    name: "Fever",
+    client: "Fever",
+    type: "client",
+    repIds: ["rep_3"],
+  },
+  {
+    id: "tm_softonic",
+    name: "Softonic",
+    client: "Softonic",
+    type: "client",
+    repIds: ["rep_4", "rep_5"],
+  },
+]
+
+export function getTeam(id: string): SalesTeam | undefined {
+  return teams.find((t) => t.id === id)
+}
+
+export function teamMembers(teamId: string): TeamMember[] {
+  const t = getTeam(teamId)
+  if (!t) return []
+  return t.repIds
+    .map((id) => getRep(id))
+    .filter((m): m is TeamMember => Boolean(m))
+}
+
+export function repTeam(repId: string): SalesTeam | undefined {
+  return teams.find((t) => t.repIds.includes(repId))
+}
+
+export function teamViewData(t: SalesTeam): ViewData {
+  const members = teamMembers(t.id)
+  const suffix = t.type === "client" ? "client team" : "internal team"
+  return aggregate(members, t.name, `${members.length} reps · ${suffix}`)
+}
+
+// The current dashboard scope: the whole org, a team/client, or a single rep.
+export type ViewScope =
+  | { kind: "org" }
+  | { kind: "team"; id: string }
+  | { kind: "rep"; id: string }
+
+export function getScopeData(scope: ViewScope): ViewData {
+  if (scope.kind === "rep") {
+    const rep = getRep(scope.id)
+    return rep ? repView(rep) : teamView()
+  }
+  if (scope.kind === "team") {
+    const t = getTeam(scope.id)
+    return t ? teamViewData(t) : teamView()
+  }
+  return teamView()
 }
 
 // Leaderboard sorted by closed-won attainment.

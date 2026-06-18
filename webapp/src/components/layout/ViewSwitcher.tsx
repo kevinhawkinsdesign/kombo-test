@@ -1,4 +1,4 @@
-import { Users, Check, ChevronsUpDown, Eye } from "lucide-react"
+import { Users, Check, ChevronsUpDown, Eye, Building2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -11,42 +11,80 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useView } from "@/lib/view-context"
-import { team } from "@/lib/team"
+import { team, teams } from "@/lib/team"
 import { portraitFor } from "@/lib/avatars"
 import { useLocale } from "@/lib/locale"
 import { initials } from "@/lib/format"
 
 export function ViewSwitcher() {
-  const { impersonatingId, impersonate, exitImpersonation } = useView()
+  const {
+    scope,
+    impersonating,
+    impersonatingId,
+    viewTeam,
+    viewTeamId,
+    impersonate,
+    viewAsTeam,
+    exitImpersonation,
+  } = useView()
   const { t } = useLocale()
-  const active = team.find((m) => m.id === impersonatingId)
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          {active ? (
+          {impersonating ? (
             <>
               <Eye className="size-4" />
               <span className="hidden sm:inline">{t("view.viewingAs")}</span>
-              <span className="font-medium">{active.name}</span>
+              <span className="max-w-32 truncate font-medium">
+                {impersonating.name}
+              </span>
+            </>
+          ) : viewTeam ? (
+            <>
+              <Building2 className="size-4" />
+              <span className="max-w-32 truncate font-medium">
+                {viewTeam.name}
+              </span>
             </>
           ) : (
             <>
               <Users className="size-4" />
-              <span className="font-medium">{t("view.wholeTeam")}</span>
+              <span className="font-medium">{t("view.org")}</span>
             </>
           )}
           <ChevronsUpDown className="text-muted-foreground size-3.5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-60">
+      <DropdownMenuContent
+        align="start"
+        className="max-h-[70svh] w-64 overflow-y-auto"
+      >
         <DropdownMenuLabel>{t("view.as")}</DropdownMenuLabel>
         <DropdownMenuItem onClick={exitImpersonation}>
           <Users className="size-4" />
-          <span className="flex-1">{t("view.wholeTeam")}</span>
-          {!active && <Check className="size-4" />}
+          <span className="flex-1">{t("view.org")}</span>
+          {scope.kind === "org" && <Check className="size-4" />}
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
+          {t("view.teams")}
+        </DropdownMenuLabel>
+        {teams.map((tm) => (
+          <DropdownMenuItem key={tm.id} onClick={() => viewAsTeam(tm.id)}>
+            <Building2 className="text-muted-foreground size-4" />
+            <span className="flex-1 truncate">{tm.name}</span>
+            {tm.type === "client" && (
+              <span className="text-muted-foreground text-[10px] tracking-wide uppercase">
+                client
+              </span>
+            )}
+            {viewTeamId === tm.id && <Check className="size-4" />}
+          </DropdownMenuItem>
+        ))}
+
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
           {t("view.impersonate")}
@@ -63,7 +101,7 @@ export function ViewSwitcher() {
               </AvatarFallback>
             </Avatar>
             <span className="flex-1 truncate">{rep.name}</span>
-            {active?.id === rep.id && <Check className="size-4" />}
+            {impersonatingId === rep.id && <Check className="size-4" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

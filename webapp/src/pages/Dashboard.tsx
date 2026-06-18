@@ -34,7 +34,7 @@ import { copilotActions } from "@/lib/mock-copilot"
 import { useView } from "@/lib/view-context"
 import { useSetup } from "@/lib/setup"
 import {
-  getViewData,
+  getScopeData,
   leaderboard,
   MONTHS,
   WEEKS,
@@ -207,8 +207,8 @@ export default function Dashboard() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const { user } = useAuth()
-  const { impersonating, impersonatingId, impersonate } = useView()
-  const data = getViewData(impersonatingId)
+  const { impersonating, viewTeam, scope, impersonate } = useView()
+  const data = getScopeData(scope)
 
   const kpis = [
     {
@@ -239,10 +239,13 @@ export default function Dashboard() {
 
   const title = impersonating
     ? c.perfTitle(impersonating.name.split(" ")[0])
-    : c.welcome(user?.name.split(" ")[0] ?? "")
-  const description = impersonating
-    ? c.perfDescription(impersonating.role, money(data.quota))
-    : c.teamDescription(money(data.quota))
+    : viewTeam
+      ? viewTeam.name
+      : c.welcome(user?.name.split(" ")[0] ?? "")
+  const description =
+    impersonating && data.scope === "rep"
+      ? c.perfDescription(impersonating.role, money(data.quota))
+      : c.teamDescription(money(data.quota))
 
   return (
     <Page>

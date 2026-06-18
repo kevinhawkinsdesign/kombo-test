@@ -24,7 +24,7 @@ import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { TrendChart, ReplyRateChart } from "@/components/charts/Charts"
 import { Funnel } from "@/components/charts/Funnel"
 import { useView } from "@/lib/view-context"
-import { getViewData, leaderboard, MONTHS, WEEKS, team } from "@/lib/team"
+import { getScopeData, leaderboard, MONTHS, WEEKS, team } from "@/lib/team"
 import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -115,8 +115,8 @@ const COPY = {
 export default function Analytics() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const { impersonating, impersonatingId } = useView()
-  const data = getViewData(impersonatingId)
+  const { impersonating, scope } = useView()
+  const data = getScopeData(scope)
   const reps = leaderboard()
 
   const totalActivities = CHANNELS.reduce((a, c) => a + c.value, 0)

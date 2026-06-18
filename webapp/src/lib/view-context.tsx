@@ -1,33 +1,50 @@
 import * as React from "react"
 
-import { getRep, type TeamMember } from "@/lib/team"
+import {
+  getRep,
+  getTeam,
+  type TeamMember,
+  type SalesTeam,
+  type ViewScope,
+} from "@/lib/team"
 
 interface ViewState {
-  /** Rep being impersonated, or null when viewing as the leader / whole team. */
+  scope: ViewScope
+  // Rep impersonation (kind === "rep")
   impersonatingId: string | null
   impersonating: TeamMember | null
   isImpersonating: boolean
+  // Team / client scope (kind === "team")
+  viewTeamId: string | null
+  viewTeam: SalesTeam | null
+  // Actions
   impersonate: (repId: string) => void
-  exitImpersonation: () => void
+  viewAsTeam: (teamId: string) => void
+  exitImpersonation: () => void // reset to the whole org
 }
 
 const ViewContext = React.createContext<ViewState | undefined>(undefined)
 
 export function ViewProvider({ children }: { children: React.ReactNode }) {
-  const [impersonatingId, setImpersonatingId] = React.useState<string | null>(
-    null
-  )
+  const [scope, setScope] = React.useState<ViewScope>({ kind: "org" })
 
   const value = React.useMemo<ViewState>(() => {
-    const impersonating = impersonatingId ? getRep(impersonatingId) ?? null : null
+    const rep =
+      scope.kind === "rep" ? (getRep(scope.id) ?? null) : null
+    const team =
+      scope.kind === "team" ? (getTeam(scope.id) ?? null) : null
     return {
-      impersonatingId: impersonating ? impersonatingId : null,
-      impersonating,
-      isImpersonating: impersonating !== null,
-      impersonate: (repId: string) => setImpersonatingId(repId),
-      exitImpersonation: () => setImpersonatingId(null),
+      scope,
+      impersonatingId: rep ? rep.id : null,
+      impersonating: rep,
+      isImpersonating: rep !== null,
+      viewTeamId: team ? team.id : null,
+      viewTeam: team,
+      impersonate: (repId: string) => setScope({ kind: "rep", id: repId }),
+      viewAsTeam: (teamId: string) => setScope({ kind: "team", id: teamId }),
+      exitImpersonation: () => setScope({ kind: "org" }),
     }
-  }, [impersonatingId])
+  }, [scope])
 
   return <ViewContext.Provider value={value}>{children}</ViewContext.Provider>
 }
