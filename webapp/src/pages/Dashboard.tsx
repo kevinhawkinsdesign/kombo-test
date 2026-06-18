@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
   TrendChart,
@@ -41,6 +41,7 @@ import {
   type TeamMember,
 } from "@/lib/team"
 import { useAuth } from "@/lib/auth"
+import { portraitFor } from "@/lib/avatars"
 import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -141,7 +142,7 @@ export default function Dashboard() {
         title={title}
         description={description}
         action={
-          <Button asChild>
+          <Button variant="volt" asChild>
             <Link to="/search">
               <Sparkles className="size-4" />
               Find prospects
@@ -157,7 +158,7 @@ export default function Dashboard() {
           className="mb-6"
           title={`Kai spotted ${copilotActions.length} signals worth acting on`}
           action={
-            <Button asChild size="sm">
+            <Button asChild size="sm" variant="outline">
               <Link to="/copilot">Review in Copilot</Link>
             </Button>
           }
@@ -340,6 +341,7 @@ function LeaderboardRow({
         {rank}
       </span>
       <Avatar className="size-9">
+        <AvatarImage src={portraitFor(rep.name)} alt="" />
         <AvatarFallback
           style={{ backgroundColor: rep.avatarColor, color: "white" }}
           className="text-xs"

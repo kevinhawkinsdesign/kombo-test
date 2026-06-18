@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   Table,
   TableBody,
@@ -31,6 +31,7 @@ import {
 import { useView } from "@/lib/view-context"
 import { team, leaderboard, type TeamMember } from "@/lib/team"
 import { initials, formatMoney as money } from "@/lib/format"
+import { portraitFor } from "@/lib/avatars"
 
 function repInitials(name: string): string {
   const [first, last] = name.split(" ")
@@ -131,6 +132,7 @@ export default function Team() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="size-9">
+                            <AvatarImage src={portraitFor(rep.name)} alt="" />
                             <AvatarFallback
                               style={{
                                 backgroundColor: rep.avatarColor,

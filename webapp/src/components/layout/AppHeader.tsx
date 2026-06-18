@@ -12,7 +12,7 @@ import {
   ChevronDown,
 } from "lucide-react"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -30,6 +30,7 @@ import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
 import { useCredits } from "@/lib/credits"
 import { useLocale, type Locale } from "@/lib/locale"
+import { portraitFor } from "@/lib/avatars"
 import { initials } from "@/lib/format"
 
 const LOCALE_FLAG: Record<Locale, string> = { en: "🇬🇧", es: "🇪🇸" }
@@ -140,6 +141,7 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <button className="focus-visible:ring-ring ml-0.5 flex items-center gap-2 rounded-full outline-none focus-visible:ring-2">
               <Avatar>
+                {user && <AvatarImage src={portraitFor(user.name)} alt="" />}
                 <AvatarFallback
                   style={{ backgroundColor: user?.avatarColor, color: "white" }}
                 >
