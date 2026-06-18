@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom"
 
-import { AppSidebar } from "@/components/layout/AppSidebar"
+import { AppSidebar, MobileBottomNav } from "@/components/layout/AppSidebar"
 import { AppHeader } from "@/components/layout/AppHeader"
 import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { SupportWidget } from "@/components/support/SupportWidget"
@@ -18,10 +18,11 @@ export function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <ImpersonationBanner />
         <AppHeader />
-        <main id="main-content" className="flex-1">
+        <main id="main-content" className="flex-1 pb-16 md:pb-0">
           <Outlet />
         </main>
       </div>
+      <MobileBottomNav />
       <SupportWidget />
     </div>
   )

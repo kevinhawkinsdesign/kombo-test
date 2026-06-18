@@ -211,24 +211,75 @@ export function AppSidebar() {
   )
 }
 
-export function MobileNav() {
+// Primary destinations shown in the native-style bottom bar on mobile.
+const bottomBarItems: NavItem[] = [
+  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles },
+  { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
+  {
+    to: "/inbox",
+    labelKey: "nav.inbox",
+    icon: Inbox,
+    badge: unread ? String(unread) : undefined,
+  },
+]
+
+/**
+ * Fixed bottom navigation for mobile — like a native app. Shows the top
+ * destinations plus a "More" button that opens the full nav in a sheet.
+ */
+export function MobileBottomNav() {
+  const { t } = useLocale()
   const [open, setOpen] = React.useState(false)
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          aria-label="Open navigation menu"
-        >
-          <Menu className="size-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="bg-sidebar w-72 p-0">
-        <SheetTitle className="sr-only">Navigation</SheetTitle>
-        <SidebarContent onNavigate={() => setOpen(false)} />
-      </SheetContent>
-    </Sheet>
+    <nav
+      aria-label="Primary"
+      className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+    >
+      {bottomBarItems.map((item) => {
+        const Icon = item.icon
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            className={({ isActive }) =>
+              cn(
+                "relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )
+            }
+          >
+            <span className="relative">
+              <Icon className="size-5" />
+              {item.badge && (
+                <span className="bg-primary text-primary-foreground absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-semibold">
+                  {item.badge}
+                </span>
+              )}
+            </span>
+            {t(item.labelKey)}
+          </NavLink>
+        )
+      })}
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium"
+            aria-label="More navigation"
+          >
+            <Menu className="size-5" />
+            More
+          </button>
+        </SheetTrigger>
+        <SheetContent side="left" className="bg-sidebar w-72 p-0">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <SidebarContent onNavigate={() => setOpen(false)} />
+        </SheetContent>
+      </Sheet>
+    </nav>
   )
 }

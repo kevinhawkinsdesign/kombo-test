@@ -24,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
-import { MobileNav } from "@/components/layout/AppSidebar"
 import { KaiAssistant } from "@/components/kai/KaiAssistant"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
@@ -58,8 +57,6 @@ export function AppHeader() {
 
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur md:gap-3 md:px-6">
-      <MobileNav />
-
       <ViewSwitcher />
 
       <div className="relative ml-auto hidden w-full max-w-xs md:block">
