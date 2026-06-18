@@ -11,6 +11,7 @@ import {
   GraduationCap,
 } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
@@ -30,10 +31,70 @@ import { cn } from "@/lib/utils"
 import type { CoachRecording } from "@/lib/types"
 
 const SENTIMENT = {
-  positive: { icon: Smile, className: "text-chart-1", label: "Positive" },
-  neutral: { icon: Meh, className: "text-chart-4", label: "Neutral" },
-  negative: { icon: Frown, className: "text-destructive", label: "Negative" },
+  positive: { icon: Smile, className: "text-chart-1" },
+  neutral: { icon: Meh, className: "text-chart-4" },
+  negative: { icon: Frown, className: "text-destructive" },
 }
+
+const COPY = {
+  en: {
+    title: "Call Coach",
+    description: "AI analysis of your sales calls with actionable feedback.",
+    introTitle: "Coach every call",
+    introDescription:
+      "AI-analyzed call recordings surface talk ratio, topics, and the next best step.",
+    introPoints: [
+      "Automatic call transcription",
+      "Talk-ratio & sentiment analysis",
+      "Coaching scorecards you can share",
+    ],
+    avgScore: "Average call score",
+    callsAnalyzed: "Calls analyzed",
+    avgTalkRatio: "Avg. talk ratio",
+    playRecording: "Play recording",
+    talkRatioYou: "Talk ratio (you)",
+    talkRatioHint: "Aim for 40–45% — let the prospect talk more.",
+    highlights: "Highlights",
+    recommendedNextSteps: "Recommended next steps",
+    aiGenerated: "AI generated",
+    viewFullAnalysis: "View full analysis",
+    callScore: "Call score",
+    sentiment: {
+      positive: "Positive",
+      neutral: "Neutral",
+      negative: "Negative",
+    },
+  },
+  es: {
+    title: "Coach de llamadas",
+    description:
+      "Análisis con IA de tus llamadas de ventas con recomendaciones accionables.",
+    introTitle: "Entrena cada llamada",
+    introDescription:
+      "Las grabaciones analizadas con IA revelan el ratio de conversación, los temas y el siguiente mejor paso.",
+    introPoints: [
+      "Transcripción automática de llamadas",
+      "Análisis de ratio de conversación y sentimiento",
+      "Informes de coaching que puedes compartir",
+    ],
+    avgScore: "Puntuación media de llamada",
+    callsAnalyzed: "Llamadas analizadas",
+    avgTalkRatio: "Ratio de conversación medio",
+    playRecording: "Reproducir grabación",
+    talkRatioYou: "Ratio de conversación (tú)",
+    talkRatioHint: "Apunta al 40–45 %: deja que el prospecto hable más.",
+    highlights: "Aspectos destacados",
+    recommendedNextSteps: "Próximos pasos recomendados",
+    aiGenerated: "Generado por IA",
+    viewFullAnalysis: "Ver análisis completo",
+    callScore: "Puntuación",
+    sentiment: {
+      positive: "Positivo",
+      neutral: "Neutral",
+      negative: "Negativo",
+    },
+  },
+} as const
 
 function scorePillClass(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"
@@ -46,42 +107,37 @@ const avgScore = Math.round(
 )
 
 export default function Coach() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   return (
     <Page>
-      <PageHeading
-        title="Call Coach"
-        description="AI analysis of your sales calls with actionable feedback."
-      />
+      <PageHeading title={c.title} description={c.description} />
 
       <FeatureIntro
         featureKey="coach"
         icon={GraduationCap}
-        title="Coach every call"
-        description="AI-analyzed call recordings surface talk ratio, topics, and the next best step."
-        points={[
-          "Automatic call transcription",
-          "Talk-ratio & sentiment analysis",
-          "Coaching scorecards you can share",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={c.introPoints}
         className="mb-6"
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardDescription>Average call score</CardDescription>
+            <CardDescription>{c.avgScore}</CardDescription>
             <CardTitle className="text-2xl">{avgScore}/100</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Calls analyzed</CardDescription>
+            <CardDescription>{c.callsAnalyzed}</CardDescription>
             <CardTitle className="text-2xl">{coachRecordings.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Avg. talk ratio</CardDescription>
+            <CardDescription>{c.avgTalkRatio}</CardDescription>
             <CardTitle className="text-2xl">
               {Math.round(
                 coachRecordings.reduce((s, r) => s + r.talkRatio, 0) /
@@ -103,6 +159,8 @@ export default function Coach() {
 }
 
 function RecordingCard({ rec }: { rec: CoachRecording }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const sentiment = SENTIMENT[rec.sentiment]
   const SentimentIcon = sentiment.icon
   const scorecard = getScorecard(rec.id)
@@ -119,7 +177,7 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
             className="size-10 shrink-0 rounded-full"
             asChild
           >
-            <Link to={`/coach/${rec.id}`} aria-label="Play recording">
+            <Link to={`/coach/${rec.id}`} aria-label={c.playRecording}>
               <Play className="size-4" />
             </Link>
           </Button>
@@ -140,7 +198,7 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
               </span>
               <span className={`flex items-center gap-1 ${sentiment.className}`}>
                 <SentimentIcon className="size-3.5" />
-                {sentiment.label}
+                {c.sentiment[rec.sentiment]}
               </span>
             </div>
             {criticalNote && (
@@ -155,10 +213,10 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
             "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-0.5 text-sm font-semibold tabular-nums",
             scorePillClass(scorecard.overall)
           )}
-          title="Call score"
+          title={c.callScore}
         >
           <span className="bg-current size-1.5 rounded-full opacity-80" />
-          Call score {scorecard.overall}
+          {c.callScore} {scorecard.overall}
         </span>
       </CardHeader>
       <CardContent className="grid gap-6 md:grid-cols-2">
@@ -166,16 +224,16 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
           <div className="mb-1 flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1">
               <TrendingUp className="size-3.5" />
-              Talk ratio (you)
+              {c.talkRatioYou}
             </span>
             <span className="font-medium tabular-nums">{rec.talkRatio}%</span>
           </div>
           <Progress value={rec.talkRatio} />
           <p className="text-muted-foreground mt-1 text-xs">
-            Aim for 40–45% — let the prospect talk more.
+            {c.talkRatioHint}
           </p>
 
-          <p className="mt-4 mb-2 text-sm font-medium">Highlights</p>
+          <p className="mt-4 mb-2 text-sm font-medium">{c.highlights}</p>
           <ul className="space-y-1.5">
             {rec.highlights.map((h) => (
               <li
@@ -190,7 +248,7 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium">Recommended next steps</p>
+          <p className="mb-2 text-sm font-medium">{c.recommendedNextSteps}</p>
           <div className="space-y-2">
             {rec.nextSteps.map((step) => (
               <div
@@ -204,11 +262,11 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
           </div>
           <div className="mt-3 flex items-center justify-between">
             <Badge variant="secondary" className="font-normal">
-              AI generated
+              {c.aiGenerated}
             </Badge>
             <Button variant="ghost" size="sm" asChild>
               <Link to={`/coach/${rec.id}`}>
-                View full analysis
+                {c.viewFullAnalysis}
                 <ArrowRight className="size-4" />
               </Link>
             </Button>

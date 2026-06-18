@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { useLocale } from "@/lib/locale"
 import {
   Card,
   CardContent,
@@ -28,7 +29,6 @@ import {
 } from "@/components/charts/Charts"
 import { Funnel } from "@/components/charts/Funnel"
 import { InfoHint } from "@/components/common/InfoHint"
-import { ImpactBand } from "@/components/common/ImpactBand"
 import { KaiSuggestion } from "@/components/kai/KaiSuggestion"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useView } from "@/lib/view-context"
@@ -44,6 +44,113 @@ import { useAuth } from "@/lib/auth"
 import { portraitFor } from "@/lib/avatars"
 import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
+
+const COPY = {
+  en: {
+    setupTitle: "Finish setting up your workspace",
+    setupBody: (progress: number) =>
+      `Connect your tools, invite your team, and set your goals — ${progress}% complete.`,
+    continueSetup: "Continue setup",
+    dismissSetup: "Dismiss setup banner",
+    kpiPipeline: "Open pipeline",
+    kpiPipelineHint:
+      "The total value of open deals you're working toward closing.",
+    kpiWon: "Closed won (QTD)",
+    kpiWonHint:
+      "Revenue from deals you've won this quarter (quarter-to-date).",
+    kpiMeetings: "Meetings booked",
+    kpiMeetingsHint: "Qualified sales meetings booked from your outreach.",
+    kpiReplyRate: "Reply rate",
+    kpiReplyRateHint:
+      "The share of contacted prospects who reply to your outreach.",
+    perfTitle: (name: string) => `${name}'s performance`,
+    welcome: (name: string) => `Welcome back, ${name}`,
+    perfDescription: (role: string, quota: string) =>
+      `${role} · quota ${quota} this quarter`,
+    teamDescription: (quota: string) =>
+      `Team pipeline and forecast · quota ${quota} this quarter`,
+    findProspects: "Find prospects",
+    kaiTitle: (count: number) =>
+      `Kai spotted ${count} signals worth acting on`,
+    reviewInCopilot: "Review in Copilot",
+    kaiBody:
+      "Replies, job changes, and intent signals across your accounts — each with a recommended next move.",
+    whatIs: (label: string) => `What is ${label}?`,
+    vsLastQuarter: "vs. last quarter",
+    pipelineForecast: "Pipeline & forecast",
+    pipelineForecastDesc:
+      "Created pipeline vs. closed won over the last 6 months",
+    conversionFunnel: "Conversion funnel",
+    funnelDesc: "Prospect → closed won",
+    replyRateTrend: "Reply rate trend",
+    replyRateTrendDesc: "Across outbound channels, weekly",
+    quotaAttainment: "Quota attainment",
+    quotaAttainmentDesc: "Closed won vs. quota",
+    won: "won",
+    quota: "quota",
+    viewingBefore: "You're viewing ",
+    viewingAfter:
+      "'s workspace. Search, lists, and inbox are scoped to their prospects.",
+    openTheirProspects: "Open their prospects",
+    teamLeaderboard: "Team leaderboard",
+    leaderboardDesc: "Ranked by quota attainment · click a rep to view their workspace",
+    pipeline: "pipeline",
+    meetings: "meetings",
+  },
+  es: {
+    setupTitle: "Termina de configurar tu espacio de trabajo",
+    setupBody: (progress: number) =>
+      `Conecta tus herramientas, invita a tu equipo y define tus objetivos — ${progress}% completado.`,
+    continueSetup: "Continuar configuración",
+    dismissSetup: "Descartar el aviso de configuración",
+    kpiPipeline: "Pipeline abierto",
+    kpiPipelineHint:
+      "El valor total de los negocios abiertos que estás trabajando para cerrar.",
+    kpiWon: "Cerrados ganados (THF)",
+    kpiWonHint:
+      "Ingresos de los negocios que has ganado este trimestre (trimestre hasta la fecha).",
+    kpiMeetings: "Reuniones agendadas",
+    kpiMeetingsHint:
+      "Reuniones de venta cualificadas agendadas a partir de tu contacto.",
+    kpiReplyRate: "Tasa de respuesta",
+    kpiReplyRateHint:
+      "La proporción de prospectos contactados que responden a tu contacto.",
+    perfTitle: (name: string) => `Rendimiento de ${name}`,
+    welcome: (name: string) => `Bienvenido de nuevo, ${name}`,
+    perfDescription: (role: string, quota: string) =>
+      `${role} · cuota ${quota} este trimestre`,
+    teamDescription: (quota: string) =>
+      `Pipeline y previsión del equipo · cuota ${quota} este trimestre`,
+    findProspects: "Buscar prospectos",
+    kaiTitle: (count: number) =>
+      `Kai detectó ${count} señales que vale la pena atender`,
+    reviewInCopilot: "Revisar en Copilot",
+    kaiBody:
+      "Respuestas, cambios de empleo y señales de intención en tus cuentas — cada una con el siguiente paso recomendado.",
+    whatIs: (label: string) => `¿Qué es ${label}?`,
+    vsLastQuarter: "vs. trimestre anterior",
+    pipelineForecast: "Pipeline y previsión",
+    pipelineForecastDesc:
+      "Pipeline creado vs. cerrados ganados en los últimos 6 meses",
+    conversionFunnel: "Embudo de conversión",
+    funnelDesc: "Prospecto → cerrado ganado",
+    replyRateTrend: "Tendencia de la tasa de respuesta",
+    replyRateTrendDesc: "Por canales de salida, semanal",
+    quotaAttainment: "Cumplimiento de cuota",
+    quotaAttainmentDesc: "Cerrados ganados vs. cuota",
+    won: "ganados",
+    quota: "cuota",
+    viewingBefore: "Estás viendo el espacio de trabajo de ",
+    viewingAfter:
+      ". La búsqueda, las listas y la bandeja de entrada se limitan a sus prospectos.",
+    openTheirProspects: "Abrir sus prospectos",
+    teamLeaderboard: "Clasificación del equipo",
+    leaderboardDesc:
+      "Ordenado por cumplimiento de cuota · haz clic en un representante para ver su espacio de trabajo",
+    pipeline: "pipeline",
+    meetings: "reuniones",
+  },
+} as const
 
 function Delta({ value }: { value: number }) {
   const positive = value >= 0
@@ -65,6 +172,8 @@ function Delta({ value }: { value: number }) {
 }
 
 function SetupBanner() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { progress, dismissed, dismiss } = useSetup()
   if (dismissed || progress >= 100) return null
   return (
@@ -74,21 +183,18 @@ function SetupBanner() {
           <Rocket className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-medium">Finish setting up your workspace</p>
-          <p className="text-muted-foreground text-sm">
-            Connect your tools, invite your team, and set your goals —{" "}
-            {progress}% complete.
-          </p>
+          <p className="font-medium">{c.setupTitle}</p>
+          <p className="text-muted-foreground text-sm">{c.setupBody(progress)}</p>
           <Progress value={progress} className="mt-2 max-w-xs" />
         </div>
         <Button asChild>
-          <Link to="/get-started">Continue setup</Link>
+          <Link to="/get-started">{c.continueSetup}</Link>
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={dismiss}
-          aria-label="Dismiss setup banner"
+          aria-label={c.dismissSetup}
         >
           <X className="size-4" />
         </Button>
@@ -98,43 +204,45 @@ function SetupBanner() {
 }
 
 export default function Dashboard() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { user } = useAuth()
   const { impersonating, impersonatingId, impersonate } = useView()
   const data = getViewData(impersonatingId)
 
   const kpis = [
     {
-      label: "Open pipeline",
+      label: c.kpiPipeline,
       value: money(data.kpis.pipeline),
       delta: data.deltas.pipeline,
-      hint: "The total value of open deals you're working toward closing.",
+      hint: c.kpiPipelineHint,
     },
     {
-      label: "Closed won (QTD)",
+      label: c.kpiWon,
       value: money(data.kpis.won),
       delta: data.deltas.won,
-      hint: "Revenue from deals you've won this quarter (quarter-to-date).",
+      hint: c.kpiWonHint,
     },
     {
-      label: "Meetings booked",
+      label: c.kpiMeetings,
       value: String(data.kpis.meetings),
       delta: data.deltas.meetings,
-      hint: "Qualified sales meetings booked from your outreach.",
+      hint: c.kpiMeetingsHint,
     },
     {
-      label: "Reply rate",
+      label: c.kpiReplyRate,
       value: `${data.kpis.replyRate}%`,
       delta: data.deltas.replyRate,
-      hint: "The share of contacted prospects who reply to your outreach.",
+      hint: c.kpiReplyRateHint,
     },
   ]
 
   const title = impersonating
-    ? `${impersonating.name.split(" ")[0]}'s performance`
-    : `Welcome back, ${user?.name.split(" ")[0]}`
+    ? c.perfTitle(impersonating.name.split(" ")[0])
+    : c.welcome(user?.name.split(" ")[0] ?? "")
   const description = impersonating
-    ? `${impersonating.role} · quota ${money(data.quota)} this quarter`
-    : `Team pipeline and forecast · quota ${money(data.quota)} this quarter`
+    ? c.perfDescription(impersonating.role, money(data.quota))
+    : c.teamDescription(money(data.quota))
 
   return (
     <Page>
@@ -145,7 +253,7 @@ export default function Dashboard() {
           <Button variant="volt" asChild>
             <Link to="/search">
               <Sparkles className="size-4" />
-              Find prospects
+              {c.findProspects}
             </Link>
           </Button>
         }
@@ -156,15 +264,14 @@ export default function Dashboard() {
       {!impersonating && copilotActions.length > 0 && (
         <KaiSuggestion
           className="mb-6"
-          title={`Kai spotted ${copilotActions.length} signals worth acting on`}
+          title={c.kaiTitle(copilotActions.length)}
           action={
             <Button asChild size="sm" variant="outline">
-              <Link to="/copilot">Review in Copilot</Link>
+              <Link to="/copilot">{c.reviewInCopilot}</Link>
             </Button>
           }
         >
-          Replies, job changes, and intent signals across your accounts — each
-          with a recommended next move.
+          {c.kaiBody}
         </KaiSuggestion>
       )}
 
@@ -175,9 +282,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardDescription className="flex items-center gap-1.5">
                 {stat.label}
-                <InfoHint label={`What is ${stat.label}?`}>
-                  {stat.hint}
-                </InfoHint>
+                <InfoHint label={c.whatIs(stat.label)}>{stat.hint}</InfoHint>
               </CardDescription>
               <CardTitle className="text-2xl tabular-nums">
                 {stat.value}
@@ -187,7 +292,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <Delta value={stat.delta} />
                 <span className="text-muted-foreground text-xs">
-                  vs. last quarter
+                  {c.vsLastQuarter}
                 </span>
               </div>
             </CardContent>
@@ -195,16 +300,12 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {!impersonating && <ImpactBand className="mt-6" />}
-
       {/* Trend + funnel */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Pipeline &amp; forecast</CardTitle>
-            <CardDescription>
-              Created pipeline vs. closed won over the last 6 months
-            </CardDescription>
+            <CardTitle>{c.pipelineForecast}</CardTitle>
+            <CardDescription>{c.pipelineForecastDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-72">
@@ -219,8 +320,8 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Conversion funnel</CardTitle>
-            <CardDescription>Prospect → closed won</CardDescription>
+            <CardTitle>{c.conversionFunnel}</CardTitle>
+            <CardDescription>{c.funnelDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <Funnel data={data.funnel} />
@@ -232,8 +333,8 @@ export default function Dashboard() {
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Reply rate trend</CardTitle>
-            <CardDescription>Across outbound channels, weekly</CardDescription>
+            <CardTitle>{c.replyRateTrend}</CardTitle>
+            <CardDescription>{c.replyRateTrendDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-56">
@@ -244,16 +345,20 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quota attainment</CardTitle>
-            <CardDescription>Closed won vs. quota</CardDescription>
+            <CardTitle>{c.quotaAttainment}</CardTitle>
+            <CardDescription>{c.quotaAttainmentDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-44">
               <AttainmentDoughnut won={data.kpis.won} quota={data.quota} />
             </div>
             <div className="text-muted-foreground mt-2 flex justify-between text-xs">
-              <span>{money(data.kpis.won)} won</span>
-              <span>{money(data.quota)} quota</span>
+              <span>
+                {money(data.kpis.won)} {c.won}
+              </span>
+              <span>
+                {money(data.quota)} {c.quota}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -266,13 +371,12 @@ export default function Dashboard() {
             <CardContent className="flex flex-wrap items-center gap-4">
               <Eye className="text-primary size-5" />
               <p className="text-sm">
-                You're viewing{" "}
-                <span className="font-medium">{impersonating.name}</span>'s
-                workspace. Search, lists, and inbox are scoped to their
-                prospects.
+                {c.viewingBefore}
+                <span className="font-medium">{impersonating.name}</span>
+                {c.viewingAfter}
               </p>
               <Button variant="outline" size="sm" asChild className="ml-auto">
-                <Link to="/search">Open their prospects</Link>
+                <Link to="/search">{c.openTheirProspects}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -289,6 +393,8 @@ function Leaderboard({
 }: {
   onImpersonate: (id: string) => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const reps = leaderboard()
   const topPipeline = Math.max(...reps.map((r) => r.metrics.pipeline))
 
@@ -298,11 +404,9 @@ function Leaderboard({
         <div>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="text-chart-4 size-4" />
-            Team leaderboard
+            {c.teamLeaderboard}
           </CardTitle>
-          <CardDescription>
-            Ranked by quota attainment · click a rep to view their workspace
-          </CardDescription>
+          <CardDescription>{c.leaderboardDesc}</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-1">
@@ -331,6 +435,8 @@ function LeaderboardRow({
   topPipeline: number
   onImpersonate: (id: string) => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const attainment = Math.round((rep.metrics.won / rep.quota) * 100)
   return (
     <button
@@ -356,14 +462,14 @@ function LeaderboardRow({
       <div className="hidden flex-1 sm:block">
         <div className="text-muted-foreground mb-1 flex justify-between text-xs">
           <span>{money(rep.metrics.pipeline)}</span>
-          <span>pipeline</span>
+          <span>{c.pipeline}</span>
         </div>
         <Progress value={(rep.metrics.pipeline / topPipeline) * 100} />
       </div>
       <div className="hidden w-16 text-right text-sm font-medium tabular-nums md:block">
         {rep.metrics.meetings}
         <span className="text-muted-foreground block text-xs font-normal">
-          meetings
+          {c.meetings}
         </span>
       </div>
       <div className="w-16 text-right">

@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { Search as SearchIcon, Plus, Briefcase, Users, Building2 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +32,61 @@ const TIERS: (AccountTier | typeof ALL)[] = [
   "SMB",
 ]
 
+const COPY = {
+  en: {
+    title: "Companies",
+    description: "Account intelligence across your book of business.",
+    addCompany: "Add company",
+    addCompanyToast: "Add company — coming soon",
+    introTitle: "Target the accounts that fit",
+    introDescription:
+      "Track companies that match your ICP and get notified when something changes that's worth a call.",
+    introPoints: [
+      "See headcount, funding & tech stack",
+      "Subscribe to hiring and growth signals",
+      "Find the full buying committee",
+      "Add a whole account to a list",
+    ],
+    searchPlaceholder: "Search by name, industry, or domain…",
+    tier: "Tier",
+    allTiers: "All tiers",
+    company: "company",
+    companies: "companies",
+    noMatch: "No companies match your filters.",
+    accountHealth: "Account health",
+    openDeals: "Open deals",
+    pipeline: "Pipeline",
+    contacts: "Contacts",
+    unassigned: "Unassigned",
+  },
+  es: {
+    title: "Empresas",
+    description: "Inteligencia de cuentas en toda tu cartera de negocio.",
+    addCompany: "Añadir empresa",
+    addCompanyToast: "Añadir empresa — próximamente",
+    introTitle: "Apunta a las cuentas que encajan",
+    introDescription:
+      "Sigue las empresas que coinciden con tu ICP y recibe avisos cuando cambie algo que merezca una llamada.",
+    introPoints: [
+      "Consulta plantilla, financiación y tecnología",
+      "Suscríbete a señales de contratación y crecimiento",
+      "Encuentra el comité de compra completo",
+      "Añade una cuenta entera a una lista",
+    ],
+    searchPlaceholder: "Busca por nombre, sector o dominio…",
+    tier: "Segmento",
+    allTiers: "Todos los segmentos",
+    company: "empresa",
+    companies: "empresas",
+    noMatch: "Ninguna empresa coincide con tus filtros.",
+    accountHealth: "Salud de la cuenta",
+    openDeals: "Negocios abiertos",
+    pipeline: "Pipeline",
+    contacts: "Contactos",
+    unassigned: "Sin asignar",
+  },
+} as const
+
 function healthTone(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"
   if (score >= 65) return "bg-chart-4/15 text-chart-4"
@@ -38,6 +94,8 @@ function healthTone(score: number): string {
 }
 
 export default function Companies() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { impersonatingId } = useView()
   const [query, setQuery] = React.useState("")
   const [tier, setTier] = React.useState<string>(ALL)
@@ -64,12 +122,12 @@ export default function Companies() {
   return (
     <Page>
       <PageHeading
-        title="Companies"
-        description="Account intelligence across your book of business."
+        title={c.title}
+        description={c.description}
         action={
-          <Button variant="volt" onClick={() => toast.info("Add company — coming soon")}>
+          <Button variant="volt" onClick={() => toast.info(c.addCompanyToast)}>
             <Plus className="size-4" />
-            Add company
+            {c.addCompany}
           </Button>
         }
       />
@@ -77,14 +135,9 @@ export default function Companies() {
       <FeatureIntro
         featureKey="companies"
         icon={Building2}
-        title="Target the accounts that fit"
-        description="Track companies that match your ICP and get notified when something changes that's worth a call."
-        points={[
-          "See headcount, funding & tech stack",
-          "Subscribe to hiring and growth signals",
-          "Find the full buying committee",
-          "Add a whole account to a list",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={[...c.introPoints]}
         className="mb-6"
       />
 
@@ -94,18 +147,18 @@ export default function Companies() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, industry, or domain…"
+            placeholder={c.searchPlaceholder}
             className="pl-9"
           />
         </div>
         <Select value={tier} onValueChange={setTier}>
           <SelectTrigger className="min-w-[150px]">
-            <SelectValue placeholder="Tier" />
+            <SelectValue placeholder={c.tier} />
           </SelectTrigger>
           <SelectContent>
             {TIERS.map((t) => (
               <SelectItem key={t} value={t}>
-                {t === ALL ? "All tiers" : t}
+                {t === ALL ? c.allTiers : t}
               </SelectItem>
             ))}
           </SelectContent>
@@ -116,7 +169,7 @@ export default function Companies() {
         <span className="text-foreground font-medium tabular-nums">
           {results.length}
         </span>{" "}
-        {results.length === 1 ? "company" : "companies"}
+        {results.length === 1 ? c.company : c.companies}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,7 +178,7 @@ export default function Companies() {
         ))}
         {results.length === 0 && (
           <div className="text-muted-foreground col-span-full rounded-xl border border-dashed py-16 text-center text-sm">
-            No companies match your filters.
+            {c.noMatch}
           </div>
         )}
       </div>
@@ -134,6 +187,8 @@ export default function Companies() {
 }
 
 function CompanyCard({ account: a }: { account: Account }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const owner = getRep(a.ownerId)
 
   return (
@@ -157,7 +212,7 @@ function CompanyCard({ account: a }: { account: Account }) {
             "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
             healthTone(a.healthScore)
           )}
-          title="Account health"
+          title={c.accountHealth}
         >
           <span className="bg-current size-1.5 rounded-full opacity-80" />
           {a.healthScore}
@@ -178,19 +233,19 @@ function CompanyCard({ account: a }: { account: Account }) {
           <p className="text-foreground font-semibold tabular-nums">
             {a.openDeals}
           </p>
-          <p>Open deals</p>
+          <p>{c.openDeals}</p>
         </div>
         <div>
           <p className="text-foreground font-semibold tabular-nums">
             {money(a.pipeline)}
           </p>
-          <p>Pipeline</p>
+          <p>{c.pipeline}</p>
         </div>
         <div>
           <p className="text-foreground font-semibold tabular-nums">
             {a.contacts}
           </p>
-          <p>Contacts</p>
+          <p>{c.contacts}</p>
         </div>
       </div>
 
@@ -223,7 +278,7 @@ function CompanyCard({ account: a }: { account: Account }) {
         ) : (
           <span className="text-muted-foreground flex items-center gap-1 text-xs">
             <Users className="size-3.5" />
-            Unassigned
+            {c.unassigned}
           </span>
         )}
         <Briefcase className="text-muted-foreground ml-auto size-3.5" />

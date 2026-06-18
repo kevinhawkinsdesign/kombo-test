@@ -33,6 +33,20 @@ const en: Dict = {
   "nav.newSearch": "New prospect search",
   "nav.newCampaign": "New campaign",
   "common.language": "Language",
+  "common.gotIt": "Got it",
+  "common.exit": "Exit",
+  "header.searchPlaceholder": "Search prospects, companies…",
+  "header.credits": "Credits remaining",
+  "header.help": "Help & support",
+  "menu.profile": "Profile",
+  "menu.billing": "Plan & billing",
+  "menu.logout": "Log out",
+  "view.as": "View workspace as",
+  "view.wholeTeam": "Whole team",
+  "view.impersonate": "Impersonate a rep",
+  "view.viewingAs": "Viewing as",
+  "banner.viewingAs": "You are viewing the workspace as",
+  "kai.suggests": "Kai suggests",
 }
 
 const es: Dict = {
@@ -64,6 +78,20 @@ const es: Dict = {
   "nav.newSearch": "Nueva búsqueda",
   "nav.newCampaign": "Nueva campaña",
   "common.language": "Idioma",
+  "common.gotIt": "Entendido",
+  "common.exit": "Salir",
+  "header.searchPlaceholder": "Buscar prospectos, empresas…",
+  "header.credits": "Créditos restantes",
+  "header.help": "Ayuda y soporte",
+  "menu.profile": "Perfil",
+  "menu.billing": "Plan y facturación",
+  "menu.logout": "Cerrar sesión",
+  "view.as": "Ver el espacio como",
+  "view.impersonate": "Ver como representante",
+  "view.wholeTeam": "Todo el equipo",
+  "view.viewingAs": "Viendo como",
+  "banner.viewingAs": "Estás viendo el espacio como",
+  "kai.suggests": "Kai sugiere",
 }
 
 const DICTS: Record<Locale, Dict> = { en, es }

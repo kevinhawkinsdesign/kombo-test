@@ -1,6 +1,7 @@
 import * as React from "react"
 import { CheckCheck } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,29 @@ import { notifications as seed } from "@/lib/mock-extra"
 import { relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
+const COPY = {
+  en: {
+    title: "Notifications",
+    unread: (count: number) => `${count} unread`,
+    caughtUp: "You're all caught up.",
+    markAllRead: "Mark all read",
+    caughtUpTitle: "You're all caught up",
+    caughtUpDesc: "New replies, meetings, and deal updates will show up here.",
+  },
+  es: {
+    title: "Notificaciones",
+    unread: (count: number) => `${count} sin leer`,
+    caughtUp: "Estás al día.",
+    markAllRead: "Marcar todo como leído",
+    caughtUpTitle: "Estás al día",
+    caughtUpDesc:
+      "Las nuevas respuestas, reuniones y actualizaciones de negocios aparecerán aquí.",
+  },
+} as const
+
 export default function Notifications() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const [items, setItems] = React.useState(seed)
   const unread = items.filter((n) => !n.read).length
 
@@ -26,14 +49,12 @@ export default function Notifications() {
   return (
     <Page className="max-w-3xl">
       <PageHeading
-        title="Notifications"
-        description={
-          unread ? `${unread} unread` : "You're all caught up."
-        }
+        title={c.title}
+        description={unread ? c.unread(unread) : c.caughtUp}
         action={
           <Button variant="volt" onClick={markAll} disabled={!unread}>
             <CheckCheck className="size-4" />
-            Mark all read
+            {c.markAllRead}
           </Button>
         }
       />
@@ -44,10 +65,8 @@ export default function Notifications() {
             <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
               <CheckCheck className="size-6" />
             </span>
-            <p className="text-sm font-medium">You're all caught up</p>
-            <p className="text-muted-foreground text-sm">
-              New replies, meetings, and deal updates will show up here.
-            </p>
+            <p className="text-sm font-medium">{c.caughtUpTitle}</p>
+            <p className="text-muted-foreground text-sm">{c.caughtUpDesc}</p>
           </div>
         )}
         {items.map((n) => {

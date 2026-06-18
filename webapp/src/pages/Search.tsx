@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,6 +52,105 @@ import type { Prospect } from "@/lib/types"
 
 const ALL = "all"
 
+const COPY = {
+  en: {
+    title: "Prospect Search",
+    descViewing: (name: string) => `Viewing ${name}'s prospects · AI-scored`,
+    descDefault: "Find and qualify your best-fit leads with AI scoring.",
+    aiLookalikes: "AI lookalikes",
+    addProspect: "Add prospect",
+    introTitle: "Find your next best prospects",
+    introDescription:
+      "Search millions of verified contacts and filter by the signals that predict a deal — role, company, tech stack, and buying intent.",
+    introPoints: [
+      "Filter by title, seniority, industry & company size",
+      "Verified work emails and direct dials",
+      "Save results to a list in one click",
+      "Push straight into a sequence",
+    ],
+    searchPlaceholder: "Search by name, title, company, or industry…",
+    industry: "Industry",
+    seniority: "Seniority",
+    status: "Status",
+    tracked: "Tracked",
+    clear: "Clear",
+    prospects: "prospects",
+    selected: (count: number) => ` · ${count} selected`,
+    addToList: "Add to list",
+    delete: "Delete",
+    startCampaign: "Start campaign",
+    enrolled: (count: number) => `${count} prospects enrolled in campaign`,
+    selectAll: "Select all",
+    colProspect: "Prospect",
+    colCompany: "Company",
+    colIndustry: "Industry",
+    colScore: "Score",
+    colStatus: "Status",
+    colTags: "Tags",
+    selectName: (name: string) => `Select ${name}`,
+    noMatch: "No prospects match your filters.",
+    clearFilters: "Clear filters",
+    addedToList: (count: number, listName: string) =>
+      `${count} prospects added to "${listName}"`,
+    deletedToast: (count: number) => `${count} prospects deleted`,
+    deleteTitle: (count: number) =>
+      `Delete ${count} ${count === 1 ? "prospect" : "prospects"}?`,
+    deleteDescription:
+      "This will permanently remove the selected prospects and remove them from any lists. This action cannot be undone.",
+    deleteConfirm: "Delete",
+    allPrefix: (label: string) => `All ${label.toLowerCase()}`,
+  },
+  es: {
+    title: "Búsqueda de prospectos",
+    descViewing: (name: string) =>
+      `Viendo los prospectos de ${name} · puntuados con IA`,
+    descDefault:
+      "Encuentra y cualifica los leads que mejor encajan con puntuación por IA.",
+    aiLookalikes: "Similares con IA",
+    addProspect: "Añadir prospecto",
+    introTitle: "Encuentra tus próximos mejores prospectos",
+    introDescription:
+      "Busca entre millones de contactos verificados y filtra por las señales que predicen un negocio — cargo, empresa, tecnología e intención de compra.",
+    introPoints: [
+      "Filtra por cargo, antigüedad, sector y tamaño de empresa",
+      "Correos de trabajo verificados y teléfonos directos",
+      "Guarda los resultados en una lista con un clic",
+      "Envíalos directamente a una secuencia",
+    ],
+    searchPlaceholder: "Busca por nombre, cargo, empresa o sector…",
+    industry: "Sector",
+    seniority: "Antigüedad",
+    status: "Estado",
+    tracked: "Seguidos",
+    clear: "Limpiar",
+    prospects: "prospectos",
+    selected: (count: number) => ` · ${count} seleccionados`,
+    addToList: "Añadir a lista",
+    delete: "Eliminar",
+    startCampaign: "Iniciar campaña",
+    enrolled: (count: number) => `${count} prospectos inscritos en la campaña`,
+    selectAll: "Seleccionar todo",
+    colProspect: "Prospecto",
+    colCompany: "Empresa",
+    colIndustry: "Sector",
+    colScore: "Puntuación",
+    colStatus: "Estado",
+    colTags: "Etiquetas",
+    selectName: (name: string) => `Seleccionar ${name}`,
+    noMatch: "Ningún prospecto coincide con tus filtros.",
+    clearFilters: "Limpiar filtros",
+    addedToList: (count: number, listName: string) =>
+      `${count} prospectos añadidos a "${listName}"`,
+    deletedToast: (count: number) => `${count} prospectos eliminados`,
+    deleteTitle: (count: number) =>
+      `¿Eliminar ${count} ${count === 1 ? "prospecto" : "prospectos"}?`,
+    deleteDescription:
+      "Esto eliminará de forma permanente los prospectos seleccionados y los quitará de cualquier lista. Esta acción no se puede deshacer.",
+    deleteConfirm: "Eliminar",
+    allPrefix: (label: string) => `Todos: ${label.toLowerCase()}`,
+  },
+} as const
+
 const statuses: (Prospect["status"] | typeof ALL)[] = [
   ALL,
   "new",
@@ -61,6 +161,8 @@ const statuses: (Prospect["status"] | typeof ALL)[] = [
 ]
 
 export default function Search() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const navigate = useNavigate()
   const prospects = useProspects()
   const { impersonating, impersonatingId } = useView()
@@ -148,7 +250,7 @@ export default function Search() {
     const count = selected.size
     selected.forEach((id) => prospectStore.remove(id))
     setSelected(new Set())
-    toast.success(`${count} prospects deleted`)
+    toast.success(c.deletedToast(count))
   }
 
   const hasFilters =
@@ -161,21 +263,21 @@ export default function Search() {
   return (
     <Page>
       <PageHeading
-        title="Prospect Search"
+        title={c.title}
         description={
           impersonating
-            ? `Viewing ${impersonating.name.split(" ")[0]}'s prospects · AI-scored`
-            : "Find and qualify your best-fit leads with AI scoring."
+            ? c.descViewing(impersonating.name.split(" ")[0])
+            : c.descDefault
         }
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline">
               <Sparkles className="size-4" />
-              AI lookalikes
+              {c.aiLookalikes}
             </Button>
             <Button variant="volt" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4" />
-              Add prospect
+              {c.addProspect}
             </Button>
           </div>
         }
@@ -184,14 +286,9 @@ export default function Search() {
       <FeatureIntro
         featureKey="search"
         icon={SearchIcon}
-        title="Find your next best prospects"
-        description="Search millions of verified contacts and filter by the signals that predict a deal — role, company, tech stack, and buying intent."
-        points={[
-          "Filter by title, seniority, industry & company size",
-          "Verified work emails and direct dials",
-          "Save results to a list in one click",
-          "Push straight into a sequence",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={[...c.introPoints]}
         className="mb-6"
       />
 
@@ -203,7 +300,7 @@ export default function Search() {
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, title, company, or industry…"
+              placeholder={c.searchPlaceholder}
               className="pl-9"
             />
           </div>
@@ -213,19 +310,22 @@ export default function Search() {
               value={industry}
               onChange={setIndustry}
               options={industries}
-              placeholder="Industry"
+              placeholder={c.industry}
+              allPrefix={c.allPrefix}
             />
             <FilterSelect
               value={seniority}
               onChange={setSeniority}
               options={seniorities}
-              placeholder="Seniority"
+              placeholder={c.seniority}
+              allPrefix={c.allPrefix}
             />
             <FilterSelect
               value={status}
               onChange={setStatus}
               options={statuses}
-              placeholder="Status"
+              placeholder={c.status}
+              allPrefix={c.allPrefix}
               capitalize
             />
             <Button
@@ -236,12 +336,12 @@ export default function Search() {
               className={cn(trackedOnly && "text-primary")}
             >
               <Bell className="size-4" />
-              Tracked
+              {c.tracked}
             </Button>
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters}>
                 <X className="size-4" />
-                Clear
+                {c.clear}
               </Button>
             )}
           </div>
@@ -251,14 +351,14 @@ export default function Search() {
       <div className="mb-2 flex min-h-9 flex-wrap items-center justify-between gap-2 px-1">
         <p className="text-muted-foreground text-sm">
           <span className="text-foreground font-medium">{results.length}</span>{" "}
-          prospects
-          {selected.size > 0 && ` · ${selected.size} selected`}
+          {c.prospects}
+          {selected.size > 0 && c.selected(selected.size)}
         </p>
         {selected.size > 0 && (
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
               <Plus className="size-4" />
-              Add to list
+              {c.addToList}
             </Button>
             <Button
               size="sm"
@@ -266,16 +366,14 @@ export default function Search() {
               onClick={() => setDeleteOpen(true)}
             >
               <Trash2 className="size-4" />
-              Delete
+              {c.delete}
             </Button>
             <Button
               size="sm"
-              onClick={() =>
-                toast.success(`${selected.size} prospects enrolled in campaign`)
-              }
+              onClick={() => toast.success(c.enrolled(selected.size))}
             >
               <Send className="size-4" />
-              Start campaign
+              {c.startCampaign}
             </Button>
           </div>
         )}
@@ -290,15 +388,17 @@ export default function Search() {
                 <Checkbox
                   checked={allSelected}
                   onCheckedChange={toggleAll}
-                  aria-label="Select all"
+                  aria-label={c.selectAll}
                 />
               </TableHead>
-              <TableHead>Prospect</TableHead>
-              <TableHead className="hidden md:table-cell">Company</TableHead>
-              <TableHead className="hidden lg:table-cell">Industry</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead className="hidden sm:table-cell">Status</TableHead>
-              <TableHead className="hidden xl:table-cell">Tags</TableHead>
+              <TableHead>{c.colProspect}</TableHead>
+              <TableHead className="hidden md:table-cell">{c.colCompany}</TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {c.colIndustry}
+              </TableHead>
+              <TableHead>{c.colScore}</TableHead>
+              <TableHead className="hidden sm:table-cell">{c.colStatus}</TableHead>
+              <TableHead className="hidden xl:table-cell">{c.colTags}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -312,7 +412,7 @@ export default function Search() {
                   <Checkbox
                     checked={selected.has(p.id)}
                     onCheckedChange={() => toggle(p.id)}
-                    aria-label={`Select ${p.firstName}`}
+                    aria-label={c.selectName(p.firstName)}
                   />
                 </TableCell>
                 <TableCell>
@@ -355,16 +455,14 @@ export default function Search() {
             {results.length === 0 && (
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={7} className="h-32 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    No prospects match your filters.
-                  </p>
+                  <p className="text-muted-foreground text-sm">{c.noMatch}</p>
                   <Button
                     variant="link"
                     size="sm"
                     onClick={resetFilters}
                     className="mt-1"
                   >
-                    Clear filters
+                    {c.clearFilters}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -379,7 +477,7 @@ export default function Search() {
         onOpenChange={setAddOpen}
         count={selected.size}
         onAdded={(listName) => {
-          toast.success(`${selected.size} prospects added to “${listName}”`)
+          toast.success(c.addedToList(selected.size, listName))
           setSelected(new Set())
         }}
       />
@@ -389,9 +487,9 @@ export default function Search() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title={`Delete ${selected.size} ${selected.size === 1 ? "prospect" : "prospects"}?`}
-        description="This will permanently remove the selected prospects and remove them from any lists. This action cannot be undone."
-        confirmLabel="Delete"
+        title={c.deleteTitle(selected.size)}
+        description={c.deleteDescription}
+        confirmLabel={c.deleteConfirm}
         destructive
         onConfirm={deleteSelected}
       />
@@ -404,12 +502,14 @@ function FilterSelect({
   onChange,
   options,
   placeholder,
+  allPrefix,
   capitalize,
 }: {
   value: string
   onChange: (v: string) => void
   options: string[]
   placeholder: string
+  allPrefix: (label: string) => string
   capitalize?: boolean
 }) {
   return (
@@ -420,7 +520,7 @@ function FilterSelect({
       <SelectContent>
         {options.map((opt) => (
           <SelectItem key={opt} value={opt} className={capitalize ? "capitalize" : ""}>
-            {opt === "all" ? `All ${placeholder.toLowerCase()}` : opt}
+            {opt === "all" ? allPrefix(placeholder) : opt}
           </SelectItem>
         ))}
       </SelectContent>

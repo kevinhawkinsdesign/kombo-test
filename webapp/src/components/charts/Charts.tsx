@@ -10,6 +10,7 @@ import {
   Legend,
   Filler,
   type ChartOptions,
+  type Plugin,
 } from "chart.js"
 import { Line, Doughnut, Bar } from "react-chartjs-2"
 
@@ -28,9 +29,9 @@ ChartJS.register(
 )
 
 const PALETTE = {
-  violet: "#7c3aed",
-  violetDark: "#8b5cf6",
-  lime: "#84cc16",
+  violet: "#6d5de6", // Lavender (brand primary)
+  violetDark: "#8b7ff0",
+  lime: "#8dab00", // Olive (brand success)
   teal: "#14b8a6",
   amber: "#f59e0b",
 }
@@ -56,6 +57,38 @@ function hexAlpha(hex: string, alpha: number) {
     .toString(16)
     .padStart(2, "0")
   return `${hex}${a}`
+}
+
+// Draws a dashed vertical guide at the hovered index so the exact data point a
+// user is pointing at is spotlighted across a line chart.
+const crosshair: Plugin<"line"> = {
+  id: "crosshair",
+  afterDatasetsDraw(chart) {
+    const active = chart.getActiveElements()
+    if (active.length === 0) return
+    const { ctx, chartArea } = chart
+    const x = active[0].element.x
+    ctx.save()
+    ctx.beginPath()
+    ctx.setLineDash([4, 4])
+    ctx.moveTo(x, chartArea.top)
+    ctx.lineTo(x, chartArea.bottom)
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = "rgba(124, 95, 232, 0.45)"
+    ctx.stroke()
+    ctx.restore()
+  },
+}
+
+// Shared point-hover styling: a filled white dot ringed in the series color.
+function pointHover(color: string) {
+  return {
+    pointHoverRadius: 6,
+    pointHoverBorderWidth: 3,
+    pointHoverBackgroundColor: "#ffffff",
+    pointHoverBorderColor: color,
+    pointHitRadius: 14,
+  } as const
 }
 
 export function TrendChart({
@@ -116,6 +149,7 @@ export function TrendChart({
   return (
     <Line
       options={options}
+      plugins={[crosshair]}
       data={{
         labels,
         datasets: [
@@ -128,7 +162,7 @@ export function TrendChart({
             tension: 0.4,
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            ...pointHover(t.primary),
           },
           {
             label: "Closed won",
@@ -139,7 +173,7 @@ export function TrendChart({
             tension: 0.4,
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            ...pointHover(t.accent),
           },
         ],
       }}
@@ -189,6 +223,7 @@ export function ReplyRateChart({
   return (
     <Line
       options={options}
+      plugins={[crosshair]}
       data={{
         labels,
         datasets: [
@@ -201,7 +236,7 @@ export function ReplyRateChart({
             tension: 0.4,
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            ...pointHover(t.primary),
           },
         ],
       }}
@@ -273,6 +308,7 @@ export function CampaignDailyChart({
             label: "Sent",
             data: sent,
             backgroundColor: hexAlpha(t.ticks, 0.35),
+            hoverBackgroundColor: hexAlpha(t.ticks, 0.65),
             borderRadius: 4,
             categoryPercentage: 0.6,
             barPercentage: 0.9,
@@ -281,6 +317,7 @@ export function CampaignDailyChart({
             label: "Opened",
             data: opened,
             backgroundColor: hexAlpha(t.primary, 0.85),
+            hoverBackgroundColor: t.primary,
             borderRadius: 4,
             categoryPercentage: 0.6,
             barPercentage: 0.9,
@@ -289,6 +326,7 @@ export function CampaignDailyChart({
             label: "Replied",
             data: replied,
             backgroundColor: t.accent,
+            hoverBackgroundColor: hexAlpha(t.accent, 0.85),
             borderRadius: 4,
             categoryPercentage: 0.6,
             barPercentage: 0.9,
@@ -387,6 +425,7 @@ export function HeadcountChart({
   return (
     <Line
       options={options}
+      plugins={[crosshair]}
       data={{
         labels,
         datasets: [
@@ -399,7 +438,7 @@ export function HeadcountChart({
             tension: 0.4,
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            ...pointHover(t.primary),
           },
         ],
       }}

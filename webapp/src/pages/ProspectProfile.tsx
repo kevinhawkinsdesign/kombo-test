@@ -30,6 +30,7 @@ import {
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
 import { Page } from "@/components/layout/Page"
+import { useLocale } from "@/lib/locale"
 import {
   Card,
   CardContent,
@@ -92,7 +93,187 @@ import { initials, relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Prospect } from "@/lib/types"
 
+const COPY = {
+  en: {
+    prospectNotFound: "Prospect not found.",
+    backToSearch: "Back to search",
+    message: "Message",
+    addToList: "Add to list",
+    edit: "Edit",
+    prospectActions: "Prospect actions",
+    deleteProspect: "Delete prospect",
+    tabOverview: "Overview",
+    tabPrep: "AI Prep",
+    tabHistory: "History",
+    tabNotes: "Notes",
+    about: "About",
+    buyingSignals: "Buying signals",
+    conversation: "Conversation",
+    openInInbox: "Open in inbox",
+    you: "You",
+    noConversation: "No conversation yet.",
+    startOutreach: "Start outreach",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} added to "${name}"`,
+    crmFirstName: "First name",
+    crmLastName: "Last name",
+    crmEmail: "Email",
+    crmPhone: "Phone",
+    crmCompany: "Company",
+    crmJobTitle: "Job title",
+    deleteTitle: "Delete prospect?",
+    deleteDescription: (fullName: string) =>
+      `This will permanently remove ${fullName} and remove them from any lists. This action cannot be undone.`,
+    deleteConfirm: "Delete",
+    prospectDeleted: "Prospect deleted",
+    contact: "Contact",
+    verified: "Verified",
+    reveal: "Reveal",
+    linkedinProfile: "LinkedIn profile",
+    addToCrm: "Add to CRM",
+    notAvailable: "Not available",
+    revealEmailTitle: "Reveal email?",
+    revealPhoneTitle: "Reveal phone?",
+    revealDesc: (cost: number, firstName: string, what: string) =>
+      `This will use ${cost} credit${cost > 1 ? "s" : ""} to reveal ${firstName}'s ${what}.`,
+    phoneNumber: "phone number",
+    emailAddress: "email address",
+    cancel: "Cancel",
+    useCredits: (cost: number) =>
+      `Use ${cost} credit${cost > 1 ? "s" : ""}`,
+    emailRevealed: "Email revealed",
+    phoneRevealed: "Phone revealed",
+    enrichment: "Enrichment",
+    dataPoints: "30 data points",
+    seniority: "Seniority",
+    department: "Department",
+    headcount: "Headcount",
+    industry: "Industry",
+    revenue: "Revenue",
+    location: "Location",
+    leadQualification: "Lead qualification",
+    icpFit: "ICP fit",
+    intent: "Intent",
+    engagement: "Engagement",
+    warmIntros: "Warm intros",
+    all: "All",
+    noWarmPaths: "No warm paths yet.",
+    exploreNetwork: "Explore your network",
+    strengthStrong: "Strong",
+    strengthMedium: "Medium",
+    strengthWeak: "Weak",
+    ask: (name: string) => `Ask ${name}`,
+    requestIntro: "Request intro",
+    introRequested: (name: string) => `Intro requested via ${name}`,
+    aiCallPrep: "AI call prep",
+    talkingPoints: "Talking points",
+    discoveryQuestions: "Discovery questions",
+    likelyObjections: "Likely objections",
+    aiEmailDrafts: "AI email drafts",
+    copy: "Copy",
+    copied: "Copied to clipboard",
+    use: "Use",
+    activityTimeline: "Activity timeline",
+    addNote: "Add a note",
+    notePlaceholder: "What did you learn? Add context for your team…",
+    addNoteButton: "Add note",
+    noteAdded: "Note added",
+    noNotes: "No notes yet.",
+    youAuthor: "You",
+  },
+  es: {
+    prospectNotFound: "Prospecto no encontrado.",
+    backToSearch: "Volver a la búsqueda",
+    message: "Mensaje",
+    addToList: "Añadir a lista",
+    edit: "Editar",
+    prospectActions: "Acciones del prospecto",
+    deleteProspect: "Eliminar prospecto",
+    tabOverview: "Resumen",
+    tabPrep: "Preparación IA",
+    tabHistory: "Historial",
+    tabNotes: "Notas",
+    about: "Acerca de",
+    buyingSignals: "Señales de compra",
+    conversation: "Conversación",
+    openInInbox: "Abrir en la bandeja",
+    you: "Tú",
+    noConversation: "Aún no hay conversación.",
+    startOutreach: "Iniciar contacto",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} añadido a "${name}"`,
+    crmFirstName: "Nombre",
+    crmLastName: "Apellidos",
+    crmEmail: "Correo",
+    crmPhone: "Teléfono",
+    crmCompany: "Empresa",
+    crmJobTitle: "Cargo",
+    deleteTitle: "¿Eliminar prospecto?",
+    deleteDescription: (fullName: string) =>
+      `Esto eliminará de forma permanente a ${fullName} y lo quitará de cualquier lista. Esta acción no se puede deshacer.`,
+    deleteConfirm: "Eliminar",
+    prospectDeleted: "Prospecto eliminado",
+    contact: "Contacto",
+    verified: "Verificado",
+    reveal: "Revelar",
+    linkedinProfile: "Perfil de LinkedIn",
+    addToCrm: "Añadir al CRM",
+    notAvailable: "No disponible",
+    revealEmailTitle: "¿Revelar correo?",
+    revealPhoneTitle: "¿Revelar teléfono?",
+    revealDesc: (cost: number, firstName: string, what: string) =>
+      `Esto usará ${cost} crédito${cost > 1 ? "s" : ""} para revelar ${what} de ${firstName}.`,
+    phoneNumber: "el número de teléfono",
+    emailAddress: "el correo electrónico",
+    cancel: "Cancelar",
+    useCredits: (cost: number) =>
+      `Usar ${cost} crédito${cost > 1 ? "s" : ""}`,
+    emailRevealed: "Correo revelado",
+    phoneRevealed: "Teléfono revelado",
+    enrichment: "Enriquecimiento",
+    dataPoints: "30 puntos de datos",
+    seniority: "Antigüedad",
+    department: "Departamento",
+    headcount: "Empleados",
+    industry: "Sector",
+    revenue: "Ingresos",
+    location: "Ubicación",
+    leadQualification: "Cualificación del lead",
+    icpFit: "Encaje con ICP",
+    intent: "Intención",
+    engagement: "Interacción",
+    warmIntros: "Presentaciones",
+    all: "Todas",
+    noWarmPaths: "Aún no hay caminos cálidos.",
+    exploreNetwork: "Explora tu red",
+    strengthStrong: "Fuerte",
+    strengthMedium: "Media",
+    strengthWeak: "Débil",
+    ask: (name: string) => `Pedir a ${name}`,
+    requestIntro: "Solicitar presentación",
+    introRequested: (name: string) =>
+      `Presentación solicitada a través de ${name}`,
+    aiCallPrep: "Preparación de llamada con IA",
+    talkingPoints: "Puntos clave",
+    discoveryQuestions: "Preguntas de descubrimiento",
+    likelyObjections: "Objeciones probables",
+    aiEmailDrafts: "Borradores de correo con IA",
+    copy: "Copiar",
+    copied: "Copiado al portapapeles",
+    use: "Usar",
+    activityTimeline: "Cronología de actividad",
+    addNote: "Añadir una nota",
+    notePlaceholder: "¿Qué has aprendido? Añade contexto para tu equipo…",
+    addNoteButton: "Añadir nota",
+    noteAdded: "Nota añadida",
+    noNotes: "Aún no hay notas.",
+    youAuthor: "Tú",
+  },
+} as const
+
 export default function ProspectProfile() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { id } = useParams()
   const navigate = useNavigate()
   const prospects = useProspects()
@@ -106,9 +287,9 @@ export default function ProspectProfile() {
   if (!prospect) {
     return (
       <Page>
-        <p className="text-muted-foreground">Prospect not found.</p>
+        <p className="text-muted-foreground">{c.prospectNotFound}</p>
         <Button variant="link" asChild className="px-0">
-          <Link to="/search">Back to search</Link>
+          <Link to="/search">{c.backToSearch}</Link>
         </Button>
       </Page>
     )
@@ -121,7 +302,7 @@ export default function ProspectProfile() {
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/search">
           <ArrowLeft className="size-4" />
-          Back to search
+          {c.backToSearch}
         </Link>
       </Button>
 
@@ -153,15 +334,15 @@ export default function ProspectProfile() {
           <div className="flex flex-wrap gap-2">
             <Button variant="volt" onClick={() => setComposeOpen(true)}>
               <Send className="size-4" />
-              Message
+              {c.message}
             </Button>
             <Button variant="outline" onClick={() => setAddOpen(true)}>
               <Plus className="size-4" />
-              Add to list
+              {c.addToList}
             </Button>
             <Button variant="outline" onClick={() => setEditOpen(true)}>
               <Pencil className="size-4" />
-              Edit
+              {c.edit}
             </Button>
             <TrackButton
               kind="prospect"
@@ -173,7 +354,7 @@ export default function ProspectProfile() {
                 <Button
                   variant="outline"
                   size="icon"
-                  aria-label="Prospect actions"
+                  aria-label={c.prospectActions}
                 >
                   <MoreHorizontal className="size-4" />
                 </Button>
@@ -184,7 +365,7 @@ export default function ProspectProfile() {
                   onSelect={() => setDeleteOpen(true)}
                 >
                   <Trash2 className="size-4" />
-                  Delete prospect
+                  {c.deleteProspect}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -196,16 +377,16 @@ export default function ProspectProfile() {
         <div className="lg:col-span-2">
           <Tabs defaultValue="overview">
             <TabsList className="mb-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="prep">AI Prep</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
+              <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
+              <TabsTrigger value="prep">{c.tabPrep}</TabsTrigger>
+              <TabsTrigger value="history">{c.tabHistory}</TabsTrigger>
+              <TabsTrigger value="notes">{c.tabNotes}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">About</CardTitle>
+                  <CardTitle className="text-base">{c.about}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm leading-relaxed">
@@ -218,7 +399,7 @@ export default function ProspectProfile() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Sparkles className="text-primary size-4" />
-                    Buying signals
+                    {c.buyingSignals}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -236,10 +417,10 @@ export default function ProspectProfile() {
 
               <Card>
                 <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle className="text-base">Conversation</CardTitle>
+                  <CardTitle className="text-base">{c.conversation}</CardTitle>
                   {conversation && (
                     <Button variant="ghost" size="sm" asChild>
-                      <Link to="/inbox">Open in inbox</Link>
+                      <Link to="/inbox">{c.openInInbox}</Link>
                     </Button>
                   )}
                 </CardHeader>
@@ -258,7 +439,7 @@ export default function ProspectProfile() {
                           <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
                             <span>
                               {m.direction === "outbound"
-                                ? "You"
+                                ? c.you
                                 : prospect.firstName}{" "}
                               · {m.channel}
                             </span>
@@ -271,7 +452,7 @@ export default function ProspectProfile() {
                   ) : (
                     <div className="py-6 text-center">
                       <p className="text-muted-foreground text-sm">
-                        No conversation yet.
+                        {c.noConversation}
                       </p>
                       <Button
                         size="sm"
@@ -279,7 +460,7 @@ export default function ProspectProfile() {
                         onClick={() => setComposeOpen(true)}
                       >
                         <Send className="size-4" />
-                        Start outreach
+                        {c.startOutreach}
                       </Button>
                     </div>
                   )}
@@ -314,7 +495,7 @@ export default function ProspectProfile() {
         onOpenChange={setAddOpen}
         count={1}
         onAdded={(name) =>
-          toast.success(`${prospect.firstName} added to “${name}”`)
+          toast.success(c.addedToList(prospect.firstName, name))
         }
       />
       <ComposeDialog
@@ -328,12 +509,12 @@ export default function ProspectProfile() {
         kind="prospect"
         recordName={`${prospect.firstName} ${prospect.lastName}`}
         fields={[
-          { label: "First name", value: prospect.firstName },
-          { label: "Last name", value: prospect.lastName },
-          { label: "Email", value: prospect.email },
-          { label: "Phone", value: prospect.phone ?? "—" },
-          { label: "Company", value: prospect.company },
-          { label: "Job title", value: prospect.title },
+          { label: c.crmFirstName, value: prospect.firstName },
+          { label: c.crmLastName, value: prospect.lastName },
+          { label: c.crmEmail, value: prospect.email },
+          { label: c.crmPhone, value: prospect.phone ?? "—" },
+          { label: c.crmCompany, value: prospect.company },
+          { label: c.crmJobTitle, value: prospect.title },
         ]}
       />
       <ProspectFormDialog
@@ -344,13 +525,15 @@ export default function ProspectProfile() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Delete prospect?"
-        description={`This will permanently remove ${prospect.firstName} ${prospect.lastName} and remove them from any lists. This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={c.deleteTitle}
+        description={c.deleteDescription(
+          `${prospect.firstName} ${prospect.lastName}`
+        )}
+        confirmLabel={c.deleteConfirm}
         destructive
         onConfirm={() => {
           prospectStore.remove(prospect.id)
-          toast.success("Prospect deleted")
+          toast.success(c.prospectDeleted)
           navigate("/search")
         }}
       />
@@ -367,6 +550,8 @@ function ContactCard({
   prospect: Prospect
   onAddToCrm: () => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { spend } = useCredits()
   const [emailShown, setEmailShown] = React.useState(false)
   const [phoneShown, setPhoneShown] = React.useState(false)
@@ -382,7 +567,7 @@ function ContactCard({
     if (spend(cost, label)) {
       if (confirm === "email") setEmailShown(true)
       else setPhoneShown(true)
-      toast.success(`${confirm === "email" ? "Email" : "Phone"} revealed`)
+      toast.success(confirm === "email" ? c.emailRevealed : c.phoneRevealed)
     }
     setConfirm(null)
   }
@@ -391,7 +576,7 @@ function ContactCard({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Contact</CardTitle>
+          <CardTitle className="text-base">{c.contact}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {/* Email */}
@@ -407,7 +592,7 @@ function ContactCard({
                 </a>
                 <span className="text-chart-1 flex shrink-0 items-center gap-1 text-xs font-medium">
                   <CheckCircle2 className="size-3.5" />
-                  Verified
+                  {c.verified}
                 </span>
               </div>
             ) : (
@@ -418,7 +603,7 @@ function ContactCard({
                 <span className="truncate">{maskedEmail}</span>
                 <span className="text-primary flex shrink-0 items-center gap-1 text-xs font-medium">
                   <Lock className="size-3" />
-                  Reveal · 1
+                  {c.reveal} · 1
                 </span>
               </button>
             )}
@@ -428,7 +613,7 @@ function ContactCard({
           <div className="flex items-center gap-3">
             <Phone className="text-muted-foreground size-4 shrink-0" />
             {phoneShown ? (
-              <span>{prospect.phone ?? "Not available"}</span>
+              <span>{prospect.phone ?? c.notAvailable}</span>
             ) : (
               <button
                 onClick={() => setConfirm("phone")}
@@ -437,7 +622,7 @@ function ContactCard({
                 <span className="truncate">{maskedPhone}</span>
                 <span className="text-primary flex shrink-0 items-center gap-1 text-xs font-medium">
                   <Lock className="size-3" />
-                  Reveal · 2
+                  {c.reveal} · 2
                 </span>
               </button>
             )}
@@ -450,7 +635,7 @@ function ContactCard({
             className="hover:text-primary flex items-center gap-3"
           >
             <LinkedinIcon className="text-muted-foreground size-4" />
-            <span className="truncate">LinkedIn profile</span>
+            <span className="truncate">{c.linkedinProfile}</span>
           </a>
 
           <Separator />
@@ -461,7 +646,7 @@ function ContactCard({
             onClick={onAddToCrm}
           >
             <Building2 className="size-4" />
-            Add to CRM
+            {c.addToCrm}
           </Button>
         </CardContent>
       </Card>
@@ -469,19 +654,24 @@ function ContactCard({
       <Dialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Reveal {confirm === "phone" ? "phone" : "email"}?</DialogTitle>
+            <DialogTitle>
+              {confirm === "phone" ? c.revealPhoneTitle : c.revealEmailTitle}
+            </DialogTitle>
             <DialogDescription>
-              This will use {cost} credit{cost > 1 ? "s" : ""} to reveal{" "}
-              {prospect.firstName}'s {confirm === "phone" ? "phone number" : "email address"}.
+              {c.revealDesc(
+                cost,
+                prospect.firstName,
+                confirm === "phone" ? c.phoneNumber : c.emailAddress
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setConfirm(null)}>
-              Cancel
+              {c.cancel}
             </Button>
             <Button onClick={doReveal}>
               <Lock className="size-4" />
-              Use {cost} credit{cost > 1 ? "s" : ""}
+              {c.useCredits(cost)}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -499,20 +689,22 @@ function EnrichmentCard({
   prospect: Prospect
   onAddToCrm: () => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const enrichment = [
-    { label: "Seniority", value: prospect.seniority },
-    { label: "Department", value: prospect.department },
-    { label: "Headcount", value: prospect.headcount },
-    { label: "Industry", value: prospect.industry },
-    { label: "Revenue", value: prospect.revenue },
-    { label: "Location", value: prospect.location },
+    { label: c.seniority, value: prospect.seniority },
+    { label: c.department, value: prospect.department },
+    { label: c.headcount, value: prospect.headcount },
+    { label: c.industry, value: prospect.industry },
+    { label: c.revenue, value: prospect.revenue },
+    { label: c.location, value: prospect.location },
   ]
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-base">Enrichment</CardTitle>
+        <CardTitle className="text-base">{c.enrichment}</CardTitle>
         <Badge variant="secondary" className="font-normal">
-          30 data points
+          {c.dataPoints}
         </Badge>
       </CardHeader>
       <CardContent>
@@ -532,7 +724,7 @@ function EnrichmentCard({
           onClick={onAddToCrm}
         >
           <Building2 className="size-4" />
-          Add to CRM
+          {c.addToCrm}
         </Button>
       </CardContent>
     </Card>
@@ -542,18 +734,20 @@ function EnrichmentCard({
 /* ----------------------------- Lead qualification ----------------------------- */
 
 function QualificationCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const q = qualification(prospect)
   const rows = [
-    { label: "ICP fit", value: q.fit },
-    { label: "Intent", value: q.intent },
-    { label: "Engagement", value: q.engagement },
+    { label: c.icpFit, value: q.fit },
+    { label: c.intent, value: q.intent },
+    { label: c.engagement, value: q.engagement },
   ]
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="text-primary size-4" />
-          Lead qualification
+          {c.leadQualification}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -595,24 +789,31 @@ const INTRO_VARIANT: Record<
 }
 
 function WarmIntroCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const strengthLabels: Record<IntroStrength, string> = {
+    strong: c.strengthStrong,
+    medium: c.strengthMedium,
+    weak: c.strengthWeak,
+  }
   const paths = getIntroPaths(prospect.id)
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-base">
           <Waypoints className="text-primary size-4" />
-          Warm intros
+          {c.warmIntros}
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/intros">All</Link>
+          <Link to="/intros">{c.all}</Link>
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {paths.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            No warm paths yet.{" "}
+            {c.noWarmPaths}{" "}
             <Link to="/intros" className="text-primary">
-              Explore your network
+              {c.exploreNetwork}
             </Link>
           </p>
         ) : (
@@ -638,11 +839,8 @@ function WarmIntroCard({ prospect }: { prospect: Prospect }) {
                     {path.connectorTitle}
                   </p>
                 </div>
-                <Badge
-                  variant={INTRO_VARIANT[path.strength]}
-                  className="capitalize"
-                >
-                  {path.strength}
+                <Badge variant={INTRO_VARIANT[path.strength]}>
+                  {strengthLabels[path.strength]}
                 </Badge>
               </div>
               <p className="text-muted-foreground text-xs">{path.via}</p>
@@ -650,13 +848,11 @@ function WarmIntroCard({ prospect }: { prospect: Prospect }) {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() =>
-                  toast.success(`Intro requested via ${path.connectorName}`)
-                }
+                onClick={() => toast.success(c.introRequested(path.connectorName))}
               >
                 {path.connectorIsTeam
-                  ? `Ask ${path.connectorName.split(" ")[0]}`
-                  : "Request intro"}
+                  ? c.ask(path.connectorName.split(" ")[0])
+                  : c.requestIntro}
               </Button>
             </div>
           ))
@@ -675,6 +871,8 @@ function PrepTab({
   prospect: Prospect
   onUse: () => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const prep = callPrep(prospect)
   const emails = emailPrep(prospect)
 
@@ -684,17 +882,17 @@ function PrepTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <PhoneCall className="text-primary size-4" />
-            AI call prep
+            {c.aiCallPrep}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <PrepSection title="Talking points" items={prep.talkingPoints} />
+          <PrepSection title={c.talkingPoints} items={prep.talkingPoints} />
           <PrepSection
-            title="Discovery questions"
+            title={c.discoveryQuestions}
             items={prep.discoveryQuestions}
           />
           <div>
-            <p className="mb-2 text-sm font-medium">Likely objections</p>
+            <p className="mb-2 text-sm font-medium">{c.likelyObjections}</p>
             <div className="space-y-2">
               {prep.objections.map((o) => (
                 <div key={o.objection} className="bg-muted/50 rounded-md p-3">
@@ -713,7 +911,7 @@ function PrepTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Sparkles className="text-primary size-4" />
-            AI email drafts
+            {c.aiEmailDrafts}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -729,15 +927,15 @@ function PrepTab({
                     size="sm"
                     onClick={() => {
                       navigator.clipboard?.writeText(`${e.subject}\n\n${e.body}`)
-                      toast.success("Copied to clipboard")
+                      toast.success(c.copied)
                     }}
                   >
                     <Copy className="size-3.5" />
-                    Copy
+                    {c.copy}
                   </Button>
                   <Button variant="outline" size="sm" onClick={onUse}>
                     <Send className="size-3.5" />
-                    Use
+                    {c.use}
                   </Button>
                 </div>
               </div>
@@ -787,11 +985,13 @@ const HISTORY_META: Record<
 }
 
 function HistoryTab({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const events = getHistory(prospect)
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Activity timeline</CardTitle>
+        <CardTitle className="text-base">{c.activityTimeline}</CardTitle>
       </CardHeader>
       <CardContent>
         <ol className="relative space-y-5 border-l pl-6">
@@ -829,6 +1029,8 @@ function HistoryTab({ prospect }: { prospect: Prospect }) {
 /* ----------------------------- Notes ----------------------------- */
 
 function NotesTab({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { user } = useAuth()
   const [notes, setNotes] = React.useState<ProspectNote[]>(() =>
     getNotes(prospect.id)
@@ -849,7 +1051,7 @@ function NotesTab({ prospect }: { prospect: Prospect }) {
     setNotes((n) => [
       {
         id: `note_new_${idRef.current}`,
-        author: user?.name ?? "You",
+        author: user?.name ?? c.youAuthor,
         body: body.trim(),
         tags,
         createdAt: new Date().toISOString(),
@@ -858,18 +1060,18 @@ function NotesTab({ prospect }: { prospect: Prospect }) {
     ])
     setBody("")
     setTags([])
-    toast.success("Note added")
+    toast.success(c.noteAdded)
   }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Add a note</CardTitle>
+          <CardTitle className="text-base">{c.addNote}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Textarea
-            placeholder="What did you learn? Add context for your team…"
+            placeholder={c.notePlaceholder}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             className="min-h-24"
@@ -893,14 +1095,14 @@ function NotesTab({ prospect }: { prospect: Prospect }) {
           <div className="flex justify-end">
             <Button size="sm" onClick={addNote} disabled={!body.trim()}>
               <Plus className="size-4" />
-              Add note
+              {c.addNoteButton}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {notes.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No notes yet.</p>
+        <p className="text-muted-foreground text-sm">{c.noNotes}</p>
       ) : (
         notes.map((note) => (
           <Card key={note.id}>

@@ -9,15 +9,58 @@ import { Input } from "@/components/ui/input"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { SequenceBuilder } from "@/components/sequence/SequenceBuilder"
 import { defaultSequence } from "@/lib/mock-sequence"
+import { useLocale } from "@/lib/locale"
 import type { BuilderStep } from "@/lib/types"
 
+const COPY = {
+  en: {
+    defaultName: "Multi-channel — VP Sales",
+    untitled: "Untitled",
+    sequenceSaved: (name: string) => `Sequence "${name}" saved`,
+    backToCampaigns: "Back to campaigns",
+    sequenceName: "Sequence name",
+    description: "Design the touches, triggers, and branches for this sequence.",
+    saveSequence: "Save sequence",
+    introTitle: "Build sequences visually",
+    introDescription:
+      "Drag steps to reorder, branch on what prospects do, and fan out touches in parallel across email, LinkedIn, WhatsApp, and AI calls.",
+    introPoints: [
+      "Drag-and-drop step ordering",
+      "Trigger on a delay, open, click, reply, or data signal",
+      "Run steps in parallel or branch on reply",
+      "Auto-pauses the moment someone responds",
+    ],
+  },
+  es: {
+    defaultName: "Multicanal — VP de Ventas",
+    untitled: "Sin título",
+    sequenceSaved: (name: string) => `Secuencia «${name}» guardada`,
+    backToCampaigns: "Volver a campañas",
+    sequenceName: "Nombre de la secuencia",
+    description:
+      "Diseña los contactos, disparadores y ramificaciones de esta secuencia.",
+    saveSequence: "Guardar secuencia",
+    introTitle: "Crea secuencias de forma visual",
+    introDescription:
+      "Arrastra pasos para reordenarlos, ramifica según lo que hagan los prospectos y despliega contactos en paralelo por correo, LinkedIn, WhatsApp y llamadas con IA.",
+    introPoints: [
+      "Ordena pasos con arrastrar y soltar",
+      "Dispara con un retraso, apertura, clic, respuesta o señal de datos",
+      "Ejecuta pasos en paralelo o ramifica al responder",
+      "Se pausa automáticamente en cuanto alguien responde",
+    ],
+  },
+} as const
+
 export default function SequenceBuilderPage() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const navigate = useNavigate()
-  const [name, setName] = React.useState("Multi-channel — VP Sales")
+  const [name, setName] = React.useState<string>(c.defaultName)
   const [initial] = React.useState<BuilderStep[]>(() => defaultSequence())
 
   function handleSave() {
-    toast.success(`Sequence "${name.trim() || "Untitled"}" saved`)
+    toast.success(c.sequenceSaved(name.trim() || c.untitled))
     navigate("/campaigns")
   }
 
@@ -27,7 +70,7 @@ export default function SequenceBuilderPage() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Back to campaigns"
+          aria-label={c.backToCampaigns}
           onClick={() => navigate("/campaigns")}
           className="-ml-2"
         >
@@ -37,30 +80,23 @@ export default function SequenceBuilderPage() {
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            aria-label="Sequence name"
+            aria-label={c.sequenceName}
             className="h-auto border-transparent bg-transparent px-0 text-xl font-semibold shadow-none focus-visible:border-transparent focus-visible:ring-0 dark:bg-transparent"
           />
-          <p className="text-muted-foreground text-sm">
-            Design the touches, triggers, and branches for this sequence.
-          </p>
+          <p className="text-muted-foreground text-sm">{c.description}</p>
         </div>
         <Button variant="volt" onClick={handleSave}>
           <Check className="size-4" />
-          Save sequence
+          {c.saveSequence}
         </Button>
       </div>
 
       <FeatureIntro
         featureKey="sequence"
         icon={Workflow}
-        title="Build sequences visually"
-        description="Drag steps to reorder, branch on what prospects do, and fan out touches in parallel across email, LinkedIn, WhatsApp, and AI calls."
-        points={[
-          "Drag-and-drop step ordering",
-          "Trigger on a delay, open, click, reply, or data signal",
-          "Run steps in parallel or branch on reply",
-          "Auto-pauses the moment someone responds",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={[...c.introPoints]}
         className="mb-6"
       />
 

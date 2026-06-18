@@ -12,8 +12,8 @@ import {
   Users,
 } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
-import { ImpactBand } from "@/components/common/ImpactBand"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import {
   Card,
@@ -49,45 +49,137 @@ const ROLE_OPTIONS = [
 
 interface ChecklistTask {
   id: SetupTaskId
-  title: string
-  description: string
   icon: React.ComponentType<{ className?: string }>
 }
 
 const CHECKLIST: ChecklistTask[] = [
-  {
-    id: "crm",
-    title: "Connect your CRM",
-    description: "Sync prospects, activities, and deals two-way.",
-    icon: Building2,
-  },
-  {
-    id: "linkedin",
-    title: "Connect LinkedIn",
-    description: "Enrich profiles and send outreach from Kombo.",
-    icon: LinkedinIcon,
-  },
-  {
-    id: "team",
-    title: "Invite your team",
-    description: "Collaborate on pipeline and share templates.",
-    icon: Users,
-  },
-  {
-    id: "profile",
-    title: "Set your role & goals",
-    description: "Tailor dashboards and AI recommendations.",
-    icon: Target,
-  },
-  {
-    id: "links",
-    title: "Add quick links",
-    description: "Pin the tools you use every day.",
-    icon: LinkIcon,
-  },
+  { id: "crm", icon: Building2 },
+  { id: "linkedin", icon: LinkedinIcon },
+  { id: "team", icon: Users },
+  { id: "profile", icon: Target },
+  { id: "links", icon: LinkIcon },
 ]
 
+const COPY = {
+  en: {
+    title: "Get started",
+    description:
+      "Finish setting up your workspace to get the most out of Kombo.",
+    saved: "Saved",
+    linkAdded: "Link added",
+    completeCount: (done: number, total: number) =>
+      `${done} of ${total} complete`,
+    allSet: "You're all set 🎉",
+    setupChecklist: "Setup checklist",
+    setupChecklistDesc: "Knock these out to unlock the full Kombo experience.",
+    roleGoals: "Your role & goals",
+    roleGoalsDesc: "We use this to tailor your dashboards and AI suggestions.",
+    role: "Role",
+    selectRole: "Select your role",
+    goals: "Goals",
+    goalsPlaceholder:
+      "e.g. Book 30 qualified meetings/month, grow pipeline 2x",
+    save: "Save",
+    quickLinks: "Quick links",
+    quickLinksDesc: "Pin the tools and resources you reach for most.",
+    removeLink: (label: string) => `Remove ${label}`,
+    label: "Label",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://example.com",
+    addLink: "Add link",
+    linkedInConnected: "LinkedIn connected",
+    connected: "Connected",
+    connect: "Connect",
+    done: "Done",
+    inviteTeam: "Invite team",
+    markDone: "Mark done",
+    tasks: {
+      crm: {
+        title: "Connect your CRM",
+        description: "Sync prospects, activities, and deals two-way.",
+      },
+      linkedin: {
+        title: "Connect LinkedIn",
+        description: "Enrich profiles and send outreach from Kombo.",
+      },
+      team: {
+        title: "Invite your team",
+        description: "Collaborate on pipeline and share templates.",
+      },
+      profile: {
+        title: "Set your role & goals",
+        description: "Tailor dashboards and AI recommendations.",
+      },
+      links: {
+        title: "Add quick links",
+        description: "Pin the tools you use every day.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
+  es: {
+    title: "Primeros pasos",
+    description:
+      "Termina de configurar tu espacio de trabajo para sacarle el máximo partido a Kombo.",
+    saved: "Guardado",
+    linkAdded: "Enlace añadido",
+    completeCount: (done: number, total: number) =>
+      `${done} de ${total} completados`,
+    allSet: "¡Todo listo! 🎉",
+    setupChecklist: "Lista de configuración",
+    setupChecklistDesc:
+      "Complétalos para desbloquear toda la experiencia de Kombo.",
+    roleGoals: "Tu rol y objetivos",
+    roleGoalsDesc:
+      "Lo usamos para personalizar tus paneles y las sugerencias de IA.",
+    role: "Rol",
+    selectRole: "Selecciona tu rol",
+    goals: "Objetivos",
+    goalsPlaceholder:
+      "p. ej. Agendar 30 reuniones cualificadas al mes, duplicar el pipeline",
+    save: "Guardar",
+    quickLinks: "Enlaces rápidos",
+    quickLinksDesc: "Fija las herramientas y recursos que más utilizas.",
+    removeLink: (label: string) => `Eliminar ${label}`,
+    label: "Etiqueta",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://ejemplo.com",
+    addLink: "Añadir enlace",
+    linkedInConnected: "LinkedIn conectado",
+    connected: "Conectado",
+    connect: "Conectar",
+    done: "Hecho",
+    inviteTeam: "Invitar al equipo",
+    markDone: "Marcar como hecho",
+    tasks: {
+      crm: {
+        title: "Conecta tu CRM",
+        description: "Sincroniza prospectos, actividades y negocios en ambos sentidos.",
+      },
+      linkedin: {
+        title: "Conecta LinkedIn",
+        description: "Enriquece perfiles y envía outreach desde Kombo.",
+      },
+      team: {
+        title: "Invita a tu equipo",
+        description: "Colabora en el pipeline y comparte plantillas.",
+      },
+      profile: {
+        title: "Define tu rol y objetivos",
+        description: "Personaliza los paneles y las recomendaciones de IA.",
+      },
+      links: {
+        title: "Añade enlaces rápidos",
+        description: "Fija las herramientas que usas cada día.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
+} as const
+
 export default function GetStarted() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const setup = useSetup()
   const completedCount = setup.completed.size
   const allDone = setup.progress === 100
@@ -99,7 +191,7 @@ export default function GetStarted() {
 
   function handleSaveProfile() {
     setup.setProfile(role, goals)
-    toast.success("Saved")
+    toast.success(c.saved)
   }
 
   function handleAddLink() {
@@ -109,30 +201,23 @@ export default function GetStarted() {
     setup.addQuickLink(label, url)
     setLinkLabel("")
     setLinkUrl("")
-    toast.success("Link added")
+    toast.success(c.linkAdded)
   }
 
   return (
     <Page className="max-w-3xl">
-      <PageHeading
-        title="Get started"
-        description="Finish setting up your workspace to get the most out of Kombo."
-      />
+      <PageHeading title={c.title} description={c.description} />
 
       <div className="space-y-4">
-        <ImpactBand />
-
         {/* Progress */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
               <div className="space-y-1">
                 <CardTitle className="text-base">
-                  {completedCount} of {CHECKLIST.length} complete
+                  {c.completeCount(completedCount, CHECKLIST.length)}
                 </CardTitle>
-                {allDone && (
-                  <CardDescription>You&apos;re all set 🎉</CardDescription>
-                )}
+                {allDone && <CardDescription>{c.allSet}</CardDescription>}
               </div>
               <span className="text-2xl font-semibold tabular-nums">
                 {setup.progress}%
@@ -147,10 +232,8 @@ export default function GetStarted() {
         {/* Checklist */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Setup checklist</CardTitle>
-            <CardDescription>
-              Knock these out to unlock the full Kombo experience.
-            </CardDescription>
+            <CardTitle className="text-base">{c.setupChecklist}</CardTitle>
+            <CardDescription>{c.setupChecklistDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-1">
             {CHECKLIST.map((task, i) => {
@@ -173,10 +256,10 @@ export default function GetStarted() {
                           done && "text-muted-foreground line-through"
                         )}
                       >
-                        {task.title}
+                        {c.tasks[task.id].title}
                       </p>
                       <p className="text-muted-foreground text-sm">
-                        {task.description}
+                        {c.tasks[task.id].description}
                       </p>
                     </div>
                     <TaskAction task={task} done={done} setup={setup} />
@@ -190,17 +273,15 @@ export default function GetStarted() {
         {/* Role & goals */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Your role &amp; goals</CardTitle>
-            <CardDescription>
-              We use this to tailor your dashboards and AI suggestions.
-            </CardDescription>
+            <CardTitle className="text-base">{c.roleGoals}</CardTitle>
+            <CardDescription>{c.roleGoalsDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role">{c.role}</Label>
               <Select value={role} onValueChange={setRole}>
                 <SelectTrigger id="role" className="w-full">
-                  <SelectValue placeholder="Select your role" />
+                  <SelectValue placeholder={c.selectRole} />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLE_OPTIONS.map((r) => (
@@ -212,17 +293,17 @@ export default function GetStarted() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="goals">Goals</Label>
+              <Label htmlFor="goals">{c.goals}</Label>
               <Textarea
                 id="goals"
                 value={goals}
                 onChange={(e) => setGoals(e.target.value)}
-                placeholder="e.g. Book 30 qualified meetings/month, grow pipeline 2x"
+                placeholder={c.goalsPlaceholder}
               />
             </div>
             <Separator />
             <div className="flex justify-end">
-              <Button onClick={handleSaveProfile}>Save</Button>
+              <Button onClick={handleSaveProfile}>{c.save}</Button>
             </div>
           </CardContent>
         </Card>
@@ -230,10 +311,8 @@ export default function GetStarted() {
         {/* Quick links */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Quick links</CardTitle>
-            <CardDescription>
-              Pin the tools and resources you reach for most.
-            </CardDescription>
+            <CardTitle className="text-base">{c.quickLinks}</CardTitle>
+            <CardDescription>{c.quickLinksDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {setup.quickLinks.length > 0 && (
@@ -260,7 +339,7 @@ export default function GetStarted() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label={`Remove ${link.label}`}
+                      aria-label={c.removeLink(link.label)}
                       onClick={() => setup.removeQuickLink(link.id)}
                     >
                       <Trash2 className="size-4" />
@@ -274,21 +353,21 @@ export default function GetStarted() {
 
             <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
               <div className="space-y-2">
-                <Label htmlFor="link-label">Label</Label>
+                <Label htmlFor="link-label">{c.label}</Label>
                 <Input
                   id="link-label"
                   value={linkLabel}
                   onChange={(e) => setLinkLabel(e.target.value)}
-                  placeholder="LinkedIn Sales Navigator"
+                  placeholder={c.labelPlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="link-url">URL</Label>
+                <Label htmlFor="link-url">{c.url}</Label>
                 <Input
                   id="link-url"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="https://example.com"
+                  placeholder={c.urlPlaceholder}
                 />
               </div>
               <Button
@@ -296,7 +375,7 @@ export default function GetStarted() {
                 disabled={!linkLabel.trim() || !linkUrl.trim()}
               >
                 <Plus className="size-4" />
-                Add link
+                {c.addLink}
               </Button>
             </div>
           </CardContent>
@@ -315,14 +394,17 @@ function TaskAction({
   done: boolean
   setup: ReturnType<typeof useSetup>
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+
   if (task.id === "crm") {
     return done ? (
       <Badge variant="success" className="font-normal">
-        Connected
+        {c.connected}
       </Badge>
     ) : (
       <Button asChild size="sm" variant="outline">
-        <Link to="/integrations">Connect</Link>
+        <Link to="/integrations">{c.connect}</Link>
       </Button>
     )
   }
@@ -330,7 +412,7 @@ function TaskAction({
   if (task.id === "linkedin") {
     return done ? (
       <Badge variant="success" className="font-normal">
-        Connected
+        {c.connected}
       </Badge>
     ) : (
       <Button
@@ -338,10 +420,10 @@ function TaskAction({
         variant="outline"
         onClick={() => {
           setup.complete("linkedin")
-          toast.success("LinkedIn connected")
+          toast.success(c.linkedInConnected)
         }}
       >
-        Connect
+        {c.connect}
       </Button>
     )
   }
@@ -349,11 +431,11 @@ function TaskAction({
   if (task.id === "team") {
     return done ? (
       <Badge variant="success" className="font-normal">
-        Done
+        {c.done}
       </Badge>
     ) : (
       <Button asChild size="sm" variant="outline">
-        <Link to="/team">Invite team</Link>
+        <Link to="/team">{c.inviteTeam}</Link>
       </Button>
     )
   }
@@ -361,7 +443,7 @@ function TaskAction({
   // profile + links are completed via their editor cards below.
   return done ? (
     <Badge variant="success" className="font-normal">
-      Done
+      {c.done}
     </Badge>
   ) : (
     <Button
@@ -369,7 +451,7 @@ function TaskAction({
       variant="ghost"
       onClick={() => setup.complete(task.id)}
     >
-      Mark done
+      {c.markDone}
     </Button>
   )
 }
