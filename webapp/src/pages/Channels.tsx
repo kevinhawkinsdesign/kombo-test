@@ -190,7 +190,7 @@ export default function Channels() {
         title="Sending Channels"
         description="Mailboxes and LinkedIn accounts your campaigns send from."
         action={
-          <Button onClick={() => toast.info("Connect channel — coming soon")}>
+          <Button variant="volt" onClick={() => toast.info("Connect channel — coming soon")}>
             <Plus className="size-4" />
             Connect channel
           </Button>

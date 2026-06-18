@@ -515,6 +515,7 @@ export const campaigns: Campaign[] = [
     replied: 22,
     meetings: 7,
     createdAt: "2026-05-20T09:00:00Z",
+    listId: "l_1",
     steps: [
       {
         id: "s_1",
@@ -525,7 +526,7 @@ export const campaigns: Campaign[] = [
       },
       {
         id: "s_2",
-        channel: "linkedin",
+        channel: "linkedin_message",
         delayDays: 2,
         body: "Connection request + short note referencing their recent post.",
       },
@@ -547,6 +548,7 @@ export const campaigns: Campaign[] = [
     replied: 12,
     meetings: 4,
     createdAt: "2026-05-25T09:00:00Z",
+    listId: "l_3",
     steps: [
       {
         id: "s_4",
@@ -576,7 +578,7 @@ export const campaigns: Campaign[] = [
     steps: [
       {
         id: "s_6",
-        channel: "linkedin",
+        channel: "linkedin_message",
         delayDays: 0,
         body: "Personalized connection request referencing their product.",
       },

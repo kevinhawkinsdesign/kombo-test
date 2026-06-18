@@ -68,7 +68,7 @@ function SetupBanner() {
   if (dismissed || progress >= 100) return null
   return (
     <Card className="border-primary/30 bg-primary/5 mb-6">
-      <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+      <CardContent className="flex flex-wrap items-center gap-4">
         <span className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-full">
           <Rocket className="size-5" />
         </span>
@@ -262,7 +262,7 @@ export default function Dashboard() {
       <div className="mt-6">
         {impersonating ? (
           <Card>
-            <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+            <CardContent className="flex flex-wrap items-center gap-4">
               <Eye className="text-primary size-5" />
               <p className="text-sm">
                 You're viewing{" "}

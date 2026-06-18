@@ -6,12 +6,16 @@ import {
   ArrowUp,
   ArrowDown,
   Mail,
+  MessageSquare,
+  MessageCircle,
+  Camera,
   Pause,
   Play,
   Pencil,
   Plus,
   Trash2,
   UserPlus,
+  X,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -43,16 +47,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
+import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
 import { getProspect } from "@/lib/mock-data"
-import { useCampaigns, campaignStore } from "@/lib/store"
+import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type {
   CampaignStatus,
-  CampaignStep,
-  Channel,
+  StepChannel,
   EnrollmentStatus,
 } from "@/lib/types"
 
@@ -75,6 +101,74 @@ const ENROLLMENT_VARIANT: Record<
   completed: "secondary",
   paused: "outline",
   bounced: "destructive",
+}
+
+const CAMPAIGN_STATUSES: CampaignStatus[] = [
+  "draft",
+  "active",
+  "paused",
+  "completed",
+]
+
+/* ------------------------------ channel meta ------------------------------ */
+interface ChannelMeta {
+  label: string
+  tint: string
+  Icon: React.ComponentType<{ className?: string }>
+}
+
+const CHANNELS: Record<StepChannel, ChannelMeta> = {
+  email: { label: "Email", tint: "bg-primary/15 text-primary", Icon: Mail },
+  sms: { label: "SMS", tint: "bg-chart-4/15 text-chart-4", Icon: MessageSquare },
+  whatsapp: {
+    label: "WhatsApp",
+    tint: "bg-chart-1/15 text-chart-1",
+    Icon: MessageCircle,
+  },
+  instagram: {
+    label: "Instagram DM",
+    tint: "bg-chart-5/15 text-chart-5",
+    Icon: Camera,
+  },
+  linkedin_message: {
+    label: "LinkedIn message",
+    tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
+    Icon: LinkedinIcon,
+  },
+  linkedin_dm: {
+    label: "LinkedIn DM",
+    tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
+    Icon: LinkedinIcon,
+  },
+  linkedin_inmail: {
+    label: "LinkedIn InMail",
+    tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
+    Icon: LinkedinIcon,
+  },
+}
+
+const CHANNEL_ORDER: StepChannel[] = [
+  "email",
+  "sms",
+  "whatsapp",
+  "instagram",
+  "linkedin_message",
+  "linkedin_dm",
+  "linkedin_inmail",
+]
+
+// Tolerant lookup so previously-persisted localStorage data (e.g. the legacy
+// "linkedin" channel, or any unknown value) still renders.
+function channelMeta(channel: string): ChannelMeta {
+  if (channel in CHANNELS) return CHANNELS[channel as StepChannel]
+  if (channel === "linkedin") return CHANNELS.linkedin_message
+  return CHANNELS.email
+}
+
+function normalizeChannel(channel: string): StepChannel {
+  if (channel in CHANNELS) return channel as StepChannel
+  if (channel === "linkedin") return "linkedin_message"
+  return "email"
 }
 
 const POSITIVE_REPLIES = [
@@ -102,28 +196,15 @@ function shortDay(iso: string): string {
   })
 }
 
-function ChannelIcon({ channel }: { channel: Channel }) {
-  return channel === "email" ? (
-    <Mail className="text-muted-foreground size-4" />
-  ) : (
-    <LinkedinIcon className="text-muted-foreground size-4" />
-  )
-}
-
-let stepCounter = 0
-function newStepId(): string {
-  stepCounter += 1
-  return `s_new_${stepCounter}`
-}
-
 export default function CampaignDetail() {
   const { id } = useParams()
   const campaigns = useCampaigns()
+  const lists = useLists()
   const campaign = campaigns.find((c) => c.id === id)
 
-  const [steps, setSteps] = React.useState<CampaignStep[]>(
-    () => campaign?.steps.map((s) => ({ ...s })) ?? []
-  )
+  const [editOpen, setEditOpen] = React.useState(false)
+  const [addOpen, setAddOpen] = React.useState(false)
+  const [attachListId, setAttachListId] = React.useState("")
 
   if (!campaign) {
     return (
@@ -135,6 +216,9 @@ export default function CampaignDetail() {
       </Page>
     )
   }
+
+  const steps = campaign.steps
+  const enrolledIds = campaign.enrolledIds ?? []
 
   const openRate = campaign.enrolled
     ? Math.round((campaign.opened / campaign.enrolled) * 100)
@@ -156,39 +240,21 @@ export default function CampaignDetail() {
     { sent: 0, opened: 0, replied: 0 }
   )
 
-  function updateStep(stepId: string, patch: Partial<CampaignStep>) {
-    setSteps((prev) =>
-      prev.map((s) => (s.id === stepId ? { ...s, ...patch } : s))
-    )
-  }
+  const attachedList = campaign.listId
+    ? lists.find((l) => l.id === campaign.listId)
+    : undefined
 
-  function moveStep(index: number, direction: -1 | 1) {
-    setSteps((prev) => {
-      const target = index + direction
-      if (target < 0 || target >= prev.length) return prev
-      const next = [...prev]
-      const [moved] = next.splice(index, 1)
-      next.splice(target, 0, moved)
-      return next
-    })
-  }
+  // Manually-enrolled prospects, de-duped against the mock enrollments so a
+  // prospect already shown in the enrollment table isn't listed twice.
+  const enrollmentIds = new Set(enrollments.map((e) => e.prospectId))
+  const manualProspects = enrolledIds
+    .filter((pid) => !enrollmentIds.has(pid))
+    .map(getProspect)
+    .filter((p): p is NonNullable<typeof p> => Boolean(p))
+  const hasProspects = enrollments.length > 0 || manualProspects.length > 0
 
-  function removeStep(stepId: string) {
-    setSteps((prev) => prev.filter((s) => s.id !== stepId))
-  }
-
-  function addStep() {
-    setSteps((prev) => [
-      ...prev,
-      {
-        id: newStepId(),
-        channel: "email",
-        delayDays: prev.length === 0 ? 0 : 3,
-        subject: "",
-        body: "",
-      },
-    ])
-  }
+  // Ids already enrolled (mock + manual) — excluded from the add dialog.
+  const allEnrolledIds = new Set<string>([...enrollmentIds, ...enrolledIds])
 
   return (
     <Page>
@@ -202,9 +268,9 @@ export default function CampaignDetail() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight">
               {campaign.name}
-            </h2>
+            </h1>
             <Badge
               variant={STATUS_VARIANT[campaign.status]}
               className="capitalize"
@@ -213,8 +279,7 @@ export default function CampaignDetail() {
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm">
-            Created {formatDate(campaign.createdAt)} · {campaign.steps.length}{" "}
-            steps
+            Created {formatDate(campaign.createdAt)} · {steps.length} steps
           </p>
         </div>
 
@@ -243,17 +308,11 @@ export default function CampaignDetail() {
               </>
             )}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => toast.info("Edit campaign — coming soon")}
-          >
+          <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="size-4" />
             Edit
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => toast.info("Add prospects — coming soon")}
-          >
+          <Button variant="outline" onClick={() => setAddOpen(true)}>
             <UserPlus className="size-4" />
             Add prospects
           </Button>
@@ -302,6 +361,88 @@ export default function CampaignDetail() {
             </CardContent>
           </Card>
 
+          {/* Audience — 1-to-1 attached list */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Audience</CardTitle>
+              <CardDescription>
+                Attach a single prospect list to feed this campaign. The link is
+                1-to-1; a dynamic list auto-enrolls new matching prospects as
+                they're found.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {attachedList ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="size-3 shrink-0 rounded-full"
+                      style={{ backgroundColor: attachedList.color }}
+                    />
+                    <div>
+                      <Link
+                        to={`/lists/${attachedList.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {attachedList.name}
+                      </Link>
+                      <p className="text-muted-foreground text-xs">
+                        {attachedList.prospectIds.length} prospects
+                        {attachedList.dynamic ? " · dynamic" : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      campaignStore.detachList(campaign.id)
+                      toast.success(`Detached ${attachedList.name}`)
+                    }}
+                  >
+                    <X className="size-4" />
+                    Detach
+                  </Button>
+                </div>
+              ) : lists.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select value={attachListId} onValueChange={setAttachListId}>
+                    <SelectTrigger className="w-[240px]">
+                      <SelectValue placeholder="Choose a list to attach" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lists.map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name}
+                          {l.campaignId && l.campaignId !== campaign.id
+                            ? " (linked elsewhere)"
+                            : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    disabled={!attachListId}
+                    onClick={() => {
+                      const target = lists.find((l) => l.id === attachListId)
+                      campaignStore.attachList(campaign.id, attachListId)
+                      setAttachListId("")
+                      toast.success(
+                        target ? `Attached ${target.name}` : "List attached"
+                      )
+                    }}
+                  >
+                    Attach
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No lists available to attach yet.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Summary</CardTitle>
@@ -337,6 +478,8 @@ export default function CampaignDetail() {
             <>
               <div className="space-y-3">
                 {steps.map((step, i) => {
+                  const meta = channelMeta(step.channel)
+                  const isEmail = normalizeChannel(step.channel) === "email"
                   const sent = Math.max(
                     0,
                     campaign.enrolled - i * Math.round(campaign.enrolled * 0.12)
@@ -346,21 +489,50 @@ export default function CampaignDetail() {
                   return (
                     <Card key={step.id}>
                       <CardContent className="space-y-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                           <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium tabular-nums">
                             {i + 1}
                           </span>
-                          <ChannelIcon channel={step.channel} />
-                          <span className="text-muted-foreground text-sm capitalize">
-                            {step.channel}
+                          <span
+                            className={cn(
+                              "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                              meta.tint
+                            )}
+                          >
+                            <meta.Icon className="size-4" />
                           </span>
+                          <Select
+                            value={normalizeChannel(step.channel)}
+                            onValueChange={(v) =>
+                              campaignStore.updateStep(campaign.id, step.id, {
+                                channel: v as StepChannel,
+                              })
+                            }
+                          >
+                            <SelectTrigger
+                              size="sm"
+                              className="w-[180px]"
+                              aria-label={`Step ${i + 1} channel`}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CHANNEL_ORDER.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                  {CHANNELS[c].label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <div className="ml-auto flex items-center gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
                               aria-label="Move step up"
                               disabled={i === 0}
-                              onClick={() => moveStep(i, -1)}
+                              onClick={() =>
+                                campaignStore.moveStep(campaign.id, step.id, -1)
+                              }
                             >
                               <ArrowUp className="size-4" />
                             </Button>
@@ -369,7 +541,9 @@ export default function CampaignDetail() {
                               size="icon"
                               aria-label="Move step down"
                               disabled={i === steps.length - 1}
-                              onClick={() => moveStep(i, 1)}
+                              onClick={() =>
+                                campaignStore.moveStep(campaign.id, step.id, 1)
+                              }
                             >
                               <ArrowDown className="size-4" />
                             </Button>
@@ -377,7 +551,10 @@ export default function CampaignDetail() {
                               variant="ghost"
                               size="icon"
                               aria-label="Remove step"
-                              onClick={() => removeStep(step.id)}
+                              className="text-muted-foreground hover:text-destructive"
+                              onClick={() =>
+                                campaignStore.removeStep(campaign.id, step.id)
+                              }
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -393,7 +570,7 @@ export default function CampaignDetail() {
                             min={0}
                             value={step.delayDays}
                             onChange={(e) =>
-                              updateStep(step.id, {
+                              campaignStore.updateStep(campaign.id, step.id, {
                                 delayDays: Math.max(
                                   0,
                                   Number(e.target.value) || 0
@@ -407,12 +584,14 @@ export default function CampaignDetail() {
                           </span>
                         </div>
 
-                        {step.channel === "email" && (
+                        {isEmail && (
                           <Input
                             value={step.subject ?? ""}
                             placeholder="Subject line"
                             onChange={(e) =>
-                              updateStep(step.id, { subject: e.target.value })
+                              campaignStore.updateStep(campaign.id, step.id, {
+                                subject: e.target.value,
+                              })
                             }
                           />
                         )}
@@ -421,7 +600,9 @@ export default function CampaignDetail() {
                           value={step.body}
                           placeholder="Message body"
                           onChange={(e) =>
-                            updateStep(step.id, { body: e.target.value })
+                            campaignStore.updateStep(campaign.id, step.id, {
+                              body: e.target.value,
+                            })
                           }
                           className="min-h-20"
                         />
@@ -455,16 +636,12 @@ export default function CampaignDetail() {
               </div>
 
               <div className="flex items-center justify-between gap-2">
-                <Button variant="outline" onClick={addStep}>
-                  <Plus className="size-4" />
-                  Add step
-                </Button>
-                <Button
-                  onClick={() => {
-                    campaignStore.update(campaign.id, { steps })
-                    toast.success("Sequence saved")
-                  }}
-                >
+                <AddStepMenu
+                  onAdd={(channel) =>
+                    campaignStore.addStep(campaign.id, channel)
+                  }
+                />
+                <Button onClick={() => toast.success("Sequence saved")}>
                   Save sequence
                 </Button>
               </div>
@@ -475,10 +652,11 @@ export default function CampaignDetail() {
                 <p className="text-muted-foreground text-sm">
                   This sequence has no steps yet.
                 </p>
-                <Button variant="outline" onClick={addStep}>
-                  <Plus className="size-4" />
-                  Add step
-                </Button>
+                <AddStepMenu
+                  onAdd={(channel) =>
+                    campaignStore.addStep(campaign.id, channel)
+                  }
+                />
               </CardContent>
             </Card>
           )}
@@ -486,84 +664,143 @@ export default function CampaignDetail() {
 
         {/* Prospects */}
         <TabsContent value="prospects" className="mt-4">
-          {enrollments.length > 0 ? (
+          {hasProspects ? (
             <Card className="overflow-hidden p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/40 hover:bg-muted/40">
-                    <TableHead className="pl-4">Prospect</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Title / Company
-                    </TableHead>
-                    <TableHead>Current step</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Last touch
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {enrollments.map((e) => {
-                    const prospect = getProspect(e.prospectId)
-                    return (
-                      <TableRow key={e.prospectId}>
-                        <TableCell className="pl-4">
-                          {prospect ? (
-                            <Link
-                              to={`/prospects/${prospect.id}`}
-                              className="flex items-center gap-3"
-                            >
-                              <ProspectAvatar prospect={prospect} />
-                              <span className="truncate font-medium">
-                                {prospect.firstName} {prospect.lastName}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="pl-4">Prospect</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Title / Company
+                      </TableHead>
+                      <TableHead>Current step</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Last touch
+                      </TableHead>
+                      <TableHead className="w-12 pr-4" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {enrollments.map((e) => {
+                      const prospect = getProspect(e.prospectId)
+                      return (
+                        <TableRow key={e.prospectId}>
+                          <TableCell className="pl-4">
+                            {prospect ? (
+                              <Link
+                                to={`/prospects/${prospect.id}`}
+                                className="flex items-center gap-3"
+                              >
+                                <ProspectAvatar prospect={prospect} />
+                                <span className="truncate font-medium">
+                                  {prospect.firstName} {prospect.lastName}
+                                </span>
+                              </Link>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                Unknown prospect
                               </span>
-                            </Link>
-                          ) : (
-                            <span className="text-muted-foreground">
-                              Unknown prospect
+                            )}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {prospect ? (
+                              <>
+                                <p className="text-muted-foreground text-sm">
+                                  {prospect.title}
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  {prospect.company}
+                                </p>
+                              </>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="tabular-nums">
+                            Step {e.currentStep} of {steps.length}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={ENROLLMENT_VARIANT[e.status]}
+                              className="capitalize"
+                            >
+                              {e.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
+                            {relativeTime(e.lastTouch)}
+                          </TableCell>
+                          <TableCell className="pr-4" />
+                        </TableRow>
+                      )
+                    })}
+                    {manualProspects.map((prospect) => (
+                      <TableRow key={prospect.id}>
+                        <TableCell className="pl-4">
+                          <Link
+                            to={`/prospects/${prospect.id}`}
+                            className="flex items-center gap-3"
+                          >
+                            <ProspectAvatar prospect={prospect} />
+                            <span className="truncate font-medium">
+                              {prospect.firstName} {prospect.lastName}
                             </span>
-                          )}
+                          </Link>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {prospect ? (
-                            <>
-                              <p className="text-muted-foreground text-sm">
-                                {prospect.title}
-                              </p>
-                              <p className="text-muted-foreground text-xs">
-                                {prospect.company}
-                              </p>
-                            </>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
+                          <p className="text-muted-foreground text-sm">
+                            {prospect.title}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {prospect.company}
+                          </p>
                         </TableCell>
                         <TableCell className="tabular-nums">
-                          Step {e.currentStep} of {campaign.steps.length}
+                          Step 1 of {steps.length}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={ENROLLMENT_VARIANT[e.status]}
-                            className="capitalize"
-                          >
-                            {e.status}
+                          <Badge variant={ENROLLMENT_VARIANT.active}>
+                            active
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
-                          {relativeTime(e.lastTouch)}
+                          Just added
+                        </TableCell>
+                        <TableCell className="pr-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Remove ${prospect.firstName} ${prospect.lastName}`}
+                            className="text-muted-foreground hover:text-destructive size-8"
+                            onClick={() => {
+                              campaignStore.removeProspect(
+                                campaign.id,
+                                prospect.id
+                              )
+                              toast.success("Removed from campaign")
+                            }}
+                          >
+                            <X className="size-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </Card>
           ) : (
             <Card>
-              <CardContent className="py-12 text-center">
+              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p className="text-muted-foreground text-sm">
                   No prospects enrolled yet.
                 </p>
+                <Button variant="outline" onClick={() => setAddOpen(true)}>
+                  <UserPlus className="size-4" />
+                  Add prospects
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -588,9 +825,7 @@ export default function CampaignDetail() {
                             ? `${prospect.firstName} ${prospect.lastName}`
                             : "Unknown prospect"}
                         </p>
-                        <p className="text-muted-foreground text-sm">
-                          {reply}
-                        </p>
+                        <p className="text-muted-foreground text-sm">{reply}</p>
                         <p className="text-muted-foreground text-xs">
                           {relativeTime(e.lastTouch)}
                         </p>
@@ -612,6 +847,149 @@ export default function CampaignDetail() {
           )}
         </TabsContent>
       </Tabs>
+
+      <EditCampaignDialog
+        key={campaign.id}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        campaignId={campaign.id}
+        currentName={campaign.name}
+        currentStatus={campaign.status}
+      />
+
+      <AddCampaignProspectsDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        campaign={campaign}
+        enrolledIds={allEnrolledIds}
+      />
     </Page>
+  )
+}
+
+/* ------------------------------ sub-components ----------------------------- */
+function AddStepMenu({
+  onAdd,
+}: {
+  onAdd: (channel: StepChannel) => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          <Plus className="size-4" />
+          Add step
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {CHANNEL_ORDER.map((c) => {
+          const meta = CHANNELS[c]
+          return (
+            <DropdownMenuItem key={c} onClick={() => onAdd(c)}>
+              <span
+                className={cn(
+                  "flex size-6 items-center justify-center rounded-md",
+                  meta.tint
+                )}
+              >
+                <meta.Icon className="size-3.5" />
+              </span>
+              {meta.label}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function EditCampaignDialog({
+  open,
+  onOpenChange,
+  campaignId,
+  currentName,
+  currentStatus,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  campaignId: string
+  currentName: string
+  currentStatus: CampaignStatus
+}) {
+  const [name, setName] = React.useState(currentName)
+  const [status, setStatus] = React.useState<CampaignStatus>(currentStatus)
+
+  // Re-sync the form whenever the dialog opens.
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setName(currentName)
+      setStatus(currentStatus)
+    }
+  }
+
+  function handleSave() {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    campaignStore.update(campaignId, { name: trimmed, status })
+    toast.success("Campaign updated")
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit campaign</DialogTitle>
+          <DialogDescription>
+            Update the campaign name and status.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="campaign-name" className="text-sm font-medium">
+              Name
+            </label>
+            <Input
+              id="campaign-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Campaign name"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="campaign-status" className="text-sm font-medium">
+              Status
+            </label>
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v as CampaignStatus)}
+            >
+              <SelectTrigger id="campaign-status" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CAMPAIGN_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="capitalize">
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={!name.trim()}>
+            Save changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -65,7 +65,7 @@ export default function Team() {
         title="Team"
         description="Manage reps and view their performance."
         action={
-          <Button onClick={() => toast.info("Invite sent — coming soon")}>
+          <Button variant="volt" onClick={() => toast.info("Invite sent — coming soon")}>
             <Plus className="size-4" />
             Invite member
           </Button>

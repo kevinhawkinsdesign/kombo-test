@@ -67,7 +67,7 @@ export default function Companies() {
         title="Companies"
         description="Account intelligence across your book of business."
         action={
-          <Button onClick={() => toast.info("Add company — coming soon")}>
+          <Button variant="volt" onClick={() => toast.info("Add company — coming soon")}>
             <Plus className="size-4" />
             Add company
           </Button>

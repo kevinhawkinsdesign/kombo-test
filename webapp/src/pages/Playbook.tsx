@@ -195,7 +195,7 @@ function ValuePropsTab({ products }: { products: PlaybookProduct[] }) {
       })}
 
       <div className="flex justify-end">
-        <Button onClick={() => toast.success("Value props saved")}>
+        <Button variant="volt" onClick={() => toast.success("Value props saved")}>
           Save value props
         </Button>
       </div>
@@ -279,7 +279,7 @@ function TemplatesTab() {
       <Separator />
 
       <div className="flex justify-end">
-        <Button onClick={() => toast.success("Template order saved")}>
+        <Button variant="volt" onClick={() => toast.success("Template order saved")}>
           Save order
         </Button>
       </div>

@@ -102,7 +102,7 @@ export default function Tasks() {
         title="Tasks"
         description="Your follow-ups and to-dos."
         action={
-          <Button onClick={openCreate}>
+          <Button variant="volt" onClick={openCreate}>
             <Plus />
             New task
           </Button>

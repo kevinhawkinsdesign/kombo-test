@@ -151,9 +151,18 @@ export interface Conversation {
 
 export type CampaignStatus = "active" | "paused" | "draft" | "completed"
 
+export type StepChannel =
+  | "email"
+  | "sms"
+  | "whatsapp"
+  | "instagram"
+  | "linkedin_message"
+  | "linkedin_dm"
+  | "linkedin_inmail"
+
 export interface CampaignStep {
   id: string
-  channel: Channel
+  channel: StepChannel
   delayDays: number
   subject?: string
   body: string
@@ -169,6 +178,8 @@ export interface Campaign {
   replied: number
   meetings: number
   createdAt: string
+  listId?: string // the single attached list (1-to-1)
+  enrolledIds?: string[] // manually-added prospect ids
 }
 
 export interface CoachRecording {

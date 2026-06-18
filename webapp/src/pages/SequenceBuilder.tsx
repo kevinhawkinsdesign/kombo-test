@@ -44,7 +44,7 @@ export default function SequenceBuilderPage() {
             Design the touches, triggers, and branches for this sequence.
           </p>
         </div>
-        <Button onClick={handleSave}>
+        <Button variant="volt" onClick={handleSave}>
           <Check className="size-4" />
           Save sequence
         </Button>

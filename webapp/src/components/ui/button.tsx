@@ -9,6 +9,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // Primary CTA — Kombo "volt" green. One per page.
+        volt: "bg-volt text-volt-foreground shadow-xs hover:bg-volt/90",
         default:
           "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
         destructive:

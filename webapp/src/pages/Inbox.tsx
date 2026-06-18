@@ -173,6 +173,7 @@ export default function Inbox() {
               </span>
               <Button
                 size="sm"
+                variant="volt"
                 disabled={!reply.trim()}
                 onClick={() => {
                   setReply("")

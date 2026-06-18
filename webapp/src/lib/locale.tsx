@@ -31,6 +31,7 @@ const en: Dict = {
   "nav.usage": "Usage & credits",
   "nav.getStarted": "Get started",
   "nav.newSearch": "New prospect search",
+  "nav.newCampaign": "New campaign",
   "common.language": "Language",
 }
 
@@ -61,6 +62,7 @@ const es: Dict = {
   "nav.usage": "Uso y créditos",
   "nav.getStarted": "Primeros pasos",
   "nav.newSearch": "Nueva búsqueda",
+  "nav.newCampaign": "Nueva campaña",
   "common.language": "Idioma",
 }
 

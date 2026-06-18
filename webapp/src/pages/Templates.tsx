@@ -213,7 +213,7 @@ export default function Templates() {
         title="Email Templates"
         description="Reusable outreach templates with live performance."
         action={
-          <Button onClick={() => openEditor(null)}>
+          <Button variant="volt" onClick={() => openEditor(null)}>
             <Plus className="size-4" />
             New template
           </Button>
@@ -348,7 +348,7 @@ export default function Templates() {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save</Button>
+            <Button variant="volt" onClick={handleSave}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
