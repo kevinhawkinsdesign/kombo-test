@@ -73,7 +73,12 @@ export function FeatureIntro({
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {action}
-            <Button variant="ghost" size="sm" onClick={dismiss}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={dismiss}
+              className="bg-background/60"
+            >
               Got it
             </Button>
           </div>
