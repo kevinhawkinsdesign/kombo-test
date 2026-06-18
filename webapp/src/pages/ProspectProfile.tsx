@@ -159,6 +159,9 @@ const COPY = {
     all: "All",
     noWarmPaths: "No warm paths yet.",
     exploreNetwork: "Explore your network",
+    strengthStrong: "Strong",
+    strengthMedium: "Medium",
+    strengthWeak: "Weak",
     ask: (name: string) => `Ask ${name}`,
     requestIntro: "Request intro",
     introRequested: (name: string) => `Intro requested via ${name}`,
@@ -243,6 +246,9 @@ const COPY = {
     all: "Todas",
     noWarmPaths: "Aún no hay caminos cálidos.",
     exploreNetwork: "Explora tu red",
+    strengthStrong: "Fuerte",
+    strengthMedium: "Media",
+    strengthWeak: "Débil",
     ask: (name: string) => `Pedir a ${name}`,
     requestIntro: "Solicitar presentación",
     introRequested: (name: string) =>
@@ -629,7 +635,7 @@ function ContactCard({
             className="hover:text-primary flex items-center gap-3"
           >
             <LinkedinIcon className="text-muted-foreground size-4" />
-            <span className="truncate">LinkedIn profile</span>
+            <span className="truncate">{c.linkedinProfile}</span>
           </a>
 
           <Separator />
@@ -640,7 +646,7 @@ function ContactCard({
             onClick={onAddToCrm}
           >
             <Building2 className="size-4" />
-            Add to CRM
+            {c.addToCrm}
           </Button>
         </CardContent>
       </Card>
@@ -648,19 +654,24 @@ function ContactCard({
       <Dialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Reveal {confirm === "phone" ? "phone" : "email"}?</DialogTitle>
+            <DialogTitle>
+              {confirm === "phone" ? c.revealPhoneTitle : c.revealEmailTitle}
+            </DialogTitle>
             <DialogDescription>
-              This will use {cost} credit{cost > 1 ? "s" : ""} to reveal{" "}
-              {prospect.firstName}'s {confirm === "phone" ? "phone number" : "email address"}.
+              {c.revealDesc(
+                cost,
+                prospect.firstName,
+                confirm === "phone" ? c.phoneNumber : c.emailAddress
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setConfirm(null)}>
-              Cancel
+              {c.cancel}
             </Button>
             <Button onClick={doReveal}>
               <Lock className="size-4" />
-              Use {cost} credit{cost > 1 ? "s" : ""}
+              {c.useCredits(cost)}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -678,20 +689,22 @@ function EnrichmentCard({
   prospect: Prospect
   onAddToCrm: () => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const enrichment = [
-    { label: "Seniority", value: prospect.seniority },
-    { label: "Department", value: prospect.department },
-    { label: "Headcount", value: prospect.headcount },
-    { label: "Industry", value: prospect.industry },
-    { label: "Revenue", value: prospect.revenue },
-    { label: "Location", value: prospect.location },
+    { label: c.seniority, value: prospect.seniority },
+    { label: c.department, value: prospect.department },
+    { label: c.headcount, value: prospect.headcount },
+    { label: c.industry, value: prospect.industry },
+    { label: c.revenue, value: prospect.revenue },
+    { label: c.location, value: prospect.location },
   ]
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-base">Enrichment</CardTitle>
+        <CardTitle className="text-base">{c.enrichment}</CardTitle>
         <Badge variant="secondary" className="font-normal">
-          30 data points
+          {c.dataPoints}
         </Badge>
       </CardHeader>
       <CardContent>
@@ -711,7 +724,7 @@ function EnrichmentCard({
           onClick={onAddToCrm}
         >
           <Building2 className="size-4" />
-          Add to CRM
+          {c.addToCrm}
         </Button>
       </CardContent>
     </Card>
@@ -721,18 +734,20 @@ function EnrichmentCard({
 /* ----------------------------- Lead qualification ----------------------------- */
 
 function QualificationCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const q = qualification(prospect)
   const rows = [
-    { label: "ICP fit", value: q.fit },
-    { label: "Intent", value: q.intent },
-    { label: "Engagement", value: q.engagement },
+    { label: c.icpFit, value: q.fit },
+    { label: c.intent, value: q.intent },
+    { label: c.engagement, value: q.engagement },
   ]
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="text-primary size-4" />
-          Lead qualification
+          {c.leadQualification}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -774,24 +789,31 @@ const INTRO_VARIANT: Record<
 }
 
 function WarmIntroCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const strengthLabels: Record<IntroStrength, string> = {
+    strong: c.strengthStrong,
+    medium: c.strengthMedium,
+    weak: c.strengthWeak,
+  }
   const paths = getIntroPaths(prospect.id)
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-base">
           <Waypoints className="text-primary size-4" />
-          Warm intros
+          {c.warmIntros}
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/intros">All</Link>
+          <Link to="/intros">{c.all}</Link>
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {paths.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            No warm paths yet.{" "}
+            {c.noWarmPaths}{" "}
             <Link to="/intros" className="text-primary">
-              Explore your network
+              {c.exploreNetwork}
             </Link>
           </p>
         ) : (
@@ -817,11 +839,8 @@ function WarmIntroCard({ prospect }: { prospect: Prospect }) {
                     {path.connectorTitle}
                   </p>
                 </div>
-                <Badge
-                  variant={INTRO_VARIANT[path.strength]}
-                  className="capitalize"
-                >
-                  {path.strength}
+                <Badge variant={INTRO_VARIANT[path.strength]}>
+                  {strengthLabels[path.strength]}
                 </Badge>
               </div>
               <p className="text-muted-foreground text-xs">{path.via}</p>
@@ -829,13 +848,11 @@ function WarmIntroCard({ prospect }: { prospect: Prospect }) {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() =>
-                  toast.success(`Intro requested via ${path.connectorName}`)
-                }
+                onClick={() => toast.success(c.introRequested(path.connectorName))}
               >
                 {path.connectorIsTeam
-                  ? `Ask ${path.connectorName.split(" ")[0]}`
-                  : "Request intro"}
+                  ? c.ask(path.connectorName.split(" ")[0])
+                  : c.requestIntro}
               </Button>
             </div>
           ))
@@ -854,6 +871,8 @@ function PrepTab({
   prospect: Prospect
   onUse: () => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const prep = callPrep(prospect)
   const emails = emailPrep(prospect)
 
@@ -863,17 +882,17 @@ function PrepTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <PhoneCall className="text-primary size-4" />
-            AI call prep
+            {c.aiCallPrep}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <PrepSection title="Talking points" items={prep.talkingPoints} />
+          <PrepSection title={c.talkingPoints} items={prep.talkingPoints} />
           <PrepSection
-            title="Discovery questions"
+            title={c.discoveryQuestions}
             items={prep.discoveryQuestions}
           />
           <div>
-            <p className="mb-2 text-sm font-medium">Likely objections</p>
+            <p className="mb-2 text-sm font-medium">{c.likelyObjections}</p>
             <div className="space-y-2">
               {prep.objections.map((o) => (
                 <div key={o.objection} className="bg-muted/50 rounded-md p-3">
@@ -892,7 +911,7 @@ function PrepTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Sparkles className="text-primary size-4" />
-            AI email drafts
+            {c.aiEmailDrafts}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -908,15 +927,15 @@ function PrepTab({
                     size="sm"
                     onClick={() => {
                       navigator.clipboard?.writeText(`${e.subject}\n\n${e.body}`)
-                      toast.success("Copied to clipboard")
+                      toast.success(c.copied)
                     }}
                   >
                     <Copy className="size-3.5" />
-                    Copy
+                    {c.copy}
                   </Button>
                   <Button variant="outline" size="sm" onClick={onUse}>
                     <Send className="size-3.5" />
-                    Use
+                    {c.use}
                   </Button>
                 </div>
               </div>
@@ -966,11 +985,13 @@ const HISTORY_META: Record<
 }
 
 function HistoryTab({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const events = getHistory(prospect)
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Activity timeline</CardTitle>
+        <CardTitle className="text-base">{c.activityTimeline}</CardTitle>
       </CardHeader>
       <CardContent>
         <ol className="relative space-y-5 border-l pl-6">
@@ -1008,6 +1029,8 @@ function HistoryTab({ prospect }: { prospect: Prospect }) {
 /* ----------------------------- Notes ----------------------------- */
 
 function NotesTab({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { user } = useAuth()
   const [notes, setNotes] = React.useState<ProspectNote[]>(() =>
     getNotes(prospect.id)
@@ -1028,7 +1051,7 @@ function NotesTab({ prospect }: { prospect: Prospect }) {
     setNotes((n) => [
       {
         id: `note_new_${idRef.current}`,
-        author: user?.name ?? "You",
+        author: user?.name ?? c.youAuthor,
         body: body.trim(),
         tags,
         createdAt: new Date().toISOString(),
@@ -1037,18 +1060,18 @@ function NotesTab({ prospect }: { prospect: Prospect }) {
     ])
     setBody("")
     setTags([])
-    toast.success("Note added")
+    toast.success(c.noteAdded)
   }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Add a note</CardTitle>
+          <CardTitle className="text-base">{c.addNote}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Textarea
-            placeholder="What did you learn? Add context for your team…"
+            placeholder={c.notePlaceholder}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             className="min-h-24"
@@ -1072,14 +1095,14 @@ function NotesTab({ prospect }: { prospect: Prospect }) {
           <div className="flex justify-end">
             <Button size="sm" onClick={addNote} disabled={!body.trim()}>
               <Plus className="size-4" />
-              Add note
+              {c.addNoteButton}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {notes.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No notes yet.</p>
+        <p className="text-muted-foreground text-sm">{c.noNotes}</p>
       ) : (
         notes.map((note) => (
           <Card key={note.id}>

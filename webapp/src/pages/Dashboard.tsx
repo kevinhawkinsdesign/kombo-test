@@ -29,7 +29,6 @@ import {
 } from "@/components/charts/Charts"
 import { Funnel } from "@/components/charts/Funnel"
 import { InfoHint } from "@/components/common/InfoHint"
-import { ImpactBand } from "@/components/common/ImpactBand"
 import { KaiSuggestion } from "@/components/kai/KaiSuggestion"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useView } from "@/lib/view-context"
@@ -300,8 +299,6 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
-
-      {!impersonating && <ImpactBand className="mt-6" />}
 
       {/* Trend + funnel */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
