@@ -1,7 +1,8 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { initials, scoreTone } from "@/lib/format"
+import { portraitFor } from "@/lib/avatars"
 import { STATUS_LABELS } from "@/lib/mock-data"
 import type { Prospect } from "@/lib/types"
 
@@ -12,8 +13,10 @@ export function ProspectAvatar({
   prospect: Pick<Prospect, "firstName" | "lastName" | "avatarColor">
   className?: string
 }) {
+  const name = `${prospect.firstName} ${prospect.lastName}`
   return (
     <Avatar className={className}>
+      <AvatarImage src={portraitFor(name)} alt="" />
       <AvatarFallback
         style={{ backgroundColor: prospect.avatarColor, color: "white" }}
         className="text-xs font-medium"

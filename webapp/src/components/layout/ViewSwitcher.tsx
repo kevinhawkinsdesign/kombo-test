@@ -1,7 +1,7 @@
 import { Users, Check, ChevronsUpDown, Eye } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useView } from "@/lib/view-context"
 import { team } from "@/lib/team"
+import { portraitFor } from "@/lib/avatars"
 import { initials } from "@/lib/format"
 
 export function ViewSwitcher() {
@@ -51,6 +52,7 @@ export function ViewSwitcher() {
         {team.map((rep) => (
           <DropdownMenuItem key={rep.id} onClick={() => impersonate(rep.id)}>
             <Avatar className="size-5">
+              <AvatarImage src={portraitFor(rep.name)} alt="" />
               <AvatarFallback
                 style={{ backgroundColor: rep.avatarColor, color: "white" }}
                 className="text-[10px]"
