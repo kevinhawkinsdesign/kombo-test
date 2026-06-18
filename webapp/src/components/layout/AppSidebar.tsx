@@ -22,9 +22,11 @@ import {
   Radio,
   Rocket,
   BookOpen,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react"
 
-import { KomboLockup } from "@/components/KomboLogo"
+import { KomboLockup, KomboMark } from "@/components/KomboLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +35,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
 import { copilotActions } from "@/lib/mock-copilot"
@@ -111,102 +119,216 @@ const bottomNav: NavItem[] = [
 function NavRow({
   item,
   onNavigate,
+  collapsed,
 }: {
   item: NavItem
   onNavigate?: () => void
+  collapsed?: boolean
 }) {
   const { t } = useLocale()
   const Icon = item.icon
-  return (
+  const label = t(item.labelKey)
+
+  const link = (
     <NavLink
       to={item.to}
       end={item.to === "/"}
       onClick={onNavigate}
+      aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         cn(
-          "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+          "group flex items-center rounded-md text-sm font-medium transition-colors",
+          collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
         )
       }
     >
-      <Icon className="size-4 shrink-0" />
-      <span className="flex-1">{t(item.labelKey)}</span>
-      {item.badge && (
+      <span className="relative">
+        <Icon className="size-4 shrink-0" />
+        {collapsed && item.badge && (
+          <span className="bg-primary ring-sidebar absolute -top-1 -right-1 size-2 rounded-full ring-2" />
+        )}
+      </span>
+      {!collapsed && <span className="flex-1">{label}</span>}
+      {!collapsed && item.badge && (
         <Badge className="h-5 min-w-5 justify-center px-1.5">
           {item.badge}
         </Badge>
       )}
     </NavLink>
   )
-}
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { t } = useLocale()
-  const { progress } = useSetup()
+  if (!collapsed) return link
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center px-5">
-        <KomboLockup className="h-7" />
-      </div>
-
-      <div className="px-3">
-        <Button
-          variant="volt"
-          className="w-full justify-start gap-2"
-          size="sm"
-          asChild
-        >
-          <NavLink to="/campaigns" onClick={onNavigate}>
-            <Send className="size-4" />
-            {t("nav.newCampaign")}
-          </NavLink>
-        </Button>
-      </div>
-
-      {progress < 100 && (
-        <div className="px-3 pt-2">
-          <NavLink
-            to="/get-started"
-            onClick={onNavigate}
-            className="border-volt/40 bg-volt/10 hover:bg-volt/15 text-sidebar-foreground flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
-          >
-            <Rocket className="text-volt size-4 shrink-0" />
-            <span className="flex-1">{t("nav.getStarted")}</span>
-            <Badge className="bg-sidebar-foreground/15 text-sidebar-foreground border-transparent tabular-nums">
-              {progress}%
-            </Badge>
-          </NavLink>
-        </div>
-      )}
-
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-        {sections.map((section) => (
-          <div key={section.labelKey} className="mb-1">
-            <p className="text-sidebar-foreground/65 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
-              {t(section.labelKey)}
-            </p>
-            {section.items.map((item) => (
-              <NavRow key={item.to} item={item} onNavigate={onNavigate} />
-            ))}
-          </div>
-        ))}
-
-        <div className="mt-auto flex flex-col gap-1 pt-2">
-          {bottomNav.map((item) => (
-            <NavRow key={item.to} item={item} onNavigate={onNavigate} />
-          ))}
-        </div>
-      </nav>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
   )
 }
 
-export function AppSidebar() {
+function SidebarContent({
+  onNavigate,
+  collapsed = false,
+  onToggleCollapse,
+}: {
+  onNavigate?: () => void
+  collapsed?: boolean
+  onToggleCollapse?: () => void
+}) {
+  const { t } = useLocale()
+  const { progress } = useSetup()
+
   return (
-    <aside className="bg-sidebar border-sidebar-border sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r md:flex">
-      <SidebarContent />
+    <TooltipProvider delayDuration={0}>
+      <div className="flex h-full flex-col">
+        <div
+          className={cn(
+            "flex h-16 items-center",
+            collapsed ? "justify-center px-2" : "px-5"
+          )}
+        >
+          {collapsed ? <KomboMark /> : <KomboLockup className="h-7" />}
+        </div>
+
+        <div className={cn(collapsed ? "px-2" : "px-3")}>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="volt" size="icon" className="mx-auto flex" asChild>
+                  <NavLink to="/campaigns" onClick={onNavigate} aria-label={t("nav.newCampaign")}>
+                    <Send className="size-4" />
+                  </NavLink>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{t("nav.newCampaign")}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="volt"
+              className="w-full justify-start gap-2"
+              size="sm"
+              asChild
+            >
+              <NavLink to="/campaigns" onClick={onNavigate}>
+                <Send className="size-4" />
+                {t("nav.newCampaign")}
+              </NavLink>
+            </Button>
+          )}
+        </div>
+
+        {progress < 100 && !collapsed && (
+          <div className="px-3 pt-2">
+            <NavLink
+              to="/get-started"
+              onClick={onNavigate}
+              className="border-volt/40 bg-volt/10 hover:bg-volt/15 text-sidebar-foreground flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+            >
+              <Rocket className="text-volt size-4 shrink-0" />
+              <span className="flex-1">{t("nav.getStarted")}</span>
+              <Badge className="bg-sidebar-foreground/15 text-sidebar-foreground border-transparent tabular-nums">
+                {progress}%
+              </Badge>
+            </NavLink>
+          </div>
+        )}
+
+        <nav
+          className={cn(
+            "flex flex-1 flex-col gap-1 overflow-y-auto",
+            collapsed ? "items-center p-2" : "p-3"
+          )}
+        >
+          {sections.map((section) => (
+            <div key={section.labelKey} className="mb-1 w-full">
+              {collapsed ? (
+                <div className="bg-sidebar-border mx-auto my-1 h-px w-6" />
+              ) : (
+                <p className="text-sidebar-foreground/65 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
+                  {t(section.labelKey)}
+                </p>
+              )}
+              {section.items.map((item) => (
+                <NavRow
+                  key={item.to}
+                  item={item}
+                  onNavigate={onNavigate}
+                  collapsed={collapsed}
+                />
+              ))}
+            </div>
+          ))}
+
+          <div className="mt-auto flex w-full flex-col gap-1 pt-2">
+            {bottomNav.map((item) => (
+              <NavRow
+                key={item.to}
+                item={item}
+                onNavigate={onNavigate}
+                collapsed={collapsed}
+              />
+            ))}
+            {onToggleCollapse && (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                className={cn(
+                  "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground flex items-center rounded-md text-sm font-medium transition-colors",
+                  collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2"
+                )}
+              >
+                {collapsed ? (
+                  <ChevronsRight className="size-4 shrink-0" />
+                ) : (
+                  <>
+                    <ChevronsLeft className="size-4 shrink-0" />
+                    <span className="flex-1 text-left">Collapse</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </nav>
+      </div>
+    </TooltipProvider>
+  )
+}
+
+const COLLAPSE_KEY = "kombo-sidebar-collapsed"
+
+export function AppSidebar() {
+  const [collapsed, setCollapsed] = React.useState(() => {
+    try {
+      return localStorage.getItem(COLLAPSE_KEY) === "1"
+    } catch {
+      return false
+    }
+  })
+
+  const toggle = React.useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0")
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }, [])
+
+  return (
+    <aside
+      className={cn(
+        "bg-sidebar border-sidebar-border sticky top-0 hidden h-svh shrink-0 flex-col border-r transition-[width] duration-200 md:flex",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
+      <SidebarContent collapsed={collapsed} onToggleCollapse={toggle} />
     </aside>
   )
 }
