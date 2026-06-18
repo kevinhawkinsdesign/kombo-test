@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { ImpactBand } from "@/components/common/ImpactBand"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"

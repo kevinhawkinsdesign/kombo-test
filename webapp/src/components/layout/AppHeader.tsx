@@ -53,7 +53,7 @@ export function AppHeader() {
   const { resolvedTheme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const { balance } = useCredits()
-  const { locale, setLocale } = useLocale()
+  const { locale, setLocale, t } = useLocale()
   const navigate = useNavigate()
 
   return (
@@ -63,8 +63,8 @@ export function AppHeader() {
       <div className="relative ml-auto hidden w-full max-w-xs md:block">
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
-          placeholder="Search prospects, companies…"
-          aria-label="Search prospects and companies"
+          placeholder={t("header.searchPlaceholder")}
+          aria-label={t("header.searchPlaceholder")}
           className="pl-9"
           onFocus={() => navigate("/search")}
         />
@@ -74,7 +74,7 @@ export function AppHeader() {
         <button
           onClick={() => navigate("/usage")}
           className="hover:bg-muted text-foreground hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors sm:flex"
-          title="Credits remaining"
+          title={t("header.credits")}
         >
           <Zap className="text-chart-4 size-3.5" />
           <span className="tabular-nums">{balance.toLocaleString()}</span>
@@ -87,8 +87,8 @@ export function AppHeader() {
           variant="ghost"
           size="icon"
           onClick={openSupport}
-          aria-label="Help & support"
-          title="Help & support"
+          aria-label={t("header.help")}
+          title={t("header.help")}
           className="text-primary hover:text-primary"
         >
           <HelpCircle className="size-5" />
@@ -165,21 +165,21 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/settings")}>
               <User className="size-4" />
-              Profile
+              {t("menu.profile")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/settings")}>
               <CreditCard className="size-4" />
-              Plan &amp; billing
+              {t("menu.billing")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={openSupport}>
               <HelpCircle className="size-4" />
-              Help &amp; support
+              {t("header.help")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={logout}>
               <LogOut className="size-4" />
-              Log out
+              {t("menu.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

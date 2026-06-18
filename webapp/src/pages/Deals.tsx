@@ -9,6 +9,7 @@ import {
   Trash2,
 } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
@@ -37,6 +38,79 @@ import { getRep } from "@/lib/team"
 import { initials, formatDate, formatMoney as money } from "@/lib/format"
 import type { Deal } from "@/lib/types"
 
+const COPY = {
+  en: {
+    title: "Deals",
+    description: "Your pipeline by stage.",
+    newDeal: "New deal",
+    introTitle: "Manage your pipeline",
+    introDescription:
+      "Track every open deal through your stages and forecast with confidence.",
+    introPoints: [
+      "Drag deals across stages",
+      "Weighted forecast by win probability",
+      "Spot stalled deals before they slip",
+    ],
+    openPipeline: "Open pipeline",
+    weightedForecast: "Weighted forecast",
+    openDeals: "Open deals",
+    noDeals: "No deals",
+    dealActions: "Deal actions",
+    edit: "Edit",
+    moveTo: "Move to",
+    delete: "Delete",
+    movedTo: (label: string) => `Moved to ${label}`,
+    deleteTitle: "Delete deal?",
+    deleteDescription: (name: string) =>
+      `"${name}" will be permanently removed.`,
+    deleteConfirm: "Delete",
+    dealDeleted: "Deal deleted",
+    stages: {
+      lead: "Lead",
+      qualified: "Qualified",
+      proposal: "Proposal",
+      negotiation: "Negotiation",
+      won: "Won",
+      lost: "Lost",
+    } as Record<Deal["stage"], string>,
+  },
+  es: {
+    title: "Negocios",
+    description: "Tu pipeline por etapa.",
+    newDeal: "Nuevo negocio",
+    introTitle: "Gestiona tu pipeline",
+    introDescription:
+      "Haz seguimiento de cada negocio abierto a través de tus etapas y prevé con confianza.",
+    introPoints: [
+      "Arrastra negocios entre etapas",
+      "Previsión ponderada por probabilidad de cierre",
+      "Detecta negocios estancados antes de que se pierdan",
+    ],
+    openPipeline: "Pipeline abierto",
+    weightedForecast: "Previsión ponderada",
+    openDeals: "Negocios abiertos",
+    noDeals: "Sin negocios",
+    dealActions: "Acciones del negocio",
+    edit: "Editar",
+    moveTo: "Mover a",
+    delete: "Eliminar",
+    movedTo: (label: string) => `Movido a ${label}`,
+    deleteTitle: "¿Eliminar negocio?",
+    deleteDescription: (name: string) =>
+      `"${name}" se eliminará de forma permanente.`,
+    deleteConfirm: "Eliminar",
+    dealDeleted: "Negocio eliminado",
+    stages: {
+      lead: "Lead",
+      qualified: "Cualificado",
+      proposal: "Propuesta",
+      negotiation: "Negociación",
+      won: "Ganado",
+      lost: "Perdido",
+    } as Record<Deal["stage"], string>,
+  },
+} as const
+
 function OwnerAvatar({ ownerId }: { ownerId: string }) {
   const rep = getRep(ownerId)
   if (!rep) return null
@@ -62,6 +136,8 @@ function DealCard({
   onEdit: (deal: Deal) => void
   onDelete: (deal: Deal) => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const account = getAccount(deal.accountId)
   return (
     <div className="bg-card hover:border-primary/40 space-y-2 rounded-lg border p-3 transition-colors">
@@ -79,7 +155,7 @@ function DealCard({
               variant="ghost"
               size="icon"
               className="-mt-1 -mr-1 size-7 shrink-0"
-              aria-label="Deal actions"
+              aria-label={c.dealActions}
             >
               <MoreHorizontal className="size-4" />
             </Button>
@@ -87,20 +163,20 @@ function DealCard({
           <DropdownMenuContent align="end" className="w-44">
             <DropdownMenuItem onSelect={() => onEdit(deal)}>
               <Pencil />
-              Edit
+              {c.edit}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Move to</DropdownMenuLabel>
+            <DropdownMenuLabel>{c.moveTo}</DropdownMenuLabel>
             {DEAL_STAGES.map((stage) => (
               <DropdownMenuItem
                 key={stage.key}
                 disabled={stage.key === deal.stage}
                 onSelect={() => {
                   dealStore.move(deal.id, stage.key)
-                  toast.success(`Moved to ${stage.label}`)
+                  toast.success(c.movedTo(c.stages[stage.key]))
                 }}
               >
-                {stage.label}
+                {c.stages[stage.key]}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
@@ -109,7 +185,7 @@ function DealCard({
               onSelect={() => onDelete(deal)}
             >
               <Trash2 />
-              Delete
+              {c.delete}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -141,6 +217,8 @@ function DealCard({
 }
 
 export default function Deals() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { impersonatingId } = useView()
   const deals = useDeals()
 
@@ -164,9 +242,9 @@ export default function Deals() {
   )
 
   const summary = [
-    { label: "Open pipeline", value: money(openPipeline) },
-    { label: "Weighted forecast", value: money(Math.round(weightedForecast)) },
-    { label: "Open deals", value: String(openDeals.length) },
+    { label: c.openPipeline, value: money(openPipeline) },
+    { label: c.weightedForecast, value: money(Math.round(weightedForecast)) },
+    { label: c.openDeals, value: String(openDeals.length) },
   ]
 
   function openCreate() {
@@ -182,12 +260,12 @@ export default function Deals() {
   return (
     <Page>
       <PageHeading
-        title="Deals"
-        description="Your pipeline by stage."
+        title={c.title}
+        description={c.description}
         action={
           <Button variant="volt" onClick={openCreate}>
             <Plus className="size-4" />
-            New deal
+            {c.newDeal}
           </Button>
         }
       />
@@ -195,13 +273,9 @@ export default function Deals() {
       <FeatureIntro
         featureKey="deals"
         icon={Briefcase}
-        title="Manage your pipeline"
-        description="Track every open deal through your stages and forecast with confidence."
-        points={[
-          "Drag deals across stages",
-          "Weighted forecast by win probability",
-          "Spot stalled deals before they slip",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={c.introPoints}
         className="mb-6"
       />
 
@@ -228,7 +302,7 @@ export default function Deals() {
               className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-lg p-2"
             >
               <div className="flex items-center gap-2 px-1 pt-1">
-                <span className="font-medium">{stage.label}</span>
+                <span className="font-medium">{c.stages[stage.key]}</span>
                 <Badge variant="secondary" className="tabular-nums">
                   {stageDeals.length}
                 </Badge>
@@ -249,7 +323,7 @@ export default function Deals() {
                   ))
                 ) : (
                   <p className="text-muted-foreground px-1 py-6 text-center text-xs">
-                    No deals
+                    {c.noDeals}
                   </p>
                 )}
               </div>
@@ -269,18 +343,16 @@ export default function Deals() {
         onOpenChange={(open) => {
           if (!open) setDeletingDeal(null)
         }}
-        title="Delete deal?"
+        title={c.deleteTitle}
         description={
-          deletingDeal
-            ? `"${deletingDeal.name}" will be permanently removed.`
-            : undefined
+          deletingDeal ? c.deleteDescription(deletingDeal.name) : undefined
         }
-        confirmLabel="Delete"
+        confirmLabel={c.deleteConfirm}
         destructive
         onConfirm={() => {
           if (deletingDeal) {
             dealStore.remove(deletingDeal.id)
-            toast.success("Deal deleted")
+            toast.success(c.dealDeleted)
           }
         }}
       />

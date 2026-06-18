@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { useLocale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -34,19 +35,80 @@ import { cn } from "@/lib/utils"
 
 const AUTOPILOT_COUNT = 8
 
-const GROUP_LABELS: Record<CopilotAction["group"], string> = {
-  recent: "Recently added",
-  due: "Due",
-}
+const COPY = {
+  en: {
+    groupRecent: "Recently added",
+    groupDue: "Due",
+    channelVideo: "Video",
+    channelEmail: "Email",
+    channelLinkedin: "LinkedIn",
+    channelCall: "Call",
+    immediately: "Immediately",
+    day1: "Day 1",
+    afterDays: (days: number) => `After ${days} days`,
+    title: "Kai Copilot",
+    pendingActions: "Pending actions",
+    onAutopilot: "On autopilot",
+    autopilotBody: (count: number) =>
+      `Kai is running ${count} low-risk steps automatically. Nothing needs your attention here.`,
+    noPending: "No pending actions.",
+    backToActions: "Back to actions",
+    newLead: "New lead",
+    viewProfile: "View profile",
+    companyDetails: "Company details",
+    industry: "Industry",
+    location: "Location",
+    headcount: "Headcount",
+    revenue: "Revenue",
+    signalDetails: "Signal details",
+    recommendedSequence: "Recommended sequence",
+    steps: "steps",
+    mailboxRotation: "Mailbox rotation",
+    dismiss: "Dismiss",
+    sendSequence: "Send sequence",
+    dismissed: "Dismissed",
+    sequenceSent: (firstName: string) => `Sequence sent to ${firstName}`,
+    allCaughtUp: "You're all caught up",
+    kaiSurfaces: "Kai will surface new signals as they happen.",
+  },
+  es: {
+    groupRecent: "Añadidos recientemente",
+    groupDue: "Pendientes",
+    channelVideo: "Vídeo",
+    channelEmail: "Correo",
+    channelLinkedin: "LinkedIn",
+    channelCall: "Llamada",
+    immediately: "Inmediatamente",
+    day1: "Día 1",
+    afterDays: (days: number) => `Tras ${days} días`,
+    title: "Kai Copilot",
+    pendingActions: "Acciones pendientes",
+    onAutopilot: "En piloto automático",
+    autopilotBody: (count: number) =>
+      `Kai está ejecutando ${count} pasos de bajo riesgo automáticamente. No necesitas hacer nada aquí.`,
+    noPending: "No hay acciones pendientes.",
+    backToActions: "Volver a las acciones",
+    newLead: "Nuevo lead",
+    viewProfile: "Ver perfil",
+    companyDetails: "Detalles de la empresa",
+    industry: "Sector",
+    location: "Ubicación",
+    headcount: "Empleados",
+    revenue: "Ingresos",
+    signalDetails: "Detalles de la señal",
+    recommendedSequence: "Secuencia recomendada",
+    steps: "pasos",
+    mailboxRotation: "Rotación de buzones",
+    dismiss: "Descartar",
+    sendSequence: "Enviar secuencia",
+    dismissed: "Descartado",
+    sequenceSent: (firstName: string) => `Secuencia enviada a ${firstName}`,
+    allCaughtUp: "Estás al día",
+    kaiSurfaces: "Kai mostrará nuevas señales a medida que ocurran.",
+  },
+} as const
 
 const GROUP_ORDER: CopilotAction["group"][] = ["recent", "due"]
-
-const CHANNEL_LABEL: Record<SequenceChannel, string> = {
-  video: "Video",
-  email: "Email",
-  linkedin: "LinkedIn",
-  call: "Call",
-}
 
 const CHANNEL_TINT: Record<SequenceChannel, string> = {
   video: "bg-chart-3/15 text-chart-3",
@@ -74,10 +136,13 @@ function ChannelGlyph({
   }
 }
 
-function delayLabel(delayDays: number): string {
-  if (delayDays <= 0) return "Immediately"
-  if (delayDays === 1) return "Day 1"
-  return `After ${delayDays} days`
+function delayLabel(
+  delayDays: number,
+  c: (typeof COPY)[keyof typeof COPY]
+): string {
+  if (delayDays <= 0) return c.immediately
+  if (delayDays === 1) return c.day1
+  return c.afterDays(delayDays)
 }
 
 /** Colored signal pill with a leading tone dot. */
@@ -126,6 +191,14 @@ function CompanyChip({
 }
 
 function SequenceTimeline({ steps }: { steps: SequenceStep[] }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const channelLabel: Record<SequenceChannel, string> = {
+    video: c.channelVideo,
+    email: c.channelEmail,
+    linkedin: c.channelLinkedin,
+    call: c.channelCall,
+  }
   return (
     <ol className="space-y-0">
       {steps.map((step, index) => {
@@ -156,10 +229,10 @@ function SequenceTimeline({ steps }: { steps: SequenceStep[] }) {
                   variant="outline"
                   className="text-muted-foreground gap-1 font-normal"
                 >
-                  {CHANNEL_LABEL[step.channel]}
+                  {channelLabel[step.channel]}
                 </Badge>
                 <span className="text-muted-foreground text-xs">
-                  {delayLabel(step.delayDays)}
+                  {delayLabel(step.delayDays, c)}
                 </span>
               </div>
               {step.body && (
@@ -176,6 +249,12 @@ function SequenceTimeline({ steps }: { steps: SequenceStep[] }) {
 }
 
 export default function Copilot() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const groupLabels: Record<CopilotAction["group"], string> = {
+    recent: c.groupRecent,
+    due: c.groupDue,
+  }
   const [pending, setPending] = React.useState<CopilotAction[]>(copilotActions)
   const [selectedId, setSelectedId] = React.useState<string | undefined>(
     copilotActions[0]?.id
@@ -220,12 +299,12 @@ export default function Copilot() {
 
   function dismiss(action: CopilotAction) {
     removeAction(action.id)
-    toast.info("Dismissed")
+    toast.info(c.dismissed)
   }
 
   function send(action: CopilotAction, firstName: string) {
     removeAction(action.id)
-    toast.success(`Sequence sent to ${firstName}`)
+    toast.success(c.sequenceSent(firstName))
   }
 
   return (
@@ -242,7 +321,7 @@ export default function Copilot() {
             <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
               <Sparkles className="size-4" />
             </span>
-            <h2 className="font-semibold">Kai Copilot</h2>
+            <h2 className="font-semibold">{c.title}</h2>
           </div>
           <div className="bg-muted text-muted-foreground inline-flex h-9 w-full items-center rounded-lg p-[3px]">
             <button
@@ -255,7 +334,7 @@ export default function Copilot() {
                   : "hover:text-foreground"
               )}
             >
-              Pending actions
+              {c.pendingActions}
               <Badge variant="secondary" className="px-1.5 font-normal">
                 {pending.length}
               </Badge>
@@ -270,7 +349,7 @@ export default function Copilot() {
                   : "hover:text-foreground"
               )}
             >
-              On autopilot
+              {c.onAutopilot}
               <Badge variant="secondary" className="px-1.5 font-normal">
                 {AUTOPILOT_COUNT}
               </Badge>
@@ -282,23 +361,20 @@ export default function Copilot() {
           <div className="flex-1 overflow-y-auto p-4">
             <div className="bg-muted/40 text-muted-foreground flex items-start gap-3 rounded-lg border p-4 text-sm">
               <Sparkles className="text-primary mt-0.5 size-4 shrink-0" />
-              <p>
-                Kai is running {AUTOPILOT_COUNT} low-risk steps automatically.
-                Nothing needs your attention here.
-              </p>
+              <p>{c.autopilotBody(AUTOPILOT_COUNT)}</p>
             </div>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto">
             {grouped.length === 0 ? (
               <div className="text-muted-foreground p-6 text-center text-sm">
-                No pending actions.
+                {c.noPending}
               </div>
             ) : (
               grouped.map(({ group, actions }) => (
                 <div key={group}>
                   <div className="text-muted-foreground flex items-center justify-between px-4 pt-4 pb-1 text-[11px] font-medium tracking-wide uppercase">
-                    <span>{GROUP_LABELS[group]}</span>
+                    <span>{groupLabels[group]}</span>
                     <span>{actions.length}</span>
                   </div>
                   {actions.map((action) => {
@@ -355,7 +431,7 @@ export default function Copilot() {
                 size="icon"
                 className="-ml-2 md:hidden"
                 onClick={() => setShowDetailMobile(false)}
-                aria-label="Back to actions"
+                aria-label={c.backToActions}
               >
                 <ArrowLeft className="size-4" />
               </Button>
@@ -366,7 +442,7 @@ export default function Copilot() {
                     {prospect.firstName} {prospect.lastName}
                   </span>
                   <Badge variant="secondary" className="font-normal">
-                    New lead
+                    {c.newLead}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground truncate text-sm">
@@ -376,7 +452,7 @@ export default function Copilot() {
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/prospects/${prospect.id}`}>
                   <ExternalLink className="size-4" />
-                  <span className="hidden sm:inline">View profile</span>
+                  <span className="hidden sm:inline">{c.viewProfile}</span>
                 </Link>
               </Button>
             </div>
@@ -385,7 +461,7 @@ export default function Copilot() {
               {/* Company details */}
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Company details</h3>
+                  <h3 className="text-sm font-semibold">{c.companyDetails}</h3>
                   <span className="text-muted-foreground text-sm">
                     {prospect.company}
                   </span>
@@ -393,22 +469,22 @@ export default function Copilot() {
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <CompanyChip
                     icon={<Building2 className="size-4" />}
-                    label="Industry"
+                    label={c.industry}
                     value={prospect.industry}
                   />
                   <CompanyChip
                     icon={<MapPin className="size-4" />}
-                    label="Location"
+                    label={c.location}
                     value={prospect.location}
                   />
                   <CompanyChip
                     icon={<Users className="size-4" />}
-                    label="Headcount"
+                    label={c.headcount}
                     value={prospect.headcount}
                   />
                   <CompanyChip
                     icon={<CircleDollarSign className="size-4" />}
-                    label="Revenue"
+                    label={c.revenue}
                     value={prospect.revenue}
                   />
                 </div>
@@ -418,7 +494,7 @@ export default function Copilot() {
 
               {/* Signal details */}
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold">Signal details</h3>
+                <h3 className="text-sm font-semibold">{c.signalDetails}</h3>
                 <SignalPill signal={selected.signal} />
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {selected.signal.detail}
@@ -430,16 +506,18 @@ export default function Copilot() {
               {/* Recommended sequence */}
               <section className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold">Recommended sequence</h3>
+                  <h3 className="text-sm font-semibold">
+                    {c.recommendedSequence}
+                  </h3>
                   <span className="text-muted-foreground text-sm">
-                    {selected.steps.length} steps
+                    {selected.steps.length} {c.steps}
                   </span>
                   <Badge
                     variant="outline"
                     className="text-muted-foreground gap-1 font-normal"
                   >
                     <Repeat className="size-3" />
-                    Mailbox rotation
+                    {c.mailboxRotation}
                   </Badge>
                 </div>
                 <SequenceTimeline steps={selected.steps} />
@@ -451,11 +529,11 @@ export default function Copilot() {
           <div className="bg-background flex items-center justify-end gap-2 border-t p-4">
             <Button variant="outline" onClick={() => dismiss(selected)}>
               <X className="size-4" />
-              Dismiss
+              {c.dismiss}
             </Button>
             <Button variant="volt" onClick={() => send(selected, prospect.firstName)}>
               <Send className="size-4" />
-              Send sequence
+              {c.sendSequence}
             </Button>
           </div>
         </div>
@@ -465,10 +543,8 @@ export default function Copilot() {
             <Sparkles className="size-6" />
           </span>
           <div>
-            <p className="text-sm font-medium">You're all caught up</p>
-            <p className="text-muted-foreground text-sm">
-              Kai will surface new signals as they happen.
-            </p>
+            <p className="text-sm font-medium">{c.allCaughtUp}</p>
+            <p className="text-muted-foreground text-sm">{c.kaiSurfaces}</p>
           </div>
         </div>
       )}

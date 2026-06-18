@@ -1,6 +1,7 @@
 import { Plus, Eye, MoreHorizontal, Users } from "lucide-react"
 import { toast } from "sonner"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
@@ -38,7 +39,85 @@ function repInitials(name: string): string {
   return initials(first, last)
 }
 
+const COPY = {
+  en: {
+    title: "Team",
+    description: "Manage reps and view their performance.",
+    inviteSent: "Invite sent — coming soon",
+    inviteMember: "Invite member",
+    introTitle: "Manage your team",
+    introDescription: "Invite reps, set roles, and see who's driving pipeline.",
+    introPoints: [
+      "Invite teammates & assign roles",
+      "Per-rep performance at a glance",
+      "Impersonate to see a rep's exact view",
+    ],
+    teamSize: "Team size",
+    totalQuota: "Total quota",
+    openPipeline: "Open pipeline",
+    avgAttainment: "Avg attainment",
+    reps: "Reps",
+    repsDescription: "Ranked by quota attainment · view any rep's workspace",
+    rep: "Rep",
+    email: "Email",
+    quota: "Quota",
+    attainment: "Attainment",
+    pipeline: "Pipeline",
+    meetings: "Meetings",
+    actions: "Actions",
+    viewAs: "View as",
+    viewingAs: (name: string) => `Viewing as ${name}`,
+    moreActions: (name: string) => `More actions for ${name}`,
+    message: "Message",
+    messageToast: (name: string) => `Message ${name} — coming soon`,
+    editRole: "Edit role",
+    editRoleToast: (name: string) => `Edit role for ${name} — coming soon`,
+    remove: "Remove",
+    removeToast: (name: string) => `Remove ${name} — coming soon`,
+  },
+  es: {
+    title: "Equipo",
+    description: "Gestiona a los representantes y consulta su rendimiento.",
+    inviteSent: "Invitación enviada — próximamente",
+    inviteMember: "Invitar miembro",
+    introTitle: "Gestiona tu equipo",
+    introDescription:
+      "Invita a representantes, asigna roles y descubre quién impulsa el pipeline.",
+    introPoints: [
+      "Invita a compañeros y asigna roles",
+      "Rendimiento por representante de un vistazo",
+      "Suplanta para ver la vista exacta de un representante",
+    ],
+    teamSize: "Tamaño del equipo",
+    totalQuota: "Cuota total",
+    openPipeline: "Pipeline abierto",
+    avgAttainment: "Cumplimiento medio",
+    reps: "Representantes",
+    repsDescription:
+      "Ordenados por cumplimiento de cuota · consulta el espacio de cualquier representante",
+    rep: "Representante",
+    email: "Correo",
+    quota: "Cuota",
+    attainment: "Cumplimiento",
+    pipeline: "Pipeline",
+    meetings: "Reuniones",
+    actions: "Acciones",
+    viewAs: "Ver como",
+    viewingAs: (name: string) => `Viendo como ${name}`,
+    moreActions: (name: string) => `Más acciones para ${name}`,
+    message: "Mensaje",
+    messageToast: (name: string) =>
+      `Enviar mensaje a ${name} — próximamente`,
+    editRole: "Editar rol",
+    editRoleToast: (name: string) => `Editar rol de ${name} — próximamente`,
+    remove: "Eliminar",
+    removeToast: (name: string) => `Eliminar a ${name} — próximamente`,
+  },
+} as const
+
 export default function Team() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { impersonate } = useView()
   const reps = leaderboard()
 
@@ -49,26 +128,26 @@ export default function Team() {
   )
 
   const summary = [
-    { label: "Team size", value: String(team.length) },
-    { label: "Total quota", value: money(totalQuota) },
-    { label: "Open pipeline", value: money(openPipeline) },
-    { label: "Avg attainment", value: `${avgAttainment}%` },
+    { label: c.teamSize, value: String(team.length) },
+    { label: c.totalQuota, value: money(totalQuota) },
+    { label: c.openPipeline, value: money(openPipeline) },
+    { label: c.avgAttainment, value: `${avgAttainment}%` },
   ]
 
   const handleImpersonate = (rep: TeamMember) => {
     impersonate(rep.id)
-    toast.success(`Viewing as ${rep.name}`)
+    toast.success(c.viewingAs(rep.name))
   }
 
   return (
     <Page>
       <PageHeading
-        title="Team"
-        description="Manage reps and view their performance."
+        title={c.title}
+        description={c.description}
         action={
-          <Button variant="volt" onClick={() => toast.info("Invite sent — coming soon")}>
+          <Button variant="volt" onClick={() => toast.info(c.inviteSent)}>
             <Plus className="size-4" />
-            Invite member
+            {c.inviteMember}
           </Button>
         }
       />
@@ -76,13 +155,9 @@ export default function Team() {
       <FeatureIntro
         featureKey="team"
         icon={Users}
-        title="Manage your team"
-        description="Invite reps, set roles, and see who's driving pipeline."
-        points={[
-          "Invite teammates & assign roles",
-          "Per-rep performance at a glance",
-          "Impersonate to see a rep's exact view",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={c.introPoints}
         className="mb-6"
       />
 
@@ -104,22 +179,22 @@ export default function Team() {
       <div className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Reps</CardTitle>
-            <CardDescription>
-              Ranked by quota attainment · view any rep&apos;s workspace
-            </CardDescription>
+            <CardTitle>{c.reps}</CardTitle>
+            <CardDescription>{c.repsDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Rep</TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="text-right">Quota</TableHead>
-                  <TableHead className="text-right">Attainment</TableHead>
-                  <TableHead className="text-right">Pipeline</TableHead>
-                  <TableHead className="text-right">Meetings</TableHead>
-                  <TableHead className="w-px text-right">Actions</TableHead>
+                  <TableHead>{c.rep}</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    {c.email}
+                  </TableHead>
+                  <TableHead className="text-right">{c.quota}</TableHead>
+                  <TableHead className="text-right">{c.attainment}</TableHead>
+                  <TableHead className="text-right">{c.pipeline}</TableHead>
+                  <TableHead className="text-right">{c.meetings}</TableHead>
+                  <TableHead className="w-px text-right">{c.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,14 +254,14 @@ export default function Team() {
                             onClick={() => handleImpersonate(rep)}
                           >
                             <Eye className="size-4" />
-                            View as
+                            {c.viewAs}
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`More actions for ${rep.name}`}
+                                aria-label={c.moreActions(rep.name)}
                               >
                                 <MoreHorizontal className="size-4" />
                               </Button>
@@ -194,28 +269,26 @@ export default function Team() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 onClick={() =>
-                                  toast.info(`Message ${rep.name} — coming soon`)
+                                  toast.info(c.messageToast(rep.name))
                                 }
                               >
-                                Message
+                                {c.message}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  toast.info(
-                                    `Edit role for ${rep.name} — coming soon`
-                                  )
+                                  toast.info(c.editRoleToast(rep.name))
                                 }
                               >
-                                Edit role
+                                {c.editRole}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 variant="destructive"
                                 onClick={() =>
-                                  toast.info(`Remove ${rep.name} — coming soon`)
+                                  toast.info(c.removeToast(rep.name))
                                 }
                               >
-                                Remove
+                                {c.remove}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

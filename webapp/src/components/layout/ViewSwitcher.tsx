@@ -13,10 +13,12 @@ import {
 import { useView } from "@/lib/view-context"
 import { team } from "@/lib/team"
 import { portraitFor } from "@/lib/avatars"
+import { useLocale } from "@/lib/locale"
 import { initials } from "@/lib/format"
 
 export function ViewSwitcher() {
   const { impersonatingId, impersonate, exitImpersonation } = useView()
+  const { t } = useLocale()
   const active = team.find((m) => m.id === impersonatingId)
 
   return (
@@ -26,28 +28,28 @@ export function ViewSwitcher() {
           {active ? (
             <>
               <Eye className="size-4" />
-              <span className="hidden sm:inline">Viewing as</span>
+              <span className="hidden sm:inline">{t("view.viewingAs")}</span>
               <span className="font-medium">{active.name}</span>
             </>
           ) : (
             <>
               <Users className="size-4" />
-              <span className="font-medium">Whole team</span>
+              <span className="font-medium">{t("view.wholeTeam")}</span>
             </>
           )}
           <ChevronsUpDown className="text-muted-foreground size-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-60">
-        <DropdownMenuLabel>View workspace as</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("view.as")}</DropdownMenuLabel>
         <DropdownMenuItem onClick={exitImpersonation}>
           <Users className="size-4" />
-          <span className="flex-1">Whole team</span>
+          <span className="flex-1">{t("view.wholeTeam")}</span>
           {!active && <Check className="size-4" />}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
-          Impersonate a rep
+          {t("view.impersonate")}
         </DropdownMenuLabel>
         {team.map((rep) => (
           <DropdownMenuItem key={rep.id} onClick={() => impersonate(rep.id)}>

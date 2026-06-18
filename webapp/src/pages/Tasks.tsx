@@ -26,7 +26,72 @@ import { getProspect } from "@/lib/mock-data"
 import { useView } from "@/lib/view-context"
 import { relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/lib/locale"
 import type { Task, TaskType } from "@/lib/types"
+
+const COPY = {
+  en: {
+    priorityLabel: {
+      high: "High",
+      medium: "Medium",
+      low: "Low",
+    } as Record<Task["priority"], string>,
+    pageTitle: "Tasks",
+    pageDescription: "Your follow-ups and to-dos.",
+    newTask: "New task",
+    introTitle: "Stay on top of every follow-up",
+    introDescription:
+      "Your prioritized daily list of calls, emails, and LinkedIn touches.",
+    introPoints: [
+      "Tasks auto-created from your sequences",
+      "A clean due-today view",
+      "Complete touches without context-switching",
+    ],
+    openDone: (open: number, done: number) => `${open} open · ${done} done`,
+    noTasks: "No tasks.",
+    markOpen: "Mark task as open",
+    markDone: "Mark task as done",
+    editAria: (title: string) => `Edit task: ${title}`,
+    deleteAria: (title: string) => `Delete task: ${title}`,
+    taskCompleted: "Task completed",
+    taskDeleted: "Task deleted",
+    deleteTitle: "Delete task?",
+    deleteDescription: (title: string) =>
+      `"${title}" will be permanently removed.`,
+    delete: "Delete",
+  },
+  es: {
+    priorityLabel: {
+      high: "Alta",
+      medium: "Media",
+      low: "Baja",
+    } as Record<Task["priority"], string>,
+    pageTitle: "Tareas",
+    pageDescription: "Tus seguimientos y pendientes.",
+    newTask: "Nueva tarea",
+    introTitle: "Controla todos tus seguimientos",
+    introDescription:
+      "Tu lista diaria priorizada de llamadas, correos y contactos por LinkedIn.",
+    introPoints: [
+      "Tareas creadas automáticamente desde tus secuencias",
+      "Una vista clara de lo que vence hoy",
+      "Completa contactos sin cambiar de contexto",
+    ],
+    openDone: (open: number, done: number) =>
+      `${open} abiertas · ${done} completadas`,
+    noTasks: "No hay tareas.",
+    markOpen: "Marcar tarea como abierta",
+    markDone: "Marcar tarea como completada",
+    editAria: (title: string) => `Editar tarea: ${title}`,
+    deleteAria: (title: string) => `Eliminar tarea: ${title}`,
+    taskCompleted: "Tarea completada",
+    taskDeleted: "Tarea eliminada",
+    deleteTitle: "¿Eliminar tarea?",
+    deleteDescription: (title: string) =>
+      `«${title}» se eliminará de forma permanente.`,
+    delete: "Eliminar",
+  },
+} as const
 
 const TYPE_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> =
   {
@@ -46,6 +111,8 @@ const PRIORITY_VARIANT: Record<
 }
 
 export default function Tasks() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { impersonatingId } = useView()
   const tasks = useTasks()
 
@@ -77,7 +144,7 @@ export default function Tasks() {
 
   function toggle(task: Task) {
     taskStore.toggle(task.id)
-    if (!task.done) toast.success("Task completed")
+    if (!task.done) toast.success(c.taskCompleted)
   }
 
   function openCreate() {
@@ -93,18 +160,18 @@ export default function Tasks() {
   function confirmDelete() {
     if (!deletingTask) return
     taskStore.remove(deletingTask.id)
-    toast.success("Task deleted")
+    toast.success(c.taskDeleted)
   }
 
   return (
     <Page>
       <PageHeading
-        title="Tasks"
-        description="Your follow-ups and to-dos."
+        title={c.pageTitle}
+        description={c.pageDescription}
         action={
           <Button variant="volt" onClick={openCreate}>
             <Plus />
-            New task
+            {c.newTask}
           </Button>
         }
       />
@@ -112,24 +179,20 @@ export default function Tasks() {
       <FeatureIntro
         featureKey="tasks"
         icon={CheckSquare}
-        title="Stay on top of every follow-up"
-        description="Your prioritized daily list of calls, emails, and LinkedIn touches."
-        points={[
-          "Tasks auto-created from your sequences",
-          "A clean due-today view",
-          "Complete touches without context-switching",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={[...c.introPoints]}
         className="mb-6"
       />
 
       <p className="text-muted-foreground mb-4 text-sm tabular-nums">
-        {openCount} open · {doneCount} done
+        {c.openDone(openCount, doneCount)}
       </p>
 
       <Card className="gap-0 overflow-hidden py-0">
         {sorted.length === 0 ? (
           <p className="text-muted-foreground px-4 py-10 text-center text-sm">
-            No tasks.
+            {c.noTasks}
           </p>
         ) : (
           sorted.map((task) => {
@@ -145,9 +208,7 @@ export default function Tasks() {
                 <Checkbox
                   checked={task.done}
                   onCheckedChange={() => toggle(task)}
-                  aria-label={
-                    task.done ? "Mark task as open" : "Mark task as done"
-                  }
+                  aria-label={task.done ? c.markOpen : c.markDone}
                 />
 
                 <span
@@ -180,9 +241,9 @@ export default function Tasks() {
 
                 <Badge
                   variant={PRIORITY_VARIANT[task.priority]}
-                  className={cn("shrink-0 capitalize", task.done && "opacity-60")}
+                  className={cn("shrink-0", task.done && "opacity-60")}
                 >
-                  {task.priority}
+                  {c.priorityLabel[task.priority]}
                 </Badge>
 
                 <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
@@ -194,7 +255,7 @@ export default function Tasks() {
                     variant="ghost"
                     size="icon"
                     className="size-8"
-                    aria-label={`Edit task: ${task.title}`}
+                    aria-label={c.editAria(task.title)}
                     onClick={() => openEdit(task)}
                   >
                     <Pencil />
@@ -203,7 +264,7 @@ export default function Tasks() {
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground hover:text-destructive size-8"
-                    aria-label={`Delete task: ${task.title}`}
+                    aria-label={c.deleteAria(task.title)}
                     onClick={() => setDeletingTask(task)}
                   >
                     <Trash2 />
@@ -226,13 +287,11 @@ export default function Tasks() {
         onOpenChange={(open) => {
           if (!open) setDeletingTask(null)
         }}
-        title="Delete task?"
+        title={c.deleteTitle}
         description={
-          deletingTask
-            ? `"${deletingTask.title}" will be permanently removed.`
-            : undefined
+          deletingTask ? c.deleteDescription(deletingTask.title) : undefined
         }
-        confirmLabel="Delete"
+        confirmLabel={c.delete}
         destructive
         onConfirm={confirmDelete}
       />

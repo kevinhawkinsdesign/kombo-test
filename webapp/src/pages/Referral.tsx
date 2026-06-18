@@ -1,6 +1,7 @@
 import { Copy, Gift, Mail, Share2 } from "lucide-react"
 import { toast } from "sonner"
 
+import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
@@ -90,26 +91,109 @@ const statusVariant: Record<
   Invited: "outline",
 }
 
-const summary = [
-  { label: "People referred", value: "8" },
-  { label: "Signed up", value: "5" },
-  { label: "Credits earned", value: "2,000" },
-]
-
-const steps = [
-  {
-    title: "Share your link",
-    description: "Send your personal referral link to friends and colleagues.",
+const COPY = {
+  en: {
+    title: "Refer & earn",
+    description: "Give 500 credits, get 500 credits when a referral activates.",
+    shareLinkToast: "Referral link copied",
+    shareLink: "Share link",
+    yourReferralLink: "Your referral link",
+    yourReferralLinkDesc: "Share this link anywhere — it's tied to your account.",
+    linkAriaLabel: "Your referral link",
+    copiedToast: "Copied to clipboard",
+    copyErrorToast: "Couldn't copy link",
+    copy: "Copy",
+    emailToast: "Opening email draft — coming soon",
+    email: "Email",
+    linkedinToast: "Opening LinkedIn share — coming soon",
+    linkedin: "LinkedIn",
+    howItWorks: "How it works",
+    howItWorksDesc: "Three steps to start earning credits.",
+    yourReferrals: "Your referrals",
+    yourReferralsDesc: "People you've invited and their current status.",
+    person: "Person",
+    status: "Status",
+    date: "Date",
+    reward: "Reward",
+    summary: [
+      { label: "People referred", value: "8" },
+      { label: "Signed up", value: "5" },
+      { label: "Credits earned", value: "2,000" },
+    ],
+    steps: [
+      {
+        title: "Share your link",
+        description:
+          "Send your personal referral link to friends and colleagues.",
+      },
+      {
+        title: "They sign up & activate",
+        description: "Your referral creates an account and starts using Kombo.",
+      },
+      {
+        title: "You both get 500 credits",
+        description: "Credits land in both accounts the moment they activate.",
+      },
+    ],
+    statusLabels: {
+      Active: "Active",
+      "Signed up": "Signed up",
+      Invited: "Invited",
+    } as Record<ReferralStatus, string>,
   },
-  {
-    title: "They sign up & activate",
-    description: "Your referral creates an account and starts using Kombo.",
+  es: {
+    title: "Recomienda y gana",
+    description:
+      "Regala 500 créditos y gana 500 cuando un referido se active.",
+    shareLinkToast: "Enlace de referido copiado",
+    shareLink: "Compartir enlace",
+    yourReferralLink: "Tu enlace de referido",
+    yourReferralLinkDesc:
+      "Comparte este enlace donde quieras: está vinculado a tu cuenta.",
+    linkAriaLabel: "Tu enlace de referido",
+    copiedToast: "Copiado al portapapeles",
+    copyErrorToast: "No se pudo copiar el enlace",
+    copy: "Copiar",
+    emailToast: "Abriendo borrador de correo — próximamente",
+    email: "Correo",
+    linkedinToast: "Abriendo para compartir en LinkedIn — próximamente",
+    linkedin: "LinkedIn",
+    howItWorks: "Cómo funciona",
+    howItWorksDesc: "Tres pasos para empezar a ganar créditos.",
+    yourReferrals: "Tus referidos",
+    yourReferralsDesc: "Personas que has invitado y su estado actual.",
+    person: "Persona",
+    status: "Estado",
+    date: "Fecha",
+    reward: "Recompensa",
+    summary: [
+      { label: "Personas referidas", value: "8" },
+      { label: "Registradas", value: "5" },
+      { label: "Créditos ganados", value: "2,000" },
+    ],
+    steps: [
+      {
+        title: "Comparte tu enlace",
+        description:
+          "Envía tu enlace personal de referido a amigos y colegas.",
+      },
+      {
+        title: "Se registran y se activan",
+        description: "Tu referido crea una cuenta y empieza a usar Kombo.",
+      },
+      {
+        title: "Ambos ganáis 500 créditos",
+        description:
+          "Los créditos llegan a ambas cuentas en cuanto se activan.",
+      },
+    ],
+    statusLabels: {
+      Active: "Activo",
+      "Signed up": "Registrado",
+      Invited: "Invitado",
+    } as Record<ReferralStatus, string>,
   },
-  {
-    title: "You both get 500 credits",
-    description: "Credits land in both accounts the moment they activate.",
-  },
-]
+} as const
 
 function referralInitials(name: string): string {
   const [first, last] = name.split(" ")
@@ -117,24 +201,29 @@ function referralInitials(name: string): string {
 }
 
 export default function Referral() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const copyLink = async () => {
     try {
       await navigator.clipboard?.writeText(REFERRAL_LINK)
-      toast.success("Copied to clipboard")
+      toast.success(c.copiedToast)
     } catch {
-      toast.error("Couldn't copy link")
+      toast.error(c.copyErrorToast)
     }
   }
 
   return (
     <Page>
       <PageHeading
-        title="Refer & earn"
-        description="Give 500 credits, get 500 credits when a referral activates."
+        title={c.title}
+        description={c.description}
         action={
-          <Button variant="volt" onClick={() => toast.success("Referral link copied")}>
+          <Button
+            variant="volt"
+            onClick={() => toast.success(c.shareLinkToast)}
+          >
             <Share2 className="size-4" />
-            Share link
+            {c.shareLink}
           </Button>
         }
       />
@@ -142,40 +231,38 @@ export default function Referral() {
       {/* Referral link */}
       <Card>
         <CardHeader>
-          <CardTitle>Your referral link</CardTitle>
-          <CardDescription>
-            Share this link anywhere — it&apos;s tied to your account.
-          </CardDescription>
+          <CardTitle>{c.yourReferralLink}</CardTitle>
+          <CardDescription>{c.yourReferralLinkDesc}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               readOnly
               value={REFERRAL_LINK}
-              aria-label="Your referral link"
+              aria-label={c.linkAriaLabel}
               className="font-mono"
             />
             <Button onClick={copyLink} className="shrink-0">
               <Copy className="size-4" />
-              Copy
+              {c.copy}
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toast.info("Opening email draft — coming soon")}
+              onClick={() => toast.info(c.emailToast)}
             >
               <Mail className="size-4" />
-              Email
+              {c.email}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toast.info("Opening LinkedIn share — coming soon")}
+              onClick={() => toast.info(c.linkedinToast)}
             >
               <LinkedinIcon className="size-4" />
-              LinkedIn
+              {c.linkedin}
             </Button>
           </div>
         </CardContent>
@@ -183,7 +270,7 @@ export default function Referral() {
 
       {/* Summary */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        {summary.map((stat) => (
+        {c.summary.map((stat) => (
           <Card key={stat.label}>
             <CardHeader>
               <CardDescription>{stat.label}</CardDescription>
@@ -201,15 +288,13 @@ export default function Referral() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Gift className="text-primary size-4" />
-              How it works
+              {c.howItWorks}
             </CardTitle>
-            <CardDescription>
-              Three steps to start earning credits.
-            </CardDescription>
+            <CardDescription>{c.howItWorksDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-3">
-              {steps.map((step, index) => (
+              {c.steps.map((step, index) => (
                 <div key={step.title} className="flex flex-col gap-2">
                   <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
                     {index + 1}
@@ -229,19 +314,17 @@ export default function Referral() {
       <div className="mt-6">
         <Card>
           <CardHeader>
-            <CardTitle>Your referrals</CardTitle>
-            <CardDescription>
-              People you&apos;ve invited and their current status.
-            </CardDescription>
+            <CardTitle>{c.yourReferrals}</CardTitle>
+            <CardDescription>{c.yourReferralsDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Person</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Reward</TableHead>
+                  <TableHead>{c.person}</TableHead>
+                  <TableHead>{c.status}</TableHead>
+                  <TableHead>{c.date}</TableHead>
+                  <TableHead className="text-right">{c.reward}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -268,7 +351,7 @@ export default function Referral() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={statusVariant[referral.status]}>
-                          {referral.status}
+                          {c.statusLabels[referral.status]}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">

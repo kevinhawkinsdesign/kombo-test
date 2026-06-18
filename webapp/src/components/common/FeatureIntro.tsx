@@ -2,6 +2,7 @@ import { X, Check } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useFeatureIntro, type FeatureKey } from "@/lib/feature-tour"
+import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 
 /**
@@ -22,11 +23,12 @@ export function FeatureIntro({
   icon: React.ComponentType<{ className?: string }>
   title: string
   description: string
-  points?: string[]
+  points?: readonly string[]
   action?: React.ReactNode
   className?: string
 }) {
   const { show, dismiss } = useFeatureIntro(featureKey)
+  const { t } = useLocale()
   if (!show) return null
 
   return (
@@ -79,7 +81,7 @@ export function FeatureIntro({
               onClick={dismiss}
               className="bg-background/60"
             >
-              Got it
+              {t("common.gotIt")}
             </Button>
           </div>
         </div>

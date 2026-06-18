@@ -46,6 +46,7 @@ import {
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { formatDate } from "@/lib/format"
+import { useLocale } from "@/lib/locale"
 import type { Campaign, CampaignStatus } from "@/lib/types"
 
 interface CampaignAudience {
@@ -53,6 +54,107 @@ interface CampaignAudience {
   name: string
   continuous: boolean
 }
+
+const COPY = {
+  en: {
+    statusLabel: {
+      active: "Active",
+      paused: "Paused",
+      draft: "Draft",
+      completed: "Completed",
+    } as Record<CampaignStatus, string>,
+    createdSteps: (date: string, steps: number) =>
+      `Created ${date} · ${steps} steps`,
+    fedBy: (name: string) => `Fed by ${name}`,
+    continuous: "Continuous",
+    pause: "Pause",
+    activate: "Activate",
+    campaignOptions: "Campaign options",
+    editSequence: "Edit sequence",
+    duplicate: "Duplicate",
+    archive: "Archive",
+    enrolled: "Enrolled",
+    opened: "Opened",
+    replied: "Replied",
+    meetings: "Meetings",
+    paused: (name: string) => `${name} paused`,
+    activated: (name: string) => `${name} activated`,
+    newCampaign: "New campaign",
+    createIntro: "Give your campaign a name to get started.",
+    campaignName: "Campaign name",
+    namePlaceholder: "Q3 outbound — VP Sales",
+    cancel: "Cancel",
+    create: "Create",
+    campaignCreated: "Campaign created",
+    campaignDuplicated: "Campaign duplicated",
+    campaignDeleted: "Campaign deleted",
+    pageTitle: "Campaigns",
+    pageDescription: "Multi-channel sequences across email and LinkedIn.",
+    buildSequence: "Build sequence",
+    introTitle: "Run multi-step sequences",
+    introDescription:
+      "Reach prospects across email and LinkedIn with timing that earns replies.",
+    introPoints: [
+      "Multi-channel, multi-step sequences",
+      "A/B test your messaging",
+      "Auto-pause the moment someone replies",
+      "Track opens, replies & meetings booked",
+    ],
+    deleteTitle: "Delete campaign?",
+    deleteDescription: (name: string) =>
+      `"${name}" and its sequence will be permanently removed.`,
+    delete: "Delete",
+  },
+  es: {
+    statusLabel: {
+      active: "Activa",
+      paused: "En pausa",
+      draft: "Borrador",
+      completed: "Completada",
+    } as Record<CampaignStatus, string>,
+    createdSteps: (date: string, steps: number) =>
+      `Creada el ${date} · ${steps} pasos`,
+    fedBy: (name: string) => `Alimentada por ${name}`,
+    continuous: "Continua",
+    pause: "Pausar",
+    activate: "Activar",
+    campaignOptions: "Opciones de campaña",
+    editSequence: "Editar secuencia",
+    duplicate: "Duplicar",
+    archive: "Archivar",
+    enrolled: "Inscritos",
+    opened: "Aperturas",
+    replied: "Respuestas",
+    meetings: "Reuniones",
+    paused: (name: string) => `${name} en pausa`,
+    activated: (name: string) => `${name} activada`,
+    newCampaign: "Nueva campaña",
+    createIntro: "Asigna un nombre a tu campaña para empezar.",
+    campaignName: "Nombre de la campaña",
+    namePlaceholder: "Outbound Q3 — VP de Ventas",
+    cancel: "Cancelar",
+    create: "Crear",
+    campaignCreated: "Campaña creada",
+    campaignDuplicated: "Campaña duplicada",
+    campaignDeleted: "Campaña eliminada",
+    pageTitle: "Campañas",
+    pageDescription: "Secuencias multicanal por correo y LinkedIn.",
+    buildSequence: "Crear secuencia",
+    introTitle: "Ejecuta secuencias de varios pasos",
+    introDescription:
+      "Llega a tus prospectos por correo y LinkedIn con un ritmo que consigue respuestas.",
+    introPoints: [
+      "Secuencias multicanal y de varios pasos",
+      "Haz pruebas A/B de tus mensajes",
+      "Pausa automática en cuanto alguien responde",
+      "Mide aperturas, respuestas y reuniones agendadas",
+    ],
+    deleteTitle: "¿Eliminar campaña?",
+    deleteDescription: (name: string) =>
+      `«${name}» y su secuencia se eliminarán de forma permanente.`,
+    delete: "Eliminar",
+  },
+} as const
 
 const STATUS_VARIANT: Record<
   CampaignStatus,
@@ -84,6 +186,8 @@ function CampaignCard({
   onDuplicate: (campaign: Campaign) => void
   onDelete: (campaign: Campaign) => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const replyRate = campaign.enrolled
     ? Math.round((campaign.replied / campaign.enrolled) * 100)
     : 0
@@ -94,8 +198,8 @@ function CampaignCard({
     campaignStore.update(campaign.id, { status: nextStatus })
     toast.success(
       nextStatus === "paused"
-        ? `${campaign.name} paused`
-        : `${campaign.name} activated`
+        ? c.paused(campaign.name)
+        : c.activated(campaign.name)
     )
   }
 
@@ -112,23 +216,22 @@ function CampaignCard({
                 {campaign.name}
               </Link>
             </CardTitle>
-            <Badge
-              variant={STATUS_VARIANT[campaign.status]}
-              className="capitalize"
-            >
-              {campaign.status}
+            <Badge variant={STATUS_VARIANT[campaign.status]}>
+              {c.statusLabel[campaign.status]}
             </Badge>
           </div>
           <p className="text-muted-foreground text-xs">
-            Created {formatDate(campaign.createdAt)} · {campaign.steps.length}{" "}
-            steps
+            {c.createdSteps(
+              formatDate(campaign.createdAt),
+              campaign.steps.length
+            )}
           </p>
           {audience && (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
               <Link to={`/lists/${audience.id}`}>
                 <Badge variant="secondary" className="gap-1 font-normal">
                   <Sparkles className="size-3" />
-                  Fed by {audience.name}
+                  {c.fedBy(audience.name)}
                 </Badge>
               </Link>
               {audience.continuous && (
@@ -137,7 +240,7 @@ function CampaignCard({
                   className="text-chart-1 gap-1 font-normal"
                 >
                   <RefreshCw className="size-3" />
-                  Continuous
+                  {c.continuous}
                 </Badge>
               )}
             </div>
@@ -148,33 +251,33 @@ function CampaignCard({
             {campaign.status === "active" ? (
               <>
                 <Pause className="size-4" />
-                Pause
+                {c.pause}
               </>
             ) : (
               <>
                 <Play className="size-4" />
-                Activate
+                {c.activate}
               </>
             )}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Campaign options">
+              <Button variant="ghost" size="icon" aria-label={c.campaignOptions}>
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link to={`/campaigns/${campaign.id}`}>Edit sequence</Link>
+                <Link to={`/campaigns/${campaign.id}`}>{c.editSequence}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onDuplicate(campaign)}>
-                Duplicate
+                {c.duplicate}
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => onDelete(campaign)}
               >
-                Archive
+                {c.archive}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -182,10 +285,10 @@ function CampaignCard({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-4 gap-2">
-          <Metric label="Enrolled" value={campaign.enrolled} />
-          <Metric label="Opened" value={campaign.opened} />
-          <Metric label="Replied" value={`${replyRate}%`} />
-          <Metric label="Meetings" value={campaign.meetings} />
+          <Metric label={c.enrolled} value={campaign.enrolled} />
+          <Metric label={c.opened} value={campaign.opened} />
+          <Metric label={c.replied} value={`${replyRate}%`} />
+          <Metric label={c.meetings} value={campaign.meetings} />
         </div>
 
         {campaign.steps.length > 0 && (
@@ -227,6 +330,8 @@ function CreateCampaignDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const navigate = useNavigate()
   const [name, setName] = React.useState("")
 
@@ -245,7 +350,7 @@ function CreateCampaignDialog({
   function handleCreate() {
     if (!trimmedName) return
     const campaign = campaignStore.create({ name: trimmedName })
-    toast.success("Campaign created")
+    toast.success(c.campaignCreated)
     onOpenChange(false)
     navigate(`/campaigns/${campaign.id}`)
   }
@@ -254,10 +359,8 @@ function CreateCampaignDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>New campaign</DialogTitle>
-          <DialogDescription>
-            Give your campaign a name to get started.
-          </DialogDescription>
+          <DialogTitle>{c.newCampaign}</DialogTitle>
+          <DialogDescription>{c.createIntro}</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(event) => {
@@ -266,12 +369,12 @@ function CreateCampaignDialog({
           }}
           className="space-y-2"
         >
-          <Label htmlFor="campaign-name">Campaign name</Label>
+          <Label htmlFor="campaign-name">{c.campaignName}</Label>
           <Input
             id="campaign-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Q3 outbound — VP Sales"
+            placeholder={c.namePlaceholder}
             autoFocus
           />
           <DialogFooter className="pt-2">
@@ -280,10 +383,10 @@ function CreateCampaignDialog({
               variant="ghost"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {c.cancel}
             </Button>
             <Button type="submit" variant="volt" disabled={!trimmedName}>
-              Create
+              {c.create}
             </Button>
           </DialogFooter>
         </form>
@@ -293,6 +396,8 @@ function CreateCampaignDialog({
 }
 
 export default function Campaigns() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const campaigns = useCampaigns()
   const lists = useLists()
   const [createOpen, setCreateOpen] = React.useState(false)
@@ -316,32 +421,36 @@ export default function Campaigns() {
   }, [lists])
 
   function handleDuplicate(campaign: Campaign) {
-    campaignStore.create({ ...campaign, name: `${campaign.name} (copy)` })
-    toast.success("Campaign duplicated")
+    const copySuffix = locale === "es" ? "(copia)" : "(copy)"
+    campaignStore.create({
+      ...campaign,
+      name: `${campaign.name} ${copySuffix}`,
+    })
+    toast.success(c.campaignDuplicated)
   }
 
   function handleDelete() {
     if (!pendingDelete) return
     campaignStore.remove(pendingDelete.id)
-    toast.success("Campaign deleted")
+    toast.success(c.campaignDeleted)
   }
 
   return (
     <Page>
       <PageHeading
-        title="Campaigns"
-        description="Multi-channel sequences across email and LinkedIn."
+        title={c.pageTitle}
+        description={c.pageDescription}
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
               <Link to="/sequence-builder">
                 <Workflow className="size-4" />
-                Build sequence
+                {c.buildSequence}
               </Link>
             </Button>
             <Button variant="volt" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4" />
-              New campaign
+              {c.newCampaign}
             </Button>
           </div>
         }
@@ -349,22 +458,17 @@ export default function Campaigns() {
       <FeatureIntro
         featureKey="campaigns"
         icon={Send}
-        title="Run multi-step sequences"
-        description="Reach prospects across email and LinkedIn with timing that earns replies."
-        points={[
-          "Multi-channel, multi-step sequences",
-          "A/B test your messaging",
-          "Auto-pause the moment someone replies",
-          "Track opens, replies & meetings booked",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={[...c.introPoints]}
         className="mb-6"
       />
       <div className="grid gap-4 lg:grid-cols-2">
-        {campaigns.map((c) => (
+        {campaigns.map((campaign) => (
           <CampaignCard
-            key={c.id}
-            campaign={c}
-            audience={audienceByCampaign.get(c.id)}
+            key={campaign.id}
+            campaign={campaign}
+            audience={audienceByCampaign.get(campaign.id)}
             onDuplicate={handleDuplicate}
             onDelete={setPendingDelete}
           />
@@ -377,13 +481,11 @@ export default function Campaigns() {
         onOpenChange={(open) => {
           if (!open) setPendingDelete(null)
         }}
-        title="Delete campaign?"
+        title={c.deleteTitle}
         description={
-          pendingDelete
-            ? `"${pendingDelete.name}" and its sequence will be permanently removed.`
-            : undefined
+          pendingDelete ? c.deleteDescription(pendingDelete.name) : undefined
         }
-        confirmLabel="Delete"
+        confirmLabel={c.delete}
         destructive
         onConfirm={handleDelete}
       />

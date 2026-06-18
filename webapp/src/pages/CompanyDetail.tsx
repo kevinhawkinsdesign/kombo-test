@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
+import { useLocale } from "@/lib/locale"
 import {
   Card,
   CardContent,
@@ -45,20 +46,92 @@ import {
 } from "@/lib/format"
 import type { Account, DealStage } from "@/lib/types"
 
+const COPY = {
+  en: {
+    healthHealthy: "Healthy",
+    healthAtWatch: "At watch",
+    healthAtRisk: "At risk",
+    companyNotFound: "Company not found.",
+    backToCompanies: "Back to companies",
+    companies: "Companies",
+    addToCrm: "Add to CRM",
+    addContact: "Add contact",
+    addContactToast: "Add a contact to this company",
+    about: "About",
+    buyingSignals: "Buying signals",
+    recentNews: "Recent news",
+    noNews: "No recent news for this account.",
+    openDeals: "Open deals",
+    dealName: "Deal name",
+    stage: "Stage",
+    value: "Value",
+    closeDate: "Close date",
+    noOpenDeals: "No open deals",
+    contacts: "Contacts",
+    noContacts: "No contacts",
+    keyExecutives: "Key executives",
+    firmographics: "Firmographics",
+    industry: "Industry",
+    employees: "Employees",
+    revenue: "Revenue",
+    location: "Location",
+    accountOwner: "Account owner",
+    unassigned: "Unassigned",
+    crmCompany: "Company",
+    crmWebsite: "Website",
+  },
+  es: {
+    healthHealthy: "Saludable",
+    healthAtWatch: "En observación",
+    healthAtRisk: "En riesgo",
+    companyNotFound: "Empresa no encontrada.",
+    backToCompanies: "Volver a empresas",
+    companies: "Empresas",
+    addToCrm: "Añadir al CRM",
+    addContact: "Añadir contacto",
+    addContactToast: "Añadir un contacto a esta empresa",
+    about: "Acerca de",
+    buyingSignals: "Señales de compra",
+    recentNews: "Noticias recientes",
+    noNews: "No hay noticias recientes de esta cuenta.",
+    openDeals: "Negocios abiertos",
+    dealName: "Nombre del negocio",
+    stage: "Etapa",
+    value: "Valor",
+    closeDate: "Fecha de cierre",
+    noOpenDeals: "Sin negocios abiertos",
+    contacts: "Contactos",
+    noContacts: "Sin contactos",
+    keyExecutives: "Ejecutivos clave",
+    firmographics: "Firmográficos",
+    industry: "Sector",
+    employees: "Empleados",
+    revenue: "Ingresos",
+    location: "Ubicación",
+    accountOwner: "Responsable de la cuenta",
+    unassigned: "Sin asignar",
+    crmCompany: "Empresa",
+    crmWebsite: "Sitio web",
+  },
+} as const
+
 function nameInitials(name: string): string {
   const [first, ...rest] = name.split(" ")
   return initials(first, rest.at(-1))
 }
 
-function healthTone(score: number): {
+function healthTone(
+  score: number,
+  c: (typeof COPY)[keyof typeof COPY]
+): {
   label: string
   className: string
 } {
   if (score >= 80)
-    return { label: "Healthy", className: "bg-chart-1/15 text-chart-1" }
+    return { label: c.healthHealthy, className: "bg-chart-1/15 text-chart-1" }
   if (score >= 65)
-    return { label: "At watch", className: "bg-chart-4/15 text-chart-4" }
-  return { label: "At risk", className: "bg-muted text-muted-foreground" }
+    return { label: c.healthAtWatch, className: "bg-chart-4/15 text-chart-4" }
+  return { label: c.healthAtRisk, className: "bg-muted text-muted-foreground" }
 }
 
 const STAGE_VARIANT: Record<
@@ -74,6 +147,8 @@ const STAGE_VARIANT: Record<
 }
 
 export default function CompanyDetail() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { id } = useParams()
   const account: Account | undefined = id ? getAccount(id) : undefined
   const [crmOpen, setCrmOpen] = React.useState(false)
@@ -81,15 +156,15 @@ export default function CompanyDetail() {
   if (!account) {
     return (
       <Page>
-        <p className="text-muted-foreground">Company not found.</p>
+        <p className="text-muted-foreground">{c.companyNotFound}</p>
         <Button variant="link" asChild className="px-0">
-          <Link to="/companies">Back to companies</Link>
+          <Link to="/companies">{c.backToCompanies}</Link>
         </Button>
       </Page>
     )
   }
 
-  const health = healthTone(account.healthScore)
+  const health = healthTone(account.healthScore, c)
   const openDeals = deals.filter((d) => d.accountId === account.id)
   const contacts = prospects.filter(
     (p) => p.companyDomain === account.domain
@@ -97,10 +172,10 @@ export default function CompanyDetail() {
   const owner = getRep(account.ownerId)
 
   const firmographics = [
-    { label: "Industry", value: account.industry },
-    { label: "Employees", value: account.employees },
-    { label: "Revenue", value: account.revenue },
-    { label: "Location", value: account.location },
+    { label: c.industry, value: account.industry },
+    { label: c.employees, value: account.employees },
+    { label: c.revenue, value: account.revenue },
+    { label: c.location, value: account.location },
   ]
 
   return (
@@ -108,7 +183,7 @@ export default function CompanyDetail() {
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/companies">
           <ArrowLeft className="size-4" />
-          Companies
+          {c.companies}
         </Link>
       </Button>
 
@@ -147,15 +222,15 @@ export default function CompanyDetail() {
           <div className="flex flex-wrap gap-2">
             <Button variant="volt" onClick={() => setCrmOpen(true)}>
               <Building2 className="size-4" />
-              Add to CRM
+              {c.addToCrm}
             </Button>
             <TrackButton kind="account" id={account.id} name={account.name} />
             <Button
               variant="outline"
-              onClick={() => toast.info("Add a contact to this company")}
+              onClick={() => toast.info(c.addContactToast)}
             >
               <Plus className="size-4" />
-              Add contact
+              {c.addContact}
             </Button>
           </div>
         </CardContent>
@@ -165,7 +240,7 @@ export default function CompanyDetail() {
         <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">About</CardTitle>
+              <CardTitle className="text-base">{c.about}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm leading-relaxed">
@@ -180,7 +255,7 @@ export default function CompanyDetail() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="text-primary size-4" />
-                Buying signals
+                {c.buyingSignals}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -200,7 +275,7 @@ export default function CompanyDetail() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Newspaper className="text-muted-foreground size-4" />
-                Recent news
+                {c.recentNews}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
@@ -232,16 +307,14 @@ export default function CompanyDetail() {
                   </div>
                 ))
               ) : (
-                <p className="text-muted-foreground text-sm">
-                  No recent news for this account.
-                </p>
+                <p className="text-muted-foreground text-sm">{c.noNews}</p>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Open deals</CardTitle>
+              <CardTitle className="text-base">{c.openDeals}</CardTitle>
             </CardHeader>
             <CardContent>
               {openDeals.length > 0 ? (
@@ -249,10 +322,10 @@ export default function CompanyDetail() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead>Deal name</TableHead>
-                      <TableHead>Stage</TableHead>
-                      <TableHead>Value</TableHead>
-                      <TableHead>Close date</TableHead>
+                      <TableHead>{c.dealName}</TableHead>
+                      <TableHead>{c.stage}</TableHead>
+                      <TableHead>{c.value}</TableHead>
+                      <TableHead>{c.closeDate}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -279,14 +352,14 @@ export default function CompanyDetail() {
                 </Table>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">No open deals</p>
+                <p className="text-muted-foreground text-sm">{c.noOpenDeals}</p>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Contacts</CardTitle>
+              <CardTitle className="text-base">{c.contacts}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               {contacts.length > 0 ? (
@@ -309,7 +382,7 @@ export default function CompanyDetail() {
                   </Link>
                 ))
               ) : (
-                <p className="text-muted-foreground text-sm">No contacts</p>
+                <p className="text-muted-foreground text-sm">{c.noContacts}</p>
               )}
             </CardContent>
           </Card>
@@ -318,7 +391,7 @@ export default function CompanyDetail() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Key executives</CardTitle>
+              <CardTitle className="text-base">{c.keyExecutives}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {account.keyExecutives.map((exec) => (
@@ -341,7 +414,7 @@ export default function CompanyDetail() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Firmographics</CardTitle>
+              <CardTitle className="text-base">{c.firmographics}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -357,7 +430,7 @@ export default function CompanyDetail() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Account owner</CardTitle>
+              <CardTitle className="text-base">{c.accountOwner}</CardTitle>
             </CardHeader>
             <CardContent>
               {owner ? (
@@ -378,7 +451,7 @@ export default function CompanyDetail() {
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">Unassigned</p>
+                <p className="text-muted-foreground text-sm">{c.unassigned}</p>
               )}
             </CardContent>
           </Card>
@@ -391,11 +464,11 @@ export default function CompanyDetail() {
         kind="company"
         recordName={account.name}
         fields={[
-          { label: "Company", value: account.name },
-          { label: "Website", value: account.domain },
-          { label: "Industry", value: account.industry },
-          { label: "Employees", value: account.employees },
-          { label: "Location", value: account.location },
+          { label: c.crmCompany, value: account.name },
+          { label: c.crmWebsite, value: account.domain },
+          { label: c.industry, value: account.industry },
+          { label: c.employees, value: account.employees },
+          { label: c.location, value: account.location },
         ]}
       />
     </Page>

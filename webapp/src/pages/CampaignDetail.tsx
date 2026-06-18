@@ -76,11 +76,209 @@ import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/lib/locale"
 import type {
   CampaignStatus,
   StepChannel,
   EnrollmentStatus,
 } from "@/lib/types"
+
+const COPY = {
+  en: {
+    channelLabel: {
+      email: "Email",
+      sms: "SMS",
+      whatsapp: "WhatsApp",
+      instagram: "Instagram DM",
+      linkedin_message: "LinkedIn message",
+      linkedin_dm: "LinkedIn DM",
+      linkedin_inmail: "LinkedIn InMail",
+    } as Record<StepChannel, string>,
+    statusLabel: {
+      active: "Active",
+      paused: "Paused",
+      draft: "Draft",
+      completed: "Completed",
+    } as Record<CampaignStatus, string>,
+    enrollmentLabel: {
+      replied: "Replied",
+      active: "Active",
+      completed: "Completed",
+      paused: "Paused",
+      bounced: "Bounced",
+    } as Record<EnrollmentStatus, string>,
+    campaignNotFound: "Campaign not found.",
+    backToCampaigns: "Back to campaigns",
+    campaigns: "Campaigns",
+    createdSteps: (date: string, steps: number) =>
+      `Created ${date} · ${steps} steps`,
+    pause: "Pause",
+    activate: "Activate",
+    edit: "Edit",
+    addProspects: "Add prospects",
+    paused: (name: string) => `${name} paused`,
+    activated: (name: string) => `${name} activated`,
+    enrolled: "Enrolled",
+    openRate: "Open rate",
+    replyRate: "Reply rate",
+    meetings: "Meetings",
+    tabOverview: "Overview",
+    tabSequence: "Sequence",
+    tabProspects: "Prospects",
+    tabConversations: "Conversations",
+    dailyPerformance: "Daily performance",
+    dailyPerformanceDesc: "Sent, opened and replied per day.",
+    noDailyData: "No daily data yet for this campaign.",
+    audience: "Audience",
+    audienceDesc:
+      "Attach a single prospect list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
+    prospectsCount: (count: number) => `${count} prospects`,
+    dynamicSuffix: " · dynamic",
+    detached: (name: string) => `Detached ${name}`,
+    detach: "Detach",
+    chooseList: "Choose a list to attach",
+    linkedElsewhere: " (linked elsewhere)",
+    attached: (name: string) => `Attached ${name}`,
+    listAttached: "List attached",
+    attach: "Attach",
+    noListsToAttach: "No lists available to attach yet.",
+    summary: "Summary",
+    sent: "Sent",
+    opened: "Opened",
+    replied: "Replied",
+    moveStepUp: "Move step up",
+    moveStepDown: "Move step down",
+    removeStep: "Remove step",
+    stepChannelAria: (n: number) => `Step ${n} channel`,
+    wait: "Wait",
+    daysBeforeSending: "days before sending",
+    subjectLine: "Subject line",
+    messageBody: "Message body",
+    saveSequence: "Save sequence",
+    sequenceSaved: "Sequence saved",
+    noSteps: "This sequence has no steps yet.",
+    addStep: "Add step",
+    thProspect: "Prospect",
+    thTitleCompany: "Title / Company",
+    thCurrentStep: "Current step",
+    thStatus: "Status",
+    thLastTouch: "Last touch",
+    unknownProspect: "Unknown prospect",
+    stepOf: (current: number, total: number) =>
+      `Step ${current} of ${total}`,
+    justAdded: "Just added",
+    removeProspectAria: (name: string) => `Remove ${name}`,
+    removedFromCampaign: "Removed from campaign",
+    noProspects: "No prospects enrolled yet.",
+    noReplies: "No replies yet.",
+    viewInInbox: "View in inbox",
+    editCampaign: "Edit campaign",
+    editCampaignDesc: "Update the campaign name and status.",
+    name: "Name",
+    namePlaceholder: "Campaign name",
+    status: "Status",
+    cancel: "Cancel",
+    saveChanges: "Save changes",
+    campaignUpdated: "Campaign updated",
+  },
+  es: {
+    channelLabel: {
+      email: "Correo",
+      sms: "SMS",
+      whatsapp: "WhatsApp",
+      instagram: "Mensaje de Instagram",
+      linkedin_message: "Mensaje de LinkedIn",
+      linkedin_dm: "Mensaje directo de LinkedIn",
+      linkedin_inmail: "InMail de LinkedIn",
+    } as Record<StepChannel, string>,
+    statusLabel: {
+      active: "Activa",
+      paused: "En pausa",
+      draft: "Borrador",
+      completed: "Completada",
+    } as Record<CampaignStatus, string>,
+    enrollmentLabel: {
+      replied: "Respondió",
+      active: "Activo",
+      completed: "Completado",
+      paused: "En pausa",
+      bounced: "Rebotado",
+    } as Record<EnrollmentStatus, string>,
+    campaignNotFound: "Campaña no encontrada.",
+    backToCampaigns: "Volver a campañas",
+    campaigns: "Campañas",
+    createdSteps: (date: string, steps: number) =>
+      `Creada el ${date} · ${steps} pasos`,
+    pause: "Pausar",
+    activate: "Activar",
+    edit: "Editar",
+    addProspects: "Añadir prospectos",
+    paused: (name: string) => `${name} en pausa`,
+    activated: (name: string) => `${name} activada`,
+    enrolled: "Inscritos",
+    openRate: "Tasa de apertura",
+    replyRate: "Tasa de respuesta",
+    meetings: "Reuniones",
+    tabOverview: "Resumen",
+    tabSequence: "Secuencia",
+    tabProspects: "Prospectos",
+    tabConversations: "Conversaciones",
+    dailyPerformance: "Rendimiento diario",
+    dailyPerformanceDesc: "Enviados, abiertos y respondidos por día.",
+    noDailyData: "Aún no hay datos diarios para esta campaña.",
+    audience: "Audiencia",
+    audienceDesc:
+      "Vincula una única lista de prospectos para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
+    prospectsCount: (count: number) => `${count} prospectos`,
+    dynamicSuffix: " · dinámica",
+    detached: (name: string) => `${name} desvinculada`,
+    detach: "Desvincular",
+    chooseList: "Elige una lista para vincular",
+    linkedElsewhere: " (vinculada en otro lugar)",
+    attached: (name: string) => `${name} vinculada`,
+    listAttached: "Lista vinculada",
+    attach: "Vincular",
+    noListsToAttach: "Aún no hay listas disponibles para vincular.",
+    summary: "Resumen",
+    sent: "Enviados",
+    opened: "Aperturas",
+    replied: "Respuestas",
+    moveStepUp: "Subir paso",
+    moveStepDown: "Bajar paso",
+    removeStep: "Eliminar paso",
+    stepChannelAria: (n: number) => `Canal del paso ${n}`,
+    wait: "Espera",
+    daysBeforeSending: "días antes de enviar",
+    subjectLine: "Asunto",
+    messageBody: "Cuerpo del mensaje",
+    saveSequence: "Guardar secuencia",
+    sequenceSaved: "Secuencia guardada",
+    noSteps: "Esta secuencia aún no tiene pasos.",
+    addStep: "Añadir paso",
+    thProspect: "Prospecto",
+    thTitleCompany: "Cargo / Empresa",
+    thCurrentStep: "Paso actual",
+    thStatus: "Estado",
+    thLastTouch: "Último contacto",
+    unknownProspect: "Prospecto desconocido",
+    stepOf: (current: number, total: number) =>
+      `Paso ${current} de ${total}`,
+    justAdded: "Recién añadido",
+    removeProspectAria: (name: string) => `Eliminar a ${name}`,
+    removedFromCampaign: "Eliminado de la campaña",
+    noProspects: "Aún no hay prospectos inscritos.",
+    noReplies: "Aún no hay respuestas.",
+    viewInInbox: "Ver en la bandeja",
+    editCampaign: "Editar campaña",
+    editCampaignDesc: "Actualiza el nombre y el estado de la campaña.",
+    name: "Nombre",
+    namePlaceholder: "Nombre de la campaña",
+    status: "Estado",
+    cancel: "Cancelar",
+    saveChanges: "Guardar cambios",
+    campaignUpdated: "Campaña actualizada",
+  },
+} as const
 
 const STATUS_VARIANT: Record<
   CampaignStatus,
@@ -112,36 +310,30 @@ const CAMPAIGN_STATUSES: CampaignStatus[] = [
 
 /* ------------------------------ channel meta ------------------------------ */
 interface ChannelMeta {
-  label: string
   tint: string
   Icon: React.ComponentType<{ className?: string }>
 }
 
 const CHANNELS: Record<StepChannel, ChannelMeta> = {
-  email: { label: "Email", tint: "bg-primary/15 text-primary", Icon: Mail },
-  sms: { label: "SMS", tint: "bg-chart-4/15 text-chart-4", Icon: MessageSquare },
+  email: { tint: "bg-primary/15 text-primary", Icon: Mail },
+  sms: { tint: "bg-chart-4/15 text-chart-4", Icon: MessageSquare },
   whatsapp: {
-    label: "WhatsApp",
     tint: "bg-chart-1/15 text-chart-1",
     Icon: MessageCircle,
   },
   instagram: {
-    label: "Instagram DM",
     tint: "bg-chart-5/15 text-chart-5",
     Icon: Camera,
   },
   linkedin_message: {
-    label: "LinkedIn message",
     tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
     Icon: LinkedinIcon,
   },
   linkedin_dm: {
-    label: "LinkedIn DM",
     tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
     Icon: LinkedinIcon,
   },
   linkedin_inmail: {
-    label: "LinkedIn InMail",
     tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
     Icon: LinkedinIcon,
   },
@@ -197,10 +389,12 @@ function shortDay(iso: string): string {
 }
 
 export default function CampaignDetail() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { id } = useParams()
   const campaigns = useCampaigns()
   const lists = useLists()
-  const campaign = campaigns.find((c) => c.id === id)
+  const campaign = campaigns.find((item) => item.id === id)
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
@@ -209,9 +403,9 @@ export default function CampaignDetail() {
   if (!campaign) {
     return (
       <Page>
-        <p className="text-muted-foreground">Campaign not found.</p>
+        <p className="text-muted-foreground">{c.campaignNotFound}</p>
         <Button variant="link" asChild className="px-0">
-          <Link to="/campaigns">Back to campaigns</Link>
+          <Link to="/campaigns">{c.backToCampaigns}</Link>
         </Button>
       </Page>
     )
@@ -261,7 +455,7 @@ export default function CampaignDetail() {
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/campaigns">
           <ArrowLeft className="size-4" />
-          Campaigns
+          {c.campaigns}
         </Link>
       </Button>
 
@@ -271,15 +465,12 @@ export default function CampaignDetail() {
             <h1 className="text-2xl font-semibold tracking-tight">
               {campaign.name}
             </h1>
-            <Badge
-              variant={STATUS_VARIANT[campaign.status]}
-              className="capitalize"
-            >
-              {campaign.status}
+            <Badge variant={STATUS_VARIANT[campaign.status]}>
+              {c.statusLabel[campaign.status]}
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm">
-            Created {formatDate(campaign.createdAt)} · {steps.length} steps
+            {c.createdSteps(formatDate(campaign.createdAt), steps.length)}
           </p>
         </div>
 
@@ -291,57 +482,55 @@ export default function CampaignDetail() {
               campaignStore.update(campaign.id, { status: nextStatus })
               toast.success(
                 nextStatus === "paused"
-                  ? `${campaign.name} paused`
-                  : `${campaign.name} activated`
+                  ? c.paused(campaign.name)
+                  : c.activated(campaign.name)
               )
             }}
           >
             {campaign.status === "active" ? (
               <>
                 <Pause className="size-4" />
-                Pause
+                {c.pause}
               </>
             ) : (
               <>
                 <Play className="size-4" />
-                Activate
+                {c.activate}
               </>
             )}
           </Button>
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="size-4" />
-            Edit
+            {c.edit}
           </Button>
           <Button variant="outline" onClick={() => setAddOpen(true)}>
             <UserPlus className="size-4" />
-            Add prospects
+            {c.addProspects}
           </Button>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">
-        <Kpi label="Enrolled" value={campaign.enrolled} />
-        <Kpi label="Open rate" value={`${openRate}%`} />
-        <Kpi label="Reply rate" value={`${replyRate}%`} />
-        <Kpi label="Meetings" value={campaign.meetings} />
+        <Kpi label={c.enrolled} value={campaign.enrolled} />
+        <Kpi label={c.openRate} value={`${openRate}%`} />
+        <Kpi label={c.replyRate} value={`${replyRate}%`} />
+        <Kpi label={c.meetings} value={campaign.meetings} />
       </div>
 
       <Tabs defaultValue="overview" className="mt-6">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sequence">Sequence</TabsTrigger>
-          <TabsTrigger value="prospects">Prospects</TabsTrigger>
-          <TabsTrigger value="conversations">Conversations</TabsTrigger>
+          <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
+          <TabsTrigger value="sequence">{c.tabSequence}</TabsTrigger>
+          <TabsTrigger value="prospects">{c.tabProspects}</TabsTrigger>
+          <TabsTrigger value="conversations">{c.tabConversations}</TabsTrigger>
         </TabsList>
 
         {/* Overview */}
         <TabsContent value="overview" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Daily performance</CardTitle>
-              <CardDescription>
-                Sent, opened and replied per day.
-              </CardDescription>
+              <CardTitle className="text-base">{c.dailyPerformance}</CardTitle>
+              <CardDescription>{c.dailyPerformanceDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {daily.length > 0 ? (
@@ -355,7 +544,7 @@ export default function CampaignDetail() {
                 </div>
               ) : (
                 <p className="text-muted-foreground py-12 text-center text-sm">
-                  No daily data yet for this campaign.
+                  {c.noDailyData}
                 </p>
               )}
             </CardContent>
@@ -364,12 +553,8 @@ export default function CampaignDetail() {
           {/* Audience — 1-to-1 attached list */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Audience</CardTitle>
-              <CardDescription>
-                Attach a single prospect list to feed this campaign. The link is
-                1-to-1; a dynamic list auto-enrolls new matching prospects as
-                they're found.
-              </CardDescription>
+              <CardTitle className="text-base">{c.audience}</CardTitle>
+              <CardDescription>{c.audienceDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {attachedList ? (
@@ -387,8 +572,8 @@ export default function CampaignDetail() {
                         {attachedList.name}
                       </Link>
                       <p className="text-muted-foreground text-xs">
-                        {attachedList.prospectIds.length} prospects
-                        {attachedList.dynamic ? " · dynamic" : ""}
+                        {c.prospectsCount(attachedList.prospectIds.length)}
+                        {attachedList.dynamic ? c.dynamicSuffix : ""}
                       </p>
                     </div>
                   </div>
@@ -397,25 +582,25 @@ export default function CampaignDetail() {
                     size="sm"
                     onClick={() => {
                       campaignStore.detachList(campaign.id)
-                      toast.success(`Detached ${attachedList.name}`)
+                      toast.success(c.detached(attachedList.name))
                     }}
                   >
                     <X className="size-4" />
-                    Detach
+                    {c.detach}
                   </Button>
                 </div>
               ) : lists.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <Select value={attachListId} onValueChange={setAttachListId}>
                     <SelectTrigger className="w-[240px]">
-                      <SelectValue placeholder="Choose a list to attach" />
+                      <SelectValue placeholder={c.chooseList} />
                     </SelectTrigger>
                     <SelectContent>
                       {lists.map((l) => (
                         <SelectItem key={l.id} value={l.id}>
                           {l.name}
                           {l.campaignId && l.campaignId !== campaign.id
-                            ? " (linked elsewhere)"
+                            ? c.linkedElsewhere
                             : ""}
                         </SelectItem>
                       ))}
@@ -428,16 +613,16 @@ export default function CampaignDetail() {
                       campaignStore.attachList(campaign.id, attachListId)
                       setAttachListId("")
                       toast.success(
-                        target ? `Attached ${target.name}` : "List attached"
+                        target ? c.attached(target.name) : c.listAttached
                       )
                     }}
                   >
-                    Attach
+                    {c.attach}
                   </Button>
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm">
-                  No lists available to attach yet.
+                  {c.noListsToAttach}
                 </p>
               )}
             </CardContent>
@@ -445,7 +630,7 @@ export default function CampaignDetail() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Summary</CardTitle>
+              <CardTitle className="text-base">{c.summary}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-2">
@@ -453,19 +638,19 @@ export default function CampaignDetail() {
                   <p className="text-lg font-semibold tabular-nums">
                     {totals.sent}
                   </p>
-                  <p className="text-muted-foreground text-xs">Sent</p>
+                  <p className="text-muted-foreground text-xs">{c.sent}</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold tabular-nums">
                     {totals.opened}
                   </p>
-                  <p className="text-muted-foreground text-xs">Opened</p>
+                  <p className="text-muted-foreground text-xs">{c.opened}</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold tabular-nums">
                     {totals.replied}
                   </p>
-                  <p className="text-muted-foreground text-xs">Replied</p>
+                  <p className="text-muted-foreground text-xs">{c.replied}</p>
                 </div>
               </div>
             </CardContent>
@@ -512,14 +697,14 @@ export default function CampaignDetail() {
                             <SelectTrigger
                               size="sm"
                               className="w-[180px]"
-                              aria-label={`Step ${i + 1} channel`}
+                              aria-label={c.stepChannelAria(i + 1)}
                             >
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {CHANNEL_ORDER.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {CHANNELS[c].label}
+                              {CHANNEL_ORDER.map((channelKey) => (
+                                <SelectItem key={channelKey} value={channelKey}>
+                                  {c.channelLabel[channelKey]}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -528,7 +713,7 @@ export default function CampaignDetail() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Move step up"
+                              aria-label={c.moveStepUp}
                               disabled={i === 0}
                               onClick={() =>
                                 campaignStore.moveStep(campaign.id, step.id, -1)
@@ -539,7 +724,7 @@ export default function CampaignDetail() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Move step down"
+                              aria-label={c.moveStepDown}
                               disabled={i === steps.length - 1}
                               onClick={() =>
                                 campaignStore.moveStep(campaign.id, step.id, 1)
@@ -550,7 +735,7 @@ export default function CampaignDetail() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Remove step"
+                              aria-label={c.removeStep}
                               className="text-muted-foreground hover:text-destructive"
                               onClick={() =>
                                 campaignStore.removeStep(campaign.id, step.id)
@@ -563,7 +748,7 @@ export default function CampaignDetail() {
 
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-muted-foreground text-sm">
-                            Wait
+                            {c.wait}
                           </span>
                           <Input
                             type="number"
@@ -580,14 +765,14 @@ export default function CampaignDetail() {
                             className="h-8 w-16 tabular-nums"
                           />
                           <span className="text-muted-foreground text-sm">
-                            days before sending
+                            {c.daysBeforeSending}
                           </span>
                         </div>
 
                         {isEmail && (
                           <Input
                             value={step.subject ?? ""}
-                            placeholder="Subject line"
+                            placeholder={c.subjectLine}
                             onChange={(e) =>
                               campaignStore.updateStep(campaign.id, step.id, {
                                 subject: e.target.value,
@@ -598,7 +783,7 @@ export default function CampaignDetail() {
 
                         <Textarea
                           value={step.body}
-                          placeholder="Message body"
+                          placeholder={c.messageBody}
                           onChange={(e) =>
                             campaignStore.updateStep(campaign.id, step.id, {
                               body: e.target.value,
@@ -611,19 +796,19 @@ export default function CampaignDetail() {
 
                         <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
                           <span className="text-muted-foreground">
-                            Sent{" "}
+                            {c.sent}{" "}
                             <span className="text-foreground font-medium tabular-nums">
                               {sent}
                             </span>
                           </span>
                           <span className="text-muted-foreground">
-                            Opened{" "}
+                            {c.opened}{" "}
                             <span className="text-foreground font-medium tabular-nums">
                               {opened}
                             </span>
                           </span>
                           <span className="text-muted-foreground">
-                            Replied{" "}
+                            {c.replied}{" "}
                             <span className="text-foreground font-medium tabular-nums">
                               {replied}
                             </span>
@@ -641,17 +826,15 @@ export default function CampaignDetail() {
                     campaignStore.addStep(campaign.id, channel)
                   }
                 />
-                <Button onClick={() => toast.success("Sequence saved")}>
-                  Save sequence
+                <Button onClick={() => toast.success(c.sequenceSaved)}>
+                  {c.saveSequence}
                 </Button>
               </div>
             </>
           ) : (
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-muted-foreground text-sm">
-                  This sequence has no steps yet.
-                </p>
+                <p className="text-muted-foreground text-sm">{c.noSteps}</p>
                 <AddStepMenu
                   onAdd={(channel) =>
                     campaignStore.addStep(campaign.id, channel)
@@ -670,14 +853,14 @@ export default function CampaignDetail() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40 hover:bg-muted/40">
-                      <TableHead className="pl-4">Prospect</TableHead>
+                      <TableHead className="pl-4">{c.thProspect}</TableHead>
                       <TableHead className="hidden md:table-cell">
-                        Title / Company
+                        {c.thTitleCompany}
                       </TableHead>
-                      <TableHead>Current step</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{c.thCurrentStep}</TableHead>
+                      <TableHead>{c.thStatus}</TableHead>
                       <TableHead className="hidden sm:table-cell">
-                        Last touch
+                        {c.thLastTouch}
                       </TableHead>
                       <TableHead className="w-12 pr-4" />
                     </TableRow>
@@ -700,7 +883,7 @@ export default function CampaignDetail() {
                               </Link>
                             ) : (
                               <span className="text-muted-foreground">
-                                Unknown prospect
+                                {c.unknownProspect}
                               </span>
                             )}
                           </TableCell>
@@ -719,14 +902,11 @@ export default function CampaignDetail() {
                             )}
                           </TableCell>
                           <TableCell className="tabular-nums">
-                            Step {e.currentStep} of {steps.length}
+                            {c.stepOf(e.currentStep, steps.length)}
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              variant={ENROLLMENT_VARIANT[e.status]}
-                              className="capitalize"
-                            >
-                              {e.status}
+                            <Badge variant={ENROLLMENT_VARIANT[e.status]}>
+                              {c.enrollmentLabel[e.status]}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
@@ -758,28 +938,30 @@ export default function CampaignDetail() {
                           </p>
                         </TableCell>
                         <TableCell className="tabular-nums">
-                          Step 1 of {steps.length}
+                          {c.stepOf(1, steps.length)}
                         </TableCell>
                         <TableCell>
                           <Badge variant={ENROLLMENT_VARIANT.active}>
-                            active
+                            {c.enrollmentLabel.active}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
-                          Just added
+                          {c.justAdded}
                         </TableCell>
                         <TableCell className="pr-4">
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Remove ${prospect.firstName} ${prospect.lastName}`}
+                            aria-label={c.removeProspectAria(
+                              `${prospect.firstName} ${prospect.lastName}`
+                            )}
                             className="text-muted-foreground hover:text-destructive size-8"
                             onClick={() => {
                               campaignStore.removeProspect(
                                 campaign.id,
                                 prospect.id
                               )
-                              toast.success("Removed from campaign")
+                              toast.success(c.removedFromCampaign)
                             }}
                           >
                             <X className="size-4" />
@@ -795,11 +977,11 @@ export default function CampaignDetail() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p className="text-muted-foreground text-sm">
-                  No prospects enrolled yet.
+                  {c.noProspects}
                 </p>
                 <Button variant="outline" onClick={() => setAddOpen(true)}>
                   <UserPlus className="size-4" />
-                  Add prospects
+                  {c.addProspects}
                 </Button>
               </CardContent>
             </Card>
@@ -823,7 +1005,7 @@ export default function CampaignDetail() {
                         <p className="font-medium">
                           {prospect
                             ? `${prospect.firstName} ${prospect.lastName}`
-                            : "Unknown prospect"}
+                            : c.unknownProspect}
                         </p>
                         <p className="text-muted-foreground text-sm">{reply}</p>
                         <p className="text-muted-foreground text-xs">
@@ -832,7 +1014,7 @@ export default function CampaignDetail() {
                       </div>
                     </div>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to="/inbox">View in inbox</Link>
+                      <Link to="/inbox">{c.viewInInbox}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -841,7 +1023,7 @@ export default function CampaignDetail() {
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground text-sm">No replies yet.</p>
+                <p className="text-muted-foreground text-sm">{c.noReplies}</p>
               </CardContent>
             </Card>
           )}
@@ -873,19 +1055,24 @@ function AddStepMenu({
 }: {
   onAdd: (channel: StepChannel) => void
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
           <Plus className="size-4" />
-          Add step
+          {c.addStep}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        {CHANNEL_ORDER.map((c) => {
-          const meta = CHANNELS[c]
+        {CHANNEL_ORDER.map((channelKey) => {
+          const meta = CHANNELS[channelKey]
           return (
-            <DropdownMenuItem key={c} onClick={() => onAdd(c)}>
+            <DropdownMenuItem
+              key={channelKey}
+              onClick={() => onAdd(channelKey)}
+            >
               <span
                 className={cn(
                   "flex size-6 items-center justify-center rounded-md",
@@ -894,7 +1081,7 @@ function AddStepMenu({
               >
                 <meta.Icon className="size-3.5" />
               </span>
-              {meta.label}
+              {c.channelLabel[channelKey]}
             </DropdownMenuItem>
           )
         })}
@@ -916,6 +1103,8 @@ function EditCampaignDialog({
   currentName: string
   currentStatus: CampaignStatus
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const [name, setName] = React.useState(currentName)
   const [status, setStatus] = React.useState<CampaignStatus>(currentStatus)
 
@@ -933,7 +1122,7 @@ function EditCampaignDialog({
     const trimmed = name.trim()
     if (!trimmed) return
     campaignStore.update(campaignId, { name: trimmed, status })
-    toast.success("Campaign updated")
+    toast.success(c.campaignUpdated)
     onOpenChange(false)
   }
 
@@ -941,27 +1130,25 @@ function EditCampaignDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit campaign</DialogTitle>
-          <DialogDescription>
-            Update the campaign name and status.
-          </DialogDescription>
+          <DialogTitle>{c.editCampaign}</DialogTitle>
+          <DialogDescription>{c.editCampaignDesc}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="campaign-name" className="text-sm font-medium">
-              Name
+              {c.name}
             </label>
             <Input
               id="campaign-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Campaign name"
+              placeholder={c.namePlaceholder}
             />
           </div>
           <div className="space-y-2">
             <label htmlFor="campaign-status" className="text-sm font-medium">
-              Status
+              {c.status}
             </label>
             <Select
               value={status}
@@ -972,8 +1159,8 @@ function EditCampaignDialog({
               </SelectTrigger>
               <SelectContent>
                 {CAMPAIGN_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s}
+                  <SelectItem key={s} value={s}>
+                    {c.statusLabel[s]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -983,10 +1170,10 @@ function EditCampaignDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {c.cancel}
           </Button>
           <Button onClick={handleSave} disabled={!name.trim()}>
-            Save changes
+            {c.saveChanges}
           </Button>
         </DialogFooter>
       </DialogContent>

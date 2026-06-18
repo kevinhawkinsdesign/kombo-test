@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { HandHeart, Users, GraduationCap, Briefcase, Waypoints } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -36,23 +37,82 @@ const STRENGTH_VARIANT: Record<
   weak: "outline",
 }
 
-const SOURCE_META: Record<
+const SOURCE_ICON: Record<
   IntroPath["source"],
-  { label: string; icon: React.ComponentType<{ className?: string }> }
+  React.ComponentType<{ className?: string }>
 > = {
-  team: { label: "Teammate", icon: Users },
-  linkedin: { label: "LinkedIn", icon: LinkedinIcon },
-  alumni: { label: "Alumni", icon: GraduationCap },
-  investor: { label: "Investor", icon: Briefcase },
+  team: Users,
+  linkedin: LinkedinIcon,
+  alumni: GraduationCap,
+  investor: Briefcase,
 }
 
-function howItWorks() {
-  toast.info(
-    "We scan your team's relationships, LinkedIn, alumni, and investor networks to surface the warmest path to each prospect."
-  )
-}
+const COPY = {
+  en: {
+    title: "Warm Intros",
+    description: "The warmest path to your top prospects.",
+    howItWorks: "How it works",
+    howItWorksToast:
+      "We scan your team's relationships, LinkedIn, alumni, and investor networks to surface the warmest path to each prospect.",
+    introTitle: "Get introduced — don't cold-call",
+    introDescription:
+      "Find the warmest path into an account through your team's combined network.",
+    introPoints: [
+      "See who on your team already knows a prospect",
+      "Paths ranked by relationship strength",
+      "Request an intro in one click",
+    ],
+    summaryIntroPaths: "Intro paths",
+    summaryStrongPaths: "Strong paths",
+    summaryReachable: "Prospects reachable",
+    emptyState:
+      "No warm intro paths yet. Connect your team and networks to find one.",
+    sourceTeam: "Teammate",
+    sourceLinkedin: "LinkedIn",
+    sourceAlumni: "Alumni",
+    sourceInvestor: "Investor",
+    strengthStrong: "Strong",
+    strengthMedium: "Medium",
+    strengthWeak: "Weak",
+    ask: (name: string) => `Ask ${name}`,
+    requestIntro: "Request intro",
+    introRequested: (name: string) => `Intro requested via ${name}`,
+  },
+  es: {
+    title: "Presentaciones",
+    description: "El camino más cálido hacia tus mejores prospectos.",
+    howItWorks: "Cómo funciona",
+    howItWorksToast:
+      "Analizamos las relaciones de tu equipo, LinkedIn, exalumnos y redes de inversores para mostrar el camino más cálido hacia cada prospecto.",
+    introTitle: "Consigue una presentación — no llames en frío",
+    introDescription:
+      "Encuentra el camino más cálido hacia una cuenta a través de la red combinada de tu equipo.",
+    introPoints: [
+      "Descubre quién en tu equipo ya conoce a un prospecto",
+      "Caminos ordenados por la fuerza de la relación",
+      "Solicita una presentación con un clic",
+    ],
+    summaryIntroPaths: "Caminos de presentación",
+    summaryStrongPaths: "Caminos fuertes",
+    summaryReachable: "Prospectos alcanzables",
+    emptyState:
+      "Aún no hay caminos de presentación cálidos. Conecta tu equipo y redes para encontrar uno.",
+    sourceTeam: "Compañero",
+    sourceLinkedin: "LinkedIn",
+    sourceAlumni: "Exalumnos",
+    sourceInvestor: "Inversor",
+    strengthStrong: "Fuerte",
+    strengthMedium: "Media",
+    strengthWeak: "Débil",
+    ask: (name: string) => `Pedir a ${name}`,
+    requestIntro: "Solicitar presentación",
+    introRequested: (name: string) => `Presentación solicitada a través de ${name}`,
+  },
+} as const
 
 export default function WarmIntros() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const strongPaths = React.useMemo(
     () => introPaths.filter((p) => p.strength === "strong").length,
     []
@@ -82,12 +142,12 @@ export default function WarmIntros() {
   return (
     <Page>
       <PageHeading
-        title="Warm Intros"
-        description="The warmest path to your top prospects."
+        title={c.title}
+        description={c.description}
         action={
-          <Button variant="outline" onClick={howItWorks}>
+          <Button variant="outline" onClick={() => toast.info(c.howItWorksToast)}>
             <HandHeart className="size-4" />
-            How it works
+            {c.howItWorks}
           </Button>
         }
       />
@@ -95,25 +155,21 @@ export default function WarmIntros() {
       <FeatureIntro
         featureKey="intros"
         icon={Waypoints}
-        title="Get introduced — don't cold-call"
-        description="Find the warmest path into an account through your team's combined network."
-        points={[
-          "See who on your team already knows a prospect",
-          "Paths ranked by relationship strength",
-          "Request an intro in one click",
-        ]}
+        title={c.introTitle}
+        description={c.introDescription}
+        points={[...c.introPoints]}
         className="mb-6"
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <SummaryCard label="Intro paths" value={introPaths.length} />
-        <SummaryCard label="Strong paths" value={strongPaths} />
-        <SummaryCard label="Prospects reachable" value={reachableProspects} />
+        <SummaryCard label={c.summaryIntroPaths} value={introPaths.length} />
+        <SummaryCard label={c.summaryStrongPaths} value={strongPaths} />
+        <SummaryCard label={c.summaryReachable} value={reachableProspects} />
       </div>
 
       {prospects.length === 0 ? (
         <div className="text-muted-foreground rounded-xl border border-dashed py-16 text-center text-sm">
-          No warm intro paths yet. Connect your team and networks to find one.
+          {c.emptyState}
         </div>
       ) : (
         <div className="space-y-4">
@@ -169,10 +225,22 @@ function ProspectIntroCard({ prospect: p }: { prospect: Prospect }) {
 }
 
 function IntroPathRow({ path }: { path: IntroPath }) {
-  const source = SOURCE_META[path.source]
-  const SourceIcon = source.icon
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const sourceLabels: Record<IntroPath["source"], string> = {
+    team: c.sourceTeam,
+    linkedin: c.sourceLinkedin,
+    alumni: c.sourceAlumni,
+    investor: c.sourceInvestor,
+  }
+  const strengthLabels: Record<IntroStrength, string> = {
+    strong: c.strengthStrong,
+    medium: c.strengthMedium,
+    weak: c.strengthWeak,
+  }
+  const SourceIcon = SOURCE_ICON[path.source]
   const firstName = path.connectorName.split(" ")[0]
-  const cta = path.connectorIsTeam ? `Ask ${firstName}` : "Request intro"
+  const cta = path.connectorIsTeam ? c.ask(firstName) : c.requestIntro
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center">
@@ -194,12 +262,12 @@ function IntroPathRow({ path }: { path: IntroPath }) {
         </div>
         <p className="text-muted-foreground mt-0.5 text-sm">{path.via}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge variant={STRENGTH_VARIANT[path.strength]} className="capitalize">
-            {path.strength}
+          <Badge variant={STRENGTH_VARIANT[path.strength]}>
+            {strengthLabels[path.strength]}
           </Badge>
           <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
             <SourceIcon className="size-3.5" />
-            {source.label}
+            {sourceLabels[path.source]}
           </span>
         </div>
       </div>
@@ -208,9 +276,7 @@ function IntroPathRow({ path }: { path: IntroPath }) {
         size="sm"
         variant={path.connectorIsTeam ? "default" : "outline"}
         className="shrink-0 sm:self-center"
-        onClick={() =>
-          toast.success(`Intro requested via ${path.connectorName}`)
-        }
+        onClick={() => toast.success(c.introRequested(path.connectorName))}
       >
         {cta}
       </Button>

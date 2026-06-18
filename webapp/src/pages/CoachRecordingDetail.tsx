@@ -25,6 +25,7 @@ import {
   ThumbsDown,
 } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { InfoHint } from "@/components/common/InfoHint"
 import { Page } from "@/components/layout/Page"
 import {
@@ -51,36 +52,159 @@ import { cn } from "@/lib/utils"
 import type { KeyMoment } from "@/lib/types"
 
 const SENTIMENT = {
-  positive: { icon: Smile, variant: "success" as const, label: "Positive" },
-  neutral: { icon: Meh, variant: "secondary" as const, label: "Neutral" },
-  negative: { icon: Frown, variant: "destructive" as const, label: "Negative" },
+  positive: { icon: Smile, variant: "success" as const },
+  neutral: { icon: Meh, variant: "secondary" as const },
+  negative: { icon: Frown, variant: "destructive" as const },
 }
 
 const MOMENT_STYLES: Record<
   KeyMoment["type"],
-  { dot: string; badge: string; label: string }
+  { dot: string; badge: string }
 > = {
   positive: {
     dot: "bg-chart-1",
     badge: "bg-chart-1/15 text-chart-1",
-    label: "Positive",
   },
   risk: {
     dot: "bg-destructive",
     badge: "bg-destructive/15 text-destructive",
-    label: "Risk",
   },
   action: {
     dot: "bg-primary",
     badge: "bg-primary/15 text-primary",
-    label: "Action",
   },
   question: {
     dot: "bg-chart-4",
     badge: "bg-chart-4/15 text-chart-4",
-    label: "Question",
   },
 }
+
+const COPY = {
+  en: {
+    recordingNotFound: "Recording not found.",
+    backToCoach: "Back to Coach",
+    coach: "Coach",
+    callScore: "Call score",
+    reanalyzing: "Re-analyzing recording…",
+    reanalyze: "Re-analyze",
+    notesAdded: "Notes added to CRM",
+    addNotesToCrm: "Add notes to CRM",
+    pause: "Pause",
+    play: "Play",
+    transcript: "Transcript",
+    keyMoments: "Key moments",
+    participants: "Participants",
+    noTranscript: "No transcript available for this recording.",
+    noKeyMoments: "No key moments captured.",
+    noParticipants: "No participant data.",
+    you: "You",
+    prospect: "Prospect",
+    talkTime: "talk time",
+    callAnalysis: "Call analysis",
+    talkRatio: "Talk ratio",
+    talkRatioHintLabel: "What is talk ratio?",
+    talkRatioHint:
+      "The share of the call you (the rep) spoke versus the prospect. Lower is usually better — let them talk.",
+    talkRatioSplit: (rep: number, prospect: number) =>
+      `You ${rep}% / Prospect ${prospect}%`,
+    talkRatioHigh: "Talk ratio is high — aim for under 50%.",
+    questionsAsked: "Questions asked",
+    longestMonologue: "Longest monologue",
+    avgResponseTime: "Avg response time",
+    topicsDiscussed: "Topics discussed",
+    objections: "Objections",
+    actionItems: "Action items",
+    markNotDone: "Mark as not done",
+    markDone: "Mark as done",
+    completed: (label: string) => `Completed: ${label}`,
+    tasksCreated: "Tasks created",
+    createTasks: "Create tasks",
+    coachingTips: "Coaching tips",
+    personalityRead: "Personality read",
+    rateThisAnalysis: "Rate this analysis",
+    rateStar: (n: number) => `Rate ${n} star${n > 1 ? "s" : ""}`,
+    thanksFeedback: "Thanks for the feedback",
+    wasHelpful: "Was this helpful?",
+    helpful: "Helpful",
+    notHelpful: "Not helpful",
+    gladHelped: "Glad it helped",
+    willImprove: "Thanks — we'll improve",
+    min: "min",
+    sentiment: {
+      positive: "Positive",
+      neutral: "Neutral",
+      negative: "Negative",
+    },
+    moments: {
+      positive: "Positive",
+      risk: "Risk",
+      action: "Action",
+      question: "Question",
+    } as Record<KeyMoment["type"], string>,
+  },
+  es: {
+    recordingNotFound: "Grabación no encontrada.",
+    backToCoach: "Volver al Coach",
+    coach: "Coach",
+    callScore: "Puntuación",
+    reanalyzing: "Reanalizando la grabación…",
+    reanalyze: "Reanalizar",
+    notesAdded: "Notas añadidas al CRM",
+    addNotesToCrm: "Añadir notas al CRM",
+    pause: "Pausar",
+    play: "Reproducir",
+    transcript: "Transcripción",
+    keyMoments: "Momentos clave",
+    participants: "Participantes",
+    noTranscript: "No hay transcripción disponible para esta grabación.",
+    noKeyMoments: "No se capturaron momentos clave.",
+    noParticipants: "Sin datos de participantes.",
+    you: "Tú",
+    prospect: "Prospecto",
+    talkTime: "tiempo hablando",
+    callAnalysis: "Análisis de la llamada",
+    talkRatio: "Ratio de conversación",
+    talkRatioHintLabel: "¿Qué es el ratio de conversación?",
+    talkRatioHint:
+      "La proporción de la llamada en la que hablaste tú (el representante) frente al prospecto. Cuanto más bajo, mejor: deja que hablen.",
+    talkRatioSplit: (rep: number, prospect: number) =>
+      `Tú ${rep}% / Prospecto ${prospect}%`,
+    talkRatioHigh: "El ratio de conversación es alto: apunta a menos del 50 %.",
+    questionsAsked: "Preguntas realizadas",
+    longestMonologue: "Monólogo más largo",
+    avgResponseTime: "Tiempo medio de respuesta",
+    topicsDiscussed: "Temas tratados",
+    objections: "Objeciones",
+    actionItems: "Tareas pendientes",
+    markNotDone: "Marcar como pendiente",
+    markDone: "Marcar como completada",
+    completed: (label: string) => `Completada: ${label}`,
+    tasksCreated: "Tareas creadas",
+    createTasks: "Crear tareas",
+    coachingTips: "Consejos de coaching",
+    personalityRead: "Análisis de personalidad",
+    rateThisAnalysis: "Valora este análisis",
+    rateStar: (n: number) => `Valorar con ${n} estrella${n > 1 ? "s" : ""}`,
+    thanksFeedback: "Gracias por tu opinión",
+    wasHelpful: "¿Te resultó útil?",
+    helpful: "Útil",
+    notHelpful: "No útil",
+    gladHelped: "Nos alegra que te ayudara",
+    willImprove: "Gracias: lo mejoraremos",
+    min: "min",
+    sentiment: {
+      positive: "Positivo",
+      neutral: "Neutral",
+      negative: "Negativo",
+    },
+    moments: {
+      positive: "Positivo",
+      risk: "Riesgo",
+      action: "Acción",
+      question: "Pregunta",
+    } as Record<KeyMoment["type"], string>,
+  },
+} as const
 
 function scorePillClass(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"
@@ -89,6 +213,8 @@ function scorePillClass(score: number): string {
 }
 
 export default function CoachRecordingDetail() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const { id } = useParams()
   const rec = coachRecordings.find((r) => r.id === id)
   const analysis = id ? recordingDetails[id] : undefined
@@ -101,9 +227,9 @@ export default function CoachRecordingDetail() {
   if (!rec) {
     return (
       <Page>
-        <p className="text-muted-foreground">Recording not found.</p>
+        <p className="text-muted-foreground">{c.recordingNotFound}</p>
         <Button variant="link" asChild className="px-0">
-          <Link to="/coach">Back to Coach</Link>
+          <Link to="/coach">{c.backToCoach}</Link>
         </Button>
       </Page>
     )
@@ -117,7 +243,7 @@ export default function CoachRecordingDetail() {
   const toggleDone = (index: number, label: string) => {
     setDoneItems((prev) => {
       const next = { ...prev, [index]: !prev[index] }
-      if (next[index]) toast.success(`Completed: ${label}`)
+      if (next[index]) toast.success(c.completed(label))
       return next
     })
   }
@@ -127,7 +253,7 @@ export default function CoachRecordingDetail() {
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/coach">
           <ArrowLeft className="size-4" />
-          Coach
+          {c.coach}
         </Link>
       </Button>
 
@@ -141,14 +267,14 @@ export default function CoachRecordingDetail() {
                   "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-sm font-semibold tabular-nums",
                   scorePillClass(rec.score)
                 )}
-                title="Call score"
+                title={c.callScore}
               >
                 <span className="bg-current size-1.5 rounded-full opacity-80" />
                 {rec.score}/100
               </span>
               <Badge variant={sentiment.variant}>
                 <SentimentIcon className="size-3" />
-                {sentiment.label}
+                {c.sentiment[rec.sentiment]}
               </Badge>
               {analysis?.callType && (
                 <Badge variant="secondary">{analysis.callType}</Badge>
@@ -162,17 +288,17 @@ export default function CoachRecordingDetail() {
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              onClick={() => toast.info("Re-analyzing recording…")}
+              onClick={() => toast.info(c.reanalyzing)}
             >
               <RefreshCw className="size-4" />
-              Re-analyze
+              {c.reanalyze}
             </Button>
             <Button
               variant="volt"
-              onClick={() => toast.success("Notes added to CRM")}
+              onClick={() => toast.success(c.notesAdded)}
             >
               <Building2 className="size-4" />
-              Add notes to CRM
+              {c.addNotesToCrm}
             </Button>
           </div>
         </CardContent>
@@ -185,7 +311,7 @@ export default function CoachRecordingDetail() {
             variant="outline"
             className="size-10 shrink-0 rounded-full"
             onClick={() => setIsPlaying((p) => !p)}
-            aria-label={isPlaying ? "Pause" : "Play"}
+            aria-label={isPlaying ? c.pause : c.play}
           >
             {isPlaying ? (
               <Pause className="size-4" />
@@ -215,9 +341,11 @@ export default function CoachRecordingDetail() {
             <CardContent>
               <Tabs defaultValue="transcript">
                 <TabsList className="mb-4 max-w-full overflow-x-auto">
-                  <TabsTrigger value="transcript">Transcript</TabsTrigger>
-                  <TabsTrigger value="moments">Key moments</TabsTrigger>
-                  <TabsTrigger value="participants">Participants</TabsTrigger>
+                  <TabsTrigger value="transcript">{c.transcript}</TabsTrigger>
+                  <TabsTrigger value="moments">{c.keyMoments}</TabsTrigger>
+                  <TabsTrigger value="participants">
+                    {c.participants}
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="transcript">
@@ -243,7 +371,7 @@ export default function CoachRecordingDetail() {
                     </div>
                   ) : (
                     <p className="text-muted-foreground py-6 text-center text-sm">
-                      No transcript available for this recording.
+                      {c.noTranscript}
                     </p>
                   )}
                 </TabsContent>
@@ -275,7 +403,7 @@ export default function CoachRecordingDetail() {
                                   style.badge
                                 )}
                               >
-                                {style.label}
+                                {c.moments[moment.type]}
                               </span>
                             </div>
                           </li>
@@ -284,7 +412,7 @@ export default function CoachRecordingDetail() {
                     </ol>
                   ) : (
                     <p className="text-muted-foreground py-6 text-center text-sm">
-                      No key moments captured.
+                      {c.noKeyMoments}
                     </p>
                   )}
                 </TabsContent>
@@ -306,11 +434,11 @@ export default function CoachRecordingDetail() {
                                 }
                                 className="capitalize"
                               >
-                                {p.role === "rep" ? "You" : "Prospect"}
+                                {p.role === "rep" ? c.you : c.prospect}
                               </Badge>
                             </div>
                             <span className="text-muted-foreground text-sm tabular-nums">
-                              {p.talkPct}% talk time
+                              {p.talkPct}% {c.talkTime}
                             </span>
                           </div>
                           <p className="text-muted-foreground mb-1.5 text-xs">
@@ -330,7 +458,7 @@ export default function CoachRecordingDetail() {
                     </div>
                   ) : (
                     <p className="text-muted-foreground py-6 text-center text-sm">
-                      No participant data.
+                      {c.noParticipants}
                     </p>
                   )}
                 </TabsContent>
@@ -342,21 +470,20 @@ export default function CoachRecordingDetail() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Call analysis</CardTitle>
+              <CardTitle className="text-base">{c.callAnalysis}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <div className="mb-1 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground flex items-center gap-1">
                     <TrendingUp className="size-3.5" />
-                    Talk ratio
-                    <InfoHint label="What is talk ratio?">
-                      The share of the call you (the rep) spoke versus the
-                      prospect. Lower is usually better — let them talk.
+                    {c.talkRatio}
+                    <InfoHint label={c.talkRatioHintLabel}>
+                      {c.talkRatioHint}
                     </InfoHint>
                   </span>
                   <span className="font-medium tabular-nums">
-                    You {repRatio}% / Prospect {prospectRatio}%
+                    {c.talkRatioSplit(repRatio, prospectRatio)}
                   </span>
                 </div>
                 <div className="bg-muted flex h-6 w-full overflow-hidden rounded-md">
@@ -371,7 +498,7 @@ export default function CoachRecordingDetail() {
                 </div>
                 {repRatio > 55 && (
                   <p className="text-muted-foreground mt-1 text-xs">
-                    Talk ratio is high — aim for under 50%.
+                    {c.talkRatioHigh}
                   </p>
                 )}
               </div>
@@ -383,7 +510,7 @@ export default function CoachRecordingDetail() {
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground flex items-center gap-2">
                         <MessageCircleQuestion className="size-4" />
-                        Questions asked
+                        {c.questionsAsked}
                       </span>
                       <span className="font-medium tabular-nums">
                         {analysis.questionsAsked}
@@ -392,16 +519,16 @@ export default function CoachRecordingDetail() {
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground flex items-center gap-2">
                         <Clock className="size-4" />
-                        Longest monologue
+                        {c.longestMonologue}
                       </span>
                       <span className="font-medium tabular-nums">
-                        {analysis.longestMonologueMin} min
+                        {analysis.longestMonologueMin} {c.min}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground flex items-center gap-2">
                         <Timer className="size-4" />
-                        Avg response time
+                        {c.avgResponseTime}
                       </span>
                       <span className="font-medium tabular-nums">
                         {analysis.patience}s
@@ -416,7 +543,7 @@ export default function CoachRecordingDetail() {
           {analysis && analysis.topics.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Topics discussed</CardTitle>
+                <CardTitle className="text-base">{c.topicsDiscussed}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {analysis.topics.map((topic) => (
@@ -444,7 +571,7 @@ export default function CoachRecordingDetail() {
           {analysis && analysis.objections.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Objections</CardTitle>
+                <CardTitle className="text-base">{c.objections}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
                 {analysis.objections.map((objection) => (
@@ -463,7 +590,7 @@ export default function CoachRecordingDetail() {
           {analysis && analysis.actionItems.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Action items</CardTitle>
+                <CardTitle className="text-base">{c.actionItems}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {analysis.actionItems.map((item, i) => {
@@ -478,7 +605,7 @@ export default function CoachRecordingDetail() {
                         variant="ghost"
                         className="size-6 shrink-0"
                         onClick={() => toggleDone(i, item)}
-                        aria-label={done ? "Mark as not done" : "Mark as done"}
+                        aria-label={done ? c.markNotDone : c.markDone}
                       >
                         {done ? (
                           <CheckCircle2 className="text-primary size-4" />
@@ -501,10 +628,10 @@ export default function CoachRecordingDetail() {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => toast.success("Tasks created")}
+                  onClick={() => toast.success(c.tasksCreated)}
                 >
                   <ListChecks className="size-4" />
-                  Create tasks
+                  {c.createTasks}
                 </Button>
               </CardContent>
             </Card>
@@ -515,7 +642,7 @@ export default function CoachRecordingDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <GraduationCap className="text-primary size-4" />
-                  Coaching tips
+                  {c.coachingTips}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -536,7 +663,7 @@ export default function CoachRecordingDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Brain className="text-primary size-4" />
-                  Personality read
+                  {c.personalityRead}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -562,7 +689,7 @@ export default function CoachRecordingDetail() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Rate this analysis</CardTitle>
+              <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-1">
@@ -571,9 +698,9 @@ export default function CoachRecordingDetail() {
                     key={n}
                     onClick={() => {
                       setRating(n)
-                      toast.success("Thanks for the feedback")
+                      toast.success(c.thanksFeedback)
                     }}
-                    aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+                    aria-label={c.rateStar(n)}
                   >
                     <Star
                       className={cn(
@@ -589,17 +716,17 @@ export default function CoachRecordingDetail() {
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-sm">
-                  Was this helpful?
+                  {c.wasHelpful}
                 </span>
                 <div className="flex gap-1">
                   <Button
                     variant={helpful === true ? "default" : "outline"}
                     size="icon"
                     className="size-8"
-                    aria-label="Helpful"
+                    aria-label={c.helpful}
                     onClick={() => {
                       setHelpful(true)
-                      toast.success("Glad it helped")
+                      toast.success(c.gladHelped)
                     }}
                   >
                     <ThumbsUp className="size-4" />
@@ -608,10 +735,10 @@ export default function CoachRecordingDetail() {
                     variant={helpful === false ? "default" : "outline"}
                     size="icon"
                     className="size-8"
-                    aria-label="Not helpful"
+                    aria-label={c.notHelpful}
                     onClick={() => {
                       setHelpful(false)
-                      toast.info("Thanks — we'll improve")
+                      toast.info(c.willImprove)
                     }}
                   >
                     <ThumbsDown className="size-4" />

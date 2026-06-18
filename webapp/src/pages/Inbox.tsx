@@ -12,7 +12,36 @@ import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { conversations, getProspect } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/lib/locale"
 import type { Channel } from "@/lib/types"
+
+const COPY = {
+  en: {
+    inbox: "Inbox",
+    unread: "unread",
+    backToInbox: "Back to inbox",
+    viewProfile: "View profile",
+    replyTo: (name: string) => `Reply to ${name}…`,
+    via: "via",
+    send: "Send",
+    replySent: (name: string) => `Reply sent to ${name}`,
+    selectConversation: "Select a conversation",
+    selectConversationHint: "Choose a thread from the list to read and reply.",
+  },
+  es: {
+    inbox: "Bandeja de entrada",
+    unread: "sin leer",
+    backToInbox: "Volver a la bandeja",
+    viewProfile: "Ver perfil",
+    replyTo: (name: string) => `Responder a ${name}…`,
+    via: "por",
+    send: "Enviar",
+    replySent: (name: string) => `Respuesta enviada a ${name}`,
+    selectConversation: "Selecciona una conversación",
+    selectConversationHint:
+      "Elige un hilo de la lista para leer y responder.",
+  },
+} as const
 
 const ChannelIcon = ({ channel }: { channel: Channel }) =>
   channel === "email" ? (
@@ -22,6 +51,8 @@ const ChannelIcon = ({ channel }: { channel: Channel }) =>
   )
 
 export default function Inbox() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const sorted = React.useMemo(
     () =>
       [...conversations].sort(
@@ -36,7 +67,7 @@ export default function Inbox() {
   // On mobile we show either the list or the thread (master-detail).
   const [showThreadMobile, setShowThreadMobile] = React.useState(false)
 
-  const active = sorted.find((c) => c.id === activeId)
+  const active = sorted.find((conv) => conv.id === activeId)
   const activeProspect = active ? getProspect(active.prospectId) : undefined
 
   return (
@@ -49,9 +80,9 @@ export default function Inbox() {
         )}
       >
         <div className="flex h-14 items-center justify-between border-b px-4">
-          <h2 className="font-semibold">Inbox</h2>
+          <h2 className="font-semibold">{c.inbox}</h2>
           <Badge variant="secondary" className="font-normal">
-            {conversations.reduce((s, c) => s + c.unread, 0)} unread
+            {conversations.reduce((s, conv) => s + conv.unread, 0)} {c.unread}
           </Badge>
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -112,7 +143,7 @@ export default function Inbox() {
               size="icon"
               className="-ml-2 md:hidden"
               onClick={() => setShowThreadMobile(false)}
-              aria-label="Back to inbox"
+              aria-label={c.backToInbox}
             >
               <ArrowLeft className="size-4" />
             </Button>
@@ -128,7 +159,7 @@ export default function Inbox() {
             <Button variant="outline" size="sm" asChild>
               <Link to={`/prospects/${activeProspect.id}`}>
                 <ExternalLink className="size-4" />
-                View profile
+                {c.viewProfile}
               </Link>
             </Button>
           </div>
@@ -163,13 +194,13 @@ export default function Inbox() {
             <Textarea
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              placeholder={`Reply to ${activeProspect.firstName}…`}
+              placeholder={c.replyTo(activeProspect.firstName)}
               className="min-h-20 resize-none"
             />
             <div className="mt-2 flex items-center justify-between">
               <span className="text-muted-foreground flex items-center gap-1 text-xs">
                 <ChannelIcon channel={active.channel} />
-                via {active.channel}
+                {c.via} {active.channel}
               </span>
               <Button
                 size="sm"
@@ -177,11 +208,11 @@ export default function Inbox() {
                 disabled={!reply.trim()}
                 onClick={() => {
                   setReply("")
-                  toast.success(`Reply sent to ${activeProspect.firstName}`)
+                  toast.success(c.replySent(activeProspect.firstName))
                 }}
               >
                 <Send className="size-4" />
-                Send
+                {c.send}
               </Button>
             </div>
           </div>
@@ -192,9 +223,9 @@ export default function Inbox() {
             <InboxIcon className="size-6" />
           </span>
           <div>
-            <p className="text-sm font-medium">Select a conversation</p>
+            <p className="text-sm font-medium">{c.selectConversation}</p>
             <p className="text-muted-foreground text-sm">
-              Choose a thread from the list to read and reply.
+              {c.selectConversationHint}
             </p>
           </div>
         </div>

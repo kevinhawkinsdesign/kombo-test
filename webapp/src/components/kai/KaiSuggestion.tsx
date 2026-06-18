@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react"
 
+import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 
 /**
@@ -7,7 +8,7 @@ import { cn } from "@/lib/utils"
  * a helpful explanation right where the user is working.
  */
 export function KaiSuggestion({
-  title = "Kai suggests",
+  title,
   children,
   action,
   className,
@@ -17,6 +18,8 @@ export function KaiSuggestion({
   action?: React.ReactNode
   className?: string
 }) {
+  const { t } = useLocale()
+  const heading = title ?? t("kai.suggests")
   return (
     <div
       className={cn(
@@ -28,7 +31,7 @@ export function KaiSuggestion({
         <Sparkles className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">{title}</p>
+        <p className="text-sm font-medium">{heading}</p>
         <div className="text-muted-foreground mt-0.5 text-sm">{children}</div>
       </div>
       {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
