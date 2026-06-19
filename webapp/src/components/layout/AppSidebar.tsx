@@ -52,6 +52,8 @@ interface NavItem {
   labelKey: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string
+  // Marks a surface that doesn't exist in the Chrome extension yet.
+  isNew?: boolean
 }
 
 interface NavSection {
@@ -65,15 +67,16 @@ const sections: NavSection[] = [
   {
     labelKey: "nav.workspace",
     items: [
-      { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+      { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
       {
         to: "/copilot",
         labelKey: "nav.copilot",
         icon: Sparkles,
         badge: String(copilotActions.length),
+        isNew: true,
       },
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
-      { to: "/intros", labelKey: "nav.intros", icon: Waypoints },
+      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
     ],
   },
@@ -88,16 +91,21 @@ const sections: NavSection[] = [
       },
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
-      { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
-      { to: "/channels", labelKey: "nav.channels", icon: Radio },
-      { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
+      { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, isNew: true },
+      { to: "/channels", labelKey: "nav.channels", icon: Radio, isNew: true },
+      { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare, isNew: true },
     ],
   },
   {
     labelKey: "nav.revenue",
     items: [
-      { to: "/deals", labelKey: "nav.deals", icon: Briefcase },
-      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+      { to: "/deals", labelKey: "nav.deals", icon: Briefcase, isNew: true },
+      {
+        to: "/analytics",
+        labelKey: "nav.analytics",
+        icon: BarChart3,
+        isNew: true,
+      },
       { to: "/coach", labelKey: "nav.coach", icon: GraduationCap },
     ],
   },
@@ -147,11 +155,21 @@ function NavRow({
     >
       <span className="relative">
         <Icon className="size-4 shrink-0" />
-        {collapsed && item.badge && (
-          <span className="bg-primary ring-sidebar absolute -top-1 -right-1 size-2 rounded-full ring-2" />
+        {collapsed && (item.isNew || item.badge) && (
+          <span
+            className={cn(
+              "ring-sidebar absolute -top-1 -right-1 size-2 rounded-full ring-2",
+              item.isNew ? "bg-volt" : "bg-primary"
+            )}
+          />
         )}
       </span>
       {!collapsed && <span className="flex-1">{label}</span>}
+      {!collapsed && item.isNew && (
+        <span className="bg-volt/15 text-volt rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
+          {t("common.new")}
+        </span>
+      )}
       {!collapsed && item.badge && (
         <Badge className="h-5 min-w-5 justify-center px-1.5">
           {item.badge}
@@ -164,7 +182,10 @@ function NavRow({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{link}</TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipContent side="right">
+        {label}
+        {item.isNew ? ` · ${t("common.new")}` : ""}
+      </TooltipContent>
     </Tooltip>
   )
 }
