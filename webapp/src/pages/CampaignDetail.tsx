@@ -16,6 +16,9 @@ import {
   Trash2,
   UserPlus,
   X,
+  Sparkles,
+  Zap,
+  AlertTriangle,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -31,6 +34,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -73,6 +77,7 @@ import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
 import { getProspect } from "@/lib/mock-data"
 import { useCampaigns, useLists, campaignStore } from "@/lib/store"
+import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -180,6 +185,22 @@ const COPY = {
     cancel: "Cancel",
     saveChanges: "Save changes",
     campaignUpdated: "Campaign updated",
+    enrichGateTitle: "Enrich emails before launching?",
+    enrichGateBody: (n: number, credits: number) =>
+      `${n} enrolled prospects don't have a verified email yet. Enriching now uses ~${credits} credits and avoids "email not available" errors once the campaign is live.`,
+    enrichAndActivate: "Enrich & activate",
+    activateAnyway: "Activate without enriching",
+    enrichedToast: (n: number) => `${n} emails enriched · campaign activated`,
+    enrichInsufficient: "Not enough credits to enrich",
+    automations: "Automations",
+    automationsDesc: "Let Kai act on replies for you.",
+    alertInterested: "Alert me when a reply is marked Interested",
+    alertInterestedDesc:
+      "Get a notification the moment Kai classifies a reply as Interested.",
+    alsoEmail: "Also email me",
+    alertsOnToast: "Interested alerts on",
+    interested: "Interested",
+    alertSent: "Alert sent",
   },
   es: {
     channelLabel: {
@@ -277,6 +298,22 @@ const COPY = {
     cancel: "Cancelar",
     saveChanges: "Guardar cambios",
     campaignUpdated: "Campaña actualizada",
+    enrichGateTitle: "¿Enriquecer correos antes de lanzar?",
+    enrichGateBody: (n: number, credits: number) =>
+      `${n} prospectos inscritos aún no tienen un correo verificado. Enriquecer ahora usa ~${credits} créditos y evita errores de "correo no disponible" con la campaña en marcha.`,
+    enrichAndActivate: "Enriquecer y activar",
+    activateAnyway: "Activar sin enriquecer",
+    enrichedToast: (n: number) => `${n} correos enriquecidos · campaña activada`,
+    enrichInsufficient: "Créditos insuficientes para enriquecer",
+    automations: "Automatizaciones",
+    automationsDesc: "Deja que Kai actúe sobre las respuestas por ti.",
+    alertInterested: "Avísame cuando una respuesta se marque como Interesado",
+    alertInterestedDesc:
+      "Recibe una notificación en cuanto Kai clasifique una respuesta como Interesado.",
+    alsoEmail: "Avísame también por correo",
+    alertsOnToast: "Alertas de Interesado activadas",
+    interested: "Interesado",
+    alertSent: "Alerta enviada",
   },
 } as const
 
@@ -399,6 +436,10 @@ export default function CampaignDetail() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [attachListId, setAttachListId] = React.useState("")
+  const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
+  const [alertInterested, setAlertInterested] = React.useState(true)
+  const [alertEmail, setAlertEmail] = React.useState(false)
+  const { spend } = useCredits()
 
   if (!campaign) {
     return (
@@ -450,6 +491,41 @@ export default function CampaignDetail() {
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
   const allEnrolledIds = new Set<string>([...enrollmentIds, ...enrolledIds])
 
+  // Enrichment gate: a campaign with an email step shouldn't launch while some
+  // enrolled prospects still lack a verified email (a common mid-campaign error).
+  const camp = campaign // narrowed, safe to use inside handlers
+  const hasEmailStep = steps.some((s) => s.channel === "email")
+  const missingEmails = hasEmailStep ? Math.round(camp.enrolled * 0.22) : 0
+  const enrichCost = missingEmails * 2
+
+  function activate() {
+    campaignStore.update(camp.id, { status: "active" })
+    toast.success(c.activated(camp.name))
+  }
+
+  function handlePrimaryAction() {
+    if (camp.status === "active") {
+      campaignStore.update(camp.id, { status: "paused" })
+      toast.success(c.paused(camp.name))
+      return
+    }
+    if (missingEmails > 0) {
+      setEnrichGateOpen(true)
+      return
+    }
+    activate()
+  }
+
+  function enrichAndActivate() {
+    if (!spend(enrichCost, `Enrich ${missingEmails} emails — ${camp.name}`)) {
+      toast.error(c.enrichInsufficient)
+      return
+    }
+    setEnrichGateOpen(false)
+    campaignStore.update(camp.id, { status: "active" })
+    toast.success(c.enrichedToast(missingEmails))
+  }
+
   return (
     <Page>
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
@@ -475,18 +551,7 @@ export default function CampaignDetail() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            onClick={() => {
-              const nextStatus: CampaignStatus =
-                campaign.status === "active" ? "paused" : "active"
-              campaignStore.update(campaign.id, { status: nextStatus })
-              toast.success(
-                nextStatus === "paused"
-                  ? c.paused(campaign.name)
-                  : c.activated(campaign.name)
-              )
-            }}
-          >
+          <Button variant="volt" onClick={handlePrimaryAction}>
             {campaign.status === "active" ? (
               <>
                 <Pause className="size-4" />
@@ -624,6 +689,48 @@ export default function CampaignDetail() {
                 <p className="text-muted-foreground text-sm">
                   {c.noListsToAttach}
                 </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Automations — alert when a reply is classified Interested */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="text-primary size-4" />
+                {c.automations}
+              </CardTitle>
+              <CardDescription>{c.automationsDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{c.alertInterested}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {c.alertInterestedDesc}
+                  </p>
+                </div>
+                <Switch
+                  checked={alertInterested}
+                  onCheckedChange={(v) => {
+                    setAlertInterested(v)
+                    if (v) toast.success(c.alertsOnToast)
+                  }}
+                  aria-label={c.alertInterested}
+                />
+              </div>
+              {alertInterested && (
+                <div className="flex items-center justify-between gap-3 border-t pt-4">
+                  <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                    <Mail className="size-4" />
+                    {c.alsoEmail}
+                  </p>
+                  <Switch
+                    checked={alertEmail}
+                    onCheckedChange={setAlertEmail}
+                    aria-label={c.alsoEmail}
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1002,11 +1109,24 @@ export default function CampaignDetail() {
                         <ProspectAvatar prospect={prospect} className="mt-0.5" />
                       )}
                       <div className="min-w-0 space-y-1">
-                        <p className="font-medium">
-                          {prospect
-                            ? `${prospect.firstName} ${prospect.lastName}`
-                            : c.unknownProspect}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium">
+                            {prospect
+                              ? `${prospect.firstName} ${prospect.lastName}`
+                              : c.unknownProspect}
+                          </p>
+                          <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+                            <Sparkles className="size-3" />
+                            {c.interested}
+                          </Badge>
+                          {alertInterested && (
+                            <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                              <Zap className="text-chart-4 size-3" />
+                              {c.alertSent}
+                              {alertEmail ? " · email" : ""}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-muted-foreground text-sm">{reply}</p>
                         <p className="text-muted-foreground text-xs">
                           {relativeTime(e.lastTouch)}
@@ -1045,6 +1165,37 @@ export default function CampaignDetail() {
         campaign={campaign}
         enrolledIds={allEnrolledIds}
       />
+
+      <Dialog open={enrichGateOpen} onOpenChange={setEnrichGateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="bg-chart-4/15 text-chart-4 flex size-7 items-center justify-center rounded-md">
+                <AlertTriangle className="size-4" />
+              </span>
+              {c.enrichGateTitle}
+            </DialogTitle>
+            <DialogDescription>
+              {c.enrichGateBody(missingEmails, enrichCost)}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEnrichGateOpen(false)
+                activate()
+              }}
+            >
+              {c.activateAnyway}
+            </Button>
+            <Button variant="volt" onClick={enrichAndActivate}>
+              <Zap className="size-4" />
+              {c.enrichAndActivate} · {enrichCost}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Page>
   )
 }
