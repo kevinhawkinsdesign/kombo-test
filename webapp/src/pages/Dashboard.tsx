@@ -73,7 +73,7 @@ const COPY = {
     findProspects: "Find prospects",
     kaiTitle: (count: number) =>
       `Kai spotted ${count} signals worth acting on`,
-    reviewInCopilot: "Review in Copilot",
+    reviewInCopilot: "Review signals",
     kaiBody:
       "Replies, job changes, and intent signals across your accounts — each with a recommended next move.",
     whatIs: (label: string) => `What is ${label}?`,
@@ -125,7 +125,7 @@ const COPY = {
     findProspects: "Buscar prospectos",
     kaiTitle: (count: number) =>
       `Kai detectó ${count} señales que vale la pena atender`,
-    reviewInCopilot: "Revisar en Copilot",
+    reviewInCopilot: "Revisar señales",
     kaiBody:
       "Respuestas, cambios de empleo y señales de intención en tus cuentas — cada una con el siguiente paso recomendado.",
     whatIs: (label: string) => `¿Qué es ${label}?`,

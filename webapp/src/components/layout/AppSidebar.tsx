@@ -149,7 +149,7 @@ function NavRow({
           collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
         )
       }
     >
@@ -268,7 +268,7 @@ function SidebarContent({
               {collapsed ? (
                 <div className="bg-sidebar-border mx-auto my-1 h-px w-6" />
               ) : (
-                <p className="text-sidebar-foreground/65 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
+                <p className="text-sidebar-foreground/70 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
                   {t(section.labelKey)}
                 </p>
               )}
@@ -298,7 +298,7 @@ function SidebarContent({
                 onClick={onToggleCollapse}
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 className={cn(
-                  "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground flex items-center rounded-md text-sm font-medium transition-colors",
+                  "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground flex items-center rounded-md text-sm font-medium transition-colors",
                   collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2"
                 )}
               >
