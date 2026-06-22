@@ -94,6 +94,7 @@ import {
   HEADCOUNT_OPTIONS,
   INDUSTRY_OPTIONS,
   SIGNAL_OPTIONS,
+  TITLE_OPTIONS,
   EMPTY_QUERY,
   type AiEntity,
   type AiQuery,
@@ -192,6 +193,8 @@ const COPY = {
     clearSel: "Clear",
     noResults: "No results yet — try a prompt or adjust your filters.",
     addFilter: "Add filter",
+    filterTypeahead: "Type a title, region, industry… or add your own",
+    addCustom: (v: string) => `Add "${v}"`,
     titles: "Titles",
     seniority: "Seniority",
     regions: "Regions",
@@ -301,6 +304,8 @@ const COPY = {
     clearSel: "Limpiar",
     noResults: "Aún no hay resultados — prueba un prompt o ajusta los filtros.",
     addFilter: "Añadir filtro",
+    filterTypeahead: "Escribe un cargo, región, sector… o añade el tuyo",
+    addCustom: (v: string) => `Añadir "${v}"`,
     titles: "Cargos",
     seniority: "Antigüedad",
     regions: "Regiones",
@@ -1502,6 +1507,7 @@ const FILTER_OPTIONS: {
   label: (c: Copy) => string
   options: string[]
 }[] = [
+  { key: "titles", label: (c) => c.titles, options: TITLE_OPTIONS },
   { key: "seniority", label: (c) => c.seniority, options: SENIORITY_OPTIONS },
   { key: "regions", label: (c) => c.regions, options: REGION_OPTIONS },
   { key: "industries", label: (c) => c.industries, options: INDUSTRY_OPTIONS },
@@ -1509,6 +1515,8 @@ const FILTER_OPTIONS: {
   { key: "signals", label: (c) => c.signals, options: SIGNAL_OPTIONS },
 ]
 
+// Type-ahead "Add filter": type to filter suggestions across every field, or
+// type any custom value and add it as a title (manual entry).
 function AddFilterPopover({
   query,
   onAdd,
@@ -1519,44 +1527,93 @@ function AddFilterPopover({
   c: Copy
 }) {
   const [open, setOpen] = React.useState(false)
+  const [text, setText] = React.useState("")
+  const q = text.trim().toLowerCase()
+
+  const suggestions = React.useMemo(() => {
+    const rows: { group: keyof AiQuery; groupLabel: string; value: string }[] = []
+    for (const group of FILTER_OPTIONS) {
+      for (const value of group.options) {
+        if ((query[group.key] as string[]).includes(value)) continue
+        if (q && !value.toLowerCase().includes(q)) continue
+        rows.push({ group: group.key, groupLabel: group.label(c), value })
+      }
+    }
+    return rows.slice(0, 40)
+  }, [query, q, c])
+
+  // Whether the typed value already matches a suggestion exactly.
+  const exact = text.trim()
+    ? suggestions.some((s) => s.value.toLowerCase() === q)
+    : true
+
+  function reset() {
+    setText("")
+  }
+
+  function add(group: keyof AiQuery, value: string) {
+    onAdd(group, value)
+    reset()
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) reset()
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
           <Plus className="size-3.5" />
           {c.addFilter}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-64 p-0">
-        <div className="max-h-80 overflow-y-auto p-1">
-          {FILTER_OPTIONS.map((group) => (
-            <div key={group.key} className="px-1 py-1">
-              <p className="text-muted-foreground px-2 py-1 text-xs font-medium tracking-wide uppercase">
-                {group.label(c)}
-              </p>
-              <div className="flex flex-wrap gap-1 px-1">
-                {group.options.map((opt) => {
-                  const active = (query[group.key] as string[]).includes(opt)
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => onAdd(group.key, opt)}
-                      disabled={active}
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-xs transition-colors",
-                        active
-                          ? "border-primary/40 bg-primary/10 text-primary cursor-default"
-                          : "hover:bg-muted"
-                      )}
-                    >
-                      {opt}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+      <PopoverContent align="start" className="w-72 p-0">
+        <div className="border-b p-2">
+          <Input
+            autoFocus
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                if (text.trim() && !exact) add("titles", text.trim())
+                else if (suggestions[0]) add(suggestions[0].group, suggestions[0].value)
+              }
+            }}
+            placeholder={c.filterTypeahead}
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="max-h-72 overflow-y-auto p-1">
+          {text.trim() && !exact && (
+            <button
+              type="button"
+              onClick={() => add("titles", text.trim())}
+              className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+            >
+              <Plus className="text-primary size-4 shrink-0" />
+              <span className="truncate">{c.addCustom(text.trim())}</span>
+            </button>
+          )}
+          {suggestions.map((s) => (
+            <button
+              key={`${s.group}:${s.value}`}
+              type="button"
+              onClick={() => add(s.group, s.value)}
+              className="hover:bg-muted flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+            >
+              <span className="truncate">{s.value}</span>
+              <span className="text-muted-foreground shrink-0 text-[10px] tracking-wide uppercase">
+                {s.groupLabel}
+              </span>
+            </button>
           ))}
+          {suggestions.length === 0 && !text.trim() && (
+            <p className="text-muted-foreground px-2 py-2 text-xs">{c.filterTypeahead}</p>
+          )}
         </div>
       </PopoverContent>
     </Popover>

@@ -103,6 +103,24 @@ export const SIGNAL_OPTIONS = [
   "Adopting AI",
   "High web intent",
 ]
+// Common titles offered as type-ahead suggestions (users can also type any
+// custom value of their own).
+export const TITLE_OPTIONS = [
+  "Chief Revenue Officer",
+  "Chief Executive Officer",
+  "Chief Operating Officer",
+  "VP of Sales",
+  "VP of Revenue",
+  "VP of Marketing",
+  "Head of Sales",
+  "Head of Sales Development",
+  "Head of Growth",
+  "Head of Partnerships",
+  "Director of Sales",
+  "Director of RevOps",
+  "Sales Manager",
+  "Founder",
+]
 
 /* -------------------------------- pools --------------------------------- */
 
