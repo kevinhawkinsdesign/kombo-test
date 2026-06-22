@@ -6,6 +6,7 @@ const RESET_KEYS = [
   "kombo_store_v1",
   "kombo_feature_tours_v1",
   "kombo_ai_searches_v1",
+  "kombo_table_cols_v1",
 ]
 
 export function installDemoReset(): void {
