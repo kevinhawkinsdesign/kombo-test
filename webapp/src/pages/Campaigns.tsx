@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Progress } from "@/components/ui/progress"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +78,11 @@ const COPY = {
     opened: "Opened",
     replied: "Replied",
     meetings: "Meetings",
+    reachedOf: (n: number, m: number) => `${n}/${m} reached`,
+    statusSending: "Sending",
+    statusPaused: "Paused",
+    statusDraft: "Not started",
+    statusCompleted: "Completed",
     paused: (name: string) => `${name} paused`,
     activated: (name: string) => `${name} activated`,
     newCampaign: "New campaign",
@@ -126,6 +132,11 @@ const COPY = {
     opened: "Aperturas",
     replied: "Respuestas",
     meetings: "Reuniones",
+    reachedOf: (n: number, m: number) => `${n}/${m} alcanzados`,
+    statusSending: "Enviando",
+    statusPaused: "En pausa",
+    statusDraft: "Sin iniciar",
+    statusCompleted: "Completada",
     paused: (name: string) => `${name} en pausa`,
     activated: (name: string) => `${name} activada`,
     newCampaign: "Nueva campaña",
@@ -289,6 +300,39 @@ function CampaignCard({
           <Metric label={c.opened} value={campaign.opened} />
           <Metric label={c.replied} value={`${replyRate}%`} />
           <Metric label={c.meetings} value={campaign.meetings} />
+        </div>
+
+        {/* Progress / status — transparency on how far the campaign has run */}
+        <div className="mt-4 space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              {campaign.status === "active" ? (
+                <>
+                  <span className="relative flex size-1.5">
+                    <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+                    <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
+                  </span>
+                  {c.statusSending}
+                </>
+              ) : campaign.status === "paused" ? (
+                c.statusPaused
+              ) : campaign.status === "completed" ? (
+                c.statusCompleted
+              ) : (
+                c.statusDraft
+              )}
+            </span>
+            <span className="tabular-nums">
+              {c.reachedOf(campaign.opened, campaign.enrolled)}
+            </span>
+          </div>
+          <Progress
+            value={
+              campaign.enrolled
+                ? Math.round((campaign.opened / campaign.enrolled) * 100)
+                : 0
+            }
+          />
         </div>
 
         {campaign.steps.length > 0 && (

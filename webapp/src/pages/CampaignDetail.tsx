@@ -190,6 +190,8 @@ const COPY = {
       `${n} enrolled prospects don't have a verified email yet. Enriching now uses ~${credits} credits and avoids "email not available" errors once the campaign is live.`,
     enrichAndActivate: "Enrich & activate",
     activateAnyway: "Activate without enriching",
+    enrichingToast: (n: number) =>
+      `Enriching ${n} emails… you can keep working — we'll notify you.`,
     enrichedToast: (n: number) => `${n} emails enriched · campaign activated`,
     enrichInsufficient: "Not enough credits to enrich",
     automations: "Automations",
@@ -303,6 +305,8 @@ const COPY = {
       `${n} prospectos inscritos aún no tienen un correo verificado. Enriquecer ahora usa ~${credits} créditos y evita errores de "correo no disponible" con la campaña en marcha.`,
     enrichAndActivate: "Enriquecer y activar",
     activateAnyway: "Activar sin enriquecer",
+    enrichingToast: (n: number) =>
+      `Enriqueciendo ${n} correos… puedes seguir trabajando, te avisaremos.`,
     enrichedToast: (n: number) => `${n} correos enriquecidos · campaña activada`,
     enrichInsufficient: "Créditos insuficientes para enriquecer",
     automations: "Automatizaciones",
@@ -522,8 +526,13 @@ export default function CampaignDetail() {
       return
     }
     setEnrichGateOpen(false)
-    campaignStore.update(camp.id, { status: "active" })
-    toast.success(c.enrichedToast(missingEmails))
+    // System-status pattern: long action runs in the background and the user is
+    // free to leave — we notify them when it's done.
+    const toastId = toast.loading(c.enrichingToast(missingEmails))
+    window.setTimeout(() => {
+      campaignStore.update(camp.id, { status: "active" })
+      toast.success(c.enrichedToast(missingEmails), { id: toastId })
+    }, 1800)
   }
 
   return (
