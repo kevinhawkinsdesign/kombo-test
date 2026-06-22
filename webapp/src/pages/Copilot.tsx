@@ -46,7 +46,7 @@ const COPY = {
     immediately: "Immediately",
     day1: "Day 1",
     afterDays: (days: number) => `After ${days} days`,
-    title: "Kai Copilot",
+    title: "Signals",
     pendingActions: "Pending actions",
     onAutopilot: "On autopilot",
     autopilotBody: (count: number) =>
@@ -81,7 +81,7 @@ const COPY = {
     immediately: "Inmediatamente",
     day1: "Día 1",
     afterDays: (days: number) => `Tras ${days} días`,
-    title: "Kai Copilot",
+    title: "Señales",
     pendingActions: "Acciones pendientes",
     onAutopilot: "En piloto automático",
     autopilotBody: (count: number) =>

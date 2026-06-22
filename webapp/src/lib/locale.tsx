@@ -10,7 +10,7 @@ const en: Dict = {
   "nav.revenue": "Revenue",
   "nav.manage": "Manage",
   "nav.dashboard": "Dashboard",
-  "nav.copilot": "Kai Copilot",
+  "nav.copilot": "Signals",
   "nav.search": "Prospect Search",
   "nav.companies": "Companies",
   "nav.intros": "Warm Intros",
@@ -51,6 +51,9 @@ const en: Dict = {
   "banner.viewingAs": "You are viewing the workspace as",
   "banner.viewingTeam": "You are viewing the team",
   "kai.suggests": "Kai suggests",
+  "update.available": "A new version of Kombo is available.",
+  "update.refresh": "Refresh",
+  "update.dismiss": "Dismiss",
 }
 
 const es: Dict = {
@@ -59,7 +62,7 @@ const es: Dict = {
   "nav.revenue": "Ingresos",
   "nav.manage": "Gestión",
   "nav.dashboard": "Panel",
-  "nav.copilot": "Kai Copilot",
+  "nav.copilot": "Señales",
   "nav.search": "Búsqueda de prospectos",
   "nav.companies": "Empresas",
   "nav.intros": "Presentaciones",
@@ -100,6 +103,9 @@ const es: Dict = {
   "banner.viewingAs": "Estás viendo el espacio como",
   "banner.viewingTeam": "Estás viendo el equipo",
   "kai.suggests": "Kai sugiere",
+  "update.available": "Hay una nueva versión de Kombo disponible.",
+  "update.refresh": "Actualizar",
+  "update.dismiss": "Descartar",
 }
 
 const DICTS: Record<Locale, Dict> = { en, es }
