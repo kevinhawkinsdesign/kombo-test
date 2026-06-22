@@ -1,6 +1,17 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Plus, Mail, Trash2 } from "lucide-react"
+import {
+  Plus,
+  Mail,
+  Trash2,
+  GripVertical,
+  Copy,
+  Check,
+  FolderPlus,
+  Pencil,
+  MoreHorizontal,
+  Braces,
+} from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
@@ -10,7 +21,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -26,10 +36,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useTemplates, templateStore } from "@/lib/store"
+import { folderStore, useTemplateFolders } from "@/lib/template-folders"
 import { useLocale } from "@/lib/locale"
 import type { Channel, EmailTemplate } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+const NEW_FOLDER = "__new_folder__"
+
+interface VariableDef {
+  tag: string
+  en: string
+  es: string
+  defEn: string
+  defEs: string
+}
+
+const VARIABLES: VariableDef[] = [
+  { tag: "first_name", en: "First name", es: "Nombre", defEn: "Recipient's first name", defEs: "Nombre del destinatario" },
+  { tag: "last_name", en: "Last name", es: "Apellido", defEn: "Recipient's last name", defEs: "Apellido del destinatario" },
+  { tag: "company", en: "Company", es: "Empresa", defEn: "Recipient's company", defEs: "Empresa del destinatario" },
+  { tag: "title", en: "Job title", es: "Cargo", defEn: "Recipient's job title", defEs: "Cargo del destinatario" },
+  { tag: "industry", en: "Industry", es: "Sector", defEn: "Recipient's industry", defEs: "Sector del destinatario" },
+  { tag: "city", en: "City", es: "Ciudad", defEn: "Recipient's city", defEs: "Ciudad del destinatario" },
+  { tag: "sender", en: "Sender", es: "Remitente", defEn: "Your name", defEs: "Tu nombre" },
+  { tag: "sender_company", en: "Your company", es: "Tu empresa", defEn: "Your company name", defEs: "El nombre de tu empresa" },
+  { tag: "sender_title", en: "Your title", es: "Tu cargo", defEn: "Your job title", defEs: "Tu cargo" },
+  { tag: "calendar_link", en: "Booking link", es: "Enlace de reserva", defEn: "Your meeting booking link", defEs: "Tu enlace para agendar" },
+]
 
 const COPY = {
   en: {
@@ -74,6 +114,21 @@ const COPY = {
     deleteTitle: "Delete template?",
     deleteDescription: (name: string) => `"${name}" will be permanently removed.`,
     delete: "Delete",
+    variablesTitle: "Variables",
+    variablesSubtitle: "Click to insert, drag into the body, or copy.",
+    copy: "Copy",
+    copied: "Copied",
+    typeaheadHint: "Tip: type {{ in the body to autocomplete a variable.",
+    newFolder: "New folder",
+    folderNamePlaceholder: "Folder name",
+    createNewFolder: "＋ Create new folder",
+    renameFolder: "Rename folder",
+    deleteFolder: "Delete folder",
+    folderActions: "Folder actions",
+    uncategorized: "Uncategorized",
+    folderCreated: "Folder created",
+    folderRenamed: "Folder renamed",
+    folderDeleted: "Folder deleted",
   },
   es: {
     topPerformer: "Mejor rendimiento",
@@ -119,8 +174,25 @@ const COPY = {
     deleteDescription: (name: string) =>
       `«${name}» se eliminará de forma permanente.`,
     delete: "Eliminar",
+    variablesTitle: "Variables",
+    variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
+    copy: "Copiar",
+    copied: "Copiado",
+    typeaheadHint: "Consejo: escribe {{ en el cuerpo para autocompletar una variable.",
+    newFolder: "Nueva carpeta",
+    folderNamePlaceholder: "Nombre de la carpeta",
+    createNewFolder: "＋ Crear nueva carpeta",
+    renameFolder: "Renombrar carpeta",
+    deleteFolder: "Eliminar carpeta",
+    folderActions: "Acciones de carpeta",
+    uncategorized: "Sin categoría",
+    folderCreated: "Carpeta creada",
+    folderRenamed: "Carpeta renombrada",
+    folderDeleted: "Carpeta eliminada",
   },
 } as const
+
+type Copy = (typeof COPY)[keyof typeof COPY]
 
 function ChannelIcon({
   channel,
@@ -134,19 +206,6 @@ function ChannelIcon({
   ) : (
     <Mail className={className} />
   )
-}
-
-function groupByFolder(templates: EmailTemplate[]): [string, EmailTemplate[]][] {
-  const groups = new Map<string, EmailTemplate[]>()
-  for (const template of templates) {
-    const bucket = groups.get(template.folder)
-    if (bucket) {
-      bucket.push(template)
-    } else {
-      groups.set(template.folder, [template])
-    }
-  }
-  return Array.from(groups.entries())
 }
 
 function TemplateCard({
@@ -249,35 +308,123 @@ export default function Templates() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const templates = useTemplates()
+  const folders = useTemplateFolders()
 
   const [open, setOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<EmailTemplate | null>(null)
   const [name, setName] = React.useState("")
   const [folder, setFolder] = React.useState("Cold outreach")
+  const [newFolderName, setNewFolderName] = React.useState("")
   const [channel, setChannel] = React.useState<Channel>("email")
   const [subject, setSubject] = React.useState("")
   const [body, setBody] = React.useState("")
   const [tags, setTags] = React.useState("")
+  const [copiedTag, setCopiedTag] = React.useState<string | null>(null)
+  const [varQuery, setVarQuery] = React.useState<string | null>(null)
+
+  const bodyRef = React.useRef<HTMLTextAreaElement>(null)
+  const subjectRef = React.useRef<HTMLInputElement>(null)
+  const activeFieldRef = React.useRef<"body" | "subject">("body")
 
   const [confirmTarget, setConfirmTarget] = React.useState<EmailTemplate | null>(
     null
   )
 
-  function openEditor(template: EmailTemplate | null) {
+  // All folders shown = managed folders ∪ any folder referenced by a template.
+  const allFolders = React.useMemo(() => {
+    const set = new Set<string>(folders)
+    templates.forEach((t) => t.folder && set.add(t.folder))
+    return [...set]
+  }, [folders, templates])
+
+  // Insert a {{variable}} into whichever field was last focused.
+  function insertVariable(tag: string) {
+    const ins = `{{${tag}}}`
+    if (activeFieldRef.current === "subject" && channel === "email") {
+      const el = subjectRef.current
+      const start = el?.selectionStart ?? subject.length
+      const end = el?.selectionEnd ?? subject.length
+      const next = subject.slice(0, start) + ins + subject.slice(end)
+      setSubject(next)
+      requestAnimationFrame(() => {
+        el?.focus()
+        el?.setSelectionRange(start + ins.length, start + ins.length)
+      })
+      return
+    }
+    const el = bodyRef.current
+    const start = el?.selectionStart ?? body.length
+    const end = el?.selectionEnd ?? body.length
+    const next = body.slice(0, start) + ins + body.slice(end)
+    setBody(next)
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(start + ins.length, start + ins.length)
+    })
+  }
+
+  // Type-ahead: typing "{{" in the body opens a variable autocomplete.
+  function onBodyChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const val = e.target.value
+    setBody(val)
+    const caret = e.target.selectionStart ?? val.length
+    const m = /\{\{(\w*)$/.exec(val.slice(0, caret))
+    setVarQuery(m ? m[1] : null)
+  }
+
+  function pickTypeahead(tag: string) {
+    const el = bodyRef.current
+    if (!el) return
+    const caret = el.selectionStart ?? body.length
+    const m = /\{\{(\w*)$/.exec(body.slice(0, caret))
+    if (!m) return
+    const startIdx = caret - m[0].length
+    const ins = `{{${tag}}}`
+    const next = body.slice(0, startIdx) + ins + body.slice(caret)
+    setBody(next)
+    setVarQuery(null)
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(startIdx + ins.length, startIdx + ins.length)
+    })
+  }
+
+  function copyVariable(tag: string) {
+    const text = `{{${tag}}}`
+    navigator.clipboard?.writeText(text).catch(() => {})
+    setCopiedTag(tag)
+    window.setTimeout(() => setCopiedTag((cur) => (cur === tag ? null : cur)), 1200)
+  }
+
+  const typeaheadMatches =
+    varQuery !== null
+      ? VARIABLES.filter((v) => v.tag.includes(varQuery.toLowerCase())).slice(0, 6)
+      : []
+
+  function openEditor(template: EmailTemplate | null, presetFolder?: string) {
     setEditing(template)
     setName(template?.name ?? "")
-    setFolder(template?.folder ?? "Cold outreach")
+    setFolder(template?.folder ?? presetFolder ?? folders[0] ?? "Cold outreach")
+    setNewFolderName("")
     setChannel(template?.channel ?? "email")
     setSubject(template?.subject ?? "")
     setBody(template?.body ?? "")
     setTags(template?.tags.join(", ") ?? "")
+    setVarQuery(null)
+    activeFieldRef.current = "body"
     setOpen(true)
   }
 
   function handleSave() {
+    // Resolve the folder, creating it if the user chose "New folder".
+    let resolvedFolder = folder
+    if (folder === NEW_FOLDER) {
+      resolvedFolder = newFolderName.trim() || c.uncategorized
+      folderStore.create(resolvedFolder)
+    }
     const patch = {
       name,
-      folder,
+      folder: resolvedFolder,
       channel,
       subject: channel === "email" ? subject : "",
       body,
@@ -299,7 +446,43 @@ export default function Templates() {
     toast.success(c.templateDeleted)
   }
 
-  const groups = groupByFolder(templates)
+  // One section per folder (including empty folders).
+  const grouped = allFolders.map(
+    (f) => [f, templates.filter((t) => t.folder === f)] as const
+  )
+
+  const [folderDialog, setFolderDialog] = React.useState<{
+    mode: "create" | "rename"
+    original?: string
+  } | null>(null)
+  const [folderInput, setFolderInput] = React.useState("")
+
+  function openFolderDialog(mode: "create" | "rename", original?: string) {
+    setFolderDialog({ mode, original })
+    setFolderInput(original ?? "")
+  }
+  function saveFolderDialog() {
+    const value = folderInput.trim()
+    if (!value || !folderDialog) return
+    if (folderDialog.mode === "create") {
+      folderStore.create(value)
+      toast.success(c.folderCreated)
+    } else if (folderDialog.original && folderDialog.original !== value) {
+      folderStore.rename(folderDialog.original, value)
+      templates
+        .filter((t) => t.folder === folderDialog.original)
+        .forEach((t) => templateStore.update(t.id, { folder: value }))
+      toast.success(c.folderRenamed)
+    }
+    setFolderDialog(null)
+  }
+  function deleteFolder(f: string) {
+    templates
+      .filter((t) => t.folder === f)
+      .forEach((t) => templateStore.update(t.id, { folder: c.uncategorized }))
+    folderStore.remove(f)
+    toast.success(c.folderDeleted)
+  }
 
   return (
     <Page>
@@ -307,10 +490,16 @@ export default function Templates() {
         title={c.pageTitle}
         description={c.pageDescription}
         action={
-          <Button variant="volt" onClick={() => openEditor(null)}>
-            <Plus className="size-4" />
-            {c.newTemplate}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => openFolderDialog("create")}>
+              <FolderPlus className="size-4" />
+              {c.newFolder}
+            </Button>
+            <Button variant="volt" onClick={() => openEditor(null)}>
+              <Plus className="size-4" />
+              {c.newTemplate}
+            </Button>
+          </div>
         }
       />
 
@@ -324,120 +513,282 @@ export default function Templates() {
       />
 
       <div className="space-y-8">
-        {groups.map(([groupFolder, groupTemplates]) => (
+        {grouped.map(([groupFolder, groupTemplates]) => (
           <section key={groupFolder} className="space-y-3">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              {groupFolder}{" "}
-              <span className="tabular-nums">({groupTemplates.length})</span>
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {groupTemplates.map((template) => (
-                <TemplateCard
-                  key={template.id}
-                  template={template}
-                  onOpen={openEditor}
-                  onDelete={setConfirmTarget}
-                />
-              ))}
+            <div className="flex items-center gap-1">
+              <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                {groupFolder}{" "}
+                <span className="tabular-nums">({groupTemplates.length})</span>
+              </h3>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-6"
+                    aria-label={c.folderActions}
+                  >
+                    <MoreHorizontal className="size-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => openEditor(null, groupFolder)}>
+                    <Plus className="size-4" />
+                    {c.newTemplate}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openFolderDialog("rename", groupFolder)}>
+                    <Pencil className="size-4" />
+                    {c.renameFolder}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => deleteFolder(groupFolder)}
+                  >
+                    <Trash2 className="size-4" />
+                    {c.deleteFolder}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+            {groupTemplates.length === 0 ? (
+              <button
+                type="button"
+                onClick={() => openEditor(null, groupFolder)}
+                className="text-muted-foreground hover:border-primary/40 hover:text-foreground w-full rounded-xl border border-dashed py-8 text-center text-sm transition-colors"
+              >
+                <Plus className="mr-1 inline size-4" />
+                {c.newTemplate}
+              </button>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {groupTemplates.map((template) => (
+                  <TemplateCard
+                    key={template.id}
+                    template={template}
+                    onOpen={openEditor}
+                    onDelete={setConfirmTarget}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         ))}
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-xl">
+      {/* Create / rename folder */}
+      <Dialog open={folderDialog !== null} onOpenChange={(v) => !v && setFolderDialog(null)}>
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>
-              {editing ? c.editTemplate : c.newTemplate}
+              {folderDialog?.mode === "rename" ? c.renameFolder : c.newFolder}
             </DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={folderInput}
+            onChange={(e) => setFolderInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && saveFolderDialog()}
+            placeholder={c.folderNamePlaceholder}
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setFolderDialog(null)}>
+              {c.cancel}
+            </Button>
+            <Button variant="volt" onClick={saveFolderDialog}>
+              {c.save}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          showCloseButton
+          className="flex h-screen w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-[92vh] sm:max-w-5xl sm:rounded-xl"
+        >
+          <DialogHeader className="border-b p-5 text-left">
+            <DialogTitle>{editing ? c.editTemplate : c.newTemplate}</DialogTitle>
             <DialogDescription>
               {channel === "email" ? c.emailDialogDesc : c.linkedinDialogDesc}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="template-name">{c.name}</Label>
-              <Input
-                id="template-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={c.namePlaceholder}
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[1fr_280px]">
+            {/* Form */}
+            <div className="space-y-4 overflow-y-auto p-5">
               <div className="space-y-2">
-                <Label htmlFor="template-channel">{c.channel}</Label>
-                <Select
-                  value={channel}
-                  onValueChange={(value) => setChannel(value as Channel)}
-                >
-                  <SelectTrigger id="template-channel" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="email">{c.email}</SelectItem>
-                    <SelectItem value="linkedin">{c.linkedin}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="template-folder">{c.folder}</Label>
+                <Label htmlFor="template-name">{c.name}</Label>
                 <Input
-                  id="template-folder"
-                  value={folder}
-                  onChange={(e) => setFolder(e.target.value)}
-                  placeholder={c.folderPlaceholder}
+                  id="template-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={c.namePlaceholder}
                 />
               </div>
-            </div>
 
-            {channel === "email" && (
-              <div className="space-y-2">
-                <Label htmlFor="template-subject">{c.subject}</Label>
-                <Input
-                  id="template-subject"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder={c.subjectPlaceholder}
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="template-channel">{c.channel}</Label>
+                  <Select value={channel} onValueChange={(v) => setChannel(v as Channel)}>
+                    <SelectTrigger id="template-channel" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">{c.email}</SelectItem>
+                      <SelectItem value="linkedin">{c.linkedin}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="template-folder">{c.folder}</Label>
+                  <Select value={folder} onValueChange={setFolder}>
+                    <SelectTrigger id="template-folder" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allFolders.map((f) => (
+                        <SelectItem key={f} value={f}>
+                          {f}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value={NEW_FOLDER}>{c.createNewFolder}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {folder === NEW_FOLDER && (
+                    <Input
+                      autoFocus
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      placeholder={c.folderNamePlaceholder}
+                    />
+                  )}
+                </div>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="template-body">{c.body}</Label>
-              <Textarea
-                id="template-body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder={c.bodyPlaceholder}
-                className="min-h-48"
-              />
-              <p className="text-muted-foreground text-xs">{c.variableHint}</p>
+              {channel === "email" && (
+                <div className="space-y-2">
+                  <Label htmlFor="template-subject">{c.subject}</Label>
+                  <Input
+                    id="template-subject"
+                    ref={subjectRef}
+                    value={subject}
+                    onFocus={() => (activeFieldRef.current = "subject")}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder={c.subjectPlaceholder}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="template-body">{c.body}</Label>
+                <div className="relative">
+                  <Textarea
+                    id="template-body"
+                    ref={bodyRef}
+                    value={body}
+                    onFocus={() => (activeFieldRef.current = "body")}
+                    onChange={onBodyChange}
+                    onBlur={() => window.setTimeout(() => setVarQuery(null), 150)}
+                    placeholder={c.bodyPlaceholder}
+                    className="min-h-48"
+                  />
+                  {typeaheadMatches.length > 0 && (
+                    <div className="bg-popover absolute right-2 bottom-2 z-10 w-56 overflow-hidden rounded-md border shadow-md">
+                      {typeaheadMatches.map((v) => (
+                        <button
+                          key={v.tag}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            pickTypeahead(v.tag)
+                          }}
+                          className="hover:bg-muted flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-sm"
+                        >
+                          <Braces className="text-primary size-3.5 shrink-0" />
+                          <span className="font-mono text-xs">{`{{${v.tag}}}`}</span>
+                          <span className="text-muted-foreground ml-auto truncate text-[11px]">
+                            {locale === "es" ? v.es : v.en}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="text-muted-foreground text-xs">{c.typeaheadHint}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="template-tags">{c.tags}</Label>
+                <Input
+                  id="template-tags"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder={c.tagsPlaceholder}
+                />
+                <p className="text-muted-foreground text-xs">{c.tagsHint}</p>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="template-tags">{c.tags}</Label>
-              <Input
-                id="template-tags"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder={c.tagsPlaceholder}
-              />
-              <p className="text-muted-foreground text-xs">{c.tagsHint}</p>
+            {/* Variables sidebar */}
+            <div className="bg-muted/30 hidden flex-col overflow-hidden border-l md:flex">
+              <div className="border-b p-4">
+                <p className="flex items-center gap-1.5 text-sm font-semibold">
+                  <Braces className="text-primary size-4" />
+                  {c.variablesTitle}
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {c.variablesSubtitle}
+                </p>
+              </div>
+              <div className="flex-1 space-y-1 overflow-y-auto p-2">
+                {VARIABLES.map((v) => (
+                  <div
+                    key={v.tag}
+                    draggable
+                    onDragStart={(e) =>
+                      e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
+                    }
+                    className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
+                  >
+                    <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
+                    <button
+                      type="button"
+                      onClick={() => insertVariable(v.tag)}
+                      className="min-w-0 flex-1 text-left"
+                      title={locale === "es" ? v.defEs : v.defEn}
+                    >
+                      <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
+                      <span className="text-muted-foreground block truncate text-[11px]">
+                        {locale === "es" ? v.defEs : v.defEn}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyVariable(v.tag)}
+                      aria-label={c.copy}
+                      className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      {copiedTag === v.tag ? (
+                        <Check className="text-chart-1 size-3.5" />
+                      ) : (
+                        <Copy className="size-3.5" />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex items-center justify-end gap-2 border-t p-4">
             <Button variant="outline" onClick={() => setOpen(false)}>
               {c.cancel}
             </Button>
             <Button variant="volt" onClick={handleSave}>
               {c.save}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
