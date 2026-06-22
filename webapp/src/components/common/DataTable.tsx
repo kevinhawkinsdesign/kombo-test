@@ -26,6 +26,9 @@ export function DataTable<T>({
   locale,
   editing = false,
   onUpdate,
+  onRowClick,
+  actions,
+  empty,
 }: {
   columns: ColumnDef<T>[]
   visible: string[]
@@ -34,6 +37,9 @@ export function DataTable<T>({
   locale: Locale
   editing?: boolean
   onUpdate?: (row: T, patch: Partial<T>) => void
+  onRowClick?: (row: T) => void
+  actions?: (row: T) => React.ReactNode
+  empty?: React.ReactNode
 }) {
   const byId = React.useMemo(() => {
     const map = new Map<string, ColumnDef<T>>()
@@ -76,11 +82,16 @@ export function DataTable<T>({
                   {col.label[locale]}
                 </TableHead>
               ))}
+              {actions && <TableHead className="w-12 pr-4" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={rowKey(row)}>
+              <TableRow
+                key={rowKey(row)}
+                className={cn(onRowClick && "cursor-pointer")}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
                 {pinned && (
                   <TableCell className="bg-background sticky left-0 z-10 pl-4">
                     {cell(pinned, row)}
@@ -94,8 +105,26 @@ export function DataTable<T>({
                     {cell(col, row)}
                   </TableCell>
                 ))}
+                {actions && (
+                  <TableCell
+                    className="pr-4 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {actions(row)}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
+            {rows.length === 0 && empty && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell
+                  colSpan={shown.length + (pinned ? 1 : 0) + (actions ? 1 : 0)}
+                  className="text-muted-foreground py-10 text-center text-sm"
+                >
+                  {empty}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

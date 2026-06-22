@@ -15,6 +15,7 @@ import {
   Search,
   Database,
   Pause,
+  Columns3,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -32,18 +33,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   ProspectAvatar,
   ScoreBadge,
-  StatusBadge,
 } from "@/components/common/ProspectBits"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
+import {
+  PEOPLE_COLUMNS,
+  PEOPLE_GROUPS,
+  PEOPLE_DEFAULT_IDS,
+  useColumnPrefs,
+} from "@/lib/table-columns"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
@@ -65,6 +65,7 @@ const COPY = {
     enrolled: (count: number) => `${count} enrolled`,
     prospectsHeading: "Prospects",
     addProspects: "Add prospects",
+    columns: "Columns",
     colProspect: "Prospect",
     colCompany: "Company",
     colScore: "Score",
@@ -114,6 +115,7 @@ const COPY = {
     enrolled: (count: number) => `${count} inscritos`,
     prospectsHeading: "Prospectos",
     addProspects: "Añadir prospectos",
+    columns: "Columnas",
     colProspect: "Prospecto",
     colCompany: "Empresa",
     colScore: "Puntuación",
@@ -163,6 +165,8 @@ export default function ListDetail() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
 
   if (!list) {
     return (
@@ -238,85 +242,50 @@ export default function ListDetail() {
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{c.prospectsHeading}</h3>
-        <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
-          <Plus className="size-4" />
-          {c.addProspects}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
+            <Columns3 className="size-4" />
+            <span className="hidden sm:inline">{c.columns}</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
+            <Plus className="size-4" />
+            {c.addProspects}
+          </Button>
+        </div>
       </div>
 
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="pl-4">{c.colProspect}</TableHead>
-              <TableHead className="hidden md:table-cell">{c.colCompany}</TableHead>
-              <TableHead>{c.colScore}</TableHead>
-              <TableHead className="hidden sm:table-cell">{c.colStatus}</TableHead>
-              <TableHead className="w-12 pr-4" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.map((p) => (
-              <TableRow
-                key={p.id}
-                className="cursor-pointer"
-                onClick={() => navigate(`/prospects/${p.id}`)}
-              >
-                <TableCell className="pl-4">
-                  <div className="flex items-center gap-3">
-                    <ProspectAvatar prospect={p} />
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {p.firstName} {p.lastName}
-                      </p>
-                      <p className="text-muted-foreground truncate text-xs">
-                        {p.title}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <p className="font-medium">{p.company}</p>
-                  <p className="text-muted-foreground text-xs">{p.location}</p>
-                </TableCell>
-                <TableCell>
-                  <ScoreBadge score={p.score} />
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <StatusBadge status={p.status} />
-                </TableCell>
-                <TableCell className="pr-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={c.removeFromList(`${p.firstName} ${p.lastName}`)}
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      listStore.removeProspect(list.id, p.id)
-                      toast.success(c.removed)
-                    }}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {members.length === 0 && (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={5}
-                  className="text-muted-foreground py-10 text-center text-sm"
-                >
-                  {c.emptyState}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        </div>
-      </Card>
+      <DataTable
+        columns={PEOPLE_COLUMNS}
+        visible={columnPrefs.visible}
+        rows={members}
+        rowKey={(p) => p.id}
+        locale={locale}
+        onRowClick={(p) => navigate(`/prospects/${p.id}`)}
+        empty={c.emptyState}
+        actions={(p) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={c.removeFromList(`${p.firstName} ${p.lastName}`)}
+            className="text-muted-foreground hover:text-destructive size-8"
+            onClick={() => {
+              listStore.removeProspect(list.id, p.id)
+              toast.success(c.removed)
+            }}
+          >
+            <X className="size-4" />
+          </Button>
+        )}
+      />
+
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={PEOPLE_COLUMNS}
+        groups={PEOPLE_GROUPS}
+        prefs={columnPrefs}
+        locale={locale}
+      />
 
       <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
 

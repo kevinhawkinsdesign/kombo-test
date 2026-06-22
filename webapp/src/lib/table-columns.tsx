@@ -20,11 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  ProspectAvatar,
+  ScoreBadge,
+  StatusBadge,
+} from "@/components/common/ProspectBits"
 import { cn } from "@/lib/utils"
 import { formatMoney as money, initials } from "@/lib/format"
 import { getRep } from "@/lib/team"
 import type { Locale } from "@/lib/locale"
-import type { Account, AccountTier } from "@/lib/types"
+import type { Account, AccountTier, Prospect } from "@/lib/types"
 
 export type Loc = Record<Locale, string>
 function L(en: string, es: string): Loc {
@@ -425,6 +430,180 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
 ]
 
 export const COMPANY_DEFAULT_IDS = COMPANY_COLUMNS.filter(
+  (c) => c.default && !c.pinned
+).map((c) => c.id)
+
+/* --------------------------------- people -------------------------------- */
+
+export const PEOPLE_GROUPS: ColGroup[] = [
+  { id: "role", label: L("Role", "Cargo") },
+  { id: "company", label: L("Company", "Empresa") },
+  { id: "contact", label: L("Contact", "Contacto") },
+  { id: "engage", label: L("Engagement & signals", "Interacción y señales") },
+  { id: "background", label: L("Background", "Trayectoria") },
+]
+
+const FUNCTIONS = ["Sales", "Marketing", "Operations", "Finance", "Engineering", "Product"]
+const MGMT = ["C-Level", "VP", "Director", "Manager", "Individual contributor"]
+const DEGREES = ["1st", "2nd", "3rd+"]
+const SCHOOLS = ["IE Business School", "ESADE", "INSEAD", "LSE", "IESE", "Stanford"]
+const PGROUPS = ["Sales Hackers", "RevGenius", "Pavilion", "Modern Sales Pros"]
+const SKILLS = ["SaaS Sales", "Negotiation", "Forecasting", "ABM", "Outbound"]
+const PAST_CO = ["Salesforce", "Oracle", "SAP", "Amazon", "Google", "Stripe"]
+const PERSONAS_P = ["Decision maker", "Champion", "Influencer", "Gatekeeper"]
+const EMAIL_STATUS: { en: string; es: string; variant: "success" | "secondary" | "outline" }[] = [
+  { en: "Verified", es: "Verificado", variant: "success" },
+  { en: "Likely", es: "Probable", variant: "secondary" },
+  { en: "Catch-all", es: "Genérico", variant: "outline" },
+]
+
+function pTxt(
+  id: string,
+  label: Loc,
+  group: string,
+  salt: string,
+  pool: string[]
+): ColumnDef<Prospect> {
+  return { id, label, group, render: (p) => mut(pickFrom(p.id, salt, pool)) }
+}
+function pNum(
+  id: string,
+  label: Loc,
+  group: string,
+  salt: string,
+  min: number,
+  max: number,
+  fmt: (n: number) => React.ReactNode = num
+): ColumnDef<Prospect> {
+  return {
+    id,
+    label,
+    group,
+    align: "right",
+    render: (p) => fmt(numFrom(p.id, salt, min, max)),
+  }
+}
+function pBool(id: string, label: Loc, group: string, salt: string): ColumnDef<Prospect> {
+  return {
+    id,
+    label,
+    group,
+    render: (p, locale) => yesNo(hash(p.id + salt) % 5 < 2, locale),
+  }
+}
+
+export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
+  {
+    id: "name",
+    label: L("Prospect", "Prospecto"),
+    group: "role",
+    pinned: true,
+    minWidth: "200px",
+    render: (p) => (
+      <div className="flex items-center gap-3">
+        <ProspectAvatar prospect={p} />
+        <div className="min-w-0">
+          <p className="truncate font-medium">
+            {p.firstName} {p.lastName}
+          </p>
+          <p className="text-muted-foreground truncate text-xs">{p.title}</p>
+        </div>
+      </div>
+    ),
+  },
+
+  // Role
+  { id: "title", label: L("Job title", "Cargo"), group: "role", render: (p) => mut(p.title) },
+  { id: "seniority", label: L("Seniority", "Antigüedad"), group: "role", render: (p) => (
+    <Badge variant="secondary" className="font-normal">{p.seniority}</Badge>
+  ) },
+  { id: "department", label: L("Department", "Departamento"), group: "role", render: (p) => mut(p.department) },
+  pTxt("function", L("Function", "Función"), "role", "fn", FUNCTIONS),
+  pTxt("mgmtLevel", L("Management level", "Nivel directivo"), "role", "ml", MGMT),
+  pNum("yearsInRole", L("Years in role", "Años en el puesto"), "role", "yir", 0, 9),
+  pNum("yearsAtCompany", L("Years at company", "Años en la empresa"), "role", "yac", 0, 14),
+  pNum("yearsExperience", L("Years of experience", "Años de experiencia"), "role", "yex", 3, 28),
+  pTxt("pastCompany", L("Past company", "Empresa anterior"), "role", "pco", PAST_CO),
+  pTxt("pastTitle", L("Past title", "Cargo anterior"), "role", "pti", ["Account Executive", "Sales Manager", "BDR Lead", "Consultant"]),
+
+  // Company
+  { id: "company", label: L("Company", "Empresa"), group: "company", default: true, render: (p) => (
+    <div className="min-w-0">
+      <p className="truncate font-medium">{p.company}</p>
+      <p className="text-muted-foreground truncate text-xs">{p.location}</p>
+    </div>
+  ) },
+  { id: "companyDomain", label: L("Company domain", "Dominio"), group: "company", render: (p) => mut(p.companyDomain) },
+  { id: "industry", label: L("Industry", "Sector"), group: "company", render: (p) => mut(p.industry) },
+  { id: "headcount", label: L("Company size", "Tamaño empresa"), group: "company", render: (p) => mut(p.headcount) },
+  { id: "revenue", label: L("Company revenue", "Ingresos empresa"), group: "company", render: (p) => mut(p.revenue) },
+  pTxt("companyType", L("Company type", "Tipo de empresa"), "company", "pct", COMPANY_TYPES),
+  pTxt("companyRegion", L("Company region", "Región empresa"), "company", "prg", REGIONS),
+
+  // Contact
+  { id: "email", label: L("Email", "Email"), group: "contact", render: (p) => mut(p.email || "—") },
+  {
+    id: "emailStatus",
+    label: L("Email status", "Estado del email"),
+    group: "contact",
+    render: (p, locale) => {
+      const s = EMAIL_STATUS[hash(p.id + "es") % EMAIL_STATUS.length]
+      return <Badge variant={s.variant} className="font-normal">{locale === "es" ? s.es : s.en}</Badge>
+    },
+  },
+  { id: "phone", label: L("Phone", "Teléfono"), group: "contact", render: (p) => mut(p.phone || "—") },
+  { id: "location", label: L("Location", "Ubicación"), group: "contact", render: (p) => mut(p.location) },
+  pTxt("connectionDegree", L("Connection", "Conexión"), "contact", "cd", DEGREES),
+  pNum("mutualConnections", L("Mutual connections", "Conexiones en común"), "contact", "mc", 0, 24),
+  pNum("followers", L("Followers", "Seguidores"), "contact", "pf", 120, 38000, (n) => num(n.toLocaleString())),
+  pTxt("timezone", L("Timezone", "Zona horaria"), "contact", "ptz", TZ),
+  pTxt("language", L("Language", "Idioma"), "contact", "plng", LANGS),
+
+  // Engagement & signals
+  { id: "score", label: L("Score", "Puntuación"), group: "engage", default: true, render: (p) => <ScoreBadge score={p.score} /> },
+  { id: "status", label: L("Status", "Estado"), group: "engage", default: true, render: (p) => <StatusBadge status={p.status} /> },
+  { id: "tags", label: L("Tags", "Etiquetas"), group: "engage", minWidth: "140px", render: (p) => chips(p.tags) },
+  { id: "signals", label: L("Signals", "Señales"), group: "engage", minWidth: "160px", render: (p) => chips(p.signals) },
+  {
+    id: "lastActivity",
+    label: L("Last activity", "Última actividad"),
+    group: "engage",
+    render: (p, locale) =>
+      mut(
+        new Date(p.lastActivity).toLocaleDateString(locale === "es" ? "es-ES" : "en-US", {
+          month: "short",
+          day: "numeric",
+        })
+      ),
+  },
+  {
+    id: "addedAt",
+    label: L("Added", "Añadido"),
+    group: "engage",
+    render: (p, locale) =>
+      mut(
+        new Date(p.addedAt).toLocaleDateString(locale === "es" ? "es-ES" : "en-US", {
+          month: "short",
+          day: "numeric",
+        })
+      ),
+  },
+  pBool("changedJobs", L("Changed jobs recently", "Cambió de empleo"), "engage", "cj"),
+  pBool("postedRecently", L("Posted recently", "Publicó recientemente"), "engage", "pr"),
+  pBool("mentionedInNews", L("In the news", "En las noticias"), "engage", "nw"),
+  pBool("viewedProfile", L("Viewed your profile", "Vio tu perfil"), "engage", "vp"),
+  pBool("inCRM", L("In CRM", "En CRM"), "engage", "icr"),
+  pTxt("persona", L("Persona", "Persona"), "engage", "pp", PERSONAS_P),
+  { id: "intent", label: L("Buyer intent", "Intención"), group: "engage", render: (p) => scoreChip(numFrom(p.id, "pint", 30, 97)) },
+
+  // Background
+  pTxt("school", L("School", "Universidad"), "background", "sch", SCHOOLS),
+  pTxt("group", L("Groups", "Grupos"), "background", "grp", PGROUPS),
+  pTxt("skill", L("Top skill", "Habilidad principal"), "background", "skl", SKILLS),
+  pTxt("certification", L("Certification", "Certificación"), "background", "crt", ["MEDDIC", "Sandler", "Challenger", "—"]),
+]
+
+export const PEOPLE_DEFAULT_IDS = PEOPLE_COLUMNS.filter(
   (c) => c.default && !c.pinned
 ).map((c) => c.id)
 
