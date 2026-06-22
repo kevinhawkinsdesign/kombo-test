@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Settings2,
   Puzzle,
+  Workflow,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -62,7 +63,7 @@ import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 interface NavItem {
   to: string
   labelKey: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   badge?: string
   // Marks a surface that doesn't exist in the Chrome extension yet.
   isNew?: boolean
@@ -71,7 +72,7 @@ interface NavItem {
 interface NavGroup {
   key: string
   labelKey: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   items: NavItem[]
 }
 
@@ -114,6 +115,7 @@ const groups: NavGroup[] = [
     icon: Megaphone,
     items: [
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
+      { to: "/sequences", labelKey: "nav.sequences", icon: Workflow, isNew: true },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
       { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, isNew: true },
       { to: "/channels", labelKey: "nav.channels", icon: Radio, isNew: true },
@@ -185,11 +187,14 @@ function NavRow({
       }
     >
       <span className="relative">
-        <Icon className="size-4 shrink-0" />
+        <Icon
+          className={cn("shrink-0", collapsed ? "size-5" : "size-4")}
+          strokeWidth={collapsed ? 2.25 : 2}
+        />
         {collapsed && (item.isNew || item.badge) && (
           <span
             className={cn(
-              "ring-sidebar absolute -top-1 -right-1 size-2 rounded-full ring-2",
+              "ring-sidebar absolute -top-0.5 -right-1 size-1.5 rounded-full ring-2",
               item.isNew ? "bg-volt" : "bg-primary"
             )}
           />
@@ -257,9 +262,9 @@ function NavGroupSection({
         )}
       >
         <span className="relative">
-          <Icon className="size-4 shrink-0" />
+          <Icon className="size-5 shrink-0" strokeWidth={2.25} />
           {!open && hasNew && (
-            <span className="bg-volt ring-sidebar absolute -top-1 -right-1 size-2 rounded-full ring-2" />
+            <span className="bg-volt ring-sidebar absolute -top-0.5 -right-1 size-1.5 rounded-full ring-2" />
           )}
         </span>
         <span className="flex-1 text-left">{t(group.labelKey)}</span>
