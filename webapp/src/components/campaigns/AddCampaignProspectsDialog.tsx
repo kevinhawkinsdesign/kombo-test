@@ -1,24 +1,143 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Search } from "lucide-react"
+import {
+  Search,
+  Sparkles,
+  ScanSearch,
+  Database,
+  Send,
+  Loader2,
+  Plus,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  ProspectAvatar,
-  ScoreBadge,
-} from "@/components/common/ProspectBits"
-import { useProspects, campaignStore } from "@/lib/store"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { useProspects, campaignStore, prospectStore } from "@/lib/store"
+import { useLocale } from "@/lib/locale"
+import { initials } from "@/lib/format"
+import { portraitFor } from "@/lib/avatars"
+import { cn } from "@/lib/utils"
+import {
+  interpretPrompt,
+  searchLeads,
+  lookalikeLeads,
+  smallerThan,
+  largerThan,
+  LOOKALIKE_SEEDS,
+  EMPTY_QUERY,
+  SENIORITY_OPTIONS,
+  type AiQuery,
+  type AiLead,
+} from "@/lib/mock-ai-search"
 import type { Campaign, Prospect } from "@/lib/types"
+
+type Mode = "db" | "ai" | "lookalike"
+
+const COPY = {
+  en: {
+    title: "Add prospects",
+    desc: (name: string) => `Find and enroll prospects into "${name}".`,
+    modeDb: "Your database",
+    modeAi: "AI search",
+    modeLookalike: "Lookalikes",
+    dbPlaceholder: "Search by name, title or company…",
+    aiPlaceholder: "Describe who you're looking for — e.g. VPs of Sales at EMEA SaaS…",
+    aiRun: "Search",
+    thinking: "Kai is searching…",
+    seedLabel: "Find people similar to",
+    pickSeed: "Pick a person or company",
+    modSmaller: "But smaller",
+    modLarger: "But larger",
+    modRegion: "Same region",
+    allIndustries: "All industries",
+    allSeniority: "All seniority",
+    allRegions: "All regions",
+    noDb: "No prospects match — try AI search to source new leads.",
+    noAi: "Run a prompt to generate a custom list of leads.",
+    aiNote: "AI-sourced leads are added to your workspace when enrolled.",
+    cancel: "Cancel",
+    add: (n: number) => (n > 0 ? `Enroll ${n}` : "Enroll"),
+    enrolled: (n: number) => `${n} ${n === 1 ? "prospect" : "prospects"} enrolled`,
+    selected: (n: number) => `${n} selected`,
+    clear: "Clear",
+  },
+  es: {
+    title: "Añadir prospectos",
+    desc: (name: string) => `Encuentra e inscribe prospectos en "${name}".`,
+    modeDb: "Tu base de datos",
+    modeAi: "Búsqueda con IA",
+    modeLookalike: "Similares",
+    dbPlaceholder: "Busca por nombre, cargo o empresa…",
+    aiPlaceholder: "Describe a quién buscas — p. ej. VPs de Ventas en SaaS de EMEA…",
+    aiRun: "Buscar",
+    thinking: "Kai está buscando…",
+    seedLabel: "Buscar personas similares a",
+    pickSeed: "Elige una persona o empresa",
+    modSmaller: "Más pequeñas",
+    modLarger: "Más grandes",
+    modRegion: "Misma región",
+    allIndustries: "Todos los sectores",
+    allSeniority: "Toda la antigüedad",
+    allRegions: "Todas las regiones",
+    noDb: "Ningún prospecto coincide — prueba la búsqueda con IA para conseguir nuevos leads.",
+    noAi: "Lanza un prompt para generar una lista de leads a medida.",
+    aiNote: "Los leads encontrados por IA se añaden a tu espacio al inscribirlos.",
+    cancel: "Cancelar",
+    add: (n: number) => (n > 0 ? `Inscribir ${n}` : "Inscribir"),
+    enrolled: (n: number) => `${n} ${n === 1 ? "prospecto inscrito" : "prospectos inscritos"}`,
+    selected: (n: number) => `${n} seleccionados`,
+    clear: "Limpiar",
+  },
+} as const
+
+const ALL = "all"
+
+function leadToProspectInput(l: AiLead) {
+  const email =
+    l.emailStatus === "missing"
+      ? ""
+      : `${l.firstName}.${l.lastName}@${l.companyDomain}`.toLowerCase()
+  return {
+    firstName: l.firstName,
+    lastName: l.lastName,
+    title: l.title,
+    company: l.company,
+    companyDomain: l.companyDomain,
+    location: l.location,
+    email,
+    linkedinUrl: `https://linkedin.com/in/${l.firstName}${l.lastName}`.toLowerCase(),
+    avatarColor: l.avatarColor,
+    score: l.fit,
+    status: "new" as const,
+    tags: ["AI search", l.region],
+    seniority: l.seniority,
+    department: l.department,
+    headcount: l.headcount,
+    industry: l.industry,
+    revenue: l.revenue,
+    about: `${l.title} at ${l.company}.`,
+    signals: l.signals,
+  }
+}
 
 export function AddCampaignProspectsDialog({
   open,
@@ -31,102 +150,343 @@ export function AddCampaignProspectsDialog({
   campaign: Campaign
   enrolledIds: Set<string>
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const prospects = useProspects()
-  const [selected, setSelected] = React.useState<Set<string>>(new Set())
-  const [query, setQuery] = React.useState("")
 
-  // Reset selection and search whenever the dialog opens (adjust state during
-  // render — the React-recommended pattern).
+  const [mode, setMode] = React.useState<Mode>("db")
+  const [selectedProspects, setSelectedProspects] = React.useState<Set<string>>(new Set())
+  const [selectedLeads, setSelectedLeads] = React.useState<Map<string, AiLead>>(new Map())
+
+  // DB filters
+  const [dbQuery, setDbQuery] = React.useState("")
+  const [industry, setIndustry] = React.useState(ALL)
+  const [seniority, setSeniority] = React.useState(ALL)
+
+  // AI search
+  const [prompt, setPrompt] = React.useState("")
+  const [aiQuery, setAiQuery] = React.useState<AiQuery | null>(null)
+  const [thinking, setThinking] = React.useState(false)
+
+  // Lookalike
+  const [seedId, setSeedId] = React.useState<string>("")
+  const [mods, setMods] = React.useState<Set<string>>(new Set())
+
+  // Reset when the dialog opens.
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
     if (open) {
-      setSelected(new Set())
-      setQuery("")
+      setMode("db")
+      setSelectedProspects(new Set())
+      setSelectedLeads(new Map())
+      setDbQuery("")
+      setIndustry(ALL)
+      setSeniority(ALL)
+      setPrompt("")
+      setAiQuery(null)
+      setThinking(false)
+      setSeedId("")
+      setMods(new Set())
     }
   }
 
-  const candidates = React.useMemo(() => {
-    const q = query.trim().toLowerCase()
+  const industries = React.useMemo(
+    () => [ALL, ...new Set(prospects.map((p) => p.industry))],
+    [prospects]
+  )
+
+  const dbResults = React.useMemo(() => {
+    const q = dbQuery.trim().toLowerCase()
     return prospects.filter((p) => {
       if (enrolledIds.has(p.id)) return false
+      if (industry !== ALL && p.industry !== industry) return false
+      if (seniority !== ALL && p.seniority !== seniority) return false
       if (!q) return true
-      const haystack =
-        `${p.firstName} ${p.lastName} ${p.title} ${p.company}`.toLowerCase()
-      return haystack.includes(q)
+      return `${p.firstName} ${p.lastName} ${p.title} ${p.company}`
+        .toLowerCase()
+        .includes(q)
     })
-  }, [prospects, enrolledIds, query])
+  }, [prospects, enrolledIds, dbQuery, industry, seniority])
 
-  function toggle(id: string) {
-    setSelected((current) => {
-      const next = new Set(current)
+  const aiResults = React.useMemo(
+    () => (aiQuery ? searchLeads(aiQuery) : []),
+    [aiQuery]
+  )
+
+  const seed = LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
+  const lookalikeResults = React.useMemo(() => {
+    if (!seed) return []
+    const q: AiQuery = { ...EMPTY_QUERY }
+    if (mods.has("smaller")) q.headcount = smallerThan(seed.headcount)
+    if (mods.has("larger")) q.headcount = largerThan(seed.headcount)
+    if (mods.has("region")) q.regions = [seed.region]
+    return lookalikeLeads(seed, q)
+  }, [seed, mods])
+
+  function runPrompt() {
+    const text = prompt.trim()
+    if (!text) return
+    setThinking(true)
+    window.setTimeout(() => {
+      setAiQuery(interpretPrompt(text).query)
+      setThinking(false)
+    }, 1200)
+  }
+
+  function toggleProspect(id: string) {
+    setSelectedProspects((prev) => {
+      const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
     })
   }
+  function toggleLead(lead: AiLead) {
+    setSelectedLeads((prev) => {
+      const next = new Map(prev)
+      if (next.has(lead.id)) next.delete(lead.id)
+      else next.set(lead.id, lead)
+      return next
+    })
+  }
+  function toggleMod(m: string) {
+    setMods((prev) => {
+      const next = new Set(prev)
+      if (m === "smaller") next.delete("larger")
+      if (m === "larger") next.delete("smaller")
+      if (next.has(m)) next.delete(m)
+      else next.add(m)
+      return next
+    })
+  }
+
+  const totalSelected = selectedProspects.size + selectedLeads.size
 
   function handleAdd() {
-    const ids = Array.from(selected)
+    const ids = [...selectedProspects]
+    selectedLeads.forEach((lead) => {
+      const created = prospectStore.create(leadToProspectInput(lead))
+      ids.push(created.id)
+    })
     if (ids.length === 0) return
     campaignStore.addProspects(campaign.id, ids)
-    toast.success(
-      `${ids.length} ${ids.length === 1 ? "prospect" : "prospects"} enrolled`
-    )
+    toast.success(c.enrolled(ids.length))
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Add prospects</DialogTitle>
-          <DialogDescription>
-            Search and enroll prospects into “{campaign.name}”.
-          </DialogDescription>
+      <DialogContent
+        showCloseButton
+        className="flex h-screen w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-[90vh] sm:max-w-3xl sm:rounded-xl"
+      >
+        <DialogHeader className="border-b p-5 text-left">
+          <DialogTitle>{c.title}</DialogTitle>
+          <DialogDescription>{c.desc(campaign.name)}</DialogDescription>
         </DialogHeader>
 
-        <div className="relative">
-          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, title or company"
-            className="pl-9"
-            aria-label="Search prospects"
-          />
+        {/* Mode tabs */}
+        <div className="flex flex-wrap gap-2 border-b px-5 py-3">
+          <ModeTab active={mode === "db"} onClick={() => setMode("db")} icon={Database} label={c.modeDb} />
+          <ModeTab active={mode === "ai"} onClick={() => setMode("ai")} icon={Sparkles} label={c.modeAi} />
+          <ModeTab active={mode === "lookalike"} onClick={() => setMode("lookalike")} icon={ScanSearch} label={c.modeLookalike} />
         </div>
 
-        {candidates.length === 0 ? (
-          <p className="text-muted-foreground py-8 text-center text-sm">
-            {query.trim()
-              ? "No prospects match your search."
-              : "Every prospect is already enrolled."}
-          </p>
-        ) : (
-          <div className="-mx-1 max-h-80 space-y-1 overflow-y-auto px-1">
-            {candidates.map((p) => (
-              <ProspectRow
-                key={p.id}
-                prospect={p}
-                checked={selected.has(p.id)}
-                onToggle={() => toggle(p.id)}
-              />
-            ))}
-          </div>
-        )}
+        {/* Controls */}
+        <div className="space-y-3 border-b px-5 py-3">
+          {mode === "db" && (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                <Input
+                  value={dbQuery}
+                  onChange={(e) => setDbQuery(e.target.value)}
+                  placeholder={c.dbPlaceholder}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={industry} onValueChange={setIndustry}>
+                <SelectTrigger size="sm" className="sm:w-44">
+                  <SelectValue placeholder={c.allIndustries} />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((i) => (
+                    <SelectItem key={i} value={i}>
+                      {i === ALL ? c.allIndustries : i}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={seniority} onValueChange={setSeniority}>
+                <SelectTrigger size="sm" className="sm:w-40">
+                  <SelectValue placeholder={c.allSeniority} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>{c.allSeniority}</SelectItem>
+                  {SENIORITY_OPTIONS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleAdd} disabled={selected.size === 0}>
-            Add selected
-            {selected.size > 0 ? ` (${selected.size})` : ""}
-          </Button>
-        </DialogFooter>
+          {mode === "ai" && (
+            <div className="flex items-end gap-2">
+              <Textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    runPrompt()
+                  }
+                }}
+                placeholder={c.aiPlaceholder}
+                rows={2}
+                className="min-h-0 resize-none"
+              />
+              <Button variant="volt" onClick={runPrompt} disabled={!prompt.trim() || thinking}>
+                <Send className="size-4" />
+                {c.aiRun}
+              </Button>
+            </div>
+          )}
+
+          {mode === "lookalike" && (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <span className="text-muted-foreground text-sm">{c.seedLabel}</span>
+              <Select value={seedId} onValueChange={setSeedId}>
+                <SelectTrigger size="sm" className="sm:w-64">
+                  <SelectValue placeholder={c.pickSeed} />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOOKALIKE_SEEDS.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} · {s.sub}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex flex-wrap gap-1.5">
+                {(["smaller", "larger", "region"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => toggleMod(m)}
+                    aria-pressed={mods.has(m)}
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                      mods.has(m)
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "hover:bg-muted"
+                    )}
+                  >
+                    {m === "smaller" ? c.modSmaller : m === "larger" ? c.modLarger : c.modRegion}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {(mode === "ai" || mode === "lookalike") && (
+            <p className="text-muted-foreground text-xs">{c.aiNote}</p>
+          )}
+        </div>
+
+        {/* Results */}
+        <div className="flex-1 space-y-1 overflow-y-auto p-3">
+          {mode === "db" &&
+            (dbResults.length === 0 ? (
+              <Empty text={c.noDb} />
+            ) : (
+              dbResults.map((p) => (
+                <ProspectRow
+                  key={p.id}
+                  prospect={p}
+                  checked={selectedProspects.has(p.id)}
+                  onToggle={() => toggleProspect(p.id)}
+                />
+              ))
+            ))}
+
+          {mode === "ai" &&
+            (thinking ? (
+              <Thinking text={c.thinking} />
+            ) : aiResults.length === 0 ? (
+              <Empty text={c.noAi} />
+            ) : (
+              aiResults.map((l) => (
+                <LeadRow
+                  key={l.id}
+                  lead={l}
+                  checked={selectedLeads.has(l.id)}
+                  onToggle={() => toggleLead(l)}
+                />
+              ))
+            ))}
+
+          {mode === "lookalike" &&
+            (!seed ? (
+              <Empty text={c.pickSeed} />
+            ) : (
+              lookalikeResults.map((l) => (
+                <LeadRow
+                  key={l.id}
+                  lead={l}
+                  checked={selectedLeads.has(l.id)}
+                  onToggle={() => toggleLead(l)}
+                />
+              ))
+            ))}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-2 border-t p-4">
+          <p className="text-muted-foreground text-sm">
+            {totalSelected > 0 ? c.selected(totalSelected) : ""}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              {c.cancel}
+            </Button>
+            <Button variant="volt" onClick={handleAdd} disabled={totalSelected === 0}>
+              <Plus className="size-4" />
+              {c.add(totalSelected)}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function ModeTab({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean
+  onClick: () => void
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+        active ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
+      )}
+    >
+      <Icon className="size-4" />
+      {label}
+    </button>
   )
 }
 
@@ -139,13 +499,13 @@ function ProspectRow({
   checked: boolean
   onToggle: () => void
 }) {
-  const checkboxId = `enroll-prospect-${prospect.id}`
+  const id = `enroll-${prospect.id}`
   return (
     <label
-      htmlFor={checkboxId}
+      htmlFor={id}
       className="hover:bg-muted/60 flex cursor-pointer items-center gap-3 rounded-md px-2 py-2"
     >
-      <Checkbox id={checkboxId} checked={checked} onCheckedChange={onToggle} />
+      <Checkbox id={id} checked={checked} onCheckedChange={onToggle} />
       <ProspectAvatar prospect={prospect} className="size-8" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">
@@ -157,5 +517,56 @@ function ProspectRow({
       </div>
       <ScoreBadge score={prospect.score} />
     </label>
+  )
+}
+
+function LeadRow({
+  lead,
+  checked,
+  onToggle,
+}: {
+  lead: AiLead
+  checked: boolean
+  onToggle: () => void
+}) {
+  const id = `lead-${lead.id}`
+  return (
+    <label
+      htmlFor={id}
+      className="hover:bg-muted/60 flex cursor-pointer items-center gap-3 rounded-md px-2 py-2"
+    >
+      <Checkbox id={id} checked={checked} onCheckedChange={onToggle} />
+      <Avatar className="size-8">
+        <AvatarImage src={portraitFor(`${lead.firstName} ${lead.lastName}`)} alt="" />
+        <AvatarFallback style={{ backgroundColor: lead.avatarColor, color: "white" }} className="text-xs">
+          {initials(lead.firstName, lead.lastName)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">
+          {lead.firstName} {lead.lastName}
+        </p>
+        <p className="text-muted-foreground truncate text-xs">
+          {lead.title} · {lead.company}
+        </p>
+      </div>
+      <Badge variant="secondary" className="gap-1 font-normal">
+        <span className="bg-chart-1 size-1.5 rounded-full" />
+        {lead.fit}
+      </Badge>
+    </label>
+  )
+}
+
+function Empty({ text }: { text: string }) {
+  return <p className="text-muted-foreground py-12 text-center text-sm">{text}</p>
+}
+
+function Thinking({ text }: { text: string }) {
+  return (
+    <div className="text-muted-foreground flex flex-col items-center gap-2 py-12 text-sm">
+      <Loader2 className="text-primary size-5 animate-spin" />
+      {text}
+    </div>
   )
 }
