@@ -29,6 +29,7 @@ import {
   Megaphone,
   TrendingUp,
   Settings2,
+  Puzzle,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -103,6 +104,7 @@ const groups: NavGroup[] = [
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
       { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
+      { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },
     ],
   },
   {

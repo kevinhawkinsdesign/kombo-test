@@ -30,6 +30,7 @@ import Team from "@/pages/Team"
 import Referral from "@/pages/Referral"
 import Usage from "@/pages/Usage"
 import Integrations from "@/pages/Integrations"
+import Extension from "@/pages/Extension"
 import Settings from "@/pages/Settings"
 import GetStarted from "@/pages/GetStarted"
 import NotificationsPage from "@/pages/Notifications"
@@ -94,6 +95,7 @@ function App() {
         <Route path="/referrals" element={<Referral />} />
         <Route path="/usage" element={<Usage />} />
         <Route path="/integrations" element={<Integrations />} />
+        <Route path="/extension" element={<Extension />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/get-started" element={<GetStarted />} />
         <Route path="/notifications" element={<NotificationsPage />} />
