@@ -421,7 +421,14 @@ function SidebarContent({
             collapsed ? "justify-center px-2" : "px-5"
           )}
         >
-          {collapsed ? <KomboMark /> : <KomboLockup className="h-7" />}
+          <NavLink
+            to="/"
+            onClick={onNavigate}
+            aria-label="Kombo home"
+            className="rounded-md focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+          >
+            {collapsed ? <KomboMark /> : <KomboLockup className="h-7" />}
+          </NavLink>
         </div>
 
         <div className={cn(collapsed ? "px-2" : "px-3")}>

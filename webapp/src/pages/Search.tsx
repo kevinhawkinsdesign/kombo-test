@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Sparkles,
@@ -131,6 +131,13 @@ const COPY = {
     showingOf: (count: number, total: number) =>
       `Showing ${count} of an estimated ${total.toLocaleString()}. Refine further or save these as a list.`,
     refinedTo: (label: string) => `Refined: ${label.toLowerCase()}.`,
+    thinkingTitle: "Kai is analyzing your request…",
+    thinkingSub: "Searching the database and scoring fit against your ask.",
+    thinkingSteps: [
+      "Understanding your request",
+      "Searching 30M+ contacts & companies",
+      "Scoring fit and enriching results",
+    ],
     refine: "Quick refine",
     saved: "Saved searches",
     saveThis: "Save this search",
@@ -233,6 +240,13 @@ const COPY = {
     showingOf: (count: number, total: number) =>
       `Mostrando ${count} de unos ${total.toLocaleString()}. Sigue refinando o guarda estos como una lista.`,
     refinedTo: (label: string) => `Refinado: ${label.toLowerCase()}.`,
+    thinkingTitle: "Kai está analizando tu petición…",
+    thinkingSub: "Buscando en la base de datos y puntuando el encaje con tu petición.",
+    thinkingSteps: [
+      "Entendiendo tu petición",
+      "Buscando en más de 30M de contactos y empresas",
+      "Puntuando el encaje y enriqueciendo resultados",
+    ],
     refine: "Refinar rápido",
     saved: "Búsquedas guardadas",
     saveThis: "Guardar esta búsqueda",
@@ -352,24 +366,65 @@ function chatId() {
   return `c_${(chatSeq += 1)}`
 }
 
+// A prompt is a general assistant question (not a prospecting search) when it
+// asks Kai to do something conversational — draft, book, summarize pipeline…
+function isAssistantQuestion(prompt: string): boolean {
+  const q = prompt.toLowerCase()
+  const conversational =
+    /\b(draft|write|book|schedule|meeting|calendar|follow.?up|at risk|deal|deals|pipeline|forecast|summar|how many|team|performance|coach|remind|reply|respond|email to|message to)\b/.test(
+      q
+    )
+  const searchy = /\b(find|search|similar to|look ?alike|leads?|prospects?|companies|accounts|list of|build a list)\b/.test(
+    q
+  )
+  return conversational && !searchy
+}
+
+// The merged "Ask Kai" assistant — answers general questions inline in the
+// same surface as search, so there's one Kai, not two.
+function kaiAnswer(prompt: string): string {
+  const q = prompt.toLowerCase()
+  if (q.includes("top") && q.includes("prospect")) {
+    return "Your highest-scoring prospects right now are Aisha Khan (CRO, Clarity AI — 95), Grace Liu (COO, Betterfly — 90) and Sarah Chen (VP Sales, Fever — 92, who just replied). I'd prioritize Sarah today — she's asking for meeting times."
+  }
+  if (q.includes("book") || q.includes("meeting") || q.includes("calendar")) {
+    return "You're open Tue 2:00 PM and Wed 10:00 AM. I've drafted an invite to Grace Liu for Tue 2:00 PM (\"Betterfly × Kombo — intro\") and a short email to send it. Want me to send both?"
+  }
+  if (q.includes("follow") || q.includes("draft") || q.includes("write")) {
+    return "Here's a draft for Sarah Chen:\n\n“Hi Sarah — great to hear you're hiring 5 SDRs this quarter. I have Tue 2pm or Wed 10am open for a quick 15-min walkthrough of how teams ramp new reps 3x faster with Kombo. Which works?”\n\nWant me to send it or tweak the tone?"
+  }
+  if (q.includes("risk") || q.includes("deal") || q.includes("pipeline") || q.includes("forecast")) {
+    return "Two deals look at risk: Edicom — Pilot ($95K, 20%, no activity in 3 days) and Viajes El Corte Inglés — Pilot ($70K, 15%, still in Lead). Betterfly ($320K) is healthy at 55% in Proposal. Want a re-engagement sequence for the two stalled ones?"
+  }
+  if (q.includes("team") || q.includes("performance") || q.includes("coach")) {
+    return "This week the team booked 23 meetings and influenced $412K in pipeline. Maya Patel leads on attainment (57%); Ethan Wright's reply rate (14%) is trending below average — a coaching opportunity. Want me to open his call recordings?"
+  }
+  return "I'm connected to your CRM, calendar, email, and the web, so I can find prospects, draft and send outreach, book meetings, and analyze pipeline. Describe who you're looking for, or ask about a specific account, deal, or rep."
+}
+
 export default function Search() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const headerPrompt = params.get("q")
   const campaigns = useCampaigns()
   const savedSearches = useSavedSearches()
   const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
 
-  // Seed with a starter query so the page lands populated for demos.
+  // Seed with a starter query so the page lands populated for demos — unless we
+  // arrived from the header search with a prompt to run.
   const initial = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
   const [entity, setEntity] = React.useState<AiEntity>(initial.entity)
-  const [query, setQuery] = React.useState<AiQuery>(initial.query)
+  const [query, setQuery] = React.useState<AiQuery>(
+    headerPrompt ? { ...EMPTY_QUERY } : initial.query
+  )
   const [lastPrompt, setLastPrompt] = React.useState(EXAMPLE_PROMPTS_EN[0])
-  const [messages, setMessages] = React.useState<AiChatMessage[]>([
-    { id: chatId(), role: "assistant", content: c.starter },
-  ])
+  const [messages, setMessages] = React.useState<AiChatMessage[]>(
+    headerPrompt ? [] : [{ id: chatId(), role: "assistant", content: c.starter }]
+  )
   const [input, setInput] = React.useState("")
-  const [thinking, setThinking] = React.useState(false)
+  const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [saveOpen, setSaveOpen] = React.useState(false)
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
@@ -397,38 +452,60 @@ export default function Search() {
   const creditBase = selectedCount > 0 ? selectedCount : estTotal
   const projectedCredits = Math.round(creditBase * CREDITS_PER_LEAD)
 
-  function runPrompt(prompt: string) {
-    const text = prompt.trim()
-    if (!text) return
-    setInput("")
-    setMessages((m) => [...m, { id: chatId(), role: "user", content: text }])
-    setThinking(true)
-    setLastPrompt(text)
-    window.setTimeout(() => {
-      const { query: q, entity: e, summary, seed: s } = interpretPrompt(text)
-      setEntity(e)
-      setQuery(q)
-      setSeed(s ?? null)
-      setSelected(new Set())
-      const count = s
-        ? e === "people"
-          ? lookalikeLeads(s, q).length
-          : lookalikeCompanies(s, q).length
-        : e === "people"
-          ? searchLeads(q).length
-          : searchCompanies(q).length
-      const total = estimatedTotal(count, e)
-      setMessages((m) => [
-        ...m,
-        {
-          id: chatId(),
-          role: "assistant",
-          content: `${summary} ${c.showingOf(count, total)}`,
-        },
-      ])
-      setThinking(false)
-    }, 750)
-  }
+  const runPrompt = React.useCallback(
+    (prompt: string) => {
+      const text = prompt.trim()
+      if (!text) return
+      setInput("")
+      setMessages((m) => [...m, { id: chatId(), role: "user", content: text }])
+      setThinking(true)
+      setLastPrompt(text)
+      // A deliberate ~1.5s pause makes Kai feel like it's reasoning before it
+      // answers — then we reveal the prompt's results (or a chat reply).
+      window.setTimeout(() => {
+        if (isAssistantQuestion(text)) {
+          setMessages((m) => [
+            ...m,
+            { id: chatId(), role: "assistant", content: kaiAnswer(text) },
+          ])
+          setThinking(false)
+          return
+        }
+        const { query: q, entity: e, summary, seed: s } = interpretPrompt(text)
+        setEntity(e)
+        setQuery(q)
+        setSeed(s ?? null)
+        setSelected(new Set())
+        const count = s
+          ? e === "people"
+            ? lookalikeLeads(s, q).length
+            : lookalikeCompanies(s, q).length
+          : e === "people"
+            ? searchLeads(q).length
+            : searchCompanies(q).length
+        const total = estimatedTotal(count, e)
+        setMessages((m) => [
+          ...m,
+          {
+            id: chatId(),
+            role: "assistant",
+            content: `${summary} ${c.showingOf(count, total)}`,
+          },
+        ])
+        setThinking(false)
+      }, 1500)
+    },
+    [c]
+  )
+
+  // Run a prompt handed over from the header search exactly once.
+  const ranHeaderPrompt = React.useRef(false)
+  React.useEffect(() => {
+    if (headerPrompt && !ranHeaderPrompt.current) {
+      ranHeaderPrompt.current = true
+      runPrompt(headerPrompt)
+    }
+  }, [headerPrompt, runPrompt])
 
   function applyRefine(patch: RefinePatch, label: string) {
     setQuery((prev) => {
@@ -782,8 +859,10 @@ export default function Search() {
             </div>
           </div>
 
+          {thinking && <ThinkingPanel c={c} />}
+
           {/* Lookalike seed banner */}
-          {seed && (
+          {!thinking && seed && (
             <div className="border-primary/30 bg-primary/5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
               <ScanSearch className="text-primary size-4 shrink-0" />
               <span className="text-muted-foreground">{c.similarTo}</span>
@@ -800,6 +879,8 @@ export default function Search() {
             </div>
           )}
 
+          {!thinking && (
+            <>
           {/* Active query chips */}
           <Card className="gap-0 p-3">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -1050,6 +1131,8 @@ export default function Search() {
               )}
             </div>
           </Card>
+            </>
+          )}
         </div>
       </div>
 
@@ -1293,6 +1376,35 @@ function EntityTab({
       <Icon className="size-4" />
       {label}
     </button>
+  )
+}
+
+function ThinkingPanel({ c }: { c: Copy }) {
+  return (
+    <Card className="flex flex-col items-center justify-center gap-5 py-16">
+      <div className="relative flex size-14 items-center justify-center">
+        <span className="bg-primary/20 absolute inline-flex size-full animate-ping rounded-full" />
+        <span className="bg-primary/10 relative flex size-14 items-center justify-center rounded-full">
+          <Sparkles className="text-primary size-6 animate-pulse" />
+        </span>
+      </div>
+      <div className="space-y-1 text-center">
+        <p className="font-medium">{c.thinkingTitle}</p>
+        <p className="text-muted-foreground text-sm">{c.thinkingSub}</p>
+      </div>
+      <div className="w-full max-w-sm space-y-2 px-6">
+        {c.thinkingSteps.map((step, i) => (
+          <div
+            key={step}
+            className="text-muted-foreground flex items-center gap-2 text-sm"
+            style={{ animation: `pulse 1.4s ease-in-out ${i * 0.3}s infinite` }}
+          >
+            <Loader2 className="text-primary size-3.5 animate-spin" />
+            {step}
+          </div>
+        ))}
+      </div>
+    </Card>
   )
 }
 
