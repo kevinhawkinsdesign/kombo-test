@@ -39,6 +39,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useTheme } from "@/components/theme-provider"
+import { IcpManager } from "@/components/settings/IcpManager"
 import { useAuth } from "@/lib/auth"
 import { team } from "@/lib/team"
 import { initials } from "@/lib/format"
@@ -85,12 +86,6 @@ const COPY = {
     skipDuplicates: "Skip duplicates",
     skipDuplicatesDesc: "Ignore prospects already in your workspace.",
     uploadSaved: "Upload settings saved",
-    icp: "Ideal Customer Profile",
-    icpDesc: "Kombo uses this to score and recommend prospects.",
-    targetIndustry: "Target industry",
-    companySize: "Company size",
-    targetTitles: "Target titles",
-    icpSaved: "ICP saved",
     outreachTemplates: "Outreach templates",
     outreachTemplatesDesc:
       "The templates and playbook Kai draws from when drafting outreach.",
@@ -192,12 +187,6 @@ const COPY = {
     skipDuplicates: "Omitir duplicados",
     skipDuplicatesDesc: "Ignora los prospectos que ya están en tu espacio.",
     uploadSaved: "Ajustes de carga guardados",
-    icp: "Perfil de cliente ideal",
-    icpDesc: "Kombo lo usa para puntuar y recomendar prospectos.",
-    targetIndustry: "Sector objetivo",
-    companySize: "Tamaño de empresa",
-    targetTitles: "Cargos objetivo",
-    icpSaved: "Perfil de cliente ideal guardado",
     outreachTemplates: "Plantillas de outreach",
     outreachTemplatesDesc:
       "Las plantillas y la estrategia que Kai utiliza al redactar el outreach.",
@@ -358,39 +347,7 @@ export default function Settings() {
 
         {/* VALUE PROPOSITION */}
         <TabsContent value="value" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.icp}</CardTitle>
-              <CardDescription>{c.icpDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  id="icp-industry"
-                  label={c.targetIndustry}
-                  value="B2B SaaS"
-                />
-                <Field
-                  id="icp-size"
-                  label={c.companySize}
-                  value="50–1000 employees"
-                />
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="icp-titles">{c.targetTitles}</Label>
-                  <Input
-                    id="icp-titles"
-                    defaultValue="VP Sales, CRO, Head of RevOps"
-                  />
-                </div>
-              </div>
-              <Separator />
-              <div className="flex justify-end">
-                <Button onClick={() => toast.success(c.icpSaved)}>
-                  {c.saveChanges}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <IcpManager />
 
           <UspsCard />
         </TabsContent>

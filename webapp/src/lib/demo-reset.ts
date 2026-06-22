@@ -10,6 +10,7 @@ const RESET_KEYS = [
   "kombo_sequences_v1",
   "kombo_automations_v1",
   "kombo_template_folders_v1",
+  "kombo_icps_v1",
 ]
 
 export function installDemoReset(): void {
