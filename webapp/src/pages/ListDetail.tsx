@@ -40,6 +40,7 @@ import {
 } from "@/components/common/ProspectBits"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
+import { TableViews } from "@/components/common/TableViews"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -333,6 +334,7 @@ export default function ListDetail() {
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{c.prospectsHeading}</h3>
         <div className="flex items-center gap-2">
+          <TableViews tableKey="list-prospects" prefs={columnPrefs} />
           <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
             <Columns3 className="size-4" />
             <span className="hidden sm:inline">{c.columns}</span>

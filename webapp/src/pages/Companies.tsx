@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
+import { TableViews } from "@/components/common/TableViews"
 import {
   COMPANY_COLUMNS,
   COMPANY_GROUPS,
@@ -220,6 +221,7 @@ export default function Companies() {
 
         {view === "table" && (
           <>
+            <TableViews tableKey="companies" prefs={columnPrefs} />
             <Button
               variant="outline"
               className="shrink-0"
