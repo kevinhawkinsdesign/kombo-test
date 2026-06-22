@@ -57,6 +57,7 @@ import { conversations } from "@/lib/mock-data"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
+import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 
 interface NavItem {
   to: string
@@ -413,6 +414,12 @@ function SidebarContent({
   const { progress } = useSetup()
   const { pathname } = useLocation()
   const { expanded, toggle } = useExpandedGroups()
+  const newCampaign = useNewCampaign()
+
+  function startNewCampaign() {
+    onNavigate?.()
+    newCampaign.open()
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -437,10 +444,14 @@ function SidebarContent({
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="volt" size="icon" className="mx-auto flex" asChild>
-                  <NavLink to="/campaigns" onClick={onNavigate} aria-label={t("nav.newCampaign")}>
-                    <Send className="size-4" />
-                  </NavLink>
+                <Button
+                  variant="volt"
+                  size="icon"
+                  className="mx-auto flex"
+                  aria-label={t("nav.newCampaign")}
+                  onClick={startNewCampaign}
+                >
+                  <Send className="size-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">{t("nav.newCampaign")}</TooltipContent>
@@ -450,12 +461,10 @@ function SidebarContent({
               variant="volt"
               className="w-full justify-start gap-2"
               size="sm"
-              asChild
+              onClick={startNewCampaign}
             >
-              <NavLink to="/campaigns" onClick={onNavigate}>
-                <Send className="size-4" />
-                {t("nav.newCampaign")}
-              </NavLink>
+              <Send className="size-4" />
+              {t("nav.newCampaign")}
             </Button>
           )}
         </div>
