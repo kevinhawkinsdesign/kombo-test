@@ -11,6 +11,7 @@ import {
   Check,
   Table2,
   LayoutGrid,
+  Columns3,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -20,15 +21,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Card } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import {
   Select,
   SelectContent,
@@ -36,6 +28,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
+import {
+  COMPANY_COLUMNS,
+  COMPANY_GROUPS,
+  COMPANY_DEFAULT_IDS,
+  useColumnPrefs,
+} from "@/lib/table-columns"
 import { useAccounts, accountStore } from "@/lib/store"
 import { getRep } from "@/lib/team"
 import { useView } from "@/lib/view-context"
@@ -45,7 +45,6 @@ import type { Account, AccountTier } from "@/lib/types"
 
 const ALL = "all"
 const TIERS: (AccountTier | typeof ALL)[] = [ALL, "Enterprise", "Mid-market", "SMB"]
-const TIER_VALUES: AccountTier[] = ["Enterprise", "Mid-market", "SMB"]
 
 const COPY = {
   en: {
@@ -75,6 +74,7 @@ const COPY = {
     unassigned: "Unassigned",
     viewTable: "Table",
     viewCards: "Cards",
+    columns: "Columns",
     edit: "Edit",
     done: "Done",
     editingHint: "Editing — changes save automatically",
@@ -112,6 +112,7 @@ const COPY = {
     unassigned: "Sin asignar",
     viewTable: "Tabla",
     viewCards: "Tarjetas",
+    columns: "Columnas",
     edit: "Editar",
     done: "Listo",
     editingHint: "Editando — los cambios se guardan solos",
@@ -141,6 +142,8 @@ export default function Companies() {
   const [tier, setTier] = React.useState<string>(ALL)
   const [view, setView] = React.useState<ViewMode>("table")
   const [editing, setEditing] = React.useState(false)
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
     ? accounts.filter((a) => a.ownerId === impersonatingId)
@@ -216,23 +219,33 @@ export default function Companies() {
         </div>
 
         {view === "table" && (
-          <Button
-            variant={editing ? "secondary" : "outline"}
-            className="shrink-0"
-            onClick={() => setEditing((v) => !v)}
-          >
-            {editing ? (
-              <>
-                <Check className="size-4" />
-                {c.done}
-              </>
-            ) : (
-              <>
-                <Pencil className="size-4" />
-                {c.edit}
-              </>
-            )}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              className="shrink-0"
+              onClick={() => setColumnsOpen(true)}
+            >
+              <Columns3 className="size-4" />
+              <span className="hidden sm:inline">{c.columns}</span>
+            </Button>
+            <Button
+              variant={editing ? "secondary" : "outline"}
+              className="shrink-0"
+              onClick={() => setEditing((v) => !v)}
+            >
+              {editing ? (
+                <>
+                  <Check className="size-4" />
+                  {c.done}
+                </>
+              ) : (
+                <>
+                  <Pencil className="size-4" />
+                  {c.edit}
+                </>
+              )}
+            </Button>
+          </>
         )}
       </div>
 
@@ -256,7 +269,15 @@ export default function Companies() {
           {c.noMatch}
         </div>
       ) : view === "table" ? (
-        <CompaniesTable accounts={results} editing={editing} c={c} />
+        <DataTable
+          columns={COMPANY_COLUMNS}
+          visible={columnPrefs.visible}
+          rows={results}
+          rowKey={(a) => a.id}
+          locale={locale}
+          editing={editing}
+          onUpdate={(a, patch) => accountStore.update(a.id, patch)}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((a) => (
@@ -264,6 +285,15 @@ export default function Companies() {
           ))}
         </div>
       )}
+
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={COMPANY_COLUMNS}
+        groups={COMPANY_GROUPS}
+        prefs={columnPrefs}
+        locale={locale}
+      />
     </Page>
   )
 }
@@ -292,194 +322,6 @@ function ViewToggleButton({
       <Icon className="size-4" />
       <span className="hidden sm:inline">{label}</span>
     </button>
-  )
-}
-
-type Copy = (typeof COPY)[keyof typeof COPY]
-
-function CompaniesTable({
-  accounts,
-  editing,
-  c,
-}: {
-  accounts: Account[]
-  editing: boolean
-  c: Copy
-}) {
-  return (
-    <Card className="overflow-hidden p-0">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="pl-4">{c.colCompany}</TableHead>
-              <TableHead>{c.colIndustry}</TableHead>
-              <TableHead>{c.colTier}</TableHead>
-              <TableHead className="hidden md:table-cell">
-                {c.colEmployees}
-              </TableHead>
-              <TableHead className="hidden lg:table-cell">{c.pipeline}</TableHead>
-              <TableHead>{c.colHealth}</TableHead>
-              <TableHead className="hidden sm:table-cell">{c.colOwner}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {accounts.map((a) => (
-              <CompanyRow key={a.id} account={a} editing={editing} c={c} />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
-  )
-}
-
-function CompanyRow({
-  account: a,
-  editing,
-  c,
-}: {
-  account: Account
-  editing: boolean
-  c: Copy
-}) {
-  const owner = getRep(a.ownerId)
-
-  function update(patch: Partial<Account>) {
-    accountStore.update(a.id, patch)
-  }
-
-  return (
-    <TableRow>
-      {/* Company */}
-      <TableCell className="pl-4">
-        <div className="flex items-center gap-3">
-          <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
-            style={{ backgroundColor: a.logoColor }}
-          >
-            {a.name.charAt(0)}
-          </span>
-          {editing ? (
-            <Input
-              value={a.name}
-              onChange={(e) => update({ name: e.target.value })}
-              aria-label={c.colCompany}
-              className="h-8 min-w-[140px]"
-            />
-          ) : (
-            <div className="min-w-0">
-              <Link
-                to={`/companies/${a.id}`}
-                className="truncate font-medium hover:underline"
-              >
-                {a.name}
-              </Link>
-              <p className="text-muted-foreground truncate text-xs">
-                {a.domain}
-              </p>
-            </div>
-          )}
-        </div>
-      </TableCell>
-
-      {/* Industry */}
-      <TableCell>
-        {editing ? (
-          <Input
-            value={a.industry}
-            onChange={(e) => update({ industry: e.target.value })}
-            aria-label={c.colIndustry}
-            className="h-8 min-w-[120px]"
-          />
-        ) : (
-          <span className="text-muted-foreground text-sm">{a.industry}</span>
-        )}
-      </TableCell>
-
-      {/* Tier */}
-      <TableCell>
-        {editing ? (
-          <Select
-            value={a.tier}
-            onValueChange={(v) => update({ tier: v as AccountTier })}
-          >
-            <SelectTrigger size="sm" className="h-8 w-[130px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TIER_VALUES.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <Badge variant="secondary" className="font-normal">
-            {a.tier}
-          </Badge>
-        )}
-      </TableCell>
-
-      {/* Employees */}
-      <TableCell className="hidden md:table-cell">
-        {editing ? (
-          <Input
-            value={a.employees}
-            onChange={(e) => update({ employees: e.target.value })}
-            aria-label={c.colEmployees}
-            className="h-8 w-[110px]"
-          />
-        ) : (
-          <span className="text-muted-foreground text-sm tabular-nums">
-            {a.employees}
-          </span>
-        )}
-      </TableCell>
-
-      {/* Pipeline (read-only) */}
-      <TableCell className="hidden lg:table-cell">
-        <span className="text-sm font-medium tabular-nums">
-          {money(a.pipeline)}
-        </span>
-      </TableCell>
-
-      {/* Health */}
-      <TableCell>
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-            healthTone(a.healthScore)
-          )}
-          title={c.accountHealth}
-        >
-          <span className="bg-current size-1.5 rounded-full opacity-80" />
-          {a.healthScore}
-        </span>
-      </TableCell>
-
-      {/* Owner */}
-      <TableCell className="hidden sm:table-cell">
-        {owner ? (
-          <div className="flex items-center gap-2">
-            <Avatar className="size-6">
-              <AvatarFallback
-                style={{ backgroundColor: owner.avatarColor, color: "white" }}
-                className="text-[10px] font-medium"
-              >
-                {initials(owner.name.split(" ")[0], owner.name.split(" ")[1])}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-muted-foreground text-xs">
-              {owner.name.split(" ")[0]}
-            </span>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">{c.unassigned}</span>
-        )}
-      </TableCell>
-    </TableRow>
   )
 }
 
