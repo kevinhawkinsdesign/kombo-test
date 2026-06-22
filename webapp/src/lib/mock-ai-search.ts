@@ -266,8 +266,33 @@ export function interpretPrompt(prompt: string): {
   query: AiQuery
   entity: AiEntity
   summary: string
+  seed?: LookalikeSeed
 } {
   const lower = prompt.toLowerCase()
+
+  // Lookalike intent: "similar to X", "like X", "lookalikes of X".
+  if (/\b(similar to|look ?alike|lookalikes?|just like|companies like|people like)\b/.test(lower)) {
+    const seed = LOOKALIKE_SEEDS.find((s) => lower.includes(s.name.toLowerCase()))
+    if (seed) {
+      const q: AiQuery = { ...EMPTY_QUERY }
+      if (/\bsmaller\b/.test(lower)) q.headcount = smallerThan(seed.headcount)
+      if (/\blarger|bigger\b/.test(lower)) q.headcount = largerThan(seed.headcount)
+      matchVocab(prompt, REGION_OPTIONS).forEach((r) => q.regions.push(r))
+      const e: AiEntity = seed.kind === "company" ? "companies" : "people"
+      const size = q.headcount.length
+        ? /\bsmaller\b/.test(lower)
+          ? " (smaller)"
+          : " (larger)"
+        : ""
+      return {
+        query: q,
+        entity: e,
+        seed,
+        summary: `Found ${e === "companies" ? "companies" : "people"} similar to ${seed.name}${size}.`,
+      }
+    }
+  }
+
   const entity: AiEntity =
     /\bcompan(y|ies)\b|\baccounts?\b/.test(lower) && !/\bpeople\b|\bleads?\b|\bcontacts?\b/.test(lower)
       ? "companies"
@@ -438,6 +463,86 @@ export function estimatedTotal(shown: number, entity: AiEntity): number {
   if (shown === 0) return 0
   const factor = entity === "companies" ? 9 : 14
   return shown * factor + (shown % 7)
+}
+
+/* ----------------------------- lookalikes ------------------------------- */
+// AI lookalike search always starts from a seed — a person/customer or a
+// company — then returns similar records, optionally narrowed by modifiers
+// (e.g. "companies similar to Vicio but smaller").
+
+export interface LookalikeSeed {
+  id: string
+  kind: "person" | "company"
+  name: string
+  sub: string // "Title @ Company" for people, industry line for companies
+  industry: string
+  region: string
+  headcount: string
+}
+
+export const LOOKALIKE_SEEDS: LookalikeSeed[] = [
+  { id: "seed_vicio", kind: "company", name: "Vicio", sub: "E-commerce · EMEA", industry: "E-commerce", region: "EMEA", headcount: "201-500" },
+  { id: "seed_fever", kind: "company", name: "Fever", sub: "E-commerce · EMEA", industry: "E-commerce", region: "EMEA", headcount: "501-1000" },
+  { id: "seed_factorial", kind: "company", name: "Factorial", sub: "SaaS · EMEA", industry: "SaaS", region: "EMEA", headcount: "501-1000" },
+  { id: "seed_ramp", kind: "company", name: "Ramp", sub: "Fintech · North America", industry: "Fintech", region: "North America", headcount: "1000+" },
+  { id: "seed_gympass", kind: "company", name: "Gympass", sub: "Healthtech · LATAM", industry: "Healthtech", region: "LATAM", headcount: "1000+" },
+  { id: "seed_sarah", kind: "person", name: "Sarah Chen", sub: "VP of Sales @ Fever", industry: "E-commerce", region: "EMEA", headcount: "501-1000" },
+  { id: "seed_aisha", kind: "person", name: "Aisha Khan", sub: "CRO @ Clarity AI", industry: "Fintech", region: "EMEA", headcount: "201-500" },
+  { id: "seed_grace", kind: "person", name: "Grace Liu", sub: "COO @ Betterfly", industry: "Healthtech", region: "LATAM", headcount: "501-1000" },
+]
+
+function headcountIndex(h: string): number {
+  const i = HEADCOUNT_OPTIONS.indexOf(h)
+  return i === -1 ? 2 : i
+}
+
+export function smallerThan(headcount: string): string[] {
+  const i = headcountIndex(headcount)
+  return HEADCOUNT_OPTIONS.filter((_, idx) => idx < i)
+}
+
+export function largerThan(headcount: string): string[] {
+  const i = headcountIndex(headcount)
+  return HEADCOUNT_OPTIONS.filter((_, idx) => idx > i)
+}
+
+interface Similar {
+  industry: string
+  region: string
+  headcount: string
+}
+
+function similarity(rec: Similar, seed: LookalikeSeed): number {
+  let s = 42
+  if (rec.industry === seed.industry) s += 30
+  if (rec.region === seed.region) s += 18
+  const d = Math.abs(headcountIndex(rec.headcount) - headcountIndex(seed.headcount))
+  s += d === 0 ? 10 : d === 1 ? 5 : 0
+  return s
+}
+
+function passesQuery(rec: { region: string; industry: string; headcount: string; signals: string[] }, q: AiQuery): boolean {
+  if (q.regions.length && !q.regions.includes(rec.region)) return false
+  if (q.industries.length && !q.industries.includes(rec.industry)) return false
+  if (q.headcount.length && !q.headcount.includes(rec.headcount)) return false
+  if (q.signals.length && !rec.signals.some((s) => q.signals.includes(s))) return false
+  return true
+}
+
+export function lookalikeLeads(seed: LookalikeSeed, q: AiQuery): AiLead[] {
+  return LEAD_POOL.map((l) => ({ ...l, fit: Math.min(99, similarity(l, seed)) }))
+    .filter((l) => l.company !== seed.name)
+    .filter((l) => passesQuery(l, q))
+    .filter((l) => (q.titles.length ? q.titles.includes(l.title) : true))
+    .filter((l) => (q.seniority.length ? q.seniority.includes(l.seniority) : true))
+    .sort((a, b) => b.fit - a.fit)
+}
+
+export function lookalikeCompanies(seed: LookalikeSeed, q: AiQuery): AiCompany[] {
+  return COMPANY_POOL.map((c) => ({ ...c, fit: Math.min(99, similarity(c, seed)) }))
+    .filter((c) => c.name !== seed.name)
+    .filter((c) => passesQuery(c, q))
+    .sort((a, b) => b.fit - a.fit)
 }
 
 export const CREDITS_PER_LEAD = 1.7

@@ -18,6 +18,7 @@ import {
   ListPlus,
   CheckCircle2,
   CircleDashed,
+  ScanSearch,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -75,6 +76,11 @@ import {
   interpretPrompt,
   searchLeads,
   searchCompanies,
+  lookalikeLeads,
+  lookalikeCompanies,
+  smallerThan,
+  largerThan,
+  LOOKALIKE_SEEDS,
   estimatedTotal,
   queryTitle,
   isQueryEmpty,
@@ -93,6 +99,7 @@ import {
   type AiQuery,
   type AiLead,
   type AiChatMessage,
+  type LookalikeSeed,
 } from "@/lib/mock-ai-search"
 import { useCampaigns, campaignStore, listStore, prospectStore } from "@/lib/store"
 import type { SavedSearchCriteria } from "@/lib/types"
@@ -143,6 +150,25 @@ const COPY = {
     addToList: "Save as list",
     findPeople: "Find decision-makers",
     findPeopleToast: "Switched to people at these companies",
+    lookalike: "Lookalikes",
+    lookalikeTitle: "Find lookalikes",
+    lookalikeDesc:
+      "Lookalike search starts from a person or company you already like. Kai finds similar records — refine with the modifiers below.",
+    pickSeed: "Pick a person or company",
+    seedPeople: "People & customers",
+    seedCompanies: "Companies",
+    modifiers: "Modifiers",
+    modSmaller: "But smaller",
+    modLarger: "But larger",
+    modRegion: "Same region",
+    modSenior: "More senior",
+    findSimilar: "Find similar",
+    similarTo: "Similar to",
+    clearLookalike: "Clear lookalike",
+    lookalikeMsg: (name: string) =>
+      `Showing records similar to ${name}. Add modifiers or filters to narrow the match.`,
+    lookalikePrompt: (name: string, mod: string) =>
+      `Find records similar to ${name}${mod}`,
     colFit: "Fit",
     colName: "Name",
     colCompany: "Company",
@@ -226,6 +252,25 @@ const COPY = {
     addToList: "Guardar como lista",
     findPeople: "Buscar decisores",
     findPeopleToast: "Cambiado a personas en estas empresas",
+    lookalike: "Similares",
+    lookalikeTitle: "Buscar similares",
+    lookalikeDesc:
+      "La búsqueda de similares parte de una persona o empresa que ya te encaja. Kai encuentra registros parecidos — refina con los modificadores de abajo.",
+    pickSeed: "Elige una persona o empresa",
+    seedPeople: "Personas y clientes",
+    seedCompanies: "Empresas",
+    modifiers: "Modificadores",
+    modSmaller: "Pero más pequeñas",
+    modLarger: "Pero más grandes",
+    modRegion: "Misma región",
+    modSenior: "Más senior",
+    findSimilar: "Buscar similares",
+    similarTo: "Similar a",
+    clearLookalike: "Quitar similares",
+    lookalikeMsg: (name: string) =>
+      `Mostrando registros similares a ${name}. Añade modificadores o filtros para afinar la coincidencia.`,
+    lookalikePrompt: (name: string, mod: string) =>
+      `Buscar registros similares a ${name}${mod}`,
     colFit: "Encaje",
     colName: "Nombre",
     colCompany: "Empresa",
@@ -316,9 +361,9 @@ export default function Search() {
   const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
 
   // Seed with a starter query so the page lands populated for demos.
-  const seed = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
-  const [entity, setEntity] = React.useState<AiEntity>(seed.entity)
-  const [query, setQuery] = React.useState<AiQuery>(seed.query)
+  const initial = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
+  const [entity, setEntity] = React.useState<AiEntity>(initial.entity)
+  const [query, setQuery] = React.useState<AiQuery>(initial.query)
   const [lastPrompt, setLastPrompt] = React.useState(EXAMPLE_PROMPTS_EN[0])
   const [messages, setMessages] = React.useState<AiChatMessage[]>([
     { id: chatId(), role: "assistant", content: c.starter },
@@ -327,6 +372,8 @@ export default function Search() {
   const [thinking, setThinking] = React.useState(false)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [saveOpen, setSaveOpen] = React.useState(false)
+  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
+  const [seed, setSeed] = React.useState<LookalikeSeed | null>(null)
   const [showEmail, setShowEmail] = React.useState(true)
   const [showSignals, setShowSignals] = React.useState(false)
   const [showRegion, setShowRegion] = React.useState(true)
@@ -336,8 +383,14 @@ export default function Search() {
     endRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, thinking])
 
-  const leads = React.useMemo(() => searchLeads(query), [query])
-  const companies = React.useMemo(() => searchCompanies(query), [query])
+  const leads = React.useMemo(
+    () => (seed ? lookalikeLeads(seed, query) : searchLeads(query)),
+    [seed, query]
+  )
+  const companies = React.useMemo(
+    () => (seed ? lookalikeCompanies(seed, query) : searchCompanies(query)),
+    [seed, query]
+  )
   const shownCount = entity === "people" ? leads.length : companies.length
   const estTotal = estimatedTotal(shownCount, entity)
   const selectedCount = selected.size
@@ -352,12 +405,18 @@ export default function Search() {
     setThinking(true)
     setLastPrompt(text)
     window.setTimeout(() => {
-      const { query: q, entity: e, summary } = interpretPrompt(text)
+      const { query: q, entity: e, summary, seed: s } = interpretPrompt(text)
       setEntity(e)
       setQuery(q)
+      setSeed(s ?? null)
       setSelected(new Set())
-      const count =
-        e === "people" ? searchLeads(q).length : searchCompanies(q).length
+      const count = s
+        ? e === "people"
+          ? lookalikeLeads(s, q).length
+          : lookalikeCompanies(s, q).length
+        : e === "people"
+          ? searchLeads(q).length
+          : searchCompanies(q).length
       const total = estimatedTotal(count, e)
       setMessages((m) => [
         ...m,
@@ -421,8 +480,23 @@ export default function Search() {
 
   function findDecisionMakers() {
     setEntity("people")
+    setSeed(null)
     setSelected(new Set())
     toast.success(c.findPeopleToast)
+  }
+
+  function applyLookalike(s: LookalikeSeed, q: AiQuery, modLabel: string) {
+    setSeed(s)
+    setEntity(s.kind === "company" ? "companies" : "people")
+    setQuery(q)
+    setSelected(new Set())
+    setLookalikeOpen(false)
+    setLastPrompt(c.lookalikePrompt(s.name, modLabel))
+    setMessages((m) => [
+      ...m,
+      { id: chatId(), role: "user", content: c.lookalikePrompt(s.name, modLabel) },
+      { id: chatId(), role: "assistant", content: c.lookalikeMsg(s.name) },
+    ])
   }
 
   function saveSearch() {
@@ -631,6 +705,7 @@ export default function Search() {
                 active={entity === "people"}
                 onClick={() => {
                   setEntity("people")
+                  setSeed(null)
                   setSelected(new Set())
                 }}
                 icon={Users}
@@ -640,6 +715,7 @@ export default function Search() {
                 active={entity === "companies"}
                 onClick={() => {
                   setEntity("companies")
+                  setSeed(null)
                   setSelected(new Set())
                 }}
                 icon={Building2}
@@ -648,6 +724,14 @@ export default function Search() {
             </div>
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLookalikeOpen(true)}
+              >
+                <ScanSearch className="size-4" />
+                <span className="hidden sm:inline">{c.lookalike}</span>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -697,6 +781,24 @@ export default function Search() {
               )}
             </div>
           </div>
+
+          {/* Lookalike seed banner */}
+          {seed && (
+            <div className="border-primary/30 bg-primary/5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+              <ScanSearch className="text-primary size-4 shrink-0" />
+              <span className="text-muted-foreground">{c.similarTo}</span>
+              <span className="font-medium">{seed.name}</span>
+              <span className="text-muted-foreground text-xs">· {seed.sub}</span>
+              <button
+                type="button"
+                onClick={() => setSeed(null)}
+                className="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-xs"
+              >
+                <X className="size-3" />
+                {c.clearLookalike}
+              </button>
+            </div>
+          )}
 
           {/* Active query chips */}
           <Card className="gap-0 p-3">
@@ -956,7 +1058,7 @@ export default function Search() {
         onOpenChange={setSaveOpen}
         c={c}
         leads={selectedCount > 0 ? leads.filter((l) => selected.has(l.id)) : leads}
-        defaultName={queryTitle(query, "people")}
+        defaultName={seed ? `${c.similarTo} ${seed.name}` : queryTitle(query, "people")}
         query={query}
         campaigns={campaigns}
         onSaved={(listId) => {
@@ -964,7 +1066,204 @@ export default function Search() {
           navigate(`/lists/${listId}`)
         }}
       />
+
+      <LookalikeDialog
+        open={lookalikeOpen}
+        onOpenChange={setLookalikeOpen}
+        c={c}
+        onConfirm={applyLookalike}
+      />
     </Page>
+  )
+}
+
+function LookalikeDialog({
+  open,
+  onOpenChange,
+  c,
+  onConfirm,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  c: Copy
+  onConfirm: (seed: LookalikeSeed, query: AiQuery, modLabel: string) => void
+}) {
+  const [seedId, setSeedId] = React.useState<string | null>(null)
+  const [mods, setMods] = React.useState<Set<string>>(new Set())
+  const [wasOpen, setWasOpen] = React.useState(false)
+
+  if (open && !wasOpen) {
+    setWasOpen(true)
+    setSeedId(null)
+    setMods(new Set())
+  }
+  if (!open && wasOpen) setWasOpen(false)
+
+  const seed = LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
+  const people = LOOKALIKE_SEEDS.filter((s) => s.kind === "person")
+  const companies = LOOKALIKE_SEEDS.filter((s) => s.kind === "company")
+
+  function toggleMod(m: string) {
+    setMods((prev) => {
+      const next = new Set(prev)
+      // smaller / larger are mutually exclusive
+      if (m === "smaller" && next.has("larger")) next.delete("larger")
+      if (m === "larger" && next.has("smaller")) next.delete("smaller")
+      if (next.has(m)) next.delete(m)
+      else next.add(m)
+      return next
+    })
+  }
+
+  function confirm() {
+    if (!seed) return
+    const q: AiQuery = { ...EMPTY_QUERY }
+    let modLabel = ""
+    if (mods.has("smaller")) {
+      q.headcount = smallerThan(seed.headcount)
+      modLabel = c === COPY.es ? " pero más pequeñas" : " but smaller"
+    }
+    if (mods.has("larger")) {
+      q.headcount = largerThan(seed.headcount)
+      modLabel = c === COPY.es ? " pero más grandes" : " but larger"
+    }
+    if (mods.has("region")) q.regions = [seed.region]
+    if (mods.has("senior") && seed.kind === "person") q.seniority = ["C-Level", "VP"]
+    onConfirm(seed, q, modLabel)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ScanSearch className="text-primary size-5" />
+            {c.lookalikeTitle}
+          </DialogTitle>
+          <DialogDescription>{c.lookalikeDesc}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-1">
+          <div className="space-y-2">
+            <Label>{c.pickSeed}</Label>
+            <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
+              <SeedGroup
+                label={c.seedCompanies}
+                seeds={companies}
+                selected={seedId}
+                onSelect={setSeedId}
+              />
+              <SeedGroup
+                label={c.seedPeople}
+                seeds={people}
+                selected={seedId}
+                onSelect={setSeedId}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{c.modifiers}</Label>
+            <div className="flex flex-wrap gap-1.5">
+              <ModChip active={mods.has("smaller")} onClick={() => toggleMod("smaller")} label={c.modSmaller} />
+              <ModChip active={mods.has("larger")} onClick={() => toggleMod("larger")} label={c.modLarger} />
+              <ModChip active={mods.has("region")} onClick={() => toggleMod("region")} label={c.modRegion} />
+              {seed?.kind === "person" && (
+                <ModChip active={mods.has("senior")} onClick={() => toggleMod("senior")} label={c.modSenior} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {c.cancel}
+          </Button>
+          <Button variant="volt" onClick={confirm} disabled={!seed}>
+            <ScanSearch className="size-4" />
+            {c.findSimilar}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function SeedGroup({
+  label,
+  seeds,
+  selected,
+  onSelect,
+}: {
+  label: string
+  seeds: LookalikeSeed[]
+  selected: string | null
+  onSelect: (id: string) => void
+}) {
+  return (
+    <div>
+      <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+        {label}
+      </p>
+      <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+        {seeds.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => onSelect(s.id)}
+            className={cn(
+              "flex items-center gap-2 rounded-md border px-2.5 py-2 text-left text-sm transition-colors",
+              selected === s.id
+                ? "border-primary bg-primary/5"
+                : "hover:bg-muted/60"
+            )}
+          >
+            <span
+              className={cn(
+                "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                s.kind === "company"
+                  ? "bg-chart-3/15 text-chart-3"
+                  : "bg-primary/10 text-primary"
+              )}
+            >
+              {s.kind === "company" ? <Building2 className="size-3.5" /> : <Users className="size-3.5" />}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-medium">{s.name}</span>
+              <span className="text-muted-foreground block truncate text-xs">
+                {s.sub}
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ModChip({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean
+  onClick: () => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+        active
+          ? "border-primary bg-primary/10 text-primary"
+          : "hover:bg-muted"
+      )}
+    >
+      {label}
+    </button>
   )
 }
 
