@@ -232,8 +232,11 @@ const COPY = {
     clearSel: "Clear",
     noResults: "No results yet — try a prompt or adjust your filters.",
     addFilter: "Add filter",
-    filterTypeahead: "Type a title, region, industry… or add your own",
+    filterTypeahead: "Search filters or describe them with AI…",
     addCustom: (v: string) => `Add "${v}"`,
+    askAiFilter: (v: string) => `Ask AI: "${v}"`,
+    viewAllFilters: "View all filters",
+    backToFilterSearch: "Back to search",
     titles: "Titles",
     seniority: "Seniority",
     regions: "Regions",
@@ -366,8 +369,11 @@ const COPY = {
     clearSel: "Limpiar",
     noResults: "Aún no hay resultados — prueba un prompt o ajusta los filtros.",
     addFilter: "Añadir filtro",
-    filterTypeahead: "Escribe un cargo, región, sector… o añade el tuyo",
+    filterTypeahead: "Busca filtros o descríbelos con IA…",
     addCustom: (v: string) => `Añadir "${v}"`,
+    askAiFilter: (v: string) => `Pregunta a la IA: "${v}"`,
+    viewAllFilters: "Ver todos los filtros",
+    backToFilterSearch: "Volver a la búsqueda",
     titles: "Cargos",
     seniority: "Antigüedad",
     regions: "Regiones",
@@ -1034,6 +1040,17 @@ export default function Search() {
                   </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Any results can be saved as a saved search (people or companies). */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={saveSearch}
+                disabled={shownCount === 0}
+              >
+                <Bookmark className="size-4" />
+                <span className="hidden sm:inline">{c.saveThis}</span>
+              </Button>
 
               {entity === "companies" ? (
                 <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
@@ -1746,13 +1763,21 @@ function AddFilterPopover({
 }) {
   const [open, setOpen] = React.useState(false)
   const [text, setText] = React.useState("")
+  const [showAll, setShowAll] = React.useState(false)
   const q = text.trim().toLowerCase()
+
+  // Groups available for the current entity / LinkedIn state.
+  const groups = React.useMemo(
+    () =>
+      FILTER_OPTIONS.filter(
+        (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
+      ),
+    [linkedinOn, entity]
+  )
 
   const suggestions = React.useMemo(() => {
     const rows: { group: keyof AiQuery; groupLabel: string; value: string }[] = []
-    for (const group of FILTER_OPTIONS) {
-      if (group.linkedinOnly && !linkedinOn) continue
-      if (group.scope && group.scope !== entity) continue
+    for (const group of groups) {
       for (const value of group.options) {
         if ((query[group.key] as string[]).includes(value)) continue
         if (q && !value.toLowerCase().includes(q)) continue
@@ -1760,20 +1785,29 @@ function AddFilterPopover({
       }
     }
     return rows.slice(0, 40)
-  }, [query, q, c, linkedinOn, entity])
+  }, [query, q, c, groups])
 
-  // Whether the typed value already matches a suggestion exactly.
   const exact = text.trim()
     ? suggestions.some((s) => s.value.toLowerCase() === q)
     : true
 
   function reset() {
     setText("")
+    setShowAll(false)
   }
-
   function add(group: keyof AiQuery, value: string) {
     onAdd(group, value)
+    setText("")
+  }
+  // Describe filters in natural language — interpret and apply them all.
+  function askAi(prompt: string) {
+    const iq = interpretPrompt(prompt).query
+    ;(Object.keys(iq) as (keyof AiQuery)[]).forEach((k) => {
+      if (k === "keywords") return
+      ;(iq[k] as string[]).forEach((v) => onAdd(k, v))
+    })
     reset()
+    setOpen(false)
   }
 
   return (
@@ -1791,50 +1825,117 @@ function AddFilterPopover({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-0">
+        {/* AI-prompt + search box (always present) */}
         <div className="border-b p-2">
-          <Input
-            autoFocus
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault()
-                if (text.trim() && !exact) add("titles", text.trim())
-                else if (suggestions[0]) add(suggestions[0].group, suggestions[0].value)
-              }
-            }}
-            placeholder={c.filterTypeahead}
-            className="h-8 text-sm"
-          />
+          <div className="relative">
+            <Sparkles className="text-primary pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Input
+              autoFocus
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  if (text.trim() && !exact) askAi(text.trim())
+                  else if (suggestions[0]) add(suggestions[0].group, suggestions[0].value)
+                }
+              }}
+              placeholder={c.filterTypeahead}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
         </div>
-        <div className="max-h-72 overflow-y-auto p-1">
-          {text.trim() && !exact && (
-            <button
-              type="button"
-              onClick={() => add("titles", text.trim())}
-              className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
-            >
-              <Plus className="text-primary size-4 shrink-0" />
-              <span className="truncate">{c.addCustom(text.trim())}</span>
-            </button>
+
+        {showAll ? (
+          // View all filters — every group and option, grouped.
+          <div className="max-h-72 overflow-y-auto p-2">
+            {groups.map((group) => (
+              <div key={group.key} className="mb-2">
+                <p className="text-muted-foreground px-1 py-1 text-[10px] font-medium tracking-wide uppercase">
+                  {group.label(c)}
+                </p>
+                <div className="flex flex-wrap gap-1 px-1">
+                  {group.options
+                    .filter((v) => !q || v.toLowerCase().includes(q))
+                    .map((value) => {
+                      const active = (query[group.key] as string[]).includes(value)
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => onAdd(group.key, value)}
+                          disabled={active}
+                          className={cn(
+                            "rounded-full border px-2 py-0.5 text-xs transition-colors",
+                            active
+                              ? "border-primary/40 bg-primary/10 text-primary cursor-default"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          {value}
+                        </button>
+                      )
+                    })}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="max-h-72 overflow-y-auto p-1">
+            {text.trim() && !exact && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => askAi(text.trim())}
+                  className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+                >
+                  <Sparkles className="text-primary size-4 shrink-0" />
+                  <span className="truncate">{c.askAiFilter(text.trim())}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => add("titles", text.trim())}
+                  className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+                >
+                  <Plus className="text-muted-foreground size-4 shrink-0" />
+                  <span className="truncate">{c.addCustom(text.trim())}</span>
+                </button>
+              </>
+            )}
+            {suggestions.map((s) => (
+              <button
+                key={`${s.group}:${s.value}`}
+                type="button"
+                onClick={() => add(s.group, s.value)}
+                className="hover:bg-muted flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+              >
+                <span className="truncate">{s.value}</span>
+                <span className="text-muted-foreground shrink-0 text-[10px] tracking-wide uppercase">
+                  {s.groupLabel}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Footer: view all / back */}
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="text-primary hover:bg-muted flex w-full items-center gap-1.5 border-t px-3 py-2 text-xs font-medium"
+        >
+          {showAll ? (
+            <>
+              <ArrowRight className="size-3.5 rotate-180" />
+              {c.backToFilterSearch}
+            </>
+          ) : (
+            <>
+              <ListPlus className="size-3.5" />
+              {c.viewAllFilters}
+            </>
           )}
-          {suggestions.map((s) => (
-            <button
-              key={`${s.group}:${s.value}`}
-              type="button"
-              onClick={() => add(s.group, s.value)}
-              className="hover:bg-muted flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
-            >
-              <span className="truncate">{s.value}</span>
-              <span className="text-muted-foreground shrink-0 text-[10px] tracking-wide uppercase">
-                {s.groupLabel}
-              </span>
-            </button>
-          ))}
-          {suggestions.length === 0 && !text.trim() && (
-            <p className="text-muted-foreground px-2 py-2 text-xs">{c.filterTypeahead}</p>
-          )}
-        </div>
+        </button>
       </PopoverContent>
     </Popover>
   )
