@@ -1,5 +1,5 @@
 import * as React from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   Building2,
@@ -24,6 +24,11 @@ import {
   BookOpen,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
+  Telescope,
+  Megaphone,
+  TrendingUp,
+  Settings2,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -56,39 +61,50 @@ interface NavItem {
   isNew?: boolean
 }
 
-interface NavSection {
+interface NavGroup {
+  key: string
   labelKey: string
+  icon: React.ComponentType<{ className?: string }>
   items: NavItem[]
 }
 
 const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
-const sections: NavSection[] = [
+// Always-visible top destinations.
+const primary: NavItem[] = [
+  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   {
-    labelKey: "nav.workspace",
+    to: "/copilot",
+    labelKey: "nav.copilot",
+    icon: Sparkles,
+    badge: String(copilotActions.length),
+    isNew: true,
+  },
+  {
+    to: "/inbox",
+    labelKey: "nav.inbox",
+    icon: Inbox,
+    badge: unread ? String(unread) : undefined,
+  },
+]
+
+// Collapsible groups keep the rail short — most pages live one click away.
+const groups: NavGroup[] = [
+  {
+    key: "prospecting",
+    labelKey: "nav.prospecting",
+    icon: Telescope,
     items: [
-      { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
-      {
-        to: "/copilot",
-        labelKey: "nav.copilot",
-        icon: Sparkles,
-        badge: String(copilotActions.length),
-        isNew: true,
-      },
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
-      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
+      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
     ],
   },
   {
-    labelKey: "nav.engage",
+    key: "outreach",
+    labelKey: "nav.outreach",
+    icon: Megaphone,
     items: [
-      {
-        to: "/inbox",
-        labelKey: "nav.inbox",
-        icon: Inbox,
-        badge: unread ? String(unread) : undefined,
-      },
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
       { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, isNew: true },
@@ -97,41 +113,53 @@ const sections: NavSection[] = [
     ],
   },
   {
+    key: "revenue",
     labelKey: "nav.revenue",
+    icon: TrendingUp,
     items: [
       { to: "/deals", labelKey: "nav.deals", icon: Briefcase, isNew: true },
-      {
-        to: "/analytics",
-        labelKey: "nav.analytics",
-        icon: BarChart3,
-        isNew: true,
-      },
+      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3, isNew: true },
       { to: "/coach", labelKey: "nav.coach", icon: GraduationCap },
-    ],
-  },
-  {
-    labelKey: "nav.manage",
-    items: [
-      { to: "/team", labelKey: "nav.team", icon: Users },
-      { to: "/usage", labelKey: "nav.usage", icon: Zap },
-      { to: "/referrals", labelKey: "nav.referrals", icon: Gift },
     ],
   },
 ]
 
-const bottomNav: NavItem[] = [
-  { to: "/integrations", labelKey: "nav.integrations", icon: Plug },
-  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+const manageGroup: NavGroup = {
+  key: "manage",
+  labelKey: "nav.manage",
+  icon: Settings2,
+  items: [
+    { to: "/team", labelKey: "nav.team", icon: Users },
+    { to: "/usage", labelKey: "nav.usage", icon: Zap },
+    { to: "/referrals", labelKey: "nav.referrals", icon: Gift },
+    { to: "/integrations", labelKey: "nav.integrations", icon: Plug },
+    { to: "/settings", labelKey: "nav.settings", icon: Settings },
+  ],
+}
+
+const allGroups = [...groups, manageGroup]
+
+// Every leaf, flattened — used for the icon-only collapsed rail.
+const allLeaves: NavItem[] = [
+  ...primary,
+  ...allGroups.flatMap((g) => g.items),
 ]
+
+function isActivePath(pathname: string, to: string): boolean {
+  if (to === "/") return pathname === "/"
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
 
 function NavRow({
   item,
   onNavigate,
   collapsed,
+  inset,
 }: {
   item: NavItem
   onNavigate?: () => void
   collapsed?: boolean
+  inset?: boolean
 }) {
   const { t } = useLocale()
   const Icon = item.icon
@@ -147,6 +175,7 @@ function NavRow({
         cn(
           "group flex items-center rounded-md text-sm font-medium transition-colors",
           collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2",
+          inset && !collapsed && "py-1.5",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
@@ -190,6 +219,107 @@ function NavRow({
   )
 }
 
+function NavGroupSection({
+  group,
+  open,
+  onToggle,
+  onNavigate,
+  currentPath,
+}: {
+  group: NavGroup
+  open: boolean
+  onToggle: () => void
+  onNavigate?: () => void
+  currentPath: string
+}) {
+  const { t } = useLocale()
+  const Icon = group.icon
+  const hasActive = group.items.some((it) => isActivePath(currentPath, it.to))
+  const hasNew = group.items.some((it) => it.isNew)
+  const badgeTotal = group.items.reduce(
+    (sum, it) => sum + (it.badge ? Number(it.badge) : 0),
+    0
+  )
+
+  return (
+    <div className="w-full">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+          hasActive && !open
+            ? "text-sidebar-foreground"
+            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+        )}
+      >
+        <span className="relative">
+          <Icon className="size-4 shrink-0" />
+          {!open && hasNew && (
+            <span className="bg-volt ring-sidebar absolute -top-1 -right-1 size-2 rounded-full ring-2" />
+          )}
+        </span>
+        <span className="flex-1 text-left">{t(group.labelKey)}</span>
+        {!open && badgeTotal > 0 && (
+          <Badge className="h-5 min-w-5 justify-center px-1.5">
+            {badgeTotal}
+          </Badge>
+        )}
+        <ChevronDown
+          className={cn(
+            "text-sidebar-foreground/60 size-3.5 shrink-0 transition-transform",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+      {open && (
+        <div className="border-sidebar-border/70 mt-0.5 ml-4 flex flex-col gap-0.5 border-l pl-2">
+          {group.items.map((item) => (
+            <NavRow
+              key={item.to}
+              item={item}
+              onNavigate={onNavigate}
+              inset
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const GROUPS_KEY = "kombo-nav-groups"
+
+function useExpandedGroups() {
+  const [expanded, setExpanded] = React.useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(GROUPS_KEY)
+      if (raw) return new Set(JSON.parse(raw) as string[])
+    } catch {
+      /* ignore */
+    }
+    // Default: outreach open so the New campaign CTA target is visible.
+    return new Set(["outreach"])
+  })
+
+  const toggle = React.useCallback((key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      try {
+        localStorage.setItem(GROUPS_KEY, JSON.stringify([...next]))
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }, [])
+
+  return { expanded, toggle }
+}
+
 function SidebarContent({
   onNavigate,
   collapsed = false,
@@ -201,6 +331,8 @@ function SidebarContent({
 }) {
   const { t } = useLocale()
   const { progress } = useSetup()
+  const { pathname } = useLocation()
+  const { expanded, toggle } = useExpandedGroups()
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -259,60 +391,75 @@ function SidebarContent({
 
         <nav
           className={cn(
-            "flex flex-1 flex-col gap-1 overflow-y-auto",
+            "flex flex-1 flex-col gap-0.5 overflow-y-auto",
             collapsed ? "items-center p-2" : "p-3"
           )}
         >
-          {sections.map((section) => (
-            <div key={section.labelKey} className="mb-1 w-full">
-              {collapsed ? (
-                <div className="bg-sidebar-border mx-auto my-1 h-px w-6" />
-              ) : (
-                <p className="text-sidebar-foreground/70 px-3 pt-2 pb-1 text-xs font-medium tracking-wide uppercase">
-                  {t(section.labelKey)}
-                </p>
-              )}
-              {section.items.map((item) => (
-                <NavRow
-                  key={item.to}
-                  item={item}
-                  onNavigate={onNavigate}
-                  collapsed={collapsed}
-                />
-              ))}
-            </div>
-          ))}
-
-          <div className="mt-auto flex w-full flex-col gap-1 pt-2">
-            {bottomNav.map((item) => (
+          {collapsed ? (
+            // Icon-only rail: flatten every page so nothing is hidden.
+            allLeaves.map((item) => (
               <NavRow
                 key={item.to}
                 item={item}
                 onNavigate={onNavigate}
-                collapsed={collapsed}
+                collapsed
               />
-            ))}
-            {onToggleCollapse && (
-              <button
-                type="button"
-                onClick={onToggleCollapse}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                className={cn(
-                  "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground flex items-center rounded-md text-sm font-medium transition-colors",
-                  collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2"
-                )}
-              >
-                {collapsed ? (
-                  <ChevronsRight className="size-4 shrink-0" />
-                ) : (
-                  <>
-                    <ChevronsLeft className="size-4 shrink-0" />
-                    <span className="flex-1 text-left">Collapse</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
+            ))
+          ) : (
+            <>
+              {primary.map((item) => (
+                <NavRow key={item.to} item={item} onNavigate={onNavigate} />
+              ))}
+
+              <div className="my-1" />
+
+              {groups.map((group) => (
+                <NavGroupSection
+                  key={group.key}
+                  group={group}
+                  open={expanded.has(group.key) || group.items.some((it) => isActivePath(pathname, it.to))}
+                  onToggle={() => toggle(group.key)}
+                  onNavigate={onNavigate}
+                  currentPath={pathname}
+                />
+              ))}
+
+              <div className="mt-auto pt-2">
+                <NavGroupSection
+                  group={manageGroup}
+                  open={
+                    expanded.has(manageGroup.key) ||
+                    manageGroup.items.some((it) => isActivePath(pathname, it.to))
+                  }
+                  onToggle={() => toggle(manageGroup.key)}
+                  onNavigate={onNavigate}
+                  currentPath={pathname}
+                />
+              </div>
+            </>
+          )}
+
+          {collapsed && <div className="mt-auto" />}
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className={cn(
+                "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground mt-1 flex items-center rounded-md text-sm font-medium transition-colors",
+                collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2"
+              )}
+            >
+              {collapsed ? (
+                <ChevronsRight className="size-4 shrink-0" />
+              ) : (
+                <>
+                  <ChevronsLeft className="size-4 shrink-0" />
+                  <span className="flex-1 text-left">Collapse</span>
+                </>
+              )}
+            </button>
+          )}
         </nav>
       </div>
     </TooltipProvider>
