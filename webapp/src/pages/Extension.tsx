@@ -12,6 +12,7 @@ import {
   Check,
   ArrowRight,
   Star,
+  Mic,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -24,6 +25,8 @@ import { cn } from "@/lib/utils"
 
 const STORE_URL =
   "https://chromewebstore.google.com/detail/kombo-prepare-your-first/djcmkdkjdchgplhaadeffehffgjcbohe"
+const RECORDER_URL =
+  "https://chromewebstore.google.com/detail/komboai-recorder/fkocennpfikhfaikkgjdfbaoeaniccla"
 
 type TabId = "linkedin" | "gmail" | "calendar" | "crm" | "everywhere"
 
@@ -103,6 +106,16 @@ const COPY = {
         body: "Save to a list or drop straight into a multi-channel sequence without leaving the page.",
       },
     ],
+    recorderEyebrow: "Also from Kombo",
+    recorderTitle: "Kombo Recorder",
+    recorderBody:
+      "Record and transcribe your sales calls across Google Meet, Zoom, and Teams — then get AI coaching scorecards and next steps automatically.",
+    recorderPoints: [
+      "Auto-join & record meetings",
+      "Transcripts + AI call scorecards",
+      "Next steps synced to your CRM",
+    ],
+    addRecorder: "Add Recorder to Chrome",
     ctaTitle: "Add Kombo to Chrome",
     ctaBody: "Install in seconds, pin it to your toolbar, and start building pipeline from anywhere.",
     installToast: "Opening the Chrome Web Store…",
@@ -183,6 +196,16 @@ const COPY = {
         body: "Guarda en una lista o entra directo en una secuencia multicanal sin salir de la página.",
       },
     ],
+    recorderEyebrow: "También de Kombo",
+    recorderTitle: "Kombo Recorder",
+    recorderBody:
+      "Graba y transcribe tus llamadas de ventas en Google Meet, Zoom y Teams — y obtén scorecards de coaching con IA y próximos pasos automáticamente.",
+    recorderPoints: [
+      "Se une y graba reuniones automáticamente",
+      "Transcripciones + scorecards de llamada con IA",
+      "Próximos pasos sincronizados con tu CRM",
+    ],
+    addRecorder: "Añadir Recorder a Chrome",
     ctaTitle: "Añade Kombo a Chrome",
     ctaBody: "Instálalo en segundos, ánclalo a tu barra y empieza a construir pipeline desde cualquier lugar.",
     installToast: "Abriendo la Chrome Web Store…",
@@ -209,6 +232,10 @@ export default function Extension() {
   function install() {
     toast.success(c.installToast)
     window.open(STORE_URL, "_blank", "noreferrer")
+  }
+  function installRecorder() {
+    toast.success(c.installToast)
+    window.open(RECORDER_URL, "_blank", "noreferrer")
   }
 
   return (
@@ -292,6 +319,35 @@ export default function Extension() {
           )
         })}
       </div>
+
+      {/* Second extension: Recorder */}
+      <Card className="mb-8 grid items-center gap-6 p-6 md:grid-cols-[1fr_auto] md:p-8">
+        <div className="space-y-3">
+          <p className="text-primary text-xs font-semibold tracking-wide uppercase">
+            {c.recorderEyebrow}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="bg-chart-5/15 text-chart-5 flex size-9 items-center justify-center rounded-lg">
+              <Mic className="size-5" />
+            </span>
+            <h3 className="text-xl font-semibold tracking-tight">{c.recorderTitle}</h3>
+            <Badge variant="secondary" className="font-normal">2</Badge>
+          </div>
+          <p className="text-muted-foreground max-w-xl text-pretty">{c.recorderBody}</p>
+          <ul className="grid gap-1.5 sm:grid-cols-3">
+            {c.recorderPoints.map((p) => (
+              <li key={p} className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                <Check className="text-chart-1 size-3.5 shrink-0" />
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Button variant="secondary" size="lg" onClick={installRecorder} className="md:self-center">
+          <Mic className="size-4" />
+          {c.addRecorder}
+        </Button>
+      </Card>
 
       {/* Final CTA */}
       <Card className="bg-sidebar text-sidebar-foreground items-center gap-4 p-8 text-center md:p-12">
