@@ -4,6 +4,7 @@ import {
   prospects as seedProspects,
   prospectLists as seedLists,
   campaigns as seedCampaigns,
+  conversations as seedConversations,
   setLiveProspects,
   setLiveLists,
   setLiveCampaigns,
@@ -28,6 +29,9 @@ import type {
   Task,
   EmailTemplate,
   Account,
+  Conversation,
+  Message,
+  ChatLang,
 } from "./types"
 
 interface StoreState {
@@ -38,6 +42,7 @@ interface StoreState {
   tasks: Task[]
   templates: EmailTemplate[]
   accounts: Account[]
+  conversations: Conversation[]
 }
 
 const KEY = "kombo_store_v1"
@@ -51,6 +56,7 @@ function seed(): StoreState {
     tasks: seedTasks,
     templates: seedTemplates,
     accounts: seedAccounts,
+    conversations: seedConversations,
   }
 }
 
@@ -68,6 +74,7 @@ function load(): StoreState {
         tasks: parsed.tasks ?? base.tasks,
         templates: parsed.templates ?? base.templates,
         accounts: parsed.accounts ?? base.accounts,
+        conversations: parsed.conversations ?? base.conversations,
       }
     }
   } catch {
@@ -151,6 +158,9 @@ export function useTemplates(): EmailTemplate[] {
 }
 export function useAccounts(): Account[] {
   return useSlice((s) => s.accounts)
+}
+export function useConversations(): Conversation[] {
+  return useSlice((s) => s.conversations)
 }
 
 /* ------------------------------- actions ------------------------------- */
@@ -460,6 +470,68 @@ export const prospectStore = {
         prospectIds: l.prospectIds.filter((x) => x !== id),
       })),
     })
+  },
+}
+
+function patchConversation(id: string, fn: (c: Conversation) => Conversation): void {
+  setState({
+    conversations: state.conversations.map((conv) =>
+      conv.id === id ? fn(conv) : conv
+    ),
+  })
+}
+
+export const conversationStore = {
+  sendMessage(id: string, body: string, lang: ChatLang): Message {
+    const message: Message = {
+      id: uid("msg"),
+      channel: state.conversations.find((c) => c.id === id)?.channel ?? "email",
+      direction: "outbound",
+      body,
+      timestamp: nowISO(),
+      read: true,
+      lang,
+    }
+    patchConversation(id, (c) => ({
+      ...c,
+      messages: [...c.messages, message],
+      lastMessageAt: message.timestamp,
+      unread: 0,
+      snoozedUntil: null,
+      archived: false,
+    }))
+    return message
+  },
+  markRead(id: string): void {
+    patchConversation(id, (c) => ({
+      ...c,
+      unread: 0,
+      messages: c.messages.map((m) => ({ ...m, read: true })),
+    }))
+  },
+  markUnread(id: string): void {
+    patchConversation(id, (c) => ({ ...c, unread: Math.max(1, c.unread) }))
+  },
+  snooze(id: string, untilISO: string): void {
+    patchConversation(id, (c) => ({ ...c, snoozedUntil: untilISO }))
+  },
+  unsnooze(id: string): void {
+    patchConversation(id, (c) => ({ ...c, snoozedUntil: null }))
+  },
+  assign(id: string, assigneeId: string | undefined): void {
+    patchConversation(id, (c) => ({ ...c, assigneeId }))
+  },
+  archive(id: string): void {
+    patchConversation(id, (c) => ({ ...c, archived: true, unread: 0 }))
+  },
+  unarchive(id: string): void {
+    patchConversation(id, (c) => ({ ...c, archived: false }))
+  },
+  setRecipientLang(id: string, lang: ChatLang): void {
+    patchConversation(id, (c) => ({ ...c, recipientLang: lang }))
+  },
+  remove(id: string): void {
+    setState({ conversations: state.conversations.filter((c) => c.id !== id) })
   },
 }
 

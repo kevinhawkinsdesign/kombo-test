@@ -130,6 +130,8 @@ export interface CoachScorecard {
   risks: string[]
 }
 
+export type ChatLang = "en" | "es"
+
 export interface Message {
   id: string
   channel: Channel
@@ -137,6 +139,7 @@ export interface Message {
   body: string
   timestamp: string
   read: boolean
+  lang?: ChatLang // language the message was written in
 }
 
 export interface Conversation {
@@ -147,6 +150,10 @@ export interface Conversation {
   messages: Message[]
   unread: number
   lastMessageAt: string
+  assigneeId?: string // team member the thread is assigned to
+  snoozedUntil?: string | null // ISO date; thread is snoozed until then
+  archived?: boolean
+  recipientLang?: ChatLang // the prospect's preferred language
 }
 
 export type CampaignStatus = "active" | "paused" | "draft" | "completed"
