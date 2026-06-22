@@ -22,25 +22,14 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import {
-  TrendChart,
-  ReplyRateChart,
-  AttainmentDoughnut,
-} from "@/components/charts/Charts"
-import { Funnel } from "@/components/charts/Funnel"
 import { InfoHint } from "@/components/common/InfoHint"
 import { DailyRecommendations } from "@/components/dashboard/DailyRecommendations"
+import { TodayPanel } from "@/components/dashboard/TodayPanel"
 import { KaiSuggestion } from "@/components/kai/KaiSuggestion"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useView } from "@/lib/view-context"
 import { useSetup } from "@/lib/setup"
-import {
-  getScopeData,
-  leaderboard,
-  MONTHS,
-  WEEKS,
-  type TeamMember,
-} from "@/lib/team"
+import { getScopeData, leaderboard, type TeamMember } from "@/lib/team"
 import { useAuth } from "@/lib/auth"
 import { portraitFor } from "@/lib/avatars"
 import { initials, formatMoney as money } from "@/lib/format"
@@ -304,71 +293,9 @@ export default function Dashboard() {
         ))}
       </div>
 
+      <TodayPanel className="mt-6" />
+
       {!impersonating && !viewTeam && <DailyRecommendations />}
-
-      {/* Trend + funnel */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>{c.pipelineForecast}</CardTitle>
-            <CardDescription>{c.pipelineForecastDesc}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <TrendChart
-                labels={MONTHS}
-                pipeline={data.monthlyPipeline}
-                won={data.monthlyWon}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{c.conversionFunnel}</CardTitle>
-            <CardDescription>{c.funnelDesc}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Funnel data={data.funnel} />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Reply rate + attainment */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>{c.replyRateTrend}</CardTitle>
-            <CardDescription>{c.replyRateTrendDesc}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-56">
-              <ReplyRateChart labels={WEEKS} values={data.weeklyReplyRate} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{c.quotaAttainment}</CardTitle>
-            <CardDescription>{c.quotaAttainmentDesc}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-44">
-              <AttainmentDoughnut won={data.kpis.won} quota={data.quota} />
-            </div>
-            <div className="text-muted-foreground mt-2 flex justify-between text-xs">
-              <span>
-                {money(data.kpis.won)} {c.won}
-              </span>
-              <span>
-                {money(data.quota)} {c.quota}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Leaderboard (team view) or rep callout (impersonating) */}
       <div className="mt-6">
