@@ -451,6 +451,8 @@ export const prospectStore = {
       id: uid("p"),
       addedAt: data.addedAt ?? nowISO(),
       lastActivity: data.lastActivity ?? nowISO(),
+      // Freshly sourced contacts start un-enriched unless caller says otherwise.
+      enriched: data.enriched ?? false,
     }
     setState({ prospects: [prospect, ...state.prospects] })
     return prospect
@@ -459,6 +461,14 @@ export const prospectStore = {
     setState({
       prospects: state.prospects.map((p) =>
         p.id === id ? { ...p, ...patch } : p
+      ),
+    })
+  },
+  enrich(ids: string[]): void {
+    const set = new Set(ids)
+    setState({
+      prospects: state.prospects.map((p) =>
+        set.has(p.id) ? { ...p, enriched: true } : p
       ),
     })
   },

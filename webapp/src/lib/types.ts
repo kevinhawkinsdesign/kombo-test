@@ -37,6 +37,10 @@ export interface Prospect {
   revenue: string
   about: string
   signals: string[] // buying / intent signals
+  // Enrichment status — false when a contact was sourced but not yet enriched
+  // (verified email/direct dial + full data points). Undefined counts as enriched
+  // so existing seed contacts stay clean.
+  enriched?: boolean
 }
 
 export interface SavedSearchCriteria {
