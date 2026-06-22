@@ -19,7 +19,11 @@ import {
   CheckCircle2,
   CircleDashed,
   ScanSearch,
+  ArrowDownUp,
+  Database,
 } from "lucide-react"
+import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { Switch } from "@/components/ui/switch"
 
 import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale } from "@/lib/locale"
@@ -95,6 +99,14 @@ import {
   INDUSTRY_OPTIONS,
   SIGNAL_OPTIONS,
   TITLE_OPTIONS,
+  DEPARTMENT_OPTIONS,
+  TECH_OPTIONS,
+  REVENUE_OPTIONS,
+  INTENT_OPTIONS,
+  LINKEDIN_OPTIONS,
+  sortLeads,
+  sortCompanies,
+  type SortKey,
   EMPTY_QUERY,
   type AiEntity,
   type AiQuery,
@@ -154,6 +166,23 @@ const COPY = {
     projected: (n: number) => `≈ ${n.toLocaleString()} credits`,
     getMore: "Get more leads",
     getMoreToast: "Expanding the search across the full database…",
+    komboData: "Kombo data",
+    komboHint: "Verified emails, mobiles, firmographics & intent — blended from our data network.",
+    linkedinSource: "LinkedIn",
+    linkedinHint: "Turn on to target LinkedIn-only network filters (job changes, posts, connection degree…).",
+    linkedinEnabled: "LinkedIn filters enabled",
+    linkedinDisabled: "LinkedIn filters turned off",
+    sortBy: "Sort",
+    sortFit: "Best fit",
+    sortName: "Name (A–Z)",
+    sortCompany: "Company (A–Z)",
+    sortHeadcount: "Largest company",
+    sortRecent: "Recently active",
+    departments: "Departments",
+    technologies: "Technologies",
+    revenue: "Revenue",
+    intent: "Buyer intent",
+    linkedinFilters: "LinkedIn",
     columns: "Columns",
     addToList: "Save as list",
     findPeople: "Find decision-makers",
@@ -265,6 +294,23 @@ const COPY = {
     projected: (n: number) => `≈ ${n.toLocaleString()} créditos`,
     getMore: "Conseguir más leads",
     getMoreToast: "Ampliando la búsqueda a toda la base de datos…",
+    komboData: "Datos de Kombo",
+    komboHint: "Emails verificados, móviles, firmografía e intención — combinados desde nuestra red de datos.",
+    linkedinSource: "LinkedIn",
+    linkedinHint: "Actívalo para usar filtros exclusivos de LinkedIn (cambios de empleo, publicaciones, grado de conexión…).",
+    linkedinEnabled: "Filtros de LinkedIn activados",
+    linkedinDisabled: "Filtros de LinkedIn desactivados",
+    sortBy: "Ordenar",
+    sortFit: "Mejor encaje",
+    sortName: "Nombre (A–Z)",
+    sortCompany: "Empresa (A–Z)",
+    sortHeadcount: "Empresa más grande",
+    sortRecent: "Actividad reciente",
+    departments: "Departamentos",
+    technologies: "Tecnologías",
+    revenue: "Ingresos",
+    intent: "Intención de compra",
+    linkedinFilters: "LinkedIn",
     columns: "Columnas",
     addToList: "Guardar como lista",
     findPeople: "Buscar decisores",
@@ -371,6 +417,21 @@ function chatId() {
   return `c_${(chatSeq += 1)}`
 }
 
+function sortLabel(key: SortKey, c: Copy): string {
+  switch (key) {
+    case "name":
+      return c.sortName
+    case "company":
+      return c.sortCompany
+    case "headcount":
+      return c.sortHeadcount
+    case "recent":
+      return c.sortRecent
+    default:
+      return c.sortFit
+  }
+}
+
 // A prompt is a general assistant question (not a prospecting search) when it
 // asks Kai to do something conversational — draft, book, summarize pipeline…
 function isAssistantQuestion(prompt: string): boolean {
@@ -437,6 +498,8 @@ export default function Search() {
   const [showEmail, setShowEmail] = React.useState(true)
   const [showSignals, setShowSignals] = React.useState(false)
   const [showRegion, setShowRegion] = React.useState(true)
+  const [linkedinOn, setLinkedinOn] = React.useState(false)
+  const [sortKey, setSortKey] = React.useState<SortKey>("fit")
   const endRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
@@ -444,12 +507,13 @@ export default function Search() {
   }, [messages, thinking])
 
   const leads = React.useMemo(
-    () => (seed ? lookalikeLeads(seed, query) : searchLeads(query)),
-    [seed, query]
+    () => sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
+    [seed, query, sortKey]
   )
   const companies = React.useMemo(
-    () => (seed ? lookalikeCompanies(seed, query) : searchCompanies(query)),
-    [seed, query]
+    () =>
+      sortCompanies(seed ? lookalikeCompanies(seed, query) : searchCompanies(query), sortKey),
+    [seed, query, sortKey]
   )
   const shownCount = entity === "people" ? leads.length : companies.length
   const estTotal = estimatedTotal(shownCount, entity)
@@ -565,6 +629,12 @@ export default function Search() {
     setSeed(null)
     setSelected(new Set())
     toast.success(c.findPeopleToast)
+  }
+
+  function toggleLinkedin(v: boolean) {
+    setLinkedinOn(v)
+    if (!v) setQuery((q) => ({ ...q, linkedin: [] }))
+    toast.success(v ? c.linkedinEnabled : c.linkedinDisabled)
   }
 
   function applyLookalike(s: LookalikeSeed, q: AiQuery, modLabel: string) {
@@ -780,6 +850,26 @@ export default function Search() {
 
         {/* Results */}
         <div className="min-w-0 space-y-3">
+          {/* Data sources */}
+          <div className="bg-muted/30 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2">
+            <span className="text-foreground inline-flex items-center gap-1.5 text-sm font-medium">
+              <Database className="text-primary size-4" />
+              {c.komboData}
+            </span>
+            <span className="text-muted-foreground hidden text-xs lg:inline">
+              {c.komboHint}
+            </span>
+            <label className="ml-auto inline-flex items-center gap-2" title={c.linkedinHint}>
+              <LinkedinIcon className="size-4 text-[#0a66c2]" />
+              <span className="text-sm font-medium">{c.linkedinSource}</span>
+              <Switch
+                checked={linkedinOn}
+                onCheckedChange={toggleLinkedin}
+                aria-label={c.linkedinSource}
+              />
+            </label>
+          </div>
+
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="bg-muted inline-flex rounded-md p-0.5">
@@ -806,6 +896,26 @@ export default function Search() {
             </div>
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <ArrowDownUp className="size-4" />
+                    <span className="hidden sm:inline">
+                      {c.sortBy}: {sortLabel(sortKey, c)}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {(["fit", "name", "company", "headcount", "recent"] as SortKey[]).map(
+                    (k) => (
+                      <DropdownMenuItem key={k} onClick={() => setSortKey(k)}>
+                        {sortLabel(k, c)}
+                        {sortKey === k && <CheckCircle2 className="ml-auto size-4" />}
+                      </DropdownMenuItem>
+                    )
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 variant="outline"
                 size="sm"
@@ -890,7 +1000,7 @@ export default function Search() {
           <Card className="gap-0 p-3">
             <div className="flex flex-wrap items-center gap-1.5">
               <QueryChips query={query} onRemove={removeFilter} c={c} />
-              <AddFilterPopover query={query} onAdd={addFilter} c={c} />
+              <AddFilterPopover query={query} onAdd={addFilter} c={c} linkedinOn={linkedinOn} />
               {!isQueryEmpty(query) && (
                 <button
                   type="button"
@@ -1458,7 +1568,12 @@ const CHIP_GROUPS: (keyof AiQuery)[] = [
   "regions",
   "industries",
   "headcount",
+  "departments",
+  "technologies",
+  "revenue",
+  "intent",
   "signals",
+  "linkedin",
 ]
 
 function QueryChips({
@@ -1485,14 +1600,20 @@ function QueryChips({
       {chips.map(({ group, value }) => (
         <span
           key={`${group}:${value}`}
-          className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium"
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
+            group === "linkedin"
+              ? "bg-[#0a66c2]/10 text-[#0a66c2]"
+              : "bg-primary/10 text-primary"
+          )}
         >
+          {group === "linkedin" && <LinkedinIcon className="size-3" />}
           {value}
           <button
             type="button"
             aria-label={`Remove ${value}`}
             onClick={() => onRemove(group, value)}
-            className="hover:bg-primary/20 rounded-full p-0.5"
+            className="rounded-full p-0.5 hover:bg-black/10"
           >
             <X className="size-3" />
           </button>
@@ -1506,13 +1627,19 @@ const FILTER_OPTIONS: {
   key: keyof AiQuery
   label: (c: Copy) => string
   options: string[]
+  linkedinOnly?: boolean
 }[] = [
   { key: "titles", label: (c) => c.titles, options: TITLE_OPTIONS },
   { key: "seniority", label: (c) => c.seniority, options: SENIORITY_OPTIONS },
+  { key: "departments", label: (c) => c.departments, options: DEPARTMENT_OPTIONS },
   { key: "regions", label: (c) => c.regions, options: REGION_OPTIONS },
   { key: "industries", label: (c) => c.industries, options: INDUSTRY_OPTIONS },
   { key: "headcount", label: (c) => c.headcountF, options: HEADCOUNT_OPTIONS },
+  { key: "revenue", label: (c) => c.revenue, options: REVENUE_OPTIONS },
+  { key: "technologies", label: (c) => c.technologies, options: TECH_OPTIONS },
+  { key: "intent", label: (c) => c.intent, options: INTENT_OPTIONS },
   { key: "signals", label: (c) => c.signals, options: SIGNAL_OPTIONS },
+  { key: "linkedin", label: (c) => c.linkedinFilters, options: LINKEDIN_OPTIONS, linkedinOnly: true },
 ]
 
 // Type-ahead "Add filter": type to filter suggestions across every field, or
@@ -1521,10 +1648,12 @@ function AddFilterPopover({
   query,
   onAdd,
   c,
+  linkedinOn,
 }: {
   query: AiQuery
   onAdd: (group: keyof AiQuery, value: string) => void
   c: Copy
+  linkedinOn: boolean
 }) {
   const [open, setOpen] = React.useState(false)
   const [text, setText] = React.useState("")
@@ -1533,6 +1662,7 @@ function AddFilterPopover({
   const suggestions = React.useMemo(() => {
     const rows: { group: keyof AiQuery; groupLabel: string; value: string }[] = []
     for (const group of FILTER_OPTIONS) {
+      if (group.linkedinOnly && !linkedinOn) continue
       for (const value of group.options) {
         if ((query[group.key] as string[]).includes(value)) continue
         if (q && !value.toLowerCase().includes(q)) continue
@@ -1540,7 +1670,7 @@ function AddFilterPopover({
       }
     }
     return rows.slice(0, 40)
-  }, [query, q, c])
+  }, [query, q, c, linkedinOn])
 
   // Whether the typed value already matches a suggestion exactly.
   const exact = text.trim()
