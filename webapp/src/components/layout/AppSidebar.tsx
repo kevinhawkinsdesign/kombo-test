@@ -41,6 +41,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -137,14 +142,6 @@ const manageGroup: NavGroup = {
   ],
 }
 
-const allGroups = [...groups, manageGroup]
-
-// Every leaf, flattened — used for the icon-only collapsed rail.
-const allLeaves: NavItem[] = [
-  ...primary,
-  ...allGroups.flatMap((g) => g.items),
-]
-
 function isActivePath(pathname: string, to: string): boolean {
   if (to === "/") return pathname === "/"
   return pathname === to || pathname.startsWith(`${to}/`)
@@ -178,7 +175,9 @@ function NavRow({
           inset && !collapsed && "py-1.5",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            : collapsed
+              ? "text-sidebar-foreground hover:bg-sidebar-accent/60"
+              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
         )
       }
     >
@@ -289,6 +288,85 @@ function NavGroupSection({
   )
 }
 
+// Collapsed rail: a single group icon that opens a flyout of its pages, so the
+// rail stays short and crisp while every page is still one click away.
+function CollapsedGroupIcon({
+  group,
+  currentPath,
+  onNavigate,
+}: {
+  group: NavGroup
+  currentPath: string
+  onNavigate?: () => void
+}) {
+  const { t } = useLocale()
+  const [open, setOpen] = React.useState(false)
+  const Icon = group.icon
+  const hasActive = group.items.some((it) => isActivePath(currentPath, it.to))
+  const hasNew = group.items.some((it) => it.isNew)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={t(group.labelKey)}
+          className={cn(
+            "relative flex size-9 items-center justify-center rounded-md transition-colors",
+            hasActive
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent/60"
+          )}
+        >
+          <Icon className="size-4" />
+          {hasNew && (
+            <span className="bg-volt ring-sidebar absolute top-1 right-1 size-2 rounded-full ring-2" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent side="right" align="start" className="w-56 p-1.5">
+        <p className="text-muted-foreground px-2 py-1 text-xs font-medium tracking-wide uppercase">
+          {t(group.labelKey)}
+        </p>
+        {group.items.map((item) => {
+          const Leaf = item.icon
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={() => {
+                setOpen(false)
+                onNavigate?.()
+              }}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-accent text-accent-foreground"
+                    : "hover:bg-accent/60"
+                )
+              }
+            >
+              <Leaf className="size-4 shrink-0" />
+              <span className="flex-1">{t(item.labelKey)}</span>
+              {item.isNew && (
+                <span className="bg-volt/15 text-volt rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
+                  {t("common.new")}
+                </span>
+              )}
+              {item.badge && (
+                <Badge className="h-5 min-w-5 justify-center px-1.5">
+                  {item.badge}
+                </Badge>
+              )}
+            </NavLink>
+          )
+        })}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 const GROUPS_KEY = "kombo-nav-groups"
 
 function useExpandedGroups() {
@@ -396,15 +474,33 @@ function SidebarContent({
           )}
         >
           {collapsed ? (
-            // Icon-only rail: flatten every page so nothing is hidden.
-            allLeaves.map((item) => (
-              <NavRow
-                key={item.to}
-                item={item}
+            // Short icon rail: primary pages as icons, groups as flyouts so
+            // every page stays one click away without crowding the rail.
+            <>
+              {primary.map((item) => (
+                <NavRow
+                  key={item.to}
+                  item={item}
+                  onNavigate={onNavigate}
+                  collapsed
+                />
+              ))}
+              <div className="bg-sidebar-border my-1 h-px w-6" />
+              {groups.map((group) => (
+                <CollapsedGroupIcon
+                  key={group.key}
+                  group={group}
+                  currentPath={pathname}
+                  onNavigate={onNavigate}
+                />
+              ))}
+              <div className="mt-auto" />
+              <CollapsedGroupIcon
+                group={manageGroup}
+                currentPath={pathname}
                 onNavigate={onNavigate}
-                collapsed
               />
-            ))
+            </>
           ) : (
             <>
               {primary.map((item) => (
@@ -439,7 +535,6 @@ function SidebarContent({
             </>
           )}
 
-          {collapsed && <div className="mt-auto" />}
           {onToggleCollapse && (
             <button
               type="button"
