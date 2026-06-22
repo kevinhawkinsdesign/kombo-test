@@ -12,6 +12,7 @@ import {
   Sparkles,
   RefreshCw,
   Zap,
+  Database,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -33,6 +34,7 @@ import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { getProspect } from "@/lib/mock-data"
 import { useLists, listStore } from "@/lib/store"
+import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
 import type { ProspectList } from "@/lib/types"
 
@@ -75,6 +77,7 @@ const COPY = {
     listDeleted: "List deleted",
     imported: (count: number) =>
       `${count} prospects imported into a new list`,
+    needEnrich: (count: number) => `${count} to enrich`,
   },
   es: {
     sourceLinkedin: "LinkedIn",
@@ -114,6 +117,7 @@ const COPY = {
     listDeleted: "Lista eliminada",
     imported: (count: number) =>
       `${count} prospectos importados a una nueva lista`,
+    needEnrich: (count: number) => `${count} por enriquecer`,
   },
 } as const
 
@@ -222,6 +226,7 @@ export default function Lists() {
           const members = list.prospectIds
             .map(getProspect)
             .filter((p): p is NonNullable<typeof p> => Boolean(p))
+          const pendingCount = members.filter((p) => !isEnriched(p)).length
           return (
             <Card
               key={list.id}
@@ -317,9 +322,20 @@ export default function Lists() {
                     </span>
                   )}
                 </div>
-                <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                  <Users className="size-3.5" />
-                  {list.prospectIds.length}
+                <div className="flex items-center gap-1.5">
+                  {pendingCount > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="border-chart-4/40 text-chart-4 gap-1 font-normal"
+                    >
+                      <Database className="size-3" />
+                      {c.needEnrich(pendingCount)}
+                    </Badge>
+                  )}
+                  <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <Users className="size-3.5" />
+                    {list.prospectIds.length}
+                  </div>
                 </div>
               </CardContent>
               <DynamicChips list={list} />

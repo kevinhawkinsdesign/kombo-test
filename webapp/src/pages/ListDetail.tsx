@@ -16,6 +16,8 @@ import {
   Database,
   Pause,
   Columns3,
+  ShieldCheck,
+  TriangleAlert,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -46,8 +48,10 @@ import {
 } from "@/lib/table-columns"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
 import { useLists, useProspects, listStore } from "@/lib/store"
+import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
 import type { Prospect, ProspectList } from "@/lib/types"
 
@@ -101,6 +105,22 @@ const COPY = {
     addSelected: "Add selected",
     added: (count: number) =>
       `${count} ${count === 1 ? "prospect" : "prospects"} added`,
+    // Enrichment
+    dataEnrichment: "Data enrichment",
+    allEnriched: "All contacts enriched",
+    allEnrichedDesc: "Verified emails, direct dials, and full data points are ready.",
+    needEnrichment: (count: number) =>
+      `${count} ${count === 1 ? "contact needs" : "contacts need"} enrichment`,
+    needEnrichmentDesc:
+      "Enrich before launching a campaign for better deliverability and reply rates.",
+    enriched: (done: number, total: number) => `${done}/${total} enriched`,
+    enrichContacts: (count: number) => `Enrich ${count}`,
+    // Warn before campaign
+    warnTitle: "Some contacts aren't enriched",
+    warnDescription: (count: number) =>
+      `${count} ${count === 1 ? "contact" : "contacts"} in this list ${count === 1 ? "hasn't" : "haven't"} been enriched. Campaigns reach more people and bounce less when contacts have verified data. Enrich now, or start anyway?`,
+    enrichFirst: "Enrich first",
+    startAnyway: "Start anyway",
   },
   es: {
     listNotFound: "Lista no encontrada.",
@@ -151,6 +171,23 @@ const COPY = {
     addSelected: "Añadir seleccionados",
     added: (count: number) =>
       `${count} ${count === 1 ? "prospecto añadido" : "prospectos añadidos"}`,
+    // Enrichment
+    dataEnrichment: "Enriquecimiento de datos",
+    allEnriched: "Todos los contactos enriquecidos",
+    allEnrichedDesc:
+      "Correos verificados, teléfonos directos y datos completos listos.",
+    needEnrichment: (count: number) =>
+      `${count} ${count === 1 ? "contacto necesita" : "contactos necesitan"} enriquecimiento`,
+    needEnrichmentDesc:
+      "Enriquece antes de lanzar una campaña para mejorar la entregabilidad y las respuestas.",
+    enriched: (done: number, total: number) => `${done}/${total} enriquecidos`,
+    enrichContacts: (count: number) => `Enriquecer ${count}`,
+    // Warn before campaign
+    warnTitle: "Algunos contactos no están enriquecidos",
+    warnDescription: (count: number) =>
+      `${count} ${count === 1 ? "contacto" : "contactos"} de esta lista no ${count === 1 ? "ha sido enriquecido" : "han sido enriquecidos"}. Las campañas llegan a más personas y rebotan menos cuando los contactos tienen datos verificados. ¿Enriquecer ahora o iniciar de todos modos?`,
+    enrichFirst: "Enriquecer primero",
+    startAnyway: "Iniciar de todos modos",
   },
 } as const
 
@@ -166,6 +203,8 @@ export default function ListDetail() {
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [enrichOpen, setEnrichOpen] = React.useState(false)
+  const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
 
   if (!list) {
@@ -182,6 +221,21 @@ export default function ListDetail() {
   const members = list.prospectIds
     .map(getProspect)
     .filter((p): p is NonNullable<typeof p> => Boolean(p))
+
+  const pending = members.filter((p) => !isEnriched(p))
+  const enrichedCount = members.length - pending.length
+
+  function launchCampaign() {
+    toast.success(c.enrolled(members.length))
+  }
+
+  function handleStartCampaign() {
+    if (pending.length > 0) {
+      setCampaignWarnOpen(true)
+      return
+    }
+    launchCampaign()
+  }
 
   return (
     <Page>
@@ -228,10 +282,7 @@ export default function ListDetail() {
             <Download className="size-4" />
             {c.export}
           </Button>
-          <Button
-            variant="volt"
-            onClick={() => toast.success(c.enrolled(members.length))}
-          >
+          <Button variant="volt" onClick={handleStartCampaign}>
             <Send className="size-4" />
             {c.startCampaign}
           </Button>
@@ -239,6 +290,45 @@ export default function ListDetail() {
       </div>
 
       {list.dynamic && <DynamicPlaylistPanel list={list} />}
+
+      {members.length > 0 && (
+        <Card
+          className={`mb-6 flex flex-row flex-wrap items-center gap-3 p-4 ${
+            pending.length > 0 ? "border-chart-4/40 bg-chart-4/[0.05]" : ""
+          }`}
+        >
+          <span
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+              pending.length > 0
+                ? "bg-chart-4/15 text-chart-4"
+                : "bg-chart-1/15 text-chart-1"
+            }`}
+          >
+            {pending.length > 0 ? (
+              <TriangleAlert className="size-4" />
+            ) : (
+              <ShieldCheck className="size-4" />
+            )}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+              {pending.length > 0 ? c.needEnrichment(pending.length) : c.allEnriched}
+              <Badge variant="secondary" className="font-normal tabular-nums">
+                {c.enriched(enrichedCount, members.length)}
+              </Badge>
+            </p>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {pending.length > 0 ? c.needEnrichmentDesc : c.allEnrichedDesc}
+            </p>
+          </div>
+          {pending.length > 0 && (
+            <Button variant="volt" onClick={() => setEnrichOpen(true)}>
+              <Database className="size-4" />
+              {c.enrichContacts(pending.length)}
+            </Button>
+          )}
+        </Card>
+      )}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{c.prospectsHeading}</h3>
@@ -304,6 +394,26 @@ export default function ListDetail() {
       />
 
       <AddProspectsDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
+
+      <EnrichListDialog
+        open={enrichOpen}
+        onOpenChange={setEnrichOpen}
+        pending={pending}
+      />
+
+      <ConfirmDialog
+        open={campaignWarnOpen}
+        onOpenChange={setCampaignWarnOpen}
+        title={c.warnTitle}
+        description={c.warnDescription(pending.length)}
+        confirmLabel={c.startAnyway}
+        cancelLabel={c.enrichFirst}
+        onCancel={() => setEnrichOpen(true)}
+        onConfirm={() => {
+          setCampaignWarnOpen(false)
+          launchCampaign()
+        }}
+      />
     </Page>
   )
 }

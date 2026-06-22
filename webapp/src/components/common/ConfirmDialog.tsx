@@ -14,16 +14,22 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   destructive = false,
   onConfirm,
+  onCancel,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   title: string
   description?: string
   confirmLabel?: string
+  cancelLabel?: string
   destructive?: boolean
   onConfirm: () => void
+  // Optional secondary action — runs when the user dismisses via the cancel
+  // button (not when the dialog closes by other means).
+  onCancel?: () => void
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -33,8 +39,14 @@ export function ConfirmDialog({
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onOpenChange(false)
+              onCancel?.()
+            }}
+          >
+            {cancelLabel}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}

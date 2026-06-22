@@ -260,6 +260,7 @@ export const prospects: Prospect[] = [
     about:
       "Scaling the sales team 2x this year. Demoed Kombo and is championing internally.",
     signals: ["Demo completed", "Looped in procurement"],
+    enriched: false,
   },
   {
     id: "p_10",
@@ -285,6 +286,7 @@ export const prospects: Prospect[] = [
     about:
       "Owns CRM hygiene and reporting. Frustrated with manual data entry from reps.",
     signals: ["Opened email", "Visited integrations page"],
+    enriched: false,
   },
   {
     id: "p_11",
@@ -334,6 +336,7 @@ export const prospects: Prospect[] = [
     about:
       "Driving a digital transformation initiative. High-value enterprise opportunity.",
     signals: ["Digital transformation initiative", "Budget approved for tooling"],
+    enriched: false,
   },
 ]
 
