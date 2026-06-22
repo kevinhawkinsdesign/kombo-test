@@ -5,9 +5,11 @@ import { AppHeader } from "@/components/layout/AppHeader"
 import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
 import { SupportWidget } from "@/components/support/SupportWidget"
+import { NewCampaignProvider } from "@/components/campaign/NewCampaignWizard"
 
 export function AppLayout() {
   return (
+    <NewCampaignProvider>
     <div className="bg-muted/30 dark:bg-background flex min-h-svh">
       <a
         href="#main-content"
@@ -27,5 +29,6 @@ export function AppLayout() {
       <MobileBottomNav />
       <SupportWidget />
     </div>
+    </NewCampaignProvider>
   )
 }
