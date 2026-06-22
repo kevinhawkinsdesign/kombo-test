@@ -735,8 +735,8 @@ export default function Search() {
   return (
     <Page>
       {/* AI is native to the product, so the page isn't labelled "AI Search". */}
-      <h1 className="sr-only">{c.srTitle}</h1>
-      <p className="text-muted-foreground mb-6 max-w-3xl text-sm">{c.description}</p>
+      <h1 className="text-xl font-semibold tracking-tight">{c.srTitle}</h1>
+      <p className="text-muted-foreground mt-1 mb-6 max-w-3xl text-sm">{c.description}</p>
 
       <FeatureIntro
         featureKey="ai-search"
@@ -875,8 +875,8 @@ export default function Search() {
                   }
                 }}
                 placeholder={c.inputPlaceholder}
-                rows={2}
-                className="min-h-0 resize-none"
+                rows={3}
+                className="max-h-48 min-h-16 resize-y"
               />
               <Button
                 type="submit"
