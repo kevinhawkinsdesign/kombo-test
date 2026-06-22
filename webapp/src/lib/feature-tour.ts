@@ -19,6 +19,7 @@ export type FeatureKey =
   | "sequence"
   | "playlist"
   | "templates"
+  | "library"
   | "playbook"
   | "channels"
   | "tasks"
