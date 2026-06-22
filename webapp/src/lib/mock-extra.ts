@@ -478,8 +478,14 @@ export const notifications: NotificationItem[] = [
 ]
 
 // Helpers
+// Live binding kept current by the store so getAccount reflects edits.
+let liveAccounts: Account[] = accounts
+export function setLiveAccounts(next: Account[]): void {
+  liveAccounts = next
+}
+
 export function getAccount(id: string): Account | undefined {
-  return accounts.find((a) => a.id === id)
+  return liveAccounts.find((a) => a.id === id)
 }
 
 // Live references kept in sync by the data store (src/lib/store.ts).

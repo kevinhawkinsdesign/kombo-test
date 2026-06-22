@@ -12,9 +12,11 @@ import {
   deals as seedDeals,
   tasks as seedTasks,
   emailTemplates as seedTemplates,
+  accounts as seedAccounts,
   setLiveDeals,
   setLiveTasks,
   setLiveTemplates,
+  setLiveAccounts,
 } from "./mock-extra"
 import type {
   Prospect,
@@ -25,6 +27,7 @@ import type {
   Deal,
   Task,
   EmailTemplate,
+  Account,
 } from "./types"
 
 interface StoreState {
@@ -34,6 +37,7 @@ interface StoreState {
   deals: Deal[]
   tasks: Task[]
   templates: EmailTemplate[]
+  accounts: Account[]
 }
 
 const KEY = "kombo_store_v1"
@@ -46,6 +50,7 @@ function seed(): StoreState {
     deals: seedDeals,
     tasks: seedTasks,
     templates: seedTemplates,
+    accounts: seedAccounts,
   }
 }
 
@@ -62,6 +67,7 @@ function load(): StoreState {
         deals: parsed.deals ?? base.deals,
         tasks: parsed.tasks ?? base.tasks,
         templates: parsed.templates ?? base.templates,
+        accounts: parsed.accounts ?? base.accounts,
       }
     }
   } catch {
@@ -80,6 +86,7 @@ function sync(): void {
   setLiveDeals(state.deals)
   setLiveTasks(state.tasks)
   setLiveTemplates(state.templates)
+  setLiveAccounts(state.accounts)
 }
 sync()
 
@@ -141,6 +148,9 @@ export function useTasks(): Task[] {
 }
 export function useTemplates(): EmailTemplate[] {
   return useSlice((s) => s.templates)
+}
+export function useAccounts(): Account[] {
+  return useSlice((s) => s.accounts)
 }
 
 /* ------------------------------- actions ------------------------------- */
@@ -407,6 +417,16 @@ export const campaignStore = {
           enrolled: had ? Math.max(0, c.enrolled - 1) : c.enrolled,
         }
       }),
+    })
+  },
+}
+
+export const accountStore = {
+  update(id: string, patch: Partial<Account>): void {
+    setState({
+      accounts: state.accounts.map((a) =>
+        a.id === id ? { ...a, ...patch } : a
+      ),
     })
   },
 }
