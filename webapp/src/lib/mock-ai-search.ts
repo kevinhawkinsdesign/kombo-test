@@ -15,7 +15,12 @@ export interface AiQuery {
   regions: string[]
   headcount: string[]
   industries: string[]
+  departments: string[]
+  technologies: string[]
+  revenue: string[]
+  intent: string[]
   signals: string[]
+  linkedin: string[] // LinkedIn-only filters (active only when LinkedIn is on)
   keywords: string
 }
 
@@ -25,7 +30,12 @@ export const EMPTY_QUERY: AiQuery = {
   regions: [],
   headcount: [],
   industries: [],
+  departments: [],
+  technologies: [],
+  revenue: [],
+  intent: [],
   signals: [],
+  linkedin: [],
   keywords: "",
 }
 
@@ -43,9 +53,14 @@ export interface AiLead {
   industry: string
   headcount: string
   revenue: string
+  technologies: string[]
+  intent: string[]
+  linkedin: string[]
   avatarColor: string
   emailStatus: "verified" | "likely" | "missing"
+  phoneStatus: "mobile" | "direct" | "none"
   signals: string[]
+  lastActiveDays: number // days since last LinkedIn/web activity (for sorting)
   fit: number // 0-100, computed against the active query
 }
 
@@ -55,9 +70,11 @@ export interface AiCompany {
   domain: string
   industry: string
   headcount: string
+  headcountNum: number
   revenue: string
   location: string
   region: string
+  technologies: string[]
   logoColor: string
   signals: string[]
   openRoles: number
@@ -103,6 +120,62 @@ export const SIGNAL_OPTIONS = [
   "Adopting AI",
   "High web intent",
 ]
+export const DEPARTMENT_OPTIONS = [
+  "Sales",
+  "Marketing",
+  "RevOps",
+  "Operations",
+  "Finance",
+  "Engineering",
+  "Product",
+  "IT",
+  "HR",
+  "Customer Success",
+]
+export const TECH_OPTIONS = [
+  "Salesforce",
+  "HubSpot",
+  "Outreach",
+  "Salesloft",
+  "Gong",
+  "Marketo",
+  "Segment",
+  "Snowflake",
+  "AWS",
+  "Google Cloud",
+  "Stripe",
+  "Zendesk",
+]
+export const REVENUE_OPTIONS = [
+  "$10M-$50M",
+  "$50M-$100M",
+  "$100M-$250M",
+  "$250M-$500M",
+  "$500M-$1B",
+  "$1B+",
+]
+export const INTENT_OPTIONS = [
+  "Sales engagement",
+  "Lead enrichment",
+  "Outbound automation",
+  "Conversation intelligence",
+  "Data enrichment",
+  "CRM migration",
+]
+// LinkedIn-only filters: network/profile signals you can only target when the
+// LinkedIn data source is switched on.
+export const LINKEDIN_OPTIONS = [
+  "Changed jobs (90d)",
+  "Posted recently",
+  "Mentioned in news",
+  "Open to work",
+  "2nd-degree connection",
+  "Shared group",
+  "Following your company",
+  "Viewed your profile",
+  "5+ years in role",
+]
+
 // Common titles offered as type-ahead suggestions (users can also type any
 // custom value of their own).
 export const TITLE_OPTIONS = [
@@ -206,6 +279,19 @@ function rand(seed: number): number {
   return x - Math.floor(x)
 }
 
+const HEADCOUNT_NUM: Record<string, number> = {
+  "11-50": 30,
+  "51-200": 120,
+  "201-500": 350,
+  "501-1000": 750,
+  "1000+": 2500,
+}
+
+// Deterministically pick a subset of a pool for a given seed.
+function subset<T>(pool: T[], seed: number, threshold: number): T[] {
+  return pool.filter((_, s) => rand(seed * 13 + s * 7) > threshold)
+}
+
 function baseLeads(): AiLead[] {
   return NAMES.map(([firstName, lastName], i) => {
     const co = pick(COMPANIES, i * 3 + 1)
@@ -214,6 +300,12 @@ function baseLeads(): AiLead[] {
     const emailRoll = rand(i * 5 + 2)
     const emailStatus: AiLead["emailStatus"] =
       emailRoll > 0.6 ? "verified" : emailRoll > 0.25 ? "likely" : "missing"
+    const phoneRoll = rand(i * 6 + 4)
+    const phoneStatus: AiLead["phoneStatus"] =
+      phoneRoll > 0.62 ? "mobile" : phoneRoll > 0.32 ? "direct" : "none"
+    const tech = subset(TECH_OPTIONS, i + 1, 0.7)
+    const intent = subset(INTENT_OPTIONS, i + 5, 0.74)
+    const linkedin = subset(LINKEDIN_OPTIONS, i + 9, 0.66)
     return {
       id: `ai_${i + 1}`,
       firstName,
@@ -228,9 +320,14 @@ function baseLeads(): AiLead[] {
       industry: co.industry,
       headcount: co.headcount,
       revenue: co.revenue,
+      technologies: tech.length ? tech : [TECH_OPTIONS[i % TECH_OPTIONS.length]],
+      intent,
+      linkedin,
       avatarColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
       emailStatus,
+      phoneStatus,
       signals: signals.length ? signals : [LEAD_SIGNALS_POOL[i % LEAD_SIGNALS_POOL.length]],
+      lastActiveDays: Math.floor(rand(i * 8 + 3) * 60),
       fit: 0,
     }
   })
@@ -239,15 +336,18 @@ function baseLeads(): AiLead[] {
 function baseCompanies(): AiCompany[] {
   return COMPANIES.map((co, i) => {
     const signals = SIGNAL_OPTIONS.filter((_, s) => rand(i * 9 + s) > 0.58)
+    const tech = subset(TECH_OPTIONS, i + 2, 0.68)
     return {
       id: `aic_${i + 1}`,
       name: co.name,
       domain: co.domain,
       industry: co.industry,
       headcount: co.headcount,
+      headcountNum: HEADCOUNT_NUM[co.headcount] ?? 100,
       revenue: co.revenue,
       location: co.location,
       region: co.region,
+      technologies: tech.length ? tech : [TECH_OPTIONS[i % TECH_OPTIONS.length]],
       logoColor: co.logoColor,
       signals: signals.length ? signals : [SIGNAL_OPTIONS[i % SIGNAL_OPTIONS.length]],
       openRoles: Math.floor(rand(i * 11) * 14) + 1,
@@ -343,15 +443,21 @@ export function interpretPrompt(prompt: string): {
   if (/\bintent|in-market|in market\b/.test(lower)) signals.add("High web intent")
 
   const headcount = matchVocab(prompt, HEADCOUNT_OPTIONS)
+  const departments = matchVocab(prompt, DEPARTMENT_OPTIONS)
+  const technologies = matchVocab(prompt, TECH_OPTIONS)
+  const intent = matchVocab(prompt, INTENT_OPTIONS)
 
   const query: AiQuery = {
+    ...EMPTY_QUERY,
     titles: [...titles],
     seniority: [...seniority],
     regions,
     headcount,
     industries,
+    departments,
+    technologies,
+    intent,
     signals: [...signals],
-    keywords: "",
   }
 
   const parts: string[] = []
@@ -384,7 +490,12 @@ export function isQueryEmpty(q: AiQuery): boolean {
     q.regions.length === 0 &&
     q.headcount.length === 0 &&
     q.industries.length === 0 &&
+    q.departments.length === 0 &&
+    q.technologies.length === 0 &&
+    q.revenue.length === 0 &&
+    q.intent.length === 0 &&
     q.signals.length === 0 &&
+    q.linkedin.length === 0 &&
     q.keywords.trim() === ""
   )
 }
@@ -425,6 +536,32 @@ function scoreLead(lead: AiLead, q: AiQuery): number {
     score += Math.min(overlap, 2) * 9
     if (overlap > 0) matched += 1
   }
+  if (q.departments.length) {
+    asked += 1
+    bump(q.departments.includes(lead.department), 8)
+  }
+  if (q.technologies.length) {
+    asked += 1
+    const overlap = lead.technologies.filter((t) => q.technologies.includes(t)).length
+    score += Math.min(overlap, 2) * 7
+    if (overlap > 0) matched += 1
+  }
+  if (q.revenue.length) {
+    asked += 1
+    bump(q.revenue.includes(lead.revenue), 7)
+  }
+  if (q.intent.length) {
+    asked += 1
+    const overlap = lead.intent.filter((t) => q.intent.includes(t)).length
+    score += Math.min(overlap, 2) * 10
+    if (overlap > 0) matched += 1
+  }
+  if (q.linkedin.length) {
+    asked += 1
+    const overlap = lead.linkedin.filter((t) => q.linkedin.includes(t)).length
+    score += Math.min(overlap, 2) * 9
+    if (overlap > 0) matched += 1
+  }
   // Reward leads that match a higher share of what was asked.
   if (asked > 0) score += Math.round((matched / asked) * 8)
   return Math.max(45, Math.min(99, Math.round(score)))
@@ -435,6 +572,11 @@ function scoreCompany(co: AiCompany, q: AiQuery): number {
   if (q.regions.length) score += q.regions.includes(co.region) ? 12 : -4
   if (q.industries.length) score += q.industries.includes(co.industry) ? 14 : -6
   if (q.headcount.length) score += q.headcount.includes(co.headcount) ? 10 : 0
+  if (q.revenue.length) score += q.revenue.includes(co.revenue) ? 8 : 0
+  if (q.technologies.length) {
+    const overlap = co.technologies.filter((t) => q.technologies.includes(t)).length
+    score += Math.min(overlap, 2) * 8
+  }
   if (q.signals.length) {
     const overlap = co.signals.filter((s) => q.signals.includes(s)).length
     score += Math.min(overlap, 2) * 10
@@ -451,7 +593,12 @@ export function searchLeads(q: AiQuery): AiLead[] {
       if (q.regions.length && !q.regions.includes(l.region)) return false
       if (q.industries.length && !q.industries.includes(l.industry)) return false
       if (q.headcount.length && !q.headcount.includes(l.headcount)) return false
+      if (q.departments.length && !q.departments.includes(l.department)) return false
+      if (q.revenue.length && !q.revenue.includes(l.revenue)) return false
+      if (q.technologies.length && !l.technologies.some((t) => q.technologies.includes(t))) return false
+      if (q.intent.length && !l.intent.some((t) => q.intent.includes(t))) return false
       if (q.signals.length && !l.signals.some((s) => q.signals.includes(s))) return false
+      if (q.linkedin.length && !l.linkedin.some((t) => q.linkedin.includes(t))) return false
       if (kw) {
         const hay = `${l.firstName} ${l.lastName} ${l.title} ${l.company} ${l.industry}`.toLowerCase()
         if (!hay.includes(kw)) return false
@@ -468,6 +615,8 @@ export function searchCompanies(q: AiQuery): AiCompany[] {
       if (q.regions.length && !q.regions.includes(c.region)) return false
       if (q.industries.length && !q.industries.includes(c.industry)) return false
       if (q.headcount.length && !q.headcount.includes(c.headcount)) return false
+      if (q.revenue.length && !q.revenue.includes(c.revenue)) return false
+      if (q.technologies.length && !c.technologies.some((t) => q.technologies.includes(t))) return false
       if (q.signals.length && !c.signals.some((s) => q.signals.includes(s))) return false
       if (kw && !`${c.name} ${c.industry}`.toLowerCase().includes(kw)) return false
       return true
@@ -561,6 +710,45 @@ export function lookalikeCompanies(seed: LookalikeSeed, q: AiQuery): AiCompany[]
     .filter((c) => c.name !== seed.name)
     .filter((c) => passesQuery(c, q))
     .sort((a, b) => b.fit - a.fit)
+}
+
+/* ------------------------------ sorting --------------------------------- */
+
+export type SortKey = "fit" | "name" | "company" | "headcount" | "recent"
+
+export const SORT_KEYS: SortKey[] = ["fit", "name", "company", "headcount", "recent"]
+
+export function sortLeads(leads: AiLead[], key: SortKey): AiLead[] {
+  const out = [...leads]
+  switch (key) {
+    case "name":
+      return out.sort((a, b) =>
+        `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+      )
+    case "company":
+      return out.sort((a, b) => a.company.localeCompare(b.company))
+    case "headcount":
+      return out.sort(
+        (a, b) => (HEADCOUNT_NUM[b.headcount] ?? 0) - (HEADCOUNT_NUM[a.headcount] ?? 0)
+      )
+    case "recent":
+      return out.sort((a, b) => a.lastActiveDays - b.lastActiveDays)
+    default:
+      return out.sort((a, b) => b.fit - a.fit)
+  }
+}
+
+export function sortCompanies(companies: AiCompany[], key: SortKey): AiCompany[] {
+  const out = [...companies]
+  switch (key) {
+    case "name":
+    case "company":
+      return out.sort((a, b) => a.name.localeCompare(b.name))
+    case "headcount":
+      return out.sort((a, b) => b.headcountNum - a.headcountNum)
+    default:
+      return out.sort((a, b) => b.fit - a.fit)
+  }
 }
 
 export const CREDITS_PER_LEAD = 1.7
