@@ -18,6 +18,7 @@ import Inbox from "@/pages/Inbox"
 import Campaigns from "@/pages/Campaigns"
 import CampaignDetail from "@/pages/CampaignDetail"
 import SequenceBuilderPage from "@/pages/SequenceBuilder"
+import Sequences from "@/pages/Sequences"
 import Channels from "@/pages/Channels"
 import Templates from "@/pages/Templates"
 import Playbook from "@/pages/Playbook"
@@ -82,6 +83,7 @@ function App() {
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
+        <Route path="/sequences" element={<Sequences />} />
         <Route path="/sequence-builder" element={<SequenceBuilderPage />} />
         <Route path="/channels" element={<Channels />} />
         <Route path="/templates" element={<Templates />} />
