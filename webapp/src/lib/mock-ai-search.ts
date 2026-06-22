@@ -20,6 +20,8 @@ export interface AiQuery {
   revenue: string[]
   intent: string[]
   signals: string[]
+  founded: string[] // company founded-year bands
+  growth: string[] // company headcount growth bands
   linkedin: string[] // LinkedIn-only filters (active only when LinkedIn is on)
   keywords: string
 }
@@ -35,6 +37,8 @@ export const EMPTY_QUERY: AiQuery = {
   revenue: [],
   intent: [],
   signals: [],
+  founded: [],
+  growth: [],
   linkedin: [],
   keywords: "",
 }
@@ -75,6 +79,8 @@ export interface AiCompany {
   location: string
   region: string
   technologies: string[]
+  foundedYear: number
+  growth: string
   logoColor: string
   signals: string[]
   openRoles: number
@@ -161,6 +167,18 @@ export const INTENT_OPTIONS = [
   "Conversation intelligence",
   "Data enrichment",
   "CRM migration",
+]
+export const FOUNDED_OPTIONS = [
+  "Founded 2020+",
+  "Founded 2015-2019",
+  "Founded 2010-2014",
+  "Founded before 2010",
+]
+export const GROWTH_OPTIONS = [
+  "Hypergrowth (>40%)",
+  "Fast (20-40%)",
+  "Steady (5-20%)",
+  "Flat (<5%)",
 ]
 // LinkedIn-only filters: network/profile signals you can only target when the
 // LinkedIn data source is switched on.
@@ -333,6 +351,13 @@ function baseLeads(): AiLead[] {
   })
 }
 
+export function foundedBand(year: number): string {
+  if (year >= 2020) return "Founded 2020+"
+  if (year >= 2015) return "Founded 2015-2019"
+  if (year >= 2010) return "Founded 2010-2014"
+  return "Founded before 2010"
+}
+
 function baseCompanies(): AiCompany[] {
   return COMPANIES.map((co, i) => {
     const signals = SIGNAL_OPTIONS.filter((_, s) => rand(i * 9 + s) > 0.58)
@@ -348,6 +373,8 @@ function baseCompanies(): AiCompany[] {
       location: co.location,
       region: co.region,
       technologies: tech.length ? tech : [TECH_OPTIONS[i % TECH_OPTIONS.length]],
+      foundedYear: 1999 + (Math.floor(rand(i * 17 + 3) * 24)),
+      growth: pick(GROWTH_OPTIONS, Math.floor(rand(i * 19 + 1) * 4)),
       logoColor: co.logoColor,
       signals: signals.length ? signals : [SIGNAL_OPTIONS[i % SIGNAL_OPTIONS.length]],
       openRoles: Math.floor(rand(i * 11) * 14) + 1,
@@ -495,6 +522,8 @@ export function isQueryEmpty(q: AiQuery): boolean {
     q.revenue.length === 0 &&
     q.intent.length === 0 &&
     q.signals.length === 0 &&
+    q.founded.length === 0 &&
+    q.growth.length === 0 &&
     q.linkedin.length === 0 &&
     q.keywords.trim() === ""
   )
@@ -573,6 +602,8 @@ function scoreCompany(co: AiCompany, q: AiQuery): number {
   if (q.industries.length) score += q.industries.includes(co.industry) ? 14 : -6
   if (q.headcount.length) score += q.headcount.includes(co.headcount) ? 10 : 0
   if (q.revenue.length) score += q.revenue.includes(co.revenue) ? 8 : 0
+  if (q.founded.length) score += q.founded.includes(foundedBand(co.foundedYear)) ? 8 : 0
+  if (q.growth.length) score += q.growth.includes(co.growth) ? 9 : 0
   if (q.technologies.length) {
     const overlap = co.technologies.filter((t) => q.technologies.includes(t)).length
     score += Math.min(overlap, 2) * 8
@@ -616,6 +647,8 @@ export function searchCompanies(q: AiQuery): AiCompany[] {
       if (q.industries.length && !q.industries.includes(c.industry)) return false
       if (q.headcount.length && !q.headcount.includes(c.headcount)) return false
       if (q.revenue.length && !q.revenue.includes(c.revenue)) return false
+      if (q.founded.length && !q.founded.includes(foundedBand(c.foundedYear))) return false
+      if (q.growth.length && !q.growth.includes(c.growth)) return false
       if (q.technologies.length && !c.technologies.some((t) => q.technologies.includes(t))) return false
       if (q.signals.length && !c.signals.some((s) => q.signals.includes(s))) return false
       if (kw && !`${c.name} ${c.industry}`.toLowerCase().includes(kw)) return false
@@ -710,6 +743,38 @@ export function lookalikeCompanies(seed: LookalikeSeed, q: AiQuery): AiCompany[]
     .filter((c) => c.name !== seed.name)
     .filter((c) => passesQuery(c, q))
     .sort((a, b) => b.fit - a.fit)
+}
+
+/* --------------------------- match reasons ------------------------------ */
+// Like LinkedIn's AI search, surface *why* a record matched the query.
+
+export function matchReasons(lead: AiLead, q: AiQuery): string[] {
+  const r: string[] = []
+  if (q.titles.includes(lead.title)) r.push(lead.title)
+  if (q.seniority.includes(lead.seniority)) r.push(lead.seniority)
+  if (q.departments.includes(lead.department)) r.push(lead.department)
+  if (q.regions.includes(lead.region)) r.push(lead.region)
+  if (q.industries.includes(lead.industry)) r.push(lead.industry)
+  if (q.headcount.includes(lead.headcount)) r.push(lead.headcount)
+  if (q.revenue.includes(lead.revenue)) r.push(lead.revenue)
+  lead.technologies.forEach((t) => q.technologies.includes(t) && r.push(t))
+  lead.intent.forEach((t) => q.intent.includes(t) && r.push(t))
+  lead.signals.forEach((t) => q.signals.includes(t) && r.push(t))
+  lead.linkedin.forEach((t) => q.linkedin.includes(t) && r.push(t))
+  return [...new Set(r)]
+}
+
+export function companyMatchReasons(co: AiCompany, q: AiQuery): string[] {
+  const r: string[] = []
+  if (q.regions.includes(co.region)) r.push(co.region)
+  if (q.industries.includes(co.industry)) r.push(co.industry)
+  if (q.headcount.includes(co.headcount)) r.push(co.headcount)
+  if (q.revenue.includes(co.revenue)) r.push(co.revenue)
+  if (q.founded.includes(foundedBand(co.foundedYear))) r.push(foundedBand(co.foundedYear))
+  if (q.growth.includes(co.growth)) r.push(co.growth)
+  co.technologies.forEach((t) => q.technologies.includes(t) && r.push(t))
+  co.signals.forEach((t) => q.signals.includes(t) && r.push(t))
+  return [...new Set(r)]
 }
 
 /* ------------------------------ sorting --------------------------------- */

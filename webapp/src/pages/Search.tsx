@@ -25,7 +25,7 @@ import {
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Switch } from "@/components/ui/switch"
 
-import { Page, PageHeading } from "@/components/layout/Page"
+import { Page } from "@/components/layout/Page"
 import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
@@ -103,9 +103,13 @@ import {
   TECH_OPTIONS,
   REVENUE_OPTIONS,
   INTENT_OPTIONS,
+  FOUNDED_OPTIONS,
+  GROWTH_OPTIONS,
   LINKEDIN_OPTIONS,
   sortLeads,
   sortCompanies,
+  matchReasons,
+  companyMatchReasons,
   type SortKey,
   EMPTY_QUERY,
   type AiEntity,
@@ -182,7 +186,13 @@ const COPY = {
     technologies: "Technologies",
     revenue: "Revenue",
     intent: "Buyer intent",
+    founded: "Founded",
+    growth: "Headcount growth",
     linkedinFilters: "LinkedIn",
+    srTitle: "Search",
+    spotlightsLabel: "Spotlights",
+    matchLabel: "Matches",
+    spotlights: ["Open to work", "Changed jobs", "Recently active", "Hiring", "High intent"],
     columns: "Columns",
     addToList: "Save as list",
     findPeople: "Find decision-makers",
@@ -310,7 +320,13 @@ const COPY = {
     technologies: "Tecnologías",
     revenue: "Ingresos",
     intent: "Intención de compra",
+    founded: "Año de fundación",
+    growth: "Crecimiento de plantilla",
     linkedinFilters: "LinkedIn",
+    srTitle: "Buscar",
+    spotlightsLabel: "Destacados",
+    matchLabel: "Coincide",
+    spotlights: ["Open to work", "Cambió de empleo", "Activos recientemente", "Contratando", "Alta intención"],
     columns: "Columnas",
     addToList: "Guardar como lista",
     findPeople: "Buscar decisores",
@@ -390,6 +406,15 @@ type RefinePatch = Partial<
 
 const LIST_COLORS = ["#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899"]
 
+// Spotlights — LinkedIn-style quick toggles (index-matched to c.spotlights).
+const SPOTLIGHT_DEFS: { key: keyof AiQuery; value: string; needsLi: boolean }[] = [
+  { key: "linkedin", value: "Open to work", needsLi: true },
+  { key: "linkedin", value: "Changed jobs (90d)", needsLi: true },
+  { key: "linkedin", value: "Posted recently", needsLi: true },
+  { key: "signals", value: "Hiring sales", needsLi: false },
+  { key: "signals", value: "High web intent", needsLi: false },
+]
+
 function FitBadge({ fit }: { fit: number }) {
   const tone = scoreTone(fit)
   const cls =
@@ -409,6 +434,18 @@ function FitBadge({ fit }: { fit: number }) {
       <span className="bg-current size-1.5 rounded-full opacity-80" />
       {fit}
     </span>
+  )
+}
+
+function MatchLine({ reasons, label }: { reasons: string[]; label: string }) {
+  if (reasons.length === 0) return null
+  return (
+    <p className="text-chart-1 mt-0.5 flex items-center gap-1 text-[11px]">
+      <CheckCircle2 className="size-3 shrink-0" />
+      <span className="truncate">
+        {label}: {reasons.slice(0, 3).join(" · ")}
+      </span>
+    </p>
   )
 }
 
@@ -637,6 +674,17 @@ export default function Search() {
     toast.success(v ? c.linkedinEnabled : c.linkedinDisabled)
   }
 
+  function toggleSpotlight(i: number) {
+    const def = SPOTLIGHT_DEFS[i]
+    const active = (query[def.key] as string[]).includes(def.value)
+    if (active) {
+      removeFilter(def.key, def.value)
+      return
+    }
+    if (def.needsLi && !linkedinOn) setLinkedinOn(true)
+    addFilter(def.key, def.value)
+  }
+
   function applyLookalike(s: LookalikeSeed, q: AiQuery, modLabel: string) {
     setSeed(s)
     setEntity(s.kind === "company" ? "companies" : "people")
@@ -680,7 +728,9 @@ export default function Search() {
 
   return (
     <Page>
-      <PageHeading title={c.title} description={c.description} />
+      {/* AI is native to the product, so the page isn't labelled "AI Search". */}
+      <h1 className="sr-only">{c.srTitle}</h1>
+      <p className="text-muted-foreground mb-6 max-w-3xl text-sm">{c.description}</p>
 
       <FeatureIntro
         featureKey="ai-search"
@@ -870,6 +920,36 @@ export default function Search() {
             </label>
           </div>
 
+          {/* Spotlights — LinkedIn-style quick toggles */}
+          {entity === "people" && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium">
+                <Sparkles className="size-3.5" />
+                {c.spotlightsLabel}
+              </span>
+              {c.spotlights.map((label, i) => {
+                const def = SPOTLIGHT_DEFS[i]
+                const active = (query[def.key] as string[]).includes(def.value)
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => toggleSpotlight(i)}
+                    aria-pressed={active}
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                      active
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="bg-muted inline-flex rounded-md p-0.5">
@@ -1000,7 +1080,7 @@ export default function Search() {
           <Card className="gap-0 p-3">
             <div className="flex flex-wrap items-center gap-1.5">
               <QueryChips query={query} onRemove={removeFilter} c={c} />
-              <AddFilterPopover query={query} onAdd={addFilter} c={c} linkedinOn={linkedinOn} />
+              <AddFilterPopover query={query} onAdd={addFilter} c={c} linkedinOn={linkedinOn} entity={entity} />
               {!isQueryEmpty(query) && (
                 <button
                   type="button"
@@ -1113,6 +1193,7 @@ export default function Search() {
                               <p className="text-muted-foreground truncate text-xs">
                                 {l.title}
                               </p>
+                              <MatchLine reasons={matchReasons(l, query)} label={c.matchLabel} />
                             </div>
                           </div>
                         </TableCell>
@@ -1208,6 +1289,7 @@ export default function Search() {
                               <p className="text-muted-foreground truncate text-xs">
                                 {co.domain}
                               </p>
+                              <MatchLine reasons={companyMatchReasons(co, query)} label={c.matchLabel} />
                             </div>
                           </div>
                         </TableCell>
@@ -1571,6 +1653,8 @@ const CHIP_GROUPS: (keyof AiQuery)[] = [
   "departments",
   "technologies",
   "revenue",
+  "founded",
+  "growth",
   "intent",
   "signals",
   "linkedin",
@@ -1628,18 +1712,21 @@ const FILTER_OPTIONS: {
   label: (c: Copy) => string
   options: string[]
   linkedinOnly?: boolean
+  scope?: AiEntity
 }[] = [
-  { key: "titles", label: (c) => c.titles, options: TITLE_OPTIONS },
-  { key: "seniority", label: (c) => c.seniority, options: SENIORITY_OPTIONS },
-  { key: "departments", label: (c) => c.departments, options: DEPARTMENT_OPTIONS },
+  { key: "titles", label: (c) => c.titles, options: TITLE_OPTIONS, scope: "people" },
+  { key: "seniority", label: (c) => c.seniority, options: SENIORITY_OPTIONS, scope: "people" },
+  { key: "departments", label: (c) => c.departments, options: DEPARTMENT_OPTIONS, scope: "people" },
   { key: "regions", label: (c) => c.regions, options: REGION_OPTIONS },
   { key: "industries", label: (c) => c.industries, options: INDUSTRY_OPTIONS },
   { key: "headcount", label: (c) => c.headcountF, options: HEADCOUNT_OPTIONS },
   { key: "revenue", label: (c) => c.revenue, options: REVENUE_OPTIONS },
+  { key: "founded", label: (c) => c.founded, options: FOUNDED_OPTIONS, scope: "companies" },
+  { key: "growth", label: (c) => c.growth, options: GROWTH_OPTIONS, scope: "companies" },
   { key: "technologies", label: (c) => c.technologies, options: TECH_OPTIONS },
-  { key: "intent", label: (c) => c.intent, options: INTENT_OPTIONS },
+  { key: "intent", label: (c) => c.intent, options: INTENT_OPTIONS, scope: "people" },
   { key: "signals", label: (c) => c.signals, options: SIGNAL_OPTIONS },
-  { key: "linkedin", label: (c) => c.linkedinFilters, options: LINKEDIN_OPTIONS, linkedinOnly: true },
+  { key: "linkedin", label: (c) => c.linkedinFilters, options: LINKEDIN_OPTIONS, linkedinOnly: true, scope: "people" },
 ]
 
 // Type-ahead "Add filter": type to filter suggestions across every field, or
@@ -1649,11 +1736,13 @@ function AddFilterPopover({
   onAdd,
   c,
   linkedinOn,
+  entity,
 }: {
   query: AiQuery
   onAdd: (group: keyof AiQuery, value: string) => void
   c: Copy
   linkedinOn: boolean
+  entity: AiEntity
 }) {
   const [open, setOpen] = React.useState(false)
   const [text, setText] = React.useState("")
@@ -1663,6 +1752,7 @@ function AddFilterPopover({
     const rows: { group: keyof AiQuery; groupLabel: string; value: string }[] = []
     for (const group of FILTER_OPTIONS) {
       if (group.linkedinOnly && !linkedinOn) continue
+      if (group.scope && group.scope !== entity) continue
       for (const value of group.options) {
         if ((query[group.key] as string[]).includes(value)) continue
         if (q && !value.toLowerCase().includes(q)) continue
@@ -1670,7 +1760,7 @@ function AddFilterPopover({
       }
     }
     return rows.slice(0, 40)
-  }, [query, q, c, linkedinOn])
+  }, [query, q, c, linkedinOn, entity])
 
   // Whether the typed value already matches a suggestion exactly.
   const exact = text.trim()
