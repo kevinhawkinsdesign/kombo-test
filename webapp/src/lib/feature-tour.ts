@@ -11,6 +11,7 @@ export type FeatureKey =
   | "copilot"
   | "search"
   | "ai-search"
+  | "discover"
   | "companies"
   | "intros"
   | "lists"
