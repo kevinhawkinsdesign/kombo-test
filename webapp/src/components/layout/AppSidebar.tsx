@@ -474,21 +474,47 @@ function SidebarContent({
           )}
         </div>
 
-        {progress < 100 && !collapsed && (
-          <div className="px-3 pt-2">
-            <NavLink
-              to="/get-started"
-              onClick={onNavigate}
-              className="border-volt/40 bg-volt/10 hover:bg-volt/15 text-sidebar-foreground flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
-            >
-              <Rocket className="text-volt size-4 shrink-0" />
-              <span className="flex-1">{t("nav.getStarted")}</span>
-              <Badge className="bg-sidebar-foreground/15 text-sidebar-foreground border-transparent tabular-nums">
-                {progress}%
-              </Badge>
-            </NavLink>
-          </div>
-        )}
+        {progress < 100 &&
+          (collapsed ? (
+            <div className="px-2 pt-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-volt/40 bg-volt/10 hover:bg-volt/15 relative mx-auto flex border-dashed"
+                    asChild
+                  >
+                    <NavLink
+                      to="/get-started"
+                      onClick={onNavigate}
+                      aria-label={`${t("nav.getStarted")} · ${progress}%`}
+                    >
+                      <Rocket className="text-volt size-5" strokeWidth={2.25} />
+                      <span className="bg-volt ring-sidebar absolute -top-0.5 -right-1 size-1.5 rounded-full ring-2" />
+                    </NavLink>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {t("nav.getStarted")} · {progress}%
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          ) : (
+            <div className="px-3 pt-2">
+              <NavLink
+                to="/get-started"
+                onClick={onNavigate}
+                className="border-volt/40 bg-volt/10 hover:bg-volt/15 text-sidebar-foreground flex items-center gap-3 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+              >
+                <Rocket className="text-volt size-4 shrink-0" />
+                <span className="flex-1">{t("nav.getStarted")}</span>
+                <Badge className="bg-sidebar-foreground/15 text-sidebar-foreground border-transparent tabular-nums">
+                  {progress}%
+                </Badge>
+              </NavLink>
+            </div>
+          ))}
 
         <nav
           className={cn(
