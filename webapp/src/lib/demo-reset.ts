@@ -2,7 +2,11 @@
 // banners and feature intros, plus any data/numbers the user changed — so every
 // walkthrough starts from a clean slate. Auth, theme, and language are kept.
 
-const RESET_KEYS = ["kombo_store_v1", "kombo_feature_tours_v1"]
+const RESET_KEYS = [
+  "kombo_store_v1",
+  "kombo_feature_tours_v1",
+  "kombo_ai_searches_v1",
+]
 
 export function installDemoReset(): void {
   window.addEventListener(

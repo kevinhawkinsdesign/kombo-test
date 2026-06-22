@@ -1,5 +1,6 @@
 import * as React from "react"
-import { Sparkles, Send, Loader2, Wrench } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { Sparkles, Send, Loader2, Wrench, Search } from "lucide-react"
 
 import {
   Sheet,
@@ -73,6 +74,7 @@ function answerFor(prompt: string): KaiReply {
 }
 
 export function KaiAssistant() {
+  const navigate = useNavigate()
   const [open, setOpen] = React.useState(false)
   const [messages, setMessages] = React.useState<KaiMessage[]>([])
   const [input, setInput] = React.useState("")
@@ -197,6 +199,19 @@ export function KaiAssistant() {
           )}
           <div ref={endRef} />
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false)
+            navigate("/search")
+          }}
+          className="hover:bg-muted/60 flex items-center gap-2 border-t px-4 py-2.5 text-left text-sm font-medium transition-colors"
+        >
+          <Search className="text-primary size-4" />
+          <span className="flex-1">Find new prospects with AI Search</span>
+          <span className="text-muted-foreground text-xs">Open →</span>
+        </button>
 
         <form
           className="flex items-center gap-2 border-t p-3"
