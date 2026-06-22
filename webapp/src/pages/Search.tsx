@@ -2,14 +2,22 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  Search as SearchIcon,
-  SlidersHorizontal,
-  Plus,
-  Send,
   Sparkles,
-  Trash2,
+  Send,
+  Plus,
   X,
-  Bell,
+  Loader2,
+  Bookmark,
+  Trash2,
+  Columns3,
+  Building2,
+  Users,
+  ArrowRight,
+  Coins,
+  Wand2,
+  ListPlus,
+  CheckCircle2,
+  CircleDashed,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -17,9 +25,33 @@ import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Select,
   SelectContent,
@@ -27,6 +59,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import {
   Table,
   TableBody,
@@ -35,201 +68,342 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  ProspectAvatar,
-  ScoreBadge,
-  StatusBadge,
-} from "@/components/common/ProspectBits"
-import { AddToListDialog } from "@/components/prospect/AddToListDialog"
-import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
-import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import { useProspects, prospectStore } from "@/lib/store"
-import { useView } from "@/lib/view-context"
-import { useSubscriptions } from "@/lib/subscriptions"
-import { ownerOf } from "@/lib/team"
 import { cn } from "@/lib/utils"
-import type { Prospect } from "@/lib/types"
+import { initials, scoreTone } from "@/lib/format"
+import { portraitFor } from "@/lib/avatars"
+import {
+  interpretPrompt,
+  searchLeads,
+  searchCompanies,
+  estimatedTotal,
+  queryTitle,
+  isQueryEmpty,
+  savedSearchStore,
+  useSavedSearches,
+  CREDITS_PER_LEAD,
+  EXAMPLE_PROMPTS_EN,
+  EXAMPLE_PROMPTS_ES,
+  SENIORITY_OPTIONS,
+  REGION_OPTIONS,
+  HEADCOUNT_OPTIONS,
+  INDUSTRY_OPTIONS,
+  SIGNAL_OPTIONS,
+  EMPTY_QUERY,
+  type AiEntity,
+  type AiQuery,
+  type AiLead,
+  type AiChatMessage,
+} from "@/lib/mock-ai-search"
+import { useCampaigns, campaignStore, listStore, prospectStore } from "@/lib/store"
+import type { SavedSearchCriteria } from "@/lib/types"
 
-const ALL = "all"
+const NEW_CAMPAIGN = "__new__"
+const NO_CAMPAIGN = "__none__"
 
 const COPY = {
   en: {
-    title: "Prospect Search",
-    descViewing: (name: string) => `Viewing ${name}'s prospects · AI-scored`,
-    descDefault: "Find and qualify your best-fit leads with AI scoring.",
-    aiLookalikes: "AI lookalikes",
-    addProspect: "Add prospect",
-    introTitle: "Find your next best prospects",
+    title: "AI Search",
+    description:
+      "Describe who you're looking for. Kai searches our database of people and companies — or applies AI to build a custom table you can save as a list and run as a campaign.",
+    introTitle: "Prospect with a prompt",
     introDescription:
-      "Search millions of verified contacts and filter by the signals that predict a deal — role, company, tech stack, and buying intent.",
+      "Ask in plain English or build an advanced query by hand. Kai returns a fit-scored table of people or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
     introPoints: [
-      "Filter by title, seniority, industry & company size",
-      "Verified work emails and direct dials",
-      "Save results to a list in one click",
-      "Push straight into a sequence",
+      "Search the database or let AI find look-alikes",
+      "Fit score every result against your ask",
+      "Save as a dynamic list that keeps filling",
+      "Connect straight to a campaign",
     ],
-    searchPlaceholder: "Search by name, title, company, or industry…",
-    industry: "Industry",
-    seniority: "Seniority",
-    status: "Status",
-    tracked: "Tracked",
-    clear: "Clear",
-    prospects: "prospects",
-    selected: (count: number) => ` · ${count} selected`,
-    addToList: "Add to list",
-    delete: "Delete",
-    startCampaign: "Start campaign",
-    enrolled: (count: number) => `${count} prospects enrolled in campaign`,
-    selectAll: "Select all",
-    colProspect: "Prospect",
+    assistantName: "Kai",
+    chatHint: "Describe your ideal prospects, or pick an example.",
+    examples: "Examples",
+    inputPlaceholder: "e.g. VPs of Sales at European SaaS that just raised…",
+    thinking: "Kai is searching…",
+    starter:
+      "Here's a starter table for VPs of Sales at European SaaS companies that recently raised. Refine it with a prompt or edit the filters on the right.",
+    showingOf: (count: number, total: number) =>
+      `Showing ${count} of an estimated ${total.toLocaleString()}. Refine further or save these as a list.`,
+    refinedTo: (label: string) => `Refined: ${label.toLowerCase()}.`,
+    refine: "Quick refine",
+    saved: "Saved searches",
+    saveThis: "Save this search",
+    noSaved: "No saved searches yet.",
+    savedToast: "Search saved with its prompt history",
+    loadedToast: "Saved search loaded",
+    removedSaved: "Saved search removed",
+    people: "People",
+    companies: "Companies",
+    resultsFor: "Results",
+    estLeads: (n: number) => `Est. ${n.toLocaleString()} total`,
+    perLead: `${CREDITS_PER_LEAD} credits / lead`,
+    projected: (n: number) => `≈ ${n.toLocaleString()} credits`,
+    getMore: "Get more leads",
+    getMoreToast: "Expanding the search across the full database…",
+    columns: "Columns",
+    addToList: "Save as list",
+    findPeople: "Find decision-makers",
+    findPeopleToast: "Switched to people at these companies",
+    colFit: "Fit",
+    colName: "Name",
     colCompany: "Company",
     colIndustry: "Industry",
-    colScore: "Score",
-    colStatus: "Status",
-    colTags: "Tags",
-    selectName: (name: string) => `Select ${name}`,
-    noMatch: "No prospects match your filters.",
-    clearFilters: "Clear filters",
-    addedToList: (count: number, listName: string) =>
-      `${count} prospects added to "${listName}"`,
-    deletedToast: (count: number) => `${count} prospects deleted`,
-    deleteTitle: (count: number) =>
-      `Delete ${count} ${count === 1 ? "prospect" : "prospects"}?`,
-    deleteDescription:
-      "This will permanently remove the selected prospects and remove them from any lists. This action cannot be undone.",
-    deleteConfirm: "Delete",
-    allPrefix: (label: string) => `All ${label.toLowerCase()}`,
+    colRegion: "Region",
+    colHeadcount: "Size",
+    colEmail: "Email",
+    colSignals: "Signals",
+    colRoles: "Open roles",
+    emailVerified: "Verified",
+    emailLikely: "Likely",
+    emailMissing: "Missing",
+    selected: (n: number) => `${n} selected`,
+    clearSel: "Clear",
+    noResults: "No results yet — try a prompt or adjust your filters.",
+    addFilter: "Add filter",
+    titles: "Titles",
+    seniority: "Seniority",
+    regions: "Regions",
+    industries: "Industries",
+    headcountF: "Headcount",
+    signals: "Signals",
+    saveTitle: "Save as a list",
+    saveDesc: (n: number) =>
+      `${n} ${n === 1 ? "lead" : "leads"} will be added to a new list as enriched prospects.`,
+    listName: "List name",
+    connectCampaign: "Connect to a campaign",
+    noCampaign: "Don't connect now",
+    newCampaign: "＋ New campaign",
+    dynamicNote:
+      "Saved as a dynamic list — new matching prospects keep flowing in over time.",
+    cancel: "Cancel",
+    saveList: "Save list",
+    savedListToast: (name: string) => `Saved "${name}" with your results`,
+    refineChips: [
+      { label: "Only recently funded", patch: { signals: ["Recently funded"] } },
+      { label: "EMEA only", patch: { regions: ["EMEA"] } },
+      { label: "1000+ employees", patch: { headcount: ["1000+"] } },
+      { label: "Add VP Marketing", patch: { titles: ["VP of Marketing"] } },
+    ],
   },
   es: {
-    title: "Búsqueda de prospectos",
-    descViewing: (name: string) =>
-      `Viendo los prospectos de ${name} · puntuados con IA`,
-    descDefault:
-      "Encuentra y cualifica los leads que mejor encajan con puntuación por IA.",
-    aiLookalikes: "Similares con IA",
-    addProspect: "Añadir prospecto",
-    introTitle: "Encuentra tus próximos mejores prospectos",
+    title: "Búsqueda con IA",
+    description:
+      "Describe a quién buscas. Kai busca en nuestra base de personas y empresas — o aplica IA para construir una tabla a medida que puedes guardar como lista y lanzar como campaña.",
+    introTitle: "Prospecta con un prompt",
     introDescription:
-      "Busca entre millones de contactos verificados y filtra por las señales que predicen un negocio — cargo, empresa, tecnología e intención de compra.",
+      "Pregunta en lenguaje natural o crea una consulta avanzada a mano. Kai devuelve una tabla de personas o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
     introPoints: [
-      "Filtra por cargo, antigüedad, sector y tamaño de empresa",
-      "Correos de trabajo verificados y teléfonos directos",
-      "Guarda los resultados en una lista con un clic",
-      "Envíalos directamente a una secuencia",
+      "Busca en la base o deja que la IA encuentre similares",
+      "Puntúa el encaje de cada resultado con tu petición",
+      "Guarda como lista dinámica que se sigue llenando",
+      "Conecta directamente con una campaña",
     ],
-    searchPlaceholder: "Busca por nombre, cargo, empresa o sector…",
-    industry: "Sector",
-    seniority: "Antigüedad",
-    status: "Estado",
-    tracked: "Seguidos",
-    clear: "Limpiar",
-    prospects: "prospectos",
-    selected: (count: number) => ` · ${count} seleccionados`,
-    addToList: "Añadir a lista",
-    delete: "Eliminar",
-    startCampaign: "Iniciar campaña",
-    enrolled: (count: number) => `${count} prospectos inscritos en la campaña`,
-    selectAll: "Seleccionar todo",
-    colProspect: "Prospecto",
+    assistantName: "Kai",
+    chatHint: "Describe tus prospectos ideales, o elige un ejemplo.",
+    examples: "Ejemplos",
+    inputPlaceholder: "p. ej. VPs de Ventas en SaaS europeo que acaban de levantar…",
+    thinking: "Kai está buscando…",
+    starter:
+      "Aquí tienes una tabla inicial de VPs de Ventas en empresas SaaS europeas que han levantado financiación recientemente. Refínala con un prompt o edita los filtros de la derecha.",
+    showingOf: (count: number, total: number) =>
+      `Mostrando ${count} de unos ${total.toLocaleString()}. Sigue refinando o guarda estos como una lista.`,
+    refinedTo: (label: string) => `Refinado: ${label.toLowerCase()}.`,
+    refine: "Refinar rápido",
+    saved: "Búsquedas guardadas",
+    saveThis: "Guardar esta búsqueda",
+    noSaved: "Aún no hay búsquedas guardadas.",
+    savedToast: "Búsqueda guardada con su historial de prompts",
+    loadedToast: "Búsqueda guardada cargada",
+    removedSaved: "Búsqueda guardada eliminada",
+    people: "Personas",
+    companies: "Empresas",
+    resultsFor: "Resultados",
+    estLeads: (n: number) => `Est. ${n.toLocaleString()} en total`,
+    perLead: `${CREDITS_PER_LEAD} créditos / lead`,
+    projected: (n: number) => `≈ ${n.toLocaleString()} créditos`,
+    getMore: "Conseguir más leads",
+    getMoreToast: "Ampliando la búsqueda a toda la base de datos…",
+    columns: "Columnas",
+    addToList: "Guardar como lista",
+    findPeople: "Buscar decisores",
+    findPeopleToast: "Cambiado a personas en estas empresas",
+    colFit: "Encaje",
+    colName: "Nombre",
     colCompany: "Empresa",
     colIndustry: "Sector",
-    colScore: "Puntuación",
-    colStatus: "Estado",
-    colTags: "Etiquetas",
-    selectName: (name: string) => `Seleccionar ${name}`,
-    noMatch: "Ningún prospecto coincide con tus filtros.",
-    clearFilters: "Limpiar filtros",
-    addedToList: (count: number, listName: string) =>
-      `${count} prospectos añadidos a "${listName}"`,
-    deletedToast: (count: number) => `${count} prospectos eliminados`,
-    deleteTitle: (count: number) =>
-      `¿Eliminar ${count} ${count === 1 ? "prospecto" : "prospectos"}?`,
-    deleteDescription:
-      "Esto eliminará de forma permanente los prospectos seleccionados y los quitará de cualquier lista. Esta acción no se puede deshacer.",
-    deleteConfirm: "Eliminar",
-    allPrefix: (label: string) => `Todos: ${label.toLowerCase()}`,
+    colRegion: "Región",
+    colHeadcount: "Tamaño",
+    colEmail: "Email",
+    colSignals: "Señales",
+    colRoles: "Vacantes",
+    emailVerified: "Verificado",
+    emailLikely: "Probable",
+    emailMissing: "Sin email",
+    selected: (n: number) => `${n} seleccionados`,
+    clearSel: "Limpiar",
+    noResults: "Aún no hay resultados — prueba un prompt o ajusta los filtros.",
+    addFilter: "Añadir filtro",
+    titles: "Cargos",
+    seniority: "Antigüedad",
+    regions: "Regiones",
+    industries: "Sectores",
+    headcountF: "Plantilla",
+    signals: "Señales",
+    saveTitle: "Guardar como lista",
+    saveDesc: (n: number) =>
+      `${n} ${n === 1 ? "lead" : "leads"} se añadirán a una nueva lista como prospectos enriquecidos.`,
+    listName: "Nombre de la lista",
+    connectCampaign: "Conectar con una campaña",
+    noCampaign: "No conectar ahora",
+    newCampaign: "＋ Nueva campaña",
+    dynamicNote:
+      "Guardada como lista dinámica — los nuevos prospectos que coincidan seguirán entrando con el tiempo.",
+    cancel: "Cancelar",
+    saveList: "Guardar lista",
+    savedListToast: (name: string) => `Guardado "${name}" con tus resultados`,
+    refineChips: [
+      { label: "Solo financiación reciente", patch: { signals: ["Recently funded"] } },
+      { label: "Solo EMEA", patch: { regions: ["EMEA"] } },
+      { label: "1000+ empleados", patch: { headcount: ["1000+"] } },
+      { label: "Añadir VP Marketing", patch: { titles: ["VP of Marketing"] } },
+    ],
   },
 } as const
 
-const statuses: (Prospect["status"] | typeof ALL)[] = [
-  ALL,
-  "new",
-  "contacted",
-  "replied",
-  "meeting",
-  "not_interested",
-]
+type Copy = (typeof COPY)[keyof typeof COPY]
+
+type RefinePatch = Partial<
+  Record<
+    "titles" | "seniority" | "regions" | "headcount" | "industries" | "signals",
+    readonly string[]
+  >
+>
+
+const LIST_COLORS = ["#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899"]
+
+function FitBadge({ fit }: { fit: number }) {
+  const tone = scoreTone(fit)
+  const cls =
+    tone === "high"
+      ? "bg-chart-1/15 text-chart-1"
+      : tone === "mid"
+        ? "bg-chart-4/15 text-chart-4"
+        : "bg-muted text-muted-foreground"
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+        cls
+      )}
+      title="AI fit score"
+    >
+      <span className="bg-current size-1.5 rounded-full opacity-80" />
+      {fit}
+    </span>
+  )
+}
+
+let chatSeq = 0
+function chatId() {
+  return `c_${(chatSeq += 1)}`
+}
 
 export default function Search() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
-  const prospects = useProspects()
-  const { impersonating, impersonatingId } = useView()
-  const { prospects: tracked } = useSubscriptions()
-  const [query, setQuery] = React.useState("")
-  const [industry, setIndustry] = React.useState(ALL)
-  const [seniority, setSeniority] = React.useState(ALL)
-  const [status, setStatus] = React.useState<string>(ALL)
-  const [trackedOnly, setTrackedOnly] = React.useState(false)
+  const campaigns = useCampaigns()
+  const savedSearches = useSavedSearches()
+  const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
+
+  // Seed with a starter query so the page lands populated for demos.
+  const seed = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
+  const [entity, setEntity] = React.useState<AiEntity>(seed.entity)
+  const [query, setQuery] = React.useState<AiQuery>(seed.query)
+  const [lastPrompt, setLastPrompt] = React.useState(EXAMPLE_PROMPTS_EN[0])
+  const [messages, setMessages] = React.useState<AiChatMessage[]>([
+    { id: chatId(), role: "assistant", content: c.starter },
+  ])
+  const [input, setInput] = React.useState("")
+  const [thinking, setThinking] = React.useState(false)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
-  const [addOpen, setAddOpen] = React.useState(false)
-  const [createOpen, setCreateOpen] = React.useState(false)
-  const [deleteOpen, setDeleteOpen] = React.useState(false)
+  const [saveOpen, setSaveOpen] = React.useState(false)
+  const [showEmail, setShowEmail] = React.useState(true)
+  const [showSignals, setShowSignals] = React.useState(false)
+  const [showRegion, setShowRegion] = React.useState(true)
+  const endRef = React.useRef<HTMLDivElement>(null)
 
-  const industries = React.useMemo(
-    () => [ALL, ...new Set(prospects.map((p) => p.industry))],
-    [prospects]
-  )
-  const seniorities = React.useMemo(
-    () => [ALL, ...new Set(prospects.map((p) => p.seniority))],
-    [prospects]
-  )
+  React.useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, thinking])
 
-  const source = React.useMemo(
-    () =>
-      impersonatingId
-        ? prospects.filter((p) => ownerOf(p.id) === impersonatingId)
-        : prospects,
-    [prospects, impersonatingId]
-  )
+  const leads = React.useMemo(() => searchLeads(query), [query])
+  const companies = React.useMemo(() => searchCompanies(query), [query])
+  const shownCount = entity === "people" ? leads.length : companies.length
+  const estTotal = estimatedTotal(shownCount, entity)
+  const selectedCount = selected.size
+  const creditBase = selectedCount > 0 ? selectedCount : estTotal
+  const projectedCredits = Math.round(creditBase * CREDITS_PER_LEAD)
 
-  const results = React.useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return source.filter((p) => {
-      const matchesQuery =
-        !q ||
-        `${p.firstName} ${p.lastName} ${p.title} ${p.company} ${p.industry}`
-          .toLowerCase()
-          .includes(q)
-      const matchesIndustry = industry === ALL || p.industry === industry
-      const matchesSeniority = seniority === ALL || p.seniority === seniority
-      const matchesStatus = status === ALL || p.status === status
-      const matchesTracked = !trackedOnly || tracked.has(p.id)
-      return (
-        matchesQuery &&
-        matchesIndustry &&
-        matchesSeniority &&
-        matchesStatus &&
-        matchesTracked
-      )
+  function runPrompt(prompt: string) {
+    const text = prompt.trim()
+    if (!text) return
+    setInput("")
+    setMessages((m) => [...m, { id: chatId(), role: "user", content: text }])
+    setThinking(true)
+    setLastPrompt(text)
+    window.setTimeout(() => {
+      const { query: q, entity: e, summary } = interpretPrompt(text)
+      setEntity(e)
+      setQuery(q)
+      setSelected(new Set())
+      const count =
+        e === "people" ? searchLeads(q).length : searchCompanies(q).length
+      const total = estimatedTotal(count, e)
+      setMessages((m) => [
+        ...m,
+        {
+          id: chatId(),
+          role: "assistant",
+          content: `${summary} ${c.showingOf(count, total)}`,
+        },
+      ])
+      setThinking(false)
+    }, 750)
+  }
+
+  function applyRefine(patch: RefinePatch, label: string) {
+    setQuery((prev) => {
+      const next: AiQuery = { ...prev }
+      ;(Object.keys(patch) as (keyof RefinePatch)[]).forEach((k) => {
+        const add = patch[k]
+        if (!add) return
+        const cur = prev[k] as string[]
+        next[k] = Array.from(new Set([...cur, ...add])) as never
+      })
+      return next
     })
-  }, [source, query, industry, seniority, status, trackedOnly, tracked])
+    setMessages((m) => [
+      ...m,
+      { id: chatId(), role: "assistant", content: c.refinedTo(label) },
+    ])
+  }
 
-  const allSelected = results.length > 0 && results.every((p) => selected.has(p.id))
+  function removeFilter(group: keyof AiQuery, value: string) {
+    setQuery((prev) => ({
+      ...prev,
+      [group]: (prev[group] as string[]).filter((v) => v !== value),
+    }))
+  }
 
-  function toggleAll() {
-    setSelected((prev) => {
-      if (results.every((p) => prev.has(p.id))) {
-        const next = new Set(prev)
-        results.forEach((p) => next.delete(p.id))
-        return next
-      }
-      return new Set([...prev, ...results.map((p) => p.id)])
+  function addFilter(group: keyof AiQuery, value: string) {
+    setQuery((prev) => {
+      const arr = prev[group] as string[]
+      if (arr.includes(value)) return prev
+      return { ...prev, [group]: [...arr, value] }
     })
   }
 
-  function toggle(id: string) {
+  function toggleRow(id: string) {
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -238,292 +412,895 @@ export default function Search() {
     })
   }
 
-  function resetFilters() {
-    setQuery("")
-    setIndustry(ALL)
-    setSeniority(ALL)
-    setStatus(ALL)
-    setTrackedOnly(false)
+  function toggleAll() {
+    const ids = entity === "people" ? leads.map((l) => l.id) : companies.map((c) => c.id)
+    setSelected((prev) =>
+      ids.every((id) => prev.has(id)) ? new Set() : new Set(ids)
+    )
   }
 
-  function deleteSelected() {
-    const count = selected.size
-    selected.forEach((id) => prospectStore.remove(id))
+  function findDecisionMakers() {
+    setEntity("people")
     setSelected(new Set())
-    toast.success(c.deletedToast(count))
+    toast.success(c.findPeopleToast)
   }
 
-  const hasFilters =
-    query ||
-    industry !== ALL ||
-    seniority !== ALL ||
-    status !== ALL ||
-    trackedOnly
+  function saveSearch() {
+    savedSearchStore.create({
+      name: queryTitle(query, entity),
+      entity,
+      query,
+      prompt: lastPrompt,
+      messages,
+      resultCount: shownCount,
+    })
+    toast.success(c.savedToast)
+  }
+
+  function loadSearch(id: string) {
+    const s = savedSearches.find((x) => x.id === id)
+    if (!s) return
+    setEntity(s.entity)
+    setQuery(s.query)
+    setLastPrompt(s.prompt)
+    setMessages(s.messages.length ? s.messages : messages)
+    setSelected(new Set())
+    toast.success(c.loadedToast)
+  }
+
+  const allSelected =
+    shownCount > 0 &&
+    (entity === "people" ? leads : companies).every((r) => selected.has(r.id))
 
   return (
     <Page>
-      <PageHeading
-        title={c.title}
-        description={
-          impersonating
-            ? c.descViewing(impersonating.name.split(" ")[0])
-            : c.descDefault
-        }
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline">
-              <Sparkles className="size-4" />
-              {c.aiLookalikes}
-            </Button>
-            <Button variant="volt" onClick={() => setCreateOpen(true)}>
-              <Plus className="size-4" />
-              {c.addProspect}
-            </Button>
-          </div>
-        }
-      />
+      <PageHeading title={c.title} description={c.description} />
 
       <FeatureIntro
-        featureKey="search"
-        icon={SearchIcon}
+        featureKey="ai-search"
+        icon={Sparkles}
         title={c.introTitle}
         description={c.introDescription}
         points={[...c.introPoints]}
         className="mb-6"
       />
 
-      <Card className="mb-4 gap-0 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={c.searchPlaceholder}
-              className="pl-9"
-            />
+      <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
+        {/* AI prompt / chat panel */}
+        <Card className="flex h-fit flex-col gap-0 p-0 lg:sticky lg:top-20">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="bg-primary/10 flex size-7 items-center justify-center rounded-md">
+                <Sparkles className="text-primary size-4" />
+              </span>
+              <span className="text-sm font-semibold">{c.assistantName}</span>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1.5">
+                  <Bookmark className="size-4" />
+                  <span className="hidden sm:inline">{c.saved}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72">
+                <DropdownMenuItem onClick={saveSearch}>
+                  <Bookmark className="size-4" />
+                  {c.saveThis}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-muted-foreground text-xs">
+                  {c.saved}
+                </DropdownMenuLabel>
+                {savedSearches.length === 0 ? (
+                  <p className="text-muted-foreground px-2 py-1.5 text-xs">
+                    {c.noSaved}
+                  </p>
+                ) : (
+                  savedSearches.map((s) => (
+                    <div
+                      key={s.id}
+                      className="hover:bg-muted/60 flex items-center gap-2 rounded-sm px-2 py-1.5"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => loadSearch(s.id)}
+                        className="min-w-0 flex-1 text-left"
+                      >
+                        <p className="truncate text-sm font-medium">{s.name}</p>
+                        <p className="text-muted-foreground truncate text-xs">
+                          {s.entity === "people" ? c.people : c.companies} ·{" "}
+                          {s.resultCount} · {s.messages.length} msgs
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Remove"
+                        onClick={() => {
+                          savedSearchStore.remove(s.id)
+                          toast.success(c.removedSaved)
+                        }}
+                        className="text-muted-foreground hover:text-destructive shrink-0"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <SlidersHorizontal className="text-muted-foreground hidden size-4 lg:block" />
-            <FilterSelect
-              value={industry}
-              onChange={setIndustry}
-              options={industries}
-              placeholder={c.industry}
-              allPrefix={c.allPrefix}
-            />
-            <FilterSelect
-              value={seniority}
-              onChange={setSeniority}
-              options={seniorities}
-              placeholder={c.seniority}
-              allPrefix={c.allPrefix}
-            />
-            <FilterSelect
-              value={status}
-              onChange={setStatus}
-              options={statuses}
-              placeholder={c.status}
-              allPrefix={c.allPrefix}
-              capitalize
-            />
-            <Button
-              variant={trackedOnly ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => setTrackedOnly((v) => !v)}
-              aria-pressed={trackedOnly}
-              className={cn(trackedOnly && "text-primary")}
-            >
-              <Bell className="size-4" />
-              {c.tracked}
-            </Button>
-            {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={resetFilters}>
-                <X className="size-4" />
-                {c.clear}
-              </Button>
-            )}
-          </div>
-        </div>
-      </Card>
 
-      <div className="mb-2 flex min-h-9 flex-wrap items-center justify-between gap-2 px-1">
-        <p className="text-muted-foreground text-sm">
-          <span className="text-foreground font-medium">{results.length}</span>{" "}
-          {c.prospects}
-          {selected.size > 0 && c.selected(selected.size)}
-        </p>
-        {selected.size > 0 && (
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
+          <div className="max-h-[320px] flex-1 space-y-3 overflow-y-auto p-4">
+            {messages.length === 0 && (
+              <p className="text-muted-foreground text-sm">{c.chatHint}</p>
+            )}
+            {messages.map((m) => (
+              <div
+                key={m.id}
+                className={cn(
+                  "flex",
+                  m.role === "user" ? "justify-end" : "justify-start"
+                )}
+              >
+                <div
+                  className={cn(
+                    "max-w-[88%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
+                      : "bg-muted rounded-tl-sm"
+                  )}
+                >
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {thinking && (
+              <div className="text-muted-foreground bg-muted flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-sm">
+                <Loader2 className="size-3.5 animate-spin" />
+                {c.thinking}
+              </div>
+            )}
+            <div ref={endRef} />
+          </div>
+
+          <div className="space-y-2 border-t p-3">
+            <div className="flex flex-wrap gap-1.5">
+              {examples.slice(0, 2).map((ex) => (
+                <button
+                  key={ex}
+                  type="button"
+                  onClick={() => runPrompt(ex)}
+                  className="border-border hover:border-primary/40 hover:bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-1 text-left text-xs transition-colors"
+                >
+                  {ex.length > 42 ? `${ex.slice(0, 42)}…` : ex}
+                </button>
+              ))}
+            </div>
+            <form
+              className="flex items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                runPrompt(input)
+              }}
+            >
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    runPrompt(input)
+                  }
+                }}
+                placeholder={c.inputPlaceholder}
+                rows={2}
+                className="min-h-0 resize-none"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                variant="volt"
+                disabled={!input.trim() || thinking}
+                aria-label="Search"
+              >
+                <Send className="size-4" />
+              </Button>
+            </form>
+            <div className="flex flex-wrap gap-1.5">
+              {c.refineChips.map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => applyRefine(chip.patch, chip.label)}
+                  className="bg-muted/60 hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors"
+                >
+                  <Wand2 className="size-3" />
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Results */}
+        <div className="min-w-0 space-y-3">
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="bg-muted inline-flex rounded-md p-0.5">
+              <EntityTab
+                active={entity === "people"}
+                onClick={() => {
+                  setEntity("people")
+                  setSelected(new Set())
+                }}
+                icon={Users}
+                label={c.people}
+              />
+              <EntityTab
+                active={entity === "companies"}
+                onClick={() => {
+                  setEntity("companies")
+                  setSelected(new Set())
+                }}
+                icon={Building2}
+                label={c.companies}
+              />
+            </div>
+
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Columns3 className="size-4" />
+                    <span className="hidden sm:inline">{c.columns}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuCheckboxItem
+                    checked={showRegion}
+                    onCheckedChange={(v) => setShowRegion(!!v)}
+                  >
+                    {c.colRegion}
+                  </DropdownMenuCheckboxItem>
+                  {entity === "people" && (
+                    <DropdownMenuCheckboxItem
+                      checked={showEmail}
+                      onCheckedChange={(v) => setShowEmail(!!v)}
+                    >
+                      {c.colEmail}
+                    </DropdownMenuCheckboxItem>
+                  )}
+                  <DropdownMenuCheckboxItem
+                    checked={showSignals}
+                    onCheckedChange={(v) => setShowSignals(!!v)}
+                  >
+                    {c.colSignals}
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {entity === "companies" ? (
+                <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
+                  <Users className="size-4" />
+                  {c.findPeople}
+                </Button>
+              ) : (
+                <Button
+                  variant="volt"
+                  size="sm"
+                  onClick={() => setSaveOpen(true)}
+                  disabled={shownCount === 0}
+                >
+                  <ListPlus className="size-4" />
+                  {c.addToList}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Active query chips */}
+          <Card className="gap-0 p-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <QueryChips query={query} onRemove={removeFilter} c={c} />
+              <AddFilterPopover query={query} onAdd={addFilter} c={c} />
+              {!isQueryEmpty(query) && (
+                <button
+                  type="button"
+                  onClick={() => setQuery({ ...EMPTY_QUERY })}
+                  className="text-muted-foreground hover:text-foreground ml-1 inline-flex items-center gap-1 text-xs"
+                >
+                  <X className="size-3" />
+                  {c.clearSel}
+                </button>
+              )}
+            </div>
+          </Card>
+
+          {/* Stats strip */}
+          <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-sm">
+            <span>
+              <span className="text-foreground font-semibold">{shownCount}</span>{" "}
+              {entity === "people" ? c.people.toLowerCase() : c.companies.toLowerCase()}
+              {selectedCount > 0 && <> · {c.selected(selectedCount)}</>}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <CircleDashed className="size-3.5" />
+              {c.estLeads(estTotal)}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Coins className="text-chart-4 size-3.5" />
+              {c.perLead}
+            </span>
+            <span className="text-foreground font-medium">
+              {c.projected(projectedCredits)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto"
+              onClick={() => toast.success(c.getMoreToast)}
+            >
               <Plus className="size-4" />
-              {c.addToList}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="size-4" />
-              {c.delete}
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => toast.success(c.enrolled(selected.size))}
-            >
-              <Send className="size-4" />
-              {c.startCampaign}
+              {c.getMore}
             </Button>
           </div>
-        )}
+
+          {/* Results table */}
+          <Card className="overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              {entity === "people" ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="w-10 pl-4">
+                        <Checkbox
+                          checked={allSelected}
+                          onCheckedChange={toggleAll}
+                          aria-label="Select all"
+                        />
+                      </TableHead>
+                      <TableHead className="w-14">{c.colFit}</TableHead>
+                      <TableHead>{c.colName}</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        {c.colCompany}
+                      </TableHead>
+                      {showRegion && (
+                        <TableHead className="hidden lg:table-cell">
+                          {c.colRegion}
+                        </TableHead>
+                      )}
+                      {showEmail && (
+                        <TableHead className="hidden sm:table-cell">
+                          {c.colEmail}
+                        </TableHead>
+                      )}
+                      {showSignals && (
+                        <TableHead className="hidden xl:table-cell">
+                          {c.colSignals}
+                        </TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leads.map((l) => (
+                      <TableRow key={l.id}>
+                        <TableCell className="pl-4">
+                          <Checkbox
+                            checked={selected.has(l.id)}
+                            onCheckedChange={() => toggleRow(l.id)}
+                            aria-label={`Select ${l.firstName}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <FitBadge fit={l.fit} />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-8">
+                              <AvatarImage
+                                src={portraitFor(`${l.firstName} ${l.lastName}`)}
+                                alt=""
+                              />
+                              <AvatarFallback
+                                style={{ backgroundColor: l.avatarColor, color: "white" }}
+                                className="text-xs"
+                              >
+                                {initials(l.firstName, l.lastName)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">
+                                {l.firstName} {l.lastName}
+                              </p>
+                              <p className="text-muted-foreground truncate text-xs">
+                                {l.title}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <p className="font-medium">{l.company}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {l.industry} · {l.headcount}
+                          </p>
+                        </TableCell>
+                        {showRegion && (
+                          <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
+                            {l.region}
+                          </TableCell>
+                        )}
+                        {showEmail && (
+                          <TableCell className="hidden sm:table-cell">
+                            <EmailStatus status={l.emailStatus} c={c} />
+                          </TableCell>
+                        )}
+                        {showSignals && (
+                          <TableCell className="hidden xl:table-cell">
+                            <div className="flex flex-wrap gap-1">
+                              {l.signals.slice(0, 2).map((s) => (
+                                <Badge key={s} variant="secondary" className="font-normal">
+                                  {s}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                    {leads.length === 0 && <EmptyRow span={7} text={c.noResults} />}
+                  </TableBody>
+                </Table>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="w-10 pl-4">
+                        <Checkbox
+                          checked={allSelected}
+                          onCheckedChange={toggleAll}
+                          aria-label="Select all"
+                        />
+                      </TableHead>
+                      <TableHead className="w-14">{c.colFit}</TableHead>
+                      <TableHead>{c.colCompany}</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        {c.colIndustry}
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        {c.colHeadcount}
+                      </TableHead>
+                      {showRegion && (
+                        <TableHead className="hidden lg:table-cell">
+                          {c.colRegion}
+                        </TableHead>
+                      )}
+                      <TableHead className="hidden sm:table-cell">
+                        {c.colRoles}
+                      </TableHead>
+                      {showSignals && (
+                        <TableHead className="hidden xl:table-cell">
+                          {c.colSignals}
+                        </TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {companies.map((co) => (
+                      <TableRow key={co.id}>
+                        <TableCell className="pl-4">
+                          <Checkbox
+                            checked={selected.has(co.id)}
+                            onCheckedChange={() => toggleRow(co.id)}
+                            aria-label={`Select ${co.name}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <FitBadge fit={co.fit} />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
+                              style={{ backgroundColor: co.logoColor }}
+                            >
+                              {co.name.slice(0, 2)}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{co.name}</p>
+                              <p className="text-muted-foreground truncate text-xs">
+                                {co.domain}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground hidden text-sm md:table-cell">
+                          {co.industry}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
+                          {co.headcount}
+                        </TableCell>
+                        {showRegion && (
+                          <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
+                            {co.region}
+                          </TableCell>
+                        )}
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge variant="secondary" className="tabular-nums">
+                            {co.openRoles}
+                          </Badge>
+                        </TableCell>
+                        {showSignals && (
+                          <TableCell className="hidden xl:table-cell">
+                            <div className="flex flex-wrap gap-1">
+                              {co.signals.slice(0, 2).map((s) => (
+                                <Badge key={s} variant="secondary" className="font-normal">
+                                  {s}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                    {companies.length === 0 && <EmptyRow span={8} text={c.noResults} />}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
 
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-10 pl-4">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={toggleAll}
-                  aria-label={c.selectAll}
-                />
-              </TableHead>
-              <TableHead>{c.colProspect}</TableHead>
-              <TableHead className="hidden md:table-cell">{c.colCompany}</TableHead>
-              <TableHead className="hidden lg:table-cell">
-                {c.colIndustry}
-              </TableHead>
-              <TableHead>{c.colScore}</TableHead>
-              <TableHead className="hidden sm:table-cell">{c.colStatus}</TableHead>
-              <TableHead className="hidden xl:table-cell">{c.colTags}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {results.map((p) => (
-              <TableRow
-                key={p.id}
-                className="cursor-pointer"
-                onClick={() => navigate(`/prospects/${p.id}`)}
-              >
-                <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    checked={selected.has(p.id)}
-                    onCheckedChange={() => toggle(p.id)}
-                    aria-label={c.selectName(p.firstName)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <ProspectAvatar prospect={p} />
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {p.firstName} {p.lastName}
-                      </p>
-                      <p className="text-muted-foreground truncate text-xs">
-                        {p.title}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <p className="font-medium">{p.company}</p>
-                  <p className="text-muted-foreground text-xs">{p.location}</p>
-                </TableCell>
-                <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
-                  {p.industry}
-                </TableCell>
-                <TableCell>
-                  <ScoreBadge score={p.score} />
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <StatusBadge status={p.status} />
-                </TableCell>
-                <TableCell className="hidden xl:table-cell">
-                  <div className="flex flex-wrap gap-1">
-                    {p.tags.slice(0, 2).map((t) => (
-                      <Badge key={t} variant="secondary" className="font-normal">
-                        {t}
-                      </Badge>
-                    ))}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {results.length === 0 && (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={7} className="h-32 text-center">
-                  <p className="text-muted-foreground text-sm">{c.noMatch}</p>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={resetFilters}
-                    className="mt-1"
-                  >
-                    {c.clearFilters}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        </div>
-      </Card>
-
-      <AddToListDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        count={selected.size}
-        onAdded={(listName) => {
-          toast.success(c.addedToList(selected.size, listName))
-          setSelected(new Set())
+      <SaveListDialog
+        open={saveOpen}
+        onOpenChange={setSaveOpen}
+        c={c}
+        leads={selectedCount > 0 ? leads.filter((l) => selected.has(l.id)) : leads}
+        defaultName={queryTitle(query, "people")}
+        query={query}
+        campaigns={campaigns}
+        onSaved={(listId) => {
+          setSaveOpen(false)
+          navigate(`/lists/${listId}`)
         }}
-      />
-
-      <ProspectFormDialog open={createOpen} onOpenChange={setCreateOpen} />
-
-      <ConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title={c.deleteTitle(selected.size)}
-        description={c.deleteDescription}
-        confirmLabel={c.deleteConfirm}
-        destructive
-        onConfirm={deleteSelected}
       />
     </Page>
   )
 }
 
-function FilterSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-  allPrefix,
-  capitalize,
+function EntityTab({
+  active,
+  onClick,
+  icon: Icon,
+  label,
 }: {
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-  placeholder: string
-  allPrefix: (label: string) => string
-  capitalize?: boolean
+  active: boolean
+  onClick: () => void
+  icon: React.ComponentType<{ className?: string }>
+  label: string
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger size="sm" className="min-w-[130px]">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((opt) => (
-          <SelectItem key={opt} value={opt} className={capitalize ? "capitalize" : ""}>
-            {opt === "all" ? allPrefix(placeholder) : opt}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-[5px] px-3 py-1.5 text-sm font-medium transition-colors",
+        active
+          ? "bg-background text-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      <Icon className="size-4" />
+      {label}
+    </button>
+  )
+}
+
+function EmailStatus({
+  status,
+  c,
+}: {
+  status: AiLead["emailStatus"]
+  c: Copy
+}) {
+  if (status === "verified")
+    return (
+      <span className="text-chart-1 inline-flex items-center gap-1 text-xs font-medium">
+        <CheckCircle2 className="size-3.5" />
+        {c.emailVerified}
+      </span>
+    )
+  if (status === "likely")
+    return (
+      <span className="text-chart-4 inline-flex items-center gap-1 text-xs font-medium">
+        <CircleDashed className="size-3.5" />
+        {c.emailLikely}
+      </span>
+    )
+  return (
+    <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+      <X className="size-3.5" />
+      {c.emailMissing}
+    </span>
+  )
+}
+
+function EmptyRow({ span, text }: { span: number; text: string }) {
+  return (
+    <TableRow className="hover:bg-transparent">
+      <TableCell colSpan={span} className="h-32 text-center">
+        <p className="text-muted-foreground text-sm">{text}</p>
+      </TableCell>
+    </TableRow>
+  )
+}
+
+const CHIP_GROUPS: (keyof AiQuery)[] = [
+  "titles",
+  "seniority",
+  "regions",
+  "industries",
+  "headcount",
+  "signals",
+]
+
+function QueryChips({
+  query,
+  onRemove,
+  c,
+}: {
+  query: AiQuery
+  onRemove: (group: keyof AiQuery, value: string) => void
+  c: Copy
+}) {
+  const chips = CHIP_GROUPS.flatMap((group) =>
+    (query[group] as string[]).map((value) => ({ group, value }))
+  )
+  if (chips.length === 0) {
+    return (
+      <span className="text-muted-foreground text-sm">
+        {c.addFilter} →
+      </span>
+    )
+  }
+  return (
+    <>
+      {chips.map(({ group, value }) => (
+        <span
+          key={`${group}:${value}`}
+          className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium"
+        >
+          {value}
+          <button
+            type="button"
+            aria-label={`Remove ${value}`}
+            onClick={() => onRemove(group, value)}
+            className="hover:bg-primary/20 rounded-full p-0.5"
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      ))}
+    </>
+  )
+}
+
+const FILTER_OPTIONS: {
+  key: keyof AiQuery
+  label: (c: Copy) => string
+  options: string[]
+}[] = [
+  { key: "seniority", label: (c) => c.seniority, options: SENIORITY_OPTIONS },
+  { key: "regions", label: (c) => c.regions, options: REGION_OPTIONS },
+  { key: "industries", label: (c) => c.industries, options: INDUSTRY_OPTIONS },
+  { key: "headcount", label: (c) => c.headcountF, options: HEADCOUNT_OPTIONS },
+  { key: "signals", label: (c) => c.signals, options: SIGNAL_OPTIONS },
+]
+
+function AddFilterPopover({
+  query,
+  onAdd,
+  c,
+}: {
+  query: AiQuery
+  onAdd: (group: keyof AiQuery, value: string) => void
+  c: Copy
+}) {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+          <Plus className="size-3.5" />
+          {c.addFilter}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-0">
+        <div className="max-h-80 overflow-y-auto p-1">
+          {FILTER_OPTIONS.map((group) => (
+            <div key={group.key} className="px-1 py-1">
+              <p className="text-muted-foreground px-2 py-1 text-xs font-medium tracking-wide uppercase">
+                {group.label(c)}
+              </p>
+              <div className="flex flex-wrap gap-1 px-1">
+                {group.options.map((opt) => {
+                  const active = (query[group.key] as string[]).includes(opt)
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => onAdd(group.key, opt)}
+                      disabled={active}
+                      className={cn(
+                        "rounded-full border px-2 py-0.5 text-xs transition-colors",
+                        active
+                          ? "border-primary/40 bg-primary/10 text-primary cursor-default"
+                          : "hover:bg-muted"
+                      )}
+                    >
+                      {opt}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function aiLeadToCriteria(query: AiQuery): SavedSearchCriteria {
+  return {
+    titles: query.titles,
+    seniority: query.seniority,
+    industries: query.industries,
+    headcount: query.headcount,
+    locations: query.regions,
+    keywords: query.keywords,
+    signals: query.signals,
+  }
+}
+
+function SaveListDialog({
+  open,
+  onOpenChange,
+  c,
+  leads,
+  defaultName,
+  query,
+  campaigns,
+  onSaved,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  c: Copy
+  leads: AiLead[]
+  defaultName: string
+  query: AiQuery
+  campaigns: { id: string; name: string }[]
+  onSaved: (listId: string) => void
+}) {
+  const [name, setName] = React.useState(defaultName)
+  const [campaign, setCampaign] = React.useState<string>(NO_CAMPAIGN)
+  const [wasOpen, setWasOpen] = React.useState(false)
+
+  // Reset fields each time the dialog opens (render-time, no effect).
+  if (open && !wasOpen) {
+    setWasOpen(true)
+    setName(defaultName)
+    setCampaign(NO_CAMPAIGN)
+  }
+  if (!open && wasOpen) setWasOpen(false)
+
+  function handleSave() {
+    // Materialize AI leads into real prospects.
+    const ids = leads.map((l) => {
+      const email =
+        l.emailStatus === "missing"
+          ? ""
+          : `${l.firstName}.${l.lastName}@${l.companyDomain}`.toLowerCase()
+      const p = prospectStore.create({
+        firstName: l.firstName,
+        lastName: l.lastName,
+        title: l.title,
+        company: l.company,
+        companyDomain: l.companyDomain,
+        location: l.location,
+        email,
+        linkedinUrl: `https://linkedin.com/in/${l.firstName}${l.lastName}`.toLowerCase(),
+        avatarColor: l.avatarColor,
+        score: l.fit,
+        status: "new",
+        tags: ["AI search", l.region],
+        seniority: l.seniority,
+        department: l.department,
+        headcount: l.headcount,
+        industry: l.industry,
+        revenue: l.revenue,
+        about: `${l.title} at ${l.company}.`,
+        signals: l.signals,
+      })
+      return p.id
+    })
+
+    const list = listStore.create({
+      name: name.trim() || defaultName,
+      description: `${ids.length} AI-sourced leads`,
+      color: LIST_COLORS[Math.floor(Math.random() * LIST_COLORS.length)],
+      source: "search",
+      prospectIds: ids,
+      dynamic: true,
+      criteria: aiLeadToCriteria(query),
+      enrichment: "continuous",
+      newPerWeek: Math.max(5, Math.round(ids.length * 0.4)),
+    })
+
+    if (campaign === NEW_CAMPAIGN) {
+      const camp = campaignStore.create({ name: `${list.name} outreach` })
+      campaignStore.attachList(camp.id, list.id)
+    } else if (campaign !== NO_CAMPAIGN) {
+      campaignStore.attachList(campaign, list.id)
+    }
+
+    toast.success(c.savedListToast(list.name))
+    onSaved(list.id)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{c.saveTitle}</DialogTitle>
+          <DialogDescription>{c.saveDesc(leads.length)}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-1">
+          <div className="space-y-1.5">
+            <Label htmlFor="ai-list-name">{c.listName}</Label>
+            <Input
+              id="ai-list-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ai-list-campaign">{c.connectCampaign}</Label>
+            <Select value={campaign} onValueChange={setCampaign}>
+              <SelectTrigger id="ai-list-campaign" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_CAMPAIGN}>{c.noCampaign}</SelectItem>
+                <SelectItem value={NEW_CAMPAIGN}>{c.newCampaign}</SelectItem>
+                {campaigns.map((cm) => (
+                  <SelectItem key={cm.id} value={cm.id}>
+                    {cm.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <p className="text-muted-foreground bg-muted/50 flex items-start gap-2 rounded-md px-3 py-2 text-xs">
+            <ArrowRight className="mt-0.5 size-3.5 shrink-0" />
+            {c.dynamicNote}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {c.cancel}
+          </Button>
+          <Button variant="volt" onClick={handleSave}>
+            <ListPlus className="size-4" />
+            {c.saveList}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
