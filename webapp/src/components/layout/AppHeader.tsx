@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   Search,
@@ -10,6 +11,7 @@ import {
   Check,
   HelpCircle,
   ChevronDown,
+  Sparkles,
 } from "lucide-react"
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -24,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
-import { KaiAssistant } from "@/components/kai/KaiAssistant"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
@@ -55,20 +56,35 @@ export function AppHeader() {
   const { balance } = useCredits()
   const { locale, setLocale, t } = useLocale()
   const navigate = useNavigate()
+  const [searchValue, setSearchValue] = useState("")
+
+  // Don't jump to the search page on focus — let the user submit their prompt
+  // first, then hand it to the unified Kai search surface.
+  function submitSearch(e: FormEvent) {
+    e.preventDefault()
+    const q = searchValue.trim()
+    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search")
+    setSearchValue("")
+  }
 
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur md:gap-3 md:px-6">
       <ViewSwitcher />
 
-      <div className="relative ml-auto hidden w-full max-w-xs md:block">
+      <form
+        role="search"
+        onSubmit={submitSearch}
+        className="relative ml-auto hidden w-full max-w-xs md:block"
+      >
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
           placeholder={t("header.searchPlaceholder")}
           aria-label={t("header.searchPlaceholder")}
           className="pl-9"
-          onFocus={() => navigate("/search")}
         />
-      </div>
+      </form>
 
       <div className="ml-auto flex items-center gap-1 md:ml-0">
         <button
@@ -80,7 +96,16 @@ export function AppHeader() {
           <span className="tabular-nums">{balance.toLocaleString()}</span>
         </button>
 
-        <KaiAssistant />
+        {/* Ask Kai and search are one surface now — both open AI Search. */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => navigate("/search")}
+        >
+          <Sparkles className="text-primary size-4" />
+          <span className="hidden sm:inline">Ask Kai</span>
+        </Button>
 
         {/* Permanent one-click support */}
         <Button
