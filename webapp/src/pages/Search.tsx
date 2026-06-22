@@ -747,9 +747,9 @@ export default function Search() {
         className="mb-6"
       />
 
-      <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
-        {/* AI prompt / chat panel */}
-        <Card className="flex h-fit flex-col gap-0 p-0 lg:sticky lg:top-20">
+      <div className="space-y-4">
+        {/* AI prompt / chat panel — a horizontal bar above the results */}
+        <Card className="flex flex-col gap-0 p-0">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="bg-primary/10 flex size-7 items-center justify-center rounded-md">
@@ -812,7 +812,7 @@ export default function Search() {
             </DropdownMenu>
           </div>
 
-          <div className="max-h-[320px] flex-1 space-y-3 overflow-y-auto p-4">
+          <div className="max-h-44 flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
               <p className="text-muted-foreground text-sm">{c.chatHint}</p>
             )}
@@ -906,8 +906,10 @@ export default function Search() {
 
         {/* Results */}
         <div className="min-w-0 space-y-3">
+          {/* Blended controls: sources, suggested filters, filters & sort */}
+          <Card className="gap-3 p-3">
           {/* Data sources */}
-          <div className="bg-muted/30 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="text-foreground inline-flex items-center gap-1.5 text-sm font-medium">
               <Database className="text-primary size-4" />
               {c.komboData}
@@ -1070,6 +1072,7 @@ export default function Search() {
               )}
             </div>
           </div>
+          </Card>
 
           {thinking && <ThinkingPanel c={c} />}
 
