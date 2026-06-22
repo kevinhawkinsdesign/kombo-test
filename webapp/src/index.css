@@ -65,13 +65,16 @@
 }
 
 .dark {
-  --background: oklch(0.172 0.012 308);
+  /* Dark surfaces form a clear ladder: the page background is the darkest,
+     and cards / tables / popovers sit visibly lighter on top of it. Text stays
+     near-white for WCAG 2.2 AA contrast on every surface. */
+  --background: oklch(0.15 0.012 308);
   --foreground: oklch(0.97 0.004 308);
 
-  --card: oklch(0.213 0.014 308);
+  --card: oklch(0.235 0.015 308);
   --card-foreground: oklch(0.97 0.004 308);
 
-  --popover: oklch(0.213 0.014 308);
+  --popover: oklch(0.235 0.015 308);
   --popover-foreground: oklch(0.97 0.004 308);
 
   --primary: oklch(0.64 0.19 284);
@@ -83,8 +86,8 @@
   --secondary: oklch(0.272 0.018 305);
   --secondary-foreground: oklch(0.97 0.004 308);
 
-  --muted: oklch(0.272 0.018 305);
-  --muted-foreground: oklch(0.715 0.016 308);
+  --muted: oklch(0.3 0.018 305);
+  --muted-foreground: oklch(0.74 0.016 308);
 
   --accent: oklch(0.3 0.03 295);
   --accent-foreground: oklch(0.97 0.004 308);
