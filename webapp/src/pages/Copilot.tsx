@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
+import { AutomationsPanel } from "@/components/automations/AutomationsPanel"
 import {
   ArrowLeft,
   Mail,
@@ -47,6 +48,7 @@ const COPY = {
     day1: "Day 1",
     afterDays: (days: number) => `After ${days} days`,
     title: "Signals",
+    automationsTab: "Automations",
     pendingActions: "Pending actions",
     onAutopilot: "On autopilot",
     autopilotBody: (count: number) =>
@@ -82,6 +84,7 @@ const COPY = {
     day1: "Día 1",
     afterDays: (days: number) => `Tras ${days} días`,
     title: "Señales",
+    automationsTab: "Automatizaciones",
     pendingActions: "Acciones pendientes",
     onAutopilot: "En piloto automático",
     autopilotBody: (count: number) =>
@@ -260,6 +263,7 @@ export default function Copilot() {
     copilotActions[0]?.id
   )
   const [tab, setTab] = React.useState<"pending" | "autopilot">("pending")
+  const [view, setView] = React.useState<"signals" | "automations">("signals")
   // On mobile we show either the list or the detail (master-detail).
   const [showDetailMobile, setShowDetailMobile] = React.useState(false)
 
@@ -308,7 +312,32 @@ export default function Copilot() {
   }
 
   return (
-    <div className="flex h-[calc(100svh-4rem)]">
+    <div className="flex h-[calc(100svh-4rem)] flex-col">
+      {/* Top tabs: Signals · Automations */}
+      <div className="flex shrink-0 items-center gap-4 border-b px-5">
+        {(["signals", "automations"] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setView(v)}
+            className={cn(
+              "-mb-px border-b-2 py-3 text-sm font-medium transition-colors",
+              view === v
+                ? "border-primary text-foreground"
+                : "text-muted-foreground hover:text-foreground border-transparent"
+            )}
+          >
+            {v === "signals" ? c.title : c.automationsTab}
+          </button>
+        ))}
+      </div>
+
+      {view === "automations" ? (
+        <div className="flex-1 overflow-y-auto">
+          <AutomationsPanel />
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1">
       {/* List pane */}
       <div
         className={cn(
@@ -546,6 +575,8 @@ export default function Copilot() {
             <p className="text-sm font-medium">{c.allCaughtUp}</p>
             <p className="text-muted-foreground text-sm">{c.kaiSurfaces}</p>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>
