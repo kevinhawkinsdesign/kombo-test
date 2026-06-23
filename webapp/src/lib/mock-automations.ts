@@ -8,6 +8,9 @@ import * as React from "react"
 export type StepKind = "search" | "enrich" | "list" | "campaign" | "crm"
 export type AutomationStatus = "running" | "paused" | "draft"
 export type Cadence = "realtime" | "daily" | "weekly"
+// "auto" runs without intervention; "ask" queues each irreversible run for
+// approval before it executes (human-in-the-loop).
+export type ApprovalMode = "auto" | "ask"
 
 export interface AutomationStep {
   kind: StepKind
@@ -22,6 +25,7 @@ export interface Automation {
   trigger: string
   cadence: Cadence
   steps: AutomationStep[]
+  approvalMode: ApprovalMode
   processed: number // total contacts processed
   perWeek: number // throughput estimate
   lastRunAt: string // ISO
@@ -51,6 +55,7 @@ const SEED: Automation[] = [
     trigger: "Saved search · VPs of Sales · EMEA SaaS",
     cadence: "daily",
     steps: seedSteps(["search", "enrich", "list", "campaign", "crm"]),
+    approvalMode: "auto",
     processed: 412,
     perWeek: 35,
     lastRunAt: "2026-06-22T06:00:00Z",
@@ -63,6 +68,7 @@ const SEED: Automation[] = [
     trigger: "Lookalike · Top customers",
     cadence: "daily",
     steps: seedSteps(["search", "enrich", "list"], ["enrich"]),
+    approvalMode: "auto",
     processed: 188,
     perWeek: 70,
     lastRunAt: "2026-06-22T06:00:00Z",
@@ -75,6 +81,7 @@ const SEED: Automation[] = [
     trigger: "Signal · Contact changed jobs",
     cadence: "realtime",
     steps: seedSteps(["enrich", "campaign", "crm"]),
+    approvalMode: "ask",
     processed: 64,
     perWeek: 12,
     lastRunAt: "2026-06-20T11:30:00Z",
@@ -143,7 +150,11 @@ const KEY = "kombo_automations_v1"
 function load(): Automation[] {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as Automation[]
+    if (raw) {
+      const parsed = JSON.parse(raw) as Automation[]
+      // Backfill approvalMode for data saved before the field existed.
+      return parsed.map((a) => ({ ...a, approvalMode: a.approvalMode ?? "auto" }))
+    }
   } catch {
     /* ignore */
   }
@@ -178,6 +189,7 @@ export const automationStore = {
       trigger: tpl.trigger,
       cadence: tpl.cadence,
       steps: tpl.steps.map((kind) => ({ kind, enabled: true })),
+      approvalMode: "auto",
       processed: 0,
       perWeek: 0,
       lastRunAt: new Date().toISOString(),
@@ -186,15 +198,22 @@ export const automationStore = {
     emit()
     return au
   },
-  create(data: Pick<Automation, "name" | "description" | "trigger" | "cadence"> & { steps: StepKind[] }): Automation {
+  create(
+    data: Pick<Automation, "name" | "description" | "trigger" | "cadence"> & {
+      steps: StepKind[]
+      approvalMode?: ApprovalMode
+      status?: AutomationStatus
+    }
+  ): Automation {
     const au: Automation = {
       id: uid(),
       name: data.name,
       description: data.description,
-      status: "draft",
+      status: data.status ?? "draft",
       trigger: data.trigger,
       cadence: data.cadence,
       steps: data.steps.map((kind) => ({ kind, enabled: true })),
+      approvalMode: data.approvalMode ?? "auto",
       processed: 0,
       perWeek: 0,
       lastRunAt: new Date().toISOString(),
@@ -205,6 +224,10 @@ export const automationStore = {
   },
   setStatus(id: string, status: AutomationStatus): void {
     state = state.map((a) => (a.id === id ? { ...a, status } : a))
+    emit()
+  },
+  setApprovalMode(id: string, approvalMode: ApprovalMode): void {
+    state = state.map((a) => (a.id === id ? { ...a, approvalMode } : a))
     emit()
   },
   toggleStep(id: string, kind: StepKind): void {

@@ -2,6 +2,7 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import { AutomationsPanel } from "@/components/automations/AutomationsPanel"
+import { ApprovalsPanel } from "@/components/automations/ApprovalsPanel"
 import {
   ArrowLeft,
   Mail,
@@ -16,6 +17,8 @@ import {
   MapPin,
   Users,
   CircleDollarSign,
+  ShieldCheck,
+  Zap,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -23,6 +26,13 @@ import { useLocale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { getProspect } from "@/lib/mock-data"
 import {
@@ -32,6 +42,8 @@ import {
   type SequenceChannel,
   type SequenceStep,
 } from "@/lib/mock-copilot"
+import { useApprovals, approvalStore } from "@/lib/mock-approvals"
+import { automationStore } from "@/lib/mock-automations"
 import { cn } from "@/lib/utils"
 
 const AUTOPILOT_COUNT = 8
@@ -49,6 +61,17 @@ const COPY = {
     afterDays: (days: number) => `After ${days} days`,
     title: "Signals",
     automationsTab: "Automations",
+    approvalsTab: "Approvals",
+    automate: "Automate",
+    automateTitle: "Always do this when the signal fires?",
+    automateBody: (signal: string) =>
+      `Kai can run this play automatically every time "${signal}" happens — no manual step.`,
+    automateAuto: "Run automatically",
+    automateAutoDesc: "Kai sends it the moment the signal fires.",
+    automateAsk: "Ask me first each time",
+    automateAskDesc: "Kai queues each run for your approval.",
+    automatedAuto: (signal: string) => `Automation on — runs automatically on "${signal}"`,
+    automatedAsk: (signal: string) => `Automation on — Kai will ask before each run on "${signal}"`,
     pendingActions: "Pending actions",
     onAutopilot: "On autopilot",
     autopilotBody: (count: number) =>
@@ -85,6 +108,17 @@ const COPY = {
     afterDays: (days: number) => `Tras ${days} días`,
     title: "Señales",
     automationsTab: "Automatizaciones",
+    approvalsTab: "Aprobaciones",
+    automate: "Automatizar",
+    automateTitle: "¿Hacer siempre esto cuando ocurra la señal?",
+    automateBody: (signal: string) =>
+      `Kai puede ejecutar esta jugada automáticamente cada vez que ocurra "${signal}" — sin pasos manuales.`,
+    automateAuto: "Ejecutar automáticamente",
+    automateAutoDesc: "Kai lo envía en cuanto se dispara la señal.",
+    automateAsk: "Pregúntame primero cada vez",
+    automateAskDesc: "Kai pone cada ejecución en cola para tu aprobación.",
+    automatedAuto: (signal: string) => `Automatización activa — se ejecuta sola con "${signal}"`,
+    automatedAsk: (signal: string) => `Automatización activa — Kai preguntará antes de cada ejecución con "${signal}"`,
     pendingActions: "Acciones pendientes",
     onAutopilot: "En piloto automático",
     autopilotBody: (count: number) =>
@@ -263,9 +297,16 @@ export default function Copilot() {
     copilotActions[0]?.id
   )
   const [tab, setTab] = React.useState<"pending" | "autopilot">("pending")
-  const [view, setView] = React.useState<"signals" | "automations">("signals")
+  const [view, setView] = React.useState<
+    "signals" | "automations" | "approvals"
+  >("signals")
   // On mobile we show either the list or the detail (master-detail).
   const [showDetailMobile, setShowDetailMobile] = React.useState(false)
+  const [automateFor, setAutomateFor] = React.useState<CopilotAction | null>(
+    null
+  )
+  const approvals = useApprovals()
+  const approvalCount = approvals.filter((a) => a.status === "pending").length
 
   const selected =
     pending.find((a) => a.id === selectedId) ?? pending[0] ?? undefined
@@ -311,23 +352,61 @@ export default function Copilot() {
     toast.success(c.sequenceSent(firstName))
   }
 
+  // Turn a one-off signal play into a recurring automation — "always do this
+  // when X happens." Auto runs hands-free; ask queues each run for approval.
+  function automate(action: CopilotAction, mode: "auto" | "ask") {
+    const signal = action.signal.label
+    automationStore.create({
+      name: signal,
+      description: `Run this play whenever a contact triggers "${signal}".`,
+      trigger: `Signal · ${signal}`,
+      cadence: "realtime",
+      steps: ["enrich", "campaign", "crm"],
+      approvalMode: mode,
+      status: "running",
+    })
+    if (mode === "ask") {
+      const p = getProspect(action.prospectId)
+      approvalStore.create({
+        action: "Start outreach sequence",
+        target: p ? `${p.firstName} ${p.lastName} · ${p.company}` : action.signal.label,
+        detail: action.signal.detail,
+        trigger: `Signal · ${signal}`,
+        count: 1,
+        irreversible: true,
+      })
+    }
+    setAutomateFor(null)
+    toast.success(mode === "auto" ? c.automatedAuto(signal) : c.automatedAsk(signal))
+  }
+
   return (
     <div className="flex h-[calc(100svh-4rem)] flex-col">
-      {/* Top tabs: Signals · Automations */}
+      {/* Top tabs: Signals · Automations · Approvals */}
       <div className="flex shrink-0 items-center gap-4 border-b px-5">
-        {(["signals", "automations"] as const).map((v) => (
+        {(["signals", "automations", "approvals"] as const).map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => setView(v)}
             className={cn(
-              "-mb-px border-b-2 py-3 text-sm font-medium transition-colors",
+              "-mb-px flex items-center gap-1.5 border-b-2 py-3 text-sm font-medium transition-colors",
               view === v
                 ? "border-primary text-foreground"
                 : "text-muted-foreground hover:text-foreground border-transparent"
             )}
           >
-            {v === "signals" ? c.title : c.automationsTab}
+            {v === "approvals" && <ShieldCheck className="size-4" />}
+            {v === "signals"
+              ? c.title
+              : v === "automations"
+                ? c.automationsTab
+                : c.approvalsTab}
+            {v === "approvals" && approvalCount > 0 && (
+              <Badge className="bg-chart-4/15 text-chart-4 h-5 min-w-5 justify-center border-transparent px-1.5 tabular-nums">
+                {approvalCount}
+              </Badge>
+            )}
           </button>
         ))}
       </div>
@@ -335,6 +414,10 @@ export default function Copilot() {
       {view === "automations" ? (
         <div className="flex-1 overflow-y-auto">
           <AutomationsPanel />
+        </div>
+      ) : view === "approvals" ? (
+        <div className="flex-1 overflow-y-auto">
+          <ApprovalsPanel />
         </div>
       ) : (
         <div className="flex min-h-0 flex-1">
@@ -555,15 +638,28 @@ export default function Copilot() {
           </div>
 
           {/* Sticky action footer */}
-          <div className="bg-background flex items-center justify-end gap-2 border-t p-4">
-            <Button variant="outline" onClick={() => dismiss(selected)}>
-              <X className="size-4" />
-              {c.dismiss}
+          <div className="bg-background flex items-center gap-2 border-t p-4">
+            <Button
+              variant="ghost"
+              className="text-primary"
+              onClick={() => setAutomateFor(selected)}
+            >
+              <Repeat className="size-4" />
+              {c.automate}
             </Button>
-            <Button variant="volt" onClick={() => send(selected, prospect.firstName)}>
-              <Send className="size-4" />
-              {c.sendSequence}
-            </Button>
+            <div className="ml-auto flex items-center gap-2">
+              <Button variant="outline" onClick={() => dismiss(selected)}>
+                <X className="size-4" />
+                {c.dismiss}
+              </Button>
+              <Button
+                variant="volt"
+                onClick={() => send(selected, prospect.firstName)}
+              >
+                <Send className="size-4" />
+                {c.sendSequence}
+              </Button>
+            </div>
           </div>
         </div>
       ) : (
@@ -579,6 +675,63 @@ export default function Copilot() {
       )}
         </div>
       )}
+
+      <Dialog
+        open={automateFor !== null}
+        onOpenChange={(open) => !open && setAutomateFor(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
+                <Repeat className="size-4" />
+              </span>
+              {c.automateTitle}
+            </DialogTitle>
+            <DialogDescription>
+              {automateFor ? c.automateBody(automateFor.signal.label) : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {automateFor && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => automate(automateFor, "auto")}
+                className="hover:border-primary/50 hover:bg-muted/50 flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors"
+              >
+                <span className="bg-chart-1/15 text-chart-1 mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md">
+                  <Zap className="size-4" />
+                </span>
+                <span>
+                  <span className="block text-sm font-medium">
+                    {c.automateAuto}
+                  </span>
+                  <span className="text-muted-foreground block text-xs">
+                    {c.automateAutoDesc}
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => automate(automateFor, "ask")}
+                className="hover:border-primary/50 hover:bg-muted/50 flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors"
+              >
+                <span className="bg-chart-4/15 text-chart-4 mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md">
+                  <ShieldCheck className="size-4" />
+                </span>
+                <span>
+                  <span className="block text-sm font-medium">
+                    {c.automateAsk}
+                  </span>
+                  <span className="text-muted-foreground block text-xs">
+                    {c.automateAskDesc}
+                  </span>
+                </span>
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
