@@ -9,6 +9,9 @@ import {
   Trash2,
   Plus,
   CheckSquare,
+  Sparkles,
+  Cpu,
+  Check,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -19,12 +22,26 @@ import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
 import { useTasks, taskStore } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { useView } from "@/lib/view-context"
-import { relativeTime } from "@/lib/format"
+import { relativeTime, initials } from "@/lib/format"
+import {
+  assignableUsers,
+  resolveUser,
+  resolveAssigner,
+  type Assigner,
+} from "@/lib/task-people"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
 import type { Task, TaskType } from "@/lib/types"
@@ -59,6 +76,13 @@ const COPY = {
     deleteDescription: (title: string) =>
       `"${title}" will be permanently removed.`,
     delete: "Delete",
+    assignTo: "Assign to",
+    assignedTo: (name: string) => `Assigned to ${name}`,
+    assignedBy: "Assigned by",
+    by: "by",
+    you: "you",
+    kai: "Kai",
+    system: "System",
   },
   es: {
     priorityLabel: {
@@ -90,8 +114,17 @@ const COPY = {
     deleteDescription: (title: string) =>
       `«${title}» se eliminará de forma permanente.`,
     delete: "Eliminar",
+    assignTo: "Asignar a",
+    assignedTo: (name: string) => `Asignada a ${name}`,
+    assignedBy: "Asignada por",
+    by: "por",
+    you: "ti",
+    kai: "Kai",
+    system: "Sistema",
   },
 } as const
+
+type Copy = (typeof COPY)[keyof typeof COPY]
 
 const TYPE_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> =
   {
@@ -237,11 +270,14 @@ export default function Tasks() {
                       · {prospect.firstName} {prospect.lastName}
                     </Link>
                   )}
+                  <AssignedByChip assigner={resolveAssigner(task.assignedById)} c={c} />
                 </div>
+
+                <AssigneePicker task={task} c={c} />
 
                 <Badge
                   variant={PRIORITY_VARIANT[task.priority]}
-                  className={cn("shrink-0", task.done && "opacity-60")}
+                  className={cn("shrink-0 max-sm:hidden", task.done && "opacity-60")}
                 >
                   {c.priorityLabel[task.priority]}
                 </Badge>
@@ -296,5 +332,95 @@ export default function Tasks() {
         onConfirm={confirmDelete}
       />
     </Page>
+  )
+}
+
+function UserAvatar({
+  name,
+  color,
+  className,
+}: {
+  name: string
+  color: string
+  className?: string
+}) {
+  return (
+    <Avatar className={className}>
+      <AvatarFallback
+        style={{ backgroundColor: color, color: "white" }}
+        className="text-[9px] font-medium"
+      >
+        {initials(name.split(" ")[0], name.split(" ")[1])}
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+// Quiet "assigned by Kai / System / a teammate" indicator.
+function AssignedByChip({ assigner, c }: { assigner: Assigner; c: Copy }) {
+  if (assigner.kind === "kai") {
+    return (
+      <span
+        className="text-primary inline-flex items-center gap-1 text-xs font-medium"
+        title={`${c.assignedBy} ${c.kai}`}
+      >
+        <Sparkles className="size-3" />
+        {c.kai}
+      </span>
+    )
+  }
+  if (assigner.kind === "system") {
+    return (
+      <span
+        className="text-muted-foreground inline-flex items-center gap-1 text-xs"
+        title={`${c.assignedBy} ${c.system}`}
+      >
+        <Cpu className="size-3" />
+        {c.system}
+      </span>
+    )
+  }
+  const label = assigner.isSelf ? c.you : assigner.person.name.split(" ")[0]
+  return (
+    <span
+      className="text-muted-foreground inline-flex items-center gap-1 text-xs"
+      title={`${c.assignedBy} ${assigner.person.name}`}
+    >
+      <UserAvatar name={assigner.person.name} color={assigner.person.avatarColor} className="size-4" />
+      {c.by} {label}
+    </span>
+  )
+}
+
+// Assignee avatar with a dropdown to reassign the task.
+function AssigneePicker({ task, c }: { task: Task; c: Copy }) {
+  const owner = resolveUser(task.ownerId)
+  const users = assignableUsers()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="hover:ring-ring/40 shrink-0 rounded-full transition-shadow hover:ring-2"
+          aria-label={c.assignedTo(owner.name)}
+          title={c.assignedTo(owner.name)}
+        >
+          <UserAvatar name={owner.name} color={owner.avatarColor} className="size-7" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuLabel>{c.assignTo}</DropdownMenuLabel>
+        {users.map((u) => (
+          <DropdownMenuItem
+            key={u.id}
+            onClick={() => taskStore.update(task.id, { ownerId: u.id })}
+          >
+            <UserAvatar name={u.name} color={u.avatarColor} className="size-5" />
+            <span className="flex-1 truncate">{u.name}</span>
+            {task.ownerId === u.id && <Check className="size-4" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -336,7 +336,9 @@ export interface Task {
   title: string
   type: TaskType
   prospectId?: string
-  ownerId: string
+  ownerId: string // assignee — a team member or the current user
+  // Who created/assigned the task: "kai" (AI), "system", or a user/rep id.
+  assignedById?: string
   dueDate: string
   done: boolean
   priority: "high" | "medium" | "low"
