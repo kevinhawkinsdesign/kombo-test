@@ -254,6 +254,7 @@ export interface CurrentUser {
   company: string
   plan: string
   avatarColor: string
+  avatarUrl?: string // user-uploaded profile photo (data URL)
 }
 
 export interface DashboardStat {

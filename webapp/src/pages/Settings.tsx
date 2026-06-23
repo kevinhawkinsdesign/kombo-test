@@ -10,6 +10,7 @@ import {
   Trash2,
   ExternalLink,
   Building2,
+  Camera,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -37,12 +38,13 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTheme } from "@/components/theme-provider"
 import { IcpManager } from "@/components/settings/IcpManager"
 import { useAuth } from "@/lib/auth"
 import { team } from "@/lib/team"
 import { initials } from "@/lib/format"
+import { portraitFor } from "@/lib/avatars"
 import {
   SALES_METHODOLOGIES,
   blacklistedCompanies as seedBlacklist,
@@ -77,6 +79,12 @@ const COPY = {
     company: "Company",
     saveChanges: "Save changes",
     profileSaved: "Profile saved",
+    profilePhoto: "Profile photo",
+    changePhoto: "Change photo",
+    removePhoto: "Remove",
+    photoHint: "PNG, JPG or GIF.",
+    photoUpdated: "Photo updated",
+    photoRemoved: "Photo removed",
     smartUploads: "Smart uploads",
     smartUploadsDesc: "How Kombo processes prospect lists you import.",
     autoEnrich: "Auto-enrich on upload",
@@ -176,6 +184,12 @@ const COPY = {
     company: "Empresa",
     saveChanges: "Guardar cambios",
     profileSaved: "Perfil guardado",
+    profilePhoto: "Foto de perfil",
+    changePhoto: "Cambiar foto",
+    removePhoto: "Quitar",
+    photoHint: "PNG, JPG o GIF.",
+    photoUpdated: "Foto actualizada",
+    photoRemoved: "Foto eliminada",
     smartUploads: "Cargas inteligentes",
     smartUploadsDesc:
       "Cómo procesa Kombo las listas de prospectos que importas.",
@@ -288,31 +302,7 @@ export default function Settings() {
 
         {/* ACCOUNT */}
         <TabsContent value="account" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.profileDetails}</CardTitle>
-              <CardDescription>{c.profileDetailsDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field id="name" label={c.fullName} value={user?.name} />
-                <Field
-                  id="email"
-                  label={c.email}
-                  type="email"
-                  value={user?.email}
-                />
-                <Field id="role" label={c.role} value={user?.role} />
-                <Field id="company" label={c.company} value={user?.company} />
-              </div>
-              <Separator />
-              <div className="flex justify-end">
-                <Button onClick={() => toast.success(c.profileSaved)}>
-                  {c.saveChanges}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ProfileCard c={c} />
 
           <Card>
             <CardHeader>
@@ -656,22 +646,119 @@ export default function Settings() {
   )
 }
 
-function Field({
-  id,
-  label,
-  value,
-  type,
-}: {
-  id: string
-  label: string
-  value?: string
-  type?: string
-}) {
+function ProfileCard({ c }: { c: { profileDetails: string; profileDetailsDesc: string; fullName: string; email: string; role: string; company: string; saveChanges: string; profileSaved: string; profilePhoto: string; changePhoto: string; removePhoto: string; photoHint: string; photoUpdated: string; photoRemoved: string } }) {
+  const { user, updateProfile } = useAuth()
+  const fileRef = React.useRef<HTMLInputElement>(null)
+  const [name, setName] = React.useState(user?.name ?? "")
+  const [email, setEmail] = React.useState(user?.email ?? "")
+  const [role, setRole] = React.useState(user?.role ?? "")
+  const [company, setCompany] = React.useState(user?.company ?? "")
+  const [avatarUrl, setAvatarUrl] = React.useState<string | undefined>(user?.avatarUrl)
+
+  const previewSrc = avatarUrl ?? (user ? portraitFor(user.name) : undefined)
+
+  function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = "" // allow re-selecting the same file
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const url = reader.result as string
+      setAvatarUrl(url)
+      updateProfile({ avatarUrl: url })
+      toast.success(c.photoUpdated)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function removePhoto() {
+    setAvatarUrl(undefined)
+    updateProfile({ avatarUrl: undefined })
+    toast.success(c.photoRemoved)
+  }
+
+  function save() {
+    updateProfile({ name, email, role, company })
+    toast.success(c.profileSaved)
+  }
+
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <Input id={id} type={type} defaultValue={value} />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{c.profileDetails}</CardTitle>
+        <CardDescription>{c.profileDetailsDesc}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Avatar editor */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="group relative rounded-full"
+            aria-label={c.changePhoto}
+          >
+            <Avatar className="size-16">
+              {previewSrc && <AvatarImage src={previewSrc} alt="" />}
+              <AvatarFallback
+                style={{ backgroundColor: user?.avatarColor, color: "white" }}
+                className="text-lg"
+              >
+                {initials(name.split(" ")[0] || "K", name.split(" ")[1])}
+              </AvatarFallback>
+            </Avatar>
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Camera className="size-5" />
+            </span>
+          </button>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                <Camera className="size-4" />
+                {c.changePhoto}
+              </Button>
+              {avatarUrl && (
+                <Button variant="ghost" size="sm" onClick={removePhoto}>
+                  {c.removePhoto}
+                </Button>
+              )}
+            </div>
+            <p className="text-muted-foreground text-xs">{c.photoHint}</p>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onPickPhoto}
+          />
+        </div>
+
+        <Separator />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="pf-name">{c.fullName}</Label>
+            <Input id="pf-name" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pf-email">{c.email}</Label>
+            <Input id="pf-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pf-role">{c.role}</Label>
+            <Input id="pf-role" value={role} onChange={(e) => setRole(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pf-company">{c.company}</Label>
+            <Input id="pf-company" value={company} onChange={(e) => setCompany(e.target.value)} />
+          </div>
+        </div>
+        <Separator />
+        <div className="flex justify-end">
+          <Button onClick={save}>{c.saveChanges}</Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

@@ -10,20 +10,36 @@ interface AuthState {
   signup: (name: string, email: string, password: string) => Promise<void>
   loginWithDemo: () => void
   logout: () => void
+  updateProfile: (patch: Partial<CurrentUser>) => void
 }
 
 const AuthContext = React.createContext<AuthState | undefined>(undefined)
 
 const STORAGE_KEY = "kombo-auth"
 
+// Persist the full user so profile edits (name, photo, …) survive reloads.
+// Older sessions stored just "1" — treat that as the default user.
+function loadUser(): CurrentUser | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    if (raw === "1") return currentUser
+    return { ...currentUser, ...(JSON.parse(raw) as Partial<CurrentUser>) }
+  } catch {
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<CurrentUser | null>(() => {
-    return localStorage.getItem(STORAGE_KEY) ? currentUser : null
-  })
+  const [user, setUser] = React.useState<CurrentUser | null>(loadUser)
 
   const persist = React.useCallback((next: CurrentUser | null) => {
-    if (next) localStorage.setItem(STORAGE_KEY, "1")
-    else localStorage.removeItem(STORAGE_KEY)
+    try {
+      if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      else localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      /* ignore quota errors (large data URLs) */
+    }
     setUser(next)
   }, [])
 
@@ -46,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       loginWithDemo: () => persist(currentUser),
       logout: () => persist(null),
+      updateProfile: (patch) => persist({ ...(user ?? currentUser), ...patch }),
     }),
     [user, persist]
   )
