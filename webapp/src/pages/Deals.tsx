@@ -29,13 +29,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import type { CollectionView } from "@/components/common/ViewToggle"
 import { DealFormDialog } from "@/components/deals/DealFormDialog"
 import { useView } from "@/lib/view-context"
 import { useDeals, dealStore } from "@/lib/store"
 import { getAccount, DEAL_STAGES } from "@/lib/mock-extra"
 import { getRep } from "@/lib/team"
 import { initials, formatDate, formatMoney as money } from "@/lib/format"
+import { downloadCsv } from "@/lib/csv"
 import type { Deal } from "@/lib/types"
 
 const COPY = {
@@ -73,6 +84,23 @@ const COPY = {
       won: "Won",
       lost: "Lost",
     } as Record<Deal["stage"], string>,
+    search: "Search deals…",
+    viewBoard: "Board",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Deals exported to CSV",
+    noResults: "No deals match your search.",
+    sortValue: "Highest value",
+    sortClose: "Closing soonest",
+    sortName: "Name (A–Z)",
+    sortProbability: "Win probability",
+    colName: "Deal",
+    colAccount: "Account",
+    colStage: "Stage",
+    colValue: "Value",
+    colProbability: "Win %",
+    colClose: "Close date",
+    colOwner: "Owner",
   },
   es: {
     title: "Negocios",
@@ -108,6 +136,23 @@ const COPY = {
       won: "Ganado",
       lost: "Perdido",
     } as Record<Deal["stage"], string>,
+    search: "Buscar negocios…",
+    viewBoard: "Tablero",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Negocios exportados a CSV",
+    noResults: "Ningún negocio coincide con tu búsqueda.",
+    sortValue: "Mayor valor",
+    sortClose: "Cierre más próximo",
+    sortName: "Nombre (A–Z)",
+    sortProbability: "Probabilidad de cierre",
+    colName: "Negocio",
+    colAccount: "Cuenta",
+    colStage: "Etapa",
+    colValue: "Valor",
+    colProbability: "% cierre",
+    colClose: "Fecha de cierre",
+    colOwner: "Responsable",
   },
 } as const
 
@@ -227,10 +272,57 @@ export default function Deals() {
     undefined
   )
   const [deletingDeal, setDeletingDeal] = React.useState<Deal | null>(null)
+  const [view, setView] = React.useState<CollectionView>("cards")
+  const [query, setQuery] = React.useState("")
+  const [sort, setSort] = React.useState("value")
 
   const scoped = impersonatingId
     ? deals.filter((d) => d.ownerId === impersonatingId)
     : deals
+
+  const tableDeals = React.useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const filtered = q
+      ? scoped.filter(
+          (d) =>
+            d.name.toLowerCase().includes(q) ||
+            d.contactName.toLowerCase().includes(q) ||
+            (getAccount(d.accountId)?.name.toLowerCase().includes(q) ?? false)
+        )
+      : scoped
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "close":
+          return (
+            new Date(a.closeDate).getTime() - new Date(b.closeDate).getTime()
+          )
+        case "probability":
+          return b.probability - a.probability
+        default:
+          return b.value - a.value
+      }
+    })
+    return sorted
+  }, [scoped, query, sort])
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-deals.csv",
+      [c.colName, c.colAccount, c.colStage, c.colValue, c.colProbability, c.colClose],
+      tableDeals.map((d) => [
+        d.name,
+        getAccount(d.accountId)?.name ?? "",
+        c.stages[d.stage],
+        d.value,
+        `${d.probability}%`,
+        formatDate(d.closeDate),
+      ])
+    )
+    toast.success(c.exported)
+  }
 
   const openDeals = scoped.filter(
     (d) => d.stage !== "won" && d.stage !== "lost"
@@ -292,45 +384,82 @@ export default function Deals() {
         ))}
       </div>
 
-      <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
-        {DEAL_STAGES.map((stage) => {
-          const stageDeals = scoped.filter((d) => d.stage === stage.key)
-          const stageValue = stageDeals.reduce((sum, d) => sum + d.value, 0)
-          return (
-            <div
-              key={stage.key}
-              className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-lg p-2"
-            >
-              <div className="flex items-center gap-2 px-1 pt-1">
-                <span className="font-medium">{c.stages[stage.key]}</span>
-                <Badge variant="secondary" className="tabular-nums">
-                  {stageDeals.length}
-                </Badge>
-                <span className="text-muted-foreground ml-auto text-sm tabular-nums">
-                  {money(stageValue)}
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                {stageDeals.length > 0 ? (
-                  stageDeals.map((deal) => (
-                    <DealCard
-                      key={deal.id}
-                      deal={deal}
-                      onEdit={openEdit}
-                      onDelete={setDeletingDeal}
-                    />
-                  ))
-                ) : (
-                  <p className="text-muted-foreground px-1 py-6 text-center text-xs">
-                    {c.noDeals}
-                  </p>
-                )}
-              </div>
-            </div>
-          )
-        })}
+      <div className="mt-6">
+        <CollectionToolbar
+          query={query}
+          onQueryChange={setQuery}
+          searchPlaceholder={c.search}
+          sort={sort}
+          onSortChange={setSort}
+          sortOptions={[
+            { value: "value", label: c.sortValue },
+            { value: "close", label: c.sortClose },
+            { value: "probability", label: c.sortProbability },
+            { value: "name", label: c.sortName },
+          ]}
+          view={view}
+          onViewChange={setView}
+          cardsLabel={c.viewBoard}
+          tableLabel={c.viewTable}
+          onExport={exportCsv}
+          exportLabel={c.exportLabel}
+        />
       </div>
+
+      {view === "table" ? (
+        tableDeals.length === 0 ? (
+          <Card className="text-muted-foreground p-8 text-center text-sm">
+            {c.noResults}
+          </Card>
+        ) : (
+          <DealTable
+            rows={tableDeals}
+            c={c}
+            onEdit={openEdit}
+            onDelete={setDeletingDeal}
+          />
+        )
+      ) : (
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {DEAL_STAGES.map((stage) => {
+            const stageDeals = scoped.filter((d) => d.stage === stage.key)
+            const stageValue = stageDeals.reduce((sum, d) => sum + d.value, 0)
+            return (
+              <div
+                key={stage.key}
+                className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-lg p-2"
+              >
+                <div className="flex items-center gap-2 px-1 pt-1">
+                  <span className="font-medium">{c.stages[stage.key]}</span>
+                  <Badge variant="secondary" className="tabular-nums">
+                    {stageDeals.length}
+                  </Badge>
+                  <span className="text-muted-foreground ml-auto text-sm tabular-nums">
+                    {money(stageValue)}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {stageDeals.length > 0 ? (
+                    stageDeals.map((deal) => (
+                      <DealCard
+                        key={deal.id}
+                        deal={deal}
+                        onEdit={openEdit}
+                        onDelete={setDeletingDeal}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground px-1 py-6 text-center text-xs">
+                      {c.noDeals}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       <DealFormDialog
         open={formOpen}
@@ -357,5 +486,129 @@ export default function Deals() {
         }}
       />
     </Page>
+  )
+}
+
+type Copy = (typeof COPY)[keyof typeof COPY]
+
+const STAGE_VARIANT: Record<
+  Deal["stage"],
+  "default" | "secondary" | "outline" | "success" | "destructive"
+> = {
+  lead: "outline",
+  qualified: "secondary",
+  proposal: "secondary",
+  negotiation: "default",
+  won: "success",
+  lost: "destructive",
+}
+
+function DealTable({
+  rows,
+  c,
+  onEdit,
+  onDelete,
+}: {
+  rows: Deal[]
+  c: Copy
+  onEdit: (deal: Deal) => void
+  onDelete: (deal: Deal) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colAccount}</TableHead>
+            <TableHead>{c.colStage}</TableHead>
+            <TableHead className="text-right">{c.colValue}</TableHead>
+            <TableHead className="text-right">{c.colProbability}</TableHead>
+            <TableHead className="text-right">{c.colClose}</TableHead>
+            <TableHead>{c.colOwner}</TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((deal) => (
+            <TableRow
+              key={deal.id}
+              className="cursor-pointer"
+              onClick={() => onEdit(deal)}
+            >
+              <TableCell>
+                <p className="font-medium">{deal.name}</p>
+                <p className="text-muted-foreground text-xs">
+                  {deal.contactName}
+                </p>
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {getAccount(deal.accountId)?.name ?? "—"}
+              </TableCell>
+              <TableCell>
+                <Badge variant={STAGE_VARIANT[deal.stage]} className="font-normal">
+                  {c.stages[deal.stage]}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right font-medium tabular-nums">
+                {money(deal.value)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {deal.probability}%
+              </TableCell>
+              <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
+                {formatDate(deal.closeDate)}
+              </TableCell>
+              <TableCell>
+                <OwnerAvatar ownerId={deal.ownerId} />
+              </TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label={c.dealActions}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => onEdit(deal)}>
+                      <Pencil className="size-4" />
+                      {c.edit}
+                    </DropdownMenuItem>
+                    <DropdownMenuLabel className="text-muted-foreground text-xs">
+                      {c.moveTo}
+                    </DropdownMenuLabel>
+                    {DEAL_STAGES.map((stage) => (
+                      <DropdownMenuItem
+                        key={stage.key}
+                        disabled={stage.key === deal.stage}
+                        onSelect={() => {
+                          dealStore.move(deal.id, stage.key)
+                          toast.success(c.movedTo(c.stages[stage.key]))
+                        }}
+                      >
+                        {c.stages[stage.key]}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => onDelete(deal)}
+                    >
+                      <Trash2 className="size-4" />
+                      {c.delete}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
   )
 }
