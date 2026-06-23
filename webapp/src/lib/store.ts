@@ -174,6 +174,7 @@ export const listStore = {
       id: uid("ls"),
       createdAt: nowISO(),
       prospectIds: data.prospectIds ?? [],
+      accountIds: data.accountIds ?? [],
       source: data.source ?? "search",
     }
     setState({ lists: [list, ...state.lists] })
@@ -201,6 +202,32 @@ export const listStore = {
       lists: state.lists.map((l) =>
         l.id === id
           ? { ...l, prospectIds: l.prospectIds.filter((x) => x !== prospectId) }
+          : l
+      ),
+    })
+  },
+  addAccounts(id: string, ids: string[]): void {
+    setState({
+      lists: state.lists.map((l) =>
+        l.id === id
+          ? {
+              ...l,
+              accountIds: Array.from(
+                new Set([...(l.accountIds ?? []), ...ids])
+              ),
+            }
+          : l
+      ),
+    })
+  },
+  removeAccount(id: string, accountId: string): void {
+    setState({
+      lists: state.lists.map((l) =>
+        l.id === id
+          ? {
+              ...l,
+              accountIds: (l.accountIds ?? []).filter((x) => x !== accountId),
+            }
           : l
       ),
     })

@@ -407,6 +407,17 @@ export const prospectLists: ProspectList[] = [
     color: "#f59e0b",
     source: "linkedin",
   },
+  {
+    id: "l_5",
+    name: "Target accounts — Q3",
+    description: "Named enterprise accounts the team is working this quarter.",
+    prospectIds: [],
+    accountIds: ["acc_1", "acc_3", "acc_4", "acc_6"],
+    kind: "company",
+    createdAt: "2026-06-11T08:00:00Z",
+    color: "#14b8a6",
+    source: "salesnav",
+  },
 ]
 
 export const conversations: Conversation[] = [

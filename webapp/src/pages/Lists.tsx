@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Zap,
   Database,
+  Building2,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -33,6 +34,7 @@ import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { getProspect } from "@/lib/mock-data"
+import { getAccount } from "@/lib/mock-extra"
 import { useLists, listStore } from "@/lib/store"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
@@ -78,6 +80,8 @@ const COPY = {
     imported: (count: number) =>
       `${count} prospects imported into a new list`,
     needEnrich: (count: number) => `${count} to enrich`,
+    peopleList: "People",
+    companyList: "Companies",
   },
   es: {
     sourceLinkedin: "LinkedIn",
@@ -118,6 +122,8 @@ const COPY = {
     imported: (count: number) =>
       `${count} prospectos importados a una nueva lista`,
     needEnrich: (count: number) => `${count} por enriquecer`,
+    peopleList: "Personas",
+    companyList: "Empresas",
   },
 } as const
 
@@ -151,12 +157,6 @@ function DynamicChips({ list }: { list: ProspectList }) {
 export default function Lists() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const sourceLabels: Record<string, string> = {
-    linkedin: c.sourceLinkedin,
-    salesnav: c.sourceSalesnav,
-    csv: c.sourceCsv,
-    search: c.sourceSearch,
-  }
   const lists = useLists()
   const [importOpen, setImportOpen] = React.useState(false)
   const [formOpen, setFormOpen] = React.useState(false)
@@ -223,10 +223,19 @@ export default function Lists() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {sortedLists.map((list) => {
+          const isCompany = list.kind === "company"
           const members = list.prospectIds
             .map(getProspect)
             .filter((p): p is NonNullable<typeof p> => Boolean(p))
-          const pendingCount = members.filter((p) => !isEnriched(p)).length
+          const accounts = (list.accountIds ?? [])
+            .map(getAccount)
+            .filter((a): a is NonNullable<typeof a> => Boolean(a))
+          const memberCount = isCompany
+            ? list.accountIds?.length ?? 0
+            : list.prospectIds.length
+          const pendingCount = isCompany
+            ? 0
+            : members.filter((p) => !isEnriched(p)).length
           return (
             <Card
               key={list.id}
@@ -278,6 +287,8 @@ export default function Lists() {
                   >
                     {list.dynamic ? (
                       <Sparkles className="size-4" style={{ color: list.color }} />
+                    ) : isCompany ? (
+                      <Building2 className="size-4" style={{ color: list.color }} />
                     ) : (
                       <FolderKanban
                         className="size-4"
@@ -295,8 +306,13 @@ export default function Lists() {
                         {c.live}
                       </Badge>
                     )}
-                    <Badge variant="secondary" className="font-normal">
-                      {sourceLabels[list.source]}
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      {isCompany ? (
+                        <Building2 className="size-3" />
+                      ) : (
+                        <Users className="size-3" />
+                      )}
+                      {isCompany ? c.companyList : c.peopleList}
                     </Badge>
                   </div>
                 </div>
@@ -309,16 +325,27 @@ export default function Lists() {
               </CardHeader>
               <CardContent className="flex items-center justify-between">
                 <div className="flex -space-x-2">
-                  {members.slice(0, 4).map((p) => (
-                    <ProspectAvatar
-                      key={p.id}
-                      prospect={p}
-                      className="ring-background size-7 ring-2"
-                    />
-                  ))}
-                  {members.length > 4 && (
+                  {isCompany
+                    ? accounts.slice(0, 4).map((a) => (
+                        <span
+                          key={a.id}
+                          className="ring-background flex size-7 items-center justify-center rounded-md text-xs font-semibold text-white ring-2"
+                          style={{ backgroundColor: a.logoColor }}
+                          title={a.name}
+                        >
+                          {a.name.charAt(0)}
+                        </span>
+                      ))
+                    : members.slice(0, 4).map((p) => (
+                        <ProspectAvatar
+                          key={p.id}
+                          prospect={p}
+                          className="ring-background size-7 ring-2"
+                        />
+                      ))}
+                  {memberCount > 4 && (
                     <span className="bg-muted ring-background text-muted-foreground flex size-7 items-center justify-center rounded-full text-xs ring-2">
-                      +{members.length - 4}
+                      +{memberCount - 4}
                     </span>
                   )}
                 </div>
@@ -333,8 +360,12 @@ export default function Lists() {
                     </Badge>
                   )}
                   <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                    <Users className="size-3.5" />
-                    {list.prospectIds.length}
+                    {isCompany ? (
+                      <Building2 className="size-3.5" />
+                    ) : (
+                      <Users className="size-3.5" />
+                    )}
+                    {memberCount}
                   </div>
                 </div>
               </CardContent>

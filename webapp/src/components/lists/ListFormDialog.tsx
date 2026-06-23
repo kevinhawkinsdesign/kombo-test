@@ -1,6 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Check } from "lucide-react"
+import { Check, Users, Building2 } from "lucide-react"
 
 import {
   Dialog,
@@ -40,6 +40,7 @@ export function ListFormDialog({
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [color, setColor] = React.useState<string>(PRESET_COLORS[0])
+  const [kind, setKind] = React.useState<"people" | "company">("people")
 
   // Reset fields whenever the dialog transitions to open, seeding from `list`
   // for edit mode. Adjusting state during render (the React-recommended
@@ -51,6 +52,7 @@ export function ListFormDialog({
       setName(list?.name ?? "")
       setDescription(list?.description ?? "")
       setColor(list?.color ?? PRESET_COLORS[0])
+      setKind(list?.kind ?? "people")
     }
   }
 
@@ -72,6 +74,7 @@ export function ListFormDialog({
         name: trimmedName,
         description: description.trim(),
         color,
+        kind,
       })
       toast.success("List created")
     }
@@ -86,6 +89,42 @@ export function ListFormDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {!isEdit && (
+            <div className="space-y-2">
+              <Label>List type</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { value: "people", label: "People", icon: Users },
+                    { value: "company", label: "Companies", icon: Building2 },
+                  ] as const
+                ).map((opt) => {
+                  const selected = kind === opt.value
+                  const Icon = opt.icon
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setKind(opt.value)}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors",
+                        selected
+                          ? "border-primary ring-primary bg-primary/[0.04] ring-1"
+                          : "hover:bg-muted/60"
+                      )}
+                    >
+                      <Icon className="size-4" />
+                      {opt.label}
+                      {selected && (
+                        <Check className="text-primary ml-auto size-4" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="list-name">Name</Label>
             <Input
