@@ -820,12 +820,12 @@ export default function Search() {
           <Card className="gap-3 p-3">
           {/* Data sources */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="text-foreground inline-flex items-center gap-1.5 text-sm font-medium">
+            <span
+              className="text-muted-foreground inline-flex items-center gap-1.5 text-sm"
+              title={c.komboHint}
+            >
               <Database className="text-primary size-4" />
               {c.komboData}
-            </span>
-            <span className="text-muted-foreground hidden text-xs lg:inline">
-              {c.komboHint}
             </span>
             <label className="ml-auto inline-flex items-center gap-2" title={c.linkedinHint}>
               <LinkedinIcon className="size-4 text-[#0a66c2]" />
@@ -952,17 +952,6 @@ export default function Search() {
                   </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              {/* Any results can be saved as a saved search (people or companies). */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={saveSearch}
-                disabled={shownCount === 0}
-              >
-                <Bookmark className="size-4" />
-                <span className="hidden sm:inline">{c.saveThis}</span>
-              </Button>
 
               {entity === "companies" ? (
                 <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
