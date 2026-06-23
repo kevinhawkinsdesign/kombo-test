@@ -28,14 +28,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import type { CollectionView } from "@/components/common/ViewToggle"
 import { getProspect } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
 import { useLists, listStore } from "@/lib/store"
+import { downloadCsv } from "@/lib/csv"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
 import type { ProspectList } from "@/lib/types"
@@ -82,6 +93,21 @@ const COPY = {
     needEnrich: (count: number) => `${count} to enrich`,
     peopleList: "People",
     companyList: "Companies",
+    search: "Search lists…",
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Lists exported to CSV",
+    noResults: "No lists match your search.",
+    sortDefault: "Playlists first",
+    sortName: "Name (A–Z)",
+    sortMembers: "Most members",
+    sortRecent: "Newest",
+    colName: "List",
+    colType: "Type",
+    colSource: "Source",
+    colMembers: "Members",
+    colCreated: "Created",
   },
   es: {
     sourceLinkedin: "LinkedIn",
@@ -124,6 +150,21 @@ const COPY = {
     needEnrich: (count: number) => `${count} por enriquecer`,
     peopleList: "Personas",
     companyList: "Empresas",
+    search: "Buscar listas…",
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Listas exportadas a CSV",
+    noResults: "Ninguna lista coincide con tu búsqueda.",
+    sortDefault: "Playlists primero",
+    sortName: "Nombre (A–Z)",
+    sortMembers: "Más miembros",
+    sortRecent: "Más recientes",
+    colName: "Lista",
+    colType: "Tipo",
+    colSource: "Origen",
+    colMembers: "Miembros",
+    colCreated: "Creada",
   },
 } as const
 
@@ -167,6 +208,9 @@ export default function Lists() {
   const [deletingList, setDeletingList] = React.useState<
     ProspectList | undefined
   >(undefined)
+  const [view, setView] = React.useState<CollectionView>("cards")
+  const [query, setQuery] = React.useState("")
+  const [sort, setSort] = React.useState("default")
 
   function openCreate() {
     setEditingList(undefined)
@@ -178,10 +222,53 @@ export default function Lists() {
     setFormOpen(true)
   }
 
-  // Dynamic "playlists" lead — they're the flagship way to work.
-  const sortedLists = [...lists].sort(
-    (a, b) => Number(Boolean(b.dynamic)) - Number(Boolean(a.dynamic))
-  )
+  const memberCountOf = (list: ProspectList) =>
+    list.kind === "company"
+      ? list.accountIds?.length ?? 0
+      : list.prospectIds.length
+
+  const sortedLists = React.useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const filtered = q
+      ? lists.filter(
+          (l) =>
+            l.name.toLowerCase().includes(q) ||
+            l.description.toLowerCase().includes(q)
+        )
+      : lists
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "members":
+          return memberCountOf(b) - memberCountOf(a)
+        case "recent":
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        default:
+          // Dynamic "playlists" lead — they're the flagship way to work.
+          return Number(Boolean(b.dynamic)) - Number(Boolean(a.dynamic))
+      }
+    })
+    return sorted
+  }, [lists, query, sort])
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-lists.csv",
+      [c.colName, c.colType, c.colSource, c.colMembers, c.colCreated],
+      sortedLists.map((l) => [
+        l.name,
+        l.kind === "company" ? c.companyList : c.peopleList,
+        l.source,
+        memberCountOf(l),
+        formatDate(l.createdAt),
+      ])
+    )
+    toast.success(c.exported)
+  }
 
   return (
     <Page>
@@ -221,6 +308,39 @@ export default function Lists() {
         className="mb-6"
       />
 
+      <CollectionToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchPlaceholder={c.search}
+        sort={sort}
+        onSortChange={setSort}
+        sortOptions={[
+          { value: "default", label: c.sortDefault },
+          { value: "name", label: c.sortName },
+          { value: "members", label: c.sortMembers },
+          { value: "recent", label: c.sortRecent },
+        ]}
+        view={view}
+        onViewChange={setView}
+        cardsLabel={c.viewCards}
+        tableLabel={c.viewTable}
+        onExport={exportCsv}
+        exportLabel={c.exportLabel}
+      />
+
+      {sortedLists.length === 0 ? (
+        <Card className="text-muted-foreground p-8 text-center text-sm">
+          {c.noResults}
+        </Card>
+      ) : view === "table" ? (
+        <ListTable
+          rows={sortedLists}
+          c={c}
+          memberCountOf={memberCountOf}
+          onEdit={openEdit}
+          onDelete={setDeletingList}
+        />
+      ) : (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {sortedLists.map((list) => {
           const isCompany = list.kind === "company"
@@ -379,6 +499,7 @@ export default function Lists() {
           )
         })}
       </div>
+      )}
 
       <PlaylistWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
@@ -413,5 +534,135 @@ export default function Lists() {
         onImported={(count) => toast.success(c.imported(count))}
       />
     </Page>
+  )
+}
+
+type Copy = (typeof COPY)[keyof typeof COPY]
+
+function ListTable({
+  rows,
+  c,
+  memberCountOf,
+  onEdit,
+  onDelete,
+}: {
+  rows: ProspectList[]
+  c: Copy
+  memberCountOf: (list: ProspectList) => number
+  onEdit: (list: ProspectList) => void
+  onDelete: (list: ProspectList) => void
+}) {
+  const sourceLabels: Record<string, string> = {
+    linkedin: c.sourceLinkedin,
+    salesnav: c.sourceSalesnav,
+    csv: c.sourceCsv,
+    search: c.sourceSearch,
+  }
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colType}</TableHead>
+            <TableHead>{c.colSource}</TableHead>
+            <TableHead className="text-right">{c.colMembers}</TableHead>
+            <TableHead className="text-right">{c.colCreated}</TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((list) => {
+            const isCompany = list.kind === "company"
+            return (
+              <TableRow key={list.id}>
+                <TableCell>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="flex size-7 shrink-0 items-center justify-center rounded-md"
+                      style={{ backgroundColor: `${list.color}1a` }}
+                    >
+                      {list.dynamic ? (
+                        <Sparkles
+                          className="size-3.5"
+                          style={{ color: list.color }}
+                        />
+                      ) : isCompany ? (
+                        <Building2
+                          className="size-3.5"
+                          style={{ color: list.color }}
+                        />
+                      ) : (
+                        <FolderKanban
+                          className="size-3.5"
+                          style={{ color: list.color }}
+                        />
+                      )}
+                    </span>
+                    <Link
+                      to={`/lists/${list.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {list.name}
+                    </Link>
+                    {list.dynamic && (
+                      <Badge className="bg-chart-1/15 text-chart-1 border-transparent font-normal">
+                        {c.live}
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="gap-1 font-normal">
+                    {isCompany ? (
+                      <Building2 className="size-3" />
+                    ) : (
+                      <Users className="size-3" />
+                    )}
+                    {isCompany ? c.companyList : c.peopleList}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {sourceLabels[list.source]}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {memberCountOf(list)}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
+                  {formatDate(list.createdAt)}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label={c.listActions}
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => onEdit(list)}>
+                        <Pencil className="size-4" />
+                        {c.edit}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => onDelete(list)}
+                      >
+                        <Trash2 className="size-4" />
+                        {c.delete}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   )
 }
