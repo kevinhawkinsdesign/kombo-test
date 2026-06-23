@@ -44,8 +44,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import type { CollectionView } from "@/components/common/ViewToggle"
 import { useCampaigns, useLists, campaignStore } from "@/lib/store"
+import { downloadCsv } from "@/lib/csv"
 import { formatDate } from "@/lib/format"
 import { useLocale } from "@/lib/locale"
 import type { Campaign, CampaignStatus } from "@/lib/types"
@@ -110,6 +121,21 @@ const COPY = {
     deleteDescription: (name: string) =>
       `"${name}" and its sequence will be permanently removed.`,
     delete: "Delete",
+    search: "Search campaigns…",
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Campaigns exported to CSV",
+    noResults: "No campaigns match your search.",
+    sortRecent: "Newest",
+    sortName: "Name (A–Z)",
+    sortEnrolled: "Most enrolled",
+    sortReply: "Reply rate",
+    colName: "Campaign",
+    colStatus: "Status",
+    colReply: "Reply rate",
+    colCreated: "Created",
+    more: "Campaign options",
   },
   es: {
     statusLabel: {
@@ -164,6 +190,21 @@ const COPY = {
     deleteDescription: (name: string) =>
       `«${name}» y su secuencia se eliminarán de forma permanente.`,
     delete: "Eliminar",
+    search: "Buscar campañas…",
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Campañas exportadas a CSV",
+    noResults: "Ninguna campaña coincide con tu búsqueda.",
+    sortRecent: "Más recientes",
+    sortName: "Nombre (A–Z)",
+    sortEnrolled: "Más inscritos",
+    sortReply: "Tasa de respuesta",
+    colName: "Campaña",
+    colStatus: "Estado",
+    colReply: "Tasa de respuesta",
+    colCreated: "Creada",
+    more: "Opciones de campaña",
   },
 } as const
 
@@ -367,6 +408,101 @@ function CampaignCard({
   )
 }
 
+function CampaignTable({
+  rows,
+  c,
+  replyRateOf,
+  onDuplicate,
+  onDelete,
+}: {
+  rows: Campaign[]
+  c: (typeof COPY)[keyof typeof COPY]
+  replyRateOf: (cm: Campaign) => number
+  onDuplicate: (campaign: Campaign) => void
+  onDelete: (campaign: Campaign) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colStatus}</TableHead>
+            <TableHead className="text-right">{c.enrolled}</TableHead>
+            <TableHead className="text-right">{c.opened}</TableHead>
+            <TableHead className="text-right">{c.colReply}</TableHead>
+            <TableHead className="text-right">{c.meetings}</TableHead>
+            <TableHead className="text-right">{c.colCreated}</TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((cm) => (
+            <TableRow key={cm.id}>
+              <TableCell>
+                <Link
+                  to={`/campaigns/${cm.id}`}
+                  className="font-medium hover:underline"
+                >
+                  {cm.name}
+                </Link>
+              </TableCell>
+              <TableCell>
+                <Badge variant={STATUS_VARIANT[cm.status]}>
+                  {c.statusLabel[cm.status]}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {cm.enrolled}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {cm.opened}
+              </TableCell>
+              <TableCell className="text-chart-1 text-right font-medium tabular-nums">
+                {replyRateOf(cm)}%
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {cm.meetings}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
+                {formatDate(cm.createdAt)}
+              </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label={c.more}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to={`/campaigns/${cm.id}`}>{c.editSequence}</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDuplicate(cm)}>
+                      {c.duplicate}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onDelete(cm)}
+                    >
+                      {c.archive}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
+  )
+}
+
 function CreateCampaignDialog({
   open,
   onOpenChange,
@@ -448,6 +584,52 @@ export default function Campaigns() {
   const [pendingDelete, setPendingDelete] = React.useState<Campaign | null>(
     null
   )
+  const [view, setView] = React.useState<CollectionView>("cards")
+  const [query, setQuery] = React.useState("")
+  const [sort, setSort] = React.useState("recent")
+
+  const replyRateOf = (cm: Campaign) =>
+    cm.enrolled ? Math.round((cm.replied / cm.enrolled) * 100) : 0
+
+  const visible = React.useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const filtered = q
+      ? campaigns.filter((cm) => cm.name.toLowerCase().includes(q))
+      : campaigns
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "enrolled":
+          return b.enrolled - a.enrolled
+        case "reply":
+          return replyRateOf(b) - replyRateOf(a)
+        default:
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+      }
+    })
+    return sorted
+  }, [campaigns, query, sort])
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-campaigns.csv",
+      [c.colName, c.colStatus, c.enrolled, c.opened, c.colReply, c.meetings, c.colCreated],
+      visible.map((cm) => [
+        cm.name,
+        c.statusLabel[cm.status],
+        cm.enrolled,
+        cm.opened,
+        `${replyRateOf(cm)}%`,
+        cm.meetings,
+        formatDate(cm.createdAt),
+      ])
+    )
+    toast.success(c.exported)
+  }
 
   // Map each campaign to the playlist that feeds it (if any).
   const audienceByCampaign = React.useMemo(() => {
@@ -507,17 +689,52 @@ export default function Campaigns() {
         points={[...c.introPoints]}
         className="mb-6"
       />
-      <div className="grid gap-4 lg:grid-cols-2">
-        {campaigns.map((campaign) => (
-          <CampaignCard
-            key={campaign.id}
-            campaign={campaign}
-            audience={audienceByCampaign.get(campaign.id)}
-            onDuplicate={handleDuplicate}
-            onDelete={setPendingDelete}
-          />
-        ))}
-      </div>
+
+      <CollectionToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchPlaceholder={c.search}
+        sort={sort}
+        onSortChange={setSort}
+        sortOptions={[
+          { value: "recent", label: c.sortRecent },
+          { value: "name", label: c.sortName },
+          { value: "enrolled", label: c.sortEnrolled },
+          { value: "reply", label: c.sortReply },
+        ]}
+        view={view}
+        onViewChange={setView}
+        cardsLabel={c.viewCards}
+        tableLabel={c.viewTable}
+        onExport={exportCsv}
+        exportLabel={c.exportLabel}
+      />
+
+      {visible.length === 0 ? (
+        <Card className="text-muted-foreground p-8 text-center text-sm">
+          {c.noResults}
+        </Card>
+      ) : view === "cards" ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {visible.map((campaign) => (
+            <CampaignCard
+              key={campaign.id}
+              campaign={campaign}
+              audience={audienceByCampaign.get(campaign.id)}
+              onDuplicate={handleDuplicate}
+              onDelete={setPendingDelete}
+            />
+          ))}
+        </div>
+      ) : (
+        <CampaignTable
+          rows={visible}
+          c={c}
+          replyRateOf={replyRateOf}
+          onDuplicate={handleDuplicate}
+          onDelete={setPendingDelete}
+        />
+      )}
 
       <CreateCampaignDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ConfirmDialog
