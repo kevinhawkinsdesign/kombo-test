@@ -352,6 +352,10 @@ function avatarColorFor(id: string): string {
   return getRep(id)?.avatarColor ?? "#7c3aed"
 }
 
+function snoozeUntilISO(hours: number): string {
+  return new Date(Date.now() + hours * 3600 * 1000).toISOString()
+}
+
 function formatWhen(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     month: "short",
@@ -467,7 +471,9 @@ export default function Inbox() {
 
   const active = conversations.find((conv) => conv.id === activeId)
   const activeInList = active && list.some((x) => x.id === active.id)
-  const effectiveActive = activeInList ? active : list[0]
+  // No conversation is open until the user explicitly picks one — opening a
+  // thread marks it read, so we never auto-select on load or list changes.
+  const effectiveActive = activeInList ? active : undefined
   const activeProspect = effectiveActive ? getProspect(effectiveActive.prospectId) : undefined
   const recipientLang: ChatLang =
     effectiveActive?.recipientLang ?? defaultLang(activeProspect)
@@ -494,8 +500,7 @@ export default function Inbox() {
   }
   function snoozeBy(hours: number) {
     if (!effectiveActive) return
-    const until = new Date(Date.now() + hours * 3600 * 1000).toISOString()
-    conversationStore.snooze(effectiveActive.id, until)
+    conversationStore.snooze(effectiveActive.id, snoozeUntilISO(hours))
     toast.success(c.snoozedToast)
   }
 

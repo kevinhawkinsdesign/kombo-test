@@ -5,7 +5,6 @@ import { AppHeader } from "@/components/layout/AppHeader"
 import { ProspectSearch } from "@/components/layout/ProspectSearch"
 import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
-import { SupportWidget } from "@/components/support/SupportWidget"
 import { NewCampaignProvider } from "@/components/campaign/NewCampaignWizard"
 
 export function AppLayout() {
@@ -28,7 +27,6 @@ export function AppLayout() {
         </main>
       </div>
       <MobileBottomNav />
-      <SupportWidget />
       <ProspectSearch />
     </div>
     </NewCampaignProvider>

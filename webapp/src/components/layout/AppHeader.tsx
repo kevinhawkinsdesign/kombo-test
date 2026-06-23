@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   Moon,
@@ -9,6 +10,9 @@ import {
   Check,
   HelpCircle,
   ChevronDown,
+  MessageCircle,
+  BookOpen,
+  Keyboard,
 } from "lucide-react"
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -22,6 +26,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
@@ -36,14 +47,18 @@ const LOCALE_LABEL: Record<Locale, string> = { en: "English", es: "Español" }
 
 const HELP_CENTER_URL = "https://info.getkombo.ai/en/"
 
-// One-click support: open the Intercom Messenger if it's loaded, otherwise the
-// help center.
-function openSupport() {
+// Open the Intercom Messenger to start a new conversation if it's loaded,
+// otherwise fall back to the help center.
+function sendSupportMessage() {
   const w = window as unknown as { Intercom?: (command: string) => void }
   if (typeof w.Intercom === "function") {
-    w.Intercom("show")
+    w.Intercom("showNewMessage")
     return
   }
+  window.open(HELP_CENTER_URL, "_blank", "noreferrer")
+}
+
+function openHelpCenter() {
   window.open(HELP_CENTER_URL, "_blank", "noreferrer")
 }
 
@@ -53,6 +68,7 @@ export function AppHeader() {
   const { balance } = useCredits()
   const { locale, setLocale, t } = useLocale()
   const navigate = useNavigate()
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur md:gap-3 md:px-6">
@@ -70,17 +86,56 @@ export function AppHeader() {
           <span className="tabular-nums">{balance.toLocaleString()}</span>
         </button>
 
-        {/* Permanent one-click support */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={openSupport}
-          aria-label={t("header.help")}
-          title={t("header.help")}
-          className="text-primary hover:text-primary"
-        >
-          <HelpCircle className="size-5" />
-        </Button>
+        {/* Help & support menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t("header.help")}
+              title={t("header.help")}
+              className="text-primary hover:text-primary"
+            >
+              <HelpCircle className="size-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-72">
+            <DropdownMenuLabel className="space-y-0.5">
+              <p className="font-semibold">{t("help.title")}</p>
+              <p className="text-muted-foreground text-xs font-normal">
+                {t("help.subtitle")}
+              </p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="gap-3 py-2" onClick={sendSupportMessage}>
+              <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
+                <MessageCircle className="size-4" />
+              </span>
+              <span className="flex flex-col">
+                <span className="text-sm font-medium">{t("help.message")}</span>
+                <span className="text-muted-foreground text-xs">{t("help.messageSub")}</span>
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-3 py-2" onClick={openHelpCenter}>
+              <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
+                <BookOpen className="size-4" />
+              </span>
+              <span className="flex flex-col">
+                <span className="text-sm font-medium">{t("help.center")}</span>
+                <span className="text-muted-foreground text-xs">{t("help.centerSub")}</span>
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-3 py-2" onClick={() => setShortcutsOpen(true)}>
+              <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
+                <Keyboard className="size-4" />
+              </span>
+              <span className="flex flex-col">
+                <span className="text-sm font-medium">{t("help.shortcuts")}</span>
+                <span className="text-muted-foreground text-xs">{t("help.shortcutsSub")}</span>
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Language picker with flags */}
         <DropdownMenu>
@@ -160,7 +215,7 @@ export function AppHeader() {
               {t("menu.billing")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={openSupport}>
+            <DropdownMenuItem onClick={sendSupportMessage}>
               <HelpCircle className="size-4" />
               {t("header.help")}
             </DropdownMenuItem>
@@ -172,6 +227,35 @@ export function AppHeader() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("help.shortcutsTitle")}</DialogTitle>
+            <DialogDescription>{t("help.shortcutsSub")}</DialogDescription>
+          </DialogHeader>
+          <div className="divide-border divide-y">
+            {[
+              { label: t("shortcut.search"), keys: ["⌘", "K"] },
+              { label: t("shortcut.close"), keys: ["Esc"] },
+            ].map((s) => (
+              <div key={s.label} className="flex items-center justify-between py-2.5">
+                <span className="text-sm">{s.label}</span>
+                <span className="flex items-center gap-1">
+                  {s.keys.map((k) => (
+                    <kbd
+                      key={k}
+                      className="bg-muted text-muted-foreground inline-flex h-6 min-w-6 items-center justify-center rounded border px-1.5 text-xs font-medium"
+                    >
+                      {k}
+                    </kbd>
+                  ))}
+                </span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   )
 }

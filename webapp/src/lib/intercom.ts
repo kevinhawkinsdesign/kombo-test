@@ -1,5 +1,5 @@
 // Loads the Intercom Messenger when VITE_INTERCOM_APP_ID is configured.
-// Without an app id this is a no-op; the in-app SupportWidget still works
+// Without an app id this is a no-op; the top-bar Help menu still works
 // and falls back to the help center.
 
 interface IntercomFn {
