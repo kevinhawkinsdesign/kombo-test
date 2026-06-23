@@ -13,6 +13,7 @@ export type FeatureKey =
   | "ai-search"
   | "discover"
   | "companies"
+  | "people"
   | "intros"
   | "lists"
   | "inbox"

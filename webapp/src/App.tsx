@@ -10,6 +10,7 @@ import Copilot from "@/pages/Copilot"
 import Search from "@/pages/Search"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
+import People from "@/pages/People"
 import CompanyDetail from "@/pages/CompanyDetail"
 import WarmIntros from "@/pages/WarmIntros"
 import Lists from "@/pages/Lists"
@@ -78,6 +79,7 @@ function App() {
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />
+        <Route path="/people" element={<People />} />
         <Route path="/discover" element={<Navigate to="/companies" replace />} />
         <Route path="/intros" element={<WarmIntros />} />
         <Route path="/lists" element={<Lists />} />
