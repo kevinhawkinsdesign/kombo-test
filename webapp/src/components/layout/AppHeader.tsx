@@ -11,7 +11,6 @@ import {
   Check,
   HelpCircle,
   ChevronDown,
-  Sparkles,
 } from "lucide-react"
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -89,23 +88,12 @@ export function AppHeader() {
       <div className="ml-auto flex items-center gap-1 md:ml-0">
         <button
           onClick={() => navigate("/usage")}
-          className="hover:bg-muted text-foreground hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors sm:flex"
+          className="hover:bg-muted text-foreground hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors sm:flex"
           title={t("header.credits")}
         >
           <Zap className="text-chart-4 size-3.5" />
           <span className="tabular-nums">{balance.toLocaleString()}</span>
         </button>
-
-        {/* Ask Kai and search are one surface now — both open AI Search. */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => navigate("/search")}
-        >
-          <Sparkles className="text-primary size-4" />
-          <span className="hidden sm:inline">Ask Kai</span>
-        </Button>
 
         {/* Permanent one-click support */}
         <Button
@@ -124,8 +112,8 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
-              className="gap-1 px-1.5"
+              size="icon"
+              className="gap-1 px-2"
               aria-label={`Language: ${LOCALE_LABEL[locale]}`}
             >
               <span className="text-base leading-none">
@@ -165,7 +153,7 @@ export function AppHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="focus-visible:ring-ring ml-0.5 flex items-center gap-2 rounded-full outline-none focus-visible:ring-2">
-              <Avatar>
+              <Avatar className="size-9">
                 {user && <AvatarImage src={portraitFor(user.name)} alt="" />}
                 <AvatarFallback
                   style={{ backgroundColor: user?.avatarColor, color: "white" }}

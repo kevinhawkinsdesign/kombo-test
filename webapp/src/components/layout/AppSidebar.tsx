@@ -587,14 +587,23 @@ function SidebarContent({
             </>
           )}
 
-          {onToggleCollapse && (
+        </nav>
+
+        {/* Pinned footer — always visible; the nav above scrolls behind it. */}
+        {onToggleCollapse && (
+          <div
+            className={cn(
+              "bg-sidebar border-sidebar-border shrink-0 border-t",
+              collapsed ? "flex justify-center p-2" : "p-3"
+            )}
+          >
             <button
               type="button"
               onClick={onToggleCollapse}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               className={cn(
-                "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground mt-1 flex items-center rounded-md text-sm font-medium transition-colors",
-                collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2"
+                "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground flex items-center rounded-md text-sm font-medium transition-colors",
+                collapsed ? "size-9 justify-center" : "w-full gap-3 px-3 py-2"
               )}
             >
               {collapsed ? (
@@ -606,8 +615,8 @@ function SidebarContent({
                 </>
               )}
             </button>
-          )}
-        </nav>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   )
