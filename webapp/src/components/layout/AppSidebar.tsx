@@ -35,6 +35,7 @@ import {
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
+import { ProspectSearchTrigger } from "@/components/layout/ProspectSearch"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -362,6 +363,10 @@ function SidebarContent({
           >
             {collapsed ? <KomboMark /> : <KomboLockup className="h-7" />}
           </NavLink>
+        </div>
+
+        <div className={cn("pb-2", collapsed ? "px-2" : "px-3")}>
+          <ProspectSearchTrigger collapsed={collapsed} onNavigate={onNavigate} />
         </div>
 
         <div className={cn(collapsed ? "px-2" : "px-3")}>
