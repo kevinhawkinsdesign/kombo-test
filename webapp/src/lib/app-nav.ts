@@ -42,6 +42,7 @@ export const APP_DESTINATIONS: AppDestination[] = [
   { to: "/inbox", labelKey: "nav.inbox", icon: Inbox, keywords: ["messages", "replies", "conversations"] },
   { to: "/search", labelKey: "nav.search", icon: Search, keywords: ["prospects", "find", "leads", "people"] },
   { to: "/companies", labelKey: "nav.companies", icon: Building2, keywords: ["accounts", "discover"] },
+  { to: "/people", labelKey: "nav.people", icon: Users, keywords: ["prospects", "contacts", "leads", "persons"] },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban, keywords: ["segments"] },
   { to: "/intros", labelKey: "nav.intros", icon: Waypoints, keywords: ["warm", "introductions", "referrals"] },
   { to: "/extension", labelKey: "nav.extension", icon: Puzzle, keywords: ["chrome", "browser"] },
