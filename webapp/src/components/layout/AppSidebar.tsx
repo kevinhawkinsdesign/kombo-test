@@ -329,7 +329,7 @@ function CollapsedGroupIcon({
               : "text-sidebar-foreground hover:bg-sidebar-accent/60"
           )}
         >
-          <Icon className="size-4" />
+          <Icon className="size-5 shrink-0" strokeWidth={2.25} />
           {hasNew && (
             <span className="bg-volt ring-sidebar absolute top-1 right-1 size-2 rounded-full ring-2" />
           )}
