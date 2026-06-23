@@ -105,7 +105,6 @@ const groups: NavGroup[] = [
     icon: Telescope,
     items: [
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
-      { to: "/discover", labelKey: "nav.discover", icon: Telescope, isNew: true },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
       { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
       { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },
@@ -120,7 +119,6 @@ const groups: NavGroup[] = [
       { to: "/sequences", labelKey: "nav.sequences", icon: Workflow, isNew: true },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
       { to: "/library", labelKey: "nav.library", icon: LibraryBig, isNew: true },
-      { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, isNew: true },
       { to: "/channels", labelKey: "nav.channels", icon: Radio, isNew: true },
       { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare, isNew: true },
     ],
@@ -142,6 +140,7 @@ const manageGroup: NavGroup = {
   labelKey: "nav.manage",
   icon: Settings2,
   items: [
+    { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
     { to: "/team", labelKey: "nav.team", icon: Users },
     { to: "/usage", labelKey: "nav.usage", icon: Zap },
     { to: "/referrals", labelKey: "nav.referrals", icon: Gift },

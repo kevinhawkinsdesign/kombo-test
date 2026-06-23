@@ -196,6 +196,19 @@ function leadToProspectInput(l: AiLead) {
 export default function Discover() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  return (
+    <Page>
+      <PageHeading title={c.title} description={c.description} />
+      <DiscoverFeed showIntro />
+    </Page>
+  )
+}
+
+// The lookalike feed body — reused standalone (the Discover page) and as a tab
+// inside Companies.
+export function DiscoverFeed({ showIntro = false }: { showIntro?: boolean }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const [seedId, setSeedId] = React.useState("all")
   const [batch, setBatch] = React.useState(1)
   const [items, setItems] = React.useState<FeedItem[]>(() =>
@@ -248,17 +261,17 @@ export default function Discover() {
   }
 
   return (
-    <Page>
-      <PageHeading title={c.title} description={c.description} />
-
-      <FeatureIntro
-        featureKey="discover"
-        icon={Telescope}
-        title={c.introTitle}
-        description={c.introDescription}
-        points={[...c.introPoints]}
-        className="mb-6"
-      />
+    <>
+      {showIntro && (
+        <FeatureIntro
+          featureKey="discover"
+          icon={Telescope}
+          title={c.introTitle}
+          description={c.introDescription}
+          points={[...c.introPoints]}
+          className="mb-6"
+        />
+      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
@@ -325,7 +338,7 @@ export default function Discover() {
           {c.loadMore}
         </Button>
       </div>
-    </Page>
+    </>
   )
 }
 

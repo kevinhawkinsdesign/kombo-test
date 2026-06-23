@@ -11,7 +11,6 @@ import Search from "@/pages/Search"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
 import CompanyDetail from "@/pages/CompanyDetail"
-import Discover from "@/pages/Discover"
 import WarmIntros from "@/pages/WarmIntros"
 import Lists from "@/pages/Lists"
 import ListDetail from "@/pages/ListDetail"
@@ -79,7 +78,7 @@ function App() {
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />
-        <Route path="/discover" element={<Discover />} />
+        <Route path="/discover" element={<Navigate to="/companies" replace />} />
         <Route path="/intros" element={<WarmIntros />} />
         <Route path="/lists" element={<Lists />} />
         <Route path="/lists/:id" element={<ListDetail />} />
