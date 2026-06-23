@@ -218,6 +218,8 @@ const COPY = {
     lookalikeDesc:
       "Lookalike search starts from a person or company you already like. Kai finds similar records — refine with the modifiers below.",
     pickSeed: "Pick a person or company",
+    companySearch: "Search a company by name…",
+    useCompany: (name: string) => `Use "${name}"`,
     seedPeople: "People & customers",
     seedCompanies: "Companies",
     modifiers: "Modifiers",
@@ -365,6 +367,8 @@ const COPY = {
     lookalikeDesc:
       "La búsqueda de similares parte de una persona o empresa que ya te encaja. Kai encuentra registros parecidos — refina con los modificadores de abajo.",
     pickSeed: "Elige una persona o empresa",
+    companySearch: "Busca una empresa por nombre…",
+    useCompany: (name: string) => `Usar "${name}"`,
     seedPeople: "Personas y clientes",
     seedCompanies: "Empresas",
     modifiers: "Modificadores",
@@ -1296,18 +1300,42 @@ function LookalikeDialog({
 }) {
   const [seedId, setSeedId] = React.useState<string | null>(null)
   const [mods, setMods] = React.useState<Set<string>>(new Set())
+  const [companyQuery, setCompanyQuery] = React.useState("")
   const [wasOpen, setWasOpen] = React.useState(false)
 
   if (open && !wasOpen) {
     setWasOpen(true)
     setSeedId(null)
     setMods(new Set())
+    setCompanyQuery("")
   }
   if (!open && wasOpen) setWasOpen(false)
 
-  const seed = LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
-  const people = LOOKALIKE_SEEDS.filter((s) => s.kind === "person")
-  const companies = LOOKALIKE_SEEDS.filter((s) => s.kind === "company")
+  const q = companyQuery.trim()
+  const ql = q.toLowerCase()
+  const match = (s: LookalikeSeed) => !ql || s.name.toLowerCase().includes(ql)
+  const people = LOOKALIKE_SEEDS.filter((s) => s.kind === "person" && match(s))
+  const companies = LOOKALIKE_SEEDS.filter((s) => s.kind === "company" && match(s))
+  // Typed a company we don't have a seed for? Build an ad-hoc one to search from.
+  const hasExact = LOOKALIKE_SEEDS.some(
+    (s) => s.kind === "company" && s.name.toLowerCase() === ql
+  )
+  const customSeed: LookalikeSeed | null =
+    q && !hasExact
+      ? {
+          id: "custom",
+          kind: "company",
+          name: q,
+          sub: `${q} · custom seed`,
+          industry: INDUSTRY_OPTIONS[0] ?? "SaaS",
+          region: REGION_OPTIONS[0] ?? "EMEA",
+          headcount: "201-500",
+        }
+      : null
+  const seed =
+    seedId === "custom"
+      ? customSeed
+      : LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
 
   function toggleMod(m: string) {
     setMods((prev) => {
@@ -1352,19 +1380,47 @@ function LookalikeDialog({
         <div className="space-y-4 py-1">
           <div className="space-y-2">
             <Label>{c.pickSeed}</Label>
+            <div className="relative">
+              <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+              <Input
+                value={companyQuery}
+                onChange={(e) => setCompanyQuery(e.target.value)}
+                placeholder={c.companySearch}
+                className="pl-9"
+              />
+            </div>
             <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
-              <SeedGroup
-                label={c.seedCompanies}
-                seeds={companies}
-                selected={seedId}
-                onSelect={setSeedId}
-              />
-              <SeedGroup
-                label={c.seedPeople}
-                seeds={people}
-                selected={seedId}
-                onSelect={setSeedId}
-              />
+              {customSeed && (
+                <button
+                  type="button"
+                  onClick={() => setSeedId("custom")}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                    seedId === "custom"
+                      ? "border-primary ring-primary bg-primary/[0.04] ring-1"
+                      : "hover:bg-muted/60"
+                  )}
+                >
+                  <Building2 className="text-primary size-4 shrink-0" />
+                  <span className="font-medium">{c.useCompany(customSeed.name)}</span>
+                </button>
+              )}
+              {companies.length > 0 && (
+                <SeedGroup
+                  label={c.seedCompanies}
+                  seeds={companies}
+                  selected={seedId}
+                  onSelect={setSeedId}
+                />
+              )}
+              {people.length > 0 && (
+                <SeedGroup
+                  label={c.seedPeople}
+                  seeds={people}
+                  selected={seedId}
+                  onSelect={setSeedId}
+                />
+              )}
             </div>
           </div>
 
