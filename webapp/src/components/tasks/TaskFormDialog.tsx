@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useProspects, taskStore } from "@/lib/store"
+import { assignableUsers } from "@/lib/task-people"
+import { currentUser } from "@/lib/mock-data"
 import type { Task, TaskType } from "@/lib/types"
 
 interface TaskFormDialogProps {
@@ -55,12 +57,14 @@ export function TaskFormDialog({
   task,
 }: TaskFormDialogProps) {
   const prospects = useProspects()
+  const users = assignableUsers()
 
   const [title, setTitle] = React.useState("")
   const [type, setType] = React.useState<TaskType>("call")
   const [priority, setPriority] = React.useState<Task["priority"]>("medium")
   const [dueDate, setDueDate] = React.useState(todayInputValue())
   const [prospectId, setProspectId] = React.useState<string>(NONE_VALUE)
+  const [ownerId, setOwnerId] = React.useState<string>(currentUser.id)
 
   // Reset the form whenever it transitions to open, seeding from `task`.
   // Adjusting state during render (the React-recommended pattern) avoids a
@@ -74,6 +78,7 @@ export function TaskFormDialog({
       setPriority(task?.priority ?? "medium")
       setDueDate(task ? task.dueDate.slice(0, 10) : todayInputValue())
       setProspectId(task?.prospectId ?? NONE_VALUE)
+      setOwnerId(task?.ownerId ?? currentUser.id)
     }
   }
 
@@ -89,7 +94,10 @@ export function TaskFormDialog({
       priority,
       dueDate: new Date(dueDate).toISOString(),
       prospectId: prospectId === NONE_VALUE ? undefined : prospectId,
-      ownerId: task?.ownerId ?? DEFAULT_OWNER_ID,
+      ownerId: ownerId || DEFAULT_OWNER_ID,
+      // Preserve the original assigner on edit; a user creating a task is the
+      // assigner.
+      assignedById: task ? task.assignedById : currentUser.id,
       done: task?.done ?? false,
     }
 
@@ -174,21 +182,39 @@ export function TaskFormDialog({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="task-prospect">Prospect</Label>
-            <Select value={prospectId} onValueChange={setProspectId}>
-              <SelectTrigger id="task-prospect" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_VALUE}>— None —</SelectItem>
-                {prospects.map((prospect) => (
-                  <SelectItem key={prospect.id} value={prospect.id}>
-                    {prospect.firstName} {prospect.lastName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="task-prospect">Prospect</Label>
+              <Select value={prospectId} onValueChange={setProspectId}>
+                <SelectTrigger id="task-prospect" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE_VALUE}>— None —</SelectItem>
+                  {prospects.map((prospect) => (
+                    <SelectItem key={prospect.id} value={prospect.id}>
+                      {prospect.firstName} {prospect.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="task-owner">Assign to</Label>
+              <Select value={ownerId} onValueChange={setOwnerId}>
+                <SelectTrigger id="task-owner" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
