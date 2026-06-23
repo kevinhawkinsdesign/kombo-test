@@ -44,11 +44,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -298,84 +293,6 @@ function NavGroupSection({
   )
 }
 
-// Collapsed rail: a single group icon that opens a flyout of its pages, so the
-// rail stays short and crisp while every page is still one click away.
-function CollapsedGroupIcon({
-  group,
-  currentPath,
-  onNavigate,
-}: {
-  group: NavGroup
-  currentPath: string
-  onNavigate?: () => void
-}) {
-  const { t } = useLocale()
-  const [open, setOpen] = React.useState(false)
-  const Icon = group.icon
-  const hasActive = group.items.some((it) => isActivePath(currentPath, it.to))
-  const hasNew = group.items.some((it) => it.isNew)
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={t(group.labelKey)}
-          className={cn(
-            "relative flex size-9 items-center justify-center rounded-md transition-colors",
-            hasActive
-              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-              : "text-sidebar-foreground hover:bg-sidebar-accent/60"
-          )}
-        >
-          <Icon className="size-5 shrink-0" strokeWidth={2.25} />
-          {hasNew && (
-            <span className="bg-volt ring-sidebar absolute top-1 right-1 size-2 rounded-full ring-2" />
-          )}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="right" align="start" className="w-56 p-1.5">
-        <p className="text-muted-foreground px-2 py-1 text-xs font-medium tracking-wide uppercase">
-          {t(group.labelKey)}
-        </p>
-        {group.items.map((item) => {
-          const Leaf = item.icon
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={() => {
-                setOpen(false)
-                onNavigate?.()
-              }}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-accent/60"
-                )
-              }
-            >
-              <Leaf className="size-4 shrink-0" />
-              <span className="flex-1">{t(item.labelKey)}</span>
-              {item.isNew && (
-                <span className="bg-volt/15 text-volt rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
-                  {t("common.new")}
-                </span>
-              )}
-              {item.badge && (
-                <Badge className="h-5 min-w-5 justify-center px-1.5">
-                  {item.badge}
-                </Badge>
-              )}
-            </NavLink>
-          )
-        })}
-      </PopoverContent>
-    </Popover>
-  )
-}
 
 const GROUPS_KEY = "kombo-nav-groups"
 
@@ -525,8 +442,8 @@ function SidebarContent({
           )}
         >
           {collapsed ? (
-            // Short icon rail: primary pages as icons, groups as flyouts so
-            // every page stays one click away without crowding the rail.
+            // Full icon rail: every page shows its own icon (grouped with thin
+            // dividers), so nothing is hidden behind a flyout when collapsed.
             <>
               {primary.map((item) => (
                 <NavRow
@@ -536,21 +453,19 @@ function SidebarContent({
                   collapsed
                 />
               ))}
-              <div className="bg-sidebar-border my-1 h-px w-6" />
-              {groups.map((group) => (
-                <CollapsedGroupIcon
-                  key={group.key}
-                  group={group}
-                  currentPath={pathname}
-                  onNavigate={onNavigate}
-                />
+              {[...groups, manageGroup].map((group) => (
+                <React.Fragment key={group.key}>
+                  <div className="bg-sidebar-border my-1 h-px w-6" />
+                  {group.items.map((item) => (
+                    <NavRow
+                      key={item.to}
+                      item={item}
+                      onNavigate={onNavigate}
+                      collapsed
+                    />
+                  ))}
+                </React.Fragment>
               ))}
-              <div className="mt-auto" />
-              <CollapsedGroupIcon
-                group={manageGroup}
-                currentPath={pathname}
-                onNavigate={onNavigate}
-              />
             </>
           ) : (
             <>
