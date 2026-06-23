@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom"
 
 import { AppSidebar, MobileBottomNav } from "@/components/layout/AppSidebar"
 import { AppHeader } from "@/components/layout/AppHeader"
+import { ProspectSearch } from "@/components/layout/ProspectSearch"
 import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
 import { SupportWidget } from "@/components/support/SupportWidget"
@@ -28,6 +29,7 @@ export function AppLayout() {
       </div>
       <MobileBottomNav />
       <SupportWidget />
+      <ProspectSearch />
     </div>
     </NewCampaignProvider>
   )
