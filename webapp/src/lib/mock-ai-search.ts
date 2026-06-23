@@ -23,6 +23,16 @@ export interface AiQuery {
   founded: string[] // company founded-year bands
   growth: string[] // company headcount growth bands
   linkedin: string[] // LinkedIn-only filters (active only when LinkedIn is on)
+  // LinkedIn-only facets mirroring Sales Navigator / search filters.
+  connections: string[] // 1st / 2nd / 3rd+ degree
+  profileLanguages: string[] // people: profile language
+  serviceCategories: string[] // people: services offered
+  schools: string[] // people: school attended
+  currentCompanies: string[] // people: current employer
+  pastCompanies: string[] // people: past employer
+  connectionsOf: string[] // people: shared connection
+  followersOf: string[] // people: creator they follow
+  jobListings: string[] // company: has open job listings
   keywords: string
 }
 
@@ -40,6 +50,15 @@ export const EMPTY_QUERY: AiQuery = {
   founded: [],
   growth: [],
   linkedin: [],
+  connections: [],
+  profileLanguages: [],
+  serviceCategories: [],
+  schools: [],
+  currentCompanies: [],
+  pastCompanies: [],
+  connectionsOf: [],
+  followersOf: [],
+  jobListings: [],
   keywords: "",
 }
 
@@ -187,12 +206,65 @@ export const LINKEDIN_OPTIONS = [
   "Posted recently",
   "Mentioned in news",
   "Open to work",
+  "Open to volunteering",
+  "Actively hiring",
   "2nd-degree connection",
   "Shared group",
   "Following your company",
   "Viewed your profile",
   "5+ years in role",
 ]
+
+// LinkedIn-only facet vocabularies (mirrors People & Company search filters).
+export const CONNECTION_OPTIONS = ["1st", "2nd", "3rd+"]
+export const PROFILE_LANGUAGE_OPTIONS = [
+  "English",
+  "French",
+  "Spanish",
+  "Portuguese",
+  "German",
+  "Italian",
+  "Dutch",
+]
+export const SERVICE_CATEGORY_OPTIONS = [
+  "Consulting",
+  "Operations",
+  "Coaching & Mentoring",
+  "Marketing",
+  "Project Management",
+  "Finance",
+  "Human Resources",
+  "IT Services",
+]
+export const SCHOOL_OPTIONS = [
+  "Stanford University",
+  "Harvard University",
+  "INSEAD",
+  "London Business School",
+  "IE Business School",
+  "ESADE",
+  "MIT",
+  "Université catholique de Louvain",
+]
+export const COMPANY_NAME_OPTIONS = [
+  "Salesforce",
+  "HubSpot",
+  "Oracle",
+  "SAP",
+  "Amazon",
+  "Google",
+  "Stripe",
+  "Microsoft",
+  "Vertiv",
+]
+export const PERSON_NAME_OPTIONS = [
+  "Sarah Chen",
+  "Marcus Riley",
+  "Aisha Khan",
+  "Diego Fernández",
+  "Grace Liu",
+]
+export const JOB_LISTING_OPTIONS = ["Has open job listings on LinkedIn"]
 
 // Common titles offered as type-ahead suggestions (users can also type any
 // custom value of their own).
