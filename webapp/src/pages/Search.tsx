@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Sparkles,
-  Send,
+  Search as SearchIcon,
   Plus,
   X,
   Loader2,
@@ -122,7 +122,6 @@ import {
   type AiEntity,
   type AiQuery,
   type AiLead,
-  type AiChatMessage,
   type LookalikeSeed,
 } from "@/lib/mock-ai-search"
 import { useCampaigns, campaignStore, listStore, prospectStore } from "@/lib/store"
@@ -206,6 +205,7 @@ const COPY = {
     followersOf: "Followers of",
     jobListings: "Job listings on LinkedIn",
     srTitle: "Search",
+    searchBtn: "Search",
     spotlightsLabel: "Spotlights",
     matchLabel: "Matches",
     spotlights: ["Open to work", "Changed jobs", "Recently active", "Hiring", "High intent"],
@@ -352,6 +352,7 @@ const COPY = {
     followersOf: "Seguidores de",
     jobListings: "Ofertas de empleo en LinkedIn",
     srTitle: "Buscar",
+    searchBtn: "Buscar",
     spotlightsLabel: "Destacados",
     matchLabel: "Coincide",
     spotlights: ["Open to work", "Cambió de empleo", "Activos recientemente", "Contratando", "Alta intención"],
@@ -480,11 +481,6 @@ function MatchLine({ reasons, label }: { reasons: string[]; label: string }) {
   )
 }
 
-let chatSeq = 0
-function chatId() {
-  return `c_${(chatSeq += 1)}`
-}
-
 function sortLabel(key: SortKey, c: Copy): string {
   switch (key) {
     case "name":
@@ -498,42 +494,6 @@ function sortLabel(key: SortKey, c: Copy): string {
     default:
       return c.sortFit
   }
-}
-
-// A prompt is a general assistant question (not a prospecting search) when it
-// asks Kai to do something conversational — draft, book, summarize pipeline…
-function isAssistantQuestion(prompt: string): boolean {
-  const q = prompt.toLowerCase()
-  const conversational =
-    /\b(draft|write|book|schedule|meeting|calendar|follow.?up|at risk|deal|deals|pipeline|forecast|summar|how many|team|performance|coach|remind|reply|respond|email to|message to)\b/.test(
-      q
-    )
-  const searchy = /\b(find|search|similar to|look ?alike|leads?|prospects?|companies|accounts|list of|build a list)\b/.test(
-    q
-  )
-  return conversational && !searchy
-}
-
-// The merged "Ask Kai" assistant — answers general questions inline in the
-// same surface as search, so there's one Kai, not two.
-function kaiAnswer(prompt: string): string {
-  const q = prompt.toLowerCase()
-  if (q.includes("top") && q.includes("prospect")) {
-    return "Your highest-scoring prospects right now are Aisha Khan (CRO, Clarity AI — 95), Grace Liu (COO, Betterfly — 90) and Sarah Chen (VP Sales, Fever — 92, who just replied). I'd prioritize Sarah today — she's asking for meeting times."
-  }
-  if (q.includes("book") || q.includes("meeting") || q.includes("calendar")) {
-    return "You're open Tue 2:00 PM and Wed 10:00 AM. I've drafted an invite to Grace Liu for Tue 2:00 PM (\"Betterfly × Kombo — intro\") and a short email to send it. Want me to send both?"
-  }
-  if (q.includes("follow") || q.includes("draft") || q.includes("write")) {
-    return "Here's a draft for Sarah Chen:\n\n“Hi Sarah — great to hear you're hiring 5 SDRs this quarter. I have Tue 2pm or Wed 10am open for a quick 15-min walkthrough of how teams ramp new reps 3x faster with Kombo. Which works?”\n\nWant me to send it or tweak the tone?"
-  }
-  if (q.includes("risk") || q.includes("deal") || q.includes("pipeline") || q.includes("forecast")) {
-    return "Two deals look at risk: Edicom — Pilot ($95K, 20%, no activity in 3 days) and Viajes El Corte Inglés — Pilot ($70K, 15%, still in Lead). Betterfly ($320K) is healthy at 55% in Proposal. Want a re-engagement sequence for the two stalled ones?"
-  }
-  if (q.includes("team") || q.includes("performance") || q.includes("coach")) {
-    return "This week the team booked 23 meetings and influenced $412K in pipeline. Maya Patel leads on attainment (57%); Ethan Wright's reply rate (14%) is trending below average — a coaching opportunity. Want me to open his call recordings?"
-  }
-  return "I'm connected to your CRM, calendar, email, and the web, so I can find prospects, draft and send outreach, book meetings, and analyze pipeline. Describe who you're looking for, or ask about a specific account, deal, or rep."
 }
 
 export default function Search() {
@@ -554,10 +514,7 @@ export default function Search() {
     headerPrompt ? { ...EMPTY_QUERY } : initial.query
   )
   const [lastPrompt, setLastPrompt] = React.useState(EXAMPLE_PROMPTS_EN[0])
-  const [messages, setMessages] = React.useState<AiChatMessage[]>(
-    headerPrompt ? [] : [{ id: chatId(), role: "assistant", content: c.starter }]
-  )
-  const [input, setInput] = React.useState("")
+  const [input, setInput] = React.useState(headerPrompt ?? EXAMPLE_PROMPTS_EN[0])
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [saveOpen, setSaveOpen] = React.useState(false)
@@ -568,11 +525,6 @@ export default function Search() {
   const [showRegion, setShowRegion] = React.useState(true)
   const [linkedinOn, setLinkedinOn] = React.useState(false)
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
-  const endRef = React.useRef<HTMLDivElement>(null)
-
-  React.useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, thinking])
 
   const leads = React.useMemo(
     () => sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
@@ -589,51 +541,23 @@ export default function Search() {
   const creditBase = selectedCount > 0 ? selectedCount : estTotal
   const projectedCredits = Math.round(creditBase * CREDITS_PER_LEAD)
 
-  const runPrompt = React.useCallback(
-    (prompt: string) => {
-      const text = prompt.trim()
-      if (!text) return
-      setInput("")
-      setMessages((m) => [...m, { id: chatId(), role: "user", content: text }])
-      setThinking(true)
-      setLastPrompt(text)
-      // A deliberate ~1.5s pause makes Kai feel like it's reasoning before it
-      // answers — then we reveal the prompt's results (or a chat reply).
-      window.setTimeout(() => {
-        if (isAssistantQuestion(text)) {
-          setMessages((m) => [
-            ...m,
-            { id: chatId(), role: "assistant", content: kaiAnswer(text) },
-          ])
-          setThinking(false)
-          return
-        }
-        const { query: q, entity: e, summary, seed: s } = interpretPrompt(text)
-        setEntity(e)
-        setQuery(q)
-        setSeed(s ?? null)
-        setSelected(new Set())
-        const count = s
-          ? e === "people"
-            ? lookalikeLeads(s, q).length
-            : lookalikeCompanies(s, q).length
-          : e === "people"
-            ? searchLeads(q).length
-            : searchCompanies(q).length
-        const total = estimatedTotal(count, e)
-        setMessages((m) => [
-          ...m,
-          {
-            id: chatId(),
-            role: "assistant",
-            content: `${summary} ${c.showingOf(count, total)}`,
-          },
-        ])
-        setThinking(false)
-      }, 1500)
-    },
-    [c]
-  )
+  // A prompt is treated as a search query — interpret it into structured
+  // filters and run the search (with a brief "thinking" beat). No chat.
+  const runPrompt = React.useCallback((prompt: string) => {
+    const text = prompt.trim()
+    if (!text) return
+    setInput(text)
+    setThinking(true)
+    setLastPrompt(text)
+    window.setTimeout(() => {
+      const { query: q, entity: e, seed: s } = interpretPrompt(text)
+      setEntity(e)
+      setQuery(q)
+      setSeed(s ?? null)
+      setSelected(new Set())
+      setThinking(false)
+    }, 900)
+  }, [])
 
   // Run a prompt handed over from the header search exactly once.
   const ranHeaderPrompt = React.useRef(false)
@@ -655,10 +579,7 @@ export default function Search() {
       })
       return next
     })
-    setMessages((m) => [
-      ...m,
-      { id: chatId(), role: "assistant", content: c.refinedTo(label) },
-    ])
+    toast.success(c.refinedTo(label))
   }
 
   function removeFilter(group: keyof AiQuery, value: string) {
@@ -722,12 +643,9 @@ export default function Search() {
     setQuery(q)
     setSelected(new Set())
     setLookalikeOpen(false)
-    setLastPrompt(c.lookalikePrompt(s.name, modLabel))
-    setMessages((m) => [
-      ...m,
-      { id: chatId(), role: "user", content: c.lookalikePrompt(s.name, modLabel) },
-      { id: chatId(), role: "assistant", content: c.lookalikeMsg(s.name) },
-    ])
+    const prompt = c.lookalikePrompt(s.name, modLabel)
+    setLastPrompt(prompt)
+    setInput(prompt)
   }
 
   function saveSearch() {
@@ -736,7 +654,7 @@ export default function Search() {
       entity,
       query,
       prompt: lastPrompt,
-      messages,
+      messages: [],
       resultCount: shownCount,
     })
     toast.success(c.savedToast)
@@ -748,7 +666,7 @@ export default function Search() {
     setEntity(s.entity)
     setQuery(s.query)
     setLastPrompt(s.prompt)
-    setMessages(s.messages.length ? s.messages : messages)
+    setInput(s.prompt)
     setSelected(new Set())
     toast.success(c.loadedToast)
   }
@@ -773,18 +691,47 @@ export default function Search() {
       />
 
       <div className="space-y-4">
-        {/* AI prompt / chat panel — a horizontal bar above the results */}
-        <Card className="flex flex-col gap-0 p-0">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="bg-primary/10 flex size-7 items-center justify-center rounded-md">
-                <Sparkles className="text-primary size-4" />
-              </span>
-              <span className="text-sm font-semibold">{c.assistantName}</span>
+        {/* Search query bar — the prompt IS the query, no chat thread. */}
+        <Card className="gap-3 p-3">
+          <form
+            className="flex items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              runPrompt(input)
+            }}
+          >
+            <div className="relative flex-1">
+              <SearchIcon className="text-muted-foreground pointer-events-none absolute top-3 left-3 size-4" />
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    runPrompt(input)
+                  }
+                }}
+                placeholder={c.inputPlaceholder}
+                rows={2}
+                aria-label={c.srTitle}
+                className="max-h-40 min-h-12 resize-y pl-9"
+              />
             </div>
+            <Button
+              type="submit"
+              variant="volt"
+              disabled={!input.trim() || thinking}
+            >
+              {thinking ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <SearchIcon className="size-4" />
+              )}
+              <span className="hidden sm:inline">{c.searchBtn}</span>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1.5">
+                <Button type="button" variant="outline" className="gap-1.5">
                   <Bookmark className="size-4" />
                   <span className="hidden sm:inline">{c.saved}</span>
                 </Button>
@@ -816,7 +763,7 @@ export default function Search() {
                         <p className="truncate text-sm font-medium">{s.name}</p>
                         <p className="text-muted-foreground truncate text-xs">
                           {s.entity === "people" ? c.people : c.companies} ·{" "}
-                          {s.resultCount} · {s.messages.length} msgs
+                          {s.resultCount}
                         </p>
                       </button>
                       <button
@@ -835,97 +782,31 @@ export default function Search() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </form>
 
-          <div className="max-h-44 flex-1 space-y-3 overflow-y-auto p-4">
-            {messages.length === 0 && (
-              <p className="text-muted-foreground text-sm">{c.chatHint}</p>
-            )}
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={cn(
-                  "flex",
-                  m.role === "user" ? "justify-end" : "justify-start"
-                )}
+          {/* Example queries + quick refinements */}
+          <div className="flex flex-wrap gap-1.5">
+            {examples.slice(0, 3).map((ex) => (
+              <button
+                key={ex}
+                type="button"
+                onClick={() => runPrompt(ex)}
+                className="border-border hover:border-primary/40 hover:bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-1 text-left text-xs transition-colors"
               >
-                <div
-                  className={cn(
-                    "max-w-[88%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-tr-sm"
-                      : "bg-muted rounded-tl-sm"
-                  )}
-                >
-                  {m.content}
-                </div>
-              </div>
+                {ex.length > 42 ? `${ex.slice(0, 42)}…` : ex}
+              </button>
             ))}
-            {thinking && (
-              <div className="text-muted-foreground bg-muted flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-sm">
-                <Loader2 className="size-3.5 animate-spin" />
-                {c.thinking}
-              </div>
-            )}
-            <div ref={endRef} />
-          </div>
-
-          <div className="space-y-2 border-t p-3">
-            <div className="flex flex-wrap gap-1.5">
-              {examples.slice(0, 2).map((ex) => (
-                <button
-                  key={ex}
-                  type="button"
-                  onClick={() => runPrompt(ex)}
-                  className="border-border hover:border-primary/40 hover:bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-1 text-left text-xs transition-colors"
-                >
-                  {ex.length > 42 ? `${ex.slice(0, 42)}…` : ex}
-                </button>
-              ))}
-            </div>
-            <form
-              className="flex items-end gap-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                runPrompt(input)
-              }}
-            >
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    runPrompt(input)
-                  }
-                }}
-                placeholder={c.inputPlaceholder}
-                rows={3}
-                className="max-h-48 min-h-16 resize-y"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                variant="volt"
-                disabled={!input.trim() || thinking}
-                aria-label="Search"
+            {c.refineChips.map((chip) => (
+              <button
+                key={chip.label}
+                type="button"
+                onClick={() => applyRefine(chip.patch, chip.label)}
+                className="bg-muted/60 hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors"
               >
-                <Send className="size-4" />
-              </Button>
-            </form>
-            <div className="flex flex-wrap gap-1.5">
-              {c.refineChips.map((chip) => (
-                <button
-                  key={chip.label}
-                  type="button"
-                  onClick={() => applyRefine(chip.patch, chip.label)}
-                  className="bg-muted/60 hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors"
-                >
-                  <Wand2 className="size-3" />
-                  {chip.label}
-                </button>
-              ))}
-            </div>
+                <Wand2 className="size-3" />
+                {chip.label}
+              </button>
+            ))}
           </div>
         </Card>
 
