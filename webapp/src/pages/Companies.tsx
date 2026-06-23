@@ -12,6 +12,7 @@ import {
   Table2,
   LayoutGrid,
   Columns3,
+  Telescope,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -31,6 +32,7 @@ import {
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
+import { DiscoverFeed } from "@/pages/Discover"
 import {
   COMPANY_COLUMNS,
   COMPANY_GROUPS,
@@ -51,6 +53,8 @@ const COPY = {
   en: {
     title: "Companies",
     description: "Account intelligence across your book of business.",
+    tabCompanies: "Companies",
+    tabDiscover: "Discover",
     addCompany: "Add company",
     addCompanyToast: "Add company — coming soon",
     introTitle: "Target the accounts that fit",
@@ -89,6 +93,8 @@ const COPY = {
   es: {
     title: "Empresas",
     description: "Inteligencia de cuentas en toda tu cartera de negocio.",
+    tabCompanies: "Empresas",
+    tabDiscover: "Descubrir",
     addCompany: "Añadir empresa",
     addCompanyToast: "Añadir empresa — próximamente",
     introTitle: "Apunta a las cuentas que encajan",
@@ -144,6 +150,7 @@ export default function Companies() {
   const [view, setView] = React.useState<ViewMode>("table")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [mode, setMode] = React.useState<"companies" | "discover">("companies")
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
@@ -171,6 +178,34 @@ export default function Companies() {
         }
       />
 
+      <div className="mb-6 flex items-center gap-1 border-b">
+        {(
+          [
+            { key: "companies", label: c.tabCompanies, icon: Building2 },
+            { key: "discover", label: c.tabDiscover, icon: Telescope },
+          ] as const
+        ).map((m) => (
+          <button
+            key={m.key}
+            type="button"
+            onClick={() => setMode(m.key)}
+            className={cn(
+              "-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+              mode === m.key
+                ? "border-primary text-foreground"
+                : "text-muted-foreground hover:text-foreground border-transparent"
+            )}
+          >
+            <m.icon className="size-4" />
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      {mode === "discover" ? (
+        <DiscoverFeed />
+      ) : (
+        <>
       <FeatureIntro
         featureKey="companies"
         icon={Building2}
@@ -286,6 +321,8 @@ export default function Companies() {
             <CompanyCard key={a.id} account={a} />
           ))}
         </div>
+      )}
+        </>
       )}
 
       <ColumnManager
