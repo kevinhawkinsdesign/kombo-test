@@ -208,6 +208,30 @@
     outline-offset: 2px;
     border-radius: var(--radius-sm);
   }
+
+  /* Anything actionable shows a pointer cursor. Tailwind v4 ships buttons
+     with cursor:default, so opt back into pointer for clickable elements. */
+  :where(
+    a[href],
+    button,
+    summary,
+    label[for],
+    select,
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    [role="option"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="radio"]
+  ):not([disabled]):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  :where(button, [role="button"], [role="tab"], [role="menuitem"])[disabled],
+  :where(button, [role="button"])[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* Respect reduced-motion preferences. */
