@@ -226,6 +226,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
           value={a.name}
           onChange={(e) => update({ name: e.target.value })}
           aria-label="Company"
+          clearable={false}
           className="h-8 min-w-[140px]"
         />
       </div>
@@ -244,6 +245,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
         value={a.industry}
         onChange={(e) => update({ industry: e.target.value })}
         aria-label="Industry"
+        clearable={false}
         className="h-8 min-w-[120px]"
       />
     ),
@@ -285,6 +287,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
         value={a.employees}
         onChange={(e) => update({ employees: e.target.value })}
         aria-label="Headcount"
+        clearable={false}
         className="h-8 w-[110px]"
       />
     ),
