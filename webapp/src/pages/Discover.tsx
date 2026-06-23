@@ -12,6 +12,7 @@ import {
   MapPin,
   RefreshCw,
   ListPlus,
+  Download,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -28,6 +29,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ViewToggle, type CollectionView } from "@/components/common/ViewToggle"
 import { useLocale } from "@/lib/locale"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
@@ -39,6 +49,7 @@ import {
   type LookalikeSeed,
 } from "@/lib/mock-ai-search"
 import { useLists, prospectStore, listStore } from "@/lib/store"
+import { downloadCsv } from "@/lib/csv"
 
 const COPY = {
   en: {
@@ -66,6 +77,16 @@ const COPY = {
     emailVerified: "Verified email",
     emailLikely: "Likely email",
     phone: "Direct dial",
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Lookalikes exported to CSV",
+    colName: "Prospect",
+    colTitle: "Title",
+    colCompany: "Company",
+    colSimilar: "Similar to",
+    colFit: "Fit",
+    colContact: "Contact",
   },
   es: {
     title: "Descubrir",
@@ -92,6 +113,16 @@ const COPY = {
     emailVerified: "Email verificado",
     emailLikely: "Email probable",
     phone: "Teléfono directo",
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Lookalikes exportados a CSV",
+    colName: "Prospecto",
+    colTitle: "Cargo",
+    colCompany: "Empresa",
+    colSimilar: "Similar a",
+    colFit: "Encaje",
+    colContact: "Contacto",
   },
 } as const
 
@@ -172,6 +203,7 @@ export default function Discover() {
   )
   const [dismissed, setDismissed] = React.useState<Set<string>>(new Set())
   const [addedKeys, setAddedKeys] = React.useState<Set<string>>(new Set())
+  const [view, setView] = React.useState<CollectionView>("cards")
 
   // Reset the feed when the seed selection changes (adjusting state during
   // render — the React-recommended pattern).
@@ -191,6 +223,29 @@ export default function Discover() {
 
   const visible = items.filter((item) => !dismissed.has(item.key))
   const seedChips = [{ id: "all", name: c.allWins }, ...LOOKALIKE_SEEDS]
+
+  function dismiss(key: string) {
+    setDismissed((prev) => new Set(prev).add(key))
+  }
+  function markAdded(key: string) {
+    setAddedKeys((prev) => new Set(prev).add(key))
+  }
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-lookalikes.csv",
+      [c.colName, c.colTitle, c.colCompany, c.colSimilar, c.colFit, "Region"],
+      visible.map((item) => [
+        `${item.lead.firstName} ${item.lead.lastName}`,
+        item.lead.title,
+        item.lead.company,
+        item.seed.name,
+        `${item.lead.fit}%`,
+        item.lead.region,
+      ])
+    )
+    toast.success(c.exported)
+  }
 
   return (
     <Page>
@@ -227,22 +282,42 @@ export default function Discover() {
             </button>
           )
         })}
+        <div className="ml-auto flex items-center gap-2">
+          <ViewToggle
+            view={view}
+            onChange={setView}
+            cardsLabel={c.viewCards}
+            tableLabel={c.viewTable}
+          />
+          <Button variant="outline" onClick={exportCsv}>
+            <Download className="size-4" />
+            <span className="hidden sm:inline">{c.exportLabel}</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((item) => (
-          <LeadCard
-            key={item.key}
-            item={item}
-            c={c}
-            added={addedKeys.has(item.key)}
-            onDismiss={() =>
-              setDismissed((prev) => new Set(prev).add(item.key))
-            }
-            onAdded={() => setAddedKeys((prev) => new Set(prev).add(item.key))}
-          />
-        ))}
-      </div>
+      {view === "table" ? (
+        <LeadTable
+          items={visible}
+          c={c}
+          addedKeys={addedKeys}
+          onDismiss={dismiss}
+          onAdded={markAdded}
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((item) => (
+            <LeadCard
+              key={item.key}
+              item={item}
+              c={c}
+              added={addedKeys.has(item.key)}
+              onDismiss={() => dismiss(item.key)}
+              onAdded={() => markAdded(item.key)}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="mt-6 flex justify-center">
         <Button variant="outline" onClick={loadMore}>
@@ -268,20 +343,6 @@ function LeadCard({
   onAdded: () => void
 }) {
   const { lead, seed } = item
-  const navigate = useNavigate()
-  const lists = useLists()
-
-  function addToList(listId: string, listName: string) {
-    const prospect = prospectStore.create(leadToProspectInput(lead))
-    listStore.addProspects(listId, [prospect.id])
-    onAdded()
-    toast.success(c.added(`${lead.firstName} ${lead.lastName}`, listName), {
-      action: {
-        label: "View",
-        onClick: () => navigate(`/lists/${listId}`),
-      },
-    })
-  }
 
   return (
     <Card className="relative h-full gap-3 p-4">
@@ -360,42 +421,196 @@ function LeadCard({
               {c.addToList}
             </Button>
           ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="volt" size="sm" className="w-full">
-                  <Plus className="size-4" />
-                  {c.addToList}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{c.chooseList}</DropdownMenuLabel>
-                {lists.length === 0 && (
-                  <p className="text-muted-foreground px-2 py-1.5 text-xs">
-                    {c.noLists}
-                  </p>
-                )}
-                {lists.map((list) => (
-                  <DropdownMenuItem
-                    key={list.id}
-                    onSelect={() => addToList(list.id, list.name)}
-                  >
-                    <span
-                      className="size-2.5 rounded-full"
-                      style={{ backgroundColor: list.color }}
-                    />
-                    {list.name}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={onDismiss}>
-                  <ListPlus className="size-4" />
-                  {c.dismiss}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AddToListMenu lead={lead} c={c} onAdded={onAdded} onDismiss={onDismiss}>
+              <Button variant="volt" size="sm" className="w-full">
+                <Plus className="size-4" />
+                {c.addToList}
+              </Button>
+            </AddToListMenu>
           )}
         </div>
       </CardContent>
+    </Card>
+  )
+}
+
+function AddToListMenu({
+  lead,
+  c,
+  onAdded,
+  onDismiss,
+  children,
+}: {
+  lead: AiLead
+  c: Copy
+  onAdded: () => void
+  onDismiss: () => void
+  children: React.ReactNode
+}) {
+  const navigate = useNavigate()
+  const lists = useLists()
+
+  function addToList(listId: string, listName: string) {
+    const prospect = prospectStore.create(leadToProspectInput(lead))
+    listStore.addProspects(listId, [prospect.id])
+    onAdded()
+    toast.success(c.added(`${lead.firstName} ${lead.lastName}`, listName), {
+      action: {
+        label: "View",
+        onClick: () => navigate(`/lists/${listId}`),
+      },
+    })
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>{c.chooseList}</DropdownMenuLabel>
+        {lists.length === 0 && (
+          <p className="text-muted-foreground px-2 py-1.5 text-xs">
+            {c.noLists}
+          </p>
+        )}
+        {lists.map((list) => (
+          <DropdownMenuItem
+            key={list.id}
+            onSelect={() => addToList(list.id, list.name)}
+          >
+            <span
+              className="size-2.5 rounded-full"
+              style={{ backgroundColor: list.color }}
+            />
+            {list.name}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={onDismiss}>
+          <ListPlus className="size-4" />
+          {c.dismiss}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function LeadTable({
+  items,
+  c,
+  addedKeys,
+  onDismiss,
+  onAdded,
+}: {
+  items: FeedItem[]
+  c: Copy
+  addedKeys: Set<string>
+  onDismiss: (key: string) => void
+  onAdded: (key: string) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colTitle}</TableHead>
+            <TableHead>{c.colCompany}</TableHead>
+            <TableHead>{c.colSimilar}</TableHead>
+            <TableHead className="text-right">{c.colFit}</TableHead>
+            <TableHead>{c.colContact}</TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => {
+            const { lead, seed } = item
+            const added = addedKeys.has(item.key)
+            return (
+              <TableRow key={item.key}>
+                <TableCell>
+                  <div className="flex items-center gap-2.5">
+                    <Avatar className="size-7">
+                      <AvatarImage
+                        src={portraitFor(`${lead.firstName} ${lead.lastName}`)}
+                        alt=""
+                      />
+                      <AvatarFallback
+                        style={{
+                          backgroundColor: lead.avatarColor,
+                          color: "white",
+                        }}
+                        className="text-[10px]"
+                      >
+                        {initials(lead.firstName, lead.lastName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">
+                      {lead.firstName} {lead.lastName}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {lead.title}
+                </TableCell>
+                <TableCell className="text-sm">{lead.company}</TableCell>
+                <TableCell>
+                  <span className="text-primary flex items-center gap-1 text-xs">
+                    <Sparkles className="size-3" />
+                    {seed.name}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <span className="bg-chart-1/15 text-chart-1 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums">
+                    {lead.fit}%
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                    {lead.emailStatus !== "missing" && (
+                      <Mail className="text-chart-1 size-3.5" />
+                    )}
+                    {lead.phoneStatus !== "none" && (
+                      <Phone className="size-3.5" />
+                    )}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-end gap-1">
+                    {added ? (
+                      <Check className="text-chart-1 size-4" />
+                    ) : (
+                      <AddToListMenu
+                        lead={lead}
+                        c={c}
+                        onAdded={() => onAdded(item.key)}
+                        onDismiss={() => onDismiss(item.key)}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          aria-label={c.addToList}
+                        >
+                          <Plus className="size-4" />
+                        </Button>
+                      </AddToListMenu>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-foreground size-8"
+                      aria-label={c.dismiss}
+                      onClick={() => onDismiss(item.key)}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     </Card>
   )
 }

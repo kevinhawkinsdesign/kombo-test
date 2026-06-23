@@ -13,6 +13,7 @@ import {
   Plus,
   Users,
   Building2,
+  Download,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -22,9 +23,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ViewToggle, type CollectionView } from "@/components/common/ViewToggle"
 import { useLocale } from "@/lib/locale"
 import { sequenceStore } from "@/lib/mock-sequences"
 import { templateStore } from "@/lib/store"
+import { downloadCsv } from "@/lib/csv"
 import {
   librarySequences,
   libraryTemplates,
@@ -76,6 +87,18 @@ const COPY = {
     company: "Companies",
     sequenceAdded: (name: string) => `"${name}" added to your sequences`,
     templateAdded: (name: string) => `"${name}" added to your templates`,
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Library exported to CSV",
+    colName: "Name",
+    colType: "Type",
+    colDetail: "Detail",
+    colTags: "Tags",
+    colChannel: "Channel",
+    colFolder: "Folder",
+    colEntity: "Target",
+    csvType: { sequence: "Sequence", template: "Template", query: "Search query" },
   },
   es: {
     title: "Biblioteca",
@@ -105,6 +128,18 @@ const COPY = {
     company: "Empresas",
     sequenceAdded: (name: string) => `"${name}" añadida a tus secuencias`,
     templateAdded: (name: string) => `"${name}" añadida a tus plantillas`,
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Biblioteca exportada a CSV",
+    colName: "Nombre",
+    colType: "Tipo",
+    colDetail: "Detalle",
+    colTags: "Etiquetas",
+    colChannel: "Canal",
+    colFolder: "Carpeta",
+    colEntity: "Objetivo",
+    csvType: { sequence: "Secuencia", template: "Plantilla", query: "Búsqueda" },
   },
 } as const
 
@@ -114,6 +149,7 @@ export default function Library() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
+  const [view, setView] = React.useState<CollectionView>("cards")
 
   function useSequence(item: LibrarySequence) {
     sequenceStore.create({
@@ -142,27 +178,61 @@ export default function Library() {
     navigate(`/search?q=${encodeURIComponent(item.prompt)}`)
   }
 
-  const sequences = (
-    <Grid>
-      {librarySequences.map((item) => (
-        <SequenceCard key={item.id} item={item} c={c} onUse={useSequence} />
-      ))}
-    </Grid>
-  )
-  const templates = (
-    <Grid>
-      {libraryTemplates.map((item) => (
-        <TemplateCard key={item.id} item={item} c={c} onUse={useTemplate} />
-      ))}
-    </Grid>
-  )
-  const queries = (
-    <Grid>
-      {libraryQueries.map((item) => (
-        <QueryCard key={item.id} item={item} c={c} onUse={runQuery} />
-      ))}
-    </Grid>
-  )
+  function exportCsv() {
+    const rows: (string | number)[][] = [
+      ...librarySequences.map((s) => [
+        s.name,
+        c.csvType.sequence,
+        c.steps(s.steps.filter((step) => step !== "wait").length),
+        s.tags.join(", "),
+      ]),
+      ...libraryTemplates.map((t) => [
+        t.name,
+        c.csvType.template,
+        t.subject || t.body.split("\n")[0],
+        t.tags.join(", "),
+      ]),
+      ...libraryQueries.map((q) => [
+        q.name,
+        c.csvType.query,
+        q.prompt,
+        q.tags.join(", "),
+      ]),
+    ]
+    downloadCsv("kombo-library.csv", [c.colName, c.colType, c.colDetail, c.colTags], rows)
+    toast.success(c.exported)
+  }
+
+  const sequences =
+    view === "table" ? (
+      <SequenceTable rows={librarySequences} c={c} onUse={useSequence} />
+    ) : (
+      <Grid>
+        {librarySequences.map((item) => (
+          <SequenceCard key={item.id} item={item} c={c} onUse={useSequence} />
+        ))}
+      </Grid>
+    )
+  const templates =
+    view === "table" ? (
+      <TemplateTable rows={libraryTemplates} c={c} onUse={useTemplate} />
+    ) : (
+      <Grid>
+        {libraryTemplates.map((item) => (
+          <TemplateCard key={item.id} item={item} c={c} onUse={useTemplate} />
+        ))}
+      </Grid>
+    )
+  const queries =
+    view === "table" ? (
+      <QueryTable rows={libraryQueries} c={c} onUse={runQuery} />
+    ) : (
+      <Grid>
+        {libraryQueries.map((item) => (
+          <QueryCard key={item.id} item={item} c={c} onUse={runQuery} />
+        ))}
+      </Grid>
+    )
 
   return (
     <Page>
@@ -178,24 +248,38 @@ export default function Library() {
       />
 
       <Tabs defaultValue="all" className="gap-4">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="all">
-            <LibraryBig className="size-4" />
-            {c.tabAll}
-          </TabsTrigger>
-          <TabsTrigger value="sequences">
-            <Workflow className="size-4" />
-            {c.tabSequences}
-          </TabsTrigger>
-          <TabsTrigger value="templates">
-            <Mail className="size-4" />
-            {c.tabTemplates}
-          </TabsTrigger>
-          <TabsTrigger value="queries">
-            <Search className="size-4" />
-            {c.tabQueries}
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-wrap items-center gap-2">
+          <TabsList className="flex-wrap">
+            <TabsTrigger value="all">
+              <LibraryBig className="size-4" />
+              {c.tabAll}
+            </TabsTrigger>
+            <TabsTrigger value="sequences">
+              <Workflow className="size-4" />
+              {c.tabSequences}
+            </TabsTrigger>
+            <TabsTrigger value="templates">
+              <Mail className="size-4" />
+              {c.tabTemplates}
+            </TabsTrigger>
+            <TabsTrigger value="queries">
+              <Search className="size-4" />
+              {c.tabQueries}
+            </TabsTrigger>
+          </TabsList>
+          <div className="ml-auto flex items-center gap-2">
+            <ViewToggle
+              view={view}
+              onChange={setView}
+              cardsLabel={c.viewCards}
+              tableLabel={c.viewTable}
+            />
+            <Button variant="outline" onClick={exportCsv}>
+              <Download className="size-4" />
+              <span className="hidden sm:inline">{c.exportLabel}</span>
+            </Button>
+          </div>
+        </div>
 
         <TabsContent value="all" className="space-y-8">
           <Section title={c.sectionSequences} icon={Workflow}>
@@ -388,6 +472,193 @@ function QueryCard({
           </Button>
         </div>
       </CardContent>
+    </Card>
+  )
+}
+
+function StepFlow({ steps }: { steps: SequenceChannelType[] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {steps.map((step, i) => {
+        const meta = STEP_ICON[step]
+        const Icon = meta.icon
+        return (
+          <span
+            key={i}
+            className={`flex size-6 items-center justify-center rounded-md ${meta.tint}`}
+          >
+            <Icon className="size-3.5" />
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+function SequenceTable({
+  rows,
+  c,
+  onUse,
+}: {
+  rows: LibrarySequence[]
+  c: Copy
+  onUse: (item: LibrarySequence) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.sectionSequences}</TableHead>
+            <TableHead>{c.colTags}</TableHead>
+            <TableHead className="w-24" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>
+                <p className="font-medium">{item.name}</p>
+                <p className="text-muted-foreground line-clamp-1 max-w-[280px] text-xs">
+                  {item.description}
+                </p>
+              </TableCell>
+              <TableCell>
+                <StepFlow steps={item.steps} />
+              </TableCell>
+              <TableCell>
+                <Tags tags={item.tags} />
+              </TableCell>
+              <TableCell>
+                <Button variant="outline" size="sm" onClick={() => onUse(item)}>
+                  <Plus className="size-4" />
+                  {c.use}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
+  )
+}
+
+function TemplateTable({
+  rows,
+  c,
+  onUse,
+}: {
+  rows: LibraryTemplate[]
+  c: Copy
+  onUse: (item: LibraryTemplate) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colChannel}</TableHead>
+            <TableHead>{c.colFolder}</TableHead>
+            <TableHead>{c.colTags}</TableHead>
+            <TableHead className="w-24" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((item) => {
+            const ChannelIcon = item.channel === "linkedin" ? LinkedinIcon : Mail
+            return (
+              <TableRow key={item.id}>
+                <TableCell>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-muted-foreground line-clamp-1 max-w-[260px] text-xs">
+                    {item.subject || item.body.split("\n")[0]}
+                  </p>
+                </TableCell>
+                <TableCell>
+                  <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                    <ChannelIcon className="size-3.5" />
+                    {item.channel === "linkedin" ? "LinkedIn" : "Email"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="font-normal">
+                    {item.folder}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Tags tags={item.tags} />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onUse(item)}
+                  >
+                    <Plus className="size-4" />
+                    {c.use}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </Card>
+  )
+}
+
+function QueryTable({
+  rows,
+  c,
+  onUse,
+}: {
+  rows: LibraryQuery[]
+  c: Copy
+  onUse: (item: LibraryQuery) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colEntity}</TableHead>
+            <TableHead>{c.colDetail}</TableHead>
+            <TableHead className="w-28" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((item) => {
+            const EntityIcon = item.entity === "company" ? Building2 : Users
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">{item.name}</TableCell>
+                <TableCell>
+                  <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                    <EntityIcon className="size-3.5" />
+                    {item.entity === "company" ? c.company : c.people}
+                  </span>
+                </TableCell>
+                <TableCell className="text-muted-foreground max-w-[320px] truncate text-sm italic">
+                  "{item.prompt}"
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onUse(item)}
+                  >
+                    <Search className="size-4" />
+                    {c.runQuery}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     </Card>
   )
 }
