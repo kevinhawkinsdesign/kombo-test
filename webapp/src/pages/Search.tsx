@@ -106,6 +106,13 @@ import {
   FOUNDED_OPTIONS,
   GROWTH_OPTIONS,
   LINKEDIN_OPTIONS,
+  CONNECTION_OPTIONS,
+  PROFILE_LANGUAGE_OPTIONS,
+  SERVICE_CATEGORY_OPTIONS,
+  SCHOOL_OPTIONS,
+  COMPANY_NAME_OPTIONS,
+  PERSON_NAME_OPTIONS,
+  JOB_LISTING_OPTIONS,
   sortLeads,
   sortCompanies,
   matchReasons,
@@ -189,6 +196,15 @@ const COPY = {
     founded: "Founded",
     growth: "Headcount growth",
     linkedinFilters: "LinkedIn",
+    connections: "Connections",
+    profileLanguages: "Profile languages",
+    serviceCategories: "Service categories",
+    schools: "Schools",
+    currentCompanies: "Current companies",
+    pastCompanies: "Past companies",
+    connectionsOf: "Connections of",
+    followersOf: "Followers of",
+    jobListings: "Job listings on LinkedIn",
     srTitle: "Search",
     spotlightsLabel: "Spotlights",
     matchLabel: "Matches",
@@ -326,6 +342,15 @@ const COPY = {
     founded: "Año de fundación",
     growth: "Crecimiento de plantilla",
     linkedinFilters: "LinkedIn",
+    connections: "Conexiones",
+    profileLanguages: "Idiomas del perfil",
+    serviceCategories: "Categorías de servicio",
+    schools: "Centros educativos",
+    currentCompanies: "Empresas actuales",
+    pastCompanies: "Empresas anteriores",
+    connectionsOf: "Conexiones de",
+    followersOf: "Seguidores de",
+    jobListings: "Ofertas de empleo en LinkedIn",
     srTitle: "Buscar",
     spotlightsLabel: "Destacados",
     matchLabel: "Coincide",
@@ -1678,7 +1703,31 @@ const CHIP_GROUPS: (keyof AiQuery)[] = [
   "intent",
   "signals",
   "linkedin",
+  "connections",
+  "profileLanguages",
+  "serviceCategories",
+  "schools",
+  "currentCompanies",
+  "pastCompanies",
+  "connectionsOf",
+  "followersOf",
+  "jobListings",
 ]
+
+// Facets that only apply when the LinkedIn data source is on — styled in the
+// LinkedIn blue so it's obvious where they come from.
+const LINKEDIN_KEYS = new Set<keyof AiQuery>([
+  "linkedin",
+  "connections",
+  "profileLanguages",
+  "serviceCategories",
+  "schools",
+  "currentCompanies",
+  "pastCompanies",
+  "connectionsOf",
+  "followersOf",
+  "jobListings",
+])
 
 function QueryChips({
   query,
@@ -1706,12 +1755,12 @@ function QueryChips({
           key={`${group}:${value}`}
           className={cn(
             "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
-            group === "linkedin"
+            LINKEDIN_KEYS.has(group)
               ? "bg-[#0a66c2]/10 text-[#0a66c2]"
               : "bg-primary/10 text-primary"
           )}
         >
-          {group === "linkedin" && <LinkedinIcon className="size-3" />}
+          {LINKEDIN_KEYS.has(group) && <LinkedinIcon className="size-3" />}
           {value}
           <button
             type="button"
@@ -1747,6 +1796,16 @@ const FILTER_OPTIONS: {
   { key: "intent", label: (c) => c.intent, options: INTENT_OPTIONS, scope: "people" },
   { key: "signals", label: (c) => c.signals, options: SIGNAL_OPTIONS },
   { key: "linkedin", label: (c) => c.linkedinFilters, options: LINKEDIN_OPTIONS, linkedinOnly: true, scope: "people" },
+  // LinkedIn-only facets (People & Company search).
+  { key: "connections", label: (c) => c.connections, options: CONNECTION_OPTIONS, linkedinOnly: true },
+  { key: "profileLanguages", label: (c) => c.profileLanguages, options: PROFILE_LANGUAGE_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "serviceCategories", label: (c) => c.serviceCategories, options: SERVICE_CATEGORY_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "schools", label: (c) => c.schools, options: SCHOOL_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "currentCompanies", label: (c) => c.currentCompanies, options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "pastCompanies", label: (c) => c.pastCompanies, options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "connectionsOf", label: (c) => c.connectionsOf, options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "followersOf", label: (c) => c.followersOf, options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
+  { key: "jobListings", label: (c) => c.jobListings, options: JOB_LISTING_OPTIONS, linkedinOnly: true, scope: "companies" },
 ]
 
 // Type-ahead "Add filter": type to filter suggestions across every field, or
