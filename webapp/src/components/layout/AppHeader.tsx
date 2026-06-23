@@ -129,7 +129,7 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <button className="focus-visible:ring-ring ml-0.5 flex items-center gap-2 rounded-full outline-none focus-visible:ring-2">
               <Avatar className="size-9">
-                {user && <AvatarImage src={portraitFor(user.name)} alt="" />}
+                {user && <AvatarImage src={user.avatarUrl ?? portraitFor(user.name)} alt="" />}
                 <AvatarFallback
                   style={{ backgroundColor: user?.avatarColor, color: "white" }}
                 >
