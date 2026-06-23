@@ -140,6 +140,15 @@ export interface CoachScorecard {
 
 export type ChatLang = "en" | "es"
 
+// Intent the conversation has been auto-tagged with (sentiment of the reply).
+export type ConvStatus =
+  | "interested"
+  | "meeting_booked"
+  | "referred"
+  | "bad_timing"
+  | "not_interested"
+  | "positive"
+
 export interface Message {
   id: string
   channel: Channel
@@ -148,6 +157,20 @@ export interface Message {
   timestamp: string
   read: boolean
   lang?: ChatLang // language the message was written in
+  aiGenerated?: boolean // outbound message was drafted by Kai
+}
+
+// A non-message activity that happened in the thread (connection sent,
+// post liked, auto-tag applied, email opened). Rendered as a quiet system row.
+export type ConvEventKind = "connection" | "like" | "view" | "open" | "click" | "tag"
+
+export interface ConvEvent {
+  id: string
+  kind: ConvEventKind
+  label: string
+  detail?: string
+  timestamp: string
+  status?: ConvStatus // for kind === "tag"
 }
 
 export interface Conversation {
@@ -162,6 +185,10 @@ export interface Conversation {
   snoozedUntil?: string | null // ISO date; thread is snoozed until then
   archived?: boolean
   recipientLang?: ChatLang // the prospect's preferred language
+  status?: ConvStatus // auto-tagged intent
+  aiDraft?: string // Kai's suggested reply, ready to send
+  scheduledAt?: string | null // ISO date; a reply queued to send later
+  events?: ConvEvent[] // activity timeline interleaved with messages
 }
 
 export type CampaignStatus = "active" | "paused" | "draft" | "completed"

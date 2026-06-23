@@ -32,6 +32,7 @@ import type {
   Conversation,
   Message,
   ChatLang,
+  ConvStatus,
 } from "./types"
 
 interface StoreState {
@@ -43,9 +44,14 @@ interface StoreState {
   templates: EmailTemplate[]
   accounts: Account[]
   conversations: Conversation[]
+  convSeedVersion?: number
 }
 
 const KEY = "kombo_store_v1"
+
+// Bump when the conversation seed changes shape so the inbox re-seeds on load
+// without wiping the user's edits to other slices (prospects, lists, etc.).
+const CONV_SEED_VERSION = 2
 
 function seed(): StoreState {
   return {
@@ -57,6 +63,7 @@ function seed(): StoreState {
     templates: seedTemplates,
     accounts: seedAccounts,
     conversations: seedConversations,
+    convSeedVersion: CONV_SEED_VERSION,
   }
 }
 
@@ -66,6 +73,7 @@ function load(): StoreState {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<StoreState>
       const base = seed()
+      const convOutdated = parsed.convSeedVersion !== CONV_SEED_VERSION
       return {
         prospects: parsed.prospects ?? base.prospects,
         lists: parsed.lists ?? base.lists,
@@ -74,7 +82,10 @@ function load(): StoreState {
         tasks: parsed.tasks ?? base.tasks,
         templates: parsed.templates ?? base.templates,
         accounts: parsed.accounts ?? base.accounts,
-        conversations: parsed.conversations ?? base.conversations,
+        conversations: convOutdated
+          ? base.conversations
+          : parsed.conversations ?? base.conversations,
+        convSeedVersion: CONV_SEED_VERSION,
       }
     }
   } catch {
@@ -519,7 +530,7 @@ function patchConversation(id: string, fn: (c: Conversation) => Conversation): v
 }
 
 export const conversationStore = {
-  sendMessage(id: string, body: string, lang: ChatLang): Message {
+  sendMessage(id: string, body: string, lang: ChatLang, aiGenerated = false): Message {
     const message: Message = {
       id: uid("msg"),
       channel: state.conversations.find((c) => c.id === id)?.channel ?? "email",
@@ -528,6 +539,7 @@ export const conversationStore = {
       timestamp: nowISO(),
       read: true,
       lang,
+      aiGenerated,
     }
     patchConversation(id, (c) => ({
       ...c,
@@ -535,9 +547,27 @@ export const conversationStore = {
       lastMessageAt: message.timestamp,
       unread: 0,
       snoozedUntil: null,
+      scheduledAt: null,
+      aiDraft: undefined,
       archived: false,
     }))
     return message
+  },
+  setStatus(id: string, status: ConvStatus | undefined): void {
+    patchConversation(id, (c) => ({ ...c, status }))
+  },
+  schedule(id: string, untilISO: string, body?: string): void {
+    patchConversation(id, (c) => ({
+      ...c,
+      scheduledAt: untilISO,
+      aiDraft: body ?? c.aiDraft,
+    }))
+  },
+  unschedule(id: string): void {
+    patchConversation(id, (c) => ({ ...c, scheduledAt: null }))
+  },
+  setDraft(id: string, body: string | undefined): void {
+    patchConversation(id, (c) => ({ ...c, aiDraft: body }))
   },
   markRead(id: string): void {
     patchConversation(id, (c) => ({

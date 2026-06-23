@@ -135,6 +135,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-volt: var(--volt);
   --color-volt-foreground: var(--volt-foreground);
+  --color-linkedin: #0a66c2;
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
