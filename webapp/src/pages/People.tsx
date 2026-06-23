@@ -30,6 +30,7 @@ import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { ProspectAvatar, ScoreBadge, StatusBadge } from "@/components/common/ProspectBits"
+import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -247,6 +248,7 @@ export default function People() {
           locale={locale}
           editing={editing}
           onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
+          actions={(p) => <RecordActionsMenu kind="person" record={p} />}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -297,19 +299,21 @@ function ViewToggleButton({
 
 function ProspectCard({ prospect: p }: { prospect: Prospect }) {
   return (
-    <Link
-      to={`/prospects/${p.id}`}
-      className="hover:border-primary/40 flex flex-col rounded-xl border p-4 transition-colors"
-    >
+    <div className="hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors">
       <div className="flex items-start gap-3">
         <ProspectAvatar prospect={p} className="size-10" />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">
-            {p.firstName} {p.lastName}
-          </p>
+          {/* Stretched link makes the whole card clickable without nesting
+              the actions button inside an anchor. */}
+          <Link to={`/prospects/${p.id}`} className="after:absolute after:inset-0">
+            <p className="truncate font-semibold">
+              {p.firstName} {p.lastName}
+            </p>
+          </Link>
           <p className="text-muted-foreground truncate text-sm">{p.title}</p>
         </div>
         <ScoreBadge score={p.score} />
+        <RecordActionsMenu kind="person" record={p} className="relative z-10 -mt-1 -mr-1" />
       </div>
 
       <div className="mt-3 flex items-center gap-2">
@@ -331,6 +335,6 @@ function ProspectCard({ prospect: p }: { prospect: Prospect }) {
           ))}
         </div>
       )}
-    </Link>
+    </div>
   )
 }

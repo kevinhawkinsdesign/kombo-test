@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { DataTable } from "@/components/common/DataTable"
+import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { DiscoverFeed } from "@/pages/Discover"
@@ -314,6 +315,7 @@ export default function Companies() {
           locale={locale}
           editing={editing}
           onUpdate={(a, patch) => accountStore.update(a.id, patch)}
+          actions={(a) => <RecordActionsMenu kind="company" record={a} />}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -370,10 +372,7 @@ function CompanyCard({ account: a }: { account: Account }) {
   const owner = getRep(a.ownerId)
 
   return (
-    <Link
-      to={`/companies/${a.id}`}
-      className="hover:border-primary/40 flex flex-col rounded-xl border p-4 transition-colors"
-    >
+    <div className="hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors">
       <div className="flex items-start gap-3">
         <span
           className="flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold text-white"
@@ -382,7 +381,10 @@ function CompanyCard({ account: a }: { account: Account }) {
           {a.name.charAt(0)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{a.name}</p>
+          {/* Stretched link keeps the actions button out of the anchor. */}
+          <Link to={`/companies/${a.id}`} className="after:absolute after:inset-0">
+            <p className="truncate font-semibold">{a.name}</p>
+          </Link>
           <p className="text-muted-foreground truncate text-sm">{a.domain}</p>
         </div>
         <span
@@ -395,6 +397,7 @@ function CompanyCard({ account: a }: { account: Account }) {
           <span className="bg-current size-1.5 rounded-full opacity-80" />
           {a.healthScore}
         </span>
+        <RecordActionsMenu kind="company" record={a} className="relative z-10 -mt-1 -mr-1" />
       </div>
 
       <div className="mt-3 flex items-center gap-2">
@@ -458,6 +461,6 @@ function CompanyCard({ account: a }: { account: Account }) {
         )}
         <Briefcase className="text-muted-foreground ml-auto size-3.5" />
       </div>
-    </Link>
+    </div>
   )
 }
