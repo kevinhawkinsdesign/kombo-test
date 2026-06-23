@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom"
+import * as React from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import {
   Play,
   TrendingUp,
@@ -24,9 +26,20 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import type { CollectionView } from "@/components/common/ViewToggle"
 import { coachRecordings } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import { formatDate } from "@/lib/format"
+import { downloadCsv } from "@/lib/csv"
 import { cn } from "@/lib/utils"
 import type { CoachRecording } from "@/lib/types"
 
@@ -64,6 +77,21 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negative",
     },
+    search: "Search calls…",
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Calls exported to CSV",
+    noResults: "No calls match your search.",
+    sortRecent: "Most recent",
+    sortScore: "Highest score",
+    sortDuration: "Longest",
+    colTitle: "Call",
+    colContact: "Prospect",
+    colDate: "Date",
+    colDuration: "Duration",
+    colSentiment: "Sentiment",
+    colScore: "Score",
   },
   es: {
     title: "Coach de llamadas",
@@ -93,8 +121,25 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negativo",
     },
+    search: "Buscar llamadas…",
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Llamadas exportadas a CSV",
+    noResults: "Ninguna llamada coincide con tu búsqueda.",
+    sortRecent: "Más recientes",
+    sortScore: "Mayor puntuación",
+    sortDuration: "Más largas",
+    colTitle: "Llamada",
+    colContact: "Prospecto",
+    colDate: "Fecha",
+    colDuration: "Duración",
+    colSentiment: "Sentimiento",
+    colScore: "Puntuación",
   },
 } as const
+
+type Copy = (typeof COPY)[keyof typeof COPY]
 
 function scorePillClass(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"
@@ -109,6 +154,50 @@ const avgScore = Math.round(
 export default function Coach() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const [view, setView] = React.useState<CollectionView>("cards")
+  const [query, setQuery] = React.useState("")
+  const [sort, setSort] = React.useState("recent")
+
+  const visible = React.useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const filtered = q
+      ? coachRecordings.filter(
+          (r) =>
+            r.title.toLowerCase().includes(q) ||
+            r.prospectName.toLowerCase().includes(q) ||
+            r.company.toLowerCase().includes(q)
+        )
+      : coachRecordings
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "score":
+          return b.score - a.score
+        case "duration":
+          return b.durationMin - a.durationMin
+        default:
+          return new Date(b.date).getTime() - new Date(a.date).getTime()
+      }
+    })
+    return sorted
+  }, [query, sort])
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-calls.csv",
+      [c.colTitle, c.colContact, c.colDate, c.colDuration, c.colSentiment, c.colScore],
+      visible.map((r) => [
+        r.title,
+        `${r.prospectName} (${r.company})`,
+        formatDate(r.date),
+        `${r.durationMin} min`,
+        c.sentiment[r.sentiment],
+        r.score,
+      ])
+    )
+    toast.success(c.exported)
+  }
+
   return (
     <Page>
       <PageHeading title={c.title} description={c.description} />
@@ -149,12 +238,107 @@ export default function Coach() {
         </Card>
       </div>
 
-      <div className="space-y-4">
-        {coachRecordings.map((rec) => (
-          <RecordingCard key={rec.id} rec={rec} />
-        ))}
-      </div>
+      <CollectionToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchPlaceholder={c.search}
+        sort={sort}
+        onSortChange={setSort}
+        sortOptions={[
+          { value: "recent", label: c.sortRecent },
+          { value: "score", label: c.sortScore },
+          { value: "duration", label: c.sortDuration },
+        ]}
+        view={view}
+        onViewChange={setView}
+        cardsLabel={c.viewCards}
+        tableLabel={c.viewTable}
+        onExport={exportCsv}
+        exportLabel={c.exportLabel}
+      />
+
+      {visible.length === 0 ? (
+        <Card className="text-muted-foreground p-8 text-center text-sm">
+          {c.noResults}
+        </Card>
+      ) : view === "table" ? (
+        <RecordingTable rows={visible} c={c} />
+      ) : (
+        <div className="space-y-4">
+          {visible.map((rec) => (
+            <RecordingCard key={rec.id} rec={rec} />
+          ))}
+        </div>
+      )}
     </Page>
+  )
+}
+
+function RecordingTable({
+  rows,
+  c,
+}: {
+  rows: CoachRecording[]
+  c: Copy
+}) {
+  const navigate = useNavigate()
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colTitle}</TableHead>
+            <TableHead>{c.colContact}</TableHead>
+            <TableHead>{c.colDate}</TableHead>
+            <TableHead className="text-right">{c.colDuration}</TableHead>
+            <TableHead>{c.colSentiment}</TableHead>
+            <TableHead className="text-right">{c.colScore}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((rec) => {
+            const sentiment = SENTIMENT[rec.sentiment]
+            const SentimentIcon = sentiment.icon
+            return (
+              <TableRow
+                key={rec.id}
+                className="cursor-pointer"
+                onClick={() => navigate(`/coach/${rec.id}`)}
+              >
+                <TableCell className="font-medium">{rec.title}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {rec.prospectName} · {rec.company}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                  {formatDate(rec.date)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {rec.durationMin} min
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`flex items-center gap-1 text-sm ${sentiment.className}`}
+                  >
+                    <SentimentIcon className="size-3.5" />
+                    {c.sentiment[rec.sentiment]}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      scorePillClass(rec.score)
+                    )}
+                  >
+                    {rec.score}
+                  </span>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   )
 }
 
