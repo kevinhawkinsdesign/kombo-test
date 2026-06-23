@@ -1,7 +1,5 @@
-import { useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import {
-  Search,
   Moon,
   Sun,
   LogOut,
@@ -15,7 +13,7 @@ import {
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AppSearch } from "@/components/layout/AppSearch"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,35 +53,12 @@ export function AppHeader() {
   const { balance } = useCredits()
   const { locale, setLocale, t } = useLocale()
   const navigate = useNavigate()
-  const [searchValue, setSearchValue] = useState("")
-
-  // Don't jump to the search page on focus — let the user submit their prompt
-  // first, then hand it to the unified Kai search surface.
-  function submitSearch(e: FormEvent) {
-    e.preventDefault()
-    const q = searchValue.trim()
-    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search")
-    setSearchValue("")
-  }
 
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur md:gap-3 md:px-6">
       <ViewSwitcher />
 
-      <form
-        role="search"
-        onSubmit={submitSearch}
-        className="relative ml-auto hidden w-full max-w-xs md:block"
-      >
-        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-        <Input
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder={t("header.searchPlaceholder")}
-          aria-label={t("header.searchPlaceholder")}
-          className="pl-9"
-        />
-      </form>
+      <AppSearch />
 
       <div className="ml-auto flex items-center gap-1 md:ml-0">
         <button

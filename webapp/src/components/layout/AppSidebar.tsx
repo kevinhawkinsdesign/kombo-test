@@ -178,9 +178,7 @@ function NavRow({
           inset && !collapsed && "py-1.5",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : collapsed
-              ? "text-sidebar-foreground hover:bg-sidebar-accent/60"
-              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent/60"
         )
       }
     >
@@ -256,7 +254,7 @@ function NavGroupSection({
           "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
           hasActive && !open
             ? "text-sidebar-foreground"
-            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent/60"
         )}
       >
         <span className="relative">
@@ -273,7 +271,7 @@ function NavGroupSection({
         )}
         <ChevronDown
           className={cn(
-            "text-sidebar-foreground/60 size-3.5 shrink-0 transition-transform",
+            "text-sidebar-foreground/70 size-3.5 shrink-0 transition-transform",
             open && "rotate-180"
           )}
         />
@@ -295,27 +293,28 @@ function NavGroupSection({
 }
 
 
-const GROUPS_KEY = "kombo-nav-groups"
+const GROUP_KEY = "kombo-nav-group"
 
-function useExpandedGroups() {
-  const [expanded, setExpanded] = React.useState<Set<string>>(() => {
+// Accordion: only one group is open at a time. Opening one closes the rest.
+function useAccordionGroup(activeGroupKey: string | null) {
+  const [openKey, setOpenKey] = React.useState<string | null>(() => {
+    // Prefer the group containing the current page so it's visible on load.
+    if (activeGroupKey) return activeGroupKey
     try {
-      const raw = localStorage.getItem(GROUPS_KEY)
-      if (raw) return new Set(JSON.parse(raw) as string[])
+      const stored = localStorage.getItem(GROUP_KEY)
+      if (stored !== null) return stored === "" ? null : stored
     } catch {
       /* ignore */
     }
     // Default: outreach open so the New campaign CTA target is visible.
-    return new Set(["outreach"])
+    return "outreach"
   })
 
-  const toggle = React.useCallback((key: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
+  const setOpen = React.useCallback((key: string) => {
+    setOpenKey((prev) => {
+      const next = prev === key ? null : key
       try {
-        localStorage.setItem(GROUPS_KEY, JSON.stringify([...next]))
+        localStorage.setItem(GROUP_KEY, next ?? "")
       } catch {
         /* ignore */
       }
@@ -323,7 +322,7 @@ function useExpandedGroups() {
     })
   }, [])
 
-  return { expanded, toggle }
+  return { openKey, setOpen }
 }
 
 function SidebarContent({
@@ -338,7 +337,11 @@ function SidebarContent({
   const { t } = useLocale()
   const { progress } = useSetup()
   const { pathname } = useLocation()
-  const { expanded, toggle } = useExpandedGroups()
+  const activeGroupKey =
+    [...groups, manageGroup].find((g) =>
+      g.items.some((it) => isActivePath(pathname, it.to))
+    )?.key ?? null
+  const { openKey, setOpen } = useAccordionGroup(activeGroupKey)
   const newCampaign = useNewCampaign()
 
   function startNewCampaign() {
@@ -484,8 +487,8 @@ function SidebarContent({
                 <NavGroupSection
                   key={group.key}
                   group={group}
-                  open={expanded.has(group.key) || group.items.some((it) => isActivePath(pathname, it.to))}
-                  onToggle={() => toggle(group.key)}
+                  open={openKey === group.key}
+                  onToggle={() => setOpen(group.key)}
                   onNavigate={onNavigate}
                   currentPath={pathname}
                 />
@@ -494,11 +497,8 @@ function SidebarContent({
               <div className="mt-auto pt-2">
                 <NavGroupSection
                   group={manageGroup}
-                  open={
-                    expanded.has(manageGroup.key) ||
-                    manageGroup.items.some((it) => isActivePath(pathname, it.to))
-                  }
-                  onToggle={() => toggle(manageGroup.key)}
+                  open={openKey === manageGroup.key}
+                  onToggle={() => setOpen(manageGroup.key)}
                   onNavigate={onNavigate}
                   currentPath={pathname}
                 />
@@ -521,7 +521,7 @@ function SidebarContent({
               onClick={onToggleCollapse}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               className={cn(
-                "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground flex items-center rounded-md text-sm font-medium transition-colors",
+                "text-sidebar-foreground hover:bg-sidebar-accent/60 flex items-center rounded-md text-sm font-medium transition-colors",
                 collapsed ? "size-9 justify-center" : "w-full gap-3 px-3 py-2"
               )}
             >
