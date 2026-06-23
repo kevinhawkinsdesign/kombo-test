@@ -64,6 +64,10 @@ export interface ProspectList {
   createdAt: string
   color: string
   source: "linkedin" | "salesnav" | "csv" | "search"
+  // Lists hold either people (prospectIds) or companies (accountIds).
+  // Undefined kind reads as a people list so existing lists stay valid.
+  kind?: "people" | "company"
+  accountIds?: string[]
   // Dynamic "playlist" automation. Static lists omit these; a dynamic list is
   // fed by a saved search that keeps adding matching prospects over time.
   dynamic?: boolean

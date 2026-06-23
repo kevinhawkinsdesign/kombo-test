@@ -45,16 +45,20 @@ import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
   PEOPLE_DEFAULT_IDS,
+  COMPANY_COLUMNS,
+  COMPANY_GROUPS,
+  COMPANY_DEFAULT_IDS,
   useColumnPrefs,
 } from "@/lib/table-columns"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
-import { useLists, useProspects, listStore } from "@/lib/store"
+import { getAccount } from "@/lib/mock-extra"
+import { useLists, useProspects, useAccounts, listStore } from "@/lib/store"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
-import type { Prospect, ProspectList } from "@/lib/types"
+import type { Account, Prospect, ProspectList } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -122,6 +126,18 @@ const COPY = {
       `${count} ${count === 1 ? "contact" : "contacts"} in this list ${count === 1 ? "hasn't" : "haven't"} been enriched. Campaigns reach more people and bounce less when contacts have verified data. Enrich now, or start anyway?`,
     enrichFirst: "Enrich first",
     startAnyway: "Start anyway",
+    // Company lists
+    companies: "companies",
+    companiesHeading: "Companies",
+    addCompanies: "Add companies",
+    removeCompany: (name: string) => `Remove ${name} from list`,
+    emptyStateCo: "No companies yet. Add some to get started.",
+    addCompaniesTitle: "Add companies",
+    addCompaniesDescription: (name: string) =>
+      `Select companies to add to "${name}".`,
+    allAlreadyCo: "Every company is already in this list.",
+    addedCo: (count: number) =>
+      `${count} ${count === 1 ? "company" : "companies"} added`,
   },
   es: {
     listNotFound: "Lista no encontrada.",
@@ -189,6 +205,18 @@ const COPY = {
       `${count} ${count === 1 ? "contacto" : "contactos"} de esta lista no ${count === 1 ? "ha sido enriquecido" : "han sido enriquecidos"}. Las campañas llegan a más personas y rebotan menos cuando los contactos tienen datos verificados. ¿Enriquecer ahora o iniciar de todos modos?`,
     enrichFirst: "Enriquecer primero",
     startAnyway: "Iniciar de todos modos",
+    // Company lists
+    companies: "empresas",
+    companiesHeading: "Empresas",
+    addCompanies: "Añadir empresas",
+    removeCompany: (name: string) => `Quitar a ${name} de la lista`,
+    emptyStateCo: "Aún no hay empresas. Añade algunas para empezar.",
+    addCompaniesTitle: "Añadir empresas",
+    addCompaniesDescription: (name: string) =>
+      `Selecciona empresas para añadir a "${name}".`,
+    allAlreadyCo: "Todas las empresas ya están en esta lista.",
+    addedCo: (count: number) =>
+      `${count} ${count === 1 ? "empresa añadida" : "empresas añadidas"}`,
   },
 } as const
 
@@ -207,6 +235,7 @@ export default function ListDetail() {
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
+  const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
 
   if (!list) {
     return (
@@ -219,19 +248,25 @@ export default function ListDetail() {
     )
   }
 
+  const isCompany = list.kind === "company"
+
   const members = list.prospectIds
     .map(getProspect)
     .filter((p): p is NonNullable<typeof p> => Boolean(p))
+  const accountMembers = (list.accountIds ?? [])
+    .map(getAccount)
+    .filter((a): a is NonNullable<typeof a> => Boolean(a))
 
+  const memberCount = isCompany ? accountMembers.length : members.length
   const pending = members.filter((p) => !isEnriched(p))
   const enrichedCount = members.length - pending.length
 
   function launchCampaign() {
-    toast.success(c.enrolled(members.length))
+    toast.success(c.enrolled(memberCount))
   }
 
   function handleStartCampaign() {
-    if (pending.length > 0) {
+    if (!isCompany && pending.length > 0) {
       setCampaignWarnOpen(true)
       return
     }
@@ -259,7 +294,7 @@ export default function ListDetail() {
               {list.description}
             </p>
             <p className="text-muted-foreground mt-1 text-xs">
-              {members.length} {c.prospects}
+              {memberCount} {isCompany ? c.companies : c.prospects}
             </p>
           </div>
         </div>
@@ -292,7 +327,7 @@ export default function ListDetail() {
 
       {list.dynamic && <DynamicPlaylistPanel list={list} />}
 
-      {members.length > 0 && (
+      {!isCompany && members.length > 0 && (
         <Card
           className={`mb-6 flex flex-row flex-wrap items-center gap-3 p-4 ${
             pending.length > 0 ? "border-chart-4/40 bg-chart-4/[0.05]" : ""
@@ -332,52 +367,94 @@ export default function ListDetail() {
       )}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">{c.prospectsHeading}</h3>
+        <h3 className="text-sm font-semibold">
+          {isCompany ? c.companiesHeading : c.prospectsHeading}
+        </h3>
         <div className="flex items-center gap-2">
-          <TableViews tableKey="list-prospects" prefs={columnPrefs} />
+          <TableViews
+            tableKey={isCompany ? "list-accounts" : "list-prospects"}
+            prefs={isCompany ? accountColumnPrefs : columnPrefs}
+          />
           <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
             <Columns3 className="size-4" />
             <span className="hidden sm:inline">{c.columns}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="size-4" />
-            {c.addProspects}
+            {isCompany ? c.addCompanies : c.addProspects}
           </Button>
         </div>
       </div>
 
-      <DataTable
-        columns={PEOPLE_COLUMNS}
-        visible={columnPrefs.visible}
-        rows={members}
-        rowKey={(p) => p.id}
-        locale={locale}
-        onRowClick={(p) => navigate(`/prospects/${p.id}`)}
-        empty={c.emptyState}
-        actions={(p) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={c.removeFromList(`${p.firstName} ${p.lastName}`)}
-            className="text-muted-foreground hover:text-destructive size-8"
-            onClick={() => {
-              listStore.removeProspect(list.id, p.id)
-              toast.success(c.removed)
-            }}
-          >
-            <X className="size-4" />
-          </Button>
-        )}
-      />
+      {isCompany ? (
+        <DataTable
+          columns={COMPANY_COLUMNS}
+          visible={accountColumnPrefs.visible}
+          rows={accountMembers}
+          rowKey={(a) => a.id}
+          locale={locale}
+          onRowClick={(a) => navigate(`/companies/${a.id}`)}
+          empty={c.emptyStateCo}
+          actions={(a) => (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={c.removeCompany(a.name)}
+              className="text-muted-foreground hover:text-destructive size-8"
+              onClick={() => {
+                listStore.removeAccount(list.id, a.id)
+                toast.success(c.removed)
+              }}
+            >
+              <X className="size-4" />
+            </Button>
+          )}
+        />
+      ) : (
+        <DataTable
+          columns={PEOPLE_COLUMNS}
+          visible={columnPrefs.visible}
+          rows={members}
+          rowKey={(p) => p.id}
+          locale={locale}
+          onRowClick={(p) => navigate(`/prospects/${p.id}`)}
+          empty={c.emptyState}
+          actions={(p) => (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={c.removeFromList(`${p.firstName} ${p.lastName}`)}
+              className="text-muted-foreground hover:text-destructive size-8"
+              onClick={() => {
+                listStore.removeProspect(list.id, p.id)
+                toast.success(c.removed)
+              }}
+            >
+              <X className="size-4" />
+            </Button>
+          )}
+        />
+      )}
 
-      <ColumnManager
-        open={columnsOpen}
-        onOpenChange={setColumnsOpen}
-        columns={PEOPLE_COLUMNS}
-        groups={PEOPLE_GROUPS}
-        prefs={columnPrefs}
-        locale={locale}
-      />
+      {isCompany ? (
+        <ColumnManager
+          open={columnsOpen}
+          onOpenChange={setColumnsOpen}
+          columns={COMPANY_COLUMNS}
+          groups={COMPANY_GROUPS}
+          prefs={accountColumnPrefs}
+          locale={locale}
+        />
+      ) : (
+        <ColumnManager
+          open={columnsOpen}
+          onOpenChange={setColumnsOpen}
+          columns={PEOPLE_COLUMNS}
+          groups={PEOPLE_GROUPS}
+          prefs={columnPrefs}
+          locale={locale}
+        />
+      )}
 
       <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
 
@@ -395,7 +472,11 @@ export default function ListDetail() {
         }}
       />
 
-      <AddProspectsDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
+      {isCompany ? (
+        <AddCompaniesDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
+      ) : (
+        <AddProspectsDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
+      )}
 
       <EnrichListDialog
         open={enrichOpen}
@@ -662,6 +743,132 @@ function ProspectRow({
         </p>
       </div>
       <ScoreBadge score={prospect.score} />
+    </label>
+  )
+}
+
+function AddCompaniesDialog({
+  open,
+  onOpenChange,
+  list,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  list: ProspectList
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const accounts = useAccounts()
+  const [selected, setSelected] = React.useState<Set<string>>(new Set())
+
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setSelected(new Set())
+  }
+
+  const memberIds = React.useMemo(
+    () => new Set(list.accountIds ?? []),
+    [list.accountIds]
+  )
+  const candidates = React.useMemo(
+    () => accounts.filter((a) => !memberIds.has(a.id)),
+    [accounts, memberIds]
+  )
+
+  function toggle(id: string) {
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function handleAdd() {
+    const ids = Array.from(selected)
+    if (ids.length === 0) return
+    listStore.addAccounts(list.id, ids)
+    toast.success(c.addedCo(ids.length))
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{c.addCompaniesTitle}</DialogTitle>
+          <DialogDescription>
+            {c.addCompaniesDescription(list.name)}
+          </DialogDescription>
+        </DialogHeader>
+
+        {candidates.length === 0 ? (
+          <p className="text-muted-foreground py-8 text-center text-sm">
+            {c.allAlreadyCo}
+          </p>
+        ) : (
+          <div className="-mx-1 max-h-80 space-y-1 overflow-y-auto px-1">
+            {candidates.map((a) => (
+              <AccountRow
+                key={a.id}
+                account={a}
+                checked={selected.has(a.id)}
+                onToggle={() => toggle(a.id)}
+              />
+            ))}
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            {c.cancel}
+          </Button>
+          <Button
+            variant="volt"
+            onClick={handleAdd}
+            disabled={selected.size === 0}
+          >
+            {c.addSelected}
+            {selected.size > 0 ? ` (${selected.size})` : ""}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function AccountRow({
+  account,
+  checked,
+  onToggle,
+}: {
+  account: Account
+  checked: boolean
+  onToggle: () => void
+}) {
+  const checkboxId = `add-account-${account.id}`
+  return (
+    <label
+      htmlFor={checkboxId}
+      className="hover:bg-muted/60 flex cursor-pointer items-center gap-3 rounded-md px-2 py-2"
+    >
+      <Checkbox id={checkboxId} checked={checked} onCheckedChange={onToggle} />
+      <span
+        className="flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold text-white"
+        style={{ backgroundColor: account.logoColor }}
+      >
+        {account.name.charAt(0)}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{account.name}</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {account.industry} · {account.location}
+        </p>
+      </div>
+      <Badge variant="secondary" className="font-normal">
+        {account.tier}
+      </Badge>
     </label>
   )
 }
