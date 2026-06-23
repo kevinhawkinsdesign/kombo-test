@@ -14,6 +14,7 @@ import {
   Clock,
   ChevronRight,
   LayoutGrid,
+  ShieldCheck,
 } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
@@ -80,6 +81,11 @@ const COPY = {
     newName: "Untitled automation",
     newDesc: "Search, enrich, add to a list, and enroll into a campaign.",
     newTrigger: "Saved search",
+    autoMode: "Auto",
+    askMode: "Approval required",
+    autoToAsk: "Now asks for approval before each run",
+    askToAuto: "Now runs automatically",
+    modeHint: "Switch between auto-run and approve-each-run",
   },
   es: {
     recommendTitle: "Kai recomienda",
@@ -115,6 +121,11 @@ const COPY = {
     newName: "Automatización sin título",
     newDesc: "Busca, enriquece, añade a una lista e inscribe en una campaña.",
     newTrigger: "Búsqueda guardada",
+    autoMode: "Automática",
+    askMode: "Requiere aprobación",
+    autoToAsk: "Ahora pide aprobación antes de cada ejecución",
+    askToAuto: "Ahora se ejecuta automáticamente",
+    modeHint: "Cambia entre ejecución automática y aprobar cada ejecución",
   },
 } as const
 
@@ -315,6 +326,28 @@ function AutomationCard({
               )}
               {statusLabel}
             </Badge>
+            <button
+              type="button"
+              title={c.modeHint}
+              onClick={() => {
+                const next = a.approvalMode === "auto" ? "ask" : "auto"
+                automationStore.setApprovalMode(a.id, next)
+                toast.success(next === "ask" ? c.autoToAsk : c.askToAuto)
+              }}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-normal transition-colors",
+                a.approvalMode === "ask"
+                  ? "border-chart-4/30 bg-chart-4/10 text-chart-4"
+                  : "border-transparent bg-muted text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {a.approvalMode === "ask" ? (
+                <ShieldCheck className="size-3" />
+              ) : (
+                <Zap className="size-3" />
+              )}
+              {a.approvalMode === "ask" ? c.askMode : c.autoMode}
+            </button>
           </div>
           <p className="text-muted-foreground mt-0.5 text-sm">{a.description}</p>
         </div>
