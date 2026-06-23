@@ -1,6 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Mail, Plus, Radio } from "lucide-react"
+import { Mail, Plus, Radio, Download } from "lucide-react"
 
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { InfoHint } from "@/components/common/InfoHint"
@@ -18,12 +18,22 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ViewToggle, type CollectionView } from "@/components/common/ViewToggle"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import {
   sendingChannels,
   type ChannelStatus,
   type SendingChannel,
 } from "@/lib/mock-network"
+import { downloadCsv } from "@/lib/csv"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
 
@@ -64,6 +74,15 @@ const COPY = {
       "Monitor deliverability & sender health",
       "Set per-channel daily limits",
     ],
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Channels exported to CSV",
+    colChannel: "Channel",
+    colProvider: "Provider",
+    colStatus: "Status",
+    colDaily: "Daily sending",
+    colHealth: "Health",
   },
   es: {
     statusLabel: {
@@ -101,8 +120,19 @@ const COPY = {
       "Supervisa la entregabilidad y la salud del remitente",
       "Define límites diarios por canal",
     ],
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Canales exportados a CSV",
+    colChannel: "Canal",
+    colProvider: "Proveedor",
+    colStatus: "Estado",
+    colDaily: "Envío diario",
+    colHealth: "Salud",
   },
 } as const
+
+type Copy = (typeof COPY)[keyof typeof COPY]
 
 const STATUS_VARIANTS: Record<
   ChannelStatus,
@@ -225,6 +255,22 @@ export default function Channels() {
   const c = COPY[locale]
   const [channels, setChannels] =
     React.useState<SendingChannel[]>(sendingChannels)
+  const [view, setView] = React.useState<CollectionView>("cards")
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-channels.csv",
+      [c.colChannel, c.colProvider, c.colStatus, c.colDaily, c.colHealth],
+      channels.map((ch) => [
+        ch.label,
+        ch.provider,
+        c.statusLabel[ch.status],
+        `${ch.sentToday}/${ch.dailyLimit}`,
+        ch.health,
+      ])
+    )
+    toast.success(c.exported)
+  }
 
   const sentToday = channels.reduce((a, ch) => a + ch.sentToday, 0)
   const dailyCapacity = channels.reduce((a, ch) => a + ch.dailyLimit, 0)
@@ -294,12 +340,100 @@ export default function Channels() {
         ))}
       </div>
 
-      {/* Channels */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {channels.map((channel) => (
-          <ChannelCard key={channel.id} channel={channel} onToggle={toggle} />
-        ))}
+      {/* Controls */}
+      <div className="mt-6 mb-4 flex items-center justify-end gap-2">
+        <ViewToggle
+          view={view}
+          onChange={setView}
+          cardsLabel={c.viewCards}
+          tableLabel={c.viewTable}
+        />
+        <Button variant="outline" onClick={exportCsv}>
+          <Download className="size-4" />
+          <span className="hidden sm:inline">{c.exportLabel}</span>
+        </Button>
       </div>
+
+      {/* Channels */}
+      {view === "table" ? (
+        <ChannelTable rows={channels} c={c} onToggle={toggle} />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {channels.map((channel) => (
+            <ChannelCard key={channel.id} channel={channel} onToggle={toggle} />
+          ))}
+        </div>
+      )}
     </Page>
+  )
+}
+
+function ChannelTable({
+  rows,
+  c,
+  onToggle,
+}: {
+  rows: SendingChannel[]
+  c: Copy
+  onToggle: (id: string) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colChannel}</TableHead>
+            <TableHead>{c.colProvider}</TableHead>
+            <TableHead>{c.colStatus}</TableHead>
+            <TableHead className="text-right">{c.colDaily}</TableHead>
+            <TableHead className="text-right">{c.colHealth}</TableHead>
+            <TableHead className="text-right">{c.sending}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((ch) => {
+            const Icon = ch.type === "linkedin" ? LinkedinIcon : Mail
+            return (
+              <TableRow key={ch.id}>
+                <TableCell>
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="text-muted-foreground size-4" />
+                    <span className="font-medium">{ch.label}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {ch.provider}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={STATUS_VARIANTS[ch.status]}>
+                    {c.statusLabel[ch.status]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {ch.sentToday} / {ch.dailyLimit}
+                </TableCell>
+                <TableCell className="text-right">
+                  <span
+                    className={cn(
+                      "rounded-md px-2 py-0.5 text-xs font-medium tabular-nums",
+                      healthPill(ch.health)
+                    )}
+                  >
+                    {ch.health}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Switch
+                    checked={ch.status !== "paused"}
+                    onCheckedChange={() => onToggle(ch.id)}
+                    aria-label={c.toggleAria(ch.label)}
+                  />
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   )
 }
