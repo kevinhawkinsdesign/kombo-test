@@ -32,7 +32,7 @@ export function ViewSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="h-9 gap-2">
           {impersonating ? (
             <>
               <Eye className="size-4" />
