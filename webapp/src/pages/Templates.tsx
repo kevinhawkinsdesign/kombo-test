@@ -42,9 +42,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Card } from "@/components/ui/card"
+import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import type { CollectionView } from "@/components/common/ViewToggle"
 import { useTemplates, templateStore } from "@/lib/store"
 import { folderStore, useTemplateFolders } from "@/lib/template-folders"
 import { useLocale } from "@/lib/locale"
+import { downloadCsv } from "@/lib/csv"
+import { formatDate } from "@/lib/format"
 import type { Channel, EmailTemplate } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -129,6 +142,23 @@ const COPY = {
     folderCreated: "Folder created",
     folderRenamed: "Folder renamed",
     folderDeleted: "Folder deleted",
+    search: "Search templates…",
+    viewCards: "Cards",
+    viewTable: "Table",
+    exportLabel: "Export",
+    exported: "Templates exported to CSV",
+    noResults: "No templates match your search.",
+    sortRecent: "Recently updated",
+    sortName: "Name (A–Z)",
+    sortSent: "Most sent",
+    sortReply: "Reply rate",
+    colName: "Template",
+    colFolder: "Folder",
+    colChannel: "Channel",
+    colSubject: "Subject",
+    colSent: "Sent",
+    colReply: "Reply rate",
+    colUpdated: "Updated",
   },
   es: {
     topPerformer: "Mejor rendimiento",
@@ -189,6 +219,23 @@ const COPY = {
     folderCreated: "Carpeta creada",
     folderRenamed: "Carpeta renombrada",
     folderDeleted: "Carpeta eliminada",
+    search: "Buscar plantillas…",
+    viewCards: "Tarjetas",
+    viewTable: "Tabla",
+    exportLabel: "Exportar",
+    exported: "Plantillas exportadas a CSV",
+    noResults: "Ninguna plantilla coincide con tu búsqueda.",
+    sortRecent: "Actualizadas recientemente",
+    sortName: "Nombre (A–Z)",
+    sortSent: "Más enviadas",
+    sortReply: "Tasa de respuesta",
+    colName: "Plantilla",
+    colFolder: "Carpeta",
+    colChannel: "Canal",
+    colSubject: "Asunto",
+    colSent: "Enviados",
+    colReply: "Tasa de respuesta",
+    colUpdated: "Actualizada",
   },
 } as const
 
@@ -205,6 +252,86 @@ function ChannelIcon({
     <LinkedinIcon className={className} />
   ) : (
     <Mail className={className} />
+  )
+}
+
+function TemplateTable({
+  rows,
+  c,
+  onOpen,
+  onDelete,
+}: {
+  rows: EmailTemplate[]
+  c: Copy
+  onOpen: (template: EmailTemplate) => void
+  onDelete: (template: EmailTemplate) => void
+}) {
+  return (
+    <Card className="p-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{c.colName}</TableHead>
+            <TableHead>{c.colFolder}</TableHead>
+            <TableHead>{c.colSubject}</TableHead>
+            <TableHead className="text-right">{c.colSent}</TableHead>
+            <TableHead className="text-right">{c.colReply}</TableHead>
+            <TableHead className="text-right">{c.colUpdated}</TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((t) => {
+            const preview =
+              t.channel === "email" ? t.subject : t.body.split("\n")[0]
+            return (
+              <TableRow
+                key={t.id}
+                className="cursor-pointer"
+                onClick={() => onOpen(t)}
+              >
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md">
+                      <ChannelIcon channel={t.channel} className="size-3.5" />
+                    </span>
+                    <span className="font-medium">{t.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="font-normal">
+                    {t.folder}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground max-w-[260px] truncate text-sm">
+                  {preview}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {t.sent.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-chart-1 text-right font-medium tabular-nums">
+                  {t.replyRate}%
+                </TableCell>
+                <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
+                  {formatDate(t.updatedAt)}
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={c.deleteAria(t.name)}
+                    className="text-muted-foreground hover:text-destructive size-8"
+                    onClick={() => onDelete(t)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   )
 }
 
@@ -446,10 +573,68 @@ export default function Templates() {
     toast.success(c.templateDeleted)
   }
 
-  // One section per folder (including empty folders).
-  const grouped = allFolders.map(
-    (f) => [f, templates.filter((t) => t.folder === f)] as const
+  const [view, setView] = React.useState<CollectionView>("cards")
+  const [query, setQuery] = React.useState("")
+  const [sort, setSort] = React.useState("recent")
+
+  const matches = React.useCallback(
+    (t: EmailTemplate) => {
+      const q = query.trim().toLowerCase()
+      if (!q) return true
+      return (
+        t.name.toLowerCase().includes(q) ||
+        t.subject.toLowerCase().includes(q) ||
+        t.body.toLowerCase().includes(q) ||
+        t.folder.toLowerCase().includes(q) ||
+        t.tags.some((tag) => tag.toLowerCase().includes(q))
+      )
+    },
+    [query]
   )
+
+  // One section per folder (including empty folders), filtered by the search.
+  // When searching, hide folders with no matches to keep the view tidy.
+  const grouped = allFolders
+    .map((f) => [f, templates.filter((t) => t.folder === f && matches(t))] as const)
+    .filter(([, items]) => query.trim() === "" || items.length > 0)
+
+  // Flat, sorted list for the table view and export.
+  const flat = React.useMemo(() => {
+    const filtered = templates.filter(matches)
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "sent":
+          return b.sent - a.sent
+        case "reply":
+          return b.replyRate - a.replyRate
+        default:
+          return (
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          )
+      }
+    })
+    return sorted
+  }, [templates, matches, sort])
+
+  function exportCsv() {
+    downloadCsv(
+      "kombo-templates.csv",
+      [c.colName, c.colFolder, c.colChannel, c.colSubject, c.colSent, c.colReply, c.colUpdated],
+      flat.map((t) => [
+        t.name,
+        t.folder,
+        t.channel === "linkedin" ? c.linkedin : c.email,
+        t.subject,
+        t.sent,
+        `${t.replyRate}%`,
+        formatDate(t.updatedAt),
+      ])
+    )
+    toast.success(c.exported)
+  }
 
   const [folderDialog, setFolderDialog] = React.useState<{
     mode: "create" | "rename"
@@ -512,6 +697,44 @@ export default function Templates() {
         className="mb-6"
       />
 
+      <CollectionToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchPlaceholder={c.search}
+        sort={sort}
+        onSortChange={setSort}
+        sortOptions={[
+          { value: "recent", label: c.sortRecent },
+          { value: "name", label: c.sortName },
+          { value: "sent", label: c.sortSent },
+          { value: "reply", label: c.sortReply },
+        ]}
+        view={view}
+        onViewChange={setView}
+        cardsLabel={c.viewCards}
+        tableLabel={c.viewTable}
+        onExport={exportCsv}
+        exportLabel={c.exportLabel}
+      />
+
+      {view === "table" ? (
+        flat.length === 0 ? (
+          <Card className="text-muted-foreground p-8 text-center text-sm">
+            {c.noResults}
+          </Card>
+        ) : (
+          <TemplateTable
+            rows={flat}
+            c={c}
+            onOpen={openEditor}
+            onDelete={setConfirmTarget}
+          />
+        )
+      ) : grouped.length === 0 ? (
+        <Card className="text-muted-foreground p-8 text-center text-sm">
+          {c.noResults}
+        </Card>
+      ) : (
       <div className="space-y-8">
         {grouped.map(([groupFolder, groupTemplates]) => (
           <section key={groupFolder} className="space-y-3">
@@ -574,6 +797,7 @@ export default function Templates() {
           </section>
         ))}
       </div>
+      )}
 
       {/* Create / rename folder */}
       <Dialog open={folderDialog !== null} onOpenChange={(v) => !v && setFolderDialog(null)}>
