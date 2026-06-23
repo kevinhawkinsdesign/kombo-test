@@ -9,7 +9,6 @@ import {
   Loader2,
   Bookmark,
   Trash2,
-  Columns3,
   Building2,
   Users,
   ArrowRight,
@@ -20,7 +19,7 @@ import {
   CircleDashed,
   ScanSearch,
   ArrowDownUp,
-  Database,
+  MoreHorizontal,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Switch } from "@/components/ui/switch"
@@ -254,6 +253,7 @@ const COPY = {
     addCustom: (v: string) => `Add "${v}"`,
     askAiFilter: (v: string) => `Ask AI: "${v}"`,
     viewAllFilters: "View all filters",
+    more: "More actions",
     backToFilterSearch: "Back to search",
     titles: "Titles",
     seniority: "Seniority",
@@ -403,6 +403,7 @@ const COPY = {
     addCustom: (v: string) => `Añadir "${v}"`,
     askAiFilter: (v: string) => `Pregunta a la IA: "${v}"`,
     viewAllFilters: "Ver todos los filtros",
+    more: "Más acciones",
     backToFilterSearch: "Volver a la búsqueda",
     titles: "Cargos",
     seniority: "Antigüedad",
@@ -818,26 +819,6 @@ export default function Search() {
         <div className="min-w-0 space-y-3">
           {/* Blended controls: sources, suggested filters, filters & sort */}
           <Card className="gap-3 p-3">
-          {/* Data sources */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span
-              className="text-muted-foreground inline-flex items-center gap-1.5 text-sm"
-              title={c.komboHint}
-            >
-              <Database className="text-primary size-4" />
-              {c.komboData}
-            </span>
-            <label className="ml-auto inline-flex items-center gap-2" title={c.linkedinHint}>
-              <LinkedinIcon className="size-4 text-[#0a66c2]" />
-              <span className="text-sm font-medium">{c.linkedinSource}</span>
-              <Switch
-                checked={linkedinOn}
-                onCheckedChange={toggleLinkedin}
-                aria-label={c.linkedinSource}
-              />
-            </label>
-          </div>
-
           {/* Spotlights — LinkedIn-style quick toggles */}
           {entity === "people" && (
             <div className="flex flex-wrap items-center gap-1.5">
@@ -894,12 +875,26 @@ export default function Search() {
             </div>
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
+              <label
+                className="inline-flex items-center gap-1.5"
+                title={c.linkedinHint}
+              >
+                <LinkedinIcon className="size-4 text-[#0a66c2]" />
+                <span className="hidden text-sm font-medium sm:inline">
+                  {c.linkedinSource}
+                </span>
+                <Switch
+                  checked={linkedinOn}
+                  onCheckedChange={toggleLinkedin}
+                  aria-label={c.linkedinSource}
+                />
+              </label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
                     <ArrowDownUp className="size-4" />
                     <span className="hidden sm:inline">
-                      {c.sortBy}: {sortLabel(sortKey, c)}
+                      {sortLabel(sortKey, c)}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -914,22 +909,47 @@ export default function Search() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLookalikeOpen(true)}
-              >
-                <ScanSearch className="size-4" />
-                <span className="hidden sm:inline">{c.lookalike}</span>
-              </Button>
+
+              {entity === "companies" ? (
+                <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
+                  <Users className="size-4" />
+                  {c.findPeople}
+                </Button>
+              ) : (
+                <Button
+                  variant="volt"
+                  size="sm"
+                  onClick={() => setSaveOpen(true)}
+                  disabled={shownCount === 0}
+                >
+                  <ListPlus className="size-4" />
+                  {c.addToList}
+                </Button>
+              )}
+
+              {/* Secondary actions tucked into one overflow menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Columns3 className="size-4" />
-                    <span className="hidden sm:inline">{c.columns}</span>
+                  <Button variant="outline" size="icon" aria-label={c.more}>
+                    <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem onClick={() => setLookalikeOpen(true)}>
+                    <ScanSearch className="size-4" />
+                    {c.lookalike}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={saveSearch}
+                    disabled={shownCount === 0}
+                  >
+                    <Bookmark className="size-4" />
+                    {c.saveThis}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-muted-foreground text-xs">
+                    {c.columns}
+                  </DropdownMenuLabel>
                   <DropdownMenuCheckboxItem
                     checked={showRegion}
                     onCheckedChange={(v) => setShowRegion(!!v)}
@@ -952,23 +972,6 @@ export default function Search() {
                   </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              {entity === "companies" ? (
-                <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
-                  <Users className="size-4" />
-                  {c.findPeople}
-                </Button>
-              ) : (
-                <Button
-                  variant="volt"
-                  size="sm"
-                  onClick={() => setSaveOpen(true)}
-                  disabled={shownCount === 0}
-                >
-                  <ListPlus className="size-4" />
-                  {c.addToList}
-                </Button>
-              )}
             </div>
           </div>
           </Card>
