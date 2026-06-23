@@ -18,7 +18,7 @@ export function KomboMark({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground",
+        "flex size-8 items-center justify-center rounded-lg bg-volt text-volt-foreground",
         className
       )}
     >
