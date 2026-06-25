@@ -13,6 +13,7 @@ const RESET_KEYS = [
   "kombo_icps_v1",
   "kombo_table_views_v1",
   "kombo_approvals_v1",
+  "kombo_kai_dismissed_v1",
 ]
 
 export function installDemoReset(): void {
