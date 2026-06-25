@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { toast } from "sonner"
 import {
   Search as SearchIcon,
   Plus,
@@ -31,6 +30,7 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { ProspectAvatar, ScoreBadge, StatusBadge } from "@/components/common/ProspectBits"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
+import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -49,8 +49,7 @@ const COPY = {
   en: {
     title: "People",
     description: "Every prospect in your book — searchable, filterable, exportable.",
-    addPerson: "Add person",
-    addPersonToast: "Add person — coming soon",
+    addPerson: "Add prospect",
     introTitle: "Work your prospects like a list",
     introDescription:
       "Browse everyone you're tracking, filter by status or fit, and jump straight into a profile or sequence.",
@@ -76,8 +75,7 @@ const COPY = {
   es: {
     title: "Personas",
     description: "Cada prospecto de tu cartera — buscable, filtrable y exportable.",
-    addPerson: "Añadir persona",
-    addPersonToast: "Añadir persona — próximamente",
+    addPerson: "Añadir prospecto",
     introTitle: "Trabaja tus prospectos como una lista",
     introDescription:
       "Explora a todos los que sigues, filtra por estado o encaje, y entra directo a un perfil o secuencia.",
@@ -113,6 +111,7 @@ export default function People() {
   const [view, setView] = React.useState<ViewMode>("table")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [addOpen, setAddOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
 
   const q = query.trim().toLowerCase()
@@ -132,12 +131,14 @@ export default function People() {
         title={c.title}
         description={c.description}
         action={
-          <Button variant="volt" onClick={() => toast.info(c.addPersonToast)}>
+          <Button variant="volt" onClick={() => setAddOpen(true)}>
             <Plus className="size-4" />
             {c.addPerson}
           </Button>
         }
       />
+
+      <ProspectFormDialog open={addOpen} onOpenChange={setAddOpen} />
 
       <FeatureIntro
         featureKey="people"
