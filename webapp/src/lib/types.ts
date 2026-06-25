@@ -220,6 +220,7 @@ export interface Campaign {
   replied: number
   meetings: number
   createdAt: string
+  goal?: string // free-text goal / intent
   listId?: string // the single attached list (1-to-1)
   enrolledIds?: string[] // manually-added prospect ids
 }

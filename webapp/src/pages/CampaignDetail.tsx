@@ -13,6 +13,7 @@ import {
   Play,
   Pencil,
   Plus,
+  Target,
   Trash2,
   UserPlus,
   X,
@@ -76,7 +77,7 @@ import { CampaignDailyChart } from "@/components/charts/Charts"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
 import { getProspect } from "@/lib/mock-data"
-import { useCampaigns, useLists, campaignStore } from "@/lib/store"
+import { useCampaigns, useLists, campaignStore, listStore } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime } from "@/lib/format"
@@ -142,6 +143,8 @@ const COPY = {
     detached: (name: string) => `Detached ${name}`,
     detach: "Detach",
     chooseList: "Choose a list to attach",
+    createList: "Create a list",
+    listCreatedAttached: (name: string) => `Created and attached "${name}"`,
     linkedElsewhere: " (linked elsewhere)",
     attached: (name: string) => `Attached ${name}`,
     listAttached: "List attached",
@@ -257,6 +260,8 @@ const COPY = {
     detached: (name: string) => `${name} desvinculada`,
     detach: "Desvincular",
     chooseList: "Elige una lista para vincular",
+    createList: "Crear una lista",
+    listCreatedAttached: (name: string) => `«${name}» creada y vinculada`,
     linkedElsewhere: " (vinculada en otro lugar)",
     attached: (name: string) => `${name} vinculada`,
     listAttached: "Lista vinculada",
@@ -507,6 +512,19 @@ export default function CampaignDetail() {
     toast.success(c.activated(camp.name))
   }
 
+  // Create a fresh people list and attach it to this campaign in one click.
+  function createAndAttachList() {
+    const list = listStore.create({
+      name: camp.name,
+      description: "",
+      color: "#6366f1",
+      kind: "people",
+    })
+    campaignStore.attachList(camp.id, list.id)
+    setAttachListId("")
+    toast.success(c.listCreatedAttached(list.name))
+  }
+
   function handlePrimaryAction() {
     if (camp.status === "active") {
       campaignStore.update(camp.id, { status: "paused" })
@@ -557,6 +575,12 @@ export default function CampaignDetail() {
           <p className="text-muted-foreground text-sm">
             {c.createdSteps(formatDate(campaign.createdAt), steps.length)}
           </p>
+          {campaign.goal && (
+            <p className="text-muted-foreground mt-1 flex items-start gap-1.5 text-sm">
+              <Target className="mt-0.5 size-3.5 shrink-0" />
+              <span className="italic">{campaign.goal}</span>
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -693,11 +717,16 @@ export default function CampaignDetail() {
                   >
                     {c.attach}
                   </Button>
+                  <Button variant="outline" onClick={createAndAttachList}>
+                    <Plus className="size-4" />
+                    {c.createList}
+                  </Button>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">
-                  {c.noListsToAttach}
-                </p>
+                <Button variant="outline" onClick={createAndAttachList}>
+                  <Plus className="size-4" />
+                  {c.createList}
+                </Button>
               )}
             </CardContent>
           </Card>

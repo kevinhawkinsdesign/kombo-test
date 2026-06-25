@@ -328,6 +328,9 @@ export const campaignStore = {
       replied: data.replied ?? 0,
       meetings: data.meetings ?? 0,
       createdAt: nowISO(),
+      goal: data.goal,
+      listId: data.listId,
+      enrolledIds: data.enrolledIds,
     }
     setState({ campaigns: [campaign, ...state.campaigns] })
     return campaign
