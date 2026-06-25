@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
   Search as SearchIcon,
   Plus,
@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   Columns3,
   MapPin,
+  Waypoints,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -31,6 +32,7 @@ import { TableViews } from "@/components/common/TableViews"
 import { ProspectAvatar, ScoreBadge, StatusBadge } from "@/components/common/ProspectBits"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
+import { WarmIntrosPanel } from "@/pages/WarmIntros"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -49,6 +51,8 @@ const COPY = {
   en: {
     title: "People",
     description: "Every prospect in your book — searchable, filterable, exportable.",
+    tabPeople: "People",
+    tabIntros: "Warm Intros",
     addPerson: "Add prospect",
     introTitle: "Work your prospects like a list",
     introDescription:
@@ -75,6 +79,8 @@ const COPY = {
   es: {
     title: "Personas",
     description: "Cada prospecto de tu cartera — buscable, filtrable y exportable.",
+    tabPeople: "Personas",
+    tabIntros: "Intros cálidas",
     addPerson: "Añadir prospecto",
     introTitle: "Trabaja tus prospectos como una lista",
     introDescription:
@@ -105,6 +111,9 @@ type ViewMode = "table" | "cards"
 export default function People() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const tab: "people" | "intros" = pathname === "/intros" ? "intros" : "people"
   const prospects = useProspects()
   const [query, setQuery] = React.useState("")
   const [status, setStatus] = React.useState<string>(ALL)
@@ -140,6 +149,35 @@ export default function People() {
 
       <ProspectFormDialog open={addOpen} onOpenChange={setAddOpen} />
 
+      {/* People ↔ Warm Intros tabs */}
+      <div className="mb-6 flex items-center gap-1 border-b">
+        {(
+          [
+            { key: "people", to: "/people", label: c.tabPeople, icon: Users },
+            { key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints },
+          ] as const
+        ).map((tb) => (
+          <button
+            key={tb.key}
+            type="button"
+            onClick={() => navigate(tb.to)}
+            className={cn(
+              "-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+              tab === tb.key
+                ? "border-primary text-foreground"
+                : "text-muted-foreground hover:text-foreground border-transparent"
+            )}
+          >
+            <tb.icon className="size-4" />
+            {tb.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "intros" ? (
+        <WarmIntrosPanel />
+      ) : (
+        <>
       <FeatureIntro
         featureKey="people"
         icon={Users}
@@ -267,6 +305,8 @@ export default function People() {
         prefs={columnPrefs}
         locale={locale}
       />
+        </>
+      )}
     </Page>
   )
 }
