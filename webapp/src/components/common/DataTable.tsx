@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
   TableBody,
@@ -27,6 +28,9 @@ export function DataTable<T>({
   actions,
   empty,
   pageSize,
+  selectable,
+  selectedIds,
+  onSelectionChange,
 }: {
   columns: ColumnDef<T>[]
   visible: string[]
@@ -39,6 +43,9 @@ export function DataTable<T>({
   actions?: (row: T) => React.ReactNode
   empty?: React.ReactNode
   pageSize?: number
+  selectable?: boolean
+  selectedIds?: Set<string>
+  onSelectionChange?: (ids: Set<string>) => void
 }) {
   const [page, setPage] = React.useState(0)
   React.useEffect(() => { setPage(0) }, [rows.length])
@@ -63,12 +70,45 @@ export function DataTable<T>({
     return col.render(row, locale)
   }
 
+  const allPageSelected =
+    selectable &&
+    displayRows.length > 0 &&
+    displayRows.every((r) => selectedIds?.has(rowKey(r)))
+
+  function togglePageAll(checked: boolean) {
+    if (!onSelectionChange || !selectedIds) return
+    const next = new Set(selectedIds)
+    displayRows.forEach((r) => {
+      if (checked) next.add(rowKey(r))
+      else next.delete(rowKey(r))
+    })
+    onSelectionChange(next)
+  }
+
+  function toggleOne(row: T) {
+    if (!onSelectionChange || !selectedIds) return
+    const id = rowKey(row)
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onSelectionChange(next)
+  }
+
   return (
     <Card className="overflow-hidden p-0">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
+              {selectable && (
+                <TableHead className="w-10 pl-4">
+                  <Checkbox
+                    checked={!!allPageSelected}
+                    onCheckedChange={(v) => togglePageAll(!!v)}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+              )}
               {pinned && (
                 <TableHead
                   className="bg-muted/40 sticky left-0 z-10 pl-4"
@@ -96,6 +136,14 @@ export function DataTable<T>({
                 className={cn(onRowClick && "cursor-pointer")}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
+                {selectable && (
+                  <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds?.has(rowKey(row)) ?? false}
+                      onCheckedChange={() => toggleOne(row)}
+                    />
+                  </TableCell>
+                )}
                 {pinned && (
                   <TableCell className="bg-background sticky left-0 z-10 pl-4">
                     {cell(pinned, row)}
@@ -122,7 +170,7 @@ export function DataTable<T>({
             {rows.length === 0 && empty && (
               <TableRow className="hover:bg-transparent">
                 <TableCell
-                  colSpan={shown.length + (pinned ? 1 : 0) + (actions ? 1 : 0)}
+                  colSpan={shown.length + (pinned ? 1 : 0) + (actions ? 1 : 0) + (selectable ? 1 : 0)}
                   className="text-muted-foreground py-10 text-center text-sm"
                 >
                   {empty}

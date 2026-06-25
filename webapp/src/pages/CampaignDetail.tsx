@@ -450,7 +450,7 @@ export default function CampaignDetail() {
   const [enrollPage, setEnrollPage] = React.useState(0)
   const { spend } = useCredits()
 
-  const ENROLL_PAGE_SIZE = 10
+  const ENROLL_PAGE_SIZE = 50
 
   if (!campaign) {
     return (

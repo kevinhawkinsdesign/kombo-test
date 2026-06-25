@@ -246,6 +246,9 @@ const COPY = {
     emailMissing: "Missing",
     selected: (n: number) => `${n} selected`,
     clearSel: "Clear",
+    addToListSel: "Add to list",
+    addToCampaign: "Add to campaign",
+    addedToCampaign: (name: string) => `Added to "${name}"`,
     noResults: "No results yet — try a prompt or adjust your filters.",
     addFilter: "Add filter",
     filterTypeahead: "Search filters or describe them with AI…",
@@ -396,6 +399,9 @@ const COPY = {
     emailMissing: "Sin email",
     selected: (n: number) => `${n} seleccionados`,
     clearSel: "Limpiar",
+    addToListSel: "Añadir a lista",
+    addToCampaign: "Añadir a campaña",
+    addedToCampaign: (name: string) => `Añadido a "${name}"`,
     noResults: "Aún no hay resultados — prueba un prompt o ajusta los filtros.",
     addFilter: "Añadir filtro",
     filterTypeahead: "Busca filtros o descríbelos con IA…",
@@ -1001,6 +1007,49 @@ export default function Search() {
 
           {!thinking && (
             <>
+
+          {/* Selection action bar */}
+          {selectedCount > 0 && (
+            <div className="bg-primary/5 border-primary/20 flex flex-wrap items-center gap-3 rounded-lg border px-4 py-2.5">
+              <span className="text-sm font-medium">{c.selected(selectedCount)}</span>
+              <Button variant="volt" size="sm" onClick={() => setSaveOpen(true)}>
+                <ListPlus className="size-4" />
+                {c.addToListSel}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="sm">
+                    <Plus className="size-4" />
+                    {c.addToCampaign}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-60">
+                  <DropdownMenuLabel className="text-muted-foreground text-xs">
+                    {c.addToCampaign}
+                  </DropdownMenuLabel>
+                  {campaigns.map((campaign) => (
+                    <DropdownMenuItem
+                      key={campaign.id}
+                      onClick={() => {
+                        setSelected(new Set())
+                        toast.success(c.addedToCampaign(campaign.name))
+                      }}
+                    >
+                      {campaign.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <button
+                type="button"
+                onClick={() => setSelected(new Set())}
+                className="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-xs"
+              >
+                <X className="size-3" />
+                {c.clearSel}
+              </button>
+            </div>
+          )}
 
           {/* Stats strip */}
           <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-sm">

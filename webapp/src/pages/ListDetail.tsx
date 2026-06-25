@@ -120,6 +120,9 @@ const COPY = {
       "Enrich before launching a campaign for better deliverability and reply rates.",
     enriched: (done: number, total: number) => `${done}/${total} enriched`,
     enrichContacts: (count: number) => `Enrich ${count}`,
+    enrichSelected: (count: number) => `Enrich ${count}${count >= 1000 ? "+" : ""}`,
+    clearSelection: "Clear",
+    selected: (n: number) => `${n} selected`,
     // Warn before campaign
     warnTitle: "Some contacts aren't enriched",
     warnDescription: (count: number) =>
@@ -199,6 +202,9 @@ const COPY = {
       "Enriquece antes de lanzar una campaña para mejorar la entregabilidad y las respuestas.",
     enriched: (done: number, total: number) => `${done}/${total} enriquecidos`,
     enrichContacts: (count: number) => `Enriquecer ${count}`,
+    enrichSelected: (count: number) => `Enriquecer ${count}${count >= 1000 ? "+" : ""}`,
+    clearSelection: "Limpiar",
+    selected: (n: number) => `${n} seleccionados`,
     // Warn before campaign
     warnTitle: "Algunos contactos no están enriquecidos",
     warnDescription: (count: number) =>
@@ -234,6 +240,7 @@ export default function ListDetail() {
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
 
@@ -386,6 +393,24 @@ export default function ListDetail() {
         </div>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="bg-primary/5 border-primary/20 mb-3 flex flex-wrap items-center gap-3 rounded-lg border px-4 py-2.5">
+          <span className="text-sm font-medium">{c.selected(selectedIds.size)}</span>
+          <Button variant="volt" size="sm" onClick={() => setEnrichOpen(true)}>
+            <Database className="size-4" />
+            {c.enrichSelected(Math.min(selectedIds.size, 1000))}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-xs"
+          >
+            <X className="size-3" />
+            {c.clearSelection}
+          </button>
+        </div>
+      )}
+
       {isCompany ? (
         <DataTable
           columns={COMPANY_COLUMNS}
@@ -395,7 +420,10 @@ export default function ListDetail() {
           locale={locale}
           onRowClick={(a) => navigate(`/companies/${a.id}`)}
           empty={c.emptyStateCo}
-          pageSize={10}
+          pageSize={50}
+          selectable
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
           actions={(a) => (
             <Button
               variant="ghost"
@@ -420,7 +448,10 @@ export default function ListDetail() {
           locale={locale}
           onRowClick={(p) => navigate(`/prospects/${p.id}`)}
           empty={c.emptyState}
-          pageSize={10}
+          pageSize={50}
+          selectable
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
           actions={(p) => (
             <Button
               variant="ghost"
