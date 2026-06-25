@@ -55,6 +55,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
+import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
 import { useLists, useProspects, useAccounts, listStore } from "@/lib/store"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
@@ -70,6 +71,7 @@ const COPY = {
     deleteList: "Delete list",
     export: "Export",
     exported: "Exported to CSV",
+    buildPlaylist: "Build a playlist",
     startCampaign: "Start campaign",
     enrolled: (count: number) => `${count} enrolled`,
     prospectsHeading: "Prospects",
@@ -148,6 +150,7 @@ const COPY = {
     deleteList: "Eliminar lista",
     export: "Exportar",
     exported: "Exportado a CSV",
+    buildPlaylist: "Crear playlist",
     startCampaign: "Iniciar campaña",
     enrolled: (count: number) => `${count} inscritos`,
     prospectsHeading: "Prospectos",
@@ -234,6 +237,7 @@ export default function ListDetail() {
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
+  const [playlistOpen, setPlaylistOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
 
@@ -318,6 +322,12 @@ export default function ListDetail() {
             <Download className="size-4" />
             {c.export}
           </Button>
+          {!list.dynamic && (
+            <Button variant="outline" onClick={() => setPlaylistOpen(true)}>
+              <Sparkles className="size-4" />
+              {c.buildPlaylist}
+            </Button>
+          )}
           <Button variant="volt" onClick={handleStartCampaign}>
             <Send className="size-4" />
             {c.startCampaign}
@@ -457,6 +467,8 @@ export default function ListDetail() {
       )}
 
       <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
+
+      <PlaylistWizard open={playlistOpen} onOpenChange={setPlaylistOpen} />
 
       <ConfirmDialog
         open={deleteOpen}
