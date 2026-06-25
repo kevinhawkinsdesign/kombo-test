@@ -5,7 +5,6 @@ import {
   Plus,
   Users,
   FolderKanban,
-  Upload,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -40,6 +39,7 @@ import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
+import { CreateListDialog } from "@/components/lists/CreateListDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
@@ -199,6 +199,7 @@ export default function Lists() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const lists = useLists()
+  const [createOpen, setCreateOpen] = React.useState(false)
   const [importOpen, setImportOpen] = React.useState(false)
   const [formOpen, setFormOpen] = React.useState(false)
   const [wizardOpen, setWizardOpen] = React.useState(false)
@@ -276,20 +277,10 @@ export default function Lists() {
         title={c.title}
         description={c.description}
         action={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" onClick={() => setImportOpen(true)}>
-              <Upload className="size-4" />
-              {c.importCsv}
-            </Button>
-            <Button variant="outline" onClick={openCreate}>
-              <Plus className="size-4" />
-              {c.newList}
-            </Button>
-            <Button variant="volt" onClick={() => setWizardOpen(true)}>
-              <Sparkles className="size-4" />
-              {c.buildPlaylist}
-            </Button>
-          </div>
+          <Button variant="volt" onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" />
+            {c.newList}
+          </Button>
         }
       />
 
@@ -500,6 +491,8 @@ export default function Lists() {
         })}
       </div>
       )}
+
+      <CreateListDialog open={createOpen} onOpenChange={setCreateOpen} />
 
       <PlaylistWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 

@@ -56,6 +56,7 @@ import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
+import { useVersion } from "@/lib/version"
 
 interface NavItem {
   to: string
@@ -64,6 +65,8 @@ interface NavItem {
   badge?: string
   // Marks a surface that doesn't exist in the Chrome extension yet.
   isNew?: boolean
+  // Hidden in v1 mode — only visible when the user switches to v2.
+  v2Only?: boolean
 }
 
 interface NavGroup {
@@ -84,6 +87,7 @@ const primary: NavItem[] = [
     icon: Sparkles,
     badge: String(copilotActions.length),
     isNew: true,
+    v2Only: true,
   },
   {
     to: "/inbox",
@@ -103,8 +107,8 @@ const groups: NavGroup[] = [
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
       { to: "/people", labelKey: "nav.people", icon: Users, isNew: true },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
-      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
-      { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },
+      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true, v2Only: true },
+      { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true, v2Only: true },
     ],
   },
   {
@@ -137,10 +141,10 @@ const manageGroup: NavGroup = {
   labelKey: "nav.manage",
   icon: Settings2,
   items: [
-    { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
+    { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, v2Only: true },
     { to: "/team", labelKey: "nav.team", icon: Users },
-    { to: "/usage", labelKey: "nav.usage", icon: Zap },
-    { to: "/referrals", labelKey: "nav.referrals", icon: Gift },
+    { to: "/usage", labelKey: "nav.usage", icon: Zap, v2Only: true },
+    { to: "/referrals", labelKey: "nav.referrals", icon: Gift, v2Only: true },
     { to: "/integrations", labelKey: "nav.integrations", icon: Plug },
     { to: "/settings", labelKey: "nav.settings", icon: Settings },
   ],
@@ -338,12 +342,18 @@ function SidebarContent({
   const { t } = useLocale()
   const { progress } = useSetup()
   const { pathname } = useLocation()
+  const { version, setVersion } = useVersion()
   const activeGroupKey =
     [...groups, manageGroup].find((g) =>
       g.items.some((it) => isActivePath(pathname, it.to))
     )?.key ?? null
   const { openKey, setOpen } = useAccordionGroup(activeGroupKey)
   const newCampaign = useNewCampaign()
+
+  // Filter items based on the current version.
+  function filterItems(items: NavItem[]): NavItem[] {
+    return version === "v2" ? items : items.filter((it) => !it.v2Only)
+  }
 
   function startNewCampaign() {
     onNavigate?.()
@@ -454,7 +464,7 @@ function SidebarContent({
             // Full icon rail: every page shows its own icon (grouped with thin
             // dividers), so nothing is hidden behind a flyout when collapsed.
             <>
-              {primary.map((item) => (
+              {filterItems(primary).map((item) => (
                 <NavRow
                   key={item.to}
                   item={item}
@@ -462,42 +472,50 @@ function SidebarContent({
                   collapsed
                 />
               ))}
-              {[...groups, manageGroup].map((group) => (
-                <React.Fragment key={group.key}>
-                  <div className="bg-sidebar-border my-1 h-px w-6" />
-                  {group.items.map((item) => (
-                    <NavRow
-                      key={item.to}
-                      item={item}
-                      onNavigate={onNavigate}
-                      collapsed
-                    />
-                  ))}
-                </React.Fragment>
-              ))}
+              {[...groups, manageGroup].map((group) => {
+                const visibleItems = filterItems(group.items)
+                if (visibleItems.length === 0) return null
+                return (
+                  <React.Fragment key={group.key}>
+                    <div className="bg-sidebar-border my-1 h-px w-6" />
+                    {visibleItems.map((item) => (
+                      <NavRow
+                        key={item.to}
+                        item={item}
+                        onNavigate={onNavigate}
+                        collapsed
+                      />
+                    ))}
+                  </React.Fragment>
+                )
+              })}
             </>
           ) : (
             <>
-              {primary.map((item) => (
+              {filterItems(primary).map((item) => (
                 <NavRow key={item.to} item={item} onNavigate={onNavigate} />
               ))}
 
               <div className="my-1" />
 
-              {groups.map((group) => (
-                <NavGroupSection
-                  key={group.key}
-                  group={group}
-                  open={openKey === group.key}
-                  onToggle={() => setOpen(group.key)}
-                  onNavigate={onNavigate}
-                  currentPath={pathname}
-                />
-              ))}
+              {groups.map((group) => {
+                const visibleItems = filterItems(group.items)
+                if (visibleItems.length === 0) return null
+                return (
+                  <NavGroupSection
+                    key={group.key}
+                    group={{ ...group, items: visibleItems }}
+                    open={openKey === group.key}
+                    onToggle={() => setOpen(group.key)}
+                    onNavigate={onNavigate}
+                    currentPath={pathname}
+                  />
+                )
+              })}
 
               <div className="mt-auto pt-2">
                 <NavGroupSection
-                  group={manageGroup}
+                  group={{ ...manageGroup, items: filterItems(manageGroup.items) }}
                   open={openKey === manageGroup.key}
                   onToggle={() => setOpen(manageGroup.key)}
                   onNavigate={onNavigate}
@@ -509,14 +527,53 @@ function SidebarContent({
 
         </nav>
 
-        {/* Pinned footer — always visible; the nav above scrolls behind it. */}
-        {onToggleCollapse && (
-          <div
-            className={cn(
-              "bg-sidebar border-sidebar-border shrink-0 border-t",
-              collapsed ? "flex justify-center p-2" : "p-3"
-            )}
-          >
+        {/* Pinned footer — version toggle + collapse. */}
+        <div
+          className={cn(
+            "bg-sidebar border-sidebar-border shrink-0 border-t",
+            collapsed ? "flex flex-col items-center gap-1 p-2" : "space-y-1 p-3"
+          )}
+        >
+          {/* V1 / V2 toggle */}
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setVersion(version === "v1" ? "v2" : "v1")}
+                  className="text-sidebar-foreground/70 hover:bg-sidebar-accent/60 flex size-9 items-center justify-center rounded-md text-[10px] font-bold transition-colors"
+                >
+                  {version}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {version === "v1" ? "Switch to v2 (all features)" : "Switch to v1 (core features)"}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="flex items-center gap-2 px-2 py-1">
+              <span className="text-sidebar-foreground/60 flex-1 text-xs">Version</span>
+              <div className="bg-sidebar-accent inline-flex rounded-md p-0.5">
+                {(["v1", "v2"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setVersion(v)}
+                    className={cn(
+                      "rounded-[4px] px-2.5 py-0.5 text-xs font-semibold transition-colors",
+                      version === v
+                        ? "bg-sidebar-accent-foreground/10 text-sidebar-foreground shadow-sm"
+                        : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+                    )}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {onToggleCollapse && (
             <button
               type="button"
               onClick={onToggleCollapse}
@@ -535,8 +592,8 @@ function SidebarContent({
                 </>
               )}
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </TooltipProvider>
   )
