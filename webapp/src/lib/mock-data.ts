@@ -643,7 +643,7 @@ export const conversations: Conversation[] = [
     subject: "Talent Garden — prospecting",
     unread: 0,
     lastMessageAt: "2026-06-23T10:20:00Z",
-    status: "positive",
+    status: "qualified",
     aiDraft:
       "Thanks, Priya — that's exactly the reaction we hope for. Want me to set up a tight 20-minute session to map this to Talent Garden's workflow? I'll send a couple of times.",
     messages: [
@@ -748,7 +748,7 @@ export const conversations: Conversation[] = [
     subject: "Next steps + procurement",
     unread: 0,
     lastMessageAt: "2026-06-22T09:15:00Z",
-    status: "positive",
+    status: "qualified",
     aiDraft:
       "Glad the demo landed, Wei. I'll send our security overview and SOC 2 report straight to procurement. Want me to set a 15-minute call with your reviewer to fast-track any questions?",
     messages: [
@@ -824,6 +824,7 @@ export const conversations: Conversation[] = [
     subject: "Betterfly — quick idea",
     unread: 0,
     lastMessageAt: "2026-06-21T12:30:00Z",
+    status: "need_review",
     messages: [
       {
         id: "m_23",

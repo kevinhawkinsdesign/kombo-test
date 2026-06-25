@@ -6,49 +6,73 @@ import { Badge } from "@/components/ui/badge"
 import type { Conversation, ConvStatus, Prospect } from "@/lib/types"
 import { initials, relativeTime } from "@/lib/format"
 
-// Forward-moving stages: left = earliest, right = most qualified
+// Forward-moving stages matching the "Set outcome" dropdown in the chrome extension.
+// Left = earliest in the funnel, right = most qualified / closest to close.
 const ACTIVE_STAGES = [
   {
     key: "outreach" as const,
     convStatus: undefined as ConvStatus | undefined,
     label: "In Outreach",
-    description: "Active sequences, no reply yet",
+    description: "Active sequences, no outcome set yet",
     dot: "bg-slate-400",
     text: "text-slate-600 dark:text-slate-400",
-  },
-  {
-    key: "positive" as const,
-    convStatus: "positive" as ConvStatus,
-    label: "Replied",
-    description: "First positive response",
-    dot: "bg-teal-500",
-    text: "text-teal-700 dark:text-teal-400",
   },
   {
     key: "interested" as const,
     convStatus: "interested" as ConvStatus,
     label: "Interested",
-    description: "Clear buying signal",
+    description: "Prospect has shown buying intent",
     dot: "bg-sky-500",
     text: "text-sky-700 dark:text-sky-400",
   },
   {
+    key: "qualified" as const,
+    convStatus: "qualified" as ConvStatus,
+    label: "Qualified",
+    description: "ICP-fit confirmed, advancing",
+    dot: "bg-violet-500",
+    text: "text-violet-700 dark:text-violet-400",
+  },
+  {
     key: "meeting_booked" as const,
     convStatus: "meeting_booked" as ConvStatus,
-    label: "Meeting Set",
-    description: "Qualified, meeting booked",
+    label: "Meeting Booked",
+    description: "Demo or discovery call scheduled",
     dot: "bg-emerald-500",
     text: "text-emerald-700 dark:text-emerald-400",
   },
+  {
+    key: "won" as const,
+    convStatus: "won" as ConvStatus,
+    label: "Won",
+    description: "Converted to customer",
+    dot: "bg-green-600",
+    text: "text-green-700 dark:text-green-400",
+  },
 ]
 
-// Off-track outcomes: shown in a separate row below the active funnel
+// Off-track outcomes: shown in a separate row below the active funnel.
+// Includes legacy values (positive, bad_timing, referred) so existing data still renders.
 const PASSIVE_STAGES = [
   {
-    key: "bad_timing" as const,
-    convStatus: "bad_timing" as ConvStatus,
-    label: "Bad Timing",
-    dot: "bg-amber-400",
+    key: "not_interested" as const,
+    convStatus: "not_interested" as ConvStatus,
+    label: "Not Interested",
+    dot: "bg-rose-500",
+    text: "text-rose-700 dark:text-rose-400",
+  },
+  {
+    key: "disqualified" as const,
+    convStatus: "disqualified" as ConvStatus,
+    label: "Disqualified",
+    dot: "bg-rose-700",
+    text: "text-rose-800 dark:text-rose-400",
+  },
+  {
+    key: "need_review" as const,
+    convStatus: "need_review" as ConvStatus,
+    label: "Need Review",
+    dot: "bg-amber-500",
     text: "text-amber-700 dark:text-amber-400",
   },
   {
@@ -59,11 +83,18 @@ const PASSIVE_STAGES = [
     text: "text-indigo-700 dark:text-indigo-400",
   },
   {
-    key: "not_interested" as const,
-    convStatus: "not_interested" as ConvStatus,
-    label: "Not Interested",
-    dot: "bg-rose-500",
-    text: "text-rose-700 dark:text-rose-400",
+    key: "bad_timing" as const,
+    convStatus: "bad_timing" as ConvStatus,
+    label: "Bad Timing",
+    dot: "bg-amber-400",
+    text: "text-amber-700 dark:text-amber-400",
+  },
+  {
+    key: "positive" as const,
+    convStatus: "positive" as ConvStatus,
+    label: "Positive",
+    dot: "bg-teal-500",
+    text: "text-teal-700 dark:text-teal-400",
   },
 ]
 
@@ -199,7 +230,7 @@ export function usePipelineSummary(
 ): PipelineFunnelSummary {
   return React.useMemo(() => {
     const data = buildPipelineData(conversations, prospects)
-    const activeKeys: StageKey[] = ["outreach", "positive", "interested", "meeting_booked"]
+    const activeKeys: StageKey[] = ["outreach", "interested", "qualified", "meeting_booked", "won"]
     const total = activeKeys.reduce((sum, k) => sum + (data.get(k)?.length ?? 0), 0)
     const meetingsSet = data.get("meeting_booked")?.length ?? 0
     const conversionPct = total > 0 ? Math.round((meetingsSet / total) * 100) : 0

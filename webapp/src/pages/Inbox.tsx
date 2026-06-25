@@ -247,27 +247,52 @@ const FOLDERS: { id: Folder; key: Folder; icon: typeof InboxIcon }[] = [
 ]
 
 // Sentiment palette encodes the funnel: open → won → handed-off → paused → closed.
+// Mirrors the "Set outcome" dropdown in the Kombo chrome extension.
 const STATUS_META: Record<
   ConvStatus,
   { en: string; es: string; dot: string; badge: string }
 > = {
-  meeting_booked: {
-    en: "Meeting booked",
-    es: "Reunión",
-    dot: "bg-emerald-500",
-    badge: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
-  },
   interested: {
     en: "Interested",
     es: "Interesado",
     dot: "bg-sky-500",
     badge: "bg-sky-500/12 text-sky-700 dark:text-sky-300",
   },
-  positive: {
-    en: "Positive",
-    es: "Positivo",
-    dot: "bg-teal-500",
-    badge: "bg-teal-500/12 text-teal-700 dark:text-teal-300",
+  qualified: {
+    en: "Qualified",
+    es: "Cualificado",
+    dot: "bg-violet-500",
+    badge: "bg-violet-500/12 text-violet-700 dark:text-violet-300",
+  },
+  meeting_booked: {
+    en: "Meeting booked",
+    es: "Reunión",
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
+  },
+  won: {
+    en: "Won",
+    es: "Ganado",
+    dot: "bg-green-600",
+    badge: "bg-green-600/12 text-green-700 dark:text-green-300",
+  },
+  not_interested: {
+    en: "Not interested",
+    es: "No interesado",
+    dot: "bg-rose-500",
+    badge: "bg-rose-500/12 text-rose-700 dark:text-rose-300",
+  },
+  disqualified: {
+    en: "Disqualified",
+    es: "Descartado",
+    dot: "bg-rose-700",
+    badge: "bg-rose-700/12 text-rose-800 dark:text-rose-300",
+  },
+  need_review: {
+    en: "Need review",
+    es: "Revisar",
+    dot: "bg-amber-500",
+    badge: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
   },
   referred: {
     en: "Referred",
@@ -278,24 +303,28 @@ const STATUS_META: Record<
   bad_timing: {
     en: "Bad timing",
     es: "Mal momento",
-    dot: "bg-amber-500",
-    badge: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
+    dot: "bg-amber-400",
+    badge: "bg-amber-400/12 text-amber-700 dark:text-amber-300",
   },
-  not_interested: {
-    en: "Not interested",
-    es: "No interesado",
-    dot: "bg-rose-500",
-    badge: "bg-rose-500/12 text-rose-700 dark:text-rose-300",
+  positive: {
+    en: "Positive",
+    es: "Positivo",
+    dot: "bg-teal-500",
+    badge: "bg-teal-500/12 text-teal-700 dark:text-teal-300",
   },
 }
 
 const STATUS_ORDER: ConvStatus[] = [
-  "meeting_booked",
   "interested",
-  "positive",
+  "qualified",
+  "meeting_booked",
+  "won",
+  "need_review",
   "referred",
   "bad_timing",
   "not_interested",
+  "disqualified",
+  "positive",
 ]
 
 const EVENT_META: Record<

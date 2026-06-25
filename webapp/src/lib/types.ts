@@ -141,12 +141,17 @@ export interface CoachScorecard {
 export type ChatLang = "en" | "es"
 
 // Intent the conversation has been auto-tagged with (sentiment of the reply).
+// Mirrors the "Set outcome" dropdown in the Kombo chrome extension.
 export type ConvStatus =
   | "interested"
+  | "qualified"
   | "meeting_booked"
+  | "won"
+  | "not_interested"
+  | "disqualified"
+  | "need_review"
   | "referred"
   | "bad_timing"
-  | "not_interested"
   | "positive"
 
 export interface Message {
