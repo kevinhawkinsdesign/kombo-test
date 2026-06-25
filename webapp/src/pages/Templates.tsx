@@ -58,6 +58,7 @@ import type { CollectionView } from "@/components/common/ViewToggle"
 import { useTemplates, templateStore } from "@/lib/store"
 import { folderStore, useTemplateFolders } from "@/lib/template-folders"
 import { generateTemplate, PROMPT_PRESETS } from "@/lib/mock-template-ai"
+import { TemplateRecommendations } from "@/components/common/Recommendations"
 import { useLocale } from "@/lib/locale"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate } from "@/lib/format"
@@ -753,6 +754,8 @@ export default function Templates() {
         points={[...c.introPoints]}
         className="mb-6"
       />
+
+      <TemplateRecommendations />
 
       <CollectionToolbar
         query={query}

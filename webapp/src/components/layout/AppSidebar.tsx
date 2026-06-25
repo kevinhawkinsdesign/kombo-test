@@ -31,7 +31,6 @@ import {
   Settings2,
   Puzzle,
   Workflow,
-  LibraryBig,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -115,7 +114,6 @@ const groups: NavGroup[] = [
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/sequences", labelKey: "nav.sequences", icon: Workflow, isNew: true },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
-      { to: "/library", labelKey: "nav.library", icon: LibraryBig, isNew: true },
       { to: "/channels", labelKey: "nav.channels", icon: Radio, isNew: true },
       { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare, isNew: true },
     ],
