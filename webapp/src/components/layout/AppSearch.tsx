@@ -4,12 +4,14 @@ import { Search } from "lucide-react"
 
 import { APP_DESTINATIONS, DEFAULT_DESTINATIONS } from "@/lib/app-nav"
 import { useLocale } from "@/lib/locale"
+import { useReleaseMode, isV2OnlyPath } from "@/lib/release-mode"
 import { cn } from "@/lib/utils"
 
 /** Top-bar combobox that searches the app's pages and jumps to them. */
 export function AppSearch() {
   const navigate = useNavigate()
   const { t } = useLocale()
+  const { isV1 } = useReleaseMode()
   const [query, setQuery] = React.useState("")
   const [focused, setFocused] = React.useState(false)
   const [active, setActive] = React.useState(0)
@@ -17,12 +19,18 @@ export function AppSearch() {
 
   const q = query.trim().toLowerCase()
   const results = React.useMemo(() => {
-    if (!q) return APP_DESTINATIONS.filter((d) => DEFAULT_DESTINATIONS.includes(d.to))
-    return APP_DESTINATIONS.filter((d) => {
-      const label = t(d.labelKey).toLowerCase()
-      return label.includes(q) || d.keywords?.some((k) => k.includes(q))
-    }).slice(0, 8)
-  }, [q, t])
+    // In v1 don't surface pages that only exist in v2 — they'd just redirect.
+    const pool = isV1
+      ? APP_DESTINATIONS.filter((d) => !isV2OnlyPath(d.to))
+      : APP_DESTINATIONS
+    if (!q) return pool.filter((d) => DEFAULT_DESTINATIONS.includes(d.to))
+    return pool
+      .filter((d) => {
+        const label = t(d.labelKey).toLowerCase()
+        return label.includes(q) || d.keywords?.some((k) => k.includes(q))
+      })
+      .slice(0, 8)
+  }, [q, t, isV1])
 
   const open = focused && results.length > 0
   const activeIndex = Math.min(active, Math.max(0, results.length - 1))
