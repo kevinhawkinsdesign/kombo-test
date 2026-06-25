@@ -12,7 +12,6 @@ import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
 import People from "@/pages/People"
 import CompanyDetail from "@/pages/CompanyDetail"
-import WarmIntros from "@/pages/WarmIntros"
 import Lists from "@/pages/Lists"
 import ListDetail from "@/pages/ListDetail"
 import Inbox from "@/pages/Inbox"
@@ -81,7 +80,7 @@ function App() {
         <Route path="/companies/:id" element={<CompanyDetail />} />
         <Route path="/people" element={<People />} />
         <Route path="/discover" element={<Navigate to="/companies" replace />} />
-        <Route path="/intros" element={<WarmIntros />} />
+        <Route path="/intros" element={<People />} />
         <Route path="/lists" element={<Lists />} />
         <Route path="/lists/:id" element={<ListDetail />} />
         <Route path="/inbox" element={<Inbox />} />
