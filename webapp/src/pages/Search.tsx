@@ -13,7 +13,6 @@ import {
   Users,
   ArrowRight,
   Coins,
-  Wand2,
   ListPlus,
   CheckCircle2,
   CircleDashed,
@@ -682,9 +681,7 @@ export default function Search() {
 
   return (
     <Page>
-      {/* AI is native to the product, so the page isn't labelled "AI Search". */}
       <h1 className="text-xl font-semibold tracking-tight">{c.srTitle}</h1>
-      <p className="text-muted-foreground mt-1 mb-6 max-w-3xl text-sm">{c.description}</p>
 
       <FeatureIntro
         featureKey="ai-search"
@@ -692,12 +689,13 @@ export default function Search() {
         title={c.introTitle}
         description={c.introDescription}
         points={[...c.introPoints]}
-        className="mb-6"
+        className="mt-4 mb-6"
       />
 
-      <div className="space-y-4">
-        {/* Search query bar — the prompt IS the query, no chat thread. */}
-        <Card className="gap-3 p-3">
+      <div className="space-y-3">
+        {/* Unified search + controls card */}
+        <Card className="gap-0 p-3">
+          {/* Search input row */}
           <form
             className="flex items-end gap-2"
             onSubmit={(e) => {
@@ -789,8 +787,8 @@ export default function Search() {
             </DropdownMenu>
           </form>
 
-          {/* Example queries + quick refinements */}
-          <div className="flex flex-wrap gap-1.5">
+          {/* Example queries */}
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {examples.slice(0, 3).map((ex) => (
               <button
                 key={ex}
@@ -801,180 +799,185 @@ export default function Search() {
                 {ex.length > 42 ? `${ex.slice(0, 42)}…` : ex}
               </button>
             ))}
-            {c.refineChips.map((chip) => (
-              <button
-                key={chip.label}
-                type="button"
-                onClick={() => applyRefine(chip.patch, chip.label)}
-                className="bg-muted/60 hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors"
-              >
-                <Wand2 className="size-3" />
-                {chip.label}
-              </button>
-            ))}
+          </div>
+
+          <div className="border-border mt-3 border-t pt-3">
+            {/* Spotlights — LinkedIn-style quick toggles */}
+            {entity === "people" && (
+              <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium">
+                  <Sparkles className="size-3.5" />
+                  {c.spotlightsLabel}
+                </span>
+                {c.spotlights.map((label, i) => {
+                  const def = SPOTLIGHT_DEFS[i]
+                  const active = (query[def.key] as string[]).includes(def.value)
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => toggleSpotlight(i)}
+                      aria-pressed={active}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Toolbar: entity toggle + right-side actions */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="bg-muted inline-flex rounded-md p-0.5">
+                <EntityTab
+                  active={entity === "people"}
+                  onClick={() => {
+                    setEntity("people")
+                    setSeed(null)
+                    setSelected(new Set())
+                  }}
+                  icon={Users}
+                  label={c.people}
+                />
+                <EntityTab
+                  active={entity === "companies"}
+                  onClick={() => {
+                    setEntity("companies")
+                    setSeed(null)
+                    setSelected(new Set())
+                  }}
+                  icon={Building2}
+                  label={c.companies}
+                />
+              </div>
+
+              <div className="ml-auto flex flex-wrap items-center gap-2">
+                <label
+                  className="inline-flex items-center gap-1.5"
+                  title={c.linkedinHint}
+                >
+                  <LinkedinIcon className="size-4 text-[#0a66c2]" />
+                  <span className="hidden text-sm font-medium sm:inline">
+                    {c.linkedinSource}
+                  </span>
+                  <Switch
+                    checked={linkedinOn}
+                    onCheckedChange={toggleLinkedin}
+                    aria-label={c.linkedinSource}
+                  />
+                </label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <ArrowDownUp className="size-4" />
+                      <span className="hidden sm:inline">
+                        {sortLabel(sortKey, c)}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {(["fit", "name", "company", "headcount", "recent"] as SortKey[]).map(
+                      (k) => (
+                        <DropdownMenuItem key={k} onClick={() => setSortKey(k)}>
+                          {sortLabel(k, c)}
+                          {sortKey === k && <CheckCircle2 className="ml-auto size-4" />}
+                        </DropdownMenuItem>
+                      )
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {entity === "companies" ? (
+                  <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
+                    <Users className="size-4" />
+                    {c.findPeople}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="volt"
+                    size="sm"
+                    onClick={() => setSaveOpen(true)}
+                    disabled={shownCount === 0}
+                  >
+                    <ListPlus className="size-4" />
+                    {c.addToList}
+                  </Button>
+                )}
+
+                {/* Secondary actions */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" aria-label={c.more}>
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem onClick={() => setLookalikeOpen(true)}>
+                      <ScanSearch className="size-4" />
+                      {c.lookalike}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={saveSearch}
+                      disabled={shownCount === 0}
+                    >
+                      <Bookmark className="size-4" />
+                      {c.saveThis}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-muted-foreground text-xs">
+                      {c.columns}
+                    </DropdownMenuLabel>
+                    <DropdownMenuCheckboxItem
+                      checked={showRegion}
+                      onCheckedChange={(v) => setShowRegion(!!v)}
+                    >
+                      {c.colRegion}
+                    </DropdownMenuCheckboxItem>
+                    {entity === "people" && (
+                      <DropdownMenuCheckboxItem
+                        checked={showEmail}
+                        onCheckedChange={(v) => setShowEmail(!!v)}
+                      >
+                        {c.colEmail}
+                      </DropdownMenuCheckboxItem>
+                    )}
+                    <DropdownMenuCheckboxItem
+                      checked={showSignals}
+                      onCheckedChange={(v) => setShowSignals(!!v)}
+                    >
+                      {c.colSignals}
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Active filter chips */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              <QueryChips query={query} onRemove={removeFilter} c={c} />
+              <AddFilterPopover query={query} onAdd={addFilter} c={c} linkedinOn={linkedinOn} entity={entity} />
+              {!isQueryEmpty(query) && (
+                <button
+                  type="button"
+                  onClick={() => setQuery({ ...EMPTY_QUERY })}
+                  className="text-muted-foreground hover:text-foreground ml-1 inline-flex items-center gap-1 text-xs"
+                >
+                  <X className="size-3" />
+                  {c.clearSel}
+                </button>
+              )}
+            </div>
           </div>
         </Card>
 
         {/* Results */}
         <div className="min-w-0 space-y-3">
-          {/* Blended controls: sources, suggested filters, filters & sort */}
-          <Card className="gap-3 p-3">
-          {/* Spotlights — LinkedIn-style quick toggles */}
-          {entity === "people" && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium">
-                <Sparkles className="size-3.5" />
-                {c.spotlightsLabel}
-              </span>
-              {c.spotlights.map((label, i) => {
-                const def = SPOTLIGHT_DEFS[i]
-                const active = (query[def.key] as string[]).includes(def.value)
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => toggleSpotlight(i)}
-                    aria-pressed={active}
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                      active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted"
-                    )}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="bg-muted inline-flex rounded-md p-0.5">
-              <EntityTab
-                active={entity === "people"}
-                onClick={() => {
-                  setEntity("people")
-                  setSeed(null)
-                  setSelected(new Set())
-                }}
-                icon={Users}
-                label={c.people}
-              />
-              <EntityTab
-                active={entity === "companies"}
-                onClick={() => {
-                  setEntity("companies")
-                  setSeed(null)
-                  setSelected(new Set())
-                }}
-                icon={Building2}
-                label={c.companies}
-              />
-            </div>
-
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <label
-                className="inline-flex items-center gap-1.5"
-                title={c.linkedinHint}
-              >
-                <LinkedinIcon className="size-4 text-[#0a66c2]" />
-                <span className="hidden text-sm font-medium sm:inline">
-                  {c.linkedinSource}
-                </span>
-                <Switch
-                  checked={linkedinOn}
-                  onCheckedChange={toggleLinkedin}
-                  aria-label={c.linkedinSource}
-                />
-              </label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <ArrowDownUp className="size-4" />
-                    <span className="hidden sm:inline">
-                      {sortLabel(sortKey, c)}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {(["fit", "name", "company", "headcount", "recent"] as SortKey[]).map(
-                    (k) => (
-                      <DropdownMenuItem key={k} onClick={() => setSortKey(k)}>
-                        {sortLabel(k, c)}
-                        {sortKey === k && <CheckCircle2 className="ml-auto size-4" />}
-                      </DropdownMenuItem>
-                    )
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {entity === "companies" ? (
-                <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
-                  <Users className="size-4" />
-                  {c.findPeople}
-                </Button>
-              ) : (
-                <Button
-                  variant="volt"
-                  size="sm"
-                  onClick={() => setSaveOpen(true)}
-                  disabled={shownCount === 0}
-                >
-                  <ListPlus className="size-4" />
-                  {c.addToList}
-                </Button>
-              )}
-
-              {/* Secondary actions tucked into one overflow menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label={c.more}>
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuItem onClick={() => setLookalikeOpen(true)}>
-                    <ScanSearch className="size-4" />
-                    {c.lookalike}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={saveSearch}
-                    disabled={shownCount === 0}
-                  >
-                    <Bookmark className="size-4" />
-                    {c.saveThis}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-muted-foreground text-xs">
-                    {c.columns}
-                  </DropdownMenuLabel>
-                  <DropdownMenuCheckboxItem
-                    checked={showRegion}
-                    onCheckedChange={(v) => setShowRegion(!!v)}
-                  >
-                    {c.colRegion}
-                  </DropdownMenuCheckboxItem>
-                  {entity === "people" && (
-                    <DropdownMenuCheckboxItem
-                      checked={showEmail}
-                      onCheckedChange={(v) => setShowEmail(!!v)}
-                    >
-                      {c.colEmail}
-                    </DropdownMenuCheckboxItem>
-                  )}
-                  <DropdownMenuCheckboxItem
-                    checked={showSignals}
-                    onCheckedChange={(v) => setShowSignals(!!v)}
-                  >
-                    {c.colSignals}
-                  </DropdownMenuCheckboxItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          </Card>
 
           {thinking && <ThinkingPanel c={c} />}
 
@@ -998,23 +1001,6 @@ export default function Search() {
 
           {!thinking && (
             <>
-          {/* Active query chips */}
-          <Card className="gap-0 p-3">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <QueryChips query={query} onRemove={removeFilter} c={c} />
-              <AddFilterPopover query={query} onAdd={addFilter} c={c} linkedinOn={linkedinOn} entity={entity} />
-              {!isQueryEmpty(query) && (
-                <button
-                  type="button"
-                  onClick={() => setQuery({ ...EMPTY_QUERY })}
-                  className="text-muted-foreground hover:text-foreground ml-1 inline-flex items-center gap-1 text-xs"
-                >
-                  <X className="size-3" />
-                  {c.clearSel}
-                </button>
-              )}
-            </div>
-          </Card>
 
           {/* Stats strip */}
           <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-sm">

@@ -21,6 +21,7 @@ import { mcpConnections } from "@/lib/mock-network"
 import type { McpConnection } from "@/lib/mock-network"
 import { downloadCsv } from "@/lib/csv"
 import type { Integration } from "@/lib/types"
+import { FieldMappingDialog } from "@/components/crm/FieldMappingDialog"
 
 const CATEGORY_LABELS: Record<Locale, Record<Integration["category"], string>> =
   {
@@ -103,6 +104,7 @@ export default function Integrations() {
   const [items, setItems] = React.useState<Integration[]>(seed)
   const [mcp, setMcp] = React.useState<McpConnection[]>(mcpConnections)
   const [view, setView] = React.useState<CollectionView>("cards")
+  const [mappingIntegration, setMappingIntegration] = React.useState<Integration | null>(null)
 
   function exportCsv() {
     const rows: (string | number)[][] = [
@@ -135,6 +137,9 @@ export default function Integrations() {
         toast.success(
           connected ? c.connectedToast(it.name) : c.disconnectedToast(it.name)
         )
+        if (connected && it.category === "crm") {
+          setMappingIntegration({ ...it, connected })
+        }
         return { ...it, connected }
       })
     )
@@ -283,6 +288,13 @@ export default function Integrations() {
           </div>
         )}
       </div>
+
+      <FieldMappingDialog
+        open={!!mappingIntegration}
+        onOpenChange={(v) => { if (!v) setMappingIntegration(null) }}
+        integrationName={mappingIntegration?.name ?? ""}
+        category={mappingIntegration?.category}
+      />
     </Page>
   )
 }
