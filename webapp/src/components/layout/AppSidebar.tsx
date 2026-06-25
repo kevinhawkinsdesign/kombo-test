@@ -378,9 +378,9 @@ function SidebarContent({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="volt"
+                  variant="secondary"
                   size="icon"
-                  className="mx-auto flex"
+                  className="bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/70 mx-auto flex"
                   aria-label={t("nav.newCampaign")}
                   onClick={startNewCampaign}
                 >
@@ -391,8 +391,8 @@ function SidebarContent({
             </Tooltip>
           ) : (
             <Button
-              variant="volt"
-              className="w-full justify-start gap-2"
+              variant="secondary"
+              className="bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/70 w-full justify-start gap-2"
               size="sm"
               onClick={startNewCampaign}
             >

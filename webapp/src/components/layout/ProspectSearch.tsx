@@ -30,7 +30,7 @@ export function ProspectSearch() {
   return null
 }
 
-/** Sidebar entry point — opens the prospect search page. */
+/** Sidebar primary CTA — opens the prospect search page. */
 export function ProspectSearchTrigger({
   collapsed,
   onNavigate,
@@ -51,31 +51,24 @@ export function ProspectSearchTrigger({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="ghost"
+            variant="volt"
             size="icon"
-            className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground mx-auto flex size-9"
-            aria-label={`${t("search.navLabel")} (⌘K)`}
+            className="mx-auto flex"
+            aria-label={t("nav.search")}
             onClick={open}
           >
-            <Search className="size-5" strokeWidth={2.25} />
+            <Search className="size-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">{t("search.navLabel")} · ⌘K</TooltipContent>
+        <TooltipContent side="right">{t("nav.search")}</TooltipContent>
       </Tooltip>
     )
   }
 
   return (
-    <button
-      type="button"
-      onClick={open}
-      className="border-sidebar-border bg-sidebar-accent/30 hover:bg-sidebar-accent/60 flex h-9 w-full items-center gap-2 rounded-md border px-3 text-sm transition-colors"
-    >
-      <Search className="text-sidebar-foreground size-4 shrink-0" />
-      <span className="text-sidebar-foreground/60 flex-1 text-left">{t("search.navLabel")}</span>
-      <kbd className="border-sidebar-border bg-sidebar text-sidebar-foreground/50 hidden rounded border px-1.5 py-0.5 text-[10px] font-medium lg:inline-block">
-        ⌘K
-      </kbd>
-    </button>
+    <Button variant="volt" size="sm" className="w-full justify-start gap-2" onClick={open}>
+      <Search className="size-4" />
+      {t("nav.search")}
+    </Button>
   )
 }
