@@ -124,6 +124,7 @@ import {
   type LookalikeSeed,
 } from "@/lib/mock-ai-search"
 import { useCampaigns, campaignStore, listStore, prospectStore } from "@/lib/store"
+import { libraryQueries } from "@/lib/mock-library"
 import type { SavedSearchCriteria } from "@/lib/types"
 
 const NEW_CAMPAIGN = "__new__"
@@ -789,8 +790,23 @@ export default function Search() {
             </DropdownMenu>
           </form>
 
-          {/* Example queries + quick refinements */}
+          {/* Suggested searches (curated) + example queries + quick refinements */}
           <div className="flex flex-wrap gap-1.5">
+            {libraryQueries
+              .filter((q) => q.entity === entity)
+              .slice(0, 4)
+              .map((q) => (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => runPrompt(q.prompt)}
+                  title={q.prompt}
+                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+                >
+                  <Sparkles className="size-3" />
+                  {q.name}
+                </button>
+              ))}
             {examples.slice(0, 3).map((ex) => (
               <button
                 key={ex}
