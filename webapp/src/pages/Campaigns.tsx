@@ -12,6 +12,8 @@ import {
   Workflow,
   Sparkles,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -408,6 +410,8 @@ function CampaignCard({
   )
 }
 
+const PAGE_SIZE = 10
+
 function CampaignTable({
   rows,
   c,
@@ -421,6 +425,11 @@ function CampaignTable({
   onDuplicate: (campaign: Campaign) => void
   onDelete: (campaign: Campaign) => void
 }) {
+  const [page, setPage] = React.useState(0)
+  React.useEffect(() => { setPage(0) }, [rows.length])
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE)
+  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
   return (
     <Card className="p-0">
       <Table>
@@ -437,7 +446,7 @@ function CampaignTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((cm) => (
+          {pageRows.map((cm) => (
             <TableRow key={cm.id}>
               <TableCell>
                 <Link
@@ -499,6 +508,22 @@ function CampaignTable({
           ))}
         </TableBody>
       </Table>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t px-4 py-2">
+          <p className="text-muted-foreground text-xs tabular-nums">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, rows.length)} of {rows.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-7 px-2" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+              <ChevronLeft className="size-3.5" />Prev
+            </Button>
+            <span className="text-muted-foreground px-1 text-xs tabular-nums">{page + 1} / {totalPages}</span>
+            <Button variant="ghost" size="sm" className="h-7 px-2" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>
+              Next<ChevronRight className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
@@ -587,6 +612,8 @@ export default function Campaigns() {
   const [view, setView] = React.useState<CollectionView>("cards")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
+  const [cardPage, setCardPage] = React.useState(0)
+  React.useEffect(() => { setCardPage(0) }, [query, sort])
 
   const replyRateOf = (cm: Campaign) =>
     cm.enrolled ? Math.round((cm.replied / cm.enrolled) * 100) : 0
@@ -715,17 +742,35 @@ export default function Campaigns() {
           {c.noResults}
         </Card>
       ) : view === "cards" ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {visible.map((campaign) => (
-            <CampaignCard
-              key={campaign.id}
-              campaign={campaign}
-              audience={audienceByCampaign.get(campaign.id)}
-              onDuplicate={handleDuplicate}
-              onDelete={setPendingDelete}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {visible.slice(cardPage * PAGE_SIZE, (cardPage + 1) * PAGE_SIZE).map((campaign) => (
+              <CampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                audience={audienceByCampaign.get(campaign.id)}
+                onDuplicate={handleDuplicate}
+                onDelete={setPendingDelete}
+              />
+            ))}
+          </div>
+          {visible.length > PAGE_SIZE && (
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-muted-foreground text-xs tabular-nums">
+                {cardPage * PAGE_SIZE + 1}–{Math.min((cardPage + 1) * PAGE_SIZE, visible.length)} of {visible.length}
+              </p>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="sm" className="h-7 px-2" disabled={cardPage === 0} onClick={() => setCardPage((p) => p - 1)}>
+                  <ChevronLeft className="size-3.5" />Prev
+                </Button>
+                <span className="text-muted-foreground px-1 text-xs tabular-nums">{cardPage + 1} / {Math.ceil(visible.length / PAGE_SIZE)}</span>
+                <Button variant="ghost" size="sm" className="h-7 px-2" disabled={cardPage >= Math.ceil(visible.length / PAGE_SIZE) - 1} onClick={() => setCardPage((p) => p + 1)}>
+                  Next<ChevronRight className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <CampaignTable
           rows={visible}

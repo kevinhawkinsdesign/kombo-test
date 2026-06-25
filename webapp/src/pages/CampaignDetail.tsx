@@ -5,6 +5,8 @@ import {
   ArrowLeft,
   ArrowUp,
   ArrowDown,
+  ChevronLeft,
+  ChevronRight,
   Mail,
   MessageSquare,
   MessageCircle,
@@ -75,6 +77,7 @@ import {
 import { CampaignDailyChart } from "@/components/charts/Charts"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
+import { CreateListDialog } from "@/components/lists/CreateListDialog"
 import { getProspect } from "@/lib/mock-data"
 import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
@@ -440,10 +443,14 @@ export default function CampaignDetail() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [attachListId, setAttachListId] = React.useState("")
+  const [createListOpen, setCreateListOpen] = React.useState(false)
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
+  const [enrollPage, setEnrollPage] = React.useState(0)
   const { spend } = useCredits()
+
+  const ENROLL_PAGE_SIZE = 10
 
   if (!campaign) {
     return (
@@ -494,6 +501,15 @@ export default function CampaignDetail() {
 
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
   const allEnrolledIds = new Set<string>([...enrollmentIds, ...enrolledIds])
+
+  // Pagination for the enrollment table
+  type EnrollRow = { kind: "enrollment"; e: (typeof enrollments)[number] } | { kind: "manual"; p: (typeof manualProspects)[number] }
+  const allEnrollRows: EnrollRow[] = [
+    ...enrollments.map((e) => ({ kind: "enrollment" as const, e })),
+    ...manualProspects.map((p) => ({ kind: "manual" as const, p })),
+  ]
+  const enrollTotalPages = Math.ceil(allEnrollRows.length / ENROLL_PAGE_SIZE)
+  const enrollPageRows = allEnrollRows.slice(enrollPage * ENROLL_PAGE_SIZE, (enrollPage + 1) * ENROLL_PAGE_SIZE)
 
   // Enrichment gate: a campaign with an email step shouldn't launch while some
   // enrolled prospects still lack a verified email (a common mid-campaign error).
@@ -693,11 +709,21 @@ export default function CampaignDetail() {
                   >
                     {c.attach}
                   </Button>
+                  <Button variant="outline" onClick={() => setCreateListOpen(true)}>
+                    <Plus className="size-4" />
+                    New list
+                  </Button>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">
-                  {c.noListsToAttach}
-                </p>
+                <div className="flex flex-col items-start gap-3">
+                  <p className="text-muted-foreground text-sm">
+                    {c.noListsToAttach}
+                  </p>
+                  <Button variant="outline" onClick={() => setCreateListOpen(true)}>
+                    <Plus className="size-4" />
+                    Create a list
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -982,12 +1008,62 @@ export default function CampaignDetail() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {enrollments.map((e) => {
-                      const prospect = getProspect(e.prospectId)
-                      return (
-                        <TableRow key={e.prospectId}>
-                          <TableCell className="pl-4">
-                            {prospect ? (
+                    {enrollPageRows.map((row) => {
+                      if (row.kind === "enrollment") {
+                        const e = row.e
+                        const prospect = getProspect(e.prospectId)
+                        return (
+                          <TableRow key={e.prospectId}>
+                            <TableCell className="pl-4">
+                              {prospect ? (
+                                <Link
+                                  to={`/prospects/${prospect.id}`}
+                                  className="flex items-center gap-3"
+                                >
+                                  <ProspectAvatar prospect={prospect} />
+                                  <span className="truncate font-medium">
+                                    {prospect.firstName} {prospect.lastName}
+                                  </span>
+                                </Link>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  {c.unknownProspect}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {prospect ? (
+                                <>
+                                  <p className="text-muted-foreground text-sm">
+                                    {prospect.title}
+                                  </p>
+                                  <p className="text-muted-foreground text-xs">
+                                    {prospect.company}
+                                  </p>
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="tabular-nums">
+                              {c.stepOf(e.currentStep, steps.length)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={ENROLLMENT_VARIANT[e.status]}>
+                                {c.enrollmentLabel[e.status]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
+                              {relativeTime(e.lastTouch)}
+                            </TableCell>
+                            <TableCell className="pr-4" />
+                          </TableRow>
+                        )
+                      } else {
+                        const prospect = row.p
+                        return (
+                          <TableRow key={prospect.id}>
+                            <TableCell className="pl-4">
                               <Link
                                 to={`/prospects/${prospect.id}`}
                                 className="flex items-center gap-3"
@@ -997,97 +1073,68 @@ export default function CampaignDetail() {
                                   {prospect.firstName} {prospect.lastName}
                                 </span>
                               </Link>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                {c.unknownProspect}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {prospect ? (
-                              <>
-                                <p className="text-muted-foreground text-sm">
-                                  {prospect.title}
-                                </p>
-                                <p className="text-muted-foreground text-xs">
-                                  {prospect.company}
-                                </p>
-                              </>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="tabular-nums">
-                            {c.stepOf(e.currentStep, steps.length)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={ENROLLMENT_VARIANT[e.status]}>
-                              {c.enrollmentLabel[e.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
-                            {relativeTime(e.lastTouch)}
-                          </TableCell>
-                          <TableCell className="pr-4" />
-                        </TableRow>
-                      )
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <p className="text-muted-foreground text-sm">
+                                {prospect.title}
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                {prospect.company}
+                              </p>
+                            </TableCell>
+                            <TableCell className="tabular-nums">
+                              {c.stepOf(1, steps.length)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={ENROLLMENT_VARIANT.active}>
+                                {c.enrollmentLabel.active}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
+                              {c.justAdded}
+                            </TableCell>
+                            <TableCell className="pr-4">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={c.removeProspectAria(
+                                  `${prospect.firstName} ${prospect.lastName}`
+                                )}
+                                className="text-muted-foreground hover:text-destructive size-8"
+                                onClick={() => {
+                                  campaignStore.removeProspect(
+                                    campaign.id,
+                                    prospect.id
+                                  )
+                                  toast.success(c.removedFromCampaign)
+                                }}
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      }
                     })}
-                    {manualProspects.map((prospect) => (
-                      <TableRow key={prospect.id}>
-                        <TableCell className="pl-4">
-                          <Link
-                            to={`/prospects/${prospect.id}`}
-                            className="flex items-center gap-3"
-                          >
-                            <ProspectAvatar prospect={prospect} />
-                            <span className="truncate font-medium">
-                              {prospect.firstName} {prospect.lastName}
-                            </span>
-                          </Link>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <p className="text-muted-foreground text-sm">
-                            {prospect.title}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {prospect.company}
-                          </p>
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {c.stepOf(1, steps.length)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={ENROLLMENT_VARIANT.active}>
-                            {c.enrollmentLabel.active}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
-                          {c.justAdded}
-                        </TableCell>
-                        <TableCell className="pr-4">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={c.removeProspectAria(
-                              `${prospect.firstName} ${prospect.lastName}`
-                            )}
-                            className="text-muted-foreground hover:text-destructive size-8"
-                            onClick={() => {
-                              campaignStore.removeProspect(
-                                campaign.id,
-                                prospect.id
-                              )
-                              toast.success(c.removedFromCampaign)
-                            }}
-                          >
-                            <X className="size-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
                   </TableBody>
                 </Table>
               </div>
+              {enrollTotalPages > 1 && (
+                <div className="flex items-center justify-between border-t px-4 py-2">
+                  <p className="text-muted-foreground text-xs tabular-nums">
+                    {enrollPage * ENROLL_PAGE_SIZE + 1}–{Math.min((enrollPage + 1) * ENROLL_PAGE_SIZE, allEnrollRows.length)} of {allEnrollRows.length}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-7 px-2" disabled={enrollPage === 0} onClick={() => setEnrollPage((p) => p - 1)}>
+                      <ChevronLeft className="size-3.5" />Prev
+                    </Button>
+                    <span className="text-muted-foreground px-1 text-xs tabular-nums">{enrollPage + 1} / {enrollTotalPages}</span>
+                    <Button variant="ghost" size="sm" className="h-7 px-2" disabled={enrollPage >= enrollTotalPages - 1} onClick={() => setEnrollPage((p) => p + 1)}>
+                      Next<ChevronRight className="size-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           ) : (
             <Card>
@@ -1173,6 +1220,12 @@ export default function CampaignDetail() {
         onOpenChange={setAddOpen}
         campaign={campaign}
         enrolledIds={allEnrolledIds}
+      />
+
+      <CreateListDialog
+        open={createListOpen}
+        onOpenChange={setCreateListOpen}
+        onCreated={(listId) => setAttachListId(listId)}
       />
 
       <Dialog open={enrichGateOpen} onOpenChange={setEnrichGateOpen}>

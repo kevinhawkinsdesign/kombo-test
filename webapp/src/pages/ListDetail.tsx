@@ -395,6 +395,7 @@ export default function ListDetail() {
           locale={locale}
           onRowClick={(a) => navigate(`/companies/${a.id}`)}
           empty={c.emptyStateCo}
+          pageSize={10}
           actions={(a) => (
             <Button
               variant="ghost"
@@ -419,6 +420,7 @@ export default function ListDetail() {
           locale={locale}
           onRowClick={(p) => navigate(`/prospects/${p.id}`)}
           empty={c.emptyState}
+          pageSize={10}
           actions={(p) => (
             <Button
               variant="ghost"

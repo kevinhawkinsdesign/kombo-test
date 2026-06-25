@@ -249,6 +249,7 @@ export default function People() {
           editing={editing}
           onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
           actions={(p) => <RecordActionsMenu kind="person" record={p} />}
+          pageSize={10}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

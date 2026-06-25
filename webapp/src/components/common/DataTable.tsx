@@ -1,6 +1,8 @@
 import * as React from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -13,11 +15,6 @@ import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
 import type { ColumnDef } from "@/lib/table-columns"
 
-/**
- * A table whose columns are driven by a registry + an ordered list of visible
- * column ids. The pinned column always renders first. Columns with an `edit`
- * renderer become inline inputs when `editing` is on.
- */
 export function DataTable<T>({
   columns,
   visible,
@@ -29,6 +26,7 @@ export function DataTable<T>({
   onRowClick,
   actions,
   empty,
+  pageSize,
 }: {
   columns: ColumnDef<T>[]
   visible: string[]
@@ -40,7 +38,13 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void
   actions?: (row: T) => React.ReactNode
   empty?: React.ReactNode
+  pageSize?: number
 }) {
+  const [page, setPage] = React.useState(0)
+  React.useEffect(() => { setPage(0) }, [rows.length])
+
+  const totalPages = pageSize ? Math.ceil(rows.length / pageSize) : 1
+  const displayRows = pageSize ? rows.slice(page * pageSize, (page + 1) * pageSize) : rows
   const byId = React.useMemo(() => {
     const map = new Map<string, ColumnDef<T>>()
     for (const c of columns) map.set(c.id, c)
@@ -86,7 +90,7 @@ export function DataTable<T>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((row) => (
+            {displayRows.map((row) => (
               <TableRow
                 key={rowKey(row)}
                 className={cn(onRowClick && "cursor-pointer")}
@@ -128,6 +132,38 @@ export function DataTable<T>({
           </TableBody>
         </Table>
       </div>
+      {pageSize && totalPages > 1 && (
+        <div className="flex items-center justify-between border-t px-4 py-2">
+          <p className="text-muted-foreground text-xs tabular-nums">
+            {page * pageSize + 1}–{Math.min((page + 1) * pageSize, rows.length)} of {rows.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="size-3.5" />
+              Prev
+            </Button>
+            <span className="text-muted-foreground px-1 text-xs tabular-nums">
+              {page + 1} / {totalPages}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+              <ChevronRight className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

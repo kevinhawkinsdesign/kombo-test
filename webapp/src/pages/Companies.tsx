@@ -316,6 +316,7 @@ export default function Companies() {
           editing={editing}
           onUpdate={(a, patch) => accountStore.update(a.id, patch)}
           actions={(a) => <RecordActionsMenu kind="company" record={a} />}
+          pageSize={10}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
