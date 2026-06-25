@@ -36,7 +36,7 @@ export const team: TeamMember[] = [
   {
     id: "rep_1",
     name: "Maya Patel",
-    role: "Account Executive",
+    role: "Sales Manager",
     avatarColor: "#7c3aed",
     email: "maya@getkombo.ai",
     quota: 250000,

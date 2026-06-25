@@ -15,6 +15,11 @@ import { team, teams } from "@/lib/team"
 import { portraitFor } from "@/lib/avatars"
 import { useLocale } from "@/lib/locale"
 import { initials } from "@/lib/format"
+import { cn } from "@/lib/utils"
+
+// Quick-switch personas: the manager dashboard vs. an SDR's narrower view.
+const MANAGER = team.find((m) => m.role === "Sales Manager")
+const SDR = team.find((m) => m.role === "SDR")
 
 export function ViewSwitcher() {
   const {
@@ -84,6 +89,38 @@ export function ViewSwitcher() {
             {viewTeamId === tm.id && <Check className="size-4" />}
           </DropdownMenuItem>
         ))}
+
+        {MANAGER && SDR && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
+              {t("view.perspective")}
+            </DropdownMenuLabel>
+            <div className="px-2 pb-1">
+              <div className="bg-muted flex rounded-lg p-[3px]">
+                {[
+                  { rep: MANAGER, label: t("view.salesManager") },
+                  { rep: SDR, label: t("view.sdr") },
+                ].map(({ rep, label }) => (
+                  <button
+                    key={rep.id}
+                    type="button"
+                    onClick={() => impersonate(rep.id)}
+                    aria-pressed={impersonatingId === rep.id}
+                    className={cn(
+                      "flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors",
+                      impersonatingId === rep.id
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
