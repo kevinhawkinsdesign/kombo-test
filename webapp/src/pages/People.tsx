@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import {
   Search as SearchIcon,
   Plus,
@@ -29,7 +29,13 @@ import {
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
-import { ProspectAvatar, ScoreBadge, StatusBadge } from "@/components/common/ProspectBits"
+import {
+  ProspectAvatar,
+  ScoreBadge,
+  StatusBadge,
+  SourceBadge,
+} from "@/components/common/ProspectBits"
+import { prospectSource } from "@/lib/format"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
 import { WarmIntrosPanel } from "@/pages/WarmIntros"
@@ -115,7 +121,9 @@ export default function People() {
   const { pathname } = useLocation()
   const tab: "people" | "intros" = pathname === "/intros" ? "intros" : "people"
   const prospects = useProspects()
-  const [query, setQuery] = React.useState("")
+  const [searchParams] = useSearchParams()
+  // Allow deep-linking a filter, e.g. account-based "/people?q=Acme".
+  const [query, setQuery] = React.useState(() => searchParams.get("q") ?? "")
   const [status, setStatus] = React.useState<string>(ALL)
   const [view, setView] = React.useState<ViewMode>("table")
   const [editing, setEditing] = React.useState(false)
@@ -339,6 +347,7 @@ function ViewToggleButton({
 }
 
 function ProspectCard({ prospect: p }: { prospect: Prospect }) {
+  const { locale } = useLocale()
   return (
     <div className="hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors">
       <div className="flex items-start gap-3">
@@ -362,9 +371,13 @@ function ProspectCard({ prospect: p }: { prospect: Prospect }) {
         <span className="text-muted-foreground truncate text-xs">{p.company}</span>
       </div>
 
-      <div className="text-muted-foreground mt-2 flex items-center gap-1 text-xs">
-        <MapPin className="size-3.5 shrink-0" />
-        <span className="truncate">{p.location}</span>
+      <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+        <span className="inline-flex min-w-0 items-center gap-1">
+          <MapPin className="size-3.5 shrink-0" />
+          <span className="truncate">{p.location}</span>
+        </span>
+        <span className="text-border">·</span>
+        <SourceBadge source={prospectSource(p)} locale={locale} />
       </div>
 
       {p.signals.length > 0 && (

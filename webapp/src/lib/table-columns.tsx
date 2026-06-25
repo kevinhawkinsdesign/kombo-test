@@ -24,9 +24,10 @@ import {
   ProspectAvatar,
   ScoreBadge,
   StatusBadge,
+  SourceBadge,
 } from "@/components/common/ProspectBits"
 import { cn } from "@/lib/utils"
-import { formatMoney as money, initials } from "@/lib/format"
+import { formatMoney as money, initials, prospectSource } from "@/lib/format"
 import { getRep } from "@/lib/team"
 import type { Locale } from "@/lib/locale"
 import type { Account, AccountTier, Prospect } from "@/lib/types"
@@ -565,6 +566,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   // Engagement & signals
   { id: "score", label: L("Score", "Puntuación"), group: "engage", default: true, render: (p) => <ScoreBadge score={p.score} /> },
   { id: "status", label: L("Status", "Estado"), group: "engage", default: true, render: (p) => <StatusBadge status={p.status} /> },
+  { id: "source", label: L("Source", "Origen"), group: "engage", default: true, render: (p, locale) => <SourceBadge source={prospectSource(p)} locale={locale} /> },
   { id: "tags", label: L("Tags", "Etiquetas"), group: "engage", minWidth: "140px", render: (p) => chips(p.tags) },
   { id: "signals", label: L("Signals", "Señales"), group: "engage", minWidth: "160px", render: (p) => chips(p.signals) },
   {
