@@ -84,6 +84,9 @@ const en: Dict = {
   "banner.viewingAs": "You are viewing the workspace as",
   "banner.viewingTeam": "You are viewing the team",
   "kai.suggests": "Kai suggests",
+  "release.label": "Release",
+  "release.tooltip":
+    "V1 shows only what's in today's Chrome extension. V2 reveals the full web-app vision.",
   "update.available": "A new version of Kombo is available.",
   "update.refresh": "Refresh",
   "update.dismiss": "Dismiss",
@@ -169,6 +172,9 @@ const es: Dict = {
   "banner.viewingAs": "Estás viendo el espacio como",
   "banner.viewingTeam": "Estás viendo el equipo",
   "kai.suggests": "Kai sugiere",
+  "release.label": "Versión",
+  "release.tooltip":
+    "V1 muestra solo lo que existe en la extensión de Chrome actual. V2 revela la visión completa de la app web.",
   "update.available": "Hay una nueva versión de Kombo disponible.",
   "update.refresh": "Actualizar",
   "update.dismiss": "Descartar",

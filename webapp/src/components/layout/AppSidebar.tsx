@@ -54,6 +54,7 @@ import { conversations } from "@/lib/mock-data"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
+import { useReleaseMode } from "@/lib/release-mode"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 
 interface NavItem {
@@ -336,8 +337,22 @@ function SidebarContent({
   const { t } = useLocale()
   const { progress } = useSetup()
   const { pathname } = useLocation()
+  const { isV1 } = useReleaseMode()
+
+  // v1 only ships surfaces that already exist in the Chrome extension, so hide
+  // every `isNew` item (and any group left empty once they're removed).
+  const visiblePrimary = isV1 ? primary.filter((it) => !it.isNew) : primary
+  const visibleGroups = isV1
+    ? groups
+        .map((g) => ({ ...g, items: g.items.filter((it) => !it.isNew) }))
+        .filter((g) => g.items.length > 0)
+    : groups
+  const visibleManage = isV1
+    ? { ...manageGroup, items: manageGroup.items.filter((it) => !it.isNew) }
+    : manageGroup
+
   const activeGroupKey =
-    [...groups, manageGroup].find((g) =>
+    [...visibleGroups, visibleManage].find((g) =>
       g.items.some((it) => isActivePath(pathname, it.to))
     )?.key ?? null
   const { openKey, setOpen } = useAccordionGroup(activeGroupKey)
@@ -452,7 +467,7 @@ function SidebarContent({
             // Full icon rail: every page shows its own icon (grouped with thin
             // dividers), so nothing is hidden behind a flyout when collapsed.
             <>
-              {primary.map((item) => (
+              {visiblePrimary.map((item) => (
                 <NavRow
                   key={item.to}
                   item={item}
@@ -460,7 +475,7 @@ function SidebarContent({
                   collapsed
                 />
               ))}
-              {[...groups, manageGroup].map((group) => (
+              {[...visibleGroups, visibleManage].map((group) => (
                 <React.Fragment key={group.key}>
                   <div className="bg-sidebar-border my-1 h-px w-6" />
                   {group.items.map((item) => (
@@ -476,13 +491,13 @@ function SidebarContent({
             </>
           ) : (
             <>
-              {primary.map((item) => (
+              {visiblePrimary.map((item) => (
                 <NavRow key={item.to} item={item} onNavigate={onNavigate} />
               ))}
 
               <div className="my-1" />
 
-              {groups.map((group) => (
+              {visibleGroups.map((group) => (
                 <NavGroupSection
                   key={group.key}
                   group={group}
@@ -495,9 +510,9 @@ function SidebarContent({
 
               <div className="mt-auto pt-2">
                 <NavGroupSection
-                  group={manageGroup}
-                  open={openKey === manageGroup.key}
-                  onToggle={() => setOpen(manageGroup.key)}
+                  group={visibleManage}
+                  open={openKey === visibleManage.key}
+                  onToggle={() => setOpen(visibleManage.key)}
                   onNavigate={onNavigate}
                   currentPath={pathname}
                 />
@@ -588,20 +603,35 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
+// v1 has no dashboard/signals — lead with the extension's prospecting flow.
+const bottomBarItemsV1: NavItem[] = [
+  { to: "/companies", labelKey: "nav.companies", icon: Building2 },
+  { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
+  { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
+  {
+    to: "/inbox",
+    labelKey: "nav.inbox",
+    icon: Inbox,
+    badge: unread ? String(unread) : undefined,
+  },
+]
+
 /**
  * Fixed bottom navigation for mobile — like a native app. Shows the top
  * destinations plus a "More" button that opens the full nav in a sheet.
  */
 export function MobileBottomNav() {
   const { t } = useLocale()
+  const { isV1 } = useReleaseMode()
   const [open, setOpen] = React.useState(false)
+  const items = isV1 ? bottomBarItemsV1 : bottomBarItems
 
   return (
     <nav
       aria-label="Primary"
       className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
-      {bottomBarItems.map((item) => {
+      {items.map((item) => {
         const Icon = item.icon
         return (
           <NavLink
