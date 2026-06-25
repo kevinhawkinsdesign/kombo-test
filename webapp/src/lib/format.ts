@@ -1,7 +1,20 @@
+import type { ProspectSource } from "@/lib/types"
+
 export function initials(first: string, last?: string): string {
   const a = first?.[0] ?? ""
   const b = last?.[0] ?? ""
   return (a + b).toUpperCase()
+}
+
+const SOURCE_ORDER: ProspectSource[] = ["search", "list", "import", "extension"]
+
+// How a prospect entered the workspace. Falls back to a stable per-id value so
+// existing seed contacts show a believable, consistent source.
+export function prospectSource(p: { id: string; source?: ProspectSource }): ProspectSource {
+  if (p.source) return p.source
+  let h = 0
+  for (let i = 0; i < p.id.length; i++) h = (h * 31 + p.id.charCodeAt(i)) >>> 0
+  return SOURCE_ORDER[h % SOURCE_ORDER.length]
 }
 
 export function relativeTime(iso: string): string {

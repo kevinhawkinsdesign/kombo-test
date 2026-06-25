@@ -1,10 +1,13 @@
+import { Search, FolderKanban, Upload, Puzzle } from "lucide-react"
+
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { initials, scoreTone } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
 import { STATUS_LABELS } from "@/lib/mock-data"
-import type { Prospect } from "@/lib/types"
+import type { Locale } from "@/lib/locale"
+import type { Prospect, ProspectSource } from "@/lib/types"
 
 export function ProspectAvatar({
   prospect,
@@ -73,5 +76,32 @@ export function StatusBadge({ status }: { status: Prospect["status"] }) {
     <Badge variant={STATUS_VARIANT[status]} className="capitalize">
       {STATUS_LABELS[status]}
     </Badge>
+  )
+}
+
+const SOURCE_META: Record<
+  ProspectSource,
+  { en: string; es: string; icon: typeof Search }
+> = {
+  search: { en: "Search", es: "Búsqueda", icon: Search },
+  list: { en: "List", es: "Lista", icon: FolderKanban },
+  import: { en: "Import", es: "Importación", icon: Upload },
+  extension: { en: "Extension", es: "Extensión", icon: Puzzle },
+}
+
+export function SourceBadge({
+  source,
+  locale = "en",
+}: {
+  source: ProspectSource
+  locale?: Locale
+}) {
+  const m = SOURCE_META[source]
+  const Icon = m.icon
+  return (
+    <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+      <Icon className="size-3 shrink-0" />
+      {locale === "es" ? m.es : m.en}
+    </span>
   )
 }
