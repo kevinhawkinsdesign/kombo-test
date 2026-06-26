@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -36,7 +36,6 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import { LookalikeDialog } from "@/components/common/LookalikeDialog"
 import { downloadCsv } from "@/lib/csv"
 import { DiscoverFeed } from "@/pages/Discover"
 import {
@@ -159,6 +158,7 @@ type ViewMode = "table" | "cards"
 export default function Companies() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const { impersonatingId } = useView()
   const accounts = useAccounts()
   const [query, setQuery] = React.useState("")
@@ -169,7 +169,6 @@ export default function Companies() {
   const [mode, setMode] = React.useState<"companies" | "discover">("companies")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
-  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
@@ -188,13 +187,6 @@ export default function Companies() {
   const someSelected = results.some((a) => selectedIds.has(a.id))
   const selectedIdsArr = [...selectedIds]
   const selectedAccounts = accounts.filter((a) => selectedIds.has(a.id))
-  const lookalikeSeeds = selectedAccounts.map((a) => ({
-    id: a.id,
-    name: a.name,
-    industry: a.industry,
-    region: "",
-    headcount: a.employees,
-  }))
 
   function toggleRow(a: Account) {
     setSelectedIds((prev) => {
@@ -227,9 +219,23 @@ export default function Companies() {
     )
     toast.success(c.exportedToast(selectedAccounts.length))
   }
+  // Lookalike is a kind of search — hand the seed to the Search page.
   function findLookalikes() {
-    if (selectedIds.size === 0) return
-    setLookalikeOpen(true)
+    const a = selectedAccounts[0]
+    if (!a) return
+    navigate("/search", {
+      state: {
+        lookalikeSeed: {
+          id: a.id,
+          kind: "company",
+          name: a.name,
+          sub: a.industry,
+          industry: a.industry,
+          region: "",
+          headcount: a.employees,
+        },
+      },
+    })
   }
 
   return (
@@ -427,13 +433,6 @@ export default function Companies() {
         mode="list"
         recordKind="company"
         ids={selectedIdsArr}
-      />
-      <LookalikeDialog
-        open={lookalikeOpen}
-        onOpenChange={setLookalikeOpen}
-        kind="company"
-        seeds={lookalikeSeeds}
-        onDone={() => setSelectedIds(new Set())}
       />
         </>
       )}

@@ -16,7 +16,7 @@ export function AppLayout() {
 
   return (
     <NewCampaignProvider>
-    <div className="bg-muted/30 dark:bg-background flex min-h-svh">
+    <div className="bg-muted/60 dark:bg-background flex min-h-svh">
       <a
         href="#main-content"
         className="bg-primary text-primary-foreground sr-only z-50 rounded-md px-4 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
