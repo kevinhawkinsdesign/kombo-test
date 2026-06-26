@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
   TableBody,
@@ -12,6 +13,14 @@ import {
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
 import type { ColumnDef } from "@/lib/table-columns"
+
+export interface TableSelection<T> {
+  isSelected: (row: T) => boolean
+  toggle: (row: T) => void
+  toggleAll: () => void
+  allSelected: boolean
+  someSelected: boolean
+}
 
 /**
  * A table whose columns are driven by a registry + an ordered list of visible
@@ -29,6 +38,7 @@ export function DataTable<T>({
   onRowClick,
   actions,
   empty,
+  selection,
 }: {
   columns: ColumnDef<T>[]
   visible: string[]
@@ -40,6 +50,7 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void
   actions?: (row: T) => React.ReactNode
   empty?: React.ReactNode
+  selection?: TableSelection<T>
 }) {
   const byId = React.useMemo(() => {
     const map = new Map<string, ColumnDef<T>>()
@@ -65,6 +76,21 @@ export function DataTable<T>({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
+              {selection && (
+                <TableHead className="w-10 pl-4">
+                  <Checkbox
+                    checked={
+                      selection.allSelected
+                        ? true
+                        : selection.someSelected
+                          ? "indeterminate"
+                          : false
+                    }
+                    onCheckedChange={() => selection.toggleAll()}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+              )}
               {pinned && (
                 <TableHead
                   className="bg-muted/40 sticky left-0 z-10 pl-4"
@@ -89,9 +115,22 @@ export function DataTable<T>({
             {rows.map((row) => (
               <TableRow
                 key={rowKey(row)}
-                className={cn(onRowClick && "cursor-pointer")}
+                data-selected={selection?.isSelected(row) || undefined}
+                className={cn(
+                  onRowClick && "cursor-pointer",
+                  selection?.isSelected(row) && "bg-primary/[0.04]"
+                )}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
+                {selection && (
+                  <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selection.isSelected(row)}
+                      onCheckedChange={() => selection.toggle(row)}
+                      aria-label="Select row"
+                    />
+                  </TableCell>
+                )}
                 {pinned && (
                   <TableCell className="bg-background sticky left-0 z-10 pl-4">
                     {cell(pinned, row)}
@@ -118,7 +157,12 @@ export function DataTable<T>({
             {rows.length === 0 && empty && (
               <TableRow className="hover:bg-transparent">
                 <TableCell
-                  colSpan={shown.length + (pinned ? 1 : 0) + (actions ? 1 : 0)}
+                  colSpan={
+                    shown.length +
+                    (pinned ? 1 : 0) +
+                    (actions ? 1 : 0) +
+                    (selection ? 1 : 0)
+                  }
                   className="text-muted-foreground py-10 text-center text-sm"
                 >
                   {empty}

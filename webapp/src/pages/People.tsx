@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { toast } from "sonner"
 import {
   Search as SearchIcon,
   Plus,
@@ -29,6 +30,9 @@ import {
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { downloadCsv } from "@/lib/csv"
 import {
   ProspectAvatar,
   ScoreBadge,
@@ -56,7 +60,11 @@ const STATUSES = Object.keys(STATUS_LABELS) as ProspectStatus[]
 const COPY = {
   en: {
     title: "People",
-    description: "Every prospect in your book — searchable, filterable, exportable.",
+    description:
+      "Everyone you've found — across searches, imports, lists & campaigns. Select to enrich, export, or add to a list or campaign.",
+    exportedToast: (n: number) => `Exported ${n} to CSV`,
+    enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "prospect" : "prospects"}…`,
+    lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     tabPeople: "People",
     tabIntros: "Warm Intros",
     addPerson: "Add prospect",
@@ -84,7 +92,11 @@ const COPY = {
   },
   es: {
     title: "Personas",
-    description: "Cada prospecto de tu cartera — buscable, filtrable y exportable.",
+    description:
+      "Todas las personas que has encontrado — de búsquedas, importaciones, listas y campañas. Selecciona para enriquecer, exportar o añadir a una lista o campaña.",
+    exportedToast: (n: number) => `Exportadas ${n} a CSV`,
+    enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "prospecto" : "prospectos"}…`,
+    lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionados…`,
     tabPeople: "Personas",
     tabIntros: "Intros cálidas",
     addPerson: "Añadir prospecto",
@@ -129,6 +141,9 @@ export default function People() {
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkList, setBulkList] = React.useState(false)
+  const [bulkCampaign, setBulkCampaign] = React.useState(false)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
 
   const q = query.trim().toLowerCase()
@@ -141,6 +156,48 @@ export default function People() {
     const matchesStatus = status === ALL || p.status === status
     return matchesQuery && matchesStatus
   })
+
+  const allSelected = results.length > 0 && results.every((p) => selectedIds.has(p.id))
+  const someSelected = results.some((p) => selectedIds.has(p.id))
+  const selectedIdsArr = [...selectedIds]
+  const selectedProspects = prospects.filter((p) => selectedIds.has(p.id))
+
+  function toggleRow(p: Prospect) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(p.id)) next.delete(p.id)
+      else next.add(p.id)
+      return next
+    })
+  }
+  function toggleAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (results.every((p) => prev.has(p.id))) results.forEach((p) => next.delete(p.id))
+      else results.forEach((p) => next.add(p.id))
+      return next
+    })
+  }
+  function exportSelected() {
+    downloadCsv(
+      "people.csv",
+      ["Name", "Title", "Company", "Email", "Status", "Location", "Source"],
+      selectedProspects.map((p) => [
+        `${p.firstName} ${p.lastName}`,
+        p.title,
+        p.company,
+        p.email,
+        STATUS_LABELS[p.status],
+        p.location,
+        prospectSource(p),
+      ])
+    )
+    toast.success(c.exportedToast(selectedProspects.length))
+  }
+  function findLookalikes() {
+    toast.success(c.lookalikeToast(selectedIds.size))
+    navigate("/search")
+  }
 
   return (
     <Page>
@@ -296,6 +353,13 @@ export default function People() {
           editing={editing}
           onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
           actions={(p) => <RecordActionsMenu kind="person" record={p} />}
+          selection={{
+            isSelected: (p) => selectedIds.has(p.id),
+            toggle: toggleRow,
+            toggleAll,
+            allSelected,
+            someSelected,
+          }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -304,6 +368,33 @@ export default function People() {
           ))}
         </div>
       )}
+
+      {view === "table" && (
+        <BulkActionsBar
+          count={selectedIds.size}
+          onClear={() => setSelectedIds(new Set())}
+          onExport={exportSelected}
+          onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
+          onAddToList={() => setBulkList(true)}
+          onAddToCampaign={() => setBulkCampaign(true)}
+          onLookalikes={findLookalikes}
+        />
+      )}
+
+      <BulkAddDialog
+        open={bulkList}
+        onOpenChange={setBulkList}
+        mode="list"
+        recordKind="person"
+        ids={selectedIdsArr}
+      />
+      <BulkAddDialog
+        open={bulkCampaign}
+        onOpenChange={setBulkCampaign}
+        mode="campaign"
+        recordKind="person"
+        ids={selectedIdsArr}
+      />
 
       <ColumnManager
         open={columnsOpen}
