@@ -29,7 +29,8 @@ export const V2_ONLY_PATHS = [
 ] as const
 
 // Where v1 lands when the user hits a hidden route (incl. the "/" dashboard).
-export const V1_HOME = "/inbox"
+// Prospect Search is the core "find prospects" job and the extension's home.
+export const V1_HOME = "/search"
 
 /** True when `pathname` belongs to a surface that only exists in v2. */
 export function isV2OnlyPath(pathname: string): boolean {

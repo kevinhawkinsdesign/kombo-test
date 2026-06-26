@@ -20,6 +20,10 @@ import {
   ScanSearch,
   ArrowDownUp,
   MoreHorizontal,
+  Upload,
+  SlidersHorizontal,
+  Megaphone,
+  LayoutTemplate,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Switch } from "@/components/ui/switch"
@@ -125,6 +129,7 @@ import {
 } from "@/lib/mock-ai-search"
 import { useCampaigns, campaignStore, listStore, prospectStore } from "@/lib/store"
 import { libraryQueries } from "@/lib/mock-library"
+import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import type { SavedSearchCriteria } from "@/lib/types"
 
 const NEW_CAMPAIGN = "__new__"
@@ -213,6 +218,17 @@ const COPY = {
     addToList: "Save as list",
     findPeople: "Find prospects",
     findPeopleToast: "Switched to people at these companies",
+    quickStart: "Start here",
+    qaFindLeads: "Find leads",
+    qaFindLeadsDesc: "Find people, companies, jobs and more.",
+    qaImport: "Import data",
+    qaImportDesc: "Import your existing list from CRM or CSV.",
+    qaAudience: "Build an audience",
+    qaAudienceDesc: "Define and enrich targeted lists of people and companies.",
+    qaCampaign: "Create a campaign",
+    qaCampaignDesc: "Build and automate your outreach campaigns.",
+    qaTemplate: "Start from template",
+    qaTemplateDesc: "Choose from pre-built workflows to get started.",
     lookalike: "Lookalikes",
     lookalikeTitle: "Find lookalikes",
     lookalikeDesc:
@@ -363,6 +379,17 @@ const COPY = {
     addToList: "Guardar como lista",
     findPeople: "Buscar prospectos",
     findPeopleToast: "Cambiado a personas en estas empresas",
+    quickStart: "Empieza aquí",
+    qaFindLeads: "Buscar leads",
+    qaFindLeadsDesc: "Encuentra personas, empresas, empleos y más.",
+    qaImport: "Importar datos",
+    qaImportDesc: "Importa tu lista existente desde CRM o CSV.",
+    qaAudience: "Crear una audiencia",
+    qaAudienceDesc: "Define y enriquece listas segmentadas de personas y empresas.",
+    qaCampaign: "Crear una campaña",
+    qaCampaignDesc: "Crea y automatiza tus campañas de difusión.",
+    qaTemplate: "Empezar con una plantilla",
+    qaTemplateDesc: "Elige entre flujos predefinidos para empezar.",
     lookalike: "Similares",
     lookalikeTitle: "Buscar similares",
     lookalikeDesc:
@@ -510,6 +537,7 @@ export default function Search() {
   const headerPrompt = params.get("q")
   const campaigns = useCampaigns()
   const savedSearches = useSavedSearches()
+  const newCampaign = useNewCampaign()
   const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
 
   // Seed with a starter query so the page lands populated for demos — unless we
@@ -681,6 +709,57 @@ export default function Search() {
     shownCount > 0 &&
     (entity === "people" ? leads : companies).every((r) => selected.has(r.id))
 
+  // Focus the prompt box by id — avoids a render-time ref the linter would flag.
+  const focusSearch = React.useCallback(() => {
+    setEntity("people")
+    setSeed(null)
+    document.getElementById("search-prompt")?.focus()
+  }, [])
+
+  // Clay-style launcher: a row of suggested starting points above the search.
+  const quickActions = [
+    {
+      key: "find",
+      icon: SearchIcon,
+      tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      title: c.qaFindLeads,
+      desc: c.qaFindLeadsDesc,
+      onClick: focusSearch,
+    },
+    {
+      key: "import",
+      icon: Upload,
+      tint: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+      title: c.qaImport,
+      desc: c.qaImportDesc,
+      onClick: () => navigate("/lists"),
+    },
+    {
+      key: "audience",
+      icon: SlidersHorizontal,
+      tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+      title: c.qaAudience,
+      desc: c.qaAudienceDesc,
+      onClick: () => setLookalikeOpen(true),
+    },
+    {
+      key: "campaign",
+      icon: Megaphone,
+      tint: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      title: c.qaCampaign,
+      desc: c.qaCampaignDesc,
+      onClick: () => newCampaign.open(),
+    },
+    {
+      key: "template",
+      icon: LayoutTemplate,
+      tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+      title: c.qaTemplate,
+      desc: c.qaTemplateDesc,
+      onClick: () => navigate("/templates"),
+    },
+  ]
+
   return (
     <Page>
       {/* AI is native to the product, so the page isn't labelled "AI Search". */}
@@ -697,6 +776,38 @@ export default function Search() {
       />
 
       <div className="space-y-4">
+        {/* Clay-style launcher: suggested starting points above the search box. */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          {quickActions.map((a) => {
+            const Icon = a.icon
+            return (
+              <button
+                key={a.key}
+                type="button"
+                onClick={a.onClick}
+                className="bg-card hover:border-primary/40 hover:bg-muted/40 flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                      a.tint
+                    )}
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                  <span className="text-sm leading-tight font-semibold">
+                    {a.title}
+                  </span>
+                </span>
+                <span className="text-muted-foreground text-xs leading-snug">
+                  {a.desc}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
         {/* Search query bar — the prompt IS the query, no chat thread. */}
         <Card className="gap-3 p-3">
           <form
@@ -709,6 +820,7 @@ export default function Search() {
             <div className="relative flex-1">
               <SearchIcon className="text-muted-foreground pointer-events-none absolute top-3 left-3 size-4" />
               <Textarea
+                id="search-prompt"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {

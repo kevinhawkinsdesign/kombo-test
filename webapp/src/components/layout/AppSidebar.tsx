@@ -31,6 +31,7 @@ import {
   Settings2,
   Puzzle,
   Workflow,
+  Search,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -603,9 +604,9 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
-// v1 has no dashboard/signals — lead with the extension's prospecting flow.
+// v1 has no dashboard/signals — lead with Search (the v1 home) and prospecting.
 const bottomBarItemsV1: NavItem[] = [
-  { to: "/companies", labelKey: "nav.companies", icon: Building2 },
+  { to: "/search", labelKey: "nav.search", icon: Search },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
   {
