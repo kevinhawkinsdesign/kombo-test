@@ -146,10 +146,17 @@ const COPY = {
     emptyStateCo: "No companies yet. Add some to get started.",
     addCompaniesTitle: "Add companies",
     addCompaniesDescription: (name: string) =>
-      `Select companies to add to "${name}".`,
+      `Pull companies into "${name}" from any source.`,
     allAlreadyCo: "Every company is already in this list.",
     addedCo: (count: number) =>
       `${count} ${count === 1 ? "company" : "companies"} added`,
+    addCoSrcAi: "Find with Kombo AI",
+    addCoSrcExisting: "Add from your companies",
+    addCoSrcImport: "Import from CSV",
+    addCoSrcManual: "Add a company manually",
+    addCoSrcCrm: "Import from your CRM",
+    addCoSearchExisting: "Search your companies…",
+    addCoNoMatch: "No companies match.",
   },
   es: {
     listNotFound: "Lista no encontrada.",
@@ -234,10 +241,17 @@ const COPY = {
     emptyStateCo: "Aún no hay empresas. Añade algunas para empezar.",
     addCompaniesTitle: "Añadir empresas",
     addCompaniesDescription: (name: string) =>
-      `Selecciona empresas para añadir a "${name}".`,
+      `Trae empresas a "${name}" desde cualquier fuente.`,
     allAlreadyCo: "Todas las empresas ya están en esta lista.",
     addedCo: (count: number) =>
       `${count} ${count === 1 ? "empresa añadida" : "empresas añadidas"}`,
+    addCoSrcAi: "Buscar con Kombo AI",
+    addCoSrcExisting: "Añadir desde tus empresas",
+    addCoSrcImport: "Importar desde CSV",
+    addCoSrcManual: "Añadir una empresa manualmente",
+    addCoSrcCrm: "Importar desde tu CRM",
+    addCoSearchExisting: "Busca tus empresas…",
+    addCoNoMatch: "Ninguna empresa coincide.",
   },
 } as const
 
@@ -854,23 +868,44 @@ function AddCompaniesDialog({
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const accounts = useAccounts()
+  const [view, setView] = React.useState<"menu" | "existing">("menu")
+  const [query, setQuery] = React.useState("")
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
 
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
-    if (open) setSelected(new Set())
+    if (open) {
+      setView("menu")
+      setQuery("")
+      setSelected(new Set())
+    }
   }
 
   const memberIds = React.useMemo(
     () => new Set(list.accountIds ?? []),
     [list.accountIds]
   )
-  const candidates = React.useMemo(
-    () => accounts.filter((a) => !memberIds.has(a.id)),
-    [accounts, memberIds]
+  const q = query.trim().toLowerCase()
+  const candidates = accounts.filter(
+    (a) =>
+      !memberIds.has(a.id) &&
+      (!q || `${a.name} ${a.industry} ${a.domain}`.toLowerCase().includes(q))
   )
+
+  function leave(to: string) {
+    onOpenChange(false)
+    navigate(to)
+  }
+  const sources = [
+    { key: "ai", icon: Sparkles, label: c.addCoSrcAi, onClick: () => leave("/search") },
+    { key: "existing", icon: Search, label: c.addCoSrcExisting, onClick: () => setView("existing") },
+    { key: "import", icon: Upload, label: c.addCoSrcImport, onClick: () => leave("/lists?import=1") },
+    { key: "manual", icon: Plus, label: c.addCoSrcManual, onClick: () => leave("/companies") },
+    { key: "crm", icon: Database, label: c.addCoSrcCrm, onClick: () => leave("/integrations") },
+  ]
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -899,35 +934,76 @@ function AddCompaniesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {candidates.length === 0 ? (
-          <p className="text-muted-foreground py-8 text-center text-sm">
-            {c.allAlreadyCo}
-          </p>
-        ) : (
-          <div className="-mx-1 max-h-80 space-y-1 overflow-y-auto px-1">
-            {candidates.map((a) => (
-              <AccountRow
-                key={a.id}
-                account={a}
-                checked={selected.has(a.id)}
-                onToggle={() => toggle(a.id)}
-              />
-            ))}
+        {view === "menu" ? (
+          <div className="space-y-1.5 py-1">
+            {sources.map((s) => {
+              const Icon = s.icon
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={s.onClick}
+                  className="hover:border-primary/40 hover:bg-muted/40 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors"
+                >
+                  <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
+                    <Icon className="text-primary size-4" />
+                  </span>
+                  <span className="text-sm font-medium">{s.label}</span>
+                </button>
+              )
+            })}
           </div>
+        ) : (
+          <>
+            <div className="relative">
+              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+              <Input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={c.addCoSearchExisting}
+                className="pl-9"
+              />
+            </div>
+            {candidates.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                {q ? c.addCoNoMatch : c.allAlreadyCo}
+              </p>
+            ) : (
+              <div className="-mx-1 max-h-72 space-y-1 overflow-y-auto px-1">
+                {candidates.slice(0, 100).map((a) => (
+                  <AccountRow
+                    key={a.id}
+                    account={a}
+                    checked={selected.has(a.id)}
+                    onToggle={() => toggle(a.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            {c.cancel}
-          </Button>
-          <Button
-            variant="volt"
-            onClick={handleAdd}
-            disabled={selected.size === 0}
-          >
-            {c.addSelected}
-            {selected.size > 0 ? ` (${selected.size})` : ""}
-          </Button>
+          {view === "existing" ? (
+            <>
+              <Button variant="ghost" onClick={() => setView("menu")}>
+                {c.addBack}
+              </Button>
+              <Button
+                variant="volt"
+                onClick={handleAdd}
+                disabled={selected.size === 0}
+              >
+                {c.addSelected}
+                {selected.size > 0 ? ` (${selected.size})` : ""}
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              {c.cancel}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
