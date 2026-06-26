@@ -284,6 +284,7 @@ const COPY = {
     activeFilters: "Active filters",
     noActiveFilters: "No filters yet — pick from the list.",
     filtersNoMatch: "No filters match.",
+    addToGroup: (label: string) => `Add ${label.toLowerCase()}…`,
     clearAll: "Clear all",
     done: "Done",
     columnsBtn: "Columns",
@@ -493,6 +494,7 @@ const COPY = {
     activeFilters: "Filtros activos",
     noActiveFilters: "Aún no hay filtros — elige de la lista.",
     filtersNoMatch: "Ningún filtro coincide.",
+    addToGroup: (label: string) => `Añadir ${label.toLowerCase()}…`,
     clearAll: "Limpiar todo",
     done: "Listo",
     columnsBtn: "Columnas",
@@ -2049,6 +2051,50 @@ const FILTER_OPTIONS: {
 
 // Type-ahead "Add filter": type to filter suggestions across every field, or
 // type any custom value and add it as a title (manual entry).
+// Per-group manual entry: type any value and press Enter (or +) to add it to
+// that filter group — so filters aren't limited to the preset options.
+function FilterGroupInput({
+  placeholder,
+  onSubmit,
+}: {
+  placeholder: string
+  onSubmit: (value: string) => void
+}) {
+  const [value, setValue] = React.useState("")
+  function submit() {
+    const v = value.trim()
+    if (!v) return
+    onSubmit(v)
+    setValue("")
+  }
+  return (
+    <div className="relative px-2 pb-1">
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault()
+            submit()
+          }
+        }}
+        placeholder={placeholder}
+        className="h-7 pr-7 text-xs"
+      />
+      {value.trim() && (
+        <button
+          type="button"
+          aria-label={placeholder}
+          onClick={submit}
+          className="text-primary hover:bg-muted absolute top-1/2 right-3 flex size-5 -translate-y-1/2 items-center justify-center rounded"
+        >
+          <Plus className="size-3.5" />
+        </button>
+      )}
+    </div>
+  )
+}
+
 // Filters live in a roomy two-pane modal (same shape as Customize columns):
 // active filters on the left, the full searchable catalog on the right.
 function FilterModal({
@@ -2217,6 +2263,11 @@ function FilterModal({
                       )}
                       {group.label(c)}
                     </p>
+                    {/* Manual entry — type any value, not just the presets. */}
+                    <FilterGroupInput
+                      placeholder={c.addToGroup(group.label(c))}
+                      onSubmit={(value) => onAdd(group.key, value)}
+                    />
                     {items.map((value) => {
                       const checked = (query[group.key] as string[]).includes(value)
                       return (

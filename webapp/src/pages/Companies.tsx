@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -33,6 +33,9 @@ import { DataTable } from "@/components/common/DataTable"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { downloadCsv } from "@/lib/csv"
 import { DiscoverFeed } from "@/pages/Discover"
 import {
   COMPANY_COLUMNS,
@@ -53,7 +56,11 @@ const TIERS: (AccountTier | typeof ALL)[] = [ALL, "Enterprise", "Mid-market", "S
 const COPY = {
   en: {
     title: "Companies",
-    description: "Account intelligence across your book of business.",
+    description:
+      "Every company you've found — across searches, imports & lists. Select to enrich, export, or add to a list.",
+    exportedToast: (n: number) => `Exported ${n} to CSV`,
+    enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
+    lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     tabCompanies: "Companies",
     tabDiscover: "Discover",
     addCompany: "Add company",
@@ -93,7 +100,11 @@ const COPY = {
   },
   es: {
     title: "Empresas",
-    description: "Inteligencia de cuentas en toda tu cartera de negocio.",
+    description:
+      "Todas las empresas que has encontrado — de búsquedas, importaciones y listas. Selecciona para enriquecer, exportar o añadir a una lista.",
+    exportedToast: (n: number) => `Exportadas ${n} a CSV`,
+    enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
+    lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
     tabCompanies: "Empresas",
     tabDiscover: "Descubrir",
     addCompany: "Añadir empresa",
@@ -144,6 +155,7 @@ type ViewMode = "table" | "cards"
 export default function Companies() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const { impersonatingId } = useView()
   const accounts = useAccounts()
   const [query, setQuery] = React.useState("")
@@ -152,6 +164,8 @@ export default function Companies() {
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [mode, setMode] = React.useState<"companies" | "discover">("companies")
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkList, setBulkList] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
@@ -165,6 +179,47 @@ export default function Companies() {
     const matchesTier = tier === ALL || a.tier === tier
     return matchesQuery && matchesTier
   })
+
+  const allSelected = results.length > 0 && results.every((a) => selectedIds.has(a.id))
+  const someSelected = results.some((a) => selectedIds.has(a.id))
+  const selectedIdsArr = [...selectedIds]
+  const selectedAccounts = accounts.filter((a) => selectedIds.has(a.id))
+
+  function toggleRow(a: Account) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(a.id)) next.delete(a.id)
+      else next.add(a.id)
+      return next
+    })
+  }
+  function toggleAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (results.every((a) => prev.has(a.id))) results.forEach((a) => next.delete(a.id))
+      else results.forEach((a) => next.add(a.id))
+      return next
+    })
+  }
+  function exportSelected() {
+    downloadCsv(
+      "companies.csv",
+      ["Company", "Industry", "Domain", "Tier", "Health", "Pipeline"],
+      selectedAccounts.map((a) => [
+        a.name,
+        a.industry,
+        a.domain,
+        a.tier,
+        a.healthScore,
+        a.pipeline,
+      ])
+    )
+    toast.success(c.exportedToast(selectedAccounts.length))
+  }
+  function findLookalikes() {
+    toast.success(c.lookalikeToast(selectedIds.size))
+    navigate("/search")
+  }
 
   return (
     <Page>
@@ -316,6 +371,13 @@ export default function Companies() {
           editing={editing}
           onUpdate={(a, patch) => accountStore.update(a.id, patch)}
           actions={(a) => <RecordActionsMenu kind="company" record={a} />}
+          selection={{
+            isSelected: (a) => selectedIds.has(a.id),
+            toggle: toggleRow,
+            toggleAll,
+            allSelected,
+            someSelected,
+          }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -324,6 +386,25 @@ export default function Companies() {
           ))}
         </div>
       )}
+
+      {view === "table" && (
+        <BulkActionsBar
+          count={selectedIds.size}
+          onClear={() => setSelectedIds(new Set())}
+          onExport={exportSelected}
+          onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
+          onAddToList={() => setBulkList(true)}
+          onLookalikes={findLookalikes}
+        />
+      )}
+
+      <BulkAddDialog
+        open={bulkList}
+        onOpenChange={setBulkList}
+        mode="list"
+        recordKind="company"
+        ids={selectedIdsArr}
+      />
         </>
       )}
 
