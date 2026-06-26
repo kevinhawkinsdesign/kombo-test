@@ -2415,7 +2415,17 @@ function FilterModal({
   entity: AiEntity
 }) {
   const [text, setText] = React.useState("")
+  const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set())
   const q = text.trim().toLowerCase()
+
+  function toggleGroup(key: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
 
   const groups = React.useMemo(
     () =>
@@ -2551,38 +2561,65 @@ function FilterModal({
                   (v) => !q || v.toLowerCase().includes(q)
                 )
                 if (items.length === 0) return null
+                const groupActive = (query[group.key] as string[]).length
+                // Collapsed by default; a search query force-expands matches.
+                const isOpen = q ? true : openGroups.has(group.key as string)
                 return (
-                  <div key={group.key} className="mb-2">
-                    <p className="text-muted-foreground flex items-center gap-1 px-2 py-1 text-[11px] font-medium tracking-wide uppercase">
+                  <div key={group.key} className="border-border/70 border-b last:border-b-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.key as string)}
+                      aria-expanded={isOpen}
+                      className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "text-muted-foreground size-3.5 shrink-0 transition-transform",
+                          !isOpen && "-rotate-90"
+                        )}
+                      />
                       {LINKEDIN_KEYS.has(group.key) && (
                         <LinkedinIcon className="size-3 text-[#0a66c2]" />
                       )}
-                      {group.label(c)}
-                    </p>
-                    {/* Manual entry — type any value, not just the presets. */}
-                    <FilterGroupInput
-                      placeholder={c.addToGroup(group.label(c))}
-                      onSubmit={(value) => onAdd(group.key, value)}
-                    />
-                    {items.map((value) => {
-                      const checked = (query[group.key] as string[]).includes(value)
-                      return (
-                        <label
-                          key={value}
-                          className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-                        >
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={() =>
-                              checked
-                                ? onRemove(group.key, value)
-                                : onAdd(group.key, value)
-                            }
-                          />
-                          <span className="flex-1 truncate">{value}</span>
-                        </label>
-                      )
-                    })}
+                      <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
+                        {group.label(c)}
+                      </span>
+                      {groupActive > 0 && (
+                        <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                          {groupActive}
+                        </span>
+                      )}
+                    </button>
+                    {isOpen && (
+                      <div className="pb-2">
+                        {/* Manual entry — type any value, not just the presets. */}
+                        <FilterGroupInput
+                          placeholder={c.addToGroup(group.label(c))}
+                          onSubmit={(value) => onAdd(group.key, value)}
+                        />
+                        {items.map((value) => {
+                          const checked = (query[group.key] as string[]).includes(
+                            value
+                          )
+                          return (
+                            <label
+                              key={value}
+                              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() =>
+                                  checked
+                                    ? onRemove(group.key, value)
+                                    : onAdd(group.key, value)
+                                }
+                              />
+                              <span className="flex-1 truncate">{value}</span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })}
