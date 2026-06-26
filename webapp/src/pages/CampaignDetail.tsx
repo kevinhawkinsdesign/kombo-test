@@ -197,6 +197,13 @@ const COPY = {
       `Enriching ${n} emails… you can keep working — we'll notify you.`,
     enrichedToast: (n: number) => `${n} emails enriched · campaign activated`,
     enrichInsufficient: "Not enough credits to enrich",
+    stepNudgeTitle: "Email step added",
+    stepNudgeBody: (n: number, credits: number) =>
+      `${n} contacts in this campaign don't have a verified email yet. Enrich now (~${credits} credits) to avoid "Email not available" errors when the campaign goes live.`,
+    enrichNow: "Enrich now",
+    doLater: "I'll do it later",
+    emailWarningBanner: (n: number) =>
+      `${n} contacts are missing verified emails — enrich before launching to avoid errors.`,
     automations: "Automations",
     automationsDesc: "Let Kai act on replies for you.",
     alertInterested: "Alert me when a reply is marked Interested",
@@ -312,6 +319,13 @@ const COPY = {
       `Enriqueciendo ${n} correos… puedes seguir trabajando, te avisaremos.`,
     enrichedToast: (n: number) => `${n} correos enriquecidos · campaña activada`,
     enrichInsufficient: "Créditos insuficientes para enriquecer",
+    stepNudgeTitle: "Paso de correo añadido",
+    stepNudgeBody: (n: number, credits: number) =>
+      `${n} contactos de esta campaña aún no tienen correo verificado. Enriquece ahora (~${credits} créditos) para evitar errores de "correo no disponible" cuando la campaña esté en marcha.`,
+    enrichNow: "Enriquecer ahora",
+    doLater: "Lo haré más tarde",
+    emailWarningBanner: (n: number) =>
+      `${n} contactos sin correo verificado — enriquece antes de lanzar para evitar errores.`,
     automations: "Automatizaciones",
     automationsDesc: "Deja que Kai actúe sobre las respuestas por ti.",
     alertInterested: "Avísame cuando una respuesta se marque como Interesado",
@@ -445,6 +459,7 @@ export default function CampaignDetail() {
   const [attachListId, setAttachListId] = React.useState("")
   const [createListOpen, setCreateListOpen] = React.useState(false)
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
+  const [stepNudgeOpen, setStepNudgeOpen] = React.useState(false)
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
   const [enrollPage, setEnrollPage] = React.useState(0)
@@ -542,13 +557,30 @@ export default function CampaignDetail() {
       return
     }
     setEnrichGateOpen(false)
-    // System-status pattern: long action runs in the background and the user is
-    // free to leave — we notify them when it's done.
     const toastId = toast.loading(c.enrichingToast(missingEmails))
     window.setTimeout(() => {
       campaignStore.update(camp.id, { status: "active" })
       toast.success(c.enrichedToast(missingEmails), { id: toastId })
     }, 1800)
+  }
+
+  function enrichOnly() {
+    if (!spend(enrichCost, `Enrich ${missingEmails} emails — ${camp.name}`)) {
+      toast.error(c.enrichInsufficient)
+      return
+    }
+    setStepNudgeOpen(false)
+    const toastId = toast.loading(c.enrichingToast(missingEmails))
+    window.setTimeout(() => {
+      toast.success(c.enrichedToast(missingEmails), { id: toastId })
+    }, 1800)
+  }
+
+  function handleAddStep(channel: StepChannel) {
+    campaignStore.addStep(camp.id, channel)
+    if (normalizeChannel(channel) === "email" && missingEmails > 0) {
+      setStepNudgeOpen(true)
+    }
   }
 
   return (
@@ -801,6 +833,17 @@ export default function CampaignDetail() {
 
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
+          {hasEmailStep && missingEmails > 0 && (
+            <div className="border-chart-4/40 bg-chart-4/[0.05] flex items-center gap-3 rounded-lg border px-4 py-3 text-sm">
+              <AlertTriangle className="text-chart-4 size-4 shrink-0" />
+              <p className="text-muted-foreground min-w-0 flex-1">
+                {c.emailWarningBanner(missingEmails)}
+              </p>
+              <Button variant="outline" size="sm" onClick={() => setEnrichGateOpen(true)}>
+                {c.enrichNow}
+              </Button>
+            </div>
+          )}
           {steps.length > 0 ? (
             <>
               <div className="space-y-3">
@@ -963,11 +1006,7 @@ export default function CampaignDetail() {
               </div>
 
               <div className="flex items-center justify-between gap-2">
-                <AddStepMenu
-                  onAdd={(channel) =>
-                    campaignStore.addStep(campaign.id, channel)
-                  }
-                />
+                <AddStepMenu onAdd={handleAddStep} />
                 <Button onClick={() => toast.success(c.sequenceSaved)}>
                   {c.saveSequence}
                 </Button>
@@ -977,11 +1016,7 @@ export default function CampaignDetail() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p className="text-muted-foreground text-sm">{c.noSteps}</p>
-                <AddStepMenu
-                  onAdd={(channel) =>
-                    campaignStore.addStep(campaign.id, channel)
-                  }
-                />
+                <AddStepMenu onAdd={handleAddStep} />
               </CardContent>
             </Card>
           )}
@@ -1254,6 +1289,31 @@ export default function CampaignDetail() {
             <Button variant="volt" onClick={enrichAndActivate}>
               <Zap className="size-4" />
               {c.enrichAndActivate} · {enrichCost}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={stepNudgeOpen} onOpenChange={setStepNudgeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="bg-chart-4/15 text-chart-4 flex size-7 items-center justify-center rounded-md">
+                <Mail className="size-4" />
+              </span>
+              {c.stepNudgeTitle}
+            </DialogTitle>
+            <DialogDescription>
+              {c.stepNudgeBody(missingEmails, enrichCost)}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="ghost" onClick={() => setStepNudgeOpen(false)}>
+              {c.doLater}
+            </Button>
+            <Button variant="volt" onClick={enrichOnly}>
+              <Zap className="size-4" />
+              {c.enrichNow} · {enrichCost}
             </Button>
           </DialogFooter>
         </DialogContent>
