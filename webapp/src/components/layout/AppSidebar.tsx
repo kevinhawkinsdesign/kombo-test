@@ -102,7 +102,7 @@ const groups: NavGroup[] = [
     icon: Telescope,
     items: [
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
-      { to: "/people", labelKey: "nav.people", icon: Users, isNew: true },
+      { to: "/people", labelKey: "nav.people", icon: Users },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
       { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
       { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },

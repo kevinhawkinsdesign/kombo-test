@@ -17,7 +17,6 @@ const KEY = "kombo-release-mode"
 export const V2_ONLY_PATHS = [
   "/", // manager dashboard
   "/copilot",
-  "/people",
   "/intros",
   "/extension",
   "/sequences",
