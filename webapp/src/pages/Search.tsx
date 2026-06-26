@@ -34,7 +34,7 @@ import {
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
 import { Page } from "@/components/layout/Page"
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -134,6 +134,7 @@ import {
   accountStore,
 } from "@/lib/store"
 import { libraryQueries } from "@/lib/mock-library"
+import { facetsForDb, facetLabel, type FacetDef } from "@/lib/search-facets"
 import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
@@ -844,6 +845,25 @@ export default function Search() {
     })
   }
 
+  // Dynamic per-database facets (LinkedIn Sales Navigator / Kombo FullEnrich).
+  function addFacet(id: string, value: string) {
+    setQuery((prev) => {
+      const cur = prev.facets[id] ?? []
+      if (cur.includes(value)) return prev
+      return { ...prev, facets: { ...prev.facets, [id]: [...cur, value] } }
+    })
+  }
+  function removeFacet(id: string, value: string) {
+    setQuery((prev) => {
+      const cur = prev.facets[id] ?? []
+      const next = cur.filter((v) => v !== value)
+      const facets = { ...prev.facets }
+      if (next.length) facets[id] = next
+      else delete facets[id]
+      return { ...prev, facets }
+    })
+  }
+
   function toggleRow(id: string) {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -1526,7 +1546,13 @@ export default function Search() {
           {/* Active query chips */}
           <Card className="gap-0 p-3">
             <div className="flex flex-wrap items-center gap-1.5">
-              <QueryChips query={query} onRemove={removeFilter} c={c} />
+              <QueryChips
+                query={query}
+                onRemove={removeFilter}
+                onRemoveFacet={removeFacet}
+                locale={locale}
+                c={c}
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -1847,6 +1873,10 @@ export default function Search() {
         c={c}
         linkedinOn={linkedinOn}
         entity={entity}
+        facetDefs={facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)}
+        onAddFacet={addFacet}
+        onRemoveFacet={removeFacet}
+        locale={locale}
       />
 
       <ColumnsModal
@@ -2269,16 +2299,23 @@ const LINKEDIN_KEYS = new Set<keyof AiQuery>([
 function QueryChips({
   query,
   onRemove,
+  onRemoveFacet,
+  locale,
   c,
 }: {
   query: AiQuery
   onRemove: (group: keyof AiQuery, value: string) => void
+  onRemoveFacet: (id: string, value: string) => void
+  locale: Locale
   c: Copy
 }) {
   const chips = CHIP_GROUPS.flatMap((group) =>
     (query[group] as string[]).map((value) => ({ group, value }))
   )
-  if (chips.length === 0) {
+  const facetChips = Object.entries(query.facets).flatMap(([id, values]) =>
+    values.map((value) => ({ id, value }))
+  )
+  if (chips.length === 0 && facetChips.length === 0) {
     return (
       <span className="text-muted-foreground text-sm">
         {c.addFilter} →
@@ -2303,6 +2340,23 @@ function QueryChips({
             type="button"
             aria-label={`Remove ${value}`}
             onClick={() => onRemove(group, value)}
+            className="rounded-full p-0.5 hover:bg-black/10"
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      ))}
+      {facetChips.map(({ id, value }) => (
+        <span
+          key={`${id}:${value}`}
+          title={facetLabel(id, locale)}
+          className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium"
+        >
+          {value}
+          <button
+            type="button"
+            aria-label={`Remove ${value}`}
+            onClick={() => onRemoveFacet(id, value)}
             className="rounded-full p-0.5 hover:bg-black/10"
           >
             <X className="size-3" />
@@ -2403,6 +2457,10 @@ function FilterModal({
   c,
   linkedinOn,
   entity,
+  facetDefs,
+  onAddFacet,
+  onRemoveFacet,
+  locale,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -2413,6 +2471,10 @@ function FilterModal({
   c: Copy
   linkedinOn: boolean
   entity: AiEntity
+  facetDefs: FacetDef[]
+  onAddFacet: (id: string, value: string) => void
+  onRemoveFacet: (id: string, value: string) => void
+  locale: Locale
 }) {
   const [text, setText] = React.useState("")
   const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set())
@@ -2438,12 +2500,22 @@ function FilterModal({
   const active = groups
     .map((g) => ({ g, values: query[g.key] as string[] }))
     .filter((x) => x.values.length > 0)
-  const activeCount = active.reduce((n, x) => n + x.values.length, 0)
+  const activeFacets = facetDefs
+    .map((f) => ({ f, values: query.facets[f.id] ?? [] }))
+    .filter((x) => x.values.length > 0)
+  const activeCount =
+    active.reduce((n, x) => n + x.values.length, 0) +
+    activeFacets.reduce((n, x) => n + x.values.length, 0)
 
   const allValues = groups.flatMap((g) => g.options)
   const exact = !q || allValues.some((v) => v.toLowerCase() === q)
   const anyVisible = groups.some((g) =>
     g.options.some((v) => !q || v.toLowerCase().includes(q))
+  )
+  const anyFacetVisible = facetDefs.some(
+    (f) =>
+      f.label[locale].toLowerCase().includes(q) ||
+      f.options.some((v) => v.toLowerCase().includes(q))
   )
 
   // Describe filters in natural language — interpret and apply them all.
@@ -2471,44 +2543,71 @@ function FilterModal({
               {c.activeFilters}
             </p>
             <div className="flex-1 space-y-3 overflow-y-auto p-3">
-              {active.length === 0 ? (
+              {active.length === 0 && activeFacets.length === 0 ? (
                 <p className="text-muted-foreground px-1 py-2 text-sm">
                   {c.noActiveFilters}
                 </p>
               ) : (
-                active.map(({ g, values }) => (
-                  <div key={g.key}>
-                    <p className="text-muted-foreground mb-1 flex items-center gap-1 text-[11px] font-medium tracking-wide uppercase">
-                      {LINKEDIN_KEYS.has(g.key) && (
-                        <LinkedinIcon className="size-3 text-[#0a66c2]" />
-                      )}
-                      {g.label(c)}
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {values.map((value) => (
-                        <span
-                          key={value}
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
-                            LINKEDIN_KEYS.has(g.key)
-                              ? "bg-[#0a66c2]/10 text-[#0a66c2]"
-                              : "bg-primary/10 text-primary"
-                          )}
-                        >
-                          {value}
-                          <button
-                            type="button"
-                            aria-label={`Remove ${value}`}
-                            onClick={() => onRemove(g.key, value)}
-                            className="rounded-full p-0.5 hover:bg-black/10"
+                <>
+                  {active.map(({ g, values }) => (
+                    <div key={g.key}>
+                      <p className="text-muted-foreground mb-1 flex items-center gap-1 text-[11px] font-medium tracking-wide uppercase">
+                        {LINKEDIN_KEYS.has(g.key) && (
+                          <LinkedinIcon className="size-3 text-[#0a66c2]" />
+                        )}
+                        {g.label(c)}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {values.map((value) => (
+                          <span
+                            key={value}
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
+                              LINKEDIN_KEYS.has(g.key)
+                                ? "bg-[#0a66c2]/10 text-[#0a66c2]"
+                                : "bg-primary/10 text-primary"
+                            )}
                           >
-                            <X className="size-3" />
-                          </button>
-                        </span>
-                      ))}
+                            {value}
+                            <button
+                              type="button"
+                              aria-label={`Remove ${value}`}
+                              onClick={() => onRemove(g.key, value)}
+                              className="rounded-full p-0.5 hover:bg-black/10"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                  {activeFacets.map(({ f, values }) => (
+                    <div key={f.id}>
+                      <p className="text-muted-foreground mb-1 text-[11px] font-medium tracking-wide uppercase">
+                        {f.label[locale]}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {values.map((value) => (
+                          <span
+                            key={value}
+                            className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium"
+                          >
+                            {value}
+                            <button
+                              type="button"
+                              aria-label={`Remove ${value}`}
+                              onClick={() => onRemoveFacet(f.id, value)}
+                              className="rounded-full p-0.5 hover:bg-black/10"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
               )}
             </div>
           </div>
@@ -2623,7 +2722,82 @@ function FilterModal({
                   </div>
                 )
               })}
-              {q && !anyVisible && exact && (
+              {/* Per-database facets (LinkedIn Sales Navigator / Kombo FullEnrich). */}
+              {facetDefs.map((facet) => {
+                const facetItems = facet.options.filter(
+                  (v) => !q || v.toLowerCase().includes(q)
+                )
+                const hasOptions = facet.options.length > 0
+                if (hasOptions && facetItems.length === 0) return null
+                if (
+                  !hasOptions &&
+                  q &&
+                  !facet.label[locale].toLowerCase().includes(q)
+                )
+                  return null
+                const selectedVals = query.facets[facet.id] ?? []
+                const facetActive = selectedVals.length
+                const isOpen = q ? true : openGroups.has(facet.id)
+                return (
+                  <div
+                    key={facet.id}
+                    className="border-border/70 border-b last:border-b-0"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(facet.id)}
+                      aria-expanded={isOpen}
+                      className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "text-muted-foreground size-3.5 shrink-0 transition-transform",
+                          !isOpen && "-rotate-90"
+                        )}
+                      />
+                      {facet.db === "linkedin" && (
+                        <LinkedinIcon className="size-3 text-[#0a66c2]" />
+                      )}
+                      <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
+                        {facet.label[locale]}
+                      </span>
+                      {facetActive > 0 && (
+                        <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                          {facetActive}
+                        </span>
+                      )}
+                    </button>
+                    {isOpen && (
+                      <div className="pb-2">
+                        <FilterGroupInput
+                          placeholder={c.addToGroup(facet.label[locale])}
+                          onSubmit={(value) => onAddFacet(facet.id, value)}
+                        />
+                        {facetItems.map((value) => {
+                          const checked = selectedVals.includes(value)
+                          return (
+                            <label
+                              key={value}
+                              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() =>
+                                  checked
+                                    ? onRemoveFacet(facet.id, value)
+                                    : onAddFacet(facet.id, value)
+                                }
+                              />
+                              <span className="flex-1 truncate">{value}</span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+              {q && !anyVisible && !anyFacetVisible && exact && (
                 <p className="text-muted-foreground p-3 text-sm">
                   {c.filtersNoMatch}
                 </p>
