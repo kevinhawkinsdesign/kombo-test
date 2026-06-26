@@ -31,6 +31,8 @@ import {
   Italic,
   ChevronDown,
   X,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -145,6 +147,18 @@ const COPY = {
     kaiDraft: "Kai draft",
     generate: "Generate draft",
     regenerate: "Regenerate",
+    tone: "Tone",
+    toneFormal: "Formal",
+    toneFriendly: "Friendly",
+    toneProfessional: "Professional",
+    toneConcise: "Concise",
+    length: "Length",
+    shorter: "Make shorter",
+    longer: "Make longer",
+    refined: (label: string) => `Rewrote — ${label.toLowerCase()}`,
+    sendVia: (ch: string) => `Send via ${ch}`,
+    collapseList: "Collapse list",
+    expandList: "Show list",
     draftReady: "Kai drafted a reply — review and send.",
     scheduledFor: (d: string) => `Reply scheduled for ${d}`,
     cancelSchedule: "Cancel",
@@ -223,6 +237,18 @@ const COPY = {
     kaiDraft: "Borrador de Kai",
     generate: "Generar borrador",
     regenerate: "Regenerar",
+    tone: "Tono",
+    toneFormal: "Formal",
+    toneFriendly: "Cercano",
+    toneProfessional: "Profesional",
+    toneConcise: "Conciso",
+    length: "Longitud",
+    shorter: "Más corto",
+    longer: "Más largo",
+    refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
+    sendVia: (ch: string) => `Enviar por ${ch}`,
+    collapseList: "Ocultar lista",
+    expandList: "Mostrar lista",
     draftReady: "Kai redactó una respuesta — revísala y envía.",
     scheduledFor: (d: string) => `Respuesta programada para ${d}`,
     cancelSchedule: "Cancelar",
@@ -393,6 +419,9 @@ export default function Inbox() {
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
+  // Focus mode: collapse the folder rail + conversation list to give the open
+  // thread full width when reading/replying deep in a conversation.
+  const [focused, setFocused] = React.useState(false)
 
   const visible = conversations.filter((conv) => !conv.archived)
 
@@ -533,7 +562,12 @@ export default function Inbox() {
   return (
     <div className="flex h-[calc(100svh-4rem)]">
       {/* Rail: folders + tags */}
-      <aside className="hidden w-60 shrink-0 flex-col overflow-y-auto border-r lg:flex">
+      <aside
+        className={cn(
+          "hidden w-60 shrink-0 flex-col overflow-y-auto border-r",
+          focused && effectiveActive ? "lg:hidden" : "lg:flex"
+        )}
+      >
         <nav className="space-y-0.5 p-3">
           {FOLDERS.map((f) => {
             const Icon = f.icon
@@ -609,8 +643,12 @@ export default function Inbox() {
       {/* List column */}
       <div
         className={cn(
-          "w-full flex-col border-r md:flex md:w-80 md:shrink-0 lg:w-[380px]",
-          showThreadMobile ? "hidden md:flex" : "flex"
+          "w-full flex-col border-r md:w-80 md:shrink-0 lg:w-[380px]",
+          focused && effectiveActive
+            ? "hidden"
+            : showThreadMobile
+              ? "hidden md:flex"
+              : "flex"
         )}
       >
         <div className="space-y-2.5 border-b px-3 pt-3 pb-2.5">
@@ -852,6 +890,22 @@ export default function Inbox() {
                 {activeProspect.title} · {activeProspect.company}
               </p>
             </div>
+
+            {/* Focus mode: collapse the list/rail to read the thread full-width */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:inline-flex"
+              onClick={() => setFocused((v) => !v)}
+              aria-label={focused ? c.expandList : c.collapseList}
+              title={focused ? c.expandList : c.collapseList}
+            >
+              {focused ? (
+                <PanelLeftOpen className="size-4" />
+              ) : (
+                <PanelLeftClose className="size-4" />
+              )}
+            </Button>
 
             {/* Status tag selector */}
             <DropdownMenu>
@@ -1214,7 +1268,15 @@ function Composer({
   const [seed, setSeed] = React.useState(0)
   const taRef = React.useRef<HTMLTextAreaElement>(null)
 
-  const channelLabel = conv.channel === "email" ? c.email : c.linkedin
+  const CHANNEL_NAMES: Record<string, string> = {
+    email: c.email,
+    linkedin: c.linkedin,
+    whatsapp: "WhatsApp",
+    sms: "SMS",
+    messenger: "Messenger",
+    instagram: "Instagram",
+  }
+  const channelLabel = CHANNEL_NAMES[conv.channel] ?? c.email
   const firstName = currentUser.name.split(" ")[0]
   const showDraftChip = aiUsed && reply.trim().length > 0
 
@@ -1223,6 +1285,26 @@ function Composer({
     setSeed(next)
     setReply(draftReply(prospect, conv, next))
     setAiUsed(true)
+  }
+
+  // Tone rewrite — restyle the draft (stand-in: a fresh AI variant).
+  function refineTone(label: string) {
+    const next = seed + 1
+    setSeed(next)
+    setReply(draftReply(prospect, conv, next))
+    setAiUsed(true)
+    toast.success(c.refined(label))
+  }
+  function refineLength(kind: "shorter" | "longer", label: string) {
+    setReply((cur) => {
+      if (!cur.trim()) return cur
+      if (kind === "shorter") {
+        const parts = cur.split(/(?<=[.!?])\s+/)
+        return parts.slice(0, Math.max(1, Math.ceil(parts.length / 2))).join(" ")
+      }
+      return `${cur}\n\nHappy to share more detail or hop on a quick call if it helps.`
+    })
+    toast.success(c.refined(label))
   }
 
   function wrap(marker: string) {
@@ -1320,6 +1402,53 @@ function Composer({
           <Italic className="size-4" />
         </Button>
 
+        {/* Tone rewrite */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              disabled={!reply.trim()}
+            >
+              <Sparkles className="size-4" />
+              {c.tone}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {[c.toneFormal, c.toneFriendly, c.toneProfessional, c.toneConcise].map(
+              (label) => (
+                <DropdownMenuItem key={label} onClick={() => refineTone(label)}>
+                  {label}
+                </DropdownMenuItem>
+              )
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Length */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              disabled={!reply.trim()}
+            >
+              <Languages className="size-4 rotate-90" />
+              {c.length}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => refineLength("shorter", c.shorter)}>
+              {c.shorter}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => refineLength("longer", c.longer)}>
+              {c.longer}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8" aria-label={c.templates}>
@@ -1357,7 +1486,7 @@ function Composer({
 
         <Button size="sm" variant="volt" className="ml-auto" disabled={!reply.trim()} onClick={send}>
           <Send className="size-4" />
-          {c.send}
+          {c.sendVia(channelLabel)}
         </Button>
       </div>
     </div>
