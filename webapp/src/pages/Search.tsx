@@ -26,6 +26,8 @@ import {
   LayoutTemplate,
   Database,
   ChevronDown,
+  Columns3,
+  Plug,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -48,17 +50,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -231,7 +227,7 @@ const COPY = {
     qaFindLeadsDesc: "Find people, companies, jobs and more.",
     qaImport: "Import data",
     qaImportDesc: "Import your existing list from CRM or CSV.",
-    qaAudience: "Build an audience",
+    qaAudience: "Build a list",
     qaAudienceDesc: "Define and enrich targeted lists of people and companies.",
     qaCampaign: "Create a campaign",
     qaCampaignDesc: "Build and automate your outreach campaigns.",
@@ -280,6 +276,47 @@ const COPY = {
     viewAllFilters: "View all filters",
     more: "More actions",
     backToFilterSearch: "Back to search",
+    filtersTitle: "Filters",
+    filtersDesc: (n: number) =>
+      n === 0
+        ? "Search or describe filters with AI, then tick to apply."
+        : `${n} active · search or describe filters with AI, then tick to apply.`,
+    activeFilters: "Active filters",
+    noActiveFilters: "No filters yet — pick from the list.",
+    filtersNoMatch: "No filters match.",
+    clearAll: "Clear all",
+    done: "Done",
+    columnsBtn: "Columns",
+    columnsTitle: "Customize columns",
+    columnsDesc: (n: number, total: number) =>
+      `${n} of ${total} columns shown. Toggle fields to show or hide.`,
+    alwaysShown: "Always shown",
+    optionalCols: "Optional columns",
+    alwaysTag: "Always",
+    buildTitle: "Build a list",
+    buildName: "List name",
+    buildNamePlaceholder: "e.g. EMEA VPs of Sales",
+    buildType: "What's in this list?",
+    buildPeople: "People",
+    buildPeopleDesc: "Individual prospects & contacts.",
+    buildCompanies: "Companies",
+    buildCompaniesDesc: "Accounts & organizations.",
+    buildPopulate: "How do you want to populate it?",
+    buildNext: "Next",
+    buildBack: "Back",
+    srcFindPeople: "Find people",
+    srcFindPeopleDesc: "Search our database for matching prospects.",
+    srcFindCompanies: "Find companies",
+    srcFindCompaniesDesc: "Search our database for matching accounts.",
+    srcLookalike: "Lookalike",
+    srcLookalikeDesc: "Find records similar to a person or company.",
+    srcImport: "Import CSV",
+    srcImportDesc: "Upload a CSV of people or companies.",
+    srcCrm: "From CRM",
+    srcCrmDesc: "Pull from HubSpot, Salesforce & more.",
+    srcBlank: "Start blank",
+    srcBlankDesc: "Create an empty list and add records later.",
+    buildCreated: (name: string) => `Created "${name}"`,
     titles: "Titles",
     seniority: "Seniority",
     regions: "Regions",
@@ -399,7 +436,7 @@ const COPY = {
     qaFindLeadsDesc: "Encuentra personas, empresas, empleos y más.",
     qaImport: "Importar datos",
     qaImportDesc: "Importa tu lista existente desde CRM o CSV.",
-    qaAudience: "Crear una audiencia",
+    qaAudience: "Crear una lista",
     qaAudienceDesc: "Define y enriquece listas segmentadas de personas y empresas.",
     qaCampaign: "Crear una campaña",
     qaCampaignDesc: "Crea y automatiza tus campañas de difusión.",
@@ -448,6 +485,47 @@ const COPY = {
     viewAllFilters: "Ver todos los filtros",
     more: "Más acciones",
     backToFilterSearch: "Volver a la búsqueda",
+    filtersTitle: "Filtros",
+    filtersDesc: (n: number) =>
+      n === 0
+        ? "Busca o describe filtros con IA y luego márcalos para aplicarlos."
+        : `${n} activos · busca o describe filtros con IA y luego márcalos para aplicarlos.`,
+    activeFilters: "Filtros activos",
+    noActiveFilters: "Aún no hay filtros — elige de la lista.",
+    filtersNoMatch: "Ningún filtro coincide.",
+    clearAll: "Limpiar todo",
+    done: "Listo",
+    columnsBtn: "Columnas",
+    columnsTitle: "Personalizar columnas",
+    columnsDesc: (n: number, total: number) =>
+      `${n} de ${total} columnas visibles. Activa o desactiva campos.`,
+    alwaysShown: "Siempre visibles",
+    optionalCols: "Columnas opcionales",
+    alwaysTag: "Fija",
+    buildTitle: "Crear una lista",
+    buildName: "Nombre de la lista",
+    buildNamePlaceholder: "p. ej. VPs de Ventas en EMEA",
+    buildType: "¿Qué contiene esta lista?",
+    buildPeople: "Personas",
+    buildPeopleDesc: "Prospectos y contactos individuales.",
+    buildCompanies: "Empresas",
+    buildCompaniesDesc: "Cuentas y organizaciones.",
+    buildPopulate: "¿Cómo quieres llenarla?",
+    buildNext: "Siguiente",
+    buildBack: "Atrás",
+    srcFindPeople: "Buscar personas",
+    srcFindPeopleDesc: "Busca prospectos que coincidan en nuestra base.",
+    srcFindCompanies: "Buscar empresas",
+    srcFindCompaniesDesc: "Busca cuentas que coincidan en nuestra base.",
+    srcLookalike: "Similares",
+    srcLookalikeDesc: "Encuentra registros similares a una persona o empresa.",
+    srcImport: "Importar CSV",
+    srcImportDesc: "Sube un CSV de personas o empresas.",
+    srcCrm: "Desde el CRM",
+    srcCrmDesc: "Importa de HubSpot, Salesforce y más.",
+    srcBlank: "Empezar vacía",
+    srcBlankDesc: "Crea una lista vacía y añade registros después.",
+    buildCreated: (name: string) => `Creada "${name}"`,
     titles: "Cargos",
     seniority: "Antigüedad",
     regions: "Regiones",
@@ -480,6 +558,9 @@ type Copy = (typeof COPY)[keyof typeof COPY]
 // Which database the search runs against. Replaces the old LinkedIn on/off toggle.
 type DataSource = "kombo" | "lookalike" | "linkedin"
 const DATA_SOURCES: DataSource[] = ["kombo", "lookalike", "linkedin"]
+
+// How a freshly-built list gets populated.
+type BuildSource = "find" | "lookalike" | "import" | "crm" | "blank"
 
 type RefinePatch = Partial<
   Record<
@@ -572,6 +653,9 @@ export default function Search() {
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [saveOpen, setSaveOpen] = React.useState(false)
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
+  const [filtersOpen, setFiltersOpen] = React.useState(false)
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [buildOpen, setBuildOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(null)
   const [showEmail, setShowEmail] = React.useState(true)
   const [showSignals, setShowSignals] = React.useState(false)
@@ -719,6 +803,27 @@ export default function Search() {
     toast.success(c.savedToast)
   }
 
+  // "Build a list": create the list, then route to the chosen population method.
+  function buildList(name: string, type: AiEntity, src: BuildSource) {
+    const trimmed = name.trim() || (type === "people" ? "New people list" : "New company list")
+    const list = listStore.create({
+      name: trimmed,
+      description: "",
+      color: LIST_COLORS[trimmed.length % LIST_COLORS.length],
+    })
+    setBuildOpen(false)
+    toast.success(c.buildCreated(list.name))
+    if (src === "find") {
+      // Keep them on Search to populate it; point search at the right entity.
+      setEntity(type)
+      setSeed(null)
+    } else if (src === "lookalike") {
+      setLookalikeOpen(true)
+    } else {
+      navigate(`/lists/${list.id}`)
+    }
+  }
+
   function loadSearch(id: string) {
     const s = savedSearches.find((x) => x.id === id)
     if (!s) return
@@ -786,7 +891,7 @@ export default function Search() {
       tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
       title: c.qaAudience,
       desc: c.qaAudienceDesc,
-      onClick: () => setLookalikeOpen(true),
+      onClick: () => setBuildOpen(true),
     },
     {
       key: "campaign",
@@ -1108,6 +1213,11 @@ export default function Search() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
+                <Columns3 className="size-4" />
+                <span className="hidden sm:inline">{c.columnsBtn}</span>
+              </Button>
+
               {entity === "people" && (
                 <Button
                   variant="volt"
@@ -1139,30 +1249,6 @@ export default function Search() {
                     <Bookmark className="size-4" />
                     {c.saveThis}
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-muted-foreground text-xs">
-                    {c.columns}
-                  </DropdownMenuLabel>
-                  <DropdownMenuCheckboxItem
-                    checked={showRegion}
-                    onCheckedChange={(v) => setShowRegion(!!v)}
-                  >
-                    {c.colRegion}
-                  </DropdownMenuCheckboxItem>
-                  {entity === "people" && (
-                    <DropdownMenuCheckboxItem
-                      checked={showEmail}
-                      onCheckedChange={(v) => setShowEmail(!!v)}
-                    >
-                      {c.colEmail}
-                    </DropdownMenuCheckboxItem>
-                  )}
-                  <DropdownMenuCheckboxItem
-                    checked={showSignals}
-                    onCheckedChange={(v) => setShowSignals(!!v)}
-                  >
-                    {c.colSignals}
-                  </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -1195,7 +1281,15 @@ export default function Search() {
           <Card className="gap-0 p-3">
             <div className="flex flex-wrap items-center gap-1.5">
               <QueryChips query={query} onRemove={removeFilter} c={c} />
-              <AddFilterPopover query={query} onAdd={addFilter} c={c} linkedinOn={linkedinOn} entity={entity} />
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs"
+                onClick={() => setFiltersOpen(true)}
+              >
+                <Plus className="size-3.5" />
+                {c.addFilter}
+              </Button>
               {!isQueryEmpty(query) && (
                 <button
                   type="button"
@@ -1227,15 +1321,6 @@ export default function Search() {
             <span className="text-foreground font-medium">
               {c.projected(projectedCredits)}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto"
-              onClick={() => toast.success(c.getMoreToast)}
-            >
-              <Plus className="size-4" />
-              {c.getMore}
-            </Button>
           </div>
 
           {/* Results table */}
@@ -1467,6 +1552,38 @@ export default function Search() {
         onOpenChange={setLookalikeOpen}
         c={c}
         onConfirm={applyLookalike}
+      />
+
+      <FilterModal
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        query={query}
+        onAdd={addFilter}
+        onRemove={removeFilter}
+        onClear={() => setQuery({ ...EMPTY_QUERY })}
+        c={c}
+        linkedinOn={linkedinOn}
+        entity={entity}
+      />
+
+      <ColumnsModal
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        entity={entity}
+        showRegion={showRegion}
+        setShowRegion={setShowRegion}
+        showEmail={showEmail}
+        setShowEmail={setShowEmail}
+        showSignals={showSignals}
+        setShowSignals={setShowSignals}
+        c={c}
+      />
+
+      <BuildListDialog
+        open={buildOpen}
+        onOpenChange={setBuildOpen}
+        c={c}
+        onChoose={buildList}
       />
     </Page>
   )
@@ -1932,25 +2049,32 @@ const FILTER_OPTIONS: {
 
 // Type-ahead "Add filter": type to filter suggestions across every field, or
 // type any custom value and add it as a title (manual entry).
-function AddFilterPopover({
+// Filters live in a roomy two-pane modal (same shape as Customize columns):
+// active filters on the left, the full searchable catalog on the right.
+function FilterModal({
+  open,
+  onOpenChange,
   query,
   onAdd,
+  onRemove,
+  onClear,
   c,
   linkedinOn,
   entity,
 }: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
   query: AiQuery
   onAdd: (group: keyof AiQuery, value: string) => void
+  onRemove: (group: keyof AiQuery, value: string) => void
+  onClear: () => void
   c: Copy
   linkedinOn: boolean
   entity: AiEntity
 }) {
-  const [open, setOpen] = React.useState(false)
   const [text, setText] = React.useState("")
-  const [showAll, setShowAll] = React.useState(false)
   const q = text.trim().toLowerCase()
 
-  // Groups available for the current entity / LinkedIn state.
   const groups = React.useMemo(
     () =>
       FILTER_OPTIONS.filter(
@@ -1959,30 +2083,17 @@ function AddFilterPopover({
     [linkedinOn, entity]
   )
 
-  const suggestions = React.useMemo(() => {
-    const rows: { group: keyof AiQuery; groupLabel: string; value: string }[] = []
-    for (const group of groups) {
-      for (const value of group.options) {
-        if ((query[group.key] as string[]).includes(value)) continue
-        if (q && !value.toLowerCase().includes(q)) continue
-        rows.push({ group: group.key, groupLabel: group.label(c), value })
-      }
-    }
-    return rows.slice(0, 40)
-  }, [query, q, c, groups])
+  const active = groups
+    .map((g) => ({ g, values: query[g.key] as string[] }))
+    .filter((x) => x.values.length > 0)
+  const activeCount = active.reduce((n, x) => n + x.values.length, 0)
 
-  const exact = text.trim()
-    ? suggestions.some((s) => s.value.toLowerCase() === q)
-    : true
+  const allValues = groups.flatMap((g) => g.options)
+  const exact = !q || allValues.some((v) => v.toLowerCase() === q)
+  const anyVisible = groups.some((g) =>
+    g.options.some((v) => !q || v.toLowerCase().includes(q))
+  )
 
-  function reset() {
-    setText("")
-    setShowAll(false)
-  }
-  function add(group: keyof AiQuery, value: string) {
-    onAdd(group, value)
-    setText("")
-  }
   // Describe filters in natural language — interpret and apply them all.
   function askAi(prompt: string) {
     const iq = interpretPrompt(prompt).query
@@ -1990,138 +2101,397 @@ function AddFilterPopover({
       if (k === "keywords") return
       ;(iq[k] as string[]).forEach((v) => onAdd(k, v))
     })
-    reset()
-    setOpen(false)
+    setText("")
   }
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v)
-        if (!v) reset()
-      }}
-    >
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
-          <Plus className="size-3.5" />
-          {c.addFilter}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-0">
-        {/* AI-prompt + search box (always present) */}
-        <div className="border-b p-2">
-          <div className="relative">
-            <Sparkles className="text-primary pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
-            <Input
-              autoFocus
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault()
-                  if (text.trim() && !exact) askAi(text.trim())
-                  else if (suggestions[0]) add(suggestions[0].group, suggestions[0].value)
-                }
-              }}
-              placeholder={c.filterTypeahead}
-              className="h-8 pl-8 text-sm"
-            />
-          </div>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="border-b p-4">
+          <DialogTitle>{c.filtersTitle}</DialogTitle>
+          <DialogDescription>{c.filtersDesc(activeCount)}</DialogDescription>
+        </DialogHeader>
 
-        {showAll ? (
-          // View all filters — every group and option, grouped.
-          <div className="max-h-72 overflow-y-auto p-2">
-            {groups.map((group) => (
-              <div key={group.key} className="mb-2">
-                <p className="text-muted-foreground px-1 py-1 text-[10px] font-medium tracking-wide uppercase">
-                  {group.label(c)}
+        <div className="grid max-h-[60vh] grid-cols-1 divide-y overflow-hidden sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+          {/* Active filters */}
+          <div className="flex max-h-[40vh] flex-col overflow-hidden sm:max-h-[60vh]">
+            <p className="text-muted-foreground bg-muted/30 px-4 py-2 text-xs font-medium tracking-wide uppercase">
+              {c.activeFilters}
+            </p>
+            <div className="flex-1 space-y-3 overflow-y-auto p-3">
+              {active.length === 0 ? (
+                <p className="text-muted-foreground px-1 py-2 text-sm">
+                  {c.noActiveFilters}
                 </p>
-                <div className="flex flex-wrap gap-1 px-1">
-                  {group.options
-                    .filter((v) => !q || v.toLowerCase().includes(q))
-                    .map((value) => {
-                      const active = (query[group.key] as string[]).includes(value)
-                      return (
-                        <button
+              ) : (
+                active.map(({ g, values }) => (
+                  <div key={g.key}>
+                    <p className="text-muted-foreground mb-1 flex items-center gap-1 text-[11px] font-medium tracking-wide uppercase">
+                      {LINKEDIN_KEYS.has(g.key) && (
+                        <LinkedinIcon className="size-3 text-[#0a66c2]" />
+                      )}
+                      {g.label(c)}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {values.map((value) => (
+                        <span
                           key={value}
-                          type="button"
-                          onClick={() => onAdd(group.key, value)}
-                          disabled={active}
                           className={cn(
-                            "rounded-full border px-2 py-0.5 text-xs transition-colors",
-                            active
-                              ? "border-primary/40 bg-primary/10 text-primary cursor-default"
-                              : "hover:bg-muted"
+                            "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
+                            LINKEDIN_KEYS.has(g.key)
+                              ? "bg-[#0a66c2]/10 text-[#0a66c2]"
+                              : "bg-primary/10 text-primary"
                           )}
                         >
                           {value}
-                        </button>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${value}`}
+                            onClick={() => onRemove(g.key, value)}
+                            className="rounded-full p-0.5 hover:bg-black/10"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Catalog */}
+          <div className="flex max-h-[40vh] flex-col overflow-hidden sm:max-h-[60vh]">
+            <div className="bg-muted/30 px-3 py-2">
+              <div className="relative">
+                <Sparkles className="text-primary pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+                <Input
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && text.trim() && !exact) {
+                      e.preventDefault()
+                      askAi(text.trim())
+                    }
+                  }}
+                  placeholder={c.filterTypeahead}
+                  className="h-8 pl-8 text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {text.trim() && !exact && (
+                <div className="mb-1">
+                  <button
+                    type="button"
+                    onClick={() => askAi(text.trim())}
+                    className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+                  >
+                    <Sparkles className="text-primary size-4 shrink-0" />
+                    <span className="truncate">{c.askAiFilter(text.trim())}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onAdd("titles", text.trim())
+                      setText("")
+                    }}
+                    className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+                  >
+                    <Plus className="text-muted-foreground size-4 shrink-0" />
+                    <span className="truncate">{c.addCustom(text.trim())}</span>
+                  </button>
+                </div>
+              )}
+              {groups.map((group) => {
+                const items = group.options.filter(
+                  (v) => !q || v.toLowerCase().includes(q)
+                )
+                if (items.length === 0) return null
+                return (
+                  <div key={group.key} className="mb-2">
+                    <p className="text-muted-foreground flex items-center gap-1 px-2 py-1 text-[11px] font-medium tracking-wide uppercase">
+                      {LINKEDIN_KEYS.has(group.key) && (
+                        <LinkedinIcon className="size-3 text-[#0a66c2]" />
+                      )}
+                      {group.label(c)}
+                    </p>
+                    {items.map((value) => {
+                      const checked = (query[group.key] as string[]).includes(value)
+                      return (
+                        <label
+                          key={value}
+                          className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() =>
+                              checked
+                                ? onRemove(group.key, value)
+                                : onAdd(group.key, value)
+                            }
+                          />
+                          <span className="flex-1 truncate">{value}</span>
+                        </label>
                       )
                     })}
-                </div>
+                  </div>
+                )
+              })}
+              {q && !anyVisible && exact && (
+                <p className="text-muted-foreground p-3 text-sm">
+                  {c.filtersNoMatch}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex-row items-center justify-between border-t p-3 sm:justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClear}
+            disabled={activeCount === 0}
+          >
+            <X className="size-4" />
+            {c.clearAll}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+            {c.done}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// Column show/hide for the results table — same modal shell as the full
+// column selector, scoped to the handful of optional search columns.
+function ColumnsModal({
+  open,
+  onOpenChange,
+  entity,
+  showRegion,
+  setShowRegion,
+  showEmail,
+  setShowEmail,
+  showSignals,
+  setShowSignals,
+  c,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  entity: AiEntity
+  showRegion: boolean
+  setShowRegion: (v: boolean) => void
+  showEmail: boolean
+  setShowEmail: (v: boolean) => void
+  showSignals: boolean
+  setShowSignals: (v: boolean) => void
+  c: Copy
+}) {
+  const always =
+    entity === "people"
+      ? [c.colFit, c.colName, c.colCompany]
+      : [c.colFit, c.colCompany, c.colIndustry, c.colHeadcount, c.colRoles]
+  const toggles = [
+    { label: c.colRegion, checked: showRegion, set: setShowRegion, show: true },
+    { label: c.colEmail, checked: showEmail, set: setShowEmail, show: entity === "people" },
+    { label: c.colSignals, checked: showSignals, set: setShowSignals, show: true },
+  ].filter((t) => t.show)
+  const shown = always.length + toggles.filter((t) => t.checked).length
+  const total = always.length + toggles.length
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] gap-0 overflow-hidden p-0 sm:max-w-md">
+        <DialogHeader className="border-b p-4">
+          <DialogTitle>{c.columnsTitle}</DialogTitle>
+          <DialogDescription>{c.columnsDesc(shown, total)}</DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto p-3">
+          <p className="text-muted-foreground mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
+            {c.alwaysShown}
+          </p>
+          {always.map((label) => (
+            <div
+              key={label}
+              className="text-muted-foreground flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+            >
+              <span className="flex-1">{label}</span>
+              <span className="bg-muted rounded px-1.5 py-0.5 text-[10px] font-medium uppercase">
+                {c.alwaysTag}
+              </span>
+            </div>
+          ))}
+          <p className="text-muted-foreground mt-3 mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
+            {c.optionalCols}
+          </p>
+          {toggles.map((t) => (
+            <label
+              key={t.label}
+              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+            >
+              <Checkbox checked={t.checked} onCheckedChange={(v) => t.set(!!v)} />
+              <span className="flex-1">{t.label}</span>
+            </label>
+          ))}
+        </div>
+        <DialogFooter className="border-t p-3">
+          <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+            {c.done}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// "Build a list": name it, pick people vs companies, then choose how to fill it.
+function BuildListDialog({
+  open,
+  onOpenChange,
+  c,
+  onChoose,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  c: Copy
+  onChoose: (name: string, type: AiEntity, source: BuildSource) => void
+}) {
+  const [step, setStep] = React.useState<"setup" | "source">("setup")
+  const [name, setName] = React.useState("")
+  const [type, setType] = React.useState<AiEntity>("people")
+  const [wasOpen, setWasOpen] = React.useState(false)
+
+  // Reset every time the dialog opens.
+  if (open && !wasOpen) {
+    setWasOpen(true)
+    setStep("setup")
+    setName("")
+    setType("people")
+  }
+  if (!open && wasOpen) setWasOpen(false)
+
+  const sources: {
+    key: BuildSource
+    icon: React.ComponentType<{ className?: string }>
+    label: string
+    desc: string
+  }[] = [
+    type === "people"
+      ? { key: "find", icon: Users, label: c.srcFindPeople, desc: c.srcFindPeopleDesc }
+      : { key: "find", icon: Building2, label: c.srcFindCompanies, desc: c.srcFindCompaniesDesc },
+    { key: "lookalike", icon: ScanSearch, label: c.srcLookalike, desc: c.srcLookalikeDesc },
+    { key: "import", icon: Upload, label: c.srcImport, desc: c.srcImportDesc },
+    { key: "crm", icon: Plug, label: c.srcCrm, desc: c.srcCrmDesc },
+    { key: "blank", icon: Plus, label: c.srcBlank, desc: c.srcBlankDesc },
+  ]
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <SlidersHorizontal className="text-primary size-5" />
+            {c.buildTitle}
+          </DialogTitle>
+          <DialogDescription>
+            {step === "setup" ? c.buildType : c.buildPopulate}
+          </DialogDescription>
+        </DialogHeader>
+
+        {step === "setup" ? (
+          <div className="space-y-4 py-1">
+            <div className="space-y-2">
+              <Label htmlFor="build-list-name">{c.buildName}</Label>
+              <Input
+                id="build-list-name"
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={c.buildNamePlaceholder}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{c.buildType}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { v: "people" as AiEntity, icon: Users, label: c.buildPeople, desc: c.buildPeopleDesc },
+                  { v: "companies" as AiEntity, icon: Building2, label: c.buildCompanies, desc: c.buildCompaniesDesc },
+                ].map((t) => {
+                  const Icon = t.icon
+                  const isActive = type === t.v
+                  return (
+                    <button
+                      key={t.v}
+                      type="button"
+                      onClick={() => setType(t.v)}
+                      className={cn(
+                        "flex flex-col gap-1 rounded-lg border p-3 text-left transition-colors",
+                        isActive
+                          ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
+                          : "hover:bg-muted/60"
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "size-5",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )}
+                      />
+                      <span className="text-sm font-medium">{t.label}</span>
+                      <span className="text-muted-foreground text-xs">{t.desc}</span>
+                    </button>
+                  )
+                })}
               </div>
-            ))}
+            </div>
           </div>
         ) : (
-          <div className="max-h-72 overflow-y-auto p-1">
-            {text.trim() && !exact && (
-              <>
+          <div className="grid grid-cols-1 gap-2 py-1 sm:grid-cols-2">
+            {sources.map((s) => {
+              const Icon = s.icon
+              return (
                 <button
+                  key={s.key}
                   type="button"
-                  onClick={() => askAi(text.trim())}
-                  className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
+                  onClick={() => onChoose(name, type, s.key)}
+                  className="hover:border-primary/40 hover:bg-muted/40 flex items-start gap-3 rounded-lg border p-3 text-left transition-colors"
                 >
-                  <Sparkles className="text-primary size-4 shrink-0" />
-                  <span className="truncate">{c.askAiFilter(text.trim())}</span>
+                  <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-md">
+                    <Icon className="text-primary size-4" />
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="text-sm font-medium">{s.label}</span>
+                    <span className="text-muted-foreground text-xs">{s.desc}</span>
+                  </span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => add("titles", text.trim())}
-                  className="hover:bg-muted flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
-                >
-                  <Plus className="text-muted-foreground size-4 shrink-0" />
-                  <span className="truncate">{c.addCustom(text.trim())}</span>
-                </button>
-              </>
-            )}
-            {suggestions.map((s) => (
-              <button
-                key={`${s.group}:${s.value}`}
-                type="button"
-                onClick={() => add(s.group, s.value)}
-                className="hover:bg-muted flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-sm"
-              >
-                <span className="truncate">{s.value}</span>
-                <span className="text-muted-foreground shrink-0 text-[10px] tracking-wide uppercase">
-                  {s.groupLabel}
-                </span>
-              </button>
-            ))}
+              )
+            })}
           </div>
         )}
 
-        {/* Footer: view all / back */}
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="text-primary hover:bg-muted flex w-full items-center gap-1.5 border-t px-3 py-2 text-xs font-medium"
-        >
-          {showAll ? (
-            <>
-              <ArrowRight className="size-3.5 rotate-180" />
-              {c.backToFilterSearch}
-            </>
+        <DialogFooter>
+          {step === "source" ? (
+            <Button variant="outline" onClick={() => setStep("setup")}>
+              {c.buildBack}
+            </Button>
           ) : (
-            <>
-              <ListPlus className="size-3.5" />
-              {c.viewAllFilters}
-            </>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              {c.cancel}
+            </Button>
           )}
-        </button>
-      </PopoverContent>
-    </Popover>
+          {step === "setup" && (
+            <Button variant="volt" onClick={() => setStep("source")}>
+              {c.buildNext}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

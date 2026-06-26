@@ -7,7 +7,7 @@ type Dict = Record<string, string>
 const en: Dict = {
   "nav.workspace": "Workspace",
   "nav.engage": "Engage",
-  "nav.prospecting": "Prospecting",
+  "nav.prospecting": "Prospect & Enrich",
   "nav.outreach": "Outreach",
   "nav.revenue": "Revenue",
   "nav.manage": "Manage",
@@ -95,7 +95,7 @@ const en: Dict = {
 const es: Dict = {
   "nav.workspace": "Espacio de trabajo",
   "nav.engage": "Interacción",
-  "nav.prospecting": "Prospección",
+  "nav.prospecting": "Prospectar y enriquecer",
   "nav.outreach": "Alcance",
   "nav.revenue": "Ingresos",
   "nav.manage": "Gestión",
