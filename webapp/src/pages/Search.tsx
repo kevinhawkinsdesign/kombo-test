@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Sparkles,
@@ -28,6 +28,8 @@ import {
   ChevronDown,
   Columns3,
   Plug,
+  Download,
+  Send,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -124,10 +126,18 @@ import {
   type AiLead,
   type LookalikeSeed,
 } from "@/lib/mock-ai-search"
-import { useCampaigns, campaignStore, listStore, prospectStore } from "@/lib/store"
+import {
+  useCampaigns,
+  campaignStore,
+  listStore,
+  prospectStore,
+  accountStore,
+} from "@/lib/store"
 import { libraryQueries } from "@/lib/mock-library"
+import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
-import type { SavedSearchCriteria } from "@/lib/types"
+import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import type { SavedSearchCriteria, AccountTier } from "@/lib/types"
 
 const NEW_CAMPAIGN = "__new__"
 const NO_CAMPAIGN = "__none__"
@@ -268,6 +278,11 @@ const COPY = {
     emailMissing: "Missing",
     selected: (n: number) => `${n} selected`,
     clearSel: "Clear",
+    bulkList: "Add to list",
+    bulkCampaign: "Add to campaign",
+    bulkExport: "Export",
+    bulkCrm: "Add to CRM",
+    crmToast: (n: number) => `Sent ${n} to your CRM`,
     noResults: "No results yet — try a prompt or adjust your filters.",
     addFilter: "Add filter",
     filterTypeahead: "Search filters or describe them with AI…",
@@ -478,6 +493,11 @@ const COPY = {
     emailMissing: "Sin email",
     selected: (n: number) => `${n} seleccionados`,
     clearSel: "Limpiar",
+    bulkList: "Añadir a lista",
+    bulkCampaign: "Añadir a campaña",
+    bulkExport: "Exportar",
+    bulkCrm: "Añadir al CRM",
+    crmToast: (n: number) => `Enviados ${n} a tu CRM`,
     noResults: "Aún no hay resultados — prueba un prompt o ajusta los filtros.",
     addFilter: "Añadir filtro",
     filterTypeahead: "Busca filtros o descríbelos con IA…",
@@ -636,21 +656,38 @@ export default function Search() {
   const c = COPY[locale]
   const navigate = useNavigate()
   const [params] = useSearchParams()
+  const location = useLocation()
   const headerPrompt = params.get("q")
+  // Lookalike is just a search: arrive here with a seed (from People/Companies
+  // "Find lookalikes") and the page opens in lookalike mode, results and all.
+  const incomingSeed =
+    (location.state as { lookalikeSeed?: LookalikeSeed } | null)?.lookalikeSeed ??
+    null
+  const similarPrompt = incomingSeed ? `${c.similarTo} ${incomingSeed.name}` : ""
   const campaigns = useCampaigns()
   const savedSearches = useSavedSearches()
   const newCampaign = useNewCampaign()
   const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
 
   // Seed with a starter query so the page lands populated for demos — unless we
-  // arrived from the header search with a prompt to run.
+  // arrived from the header search with a prompt to run, or a lookalike seed.
   const initial = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
-  const [entity, setEntity] = React.useState<AiEntity>(initial.entity)
-  const [query, setQuery] = React.useState<AiQuery>(
-    headerPrompt ? { ...EMPTY_QUERY } : initial.query
+  const [entity, setEntity] = React.useState<AiEntity>(
+    incomingSeed
+      ? incomingSeed.kind === "company"
+        ? "companies"
+        : "people"
+      : initial.entity
   )
-  const [lastPrompt, setLastPrompt] = React.useState(EXAMPLE_PROMPTS_EN[0])
-  const [input, setInput] = React.useState(headerPrompt ?? EXAMPLE_PROMPTS_EN[0])
+  const [query, setQuery] = React.useState<AiQuery>(
+    incomingSeed || headerPrompt ? { ...EMPTY_QUERY } : initial.query
+  )
+  const [lastPrompt, setLastPrompt] = React.useState(
+    similarPrompt || EXAMPLE_PROMPTS_EN[0]
+  )
+  const [input, setInput] = React.useState(
+    similarPrompt || headerPrompt || EXAMPLE_PROMPTS_EN[0]
+  )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [saveOpen, setSaveOpen] = React.useState(false)
@@ -658,7 +695,11 @@ export default function Search() {
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [buildOpen, setBuildOpen] = React.useState(false)
-  const [seed, setSeed] = React.useState<LookalikeSeed | null>(null)
+  const [quickOpen, setQuickOpen] = React.useState(true)
+  const [bulkIds, setBulkIds] = React.useState<string[]>([])
+  const [bulkListOpen, setBulkListOpen] = React.useState(false)
+  const [bulkCampaignOpen, setBulkCampaignOpen] = React.useState(false)
+  const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
   const [showEmail, setShowEmail] = React.useState(true)
   const [showSignals, setShowSignals] = React.useState(false)
   const [showRegion, setShowRegion] = React.useState(true)
@@ -841,6 +882,114 @@ export default function Search() {
     shownCount > 0 &&
     (entity === "people" ? leads : companies).every((r) => selected.has(r.id))
 
+  // Selected search/lookalike results → real records, then the standard
+  // search-result actions (add to list / campaign / export / CRM).
+  function materializeSelected(): string[] {
+    if (entity === "people") {
+      return leads
+        .filter((l) => selected.has(l.id))
+        .map(
+          (l) =>
+            prospectStore.create({
+              firstName: l.firstName,
+              lastName: l.lastName,
+              title: l.title,
+              company: l.company,
+              companyDomain: l.companyDomain,
+              location: l.location,
+              email: `${l.firstName}.${l.lastName}@${l.companyDomain}`
+                .toLowerCase()
+                .replace(/\s+/g, ""),
+              linkedinUrl: "",
+              avatarColor: l.avatarColor,
+              score: l.fit,
+              status: "new",
+              tags: [],
+              seniority: l.seniority,
+              department: l.department,
+              headcount: l.headcount,
+              industry: l.industry,
+              revenue: l.revenue,
+              about: "",
+              signals: l.signals,
+              source: "search",
+              enriched: false,
+            }).id
+        )
+    }
+    return companies
+      .filter((co) => selected.has(co.id))
+      .map((co) => {
+        const tier: AccountTier =
+          co.headcountNum >= 1000
+            ? "Enterprise"
+            : co.headcountNum >= 200
+              ? "Mid-market"
+              : "SMB"
+        return accountStore.create({
+          name: co.name,
+          domain: co.domain,
+          industry: co.industry,
+          employees: co.headcount,
+          revenue: co.revenue,
+          location: co.location,
+          logoColor: co.logoColor,
+          tier,
+          healthScore: co.fit,
+          openDeals: 0,
+          pipeline: 0,
+          contacts: 0,
+          ownerId: "",
+          about: "",
+          signals: co.signals,
+          keyExecutives: [],
+        }).id
+      })
+  }
+  function bulkAddToList() {
+    const ids = materializeSelected()
+    if (ids.length === 0) return
+    setBulkIds(ids)
+    setSelected(new Set())
+    setBulkListOpen(true)
+  }
+  function bulkAddToCampaign() {
+    const ids = materializeSelected()
+    if (ids.length === 0) return
+    setBulkIds(ids)
+    setSelected(new Set())
+    setBulkCampaignOpen(true)
+  }
+  function bulkExportSelected() {
+    if (entity === "people") {
+      const rows = leads.filter((l) => selected.has(l.id))
+      downloadCsv(
+        "prospects.csv",
+        ["Name", "Title", "Company", "Region", "Fit"],
+        rows.map((l) => [
+          `${l.firstName} ${l.lastName}`,
+          l.title,
+          l.company,
+          l.region,
+          l.fit,
+        ])
+      )
+    } else {
+      const rows = companies.filter((co) => selected.has(co.id))
+      downloadCsv(
+        "companies.csv",
+        ["Company", "Industry", "Region", "Headcount", "Fit"],
+        rows.map((co) => [co.name, co.industry, co.region, co.headcount, co.fit])
+      )
+    }
+  }
+  function bulkAddToCrm() {
+    const ids = materializeSelected()
+    if (ids.length === 0) return
+    setSelected(new Set())
+    toast.success(c.crmToast(ids.length))
+  }
+
   // Focus the prompt box by id — avoids a render-time ref the linter would flag.
   const focusSearch = React.useCallback(() => {
     setEntity("people")
@@ -929,36 +1078,54 @@ export default function Search() {
       />
 
       <div className="space-y-4">
-        {/* Clay-style launcher: suggested starting points above the search box. */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {quickActions.map((a) => {
-            const Icon = a.icon
-            return (
-              <button
-                key={a.key}
-                type="button"
-                onClick={a.onClick}
-                className="bg-card hover:border-primary/40 hover:bg-muted/40 flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "flex size-7 shrink-0 items-center justify-center rounded-lg",
-                      a.tint
-                    )}
+        {/* Clay-style launcher: collapsible row of suggested starting points. */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setQuickOpen((v) => !v)}
+            aria-expanded={quickOpen}
+            className="text-muted-foreground hover:text-foreground mb-2 flex items-center gap-1 text-sm font-medium"
+          >
+            <ChevronDown
+              className={cn(
+                "size-4 transition-transform",
+                !quickOpen && "-rotate-90"
+              )}
+            />
+            {c.quickStart}
+          </button>
+          {quickOpen && (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {quickActions.map((a) => {
+                const Icon = a.icon
+                return (
+                  <button
+                    key={a.key}
+                    type="button"
+                    onClick={a.onClick}
+                    className="bg-card hover:border-primary/40 hover:bg-muted/40 flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-colors"
                   >
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="text-sm leading-tight font-semibold">
-                    {a.title}
-                  </span>
-                </span>
-                <span className="text-muted-foreground text-xs leading-snug">
-                  {a.desc}
-                </span>
-              </button>
-            )
-          })}
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                          a.tint
+                        )}
+                      >
+                        <Icon className="size-4" />
+                      </span>
+                      <span className="text-sm leading-tight font-semibold">
+                        {a.title}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground text-xs leading-snug">
+                      {a.desc}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Search query bar — the prompt IS the query, no chat thread. */}
@@ -1530,6 +1697,43 @@ export default function Search() {
               )}
             </div>
           </Card>
+
+          {/* Search-result actions — same set for plain search & lookalike. */}
+          {selectedCount > 0 && (
+            <div className="bg-background sticky bottom-4 z-20 flex flex-wrap items-center gap-1.5 rounded-xl border p-2 shadow-lg">
+              <span className="px-2 text-sm font-medium tabular-nums">
+                {c.selected(selectedCount)}
+              </span>
+              <span className="bg-border mx-1 h-5 w-px" />
+              <Button variant="outline" size="sm" onClick={bulkAddToList}>
+                <ListPlus className="size-4" />
+                {c.bulkList}
+              </Button>
+              {entity === "people" && (
+                <Button variant="outline" size="sm" onClick={bulkAddToCampaign}>
+                  <Send className="size-4" />
+                  {c.bulkCampaign}
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={bulkExportSelected}>
+                <Download className="size-4" />
+                {c.bulkExport}
+              </Button>
+              <Button variant="outline" size="sm" onClick={bulkAddToCrm}>
+                <Plug className="size-4" />
+                {c.bulkCrm}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto"
+                onClick={() => setSelected(new Set())}
+              >
+                <X className="size-4" />
+                {c.clearSel}
+              </Button>
+            </div>
+          )}
             </>
           )}
         </div>
@@ -1586,6 +1790,21 @@ export default function Search() {
         onOpenChange={setBuildOpen}
         c={c}
         onChoose={buildList}
+      />
+
+      <BulkAddDialog
+        open={bulkListOpen}
+        onOpenChange={setBulkListOpen}
+        mode="list"
+        recordKind={entity === "people" ? "person" : "company"}
+        ids={bulkIds}
+      />
+      <BulkAddDialog
+        open={bulkCampaignOpen}
+        onOpenChange={setBulkCampaignOpen}
+        mode="campaign"
+        recordKind="person"
+        ids={bulkIds}
       />
     </Page>
   )

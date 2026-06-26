@@ -33,7 +33,6 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import { LookalikeDialog } from "@/components/common/LookalikeDialog"
 import { downloadCsv } from "@/lib/csv"
 import {
   ProspectAvatar,
@@ -150,7 +149,6 @@ export default function People() {
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkCampaign, setBulkCampaign] = React.useState(false)
-  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
 
   const q = query.trim().toLowerCase()
@@ -168,13 +166,6 @@ export default function People() {
   const someSelected = results.some((p) => selectedIds.has(p.id))
   const selectedIdsArr = [...selectedIds]
   const selectedProspects = prospects.filter((p) => selectedIds.has(p.id))
-  const lookalikeSeeds = selectedProspects.map((p) => ({
-    id: p.id,
-    name: `${p.firstName} ${p.lastName}`,
-    industry: p.industry,
-    region: "",
-    headcount: p.headcount,
-  }))
 
   function toggleRow(p: Prospect) {
     setSelectedIds((prev) => {
@@ -208,10 +199,32 @@ export default function People() {
     )
     toast.success(c.exportedToast(selectedProspects.length))
   }
+  // Lookalike is a kind of search — hand the seed to the Search page.
   function findLookalikes() {
-    if (selectedIds.size === 0) return
-    setLookalikeOpen(true)
+    const p = selectedProspects[0]
+    if (!p) return
+    navigate("/search", {
+      state: {
+        lookalikeSeed: {
+          id: p.id,
+          kind: "person",
+          name: `${p.firstName} ${p.lastName}`,
+          sub: `${p.title} @ ${p.company}`,
+          industry: p.industry,
+          region: "",
+          headcount: p.headcount,
+        },
+      },
+    })
   }
+
+  // Warm Intros is V2-only, so V1 is left with just the People tab.
+  const tabs = [
+    { key: "people", to: "/people", label: c.tabPeople, icon: Users },
+    ...(isV1
+      ? []
+      : [{ key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints }]),
+  ]
 
   return (
     <Page>
@@ -228,14 +241,10 @@ export default function People() {
 
       <ProspectFormDialog open={addOpen} onOpenChange={setAddOpen} />
 
-      {/* People ↔ Warm Intros tabs (Warm Intros is V2-only) */}
+      {/* People ↔ Warm Intros tabs (Warm Intros is V2-only; hidden if alone). */}
+      {tabs.length > 1 && (
       <div className="mb-6 flex items-center gap-1 border-b">
-        {[
-          { key: "people", to: "/people", label: c.tabPeople, icon: Users },
-          ...(isV1
-            ? []
-            : [{ key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints }]),
-        ].map((tb) => (
+        {tabs.map((tb) => (
           <button
             key={tb.key}
             type="button"
@@ -252,6 +261,7 @@ export default function People() {
           </button>
         ))}
       </div>
+      )}
 
       {tab === "intros" ? (
         <WarmIntrosPanel />
@@ -420,13 +430,6 @@ export default function People() {
         mode="campaign"
         recordKind="person"
         ids={selectedIdsArr}
-      />
-      <LookalikeDialog
-        open={lookalikeOpen}
-        onOpenChange={setLookalikeOpen}
-        kind="person"
-        seeds={lookalikeSeeds}
-        onDone={() => setSelectedIds(new Set())}
       />
 
       <ColumnManager

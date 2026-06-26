@@ -24,7 +24,6 @@ export const V2_ONLY_PATHS = [
   "/channels",
   "/tasks",
   "/deals",
-  "/analytics",
 ] as const
 
 // Where v1 lands when the user hits a hidden route (incl. the "/" dashboard).

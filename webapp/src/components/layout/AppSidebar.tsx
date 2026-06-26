@@ -55,7 +55,7 @@ import { conversations } from "@/lib/mock-data"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
-import { useReleaseMode } from "@/lib/release-mode"
+import { useReleaseMode, isV2OnlyPath } from "@/lib/release-mode"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 
 interface NavItem {
@@ -340,16 +340,18 @@ function SidebarContent({
   const { pathname } = useLocation()
   const { isV1 } = useReleaseMode()
 
-  // v1 only ships surfaces that already exist in the Chrome extension, so hide
-  // every `isNew` item (and any group left empty once they're removed).
-  const visiblePrimary = isV1 ? primary.filter((it) => !it.isNew) : primary
+  // v1 only ships surfaces that exist in the Chrome extension. Gate by route
+  // (V2_ONLY_PATHS), not the `isNew` badge — so a page can ship in v1 and still
+  // be badged "New" (e.g. Analytics).
+  const inV1 = (to: string) => !isV2OnlyPath(to)
+  const visiblePrimary = isV1 ? primary.filter((it) => inV1(it.to)) : primary
   const visibleGroups = isV1
     ? groups
-        .map((g) => ({ ...g, items: g.items.filter((it) => !it.isNew) }))
+        .map((g) => ({ ...g, items: g.items.filter((it) => inV1(it.to)) }))
         .filter((g) => g.items.length > 0)
     : groups
   const visibleManage = isV1
-    ? { ...manageGroup, items: manageGroup.items.filter((it) => !it.isNew) }
+    ? { ...manageGroup, items: manageGroup.items.filter((it) => inV1(it.to)) }
     : manageGroup
 
   const activeGroupKey =
