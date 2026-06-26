@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -166,7 +166,14 @@ export default function Companies() {
   const [view, setView] = React.useState<ViewMode>("table")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
-  const [mode, setMode] = React.useState<"companies" | "discover">("companies")
+  // URL-addressable tabs: /companies?tab=discover deep-links the Discover tab.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const mode: "companies" | "discover" =
+    searchParams.get("tab") === "discover" ? "discover" : "companies"
+  const setMode = (m: "companies" | "discover") =>
+    setSearchParams(m === "discover" ? { tab: "discover" } : {}, {
+      replace: true,
+    })
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
