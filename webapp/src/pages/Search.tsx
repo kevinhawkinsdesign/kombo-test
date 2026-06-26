@@ -332,6 +332,22 @@ const COPY = {
     srcCrmDesc: "Pull from HubSpot, Salesforce & more.",
     srcBlank: "Start blank",
     srcBlankDesc: "Create an empty list and add records later.",
+    srcGroupAi: "Kombo AI",
+    srcGroupLinkedin: "LinkedIn",
+    srcGroupCrunchbase: "Crunchbase",
+    srcGroupImportCat: "Import & manual",
+    srcLiSearch: "Search on LinkedIn",
+    srcLiPost: "Extract from a post",
+    srcLiEvent: "Extract from an event",
+    srcLiPoll: "Extract from a poll",
+    srcLiConnections: "Your LinkedIn connections",
+    srcLiFollowers: "Your LinkedIn followers",
+    srcCb: "Search on Crunchbase",
+    srcCbInvestors: "Search investors",
+    srcManual: "Add manually",
+    srcHubspot: "Import from HubSpot",
+    srcHubspotList: "Import from a HubSpot list",
+    buildSourceSoon: "Opening search — pick your filters",
     buildCreated: (name: string) => `Created "${name}"`,
     titles: "Titles",
     seniority: "Seniority",
@@ -547,6 +563,22 @@ const COPY = {
     srcCrmDesc: "Importa de HubSpot, Salesforce y más.",
     srcBlank: "Empezar vacía",
     srcBlankDesc: "Crea una lista vacía y añade registros después.",
+    srcGroupAi: "Kombo AI",
+    srcGroupLinkedin: "LinkedIn",
+    srcGroupCrunchbase: "Crunchbase",
+    srcGroupImportCat: "Importar y manual",
+    srcLiSearch: "Buscar en LinkedIn",
+    srcLiPost: "Extraer de una publicación",
+    srcLiEvent: "Extraer de un evento",
+    srcLiPoll: "Extraer de una encuesta",
+    srcLiConnections: "Tus conexiones de LinkedIn",
+    srcLiFollowers: "Tus seguidores de LinkedIn",
+    srcCb: "Buscar en Crunchbase",
+    srcCbInvestors: "Buscar inversores",
+    srcManual: "Añadir manualmente",
+    srcHubspot: "Importar de HubSpot",
+    srcHubspotList: "Importar de una lista de HubSpot",
+    buildSourceSoon: "Abriendo búsqueda — elige tus filtros",
     buildCreated: (name: string) => `Creada "${name}"`,
     titles: "Cargos",
     seniority: "Antigüedad",
@@ -582,7 +614,39 @@ type DataSource = "kombo" | "lookalike" | "linkedin"
 const DATA_SOURCES: DataSource[] = ["kombo", "lookalike", "linkedin"]
 
 // How a freshly-built list gets populated.
-type BuildSource = "find" | "lookalike" | "import" | "crm" | "blank"
+type BuildSource =
+  | "find"
+  | "lookalike"
+  | "li-search"
+  | "li-post"
+  | "li-event"
+  | "li-poll"
+  | "li-connections"
+  | "li-followers"
+  | "crunchbase"
+  | "crunchbase-investors"
+  | "import"
+  | "manual"
+  | "hubspot"
+  | "hubspot-list"
+  | "blank"
+
+// Sources that are really a search — they don't pre-create an empty list.
+const SEARCH_SOURCES: BuildSource[] = [
+  "find",
+  "li-search",
+  "crunchbase",
+  "crunchbase-investors",
+]
+// Sources only meaningful for people lists.
+const PEOPLE_ONLY_SOURCES: BuildSource[] = [
+  "li-post",
+  "li-event",
+  "li-poll",
+  "li-connections",
+  "li-followers",
+  "crunchbase-investors",
+]
 
 type RefinePatch = Partial<
   Record<
@@ -846,25 +910,38 @@ export default function Search() {
     toast.success(c.savedToast)
   }
 
-  // "Build a list": create the list, then route to the chosen population method.
+  // "Build a list": route to the chosen population method. Search-style sources
+  // don't pre-create an empty list; the rest create it and route accordingly.
   function buildList(name: string, type: AiEntity, src: BuildSource) {
-    const trimmed = name.trim() || (type === "people" ? "New people list" : "New company list")
+    setBuildOpen(false)
+    if (src === "lookalike") {
+      setLookalikeOpen(true)
+      return
+    }
+    if (SEARCH_SOURCES.includes(src)) {
+      setEntity(type)
+      setSeed(null)
+      if (src !== "find") toast.success(c.buildSourceSoon)
+      return
+    }
+    if (src === "import") {
+      navigate("/lists?import=1")
+      return
+    }
+    const trimmed =
+      name.trim() || (type === "people" ? "New people list" : "New company list")
     const list = listStore.create({
       name: trimmed,
       description: "",
       color: LIST_COLORS[trimmed.length % LIST_COLORS.length],
+      kind: type === "people" ? "people" : "company",
     })
-    setBuildOpen(false)
     toast.success(c.buildCreated(list.name))
-    if (src === "find") {
-      // Keep them on Search to populate it; point search at the right entity.
-      setEntity(type)
-      setSeed(null)
-    } else if (src === "lookalike") {
-      setLookalikeOpen(true)
-    } else {
-      navigate(`/lists/${list.id}`)
+    if (src === "hubspot" || src === "hubspot-list") {
+      navigate("/integrations")
+      return
     }
+    navigate(`/lists/${list.id}`)
   }
 
   function loadSearch(id: string) {
@@ -2645,20 +2722,59 @@ function BuildListDialog({
   }
   if (!open && wasOpen) setWasOpen(false)
 
-  const sources: {
-    key: BuildSource
-    icon: React.ComponentType<{ className?: string }>
+  const sourceGroups: {
     label: string
-    desc: string
+    items: {
+      key: BuildSource
+      icon: React.ComponentType<{ className?: string }>
+      label: string
+    }[]
   }[] = [
-    type === "people"
-      ? { key: "find", icon: Users, label: c.srcFindPeople, desc: c.srcFindPeopleDesc }
-      : { key: "find", icon: Building2, label: c.srcFindCompanies, desc: c.srcFindCompaniesDesc },
-    { key: "lookalike", icon: ScanSearch, label: c.srcLookalike, desc: c.srcLookalikeDesc },
-    { key: "import", icon: Upload, label: c.srcImport, desc: c.srcImportDesc },
-    { key: "crm", icon: Plug, label: c.srcCrm, desc: c.srcCrmDesc },
-    { key: "blank", icon: Plus, label: c.srcBlank, desc: c.srcBlankDesc },
+    {
+      label: c.srcGroupAi,
+      items: [
+        type === "people"
+          ? { key: "find", icon: Users, label: c.srcFindPeople }
+          : { key: "find", icon: Building2, label: c.srcFindCompanies },
+        { key: "lookalike", icon: ScanSearch, label: c.srcLookalike },
+      ],
+    },
+    {
+      label: c.srcGroupLinkedin,
+      items: [
+        { key: "li-search", icon: LinkedinIcon, label: c.srcLiSearch },
+        { key: "li-post", icon: LinkedinIcon, label: c.srcLiPost },
+        { key: "li-event", icon: LinkedinIcon, label: c.srcLiEvent },
+        { key: "li-poll", icon: LinkedinIcon, label: c.srcLiPoll },
+        { key: "li-connections", icon: LinkedinIcon, label: c.srcLiConnections },
+        { key: "li-followers", icon: LinkedinIcon, label: c.srcLiFollowers },
+      ],
+    },
+    {
+      label: c.srcGroupCrunchbase,
+      items: [
+        { key: "crunchbase", icon: Database, label: c.srcCb },
+        { key: "crunchbase-investors", icon: Database, label: c.srcCbInvestors },
+      ],
+    },
+    {
+      label: c.srcGroupImportCat,
+      items: [
+        { key: "import", icon: Upload, label: c.srcImport },
+        { key: "manual", icon: Plus, label: c.srcManual },
+        { key: "hubspot", icon: Plug, label: c.srcHubspot },
+        { key: "hubspot-list", icon: Plug, label: c.srcHubspotList },
+      ],
+    },
   ]
+  const groups = sourceGroups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter(
+        (it) => type === "people" || !PEOPLE_ONLY_SOURCES.includes(it.key)
+      ),
+    }))
+    .filter((g) => g.items.length > 0)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -2721,26 +2837,32 @@ function BuildListDialog({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-2 py-1 sm:grid-cols-2">
-            {sources.map((s) => {
-              const Icon = s.icon
-              return (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => onChoose(name, type, s.key)}
-                  className="hover:border-primary/40 hover:bg-muted/40 flex items-start gap-3 rounded-lg border p-3 text-left transition-colors"
-                >
-                  <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-md">
-                    <Icon className="text-primary size-4" />
-                  </span>
-                  <span className="flex flex-col">
-                    <span className="text-sm font-medium">{s.label}</span>
-                    <span className="text-muted-foreground text-xs">{s.desc}</span>
-                  </span>
-                </button>
-              )
-            })}
+          <div className="max-h-[55vh] space-y-3 overflow-y-auto py-1">
+            {groups.map((g) => (
+              <div key={g.label}>
+                <p className="text-muted-foreground mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
+                  {g.label}
+                </p>
+                <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                  {g.items.map((s) => {
+                    const Icon = s.icon
+                    return (
+                      <button
+                        key={s.key}
+                        type="button"
+                        onClick={() => onChoose(name, type, s.key)}
+                        className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors"
+                      >
+                        <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
+                          <Icon className="text-primary size-3.5" />
+                        </span>
+                        <span className="text-sm font-medium">{s.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
