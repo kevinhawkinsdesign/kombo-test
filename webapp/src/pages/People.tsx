@@ -20,6 +20,7 @@ import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -32,6 +33,7 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { LookalikeDialog } from "@/components/common/LookalikeDialog"
 import { downloadCsv } from "@/lib/csv"
 import {
   ProspectAvatar,
@@ -50,6 +52,7 @@ import {
   useColumnPrefs,
 } from "@/lib/table-columns"
 import { useProspects, prospectStore } from "@/lib/store"
+import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_LABELS } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import type { Prospect, ProspectStatus } from "@/lib/types"
@@ -89,6 +92,7 @@ const COPY = {
     edit: "Edit",
     done: "Done",
     editingHint: "Editing — changes save automatically",
+    selectAll: "Select all",
   },
   es: {
     title: "Personas",
@@ -121,6 +125,7 @@ const COPY = {
     edit: "Editar",
     done: "Listo",
     editingHint: "Editando — los cambios se guardan solos",
+    selectAll: "Seleccionar todo",
   },
 } as const
 
@@ -131,6 +136,7 @@ export default function People() {
   const c = COPY[locale]
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const { isV1 } = useReleaseMode()
   const tab: "people" | "intros" = pathname === "/intros" ? "intros" : "people"
   const prospects = useProspects()
   const [searchParams] = useSearchParams()
@@ -144,6 +150,7 @@ export default function People() {
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkCampaign, setBulkCampaign] = React.useState(false)
+  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
 
   const q = query.trim().toLowerCase()
@@ -161,6 +168,13 @@ export default function People() {
   const someSelected = results.some((p) => selectedIds.has(p.id))
   const selectedIdsArr = [...selectedIds]
   const selectedProspects = prospects.filter((p) => selectedIds.has(p.id))
+  const lookalikeSeeds = selectedProspects.map((p) => ({
+    id: p.id,
+    name: `${p.firstName} ${p.lastName}`,
+    industry: p.industry,
+    region: "",
+    headcount: p.headcount,
+  }))
 
   function toggleRow(p: Prospect) {
     setSelectedIds((prev) => {
@@ -195,8 +209,8 @@ export default function People() {
     toast.success(c.exportedToast(selectedProspects.length))
   }
   function findLookalikes() {
-    toast.success(c.lookalikeToast(selectedIds.size))
-    navigate("/search")
+    if (selectedIds.size === 0) return
+    setLookalikeOpen(true)
   }
 
   return (
@@ -214,14 +228,14 @@ export default function People() {
 
       <ProspectFormDialog open={addOpen} onOpenChange={setAddOpen} />
 
-      {/* People ↔ Warm Intros tabs */}
+      {/* People ↔ Warm Intros tabs (Warm Intros is V2-only) */}
       <div className="mb-6 flex items-center gap-1 border-b">
-        {(
-          [
-            { key: "people", to: "/people", label: c.tabPeople, icon: Users },
-            { key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints },
-          ] as const
-        ).map((tb) => (
+        {[
+          { key: "people", to: "/people", label: c.tabPeople, icon: Users },
+          ...(isV1
+            ? []
+            : [{ key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints }]),
+        ].map((tb) => (
           <button
             key={tb.key}
             type="button"
@@ -337,6 +351,15 @@ export default function People() {
             {c.editingHint}
           </span>
         )}
+        {view === "cards" && results.length > 0 && (
+          <label className="ml-1 flex cursor-pointer items-center gap-1.5">
+            <Checkbox
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
+              onCheckedChange={() => toggleAll()}
+            />
+            <span>{c.selectAll}</span>
+          </label>
+        )}
       </div>
 
       {results.length === 0 ? (
@@ -364,22 +387,25 @@ export default function People() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((p) => (
-            <ProspectCard key={p.id} prospect={p} />
+            <ProspectCard
+              key={p.id}
+              prospect={p}
+              selected={selectedIds.has(p.id)}
+              onToggle={() => toggleRow(p)}
+            />
           ))}
         </div>
       )}
 
-      {view === "table" && (
-        <BulkActionsBar
-          count={selectedIds.size}
-          onClear={() => setSelectedIds(new Set())}
-          onExport={exportSelected}
-          onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
-          onAddToList={() => setBulkList(true)}
-          onAddToCampaign={() => setBulkCampaign(true)}
-          onLookalikes={findLookalikes}
-        />
-      )}
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onExport={exportSelected}
+        onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
+        onAddToList={() => setBulkList(true)}
+        onAddToCampaign={() => setBulkCampaign(true)}
+        onLookalikes={findLookalikes}
+      />
 
       <BulkAddDialog
         open={bulkList}
@@ -394,6 +420,13 @@ export default function People() {
         mode="campaign"
         recordKind="person"
         ids={selectedIdsArr}
+      />
+      <LookalikeDialog
+        open={lookalikeOpen}
+        onOpenChange={setLookalikeOpen}
+        kind="person"
+        seeds={lookalikeSeeds}
+        onDone={() => setSelectedIds(new Set())}
       />
 
       <ColumnManager
@@ -437,11 +470,36 @@ function ViewToggleButton({
   )
 }
 
-function ProspectCard({ prospect: p }: { prospect: Prospect }) {
+function ProspectCard({
+  prospect: p,
+  selected,
+  onToggle,
+}: {
+  prospect: Prospect
+  selected?: boolean
+  onToggle?: () => void
+}) {
   const { locale } = useLocale()
   return (
-    <div className="hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors">
+    <div
+      className={cn(
+        "hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors",
+        selected && "border-primary ring-primary/30 ring-1"
+      )}
+    >
       <div className="flex items-start gap-3">
+        {onToggle && (
+          <div
+            className="relative z-10 pt-0.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={selected}
+              onCheckedChange={onToggle}
+              aria-label="Select"
+            />
+          </div>
+        )}
         <ProspectAvatar prospect={p} className="size-10" />
         <div className="min-w-0 flex-1">
           {/* Stretched link makes the whole card clickable without nesting

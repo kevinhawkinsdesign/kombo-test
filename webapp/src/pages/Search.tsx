@@ -885,7 +885,7 @@ export default function Search() {
       tint: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
       title: c.qaImport,
       desc: c.qaImportDesc,
-      onClick: () => navigate("/lists"),
+      onClick: () => navigate("/lists?import=1"),
     },
     {
       key: "audience",

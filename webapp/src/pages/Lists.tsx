@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Plus,
@@ -198,7 +198,20 @@ export default function Lists() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const lists = useLists()
-  const [importOpen, setImportOpen] = React.useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  // Deep link: /lists?import=1 (e.g. from the Search "Import data" card) opens
+  // the CSV import dialog straight away.
+  const [importOpen, setImportOpen] = React.useState(
+    () => searchParams.get("import") === "1"
+  )
+  function closeImport(open: boolean) {
+    setImportOpen(open)
+    if (!open && searchParams.get("import")) {
+      const next = new URLSearchParams(searchParams)
+      next.delete("import")
+      setSearchParams(next, { replace: true })
+    }
+  }
   const [formOpen, setFormOpen] = React.useState(false)
   const [editingList, setEditingList] = React.useState<ProspectList | undefined>(
     undefined
@@ -523,7 +536,7 @@ export default function Lists() {
 
       <ImportCsvDialog
         open={importOpen}
-        onOpenChange={setImportOpen}
+        onOpenChange={closeImport}
         onImported={(count) => toast.success(c.imported(count))}
       />
     </Page>

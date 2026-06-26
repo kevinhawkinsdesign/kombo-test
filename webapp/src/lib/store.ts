@@ -473,6 +473,18 @@ export const campaignStore = {
 }
 
 export const accountStore = {
+  create(
+    data: Omit<Account, "id" | "lastActivity"> &
+      Partial<Pick<Account, "lastActivity">>
+  ): Account {
+    const account: Account = {
+      ...data,
+      id: uid("acc"),
+      lastActivity: data.lastActivity ?? nowISO(),
+    }
+    setState({ accounts: [account, ...state.accounts] })
+    return account
+  },
   update(id: string, patch: Partial<Account>): void {
     setState({
       accounts: state.accounts.map((a) =>
