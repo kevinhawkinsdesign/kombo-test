@@ -18,6 +18,7 @@ import {
   Columns3,
   ShieldCheck,
   TriangleAlert,
+  Upload,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -25,6 +26,7 @@ import { useLocale } from "@/lib/locale"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
@@ -106,12 +108,20 @@ const COPY = {
     lastSynced: (date: string) => `Last synced ${date}`,
     addProspectsTitle: "Add prospects",
     addProspectsDescription: (name: string) =>
-      `Select prospects to add to "${name}".`,
+      `Pull people into "${name}" from any source.`,
     allAlready: "Every prospect is already in this list.",
     cancel: "Cancel",
     addSelected: "Add selected",
     added: (count: number) =>
       `${count} ${count === 1 ? "prospect" : "prospects"} added`,
+    addSrcAi: "Find with Kombo AI",
+    addSrcExisting: "Add from your prospects",
+    addSrcImport: "Import from CSV",
+    addSrcManual: "Add a contact manually",
+    addSrcCrm: "Import from your CRM",
+    addSearchExisting: "Search your prospects…",
+    addBack: "Back",
+    addNoMatch: "No prospects match.",
     // Enrichment
     dataEnrichment: "Data enrichment",
     allEnriched: "All contacts enriched",
@@ -185,12 +195,20 @@ const COPY = {
     lastSynced: (date: string) => `Última sincronización ${date}`,
     addProspectsTitle: "Añadir prospectos",
     addProspectsDescription: (name: string) =>
-      `Selecciona prospectos para añadir a "${name}".`,
+      `Trae personas a "${name}" desde cualquier fuente.`,
     allAlready: "Todos los prospectos ya están en esta lista.",
     cancel: "Cancelar",
     addSelected: "Añadir seleccionados",
     added: (count: number) =>
       `${count} ${count === 1 ? "prospecto añadido" : "prospectos añadidos"}`,
+    addSrcAi: "Buscar con Kombo AI",
+    addSrcExisting: "Añadir desde tus prospectos",
+    addSrcImport: "Importar desde CSV",
+    addSrcManual: "Añadir un contacto manualmente",
+    addSrcCrm: "Importar desde tu CRM",
+    addSearchExisting: "Busca tus prospectos…",
+    addBack: "Atrás",
+    addNoMatch: "Ningún prospecto coincide.",
     // Enrichment
     dataEnrichment: "Enriquecimiento de datos",
     allEnriched: "Todos los contactos enriquecidos",
@@ -643,25 +661,50 @@ function AddProspectsDialog({
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const prospects = useProspects()
+  const [view, setView] = React.useState<"menu" | "existing">("menu")
+  const [query, setQuery] = React.useState("")
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
 
-  // Reset the selection whenever the dialog transitions to open (adjusting
-  // state during render — the React-recommended pattern).
+  // Reset whenever the dialog transitions to open (adjusting state during
+  // render — the React-recommended pattern).
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
-    if (open) setSelected(new Set())
+    if (open) {
+      setView("menu")
+      setQuery("")
+      setSelected(new Set())
+    }
   }
 
   const memberIds = React.useMemo(
     () => new Set(list.prospectIds),
     [list.prospectIds]
   )
-  const candidates = React.useMemo(
-    () => prospects.filter((p) => !memberIds.has(p.id)),
-    [prospects, memberIds]
+  const q = query.trim().toLowerCase()
+  const candidates = prospects.filter(
+    (p) =>
+      !memberIds.has(p.id) &&
+      (!q ||
+        `${p.firstName} ${p.lastName} ${p.title} ${p.company}`
+          .toLowerCase()
+          .includes(q))
   )
+
+  function leave(to: string) {
+    onOpenChange(false)
+    navigate(to)
+  }
+  // Enterprise scale: pull from any source, not a fixed checkbox list.
+  const sources = [
+    { key: "ai", icon: Sparkles, label: c.addSrcAi, onClick: () => leave("/search") },
+    { key: "existing", icon: Search, label: c.addSrcExisting, onClick: () => setView("existing") },
+    { key: "import", icon: Upload, label: c.addSrcImport, onClick: () => leave("/lists?import=1") },
+    { key: "manual", icon: Plus, label: c.addSrcManual, onClick: () => leave("/people") },
+    { key: "crm", icon: Database, label: c.addSrcCrm, onClick: () => leave("/integrations") },
+  ]
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -690,35 +733,76 @@ function AddProspectsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {candidates.length === 0 ? (
-          <p className="text-muted-foreground py-8 text-center text-sm">
-            {c.allAlready}
-          </p>
-        ) : (
-          <div className="-mx-1 max-h-80 space-y-1 overflow-y-auto px-1">
-            {candidates.map((p) => (
-              <ProspectRow
-                key={p.id}
-                prospect={p}
-                checked={selected.has(p.id)}
-                onToggle={() => toggle(p.id)}
-              />
-            ))}
+        {view === "menu" ? (
+          <div className="space-y-1.5 py-1">
+            {sources.map((s) => {
+              const Icon = s.icon
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={s.onClick}
+                  className="hover:border-primary/40 hover:bg-muted/40 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors"
+                >
+                  <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
+                    <Icon className="text-primary size-4" />
+                  </span>
+                  <span className="text-sm font-medium">{s.label}</span>
+                </button>
+              )
+            })}
           </div>
+        ) : (
+          <>
+            <div className="relative">
+              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+              <Input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={c.addSearchExisting}
+                className="pl-9"
+              />
+            </div>
+            {candidates.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                {q ? c.addNoMatch : c.allAlready}
+              </p>
+            ) : (
+              <div className="-mx-1 max-h-72 space-y-1 overflow-y-auto px-1">
+                {candidates.slice(0, 100).map((p) => (
+                  <ProspectRow
+                    key={p.id}
+                    prospect={p}
+                    checked={selected.has(p.id)}
+                    onToggle={() => toggle(p.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            {c.cancel}
-          </Button>
-          <Button
-            variant="volt"
-            onClick={handleAdd}
-            disabled={selected.size === 0}
-          >
-            {c.addSelected}
-            {selected.size > 0 ? ` (${selected.size})` : ""}
-          </Button>
+          {view === "existing" ? (
+            <>
+              <Button variant="ghost" onClick={() => setView("menu")}>
+                {c.addBack}
+              </Button>
+              <Button
+                variant="volt"
+                onClick={handleAdd}
+                disabled={selected.size === 0}
+              >
+                {c.addSelected}
+                {selected.size > 0 ? ` (${selected.size})` : ""}
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              {c.cancel}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
