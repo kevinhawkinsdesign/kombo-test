@@ -4,15 +4,22 @@
 
 import * as React from "react"
 
+// Folders map to the outcomes used across the Chrome extension, plus a couple
+// of generic outreach folders.
 const SEED = [
+  "Interested",
+  "Not Interested",
+  "Qualified",
+  "Disqualified",
+  "Meeting Booked",
+  "Need Review",
+  "Won",
   "Cold outreach",
   "Follow-up",
-  "Meeting booking",
   "Re-engagement",
-  "Call follow-up",
 ]
 
-const KEY = "kombo_template_folders_v1"
+const KEY = "kombo_template_folders_v2"
 
 function load(): string[] {
   try {

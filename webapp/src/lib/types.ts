@@ -10,7 +10,13 @@ export type ProspectStatus =
   | "customer"
   | "not_interested"
 
-export type Channel = "email" | "linkedin"
+export type Channel =
+  | "email"
+  | "linkedin"
+  | "whatsapp"
+  | "sms"
+  | "messenger"
+  | "instagram"
 
 // How a prospect entered the workspace (search, a list, a CSV import, or the
 // browser extension while prospecting on LinkedIn).

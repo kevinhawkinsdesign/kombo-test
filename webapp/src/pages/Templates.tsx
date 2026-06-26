@@ -13,6 +13,10 @@ import {
   Braces,
   Sparkles,
   Wand2,
+  MessageCircle,
+  MessageSquare,
+  Send,
+  Camera,
 } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -94,7 +98,7 @@ const COPY = {
     deleteAria: (name: string) => `Delete ${name}`,
     sent: (count: string) => `${count} sent`,
     replySuffix: "reply",
-    pageTitle: "Email Templates",
+    pageTitle: "Message Templates",
     pageDescription: "Reusable outreach templates with live performance.",
     newTemplate: "New template",
     introTitle: "Reusable message templates",
@@ -113,6 +117,11 @@ const COPY = {
     channel: "Channel",
     email: "Email",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
+    sms: "SMS",
+    messenger: "Messenger",
+    instagram: "Instagram",
+    allChannels: "All channels",
     folder: "Folder",
     folderPlaceholder: "Cold outreach",
     subject: "Subject",
@@ -180,7 +189,7 @@ const COPY = {
     deleteAria: (name: string) => `Eliminar ${name}`,
     sent: (count: string) => `${count} enviados`,
     replySuffix: "respuesta",
-    pageTitle: "Plantillas de correo",
+    pageTitle: "Plantillas de mensajes",
     pageDescription:
       "Plantillas de contacto reutilizables con rendimiento en vivo.",
     newTemplate: "Nueva plantilla",
@@ -200,6 +209,11 @@ const COPY = {
     channel: "Canal",
     email: "Correo",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
+    sms: "SMS",
+    messenger: "Messenger",
+    instagram: "Instagram",
+    allChannels: "Todos los canales",
     folder: "Carpeta",
     folderPlaceholder: "Contacto en frío",
     subject: "Asunto",
@@ -274,11 +288,34 @@ function ChannelIcon({
   channel: Channel
   className?: string
 }) {
-  return channel === "linkedin" ? (
-    <LinkedinIcon className={className} />
-  ) : (
-    <Mail className={className} />
-  )
+  switch (channel) {
+    case "linkedin":
+      return <LinkedinIcon className={className} />
+    case "whatsapp":
+      return <MessageCircle className={cn(className, "text-[#25D366]")} />
+    case "sms":
+      return <MessageSquare className={className} />
+    case "messenger":
+      return <Send className={cn(className, "text-[#0084ff]")} />
+    case "instagram":
+      return <Camera className={cn(className, "text-[#e1306c]")} />
+    default:
+      return <Mail className={className} />
+  }
+}
+
+// Channel display order + label key for filters and the editor select.
+const CHANNELS: Channel[] = [
+  "email",
+  "linkedin",
+  "whatsapp",
+  "sms",
+  "messenger",
+  "instagram",
+]
+
+function channelLabel(channel: Channel, c: Copy): string {
+  return c[channel]
 }
 
 function TemplateTable({
@@ -634,9 +671,11 @@ export default function Templates() {
   const [view, setView] = React.useState<CollectionView>("cards")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
+  const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
 
   const matches = React.useCallback(
     (t: EmailTemplate) => {
+      if (channelFilter !== "all" && t.channel !== channelFilter) return false
       const q = query.trim().toLowerCase()
       if (!q) return true
       return (
@@ -647,7 +686,7 @@ export default function Templates() {
         t.tags.some((tag) => tag.toLowerCase().includes(q))
       )
     },
-    [query]
+    [query, channelFilter]
   )
 
   // One section per folder (including empty folders), filtered by the search.
@@ -684,7 +723,7 @@ export default function Templates() {
       flat.map((t) => [
         t.name,
         t.folder,
-        t.channel === "linkedin" ? c.linkedin : c.email,
+        channelLabel(t.channel, c),
         t.subject,
         t.sent,
         `${t.replyRate}%`,
@@ -756,6 +795,41 @@ export default function Templates() {
       />
 
       <TemplateRecommendations />
+
+      {/* Channel filter — templates exist per channel (email, LinkedIn,
+          WhatsApp, SMS, Messenger, Instagram). */}
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          onClick={() => setChannelFilter("all")}
+          aria-pressed={channelFilter === "all"}
+          className={cn(
+            "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+            channelFilter === "all"
+              ? "border-primary bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-muted"
+          )}
+        >
+          {c.allChannels}
+        </button>
+        {CHANNELS.map((ch) => (
+          <button
+            key={ch}
+            type="button"
+            onClick={() => setChannelFilter(ch)}
+            aria-pressed={channelFilter === ch}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+              channelFilter === ch
+                ? "border-primary bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <ChannelIcon channel={ch} className="size-3.5" />
+            {channelLabel(ch, c)}
+          </button>
+        ))}
+      </div>
 
       <CollectionToolbar
         query={query}
@@ -1010,8 +1084,11 @@ export default function Templates() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="email">{c.email}</SelectItem>
-                      <SelectItem value="linkedin">{c.linkedin}</SelectItem>
+                      {CHANNELS.map((ch) => (
+                        <SelectItem key={ch} value={ch}>
+                          {channelLabel(ch, c)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
