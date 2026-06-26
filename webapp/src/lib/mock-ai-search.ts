@@ -34,6 +34,10 @@ export interface AiQuery {
   followersOf: string[] // people: creator they follow
   jobListings: string[] // company: has open job listings
   keywords: string
+  // Extensible facet bucket: the large per-database filter catalogs (LinkedIn
+  // Sales Navigator, Kombo / FullEnrich) write here keyed by facet id, so we
+  // don't need a typed field per filter.
+  facets: Record<string, string[]>
 }
 
 export const EMPTY_QUERY: AiQuery = {
@@ -60,6 +64,7 @@ export const EMPTY_QUERY: AiQuery = {
   followersOf: [],
   jobListings: [],
   keywords: "",
+  facets: {},
 }
 
 export interface AiLead {
@@ -597,7 +602,8 @@ export function isQueryEmpty(q: AiQuery): boolean {
     q.founded.length === 0 &&
     q.growth.length === 0 &&
     q.linkedin.length === 0 &&
-    q.keywords.trim() === ""
+    q.keywords.trim() === "" &&
+    Object.values(q.facets).every((v) => v.length === 0)
   )
 }
 
