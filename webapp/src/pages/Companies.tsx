@@ -36,6 +36,7 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { downloadCsv } from "@/lib/csv"
 import { DiscoverFeed } from "@/pages/Discover"
 import {
@@ -176,6 +177,7 @@ export default function Companies() {
     })
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
+  const [addOpen, setAddOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
@@ -251,7 +253,7 @@ export default function Companies() {
         title={c.title}
         description={c.description}
         action={
-          <Button variant="volt" onClick={() => toast.info(c.addCompanyToast)}>
+          <Button variant="volt" onClick={() => setAddOpen(true)}>
             <Plus className="size-4" />
             {c.addCompany}
           </Button>
@@ -452,6 +454,8 @@ export default function Companies() {
         prefs={columnPrefs}
         locale={locale}
       />
+
+      <AddRecordsDialog open={addOpen} onOpenChange={setAddOpen} kind="company" />
     </Page>
   )
 }
