@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -21,6 +21,7 @@ import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Select,
@@ -35,6 +36,7 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { LookalikeDialog } from "@/components/common/LookalikeDialog"
 import { downloadCsv } from "@/lib/csv"
 import { DiscoverFeed } from "@/pages/Discover"
 import {
@@ -91,6 +93,7 @@ const COPY = {
     edit: "Edit",
     done: "Done",
     editingHint: "Editing — changes save automatically",
+    selectAll: "Select all",
     colCompany: "Company",
     colIndustry: "Industry",
     colTier: "Tier",
@@ -135,6 +138,7 @@ const COPY = {
     edit: "Editar",
     done: "Listo",
     editingHint: "Editando — los cambios se guardan solos",
+    selectAll: "Seleccionar todo",
     colCompany: "Empresa",
     colIndustry: "Sector",
     colTier: "Segmento",
@@ -155,7 +159,6 @@ type ViewMode = "table" | "cards"
 export default function Companies() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const navigate = useNavigate()
   const { impersonatingId } = useView()
   const accounts = useAccounts()
   const [query, setQuery] = React.useState("")
@@ -166,6 +169,7 @@ export default function Companies() {
   const [mode, setMode] = React.useState<"companies" | "discover">("companies")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
+  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
@@ -184,6 +188,13 @@ export default function Companies() {
   const someSelected = results.some((a) => selectedIds.has(a.id))
   const selectedIdsArr = [...selectedIds]
   const selectedAccounts = accounts.filter((a) => selectedIds.has(a.id))
+  const lookalikeSeeds = selectedAccounts.map((a) => ({
+    id: a.id,
+    name: a.name,
+    industry: a.industry,
+    region: "",
+    headcount: a.employees,
+  }))
 
   function toggleRow(a: Account) {
     setSelectedIds((prev) => {
@@ -217,8 +228,8 @@ export default function Companies() {
     toast.success(c.exportedToast(selectedAccounts.length))
   }
   function findLookalikes() {
-    toast.success(c.lookalikeToast(selectedIds.size))
-    navigate("/search")
+    if (selectedIds.size === 0) return
+    setLookalikeOpen(true)
   }
 
   return (
@@ -355,6 +366,15 @@ export default function Companies() {
             {c.editingHint}
           </span>
         )}
+        {view === "cards" && results.length > 0 && (
+          <label className="ml-1 flex cursor-pointer items-center gap-1.5">
+            <Checkbox
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
+              onCheckedChange={() => toggleAll()}
+            />
+            <span>{c.selectAll}</span>
+          </label>
+        )}
       </div>
 
       {results.length === 0 ? (
@@ -382,21 +402,24 @@ export default function Companies() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((a) => (
-            <CompanyCard key={a.id} account={a} />
+            <CompanyCard
+              key={a.id}
+              account={a}
+              selected={selectedIds.has(a.id)}
+              onToggle={() => toggleRow(a)}
+            />
           ))}
         </div>
       )}
 
-      {view === "table" && (
-        <BulkActionsBar
-          count={selectedIds.size}
-          onClear={() => setSelectedIds(new Set())}
-          onExport={exportSelected}
-          onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
-          onAddToList={() => setBulkList(true)}
-          onLookalikes={findLookalikes}
-        />
-      )}
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onExport={exportSelected}
+        onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
+        onAddToList={() => setBulkList(true)}
+        onLookalikes={findLookalikes}
+      />
 
       <BulkAddDialog
         open={bulkList}
@@ -404,6 +427,13 @@ export default function Companies() {
         mode="list"
         recordKind="company"
         ids={selectedIdsArr}
+      />
+      <LookalikeDialog
+        open={lookalikeOpen}
+        onOpenChange={setLookalikeOpen}
+        kind="company"
+        seeds={lookalikeSeeds}
+        onDone={() => setSelectedIds(new Set())}
       />
         </>
       )}
@@ -447,14 +477,39 @@ function ViewToggleButton({
   )
 }
 
-function CompanyCard({ account: a }: { account: Account }) {
+function CompanyCard({
+  account: a,
+  selected,
+  onToggle,
+}: {
+  account: Account
+  selected?: boolean
+  onToggle?: () => void
+}) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const owner = getRep(a.ownerId)
 
   return (
-    <div className="hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors">
+    <div
+      className={cn(
+        "hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors",
+        selected && "border-primary ring-primary/30 ring-1"
+      )}
+    >
       <div className="flex items-start gap-3">
+        {onToggle && (
+          <div
+            className="relative z-10 pt-0.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={selected}
+              onCheckedChange={onToggle}
+              aria-label="Select"
+            />
+          </div>
+        )}
         <span
           className="flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold text-white"
           style={{ backgroundColor: a.logoColor }}
