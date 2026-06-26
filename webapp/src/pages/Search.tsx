@@ -24,9 +24,10 @@ import {
   SlidersHorizontal,
   Megaphone,
   LayoutTemplate,
+  Database,
+  ChevronDown,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
-import { Switch } from "@/components/ui/switch"
 
 import { Page } from "@/components/layout/Page"
 import { useLocale } from "@/lib/locale"
@@ -183,6 +184,13 @@ const COPY = {
     getMoreToast: "Expanding the search across the full database…",
     komboData: "Kombo data",
     komboHint: "Verified emails, mobiles, firmographics & intent — blended from our data network.",
+    dbLabel: "Search in",
+    dbKombo: "KomboAI",
+    dbKomboDesc: "Our verified network of people & companies.",
+    dbLookalike: "Lookalike",
+    dbLookalikeDesc: "Find records similar to a person or company.",
+    dbLinkedinDesc: "Search with LinkedIn network filters.",
+    dbSwitched: (name: string) => `Now searching ${name}`,
     linkedinSource: "LinkedIn",
     linkedinHint: "Turn on to target LinkedIn-only network filters (job changes, posts, connection degree…).",
     linkedinEnabled: "LinkedIn filters enabled",
@@ -344,6 +352,13 @@ const COPY = {
     getMoreToast: "Ampliando la búsqueda a toda la base de datos…",
     komboData: "Datos de Kombo",
     komboHint: "Emails verificados, móviles, firmografía e intención — combinados desde nuestra red de datos.",
+    dbLabel: "Buscar en",
+    dbKombo: "KomboAI",
+    dbKomboDesc: "Nuestra red verificada de personas y empresas.",
+    dbLookalike: "Similares",
+    dbLookalikeDesc: "Encuentra registros similares a una persona o empresa.",
+    dbLinkedinDesc: "Busca con filtros de la red de LinkedIn.",
+    dbSwitched: (name: string) => `Buscando en ${name}`,
     linkedinSource: "LinkedIn",
     linkedinHint: "Actívalo para usar filtros exclusivos de LinkedIn (cambios de empleo, publicaciones, grado de conexión…).",
     linkedinEnabled: "Filtros de LinkedIn activados",
@@ -462,6 +477,10 @@ const COPY = {
 
 type Copy = (typeof COPY)[keyof typeof COPY]
 
+// Which database the search runs against. Replaces the old LinkedIn on/off toggle.
+type DataSource = "kombo" | "lookalike" | "linkedin"
+const DATA_SOURCES: DataSource[] = ["kombo", "lookalike", "linkedin"]
+
 type RefinePatch = Partial<
   Record<
     "titles" | "seniority" | "regions" | "headcount" | "industries" | "signals",
@@ -560,6 +579,9 @@ export default function Search() {
   const [linkedinOn, setLinkedinOn] = React.useState(false)
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
 
+  // The active database is derived: a seed means lookalike, else LinkedIn or Kombo.
+  const source: DataSource = seed ? "lookalike" : linkedinOn ? "linkedin" : "kombo"
+
   const leads = React.useMemo(
     () => sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
     [seed, query, sortKey]
@@ -647,17 +669,20 @@ export default function Search() {
     )
   }
 
-  function findDecisionMakers() {
-    setEntity("people")
+  // Pick the database to search. Lookalike needs a seed, so it opens the picker;
+  // Kombo / LinkedIn just flip the LinkedIn-filter set on or off.
+  function selectSource(next: DataSource) {
+    if (next === "lookalike") {
+      if (linkedinOn) setLinkedinOn(false)
+      setQuery((q) => ({ ...q, linkedin: [] }))
+      setLookalikeOpen(true)
+      return
+    }
     setSeed(null)
-    setSelected(new Set())
-    toast.success(c.findPeopleToast)
-  }
-
-  function toggleLinkedin(v: boolean) {
-    setLinkedinOn(v)
-    if (!v) setQuery((q) => ({ ...q, linkedin: [] }))
-    toast.success(v ? c.linkedinEnabled : c.linkedinDisabled)
+    const on = next === "linkedin"
+    setLinkedinOn(on)
+    if (!on) setQuery((q) => ({ ...q, linkedin: [] }))
+    toast.success(c.dbSwitched(on ? c.linkedinSource : c.dbKombo))
   }
 
   function toggleSpotlight(i: number) {
@@ -715,6 +740,27 @@ export default function Search() {
     setSeed(null)
     document.getElementById("search-prompt")?.focus()
   }, [])
+
+  // Label, description and icon for each searchable database.
+  const sourceMeta = (k: DataSource) => {
+    if (k === "linkedin")
+      return {
+        label: c.linkedinSource,
+        desc: c.dbLinkedinDesc,
+        icon: <LinkedinIcon className="size-4 text-[#0a66c2]" />,
+      }
+    if (k === "lookalike")
+      return {
+        label: c.dbLookalike,
+        desc: c.dbLookalikeDesc,
+        icon: <ScanSearch className="text-primary size-4" />,
+      }
+    return {
+      label: c.dbKombo,
+      desc: c.dbKomboDesc,
+      icon: <Database className="text-primary size-4" />,
+    }
+  }
 
   // Clay-style launcher: a row of suggested starting points above the search.
   const quickActions = [
@@ -1003,20 +1049,44 @@ export default function Search() {
             </div>
 
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <label
-                className="inline-flex items-center gap-1.5"
-                title={c.linkedinHint}
-              >
-                <LinkedinIcon className="size-4 text-[#0a66c2]" />
-                <span className="hidden text-sm font-medium sm:inline">
-                  {c.linkedinSource}
-                </span>
-                <Switch
-                  checked={linkedinOn}
-                  onCheckedChange={toggleLinkedin}
-                  aria-label={c.linkedinSource}
-                />
-              </label>
+              {/* Database selector — KomboAI, Lookalike, or LinkedIn. */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5" title={c.dbLabel}>
+                    {sourceMeta(source).icon}
+                    <span className="hidden sm:inline">{sourceMeta(source).label}</span>
+                    <ChevronDown className="text-muted-foreground size-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel className="text-muted-foreground text-xs">
+                    {c.dbLabel}
+                  </DropdownMenuLabel>
+                  {DATA_SOURCES.map((k) => {
+                    const meta = sourceMeta(k)
+                    return (
+                      <DropdownMenuItem
+                        key={k}
+                        onClick={() => selectSource(k)}
+                        className="gap-2.5 py-2"
+                      >
+                        <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
+                          {meta.icon}
+                        </span>
+                        <span className="flex min-w-0 flex-1 flex-col">
+                          <span className="text-sm font-medium">{meta.label}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {meta.desc}
+                          </span>
+                        </span>
+                        {source === k && (
+                          <CheckCircle2 className="text-primary size-4 shrink-0" />
+                        )}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -1038,12 +1108,7 @@ export default function Search() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {entity === "companies" ? (
-                <Button variant="secondary" size="sm" onClick={findDecisionMakers}>
-                  <Users className="size-4" />
-                  {c.findPeople}
-                </Button>
-              ) : (
+              {entity === "people" && (
                 <Button
                   variant="volt"
                   size="sm"
