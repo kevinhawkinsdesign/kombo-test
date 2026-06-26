@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Search, Plus, FolderKanban, Send } from "lucide-react"
 
@@ -70,6 +71,7 @@ export function BulkAddDialog({
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const lists = useLists()
   const campaigns = useCampaigns()
   const [query, setQuery] = React.useState("")
@@ -121,9 +123,12 @@ export function BulkAddDialog({
         kind: recordKind === "company" ? "company" : "people",
       })
       addToList(list.id, name)
+      // Open the brand-new list so the user sees what they just made.
+      navigate(`/lists/${list.id}`)
     } else {
       const cp = campaignStore.create({ name })
       addToCampaign(cp.id, name)
+      navigate(`/campaigns/${cp.id}`)
     }
   }
 

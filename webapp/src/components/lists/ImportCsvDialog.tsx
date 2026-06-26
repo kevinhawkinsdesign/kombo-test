@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { ArrowRight, FileText, Trash2, Upload } from "lucide-react"
 
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { listStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
 interface ImportCsvDialogProps {
@@ -114,6 +116,7 @@ export function ImportCsvDialog({
   onOpenChange,
   onImported,
 }: ImportCsvDialogProps) {
+  const navigate = useNavigate()
   const [step, setStep] = React.useState(0)
   const [selected, setSelected] = React.useState(false)
   const [mapping, setMapping] = React.useState<Record<string, string>>(() =>
@@ -151,9 +154,17 @@ export function ImportCsvDialog({
       setStep((current) => current + 1)
       return
     }
+    // Materialize a real list so the user lands on what they imported.
+    const list = listStore.create({
+      name: "Imported contacts",
+      description: "",
+      color: "#0ea5e9",
+      kind: "people",
+    })
     onImported(NEW_COUNT)
     toast.success(`${NEW_COUNT} prospects imported`)
     onOpenChange(false)
+    navigate(`/lists/${list.id}`)
   }
 
   const primaryLabel =

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Search, Check, Plus, FolderKanban, Send } from "lucide-react"
 
@@ -75,6 +76,7 @@ export function AddToCollectionDialog({
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const lists = useLists()
   const campaigns = useCampaigns()
   const [query, setQuery] = React.useState("")
@@ -144,12 +146,19 @@ export function AddToCollectionDialog({
       if (recordKind === "company") listStore.addAccounts(list.id, [recordId])
       else listStore.addProspects(list.id, [recordId])
       toast.success(c.createdList(name))
+      setQuery("")
+      onOpenChange(false)
+      navigate(`/lists/${list.id}`)
+      return
     } else {
       const cp = campaignStore.create({ name })
       campaignStore.addProspects(cp.id, [recordId])
       toast.success(c.createdCampaign(name))
+      setQuery("")
+      onOpenChange(false)
+      navigate(`/campaigns/${cp.id}`)
+      return
     }
-    setQuery("")
   }
 
   const title = mode === "list" ? c.listTitle(recordName) : c.campaignTitle(recordName)
