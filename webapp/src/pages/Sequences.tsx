@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import { SequenceRecommendations } from "@/components/common/Recommendations"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { useSequences, sequenceStore } from "@/lib/mock-sequences"
@@ -226,6 +227,8 @@ export default function Sequences() {
         points={[...c.introPoints]}
         className="mb-6"
       />
+
+      <SequenceRecommendations />
 
       <CollectionToolbar
         query={query}

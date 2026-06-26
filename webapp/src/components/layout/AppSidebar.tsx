@@ -31,7 +31,7 @@ import {
   Settings2,
   Puzzle,
   Workflow,
-  LibraryBig,
+  Search,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -55,8 +55,8 @@ import { conversations } from "@/lib/mock-data"
 import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
+import { useReleaseMode, isV2OnlyPath } from "@/lib/release-mode"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
-import { useVersion } from "@/lib/version"
 
 interface NavItem {
   to: string
@@ -65,8 +65,6 @@ interface NavItem {
   badge?: string
   // Marks a surface that doesn't exist in the Chrome extension yet.
   isNew?: boolean
-  // Hidden in v1 mode — only visible when the user switches to v2.
-  v2Only?: boolean
 }
 
 interface NavGroup {
@@ -87,7 +85,6 @@ const primary: NavItem[] = [
     icon: Sparkles,
     badge: String(copilotActions.length),
     isNew: true,
-    v2Only: true,
   },
   {
     to: "/inbox",
@@ -105,10 +102,10 @@ const groups: NavGroup[] = [
     icon: Telescope,
     items: [
       { to: "/companies", labelKey: "nav.companies", icon: Building2 },
-      { to: "/people", labelKey: "nav.people", icon: Users, isNew: true },
+      { to: "/people", labelKey: "nav.people", icon: Users },
       { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
-      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true, v2Only: true },
-      { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true, v2Only: true },
+      { to: "/intros", labelKey: "nav.intros", icon: Waypoints, isNew: true },
+      { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },
     ],
   },
   {
@@ -119,7 +116,6 @@ const groups: NavGroup[] = [
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/sequences", labelKey: "nav.sequences", icon: Workflow, isNew: true },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
-      { to: "/library", labelKey: "nav.library", icon: LibraryBig, isNew: true },
       { to: "/channels", labelKey: "nav.channels", icon: Radio, isNew: true },
       { to: "/tasks", labelKey: "nav.tasks", icon: CheckSquare, isNew: true },
     ],
@@ -141,10 +137,10 @@ const manageGroup: NavGroup = {
   labelKey: "nav.manage",
   icon: Settings2,
   items: [
-    { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, v2Only: true },
+    { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
     { to: "/team", labelKey: "nav.team", icon: Users },
-    { to: "/usage", labelKey: "nav.usage", icon: Zap, v2Only: true },
-    { to: "/referrals", labelKey: "nav.referrals", icon: Gift, v2Only: true },
+    { to: "/usage", labelKey: "nav.usage", icon: Zap },
+    { to: "/referrals", labelKey: "nav.referrals", icon: Gift },
     { to: "/integrations", labelKey: "nav.integrations", icon: Plug },
     { to: "/settings", labelKey: "nav.settings", icon: Settings },
   ],
@@ -342,18 +338,28 @@ function SidebarContent({
   const { t } = useLocale()
   const { progress } = useSetup()
   const { pathname } = useLocation()
-  const { version, setVersion } = useVersion()
+  const { isV1 } = useReleaseMode()
+
+  // v1 only ships surfaces that exist in the Chrome extension. Gate by route
+  // (V2_ONLY_PATHS), not the `isNew` badge — so a page can ship in v1 and still
+  // be badged "New" (e.g. Analytics).
+  const inV1 = (to: string) => !isV2OnlyPath(to)
+  const visiblePrimary = isV1 ? primary.filter((it) => inV1(it.to)) : primary
+  const visibleGroups = isV1
+    ? groups
+        .map((g) => ({ ...g, items: g.items.filter((it) => inV1(it.to)) }))
+        .filter((g) => g.items.length > 0)
+    : groups
+  const visibleManage = isV1
+    ? { ...manageGroup, items: manageGroup.items.filter((it) => inV1(it.to)) }
+    : manageGroup
+
   const activeGroupKey =
-    [...groups, manageGroup].find((g) =>
+    [...visibleGroups, visibleManage].find((g) =>
       g.items.some((it) => isActivePath(pathname, it.to))
     )?.key ?? null
   const { openKey, setOpen } = useAccordionGroup(activeGroupKey)
   const newCampaign = useNewCampaign()
-
-  // Filter items based on the current version.
-  function filterItems(items: NavItem[]): NavItem[] {
-    return version === "v2" ? items : items.filter((it) => !it.v2Only)
-  }
 
   function startNewCampaign() {
     onNavigate?.()
@@ -388,9 +394,9 @@ function SidebarContent({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="volt"
+                  variant="secondary"
                   size="icon"
-                  className="mx-auto flex"
+                  className="bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/70 mx-auto flex"
                   aria-label={t("nav.newCampaign")}
                   onClick={startNewCampaign}
                 >
@@ -401,8 +407,8 @@ function SidebarContent({
             </Tooltip>
           ) : (
             <Button
-              variant="volt"
-              className="w-full justify-start gap-2"
+              variant="secondary"
+              className="bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/70 w-full justify-start gap-2"
               size="sm"
               onClick={startNewCampaign}
             >
@@ -464,7 +470,7 @@ function SidebarContent({
             // Full icon rail: every page shows its own icon (grouped with thin
             // dividers), so nothing is hidden behind a flyout when collapsed.
             <>
-              {filterItems(primary).map((item) => (
+              {visiblePrimary.map((item) => (
                 <NavRow
                   key={item.to}
                   item={item}
@@ -472,52 +478,44 @@ function SidebarContent({
                   collapsed
                 />
               ))}
-              {[...groups, manageGroup].map((group) => {
-                const visibleItems = filterItems(group.items)
-                if (visibleItems.length === 0) return null
-                return (
-                  <React.Fragment key={group.key}>
-                    <div className="bg-sidebar-border my-1 h-px w-6" />
-                    {visibleItems.map((item) => (
-                      <NavRow
-                        key={item.to}
-                        item={item}
-                        onNavigate={onNavigate}
-                        collapsed
-                      />
-                    ))}
-                  </React.Fragment>
-                )
-              })}
+              {[...visibleGroups, visibleManage].map((group) => (
+                <React.Fragment key={group.key}>
+                  <div className="bg-sidebar-border my-1 h-px w-6" />
+                  {group.items.map((item) => (
+                    <NavRow
+                      key={item.to}
+                      item={item}
+                      onNavigate={onNavigate}
+                      collapsed
+                    />
+                  ))}
+                </React.Fragment>
+              ))}
             </>
           ) : (
             <>
-              {filterItems(primary).map((item) => (
+              {visiblePrimary.map((item) => (
                 <NavRow key={item.to} item={item} onNavigate={onNavigate} />
               ))}
 
               <div className="my-1" />
 
-              {groups.map((group) => {
-                const visibleItems = filterItems(group.items)
-                if (visibleItems.length === 0) return null
-                return (
-                  <NavGroupSection
-                    key={group.key}
-                    group={{ ...group, items: visibleItems }}
-                    open={openKey === group.key}
-                    onToggle={() => setOpen(group.key)}
-                    onNavigate={onNavigate}
-                    currentPath={pathname}
-                  />
-                )
-              })}
+              {visibleGroups.map((group) => (
+                <NavGroupSection
+                  key={group.key}
+                  group={group}
+                  open={openKey === group.key}
+                  onToggle={() => setOpen(group.key)}
+                  onNavigate={onNavigate}
+                  currentPath={pathname}
+                />
+              ))}
 
               <div className="mt-auto pt-2">
                 <NavGroupSection
-                  group={{ ...manageGroup, items: filterItems(manageGroup.items) }}
-                  open={openKey === manageGroup.key}
-                  onToggle={() => setOpen(manageGroup.key)}
+                  group={visibleManage}
+                  open={openKey === visibleManage.key}
+                  onToggle={() => setOpen(visibleManage.key)}
                   onNavigate={onNavigate}
                   currentPath={pathname}
                 />
@@ -527,53 +525,14 @@ function SidebarContent({
 
         </nav>
 
-        {/* Pinned footer — version toggle + collapse. */}
-        <div
-          className={cn(
-            "bg-sidebar border-sidebar-border shrink-0 border-t",
-            collapsed ? "flex flex-col items-center gap-1 p-2" : "space-y-1 p-3"
-          )}
-        >
-          {/* V1 / V2 toggle */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setVersion(version === "v1" ? "v2" : "v1")}
-                  className="text-sidebar-foreground/70 hover:bg-sidebar-accent/60 flex size-9 items-center justify-center rounded-md text-[10px] font-bold transition-colors"
-                >
-                  {version}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {version === "v1" ? "Switch to v2 (all features)" : "Switch to v1 (core features)"}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <div className="flex items-center gap-2 px-2 py-1">
-              <span className="text-sidebar-foreground/60 flex-1 text-xs">Version</span>
-              <div className="bg-sidebar-accent inline-flex rounded-md p-0.5">
-                {(["v1", "v2"] as const).map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVersion(v)}
-                    className={cn(
-                      "rounded-[4px] px-2.5 py-0.5 text-xs font-semibold transition-colors",
-                      version === v
-                        ? "bg-sidebar-accent-foreground/10 text-sidebar-foreground shadow-sm"
-                        : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
-                    )}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {onToggleCollapse && (
+        {/* Pinned footer — always visible; the nav above scrolls behind it. */}
+        {onToggleCollapse && (
+          <div
+            className={cn(
+              "bg-sidebar border-sidebar-border shrink-0 border-t",
+              collapsed ? "flex justify-center p-2" : "p-3"
+            )}
+          >
             <button
               type="button"
               onClick={onToggleCollapse}
@@ -592,8 +551,8 @@ function SidebarContent({
                 </>
               )}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   )
@@ -647,20 +606,35 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
+// v1 has no dashboard/signals — lead with Search (the v1 home) and prospecting.
+const bottomBarItemsV1: NavItem[] = [
+  { to: "/search", labelKey: "nav.search", icon: Search },
+  { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
+  { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
+  {
+    to: "/inbox",
+    labelKey: "nav.inbox",
+    icon: Inbox,
+    badge: unread ? String(unread) : undefined,
+  },
+]
+
 /**
  * Fixed bottom navigation for mobile — like a native app. Shows the top
  * destinations plus a "More" button that opens the full nav in a sheet.
  */
 export function MobileBottomNav() {
   const { t } = useLocale()
+  const { isV1 } = useReleaseMode()
   const [open, setOpen] = React.useState(false)
+  const items = isV1 ? bottomBarItemsV1 : bottomBarItems
 
   return (
     <nav
       aria-label="Primary"
       className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
-      {bottomBarItems.map((item) => {
+      {items.map((item) => {
         const Icon = item.icon
         return (
           <NavLink

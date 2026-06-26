@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -21,6 +21,7 @@ import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Select,
@@ -33,6 +34,9 @@ import { DataTable } from "@/components/common/DataTable"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { downloadCsv } from "@/lib/csv"
 import { DiscoverFeed } from "@/pages/Discover"
 import {
   COMPANY_COLUMNS,
@@ -53,7 +57,11 @@ const TIERS: (AccountTier | typeof ALL)[] = [ALL, "Enterprise", "Mid-market", "S
 const COPY = {
   en: {
     title: "Companies",
-    description: "Account intelligence across your book of business.",
+    description:
+      "Every company you've found — across searches, imports & lists. Select to enrich, export, or add to a list.",
+    exportedToast: (n: number) => `Exported ${n} to CSV`,
+    enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
+    lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     tabCompanies: "Companies",
     tabDiscover: "Discover",
     addCompany: "Add company",
@@ -84,6 +92,7 @@ const COPY = {
     edit: "Edit",
     done: "Done",
     editingHint: "Editing — changes save automatically",
+    selectAll: "Select all",
     colCompany: "Company",
     colIndustry: "Industry",
     colTier: "Tier",
@@ -93,7 +102,11 @@ const COPY = {
   },
   es: {
     title: "Empresas",
-    description: "Inteligencia de cuentas en toda tu cartera de negocio.",
+    description:
+      "Todas las empresas que has encontrado — de búsquedas, importaciones y listas. Selecciona para enriquecer, exportar o añadir a una lista.",
+    exportedToast: (n: number) => `Exportadas ${n} a CSV`,
+    enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
+    lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
     tabCompanies: "Empresas",
     tabDiscover: "Descubrir",
     addCompany: "Añadir empresa",
@@ -124,6 +137,7 @@ const COPY = {
     edit: "Editar",
     done: "Listo",
     editingHint: "Editando — los cambios se guardan solos",
+    selectAll: "Seleccionar todo",
     colCompany: "Empresa",
     colIndustry: "Sector",
     colTier: "Segmento",
@@ -144,6 +158,7 @@ type ViewMode = "table" | "cards"
 export default function Companies() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const navigate = useNavigate()
   const { impersonatingId } = useView()
   const accounts = useAccounts()
   const [query, setQuery] = React.useState("")
@@ -151,7 +166,16 @@ export default function Companies() {
   const [view, setView] = React.useState<ViewMode>("table")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
-  const [mode, setMode] = React.useState<"companies" | "discover">("companies")
+  // URL-addressable tabs: /companies?tab=discover deep-links the Discover tab.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const mode: "companies" | "discover" =
+    searchParams.get("tab") === "discover" ? "discover" : "companies"
+  const setMode = (m: "companies" | "discover") =>
+    setSearchParams(m === "discover" ? { tab: "discover" } : {}, {
+      replace: true,
+    })
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkList, setBulkList] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
   const source = impersonatingId
@@ -165,6 +189,61 @@ export default function Companies() {
     const matchesTier = tier === ALL || a.tier === tier
     return matchesQuery && matchesTier
   })
+
+  const allSelected = results.length > 0 && results.every((a) => selectedIds.has(a.id))
+  const someSelected = results.some((a) => selectedIds.has(a.id))
+  const selectedIdsArr = [...selectedIds]
+  const selectedAccounts = accounts.filter((a) => selectedIds.has(a.id))
+
+  function toggleRow(a: Account) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(a.id)) next.delete(a.id)
+      else next.add(a.id)
+      return next
+    })
+  }
+  function toggleAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (results.every((a) => prev.has(a.id))) results.forEach((a) => next.delete(a.id))
+      else results.forEach((a) => next.add(a.id))
+      return next
+    })
+  }
+  function exportSelected() {
+    downloadCsv(
+      "companies.csv",
+      ["Company", "Industry", "Domain", "Tier", "Health", "Pipeline"],
+      selectedAccounts.map((a) => [
+        a.name,
+        a.industry,
+        a.domain,
+        a.tier,
+        a.healthScore,
+        a.pipeline,
+      ])
+    )
+    toast.success(c.exportedToast(selectedAccounts.length))
+  }
+  // Lookalike is a kind of search — hand the seed to the Search page.
+  function findLookalikes() {
+    const a = selectedAccounts[0]
+    if (!a) return
+    navigate("/search", {
+      state: {
+        lookalikeSeed: {
+          id: a.id,
+          kind: "company",
+          name: a.name,
+          sub: a.industry,
+          industry: a.industry,
+          region: "",
+          headcount: a.employees,
+        },
+      },
+    })
+  }
 
   return (
     <Page>
@@ -300,6 +379,15 @@ export default function Companies() {
             {c.editingHint}
           </span>
         )}
+        {view === "cards" && results.length > 0 && (
+          <label className="ml-1 flex cursor-pointer items-center gap-1.5">
+            <Checkbox
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
+              onCheckedChange={() => toggleAll()}
+            />
+            <span>{c.selectAll}</span>
+          </label>
+        )}
       </div>
 
       {results.length === 0 ? (
@@ -316,15 +404,43 @@ export default function Companies() {
           editing={editing}
           onUpdate={(a, patch) => accountStore.update(a.id, patch)}
           actions={(a) => <RecordActionsMenu kind="company" record={a} />}
-          pageSize={50}
+          selection={{
+            isSelected: (a) => selectedIds.has(a.id),
+            toggle: toggleRow,
+            toggleAll,
+            allSelected,
+            someSelected,
+          }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((a) => (
-            <CompanyCard key={a.id} account={a} />
+            <CompanyCard
+              key={a.id}
+              account={a}
+              selected={selectedIds.has(a.id)}
+              onToggle={() => toggleRow(a)}
+            />
           ))}
         </div>
       )}
+
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onExport={exportSelected}
+        onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
+        onAddToList={() => setBulkList(true)}
+        onLookalikes={findLookalikes}
+      />
+
+      <BulkAddDialog
+        open={bulkList}
+        onOpenChange={setBulkList}
+        mode="list"
+        recordKind="company"
+        ids={selectedIdsArr}
+      />
         </>
       )}
 
@@ -367,14 +483,39 @@ function ViewToggleButton({
   )
 }
 
-function CompanyCard({ account: a }: { account: Account }) {
+function CompanyCard({
+  account: a,
+  selected,
+  onToggle,
+}: {
+  account: Account
+  selected?: boolean
+  onToggle?: () => void
+}) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const owner = getRep(a.ownerId)
 
   return (
-    <div className="hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors">
+    <div
+      className={cn(
+        "hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors",
+        selected && "border-primary ring-primary/30 ring-1"
+      )}
+    >
       <div className="flex items-start gap-3">
+        {onToggle && (
+          <div
+            className="relative z-10 pt-0.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={selected}
+              onCheckedChange={onToggle}
+              aria-label="Select"
+            />
+          </div>
+        )}
         <span
           className="flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold text-white"
           style={{ backgroundColor: a.logoColor }}

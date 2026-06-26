@@ -11,6 +11,12 @@ import {
   Pencil,
   MoreHorizontal,
   Braces,
+  Sparkles,
+  Wand2,
+  MessageCircle,
+  MessageSquare,
+  Send,
+  Camera,
 } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -55,6 +61,8 @@ import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { useTemplates, templateStore } from "@/lib/store"
 import { folderStore, useTemplateFolders } from "@/lib/template-folders"
+import { generateTemplate, PROMPT_PRESETS } from "@/lib/mock-template-ai"
+import { TemplateRecommendations } from "@/components/common/Recommendations"
 import { useLocale } from "@/lib/locale"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate } from "@/lib/format"
@@ -90,7 +98,7 @@ const COPY = {
     deleteAria: (name: string) => `Delete ${name}`,
     sent: (count: string) => `${count} sent`,
     replySuffix: "reply",
-    pageTitle: "Email Templates",
+    pageTitle: "Message Templates",
     pageDescription: "Reusable outreach templates with live performance.",
     newTemplate: "New template",
     introTitle: "Reusable message templates",
@@ -109,6 +117,11 @@ const COPY = {
     channel: "Channel",
     email: "Email",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
+    sms: "SMS",
+    messenger: "Messenger",
+    instagram: "Instagram",
+    allChannels: "All channels",
     folder: "Folder",
     folderPlaceholder: "Cold outreach",
     subject: "Subject",
@@ -131,6 +144,17 @@ const COPY = {
     variablesSubtitle: "Click to insert, drag into the body, or copy.",
     copy: "Copy",
     copied: "Copied",
+    aiGenerate: "Generate with AI",
+    aiSubtitle: "Let our GPT agent draft the message — it'll include merge variables you can tweak.",
+    aiPromptLabel: "What should it say?",
+    aiPromptPlaceholder:
+      "Describe the message you want, e.g. \"Casual follow-up sharing a case study, mention {{company}} and {{first_name}}.\"",
+    aiPresets: "Starting points",
+    aiRun: "Generate",
+    aiRunning: "Writing…",
+    aiRegenerate: "Regenerate",
+    aiDone: "Draft ready — review and tweak.",
+    aiCollapse: "Close",
     typeaheadHint: "Tip: type {{ in the body to autocomplete a variable.",
     newFolder: "New folder",
     folderNamePlaceholder: "Folder name",
@@ -165,7 +189,7 @@ const COPY = {
     deleteAria: (name: string) => `Eliminar ${name}`,
     sent: (count: string) => `${count} enviados`,
     replySuffix: "respuesta",
-    pageTitle: "Plantillas de correo",
+    pageTitle: "Plantillas de mensajes",
     pageDescription:
       "Plantillas de contacto reutilizables con rendimiento en vivo.",
     newTemplate: "Nueva plantilla",
@@ -185,6 +209,11 @@ const COPY = {
     channel: "Canal",
     email: "Correo",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
+    sms: "SMS",
+    messenger: "Messenger",
+    instagram: "Instagram",
+    allChannels: "Todos los canales",
     folder: "Carpeta",
     folderPlaceholder: "Contacto en frío",
     subject: "Asunto",
@@ -208,6 +237,17 @@ const COPY = {
     variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
     copy: "Copiar",
     copied: "Copiado",
+    aiGenerate: "Generar con IA",
+    aiSubtitle: "Deja que nuestro agente GPT redacte el mensaje — incluirá variables que podrás ajustar.",
+    aiPromptLabel: "¿Qué debe decir?",
+    aiPromptPlaceholder:
+      "Describe el mensaje que quieres, p. ej. «Seguimiento casual con un caso de éxito, menciona {{company}} y {{first_name}}.»",
+    aiPresets: "Puntos de partida",
+    aiRun: "Generar",
+    aiRunning: "Escribiendo…",
+    aiRegenerate: "Regenerar",
+    aiDone: "Borrador listo — revísalo y ajústalo.",
+    aiCollapse: "Cerrar",
     typeaheadHint: "Consejo: escribe {{ en el cuerpo para autocompletar una variable.",
     newFolder: "Nueva carpeta",
     folderNamePlaceholder: "Nombre de la carpeta",
@@ -248,11 +288,34 @@ function ChannelIcon({
   channel: Channel
   className?: string
 }) {
-  return channel === "linkedin" ? (
-    <LinkedinIcon className={className} />
-  ) : (
-    <Mail className={className} />
-  )
+  switch (channel) {
+    case "linkedin":
+      return <LinkedinIcon className={className} />
+    case "whatsapp":
+      return <MessageCircle className={cn(className, "text-[#25D366]")} />
+    case "sms":
+      return <MessageSquare className={className} />
+    case "messenger":
+      return <Send className={cn(className, "text-[#0084ff]")} />
+    case "instagram":
+      return <Camera className={cn(className, "text-[#e1306c]")} />
+    default:
+      return <Mail className={className} />
+  }
+}
+
+// Channel display order + label key for filters and the editor select.
+const CHANNELS: Channel[] = [
+  "email",
+  "linkedin",
+  "whatsapp",
+  "sms",
+  "messenger",
+  "instagram",
+]
+
+function channelLabel(channel: Channel, c: Copy): string {
+  return c[channel]
 }
 
 function TemplateTable({
@@ -449,6 +512,13 @@ export default function Templates() {
   const [copiedTag, setCopiedTag] = React.useState<string | null>(null)
   const [varQuery, setVarQuery] = React.useState<string | null>(null)
 
+  // AI generator (method 2: prompt → draft).
+  const [aiOpen, setAiOpen] = React.useState(false)
+  const [aiPrompt, setAiPrompt] = React.useState("")
+  const [aiBusy, setAiBusy] = React.useState(false)
+  const [aiSeed, setAiSeed] = React.useState(0)
+  const [aiGenerated, setAiGenerated] = React.useState(false)
+
   const bodyRef = React.useRef<HTMLTextAreaElement>(null)
   const subjectRef = React.useRef<HTMLInputElement>(null)
   const activeFieldRef = React.useRef<"body" | "subject">("body")
@@ -539,7 +609,32 @@ export default function Templates() {
     setTags(template?.tags.join(", ") ?? "")
     setVarQuery(null)
     activeFieldRef.current = "body"
+    setAiOpen(false)
+    setAiPrompt("")
+    setAiBusy(false)
+    setAiSeed(0)
+    setAiGenerated(false)
     setOpen(true)
+  }
+
+  // Method 2: hand the prompt to our GPT agent and drop the draft into the
+  // subject/body. Filters the presets to the current channel.
+  const aiPresets = PROMPT_PRESETS.filter((p) => !p.channel || p.channel === channel)
+
+  function runAi() {
+    const prompt = aiPrompt.trim()
+    if (!prompt || aiBusy) return
+    setAiBusy(true)
+    const seed = aiGenerated ? aiSeed + 1 : 0
+    window.setTimeout(() => {
+      const draft = generateTemplate(prompt, channel, seed)
+      if (channel === "email") setSubject(draft.subject)
+      setBody(draft.body)
+      setAiSeed(seed)
+      setAiGenerated(true)
+      setAiBusy(false)
+      toast.success(c.aiDone)
+    }, 900)
   }
 
   function handleSave() {
@@ -576,9 +671,11 @@ export default function Templates() {
   const [view, setView] = React.useState<CollectionView>("cards")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
+  const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
 
   const matches = React.useCallback(
     (t: EmailTemplate) => {
+      if (channelFilter !== "all" && t.channel !== channelFilter) return false
       const q = query.trim().toLowerCase()
       if (!q) return true
       return (
@@ -589,7 +686,7 @@ export default function Templates() {
         t.tags.some((tag) => tag.toLowerCase().includes(q))
       )
     },
-    [query]
+    [query, channelFilter]
   )
 
   // One section per folder (including empty folders), filtered by the search.
@@ -626,7 +723,7 @@ export default function Templates() {
       flat.map((t) => [
         t.name,
         t.folder,
-        t.channel === "linkedin" ? c.linkedin : c.email,
+        channelLabel(t.channel, c),
         t.subject,
         t.sent,
         `${t.replyRate}%`,
@@ -696,6 +793,43 @@ export default function Templates() {
         points={[...c.introPoints]}
         className="mb-6"
       />
+
+      <TemplateRecommendations />
+
+      {/* Channel filter — templates exist per channel (email, LinkedIn,
+          WhatsApp, SMS, Messenger, Instagram). */}
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          onClick={() => setChannelFilter("all")}
+          aria-pressed={channelFilter === "all"}
+          className={cn(
+            "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+            channelFilter === "all"
+              ? "border-primary bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-muted"
+          )}
+        >
+          {c.allChannels}
+        </button>
+        {CHANNELS.map((ch) => (
+          <button
+            key={ch}
+            type="button"
+            onClick={() => setChannelFilter(ch)}
+            aria-pressed={channelFilter === ch}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+              channelFilter === ch
+                ? "border-primary bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <ChannelIcon channel={ch} className="size-3.5" />
+            {channelLabel(ch, c)}
+          </button>
+        ))}
+      </div>
 
       <CollectionToolbar
         query={query}
@@ -840,6 +974,98 @@ export default function Templates() {
           <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[1fr_280px]">
             {/* Form */}
             <div className="space-y-4 overflow-y-auto p-5">
+              {/* Method 2 — generate with our GPT agent */}
+              <div className="rounded-lg bg-gradient-to-r from-[#ff7e1f] via-[#f54ea2] to-[#6a5bff] p-[1.5px]">
+                <div className="bg-background rounded-[6.5px] p-3">
+                  {!aiOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setAiOpen(true)}
+                      className="flex w-full items-center gap-2.5 text-left"
+                    >
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#f54ea2] to-[#6a5bff] text-white">
+                        <Wand2 className="size-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold">{c.aiGenerate}</span>
+                        <span className="text-muted-foreground block text-xs">{c.aiSubtitle}</span>
+                      </span>
+                      <Sparkles className="text-muted-foreground size-4 shrink-0" />
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#f54ea2] to-[#6a5bff] text-white">
+                          <Wand2 className="size-4" />
+                        </span>
+                        <span className="flex-1 text-sm font-semibold">{c.aiGenerate}</span>
+                        <Button variant="ghost" size="sm" onClick={() => setAiOpen(false)}>
+                          {c.aiCollapse}
+                        </Button>
+                      </div>
+
+                      <div>
+                        <p className="text-muted-foreground mb-1.5 text-xs font-medium">
+                          {c.aiPresets}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {aiPresets.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() =>
+                                setAiPrompt(locale === "es" ? p.prompt.es : p.prompt.en)
+                              }
+                              className="bg-muted hover:bg-muted/70 rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+                            >
+                              {locale === "es" ? p.es : p.en}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="ai-prompt" className="text-xs">
+                          {c.aiPromptLabel}
+                        </Label>
+                        <Textarea
+                          id="ai-prompt"
+                          value={aiPrompt}
+                          onChange={(e) => setAiPrompt(e.target.value)}
+                          placeholder={c.aiPromptPlaceholder}
+                          className="min-h-20"
+                        />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={runAi}
+                          disabled={!aiPrompt.trim() || aiBusy}
+                          className="bg-gradient-to-r from-[#f54ea2] to-[#6a5bff] text-white hover:opacity-90"
+                        >
+                          {aiBusy ? (
+                            <>
+                              <Sparkles className="size-4 animate-pulse" />
+                              {c.aiRunning}
+                            </>
+                          ) : aiGenerated ? (
+                            <>
+                              <Wand2 className="size-4" />
+                              {c.aiRegenerate}
+                            </>
+                          ) : (
+                            <>
+                              <Wand2 className="size-4" />
+                              {c.aiRun}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="template-name">{c.name}</Label>
                 <Input
@@ -858,8 +1084,11 @@ export default function Templates() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="email">{c.email}</SelectItem>
-                      <SelectItem value="linkedin">{c.linkedin}</SelectItem>
+                      {CHANNELS.map((ch) => (
+                        <SelectItem key={ch} value={ch}>
+                          {channelLabel(ch, c)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

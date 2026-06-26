@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Building2,
   Plus,
+  Users,
   Sparkles,
   Newspaper,
   TrendingUp,
@@ -56,6 +57,7 @@ const COPY = {
     companies: "Companies",
     addToCrm: "Add to CRM",
     addContact: "Add contact",
+    findPeople: "Find people here",
     addContactToast: "Add a contact to this company",
     about: "About",
     buyingSignals: "Buying signals",
@@ -89,6 +91,7 @@ const COPY = {
     companies: "Empresas",
     addToCrm: "Añadir al CRM",
     addContact: "Añadir contacto",
+    findPeople: "Buscar personas aquí",
     addContactToast: "Añadir un contacto a esta empresa",
     about: "Acerca de",
     buyingSignals: "Señales de compra",
@@ -225,6 +228,12 @@ export default function CompanyDetail() {
               {c.addToCrm}
             </Button>
             <TrackButton kind="account" id={account.id} name={account.name} />
+            <Button variant="outline" asChild>
+              <Link to={`/people?q=${encodeURIComponent(account.name)}`}>
+                <Users className="size-4" />
+                {c.findPeople}
+              </Link>
+            </Button>
             <Button
               variant="outline"
               onClick={() => toast.info(c.addContactToast)}

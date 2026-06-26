@@ -1,9 +1,8 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import { HandHeart, Users, GraduationCap, Briefcase, Waypoints } from "lucide-react"
+import { Users, GraduationCap, Briefcase, Waypoints } from "lucide-react"
 
-import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -110,7 +109,8 @@ const COPY = {
   },
 } as const
 
-export default function WarmIntros() {
+/** Warm Intros content, embedded as a tab inside the People page. */
+export function WarmIntrosPanel() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const strongPaths = React.useMemo(
@@ -140,18 +140,7 @@ export default function WarmIntros() {
   }, [])
 
   return (
-    <Page>
-      <PageHeading
-        title={c.title}
-        description={c.description}
-        action={
-          <Button variant="outline" onClick={() => toast.info(c.howItWorksToast)}>
-            <HandHeart className="size-4" />
-            {c.howItWorks}
-          </Button>
-        }
-      />
-
+    <>
       <FeatureIntro
         featureKey="intros"
         icon={Waypoints}
@@ -178,7 +167,7 @@ export default function WarmIntros() {
           ))}
         </div>
       )}
-    </Page>
+    </>
   )
 }
 

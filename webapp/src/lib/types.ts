@@ -10,7 +10,17 @@ export type ProspectStatus =
   | "customer"
   | "not_interested"
 
-export type Channel = "email" | "linkedin"
+export type Channel =
+  | "email"
+  | "linkedin"
+  | "whatsapp"
+  | "sms"
+  | "messenger"
+  | "instagram"
+
+// How a prospect entered the workspace (search, a list, a CSV import, or the
+// browser extension while prospecting on LinkedIn).
+export type ProspectSource = "search" | "list" | "import" | "extension"
 
 export interface Prospect {
   id: string
@@ -41,6 +51,8 @@ export interface Prospect {
   // (verified email/direct dial + full data points). Undefined counts as enriched
   // so existing seed contacts stay clean.
   enriched?: boolean
+  // How this prospect entered the workspace. Undefined reads as "search".
+  source?: ProspectSource
 }
 
 export interface SavedSearchCriteria {
@@ -225,6 +237,7 @@ export interface Campaign {
   replied: number
   meetings: number
   createdAt: string
+  goal?: string // free-text goal / intent
   listId?: string // the single attached list (1-to-1)
   enrolledIds?: string[] // manually-added prospect ids
 }

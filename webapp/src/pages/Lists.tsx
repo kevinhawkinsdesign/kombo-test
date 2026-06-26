@@ -1,10 +1,11 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Plus,
   Users,
   FolderKanban,
+  Upload,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -38,8 +39,6 @@ import {
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
-import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
-import { CreateListDialog } from "@/components/lists/CreateListDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
@@ -199,10 +198,21 @@ export default function Lists() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const lists = useLists()
-  const [createOpen, setCreateOpen] = React.useState(false)
-  const [importOpen, setImportOpen] = React.useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  // Deep link: /lists?import=1 (e.g. from the Search "Import data" card) opens
+  // the CSV import dialog straight away.
+  const [importOpen, setImportOpen] = React.useState(
+    () => searchParams.get("import") === "1"
+  )
+  function closeImport(open: boolean) {
+    setImportOpen(open)
+    if (!open && searchParams.get("import")) {
+      const next = new URLSearchParams(searchParams)
+      next.delete("import")
+      setSearchParams(next, { replace: true })
+    }
+  }
   const [formOpen, setFormOpen] = React.useState(false)
-  const [wizardOpen, setWizardOpen] = React.useState(false)
   const [editingList, setEditingList] = React.useState<ProspectList | undefined>(
     undefined
   )
@@ -277,10 +287,16 @@ export default function Lists() {
         title={c.title}
         description={c.description}
         action={
-          <Button variant="volt" onClick={() => setCreateOpen(true)}>
-            <Plus className="size-4" />
-            {c.newList}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" onClick={() => setImportOpen(true)}>
+              <Upload className="size-4" />
+              {c.importCsv}
+            </Button>
+            <Button variant="volt" onClick={openCreate}>
+              <Plus className="size-4" />
+              {c.newList}
+            </Button>
+          </div>
         }
       />
 
@@ -291,9 +307,9 @@ export default function Lists() {
         description={c.introDescription}
         points={[...c.introPoints]}
         action={
-          <Button size="sm" onClick={() => setWizardOpen(true)}>
-            <Sparkles className="size-4" />
-            {c.buildPlaylist}
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="size-4" />
+            {c.newList}
           </Button>
         }
         className="mb-6"
@@ -492,9 +508,6 @@ export default function Lists() {
       </div>
       )}
 
-      <CreateListDialog open={createOpen} onOpenChange={setCreateOpen} />
-
-      <PlaylistWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
       <ListFormDialog
         open={formOpen}
@@ -523,7 +536,7 @@ export default function Lists() {
 
       <ImportCsvDialog
         open={importOpen}
-        onOpenChange={setImportOpen}
+        onOpenChange={closeImport}
         onImported={(count) => toast.success(c.imported(count))}
       />
     </Page>

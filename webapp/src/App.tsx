@@ -12,7 +12,6 @@ import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
 import People from "@/pages/People"
 import CompanyDetail from "@/pages/CompanyDetail"
-import WarmIntros from "@/pages/WarmIntros"
 import Lists from "@/pages/Lists"
 import ListDetail from "@/pages/ListDetail"
 import Inbox from "@/pages/Inbox"
@@ -22,7 +21,6 @@ import SequenceBuilderPage from "@/pages/SequenceBuilder"
 import Sequences from "@/pages/Sequences"
 import Channels from "@/pages/Channels"
 import Templates from "@/pages/Templates"
-import Library from "@/pages/Library"
 import Playbook from "@/pages/Playbook"
 import Tasks from "@/pages/Tasks"
 import Deals from "@/pages/Deals"
@@ -81,7 +79,7 @@ function App() {
         <Route path="/companies/:id" element={<CompanyDetail />} />
         <Route path="/people" element={<People />} />
         <Route path="/discover" element={<Navigate to="/companies" replace />} />
-        <Route path="/intros" element={<WarmIntros />} />
+        <Route path="/intros" element={<People />} />
         <Route path="/lists" element={<Lists />} />
         <Route path="/lists/:id" element={<ListDetail />} />
         <Route path="/inbox" element={<Inbox />} />
@@ -91,7 +89,6 @@ function App() {
         <Route path="/sequence-builder" element={<SequenceBuilderPage />} />
         <Route path="/channels" element={<Channels />} />
         <Route path="/templates" element={<Templates />} />
-        <Route path="/library" element={<Library />} />
         <Route path="/playbook" element={<Playbook />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/deals" element={<Deals />} />

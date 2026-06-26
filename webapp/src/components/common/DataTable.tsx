@@ -16,6 +16,19 @@ import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
 import type { ColumnDef } from "@/lib/table-columns"
 
+export interface TableSelection<T> {
+  isSelected: (row: T) => boolean
+  toggle: (row: T) => void
+  toggleAll: () => void
+  allSelected: boolean
+  someSelected: boolean
+}
+
+/**
+ * A table whose columns are driven by a registry + an ordered list of visible
+ * column ids. The pinned column always renders first. Columns with an `edit`
+ * renderer become inline inputs when `editing` is on.
+ */
 export function DataTable<T>({
   columns,
   visible,
@@ -28,9 +41,7 @@ export function DataTable<T>({
   actions,
   empty,
   pageSize,
-  selectable,
-  selectedIds,
-  onSelectionChange,
+  selection,
 }: {
   columns: ColumnDef<T>[]
   visible: string[]
@@ -43,9 +54,7 @@ export function DataTable<T>({
   actions?: (row: T) => React.ReactNode
   empty?: React.ReactNode
   pageSize?: number
-  selectable?: boolean
-  selectedIds?: Set<string>
-  onSelectionChange?: (ids: Set<string>) => void
+  selection?: TableSelection<T>
 }) {
   const [page, setPage] = React.useState(0)
   React.useEffect(() => { setPage(0) }, [rows.length])
@@ -70,41 +79,23 @@ export function DataTable<T>({
     return col.render(row, locale)
   }
 
-  const allPageSelected =
-    selectable &&
-    displayRows.length > 0 &&
-    displayRows.every((r) => selectedIds?.has(rowKey(r)))
-
-  function togglePageAll(checked: boolean) {
-    if (!onSelectionChange || !selectedIds) return
-    const next = new Set(selectedIds)
-    displayRows.forEach((r) => {
-      if (checked) next.add(rowKey(r))
-      else next.delete(rowKey(r))
-    })
-    onSelectionChange(next)
-  }
-
-  function toggleOne(row: T) {
-    if (!onSelectionChange || !selectedIds) return
-    const id = rowKey(row)
-    const next = new Set(selectedIds)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    onSelectionChange(next)
-  }
-
   return (
     <Card className="overflow-hidden p-0">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              {selectable && (
+              {selection && (
                 <TableHead className="w-10 pl-4">
                   <Checkbox
-                    checked={!!allPageSelected}
-                    onCheckedChange={(v) => togglePageAll(!!v)}
+                    checked={
+                      selection.allSelected
+                        ? true
+                        : selection.someSelected
+                          ? "indeterminate"
+                          : false
+                    }
+                    onCheckedChange={() => selection.toggleAll()}
                     aria-label="Select all"
                   />
                 </TableHead>
@@ -133,14 +124,19 @@ export function DataTable<T>({
             {displayRows.map((row) => (
               <TableRow
                 key={rowKey(row)}
-                className={cn(onRowClick && "cursor-pointer")}
+                data-selected={selection?.isSelected(row) || undefined}
+                className={cn(
+                  onRowClick && "cursor-pointer",
+                  selection?.isSelected(row) && "bg-primary/[0.04]"
+                )}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
-                {selectable && (
+                {selection && (
                   <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
-                      checked={selectedIds?.has(rowKey(row)) ?? false}
-                      onCheckedChange={() => toggleOne(row)}
+                      checked={selection.isSelected(row)}
+                      onCheckedChange={() => selection.toggle(row)}
+                      aria-label="Select row"
                     />
                   </TableCell>
                 )}
@@ -170,7 +166,12 @@ export function DataTable<T>({
             {rows.length === 0 && empty && (
               <TableRow className="hover:bg-transparent">
                 <TableCell
-                  colSpan={shown.length + (pinned ? 1 : 0) + (actions ? 1 : 0) + (selectable ? 1 : 0)}
+                  colSpan={
+                    shown.length +
+                    (pinned ? 1 : 0) +
+                    (actions ? 1 : 0) +
+                    (selection ? 1 : 0)
+                  }
                   className="text-muted-foreground py-10 text-center text-sm"
                 >
                   {empty}

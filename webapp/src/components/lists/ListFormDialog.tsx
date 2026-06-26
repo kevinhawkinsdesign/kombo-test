@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Check, Users, Building2 } from "lucide-react"
 
@@ -37,6 +38,7 @@ export function ListFormDialog({
   onOpenChange,
   list,
 }: ListFormDialogProps) {
+  const navigate = useNavigate()
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [color, setColor] = React.useState<string>(PRESET_COLORS[0])
@@ -70,13 +72,17 @@ export function ListFormDialog({
       })
       toast.success("List updated")
     } else {
-      listStore.create({
+      const created = listStore.create({
         name: trimmedName,
         description: description.trim(),
         color,
         kind,
       })
       toast.success("List created")
+      onOpenChange(false)
+      // Open the new list so the user lands on what they just made.
+      navigate(`/lists/${created.id}`)
+      return
     }
     onOpenChange(false)
   }

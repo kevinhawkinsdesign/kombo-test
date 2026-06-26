@@ -257,6 +257,7 @@ export default function Dashboard() {
       {!impersonating && copilotActions.length > 0 && (
         <KaiSuggestion
           className="mb-6"
+          dismissKey="dashboard-copilot"
           title={c.kaiTitle(copilotActions.length)}
           action={
             <Button asChild size="sm" variant="outline">

@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ViewSwitcher } from "@/components/layout/ViewSwitcher"
+import { ReleaseToggle } from "@/components/layout/ReleaseToggle"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
@@ -73,6 +74,8 @@ export function AppHeader() {
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur md:gap-3 md:px-6">
       <ViewSwitcher />
+
+      <ReleaseToggle />
 
       <AppSearch />
 
@@ -210,7 +213,7 @@ export function AppHeader() {
               <User className="size-4" />
               {t("menu.profile")}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings")}>
+            <DropdownMenuItem onClick={() => navigate("/settings?tab=billing")}>
               <CreditCard className="size-4" />
               {t("menu.billing")}
             </DropdownMenuItem>

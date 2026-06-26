@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Check,
@@ -283,12 +283,18 @@ export default function Settings() {
   const c = COPY[locale]
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
+  // URL-addressable tabs: /settings?tab=billing deep-links the Billing tab.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = searchParams.get("tab") ?? "account"
 
   return (
     <Page className="max-w-3xl">
       <PageHeading title={c.title} description={c.description} />
 
-      <Tabs defaultValue="account">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
+      >
         <TabsList className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-16 z-20 mb-4 h-auto flex-wrap backdrop-blur">
           <TabsTrigger value="account">{c.tabAccount}</TabsTrigger>
           <TabsTrigger value="value">{c.tabValue}</TabsTrigger>
