@@ -935,6 +935,52 @@ export interface SavedAiSearch {
 
 const SAVED_KEY = "kombo_ai_searches_v1"
 
+// Seeded so the "Saved searches" picker (and the workspace source step) land
+// populated for demos. Queries are left empty — only name/prompt/entity/count
+// matter for the picker and association UI.
+const SAVED_SEED: SavedAiSearch[] = [
+  {
+    id: "ss_1",
+    name: "VPs of Sales · EMEA SaaS",
+    entity: "people",
+    query: { ...EMPTY_QUERY },
+    prompt: "VPs of Sales at European SaaS companies that recently raised funding",
+    messages: [],
+    resultCount: 184,
+    createdAt: "2026-06-20T00:00:00Z",
+  },
+  {
+    id: "ss_2",
+    name: "Heads of Growth · Fintech",
+    entity: "people",
+    query: { ...EMPTY_QUERY },
+    prompt: "Heads of Growth in fintech across EMEA hiring SDRs",
+    messages: [],
+    resultCount: 96,
+    createdAt: "2026-06-22T00:00:00Z",
+  },
+  {
+    id: "ss_3",
+    name: "RevOps leaders · 500+",
+    entity: "people",
+    query: { ...EMPTY_QUERY },
+    prompt: "RevOps leaders at 500+ employee companies",
+    messages: [],
+    resultCount: 212,
+    createdAt: "2026-06-24T00:00:00Z",
+  },
+  {
+    id: "ss_4",
+    name: "Recently funded B2B SaaS",
+    entity: "companies",
+    query: { ...EMPTY_QUERY },
+    prompt: "B2B SaaS companies that raised a round in the last 6 months",
+    messages: [],
+    resultCount: 340,
+    createdAt: "2026-06-25T00:00:00Z",
+  },
+]
+
 function loadSaved(): SavedAiSearch[] {
   try {
     const raw = localStorage.getItem(SAVED_KEY)
@@ -942,7 +988,7 @@ function loadSaved(): SavedAiSearch[] {
   } catch {
     /* ignore */
   }
-  return []
+  return SAVED_SEED
 }
 
 let savedState: SavedAiSearch[] = loadSaved()

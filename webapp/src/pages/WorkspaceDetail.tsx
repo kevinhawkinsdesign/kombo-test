@@ -5,13 +5,14 @@ import {
   ArrowLeft,
   Play,
   Plus,
-  Search as SearchIcon,
   Send,
   Sparkles,
   ArrowRight,
   Mail,
   MessageCircle,
   Check,
+  Bookmark,
+  X,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -31,7 +32,9 @@ import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { isEnriched } from "@/lib/enrichment"
+import { useReleaseMode } from "@/lib/release-mode"
 import { useLists, useCampaigns, useProspects } from "@/lib/store"
+import { useSavedSearches, type SavedAiSearch } from "@/lib/mock-ai-search"
 import {
   useWorkspace,
   useWorkspaces,
@@ -49,6 +52,16 @@ const COPY = {
     namePlaceholder: "Name this workspace…",
     run: "Run workspace",
     running: "Running workspace — we'll refresh each step",
+    savedSearches: "Saved searches",
+    addSavedSearches: "Add saved searches",
+    noSearches: "No saved searches yet — add one to source this workspace.",
+    searchesChip: (n: number) => `${n} ${n === 1 ? "search" : "searches"}`,
+    searchResults: (n: number) => `${n.toLocaleString()} results`,
+    openInSearch: "Open in Search",
+    removeSearch: (name: string) => `Remove ${name}`,
+    searchPickerEmpty: "No saved searches yet. Save one from the Search page.",
+    entityPeople: "People",
+    entityCompanies: "Companies",
     summary: (lists: number, campaigns: number) =>
       `${lists} ${lists === 1 ? "list" : "lists"} · ${campaigns} live ${campaigns === 1 ? "campaign" : "campaigns"} · synced recently`,
     stepSource: "Source",
@@ -110,6 +123,16 @@ const COPY = {
     namePlaceholder: "Nombra este espacio…",
     run: "Ejecutar espacio",
     running: "Ejecutando el espacio — actualizaremos cada paso",
+    savedSearches: "Búsquedas guardadas",
+    addSavedSearches: "Añadir búsquedas guardadas",
+    noSearches: "Aún no hay búsquedas guardadas — añade una para alimentar este espacio.",
+    searchesChip: (n: number) => `${n} ${n === 1 ? "búsqueda" : "búsquedas"}`,
+    searchResults: (n: number) => `${n.toLocaleString()} resultados`,
+    openInSearch: "Abrir en Búsqueda",
+    removeSearch: (name: string) => `Eliminar ${name}`,
+    searchPickerEmpty: "Aún no hay búsquedas guardadas. Guarda una desde la página de Búsqueda.",
+    entityPeople: "Personas",
+    entityCompanies: "Empresas",
     summary: (lists: number, campaigns: number) =>
       `${lists} ${lists === 1 ? "lista" : "listas"} · ${campaigns} ${campaigns === 1 ? "campaña activa" : "campañas activas"} · sincronizado hace poco`,
     stepSource: "Fuente",
@@ -202,9 +225,12 @@ export default function WorkspaceDetail() {
   const allLists = useLists()
   const allCampaigns = useCampaigns()
   const prospects = useProspects()
+  const allSearches = useSavedSearches()
+  const { isV1 } = useReleaseMode()
 
   const [step, setStep] = React.useState<Step>("source")
   const [pickerOpen, setPickerOpen] = React.useState(false)
+  const [searchPickerOpen, setSearchPickerOpen] = React.useState(false)
   const [selectedListId, setSelectedListId] = React.useState<string | null>(null)
 
   if (!workspace) {
@@ -227,6 +253,10 @@ export default function WorkspaceDetail() {
     .map((cid) => campaignById.get(cid))
     .filter((cm): cm is Campaign => Boolean(cm))
   const campaign = campaigns[0]
+  const searchById = new Map(allSearches.map((s) => [s.id, s]))
+  const searches = workspace.searchIds
+    .map((sid) => searchById.get(sid))
+    .filter((s): s is SavedAiSearch => Boolean(s))
   const totalPeople =
     workspace.source?.people ?? lists.reduce((n, l) => n + listCount(l), 0)
   const selectedList = lists.find((l) => l.id === selectedListId) ?? lists[0]
@@ -250,10 +280,14 @@ export default function WorkspaceDetail() {
             {c.summary(lists.length, campaigns.length)}
           </p>
         </div>
-        <Button variant="volt" onClick={() => toast.success(c.running)}>
-          <Play className="size-4" />
-          {c.run}
-        </Button>
+        {/* Run = the advanced "playlist" automation (continuously searches,
+            updates lists, runs the campaign). v2 only — hidden in v1. */}
+        {!isV1 && (
+          <Button variant="volt" onClick={() => toast.success(c.running)}>
+            <Play className="size-4" />
+            {c.run}
+          </Button>
+        )}
       </div>
 
       {/* Pipeline */}
@@ -262,7 +296,7 @@ export default function WorkspaceDetail() {
           n={1}
           category={c.catSource}
           title={c.titleSearch}
-          chip={workspace.source ? c.found(workspace.source.found) : c.runSearch}
+          chip={searches.length ? c.searchesChip(searches.length) : c.runSearch}
           status={c.stComplete}
           tone="complete"
           active={step === "source"}
@@ -295,7 +329,15 @@ export default function WorkspaceDetail() {
       {/* Detail panel */}
       <div className="mt-6">
         {step === "source" ? (
-          <SourcePanel workspace={workspace} c={c} onSearch={() => navigate("/search")} />
+          <SourcePanel
+            c={c}
+            searches={searches}
+            onAdd={() => setSearchPickerOpen(true)}
+            onRemove={(sid) =>
+              workspaceStore.dissociate(workspace.id, "search", sid)
+            }
+            onOpen={() => navigate("/search")}
+          />
         ) : step === "audience" ? (
           <AudiencePanel
             c={c}
@@ -324,6 +366,15 @@ export default function WorkspaceDetail() {
           allLists={allLists}
           c={c}
           onOpenChange={(o) => !o && setPickerOpen(false)}
+        />
+      )}
+
+      {searchPickerOpen && (
+        <AddSearchesDialog
+          workspaceId={workspace.id}
+          allSearches={allSearches}
+          c={c}
+          onOpenChange={(o) => !o && setSearchPickerOpen(false)}
         />
       )}
     </Page>
@@ -424,54 +475,78 @@ function Arrow() {
 }
 
 function SourcePanel({
-  workspace,
   c,
-  onSearch,
+  searches,
+  onAdd,
+  onRemove,
+  onOpen,
 }: {
-  workspace: { source?: import("@/lib/workspaces").WorkspaceSource }
   c: Copy
-  onSearch: () => void
+  searches: SavedAiSearch[]
+  onAdd: () => void
+  onRemove: (id: string) => void
+  onOpen: (search: SavedAiSearch) => void
 }) {
-  const src = workspace.source
-  if (!src) {
+  if (searches.length === 0) {
     return (
       <Card className="flex flex-col items-center gap-3 py-12 text-center">
-        <p className="text-muted-foreground text-sm">{c.noSource}</p>
-        <Button variant="volt" onClick={onSearch}>
-          <SearchIcon className="size-4" />
-          {c.runSearch}
+        <p className="text-muted-foreground text-sm">{c.noSearches}</p>
+        <Button variant="volt" onClick={onAdd}>
+          <Bookmark className="size-4" />
+          {c.addSavedSearches}
         </Button>
       </Card>
     )
   }
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 rounded-xl border p-4">
-        <Sparkles className="text-primary size-5 shrink-0" />
-        <p className="text-sm font-medium">{src.prompt}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">{c.savedSearches}</h2>
+        <Button variant="outline" size="sm" onClick={onAdd}>
+          <Plus className="size-4" />
+          {c.addSavedSearches}
+        </Button>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {src.filters.map((f) => (
-          <span
-            key={f.label}
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm"
-          >
-            <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-              {f.label}
-            </span>
-            <span className="font-medium">{f.value}</span>
-          </span>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {searches.map((s) => (
+          <Card key={s.id} className="gap-2 p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <Sparkles className="text-primary size-4 shrink-0" />
+                <p className="truncate text-sm font-semibold">{s.name}</p>
+              </div>
+              <button
+                type="button"
+                aria-label={c.removeSearch(s.name)}
+                onClick={() => onRemove(s.id)}
+                className="text-muted-foreground hover:text-destructive shrink-0"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <p className="text-muted-foreground line-clamp-2 text-xs">
+              {s.prompt}
+            </p>
+            <div className="mt-1 flex items-center justify-between">
+              <Badge variant="secondary" className="font-normal">
+                {s.entity === "people" ? c.entityPeople : c.entityCompanies}
+              </Badge>
+              <span className="text-muted-foreground text-xs tabular-nums">
+                {c.searchResults(s.resultCount)}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-1 -ml-2 self-start"
+              onClick={() => onOpen(s)}
+            >
+              {c.openInSearch}
+              <ArrowRight className="size-3.5" />
+            </Button>
+          </Card>
         ))}
-        <button
-          type="button"
-          onClick={onSearch}
-          className="text-muted-foreground hover:text-foreground hover:border-input inline-flex items-center gap-1 rounded-lg border border-dashed px-3 py-1.5 text-sm"
-        >
-          <Plus className="size-3.5" />
-          {c.addFilter}
-        </button>
       </div>
-      <p className="text-muted-foreground text-sm">{c.matching(src.people, src.companies)}</p>
     </div>
   )
 }
@@ -796,6 +871,88 @@ function AddListsDialog({
                   </span>
                   <span className="size-2 rounded-full" style={{ backgroundColor: l.color }} />
                   <span className="min-w-0 flex-1 truncate text-sm">{l.name}</span>
+                  {inOther && (
+                    <span className="text-muted-foreground shrink-0 text-xs">
+                      {owner.name ? c.inOther(owner.name) : c.inOtherUntitled}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
+        <div className="flex justify-end">
+          <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
+            {c.done}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// Entry point to all saved searches: associate one or more to the workspace.
+function AddSearchesDialog({
+  workspaceId,
+  allSearches,
+  c,
+  onOpenChange,
+}: {
+  workspaceId: string
+  allSearches: SavedAiSearch[]
+  c: Copy
+  onOpenChange: (open: boolean) => void
+}) {
+  const workspaces = useWorkspaces()
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{c.savedSearches}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {c.addSavedSearches}
+          </DialogDescription>
+        </DialogHeader>
+        {allSearches.length === 0 ? (
+          <p className="text-muted-foreground py-6 text-center text-sm">
+            {c.searchPickerEmpty}
+          </p>
+        ) : (
+          <div className="-mx-2 max-h-[55vh] space-y-0.5 overflow-y-auto px-2">
+            {allSearches.map((s) => {
+              const owner = ownerOf(workspaces, "search", s.id)
+              const inThis = owner?.id === workspaceId
+              const inOther = owner && !inThis
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() =>
+                    inThis
+                      ? workspaceStore.dissociate(workspaceId, "search", s.id)
+                      : workspaceStore.associate(workspaceId, "search", s.id)
+                  }
+                  className="hover:bg-muted/60 flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left"
+                >
+                  <span
+                    className={cn(
+                      "flex size-5 shrink-0 items-center justify-center rounded-md border",
+                      inThis
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input"
+                    )}
+                  >
+                    {inThis && <Check className="size-3.5" />}
+                  </span>
+                  <Sparkles className="text-primary size-4 shrink-0" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">
+                      {s.name}
+                    </span>
+                    <span className="text-muted-foreground block truncate text-xs">
+                      {s.prompt}
+                    </span>
+                  </span>
                   {inOther && (
                     <span className="text-muted-foreground shrink-0 text-xs">
                       {owner.name ? c.inOther(owner.name) : c.inOtherUntitled}

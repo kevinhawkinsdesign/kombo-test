@@ -45,7 +45,7 @@ const SEED: Workspace[] = [
     id: "ws_1",
     name: "Q3 EMEA Outbound",
     color: COLORS[0],
-    searchIds: [],
+    searchIds: ["ss_1", "ss_3"],
     listIds: ["l_1", "l_2", "l_3"],
     campaignIds: ["cm_1"],
     source: {
