@@ -24,6 +24,8 @@ import {
   SlidersHorizontal,
   ThumbsUp,
   Eye,
+  EyeOff,
+  Braces,
   MousePointerClick,
   UserCheck,
   Tag,
@@ -156,6 +158,16 @@ const COPY = {
     shorter: "Make shorter",
     longer: "Make longer",
     refined: (label: string) => `Rewrote — ${label.toLowerCase()}`,
+    personalize: "Personalize",
+    preview: "Preview",
+    editMessage: "Edit",
+    vars: {
+      first_name: "First name",
+      last_name: "Last name",
+      company: "Company",
+      title: "Job title",
+      sender: "Your name",
+    } as Record<string, string>,
     sendVia: (ch: string) => `Send via ${ch}`,
     collapseList: "Collapse list",
     expandList: "Show list",
@@ -246,6 +258,16 @@ const COPY = {
     shorter: "Más corto",
     longer: "Más largo",
     refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
+    personalize: "Personalizar",
+    preview: "Vista previa",
+    editMessage: "Editar",
+    vars: {
+      first_name: "Nombre",
+      last_name: "Apellido",
+      company: "Empresa",
+      title: "Cargo",
+      sender: "Tu nombre",
+    } as Record<string, string>,
     sendVia: (ch: string) => `Enviar por ${ch}`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
@@ -1266,6 +1288,7 @@ function Composer({
   const [reply, setReply] = React.useState(conv.aiDraft ?? "")
   const [aiUsed, setAiUsed] = React.useState(Boolean(conv.aiDraft))
   const [seed, setSeed] = React.useState(0)
+  const [preview, setPreview] = React.useState(false)
   const taRef = React.useRef<HTMLTextAreaElement>(null)
 
   const CHANNEL_NAMES: Record<string, string> = {
@@ -1279,6 +1302,19 @@ function Composer({
   const channelLabel = CHANNEL_NAMES[conv.channel] ?? c.email
   const firstName = currentUser.name.split(" ")[0]
   const showDraftChip = aiUsed && reply.trim().length > 0
+
+  // Personalization variables resolved against the recipient + sender.
+  const vars: { tag: string; value: string }[] = [
+    { tag: "first_name", value: prospect.firstName },
+    { tag: "last_name", value: prospect.lastName },
+    { tag: "company", value: prospect.company },
+    { tag: "title", value: prospect.title },
+    { tag: "sender", value: firstName },
+  ]
+  const renderedReply = vars.reduce(
+    (text, v) => text.replaceAll(`{{${v.tag}}}`, v.value),
+    reply
+  )
 
   function generate() {
     const next = seed + 1
@@ -1324,6 +1360,23 @@ function Composer({
     })
   }
 
+  // Insert a {{variable}} at the cursor (or append if the field isn't focused).
+  function insertVar(tag: string) {
+    const ins = `{{${tag}}}`
+    const ta = taRef.current
+    if (!ta) {
+      setReply((r) => r + ins)
+      return
+    }
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    setReply(reply.slice(0, start) + ins + reply.slice(end))
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.setSelectionRange(start + ins.length, start + ins.length)
+    })
+  }
+
   function applyTemplate(body: string) {
     const filled = body
       .replaceAll("{{first_name}}", prospect.firstName)
@@ -1333,9 +1386,12 @@ function Composer({
 
   function send() {
     if (!reply.trim()) return
-    conversationStore.sendMessage(conv.id, reply.trim(), detectLang(reply), aiUsed)
+    // Send with personalization variables filled in.
+    const out = renderedReply.trim()
+    conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed)
     setReply("")
     setAiUsed(false)
+    setPreview(false)
     toast.success(c.replySent(prospect.firstName))
   }
 
@@ -1373,19 +1429,31 @@ function Composer({
         </div>
       )}
 
-      <Textarea
-        ref={taRef}
-        value={reply}
-        onChange={(e) => {
-          setReply(e.target.value)
-          if (e.target.value.trim() === "") setAiUsed(false)
-        }}
-        placeholder={c.replyTo(prospect.firstName)}
-        className={cn(
-          "min-h-24 resize-none",
-          showDraftChip && "border-primary/30 bg-primary/[0.03]"
-        )}
-      />
+      {preview ? (
+        <div className="min-h-24 rounded-md border p-3 text-sm whitespace-pre-wrap">
+          {renderedReply.trim() ? (
+            renderedReply
+          ) : (
+            <span className="text-muted-foreground">
+              {c.replyTo(prospect.firstName)}
+            </span>
+          )}
+        </div>
+      ) : (
+        <Textarea
+          ref={taRef}
+          value={reply}
+          onChange={(e) => {
+            setReply(e.target.value)
+            if (e.target.value.trim() === "") setAiUsed(false)
+          }}
+          placeholder={c.replyTo(prospect.firstName)}
+          className={cn(
+            "min-h-24 resize-none",
+            showDraftChip && "border-primary/30 bg-primary/[0.03]"
+          )}
+        />
+      )}
 
       <div className="flex flex-wrap items-center gap-1.5">
         <Button variant="outline" size="sm" onClick={generate}>
@@ -1468,6 +1536,45 @@ function Composer({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Personalize — insert merge variables */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              disabled={preview}
+            >
+              <Braces className="size-4" />
+              {c.personalize}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuLabel>{c.personalize}</DropdownMenuLabel>
+            {vars.map((v) => (
+              <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
+                <Braces className="text-primary size-3.5" />
+                <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
+                <span className="text-muted-foreground font-mono text-[11px]">
+                  {`{{${v.tag}}}`}
+                </span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Preview with variables filled in */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          disabled={!reply.trim()}
+          onClick={() => setPreview((v) => !v)}
+        >
+          {preview ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          {preview ? c.editMessage : c.preview}
+        </Button>
 
         {showTranslate && (
           <Button
