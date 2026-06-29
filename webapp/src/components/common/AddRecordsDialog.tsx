@@ -17,30 +17,78 @@ import { cn } from "@/lib/utils"
 type Kind = "contact" | "company"
 type Action = "search" | "csv" | "hubspot" | "extract" | "sync" | "manual"
 type Brand = "linkedin" | "crunchbase" | "hubspot" | "neutral"
+type Flow = "outbound" | "inbound"
 
 interface SourceDef {
   key: string
   brand: Brand
   icon?: React.ComponentType<{ className?: string }>
   action: Action
+  flow: Flow
   scope: "both" | "contact" | "company"
   label: Record<"en" | "es", (noun: string) => string>
 }
 
 const SOURCES: SourceDef[] = [
-  { key: "li-search", brand: "linkedin", action: "search", scope: "both", label: { en: (n) => `Search ${n} on LinkedIn`, es: (n) => `Buscar ${n} en LinkedIn` } },
-  { key: "li-post", brand: "linkedin", action: "extract", scope: "contact", label: { en: () => "Extract contacts from a Post", es: () => "Extraer contactos de una publicación" } },
-  { key: "li-event", brand: "linkedin", action: "extract", scope: "contact", label: { en: () => "Extract contacts from an Event", es: () => "Extraer contactos de un evento" } },
-  { key: "li-poll", brand: "linkedin", action: "extract", scope: "contact", label: { en: () => "Extract contacts from a Poll", es: () => "Extraer contactos de una encuesta" } },
-  { key: "li-connections", brand: "linkedin", action: "sync", scope: "contact", label: { en: () => "Extract your LinkedIn connections", es: () => "Extraer tus conexiones de LinkedIn" } },
-  { key: "li-followers", brand: "linkedin", action: "sync", scope: "contact", label: { en: () => "Extract your LinkedIn followers", es: () => "Extraer tus seguidores de LinkedIn" } },
-  { key: "cb-search", brand: "crunchbase", action: "search", scope: "both", label: { en: (n) => `Search ${n} on Crunchbase`, es: (n) => `Buscar ${n} en Crunchbase` } },
-  { key: "cb-investors", brand: "crunchbase", action: "search", scope: "contact", label: { en: () => "Search investors on Crunchbase", es: () => "Buscar inversores en Crunchbase" } },
-  { key: "csv", brand: "neutral", icon: Upload, action: "csv", scope: "both", label: { en: (n) => `Import ${n} from CSV`, es: (n) => `Importar ${n} desde CSV` } },
-  { key: "manual", brand: "neutral", icon: UserPlus, action: "manual", scope: "both", label: { en: (n) => `Add a new ${n}`, es: (n) => `Añadir ${n}` } },
-  { key: "hubspot", brand: "hubspot", action: "hubspot", scope: "both", label: { en: (n) => `Import ${n} from HubSpot`, es: (n) => `Importar ${n} desde HubSpot` } },
-  { key: "hubspot-list", brand: "hubspot", action: "hubspot", scope: "both", label: { en: (n) => `Import ${n} from a HubSpot List`, es: (n) => `Importar ${n} de una lista de HubSpot` } },
+  // Outbound — go find net-new records to reach out to
+  { key: "li-search", brand: "linkedin", action: "search", flow: "outbound", scope: "both", label: { en: (n) => `Search ${n} on LinkedIn`, es: (n) => `Buscar ${n} en LinkedIn` } },
+  { key: "cb-search", brand: "crunchbase", action: "search", flow: "outbound", scope: "both", label: { en: (n) => `Search ${n} on Crunchbase`, es: (n) => `Buscar ${n} en Crunchbase` } },
+  { key: "cb-investors", brand: "crunchbase", action: "search", flow: "outbound", scope: "contact", label: { en: () => "Search investors on Crunchbase", es: () => "Buscar inversores en Crunchbase" } },
+  { key: "li-post", brand: "linkedin", action: "extract", flow: "outbound", scope: "contact", label: { en: () => "Extract contacts from a Post", es: () => "Extraer contactos de una publicación" } },
+  { key: "li-event", brand: "linkedin", action: "extract", flow: "outbound", scope: "contact", label: { en: () => "Extract contacts from an Event", es: () => "Extraer contactos de un evento" } },
+  { key: "li-poll", brand: "linkedin", action: "extract", flow: "outbound", scope: "contact", label: { en: () => "Extract contacts from a Poll", es: () => "Extraer contactos de una encuesta" } },
+  // Inbound — bring in records that already came to you
+  { key: "hubspot", brand: "hubspot", action: "hubspot", flow: "inbound", scope: "both", label: { en: (n) => `Import ${n} from HubSpot`, es: (n) => `Importar ${n} desde HubSpot` } },
+  { key: "hubspot-list", brand: "hubspot", action: "hubspot", flow: "inbound", scope: "both", label: { en: (n) => `Import ${n} from a HubSpot List`, es: (n) => `Importar ${n} de una lista de HubSpot` } },
+  { key: "li-connections", brand: "linkedin", action: "sync", flow: "inbound", scope: "contact", label: { en: () => "Import your LinkedIn connections", es: () => "Importar tus conexiones de LinkedIn" } },
+  { key: "li-followers", brand: "linkedin", action: "sync", flow: "inbound", scope: "contact", label: { en: () => "Import your LinkedIn followers", es: () => "Importar tus seguidores de LinkedIn" } },
+  { key: "csv", brand: "neutral", icon: Upload, action: "csv", flow: "inbound", scope: "both", label: { en: (n) => `Import ${n} from CSV`, es: (n) => `Importar ${n} desde CSV` } },
+  { key: "manual", brand: "neutral", icon: UserPlus, action: "manual", flow: "inbound", scope: "both", label: { en: (n) => `Add a new ${n}`, es: (n) => `Añadir ${n}` } },
 ]
+
+function SourceGroup({
+  heading,
+  hint,
+  sources,
+  activeKey,
+  onSelect,
+  label,
+  className,
+}: {
+  heading: string
+  hint: string
+  sources: SourceDef[]
+  activeKey: string
+  onSelect: (key: string) => void
+  label: (s: SourceDef) => string
+  className?: string
+}) {
+  if (sources.length === 0) return null
+  return (
+    <div className={className}>
+      <div className="px-2 pb-1 pt-2">
+        <p className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide">
+          {heading}
+        </p>
+        <p className="text-muted-foreground/70 text-[11px]">{hint}</p>
+      </div>
+      {sources.map((s) => (
+        <button
+          key={s.key}
+          type="button"
+          onClick={() => onSelect(s.key)}
+          className={cn(
+            "flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm transition-colors",
+            activeKey === s.key ? "bg-muted font-medium" : "hover:bg-muted/60"
+          )}
+        >
+          <SourceGlyph source={s} />
+          <span className="min-w-0 flex-1 truncate">{label(s)}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
 
 function SourceGlyph({ source }: { source: SourceDef }) {
   if (source.brand === "linkedin")
@@ -89,14 +137,14 @@ export function AddRecordsDialog({
   const { locale } = useLocale()
   const navigate = useNavigate()
   const [tab, setTab] = React.useState<Kind>(kind)
-  const [selected, setSelected] = React.useState("csv")
+  const [selected, setSelected] = React.useState("li-search")
   const [extractUrl, setExtractUrl] = React.useState("")
   const [wasOpen, setWasOpen] = React.useState(false)
 
   if (open && !wasOpen) {
     setWasOpen(true)
     setTab(kind)
-    setSelected("csv")
+    setSelected("li-search")
     setExtractUrl("")
   }
   if (!open && wasOpen) setWasOpen(false)
@@ -112,6 +160,8 @@ export function AddRecordsDialog({
   const sources = SOURCES.filter(
     (s) => s.scope === "both" || s.scope === tab
   )
+  const outboundSources = sources.filter((s) => s.flow === "outbound")
+  const inboundSources = sources.filter((s) => s.flow === "inbound")
   const active = sources.find((s) => s.key === selected) ?? sources[0]
   const label = (s: SourceDef) =>
     s.label[locale === "es" ? "es" : "en"](
@@ -179,7 +229,7 @@ export function AddRecordsDialog({
                     type="button"
                     onClick={() => {
                       setTab(tb.v)
-                      setSelected("csv")
+                      setSelected("li-search")
                     }}
                     className={cn(
                       "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors",
@@ -195,20 +245,23 @@ export function AddRecordsDialog({
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
-              {sources.map((s) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => setSelected(s.key)}
-                  className={cn(
-                    "flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm transition-colors",
-                    active.key === s.key ? "bg-muted font-medium" : "hover:bg-muted/60"
-                  )}
-                >
-                  <SourceGlyph source={s} />
-                  <span className="min-w-0 flex-1 truncate">{label(s)}</span>
-                </button>
-              ))}
+              <SourceGroup
+                heading={t("Outbound", "Outbound")}
+                hint={t("Find net-new records", "Encuentra registros nuevos")}
+                sources={outboundSources}
+                activeKey={active.key}
+                onSelect={setSelected}
+                label={label}
+              />
+              <SourceGroup
+                heading={t("Inbound", "Inbound")}
+                hint={t("Bring in records you already have", "Trae registros que ya tienes")}
+                sources={inboundSources}
+                activeKey={active.key}
+                onSelect={setSelected}
+                label={label}
+                className="mt-3"
+              />
             </div>
           </div>
 
