@@ -33,6 +33,7 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
 import {
   ProspectAvatar,
@@ -151,6 +152,7 @@ export default function People() {
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkCampaign, setBulkCampaign] = React.useState(false)
+  const [bulkEnrich, setBulkEnrich] = React.useState(false)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
 
   const q = query.trim().toLowerCase()
@@ -419,7 +421,7 @@ export default function People() {
         count={selectedIds.size}
         onClear={() => setSelectedIds(new Set())}
         onExport={exportSelected}
-        onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
+        onEnrich={() => setBulkEnrich(true)}
         onAddToList={() => setBulkList(true)}
         onAddToCampaign={() => setBulkCampaign(true)}
         onLookalikes={findLookalikes}
@@ -438,6 +440,11 @@ export default function People() {
         mode="campaign"
         recordKind="person"
         ids={selectedIdsArr}
+      />
+      <EnrichListDialog
+        open={bulkEnrich}
+        onOpenChange={setBulkEnrich}
+        prospects={selectedProspects}
       />
 
       <ColumnManager

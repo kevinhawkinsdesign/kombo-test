@@ -34,6 +34,18 @@ import type {
   ChatLang,
   ConvStatus,
 } from "./types"
+import type { EnrichScope } from "./enrichment"
+
+// Deterministic mock direct-dial derived from a contact id, so the same
+// contact always "reveals" the same number across renders.
+function mockPhone(seed: string): string {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  const area = 200 + (h % 800)
+  const mid = 100 + ((h >> 4) % 900)
+  const last = 1000 + ((h >> 8) % 9000)
+  return `+1 (${area}) ${mid}-${last}`
+}
 
 interface StoreState {
   prospects: Prospect[]
@@ -517,12 +529,25 @@ export const prospectStore = {
       ),
     })
   },
-  enrich(ids: string[]): void {
+  enrich(ids: string[], scope: EnrichScope = "full"): void {
     const set = new Set(ids)
     setState({
-      prospects: state.prospects.map((p) =>
-        set.has(p.id) ? { ...p, enriched: true } : p
-      ),
+      prospects: state.prospects.map((p) => {
+        if (!set.has(p.id)) return p
+        const next: Prospect = { ...p }
+        if (scope === "email" || scope === "full") {
+          next.email =
+            p.email ||
+            `${p.firstName}.${p.lastName}@${p.companyDomain}`
+              .toLowerCase()
+              .replace(/\s+/g, "")
+        }
+        if (scope === "phone" || scope === "full") {
+          next.phone = p.phone || mockPhone(p.id)
+        }
+        next.enriched = true
+        return next
+      }),
     })
   },
   remove(id: string): void {
