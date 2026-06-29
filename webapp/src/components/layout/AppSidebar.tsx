@@ -51,6 +51,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
 import { copilotActions } from "@/lib/mock-copilot"
@@ -296,6 +301,78 @@ function NavGroupSection({
 }
 
 
+// Collapsed rail: each accordion becomes a single group icon whose nested
+// items open in a popover (instead of flattening every leaf icon).
+function CollapsedGroupPopover({
+  group,
+  currentPath,
+  onNavigate,
+}: {
+  group: NavGroup
+  currentPath: string
+  onNavigate?: () => void
+}) {
+  const { t } = useLocale()
+  const Icon = group.icon
+  const [open, setOpen] = React.useState(false)
+  const label = t(group.labelKey)
+  const hasActive = group.items.some((it) => isActivePath(currentPath, it.to))
+  const hasNew = group.items.some((it) => it.isNew)
+  const badgeTotal = group.items.reduce(
+    (sum, it) => sum + (it.badge ? Number(it.badge) : 0),
+    0
+  )
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={label}
+          className={cn(
+            "relative flex size-9 items-center justify-center rounded-md text-sm font-medium transition-colors",
+            hasActive
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent/60"
+          )}
+        >
+          <Icon className="size-5 shrink-0" strokeWidth={2.25} />
+          {(hasNew || badgeTotal > 0) && (
+            <span
+              className={cn(
+                "ring-sidebar absolute -top-0.5 -right-1 size-1.5 rounded-full ring-2",
+                hasNew ? "bg-volt" : "bg-primary"
+              )}
+            />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="right"
+        align="start"
+        sideOffset={8}
+        className="bg-sidebar text-sidebar-foreground border-sidebar-border w-56 p-1.5"
+      >
+        <p className="text-sidebar-foreground/60 px-2 py-1 text-[11px] font-medium tracking-wide uppercase">
+          {label}
+        </p>
+        <div className="flex flex-col gap-0.5">
+          {group.items.map((item) => (
+            <NavRow
+              key={item.to}
+              item={item}
+              onNavigate={() => {
+                setOpen(false)
+                onNavigate?.()
+              }}
+            />
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 const GROUP_KEY = "kombo-nav-group"
 
 // Accordion: only one group is open at a time. Opening one closes the rest.
@@ -469,8 +546,8 @@ function SidebarContent({
           )}
         >
           {collapsed ? (
-            // Full icon rail: every page shows its own icon (grouped with thin
-            // dividers), so nothing is hidden behind a flyout when collapsed.
+            // Icon rail: primary destinations as icons, then one icon per
+            // accordion group whose nested items open in a popover.
             <>
               {visiblePrimary.map((item) => (
                 <NavRow
@@ -480,19 +557,23 @@ function SidebarContent({
                   collapsed
                 />
               ))}
-              {[...visibleGroups, visibleManage].map((group) => (
-                <React.Fragment key={group.key}>
-                  <div className="bg-sidebar-border my-1 h-px w-6" />
-                  {group.items.map((item) => (
-                    <NavRow
-                      key={item.to}
-                      item={item}
-                      onNavigate={onNavigate}
-                      collapsed
-                    />
-                  ))}
-                </React.Fragment>
+              <div className="bg-sidebar-border my-1 h-px w-6" />
+              {visibleGroups.map((group) => (
+                <CollapsedGroupPopover
+                  key={group.key}
+                  group={group}
+                  currentPath={pathname}
+                  onNavigate={onNavigate}
+                />
               ))}
+              <div className="mt-auto flex flex-col items-center gap-0.5">
+                <div className="bg-sidebar-border my-1 h-px w-6" />
+                <CollapsedGroupPopover
+                  group={visibleManage}
+                  currentPath={pathname}
+                  onNavigate={onNavigate}
+                />
+              </div>
             </>
           ) : (
             <>
