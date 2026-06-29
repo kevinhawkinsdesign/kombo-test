@@ -35,7 +35,7 @@ import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
 import { TrackButton } from "@/components/common/TrackButton"
 import { CompanyMetrics } from "@/components/company/CompanyMetrics"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
-import { getAccount, deals } from "@/lib/mock-extra"
+import { getAccount, deals, DEAL_STAGES } from "@/lib/mock-extra"
 import { getCompanyNews } from "@/lib/mock-depth"
 import { prospects } from "@/lib/mock-data"
 import { getRep } from "@/lib/team"
@@ -141,12 +141,11 @@ const STAGE_VARIANT: Record<
   DealStage,
   "default" | "secondary" | "outline" | "success" | "destructive"
 > = {
-  lead: "outline",
-  qualified: "secondary",
-  proposal: "default",
-  negotiation: "default",
+  interested: "outline",
+  meeting_booked: "secondary",
+  qualified: "default",
   won: "success",
-  lost: "destructive",
+  disqualified: "destructive",
 }
 
 export default function CompanyDetail() {
@@ -342,11 +341,9 @@ export default function CompanyDetail() {
                       <TableRow key={d.id}>
                         <TableCell className="font-medium">{d.name}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant={STAGE_VARIANT[d.stage]}
-                            className="capitalize"
-                          >
-                            {d.stage}
+                          <Badge variant={STAGE_VARIANT[d.stage]}>
+                            {DEAL_STAGES.find((s) => s.key === d.stage)?.label ??
+                              d.stage}
                           </Badge>
                         </TableCell>
                         <TableCell className="font-medium tabular-nums">

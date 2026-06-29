@@ -52,13 +52,13 @@ import type { Deal } from "@/lib/types"
 const COPY = {
   en: {
     title: "Deals",
-    description: "Your pipeline by stage.",
+    description: "Your pipeline by outcome.",
     newDeal: "New deal",
-    introTitle: "Manage your pipeline",
+    introTitle: "Manage your pipeline by outcome",
     introDescription:
-      "Track every open deal through your stages and forecast with confidence.",
+      "Track every prospect through outcome stages — interested, meeting booked, qualified — and forecast with confidence.",
     introPoints: [
-      "Drag deals across stages",
+      "Move records across outcome stages",
       "Weighted forecast by win probability",
       "Spot stalled deals before they slip",
     ],
@@ -77,12 +77,11 @@ const COPY = {
     deleteConfirm: "Delete",
     dealDeleted: "Deal deleted",
     stages: {
-      lead: "Lead",
+      interested: "Interested",
+      meeting_booked: "Meeting booked",
       qualified: "Qualified",
-      proposal: "Proposal",
-      negotiation: "Negotiation",
       won: "Won",
-      lost: "Lost",
+      disqualified: "Disqualified",
     } as Record<Deal["stage"], string>,
     search: "Search deals…",
     viewBoard: "Board",
@@ -104,13 +103,13 @@ const COPY = {
   },
   es: {
     title: "Negocios",
-    description: "Tu pipeline por etapa.",
+    description: "Tu pipeline por resultado.",
     newDeal: "Nuevo negocio",
-    introTitle: "Gestiona tu pipeline",
+    introTitle: "Gestiona tu pipeline por resultado",
     introDescription:
-      "Haz seguimiento de cada negocio abierto a través de tus etapas y prevé con confianza.",
+      "Haz seguimiento de cada prospecto a través de etapas de resultado — interesado, reunión agendada, cualificado — y prevé con confianza.",
     introPoints: [
-      "Arrastra negocios entre etapas",
+      "Mueve registros entre etapas de resultado",
       "Previsión ponderada por probabilidad de cierre",
       "Detecta negocios estancados antes de que se pierdan",
     ],
@@ -129,12 +128,11 @@ const COPY = {
     deleteConfirm: "Eliminar",
     dealDeleted: "Negocio eliminado",
     stages: {
-      lead: "Lead",
+      interested: "Interesado",
+      meeting_booked: "Reunión agendada",
       qualified: "Cualificado",
-      proposal: "Propuesta",
-      negotiation: "Negociación",
       won: "Ganado",
-      lost: "Perdido",
+      disqualified: "Descalificado",
     } as Record<Deal["stage"], string>,
     search: "Buscar negocios…",
     viewBoard: "Tablero",
@@ -325,7 +323,7 @@ export default function Deals() {
   }
 
   const openDeals = scoped.filter(
-    (d) => d.stage !== "won" && d.stage !== "lost"
+    (d) => d.stage !== "won" && d.stage !== "disqualified"
   )
   const openPipeline = openDeals.reduce((sum, d) => sum + d.value, 0)
   const weightedForecast = openDeals.reduce(
@@ -495,12 +493,11 @@ const STAGE_VARIANT: Record<
   Deal["stage"],
   "default" | "secondary" | "outline" | "success" | "destructive"
 > = {
-  lead: "outline",
-  qualified: "secondary",
-  proposal: "secondary",
-  negotiation: "default",
+  interested: "outline",
+  meeting_booked: "secondary",
+  qualified: "default",
   won: "success",
-  lost: "destructive",
+  disqualified: "destructive",
 }
 
 function DealTable({

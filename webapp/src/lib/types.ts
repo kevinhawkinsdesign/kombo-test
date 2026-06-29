@@ -308,13 +308,14 @@ export interface Account {
   keyExecutives: { name: string; title: string }[]
 }
 
+// Outcome-based pipeline stages — a top-of-funnel view of where each
+// prospect/account stands, rather than classic deal stages.
 export type DealStage =
-  | "lead"
+  | "interested"
+  | "meeting_booked"
   | "qualified"
-  | "proposal"
-  | "negotiation"
   | "won"
-  | "lost"
+  | "disqualified"
 
 export interface Deal {
   id: string

@@ -31,7 +31,7 @@ interface DealFormDialogProps {
 }
 
 const DEFAULT_ACCOUNT_ID = accounts[0]?.id ?? ""
-const DEFAULT_STAGE: DealStage = DEAL_STAGES[0]?.key ?? "lead"
+const DEFAULT_STAGE: DealStage = DEAL_STAGES[0]?.key ?? "interested"
 const DEFAULT_OWNER_ID = "rep_1"
 
 interface DealFormState {
