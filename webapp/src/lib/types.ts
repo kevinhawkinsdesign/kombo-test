@@ -343,7 +343,11 @@ export interface EmailTemplate {
   tags: string[]
 }
 
-export type TaskType = "call" | "email" | "linkedin" | "follow_up"
+export type TaskType = "call" | "email" | "linkedin" | "sms" | "manual" | "follow_up"
+
+// Whether a task is completed inside the app (a message we can send) or
+// offline (a call to place, a manual to-do logged by hand).
+export type TaskMode = "in_app" | "offline"
 
 export interface Task {
   id: string
@@ -355,6 +359,7 @@ export interface Task {
   assignedById?: string
   dueDate: string
   done: boolean
+  ignored?: boolean // dismissed/snoozed out of the active queue
   priority: "high" | "medium" | "low"
 }
 

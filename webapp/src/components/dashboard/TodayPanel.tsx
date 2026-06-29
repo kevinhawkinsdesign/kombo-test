@@ -54,6 +54,8 @@ const TASK_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> =
   call: Phone,
   email: Mail,
   linkedin: LinkedinIcon,
+  sms: Mail,
+  manual: Clock,
   follow_up: Clock,
 }
 

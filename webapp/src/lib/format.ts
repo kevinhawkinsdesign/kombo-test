@@ -53,6 +53,36 @@ export function dueBucket(iso: string): DueBucket {
   return "upcoming"
 }
 
+/** "Today at 08:00" / "Tomorrow at 08:00" / "Mon, Jun 30 · 08:00". */
+export function formatDueAt(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const startToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).getTime()
+  const dayStart = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate()
+  ).getTime()
+  const dayDiff = Math.round((dayStart - startToday) / 86400000)
+  const time = d.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+  if (dayDiff === 0) return `Today at ${time}`
+  if (dayDiff === 1) return `Tomorrow at ${time}`
+  if (dayDiff === -1) return `Yesterday at ${time}`
+  const date = d.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })
+  return `${date} · ${time}`
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
