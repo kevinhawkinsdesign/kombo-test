@@ -21,6 +21,8 @@ import {
   Zap,
   Search as SearchIcon,
   X,
+  Check,
+  ChevronDown,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -52,6 +54,7 @@ import { getProspect, currentUser } from "@/lib/mock-data"
 import { isEnriched, ENRICH_COST } from "@/lib/enrichment"
 import { formatDueAt, initials, dueBucket } from "@/lib/format"
 import { assignableUsers, resolveUser, resolveAssigner } from "@/lib/task-people"
+import type { Person } from "@/lib/task-people"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
 import type { Task, TaskType } from "@/lib/types"
@@ -102,6 +105,10 @@ const COPY = {
     assignedTo: "Assigned to",
     me: "Me",
     anyone: "Anyone",
+    assignTo: "Assign to",
+    assignToMe: "Assign to me",
+    assignedToast: (name: string) => `Assigned to ${name}`,
+    reassign: (name: string) => `Assigned to ${name} — reassign`,
     clearFilters: "Clear filters",
     sortDate: "Date",
     colTask: "Task",
@@ -159,6 +166,10 @@ const COPY = {
     assignedTo: "Asignado a",
     me: "Yo",
     anyone: "Cualquiera",
+    assignTo: "Asignar a",
+    assignToMe: "Asignármela",
+    assignedToast: (name: string) => `Asignado a ${name}`,
+    reassign: (name: string) => `Asignado a ${name} — reasignar`,
     clearFilters: "Limpiar filtros",
     sortDate: "Fecha",
     colTask: "Tarea",
@@ -296,6 +307,11 @@ export default function Tasks() {
   function setIgnored(task: Task, ignored: boolean) {
     taskStore.update(task.id, { ignored })
     toast.success(ignored ? c.ignored : c.restored)
+  }
+  function reassign(task: Task, userId: string) {
+    if (userId === task.ownerId) return
+    taskStore.update(task.id, { ownerId: userId })
+    toast.success(c.assignedToast(resolveUser(userId).name))
   }
 
   const tabs: { key: Tab; label: string; count: number }[] = [
@@ -473,8 +489,10 @@ export default function Tasks() {
                   key={task.id}
                   task={task}
                   c={c}
+                  users={users}
                   onComplete={() => complete(task)}
                   onReschedule={(d) => reschedule(task, d)}
+                  onReassign={(userId) => reassign(task, userId)}
                   onIgnore={() => setIgnored(task, !task.ignored)}
                   onEdit={() => {
                     setEditingTask(task)
@@ -543,16 +561,20 @@ function SourceBadge({ task, c }: { task: Task; c: Copy }) {
 function TaskRow({
   task,
   c,
+  users,
   onComplete,
   onReschedule,
+  onReassign,
   onIgnore,
   onEdit,
   onDelete,
 }: {
   task: Task
   c: Copy
+  users: Person[]
   onComplete: () => void
   onReschedule: (days: number) => void
+  onReassign: (userId: string) => void
   onIgnore: () => void
   onEdit: () => void
   onDelete: () => void
@@ -634,12 +656,41 @@ function TaskRow({
         )}
       </td>
       <td className="hidden px-2 py-2.5 sm:table-cell">
-        <div className="flex items-center gap-2">
-          <UserChip name={owner.name} color={owner.avatarColor} />
-          <span className="text-muted-foreground truncate text-xs">
-            {owner.name.split(" ")[0]}
-          </span>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              title={c.reassign(owner.name)}
+              className="hover:bg-muted -mx-1 flex items-center gap-2 rounded-md px-1 py-1 transition-colors"
+            >
+              <UserChip name={owner.name} color={owner.avatarColor} />
+              <span className="text-muted-foreground truncate text-xs">
+                {owner.name.split(" ")[0]}
+              </span>
+              <ChevronDown className="text-muted-foreground size-3.5 shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+              {c.assignTo}
+            </DropdownMenuLabel>
+            {users.map((u) => (
+              <DropdownMenuItem
+                key={u.id}
+                onClick={() => onReassign(u.id)}
+                className="gap-2"
+              >
+                <UserChip name={u.name} color={u.avatarColor} size="size-5" />
+                <span className="flex-1 truncate">
+                  {u.id === currentUser.id ? `${u.name} (${c.me})` : u.name}
+                </span>
+                {u.id === task.ownerId && (
+                  <Check className="text-primary size-4 shrink-0" />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
       <td className="text-muted-foreground px-2 py-2.5 text-xs whitespace-nowrap">
         {formatDueAt(task.dueDate)}
