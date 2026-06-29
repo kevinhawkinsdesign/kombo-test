@@ -3,7 +3,6 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
-  Plus,
   Users,
   Pencil,
   Check,
@@ -64,7 +63,7 @@ const COPY = {
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     tabPeople: "People",
     tabIntros: "Warm Intros",
-    addPerson: "Add prospect",
+    addPerson: "Find prospects",
     introTitle: "Work your prospects like a list",
     introDescription:
       "Browse everyone you're tracking, filter by status or fit, and jump straight into a profile or sequence.",
@@ -100,7 +99,7 @@ const COPY = {
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionados…`,
     tabPeople: "Personas",
     tabIntros: "Intros cálidas",
-    addPerson: "Añadir prospecto",
+    addPerson: "Buscar prospectos",
     introTitle: "Trabaja tus prospectos como una lista",
     introDescription:
       "Explora a todos los que sigues, filtra por estado o encaje, y entra directo a un perfil o secuencia.",
@@ -254,7 +253,7 @@ export default function People() {
         description={c.description}
         action={
           <Button variant="volt" onClick={() => setAddOpen(true)}>
-            <Plus className="size-4" />
+            <SearchIcon className="size-4" />
             {c.addPerson}
           </Button>
         }

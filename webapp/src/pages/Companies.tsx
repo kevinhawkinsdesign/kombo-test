@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
-  Plus,
   Building2,
   Pencil,
   Check,
@@ -61,7 +60,7 @@ const COPY = {
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     tabCompanies: "Discovered",
     tabDiscover: "Lookalikes",
-    addCompany: "Add company",
+    addCompany: "Find companies",
     addCompanyToast: "Add company — coming soon",
     introTitle: "Target the accounts that fit",
     introDescription:
@@ -109,7 +108,7 @@ const COPY = {
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
     tabCompanies: "Descubiertas",
     tabDiscover: "Similares",
-    addCompany: "Añadir empresa",
+    addCompany: "Buscar empresas",
     addCompanyToast: "Añadir empresa — próximamente",
     introTitle: "Apunta a las cuentas que encajan",
     introDescription:
@@ -269,7 +268,7 @@ export default function Companies() {
         description={c.description}
         action={
           <Button variant="volt" onClick={() => setAddOpen(true)}>
-            <Plus className="size-4" />
+            <SearchIcon className="size-4" />
             {c.addCompany}
           </Button>
         }
