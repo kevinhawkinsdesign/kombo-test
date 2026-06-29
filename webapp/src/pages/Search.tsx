@@ -13,7 +13,6 @@ import {
   Users,
   ArrowRight,
   Coins,
-  Wand2,
   ListPlus,
   CheckCircle2,
   CircleDashed,
@@ -35,7 +34,6 @@ import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
 import { Page } from "@/components/layout/Page"
 import { useLocale, type Locale } from "@/lib/locale"
-import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -89,7 +87,6 @@ import {
   LOOKALIKE_SEEDS,
   estimatedTotal,
   queryTitle,
-  isQueryEmpty,
   savedSearchStore,
   useSavedSearches,
   CREDITS_PER_LEAD,
@@ -134,7 +131,7 @@ import {
   accountStore,
 } from "@/lib/store"
 import { libraryQueries } from "@/lib/mock-library"
-import { facetsForDb, facetLabel, type FacetDef } from "@/lib/search-facets"
+import { facetsForDb, type FacetDef } from "@/lib/search-facets"
 import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
@@ -675,13 +672,6 @@ const PEOPLE_ONLY_SOURCES: BuildSource[] = [
   "crunchbase-investors",
 ]
 
-type RefinePatch = Partial<
-  Record<
-    "titles" | "seniority" | "regions" | "headcount" | "industries" | "signals",
-    readonly string[]
-  >
->
-
 const LIST_COLORS = ["#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899"]
 
 // Spotlights — LinkedIn-style quick toggles (index-matched to c.spotlights).
@@ -864,20 +854,6 @@ export default function Search() {
       runPrompt(headerPrompt)
     }
   }, [headerPrompt, runPrompt])
-
-  function applyRefine(patch: RefinePatch, label: string) {
-    setQuery((prev) => {
-      const next: AiQuery = { ...prev }
-      ;(Object.keys(patch) as (keyof RefinePatch)[]).forEach((k) => {
-        const add = patch[k]
-        if (!add) return
-        const cur = prev[k] as string[]
-        next[k] = Array.from(new Set([...cur, ...add])) as never
-      })
-      return next
-    })
-    toast.success(c.refinedTo(label))
-  }
 
   function removeFilter(group: keyof AiQuery, value: string) {
     setQuery((prev) => ({
@@ -1236,20 +1212,9 @@ export default function Search() {
         />
       ) : (
         <>
-      {/* AI is native to the product, so the page isn't labelled "AI Search". */}
-      <h1 className="text-xl font-semibold tracking-tight">{c.srTitle}</h1>
-      <p className="text-muted-foreground mt-1 mb-6 max-w-3xl text-sm">{c.description}</p>
-
-      <FeatureIntro
-        featureKey="ai-search"
-        icon={Sparkles}
-        title={c.introTitle}
-        description={c.introDescription}
-        points={[...c.introPoints]}
-        className="mb-6"
-      />
-
-      <div className="space-y-4">
+      {/* Results view stays lean — the dense table is the focus, so the page
+          title, blurb and intro panel live only on the pre-search home. */}
+      <div className="space-y-3">
         {/* Prospect Search tabs — People vs Companies (always shown). */}
         <div className="bg-muted inline-flex rounded-md p-0.5">
           <EntityTab
@@ -1275,7 +1240,7 @@ export default function Search() {
         </div>
 
         {/* Search query bar — the prompt IS the query, no chat thread. */}
-        <Card className="gap-3 p-3">
+        <Card className="p-3">
           <form
             className="flex items-end gap-2"
             onSubmit={(e) => {
@@ -1367,46 +1332,6 @@ export default function Search() {
               </DropdownMenuContent>
             </DropdownMenu>
           </form>
-
-          {/* Suggested searches (curated) + example queries + quick refinements */}
-          <div className="flex flex-wrap gap-1.5">
-            {libraryQueries
-              .filter((q) => q.entity === entity)
-              .slice(0, 4)
-              .map((q) => (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => runPrompt(q.prompt)}
-                  title={q.prompt}
-                  className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
-                >
-                  <Sparkles className="size-3" />
-                  {q.name}
-                </button>
-              ))}
-            {examples.slice(0, 3).map((ex) => (
-              <button
-                key={ex}
-                type="button"
-                onClick={() => runPrompt(ex)}
-                className="border-border hover:border-primary/40 hover:bg-muted/60 text-muted-foreground rounded-full border px-2.5 py-1 text-left text-xs transition-colors"
-              >
-                {ex.length > 42 ? `${ex.slice(0, 42)}…` : ex}
-              </button>
-            ))}
-            {c.refineChips.map((chip) => (
-              <button
-                key={chip.label}
-                type="button"
-                onClick={() => applyRefine(chip.patch, chip.label)}
-                className="bg-muted/60 hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors"
-              >
-                <Wand2 className="size-3" />
-                {chip.label}
-              </button>
-            ))}
-          </div>
         </Card>
 
         {/* Filters live in a persistent sidebar; results (or the home/empty
@@ -1587,41 +1512,6 @@ export default function Search() {
 
           {!thinking && (
             <>
-          {/* Active query chips */}
-          <Card className="gap-0 p-3">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <QueryChips
-                query={query}
-                onRemove={removeFilter}
-                onRemoveFacet={removeFacet}
-                onClearCap={() =>
-                  setQuery((q) => ({ ...q, perCompanyCap: null }))
-                }
-                locale={locale}
-                c={c}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 gap-1 px-2 text-xs"
-                onClick={() => setFiltersOpen(true)}
-              >
-                <Plus className="size-3.5" />
-                {c.addFilter}
-              </Button>
-              {!isQueryEmpty(query) && (
-                <button
-                  type="button"
-                  onClick={() => setQuery({ ...EMPTY_QUERY })}
-                  className="text-muted-foreground hover:text-foreground ml-1 inline-flex items-center gap-1 text-xs"
-                >
-                  <X className="size-3" />
-                  {c.clearSel}
-                </button>
-              )}
-            </div>
-          </Card>
-
           {/* Stats strip */}
           <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-sm">
             <span>
@@ -2769,31 +2659,6 @@ function EmptyRow({ span, text }: { span: number; text: string }) {
   )
 }
 
-const CHIP_GROUPS: (keyof AiQuery)[] = [
-  "titles",
-  "seniority",
-  "regions",
-  "industries",
-  "headcount",
-  "departments",
-  "technologies",
-  "revenue",
-  "founded",
-  "growth",
-  "intent",
-  "signals",
-  "linkedin",
-  "connections",
-  "profileLanguages",
-  "serviceCategories",
-  "schools",
-  "currentCompanies",
-  "pastCompanies",
-  "connectionsOf",
-  "followersOf",
-  "jobListings",
-]
-
 // Facets that only apply when the LinkedIn data source is on — styled in the
 // LinkedIn blue so it's obvious where they come from.
 const LINKEDIN_KEYS = new Set<keyof AiQuery>([
@@ -2808,94 +2673,6 @@ const LINKEDIN_KEYS = new Set<keyof AiQuery>([
   "followersOf",
   "jobListings",
 ])
-
-function QueryChips({
-  query,
-  onRemove,
-  onRemoveFacet,
-  onClearCap,
-  locale,
-  c,
-}: {
-  query: AiQuery
-  onRemove: (group: keyof AiQuery, value: string) => void
-  onRemoveFacet: (id: string, value: string) => void
-  onClearCap: () => void
-  locale: Locale
-  c: Copy
-}) {
-  const chips = CHIP_GROUPS.flatMap((group) =>
-    (query[group] as string[]).map((value) => ({ group, value }))
-  )
-  const facetChips = Object.entries(query.facets).flatMap(([id, values]) =>
-    values.map((value) => ({ id, value }))
-  )
-  const hasCap = query.perCompanyCap != null
-  if (chips.length === 0 && facetChips.length === 0 && !hasCap) {
-    return (
-      <span className="text-muted-foreground text-sm">
-        {c.addFilter} →
-      </span>
-    )
-  }
-  return (
-    <>
-      {hasCap && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 py-1 pr-1 pl-2.5 text-xs font-medium text-amber-700">
-          <Building2 className="size-3" />
-          {c.capChip(query.perCompanyCap as number)}
-          <button
-            type="button"
-            aria-label="Remove per-company cap"
-            onClick={onClearCap}
-            className="rounded-full p-0.5 hover:bg-black/10"
-          >
-            <X className="size-3" />
-          </button>
-        </span>
-      )}
-      {chips.map(({ group, value }) => (
-        <span
-          key={`${group}:${value}`}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
-            LINKEDIN_KEYS.has(group)
-              ? "bg-[#0a66c2]/10 text-[#0a66c2]"
-              : "bg-primary/10 text-primary"
-          )}
-        >
-          {LINKEDIN_KEYS.has(group) && <LinkedinIcon className="size-3" />}
-          {value}
-          <button
-            type="button"
-            aria-label={`Remove ${value}`}
-            onClick={() => onRemove(group, value)}
-            className="rounded-full p-0.5 hover:bg-black/10"
-          >
-            <X className="size-3" />
-          </button>
-        </span>
-      ))}
-      {facetChips.map(({ id, value }) => (
-        <span
-          key={`${id}:${value}`}
-          title={facetLabel(id, locale)}
-          className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium"
-        >
-          {value}
-          <button
-            type="button"
-            aria-label={`Remove ${value}`}
-            onClick={() => onRemoveFacet(id, value)}
-            className="rounded-full p-0.5 hover:bg-black/10"
-          >
-            <X className="size-3" />
-          </button>
-        </span>
-      ))}
-    </>
-  )
-}
 
 const FILTER_OPTIONS: {
   key: keyof AiQuery
