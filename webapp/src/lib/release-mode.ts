@@ -22,7 +22,6 @@ export const V2_ONLY_PATHS = [
   "/sequences",
   "/sequence-builder",
   "/channels",
-  "/tasks",
   "/deals",
 ] as const
 

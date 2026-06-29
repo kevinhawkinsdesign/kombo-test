@@ -36,6 +36,23 @@ export function relativeTime(iso: string): string {
   })
 }
 
+export type DueBucket = "overdue" | "today" | "upcoming"
+
+/** Bucket a due date relative to today, for cadence-style task grouping. */
+export function dueBucket(iso: string): DueBucket {
+  const due = new Date(iso).getTime()
+  const now = new Date()
+  const startToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).getTime()
+  const startTomorrow = startToday + 24 * 60 * 60 * 1000
+  if (due < startToday) return "overdue"
+  if (due < startTomorrow) return "today"
+  return "upcoming"
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short",

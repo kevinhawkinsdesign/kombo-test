@@ -35,7 +35,7 @@ import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
 import { useTasks, taskStore } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { useView } from "@/lib/view-context"
-import { relativeTime, initials } from "@/lib/format"
+import { relativeTime, initials, dueBucket } from "@/lib/format"
 import {
   assignableUsers,
   resolveUser,
@@ -65,7 +65,17 @@ const COPY = {
       "Complete touches without context-switching",
     ],
     openDone: (open: number, done: number) => `${open} open · ${done} done`,
+    groupOverdue: "Overdue",
+    groupToday: "Today",
+    groupUpcoming: "Upcoming",
+    groupCompleted: "Completed",
+    filterAll: "All",
+    filterCall: "Calls",
+    filterEmail: "Emails",
+    filterLinkedin: "LinkedIn",
+    filterFollowUp: "Follow-ups",
     noTasks: "No tasks.",
+    noTasksFiltered: "No tasks match this filter.",
     markOpen: "Mark task as open",
     markDone: "Mark task as done",
     editAria: (title: string) => `Edit task: ${title}`,
@@ -103,7 +113,17 @@ const COPY = {
     ],
     openDone: (open: number, done: number) =>
       `${open} abiertas · ${done} completadas`,
+    groupOverdue: "Vencidas",
+    groupToday: "Hoy",
+    groupUpcoming: "Próximas",
+    groupCompleted: "Completadas",
+    filterAll: "Todas",
+    filterCall: "Llamadas",
+    filterEmail: "Correos",
+    filterLinkedin: "LinkedIn",
+    filterFollowUp: "Seguimientos",
     noTasks: "No hay tareas.",
+    noTasksFiltered: "Ninguna tarea coincide con este filtro.",
     markOpen: "Marcar tarea como abierta",
     markDone: "Marcar tarea como completada",
     editAria: (title: string) => `Editar tarea: ${title}`,
@@ -154,6 +174,7 @@ export default function Tasks() {
     undefined
   )
   const [deletingTask, setDeletingTask] = React.useState<Task | null>(null)
+  const [typeFilter, setTypeFilter] = React.useState<TaskType | "all">("all")
 
   const visible = React.useMemo(
     () =>
@@ -163,17 +184,46 @@ export default function Tasks() {
     [tasks, impersonatingId]
   )
 
-  const sorted = React.useMemo(
+  const filtered = React.useMemo(
     () =>
-      [...visible].sort((a, b) => {
-        if (a.done !== b.done) return a.done ? 1 : -1
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-      }),
-    [visible]
+      typeFilter === "all"
+        ? visible
+        : visible.filter((t) => t.type === typeFilter),
+    [visible, typeFilter]
   )
+
+  const byDue = (a: Task, b: Task) =>
+    new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+
+  // Cadence groups: open tasks bucketed by due date, plus a completed section.
+  const groups = React.useMemo(() => {
+    const open = filtered.filter((t) => !t.done)
+    return {
+      overdue: open.filter((t) => dueBucket(t.dueDate) === "overdue").sort(byDue),
+      today: open.filter((t) => dueBucket(t.dueDate) === "today").sort(byDue),
+      upcoming: open.filter((t) => dueBucket(t.dueDate) === "upcoming").sort(byDue),
+      completed: filtered.filter((t) => t.done).sort(byDue),
+    }
+  }, [filtered])
 
   const openCount = visible.filter((t) => !t.done).length
   const doneCount = visible.length - openCount
+
+  const typeFilters: { value: TaskType | "all"; label: string }[] = [
+    { value: "all", label: c.filterAll },
+    { value: "call", label: c.filterCall },
+    { value: "email", label: c.filterEmail },
+    { value: "linkedin", label: c.filterLinkedin },
+    { value: "follow_up", label: c.filterFollowUp },
+  ]
+
+  const cadenceSections: { key: keyof typeof groups; label: string; tone: string }[] = [
+    { key: "overdue", label: c.groupOverdue, tone: "bg-destructive" },
+    { key: "today", label: c.groupToday, tone: "bg-volt" },
+    { key: "upcoming", label: c.groupUpcoming, tone: "bg-primary" },
+    { key: "completed", label: c.groupCompleted, tone: "bg-muted-foreground" },
+  ]
+  const hasAny = cadenceSections.some((s) => groups[s.key].length > 0)
 
   function toggle(task: Task) {
     taskStore.toggle(task.id)
@@ -218,99 +268,66 @@ export default function Tasks() {
         className="mb-6"
       />
 
-      <p className="text-muted-foreground mb-4 text-sm tabular-nums">
-        {c.openDone(openCount, doneCount)}
-      </p>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {typeFilters.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setTypeFilter(f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                typeFilter === f.value
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted/60"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm tabular-nums">
+          {c.openDone(openCount, doneCount)}
+        </p>
+      </div>
 
-      <Card className="gap-0 overflow-hidden py-0">
-        {sorted.length === 0 ? (
+      {!hasAny ? (
+        <Card className="py-0">
           <p className="text-muted-foreground px-4 py-10 text-center text-sm">
-            {c.noTasks}
+            {typeFilter === "all" ? c.noTasks : c.noTasksFiltered}
           </p>
-        ) : (
-          sorted.map((task) => {
-            const Icon = TYPE_ICON[task.type]
-            const prospect = task.prospectId
-              ? getProspect(task.prospectId)
-              : undefined
+        </Card>
+      ) : (
+        <div className="space-y-5">
+          {cadenceSections.map((section) => {
+            const items = groups[section.key]
+            if (items.length === 0) return null
             return (
-              <div
-                key={task.id}
-                className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
-              >
-                <Checkbox
-                  checked={task.done}
-                  onCheckedChange={() => toggle(task)}
-                  aria-label={task.done ? c.markOpen : c.markDone}
-                />
-
-                <span
-                  className={cn(
-                    "bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full",
-                    task.done && "opacity-60"
-                  )}
-                >
-                  <Icon className="size-4" />
-                </span>
-
-                <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1">
-                  <span
-                    className={cn(
-                      "font-medium",
-                      task.done && "text-muted-foreground line-through"
-                    )}
-                  >
-                    {task.title}
+              <div key={section.key}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className={cn("size-2 rounded-full", section.tone)} />
+                  <h2 className="text-sm font-semibold">{section.label}</h2>
+                  <span className="text-muted-foreground text-xs tabular-nums">
+                    {items.length}
                   </span>
-                  {prospect && (
-                    <Link
-                      to={`/prospects/${prospect.id}`}
-                      className="text-muted-foreground text-sm hover:underline"
-                    >
-                      · {prospect.firstName} {prospect.lastName}
-                    </Link>
-                  )}
-                  <AssignedByChip assigner={resolveAssigner(task.assignedById)} c={c} />
                 </div>
-
-                <AssigneePicker task={task} c={c} />
-
-                <Badge
-                  variant={PRIORITY_VARIANT[task.priority]}
-                  className={cn("shrink-0 max-sm:hidden", task.done && "opacity-60")}
-                >
-                  {c.priorityLabel[task.priority]}
-                </Badge>
-
-                <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                  {relativeTime(task.dueDate)}
-                </span>
-
-                <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.editAria(task.title)}
-                    onClick={() => openEdit(task)}
-                  >
-                    <Pencil />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    aria-label={c.deleteAria(task.title)}
-                    onClick={() => setDeletingTask(task)}
-                  >
-                    <Trash2 />
-                  </Button>
-                </div>
+                <Card className="gap-0 overflow-hidden py-0">
+                  {items.map((task) => (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      c={c}
+                      onToggle={() => toggle(task)}
+                      onEdit={() => openEdit(task)}
+                      onDelete={() => setDeletingTask(task)}
+                    />
+                  ))}
+                </Card>
               </div>
             )
-          })
-        )}
-      </Card>
+          })}
+        </div>
+      )}
 
       <TaskFormDialog
         open={formOpen}
@@ -332,6 +349,95 @@ export default function Tasks() {
         onConfirm={confirmDelete}
       />
     </Page>
+  )
+}
+
+function TaskRow({
+  task,
+  c,
+  onToggle,
+  onEdit,
+  onDelete,
+}: {
+  task: Task
+  c: Copy
+  onToggle: () => void
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const Icon = TYPE_ICON[task.type]
+  const prospect = task.prospectId ? getProspect(task.prospectId) : undefined
+  return (
+    <div className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
+      <Checkbox
+        checked={task.done}
+        onCheckedChange={onToggle}
+        aria-label={task.done ? c.markOpen : c.markDone}
+      />
+
+      <span
+        className={cn(
+          "bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full",
+          task.done && "opacity-60"
+        )}
+      >
+        <Icon className="size-4" />
+      </span>
+
+      <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1">
+        <span
+          className={cn(
+            "font-medium",
+            task.done && "text-muted-foreground line-through"
+          )}
+        >
+          {task.title}
+        </span>
+        {prospect && (
+          <Link
+            to={`/prospects/${prospect.id}`}
+            className="text-muted-foreground text-sm hover:underline"
+          >
+            · {prospect.firstName} {prospect.lastName}
+          </Link>
+        )}
+        <AssignedByChip assigner={resolveAssigner(task.assignedById)} c={c} />
+      </div>
+
+      <AssigneePicker task={task} c={c} />
+
+      <Badge
+        variant={PRIORITY_VARIANT[task.priority]}
+        className={cn("shrink-0 max-sm:hidden", task.done && "opacity-60")}
+      >
+        {c.priorityLabel[task.priority]}
+      </Badge>
+
+      <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+        {relativeTime(task.dueDate)}
+      </span>
+
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          aria-label={c.editAria(task.title)}
+          onClick={onEdit}
+        >
+          <Pencil />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive size-8"
+          aria-label={c.deleteAria(task.title)}
+          onClick={onDelete}
+        >
+          <Trash2 />
+        </Button>
+      </div>
+    </div>
   )
 }
 
