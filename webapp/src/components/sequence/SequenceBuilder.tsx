@@ -228,6 +228,38 @@ export function SequenceBuilder({
         </div>
       </div>
 
+      {/* Automation (sequence-level) — shown above the steps. */}
+      <div className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-xl border p-3 sm:p-4">
+        <span className="bg-chart-4/15 text-chart-4 flex size-8 shrink-0 items-center justify-center rounded-lg">
+          <Zap className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1 text-sm font-medium">
+            Runs automatically
+            <InfoHint label="How automation works">
+              Steps fire on their trigger — a delay, an opened email, a clicked
+              link, or a data signal. The sequence pauses the instant a prospect
+              replies so you never message someone who's already engaged.
+            </InfoHint>
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {autoPause
+              ? "Auto-pauses the moment a prospect replies."
+              : "Continues regardless of replies."}
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground hidden sm:inline">
+            Auto-pause on reply
+          </span>
+          <Switch
+            checked={autoPause}
+            onCheckedChange={setAutoPause}
+            aria-label="Auto-pause on reply"
+          />
+        </label>
+      </div>
+
       {view === "timeline" ? (
         <ol className="space-y-2">
           {steps.map((step, index) => {
@@ -440,37 +472,6 @@ export function SequenceBuilder({
         <SequenceDiagram steps={steps} days={days} autoPause={autoPause} />
       )}
 
-      {/* Footer: automation */}
-      <div className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-xl border p-3 sm:p-4">
-        <span className="bg-chart-4/15 text-chart-4 flex size-8 shrink-0 items-center justify-center rounded-lg">
-          <Zap className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1 text-sm font-medium">
-            Runs automatically
-            <InfoHint label="How automation works">
-              Steps fire on their trigger — a delay, an opened email, a clicked
-              link, or a data signal. The sequence pauses the instant a prospect
-              replies so you never message someone who's already engaged.
-            </InfoHint>
-          </p>
-          <p className="text-muted-foreground text-xs">
-            {autoPause
-              ? "Auto-pauses the moment a prospect replies."
-              : "Continues regardless of replies."}
-          </p>
-        </div>
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground hidden sm:inline">
-            Auto-pause on reply
-          </span>
-          <Switch
-            checked={autoPause}
-            onCheckedChange={setAutoPause}
-            aria-label="Auto-pause on reply"
-          />
-        </label>
-      </div>
     </div>
   )
 }
