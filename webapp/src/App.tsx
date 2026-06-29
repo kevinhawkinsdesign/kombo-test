@@ -14,6 +14,8 @@ import People from "@/pages/People"
 import CompanyDetail from "@/pages/CompanyDetail"
 import Lists from "@/pages/Lists"
 import ListDetail from "@/pages/ListDetail"
+import Workspaces from "@/pages/Workspaces"
+import WorkspaceDetail from "@/pages/WorkspaceDetail"
 import Inbox from "@/pages/Inbox"
 import Campaigns from "@/pages/Campaigns"
 import CampaignDetail from "@/pages/CampaignDetail"
@@ -82,6 +84,8 @@ function App() {
         <Route path="/intros" element={<People />} />
         <Route path="/lists" element={<Lists />} />
         <Route path="/lists/:id" element={<ListDetail />} />
+        <Route path="/workspaces" element={<Workspaces />} />
+        <Route path="/workspaces/:id" element={<WorkspaceDetail />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />

@@ -737,6 +737,12 @@ export default function Search() {
   const similarPrompt = incomingSeed ? `${c.similarTo} ${incomingSeed.name}` : ""
   const campaigns = useCampaigns()
   const savedSearches = useSavedSearches()
+  // Arrive from a workspace with a saved-search id and the page opens preloaded.
+  const incomingSearchId =
+    (location.state as { loadSearchId?: string } | null)?.loadSearchId ?? null
+  const loadedSearch = incomingSearchId
+    ? (savedSearches.find((s) => s.id === incomingSearchId) ?? null)
+    : null
   const newCampaign = useNewCampaign()
   const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
 
@@ -744,20 +750,28 @@ export default function Search() {
   // arrived from the header search with a prompt to run, or a lookalike seed.
   const initial = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
   const [entity, setEntity] = React.useState<AiEntity>(
-    incomingSeed
-      ? incomingSeed.kind === "company"
-        ? "companies"
-        : "people"
-      : initial.entity
+    loadedSearch
+      ? loadedSearch.entity
+      : incomingSeed
+        ? incomingSeed.kind === "company"
+          ? "companies"
+          : "people"
+        : initial.entity
   )
   const [query, setQuery] = React.useState<AiQuery>(
-    incomingSeed || headerPrompt ? { ...EMPTY_QUERY } : initial.query
+    loadedSearch
+      ? loadedSearch.query
+      : incomingSeed || headerPrompt
+        ? { ...EMPTY_QUERY }
+        : initial.query
   )
   const [lastPrompt, setLastPrompt] = React.useState(
-    similarPrompt || EXAMPLE_PROMPTS_EN[0]
+    loadedSearch ? loadedSearch.prompt : similarPrompt || EXAMPLE_PROMPTS_EN[0]
   )
   const [input, setInput] = React.useState(
-    similarPrompt || headerPrompt || EXAMPLE_PROMPTS_EN[0]
+    loadedSearch
+      ? loadedSearch.prompt
+      : similarPrompt || headerPrompt || EXAMPLE_PROMPTS_EN[0]
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())

@@ -32,6 +32,7 @@ import {
   Puzzle,
   Workflow,
   Search,
+  LayoutGrid,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -86,6 +87,7 @@ const primary: NavItem[] = [
     badge: String(copilotActions.length),
     isNew: true,
   },
+  { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
   {
     to: "/inbox",
     labelKey: "nav.inbox",
