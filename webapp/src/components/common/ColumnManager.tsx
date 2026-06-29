@@ -6,6 +6,8 @@ import {
   X,
   RotateCcw,
   Search as SearchIcon,
+  Sparkles,
+  Trash2,
 } from "lucide-react"
 
 import {
@@ -38,6 +40,8 @@ const COPY = {
     moveUp: "Move up",
     moveDown: "Move down",
     remove: "Remove",
+    newAiColumn: "New AI column",
+    deleteColumn: "Delete column",
   },
   es: {
     title: "Personalizar columnas",
@@ -53,6 +57,8 @@ const COPY = {
     moveUp: "Subir",
     moveDown: "Bajar",
     remove: "Quitar",
+    newAiColumn: "Nueva columna IA",
+    deleteColumn: "Eliminar columna",
   },
 } as const
 
@@ -63,6 +69,9 @@ export function ColumnManager<T>({
   groups,
   prefs,
   locale,
+  onAddAiColumn,
+  aiColumnIds,
+  onDeleteColumn,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -70,6 +79,9 @@ export function ColumnManager<T>({
   groups: ColGroup[]
   prefs: ColumnPrefs
   locale: Locale
+  onAddAiColumn?: () => void
+  aiColumnIds?: Set<string>
+  onDeleteColumn?: (id: string) => void
 }) {
   const c = COPY[locale]
   const [search, setSearch] = React.useState("")
@@ -178,7 +190,7 @@ export function ColumnManager<T>({
 
           {/* Available */}
           <div className="flex max-h-[40vh] flex-col overflow-hidden sm:max-h-[60vh]">
-            <div className="bg-muted/30 px-3 py-2">
+            <div className="bg-muted/30 space-y-2 px-3 py-2">
               <div className="relative">
                 <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
                 <Input
@@ -188,6 +200,17 @@ export function ColumnManager<T>({
                   className="h-8 pl-8 text-sm"
                 />
               </div>
+              {onAddAiColumn && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={onAddAiColumn}
+                >
+                  <Sparkles className="size-4" />
+                  {c.newAiColumn}
+                </Button>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {groups.map((group) => {
@@ -214,6 +237,20 @@ export function ColumnManager<T>({
                             onCheckedChange={() => prefs.toggle(col.id)}
                           />
                           <span className="flex-1 truncate">{col.label[locale]}</span>
+                          {aiColumnIds?.has(col.id) && onDeleteColumn && (
+                            <button
+                              type="button"
+                              aria-label={c.deleteColumn}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                onDeleteColumn(col.id)
+                              }}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
                         </label>
                       )
                     })}

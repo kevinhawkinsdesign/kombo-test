@@ -43,8 +43,12 @@ import {
   COMPANY_COLUMNS,
   COMPANY_GROUPS,
   COMPANY_DEFAULT_IDS,
+  AI_COLUMN_GROUP,
+  aiColumnsToDefs,
   useColumnPrefs,
 } from "@/lib/table-columns"
+import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
+import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
 import { useAccounts, accountStore } from "@/lib/store"
 import { getRep } from "@/lib/team"
 import { useView } from "@/lib/view-context"
@@ -178,7 +182,23 @@ export default function Companies() {
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  const [aiColOpen, setAiColOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
+
+  // User-defined AI columns merged into the table's column registry.
+  const aiCols = useAiColumns("company")
+  const allColumns = React.useMemo(
+    () => [...COMPANY_COLUMNS, ...aiColumnsToDefs<Account>(aiCols)],
+    [aiCols]
+  )
+  const allGroups = React.useMemo(
+    () => (aiCols.length ? [...COMPANY_GROUPS, AI_COLUMN_GROUP] : COMPANY_GROUPS),
+    [aiCols.length]
+  )
+  const aiColumnIds = React.useMemo(
+    () => new Set(aiCols.map((co) => co.id)),
+    [aiCols]
+  )
 
   const source = impersonatingId
     ? accounts.filter((a) => a.ownerId === impersonatingId)
@@ -398,7 +418,7 @@ export default function Companies() {
         </div>
       ) : view === "table" ? (
         <DataTable
-          columns={COMPANY_COLUMNS}
+          columns={allColumns}
           visible={columnPrefs.visible}
           rows={results}
           rowKey={(a) => a.id}
@@ -449,10 +469,22 @@ export default function Companies() {
       <ColumnManager
         open={columnsOpen}
         onOpenChange={setColumnsOpen}
-        columns={COMPANY_COLUMNS}
-        groups={COMPANY_GROUPS}
+        columns={allColumns}
+        groups={allGroups}
         prefs={columnPrefs}
         locale={locale}
+        onAddAiColumn={() => setAiColOpen(true)}
+        aiColumnIds={aiColumnIds}
+        onDeleteColumn={(id) => aiColumnStore.remove(id)}
+      />
+      <AddAiColumnDialog
+        open={aiColOpen}
+        onOpenChange={setAiColOpen}
+        entity="company"
+        onCreated={(id) => {
+          if (!columnPrefs.visible.includes(id))
+            columnPrefs.setVisible([...columnPrefs.visible, id])
+        }}
       />
 
       <AddRecordsDialog open={addOpen} onOpenChange={setAddOpen} kind="company" />

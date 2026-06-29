@@ -50,8 +50,12 @@ import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
   PEOPLE_DEFAULT_IDS,
+  AI_COLUMN_GROUP,
+  aiColumnsToDefs,
   useColumnPrefs,
 } from "@/lib/table-columns"
+import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
+import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
 import { useProspects, prospectStore } from "@/lib/store"
 import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_LABELS } from "@/lib/mock-data"
@@ -153,7 +157,23 @@ export default function People() {
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkCampaign, setBulkCampaign] = React.useState(false)
   const [bulkEnrich, setBulkEnrich] = React.useState(false)
+  const [aiColOpen, setAiColOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
+
+  // User-defined AI columns merged into the table's column registry.
+  const aiCols = useAiColumns("people")
+  const allColumns = React.useMemo(
+    () => [...PEOPLE_COLUMNS, ...aiColumnsToDefs<Prospect>(aiCols)],
+    [aiCols]
+  )
+  const allGroups = React.useMemo(
+    () => (aiCols.length ? [...PEOPLE_GROUPS, AI_COLUMN_GROUP] : PEOPLE_GROUPS),
+    [aiCols.length]
+  )
+  const aiColumnIds = React.useMemo(
+    () => new Set(aiCols.map((c) => c.id)),
+    [aiCols]
+  )
 
   const q = query.trim().toLowerCase()
   const results = prospects.filter((p) => {
@@ -388,7 +408,7 @@ export default function People() {
         </div>
       ) : view === "table" ? (
         <DataTable
-          columns={PEOPLE_COLUMNS}
+          columns={allColumns}
           visible={columnPrefs.visible}
           rows={results}
           rowKey={(p) => p.id}
@@ -450,10 +470,22 @@ export default function People() {
       <ColumnManager
         open={columnsOpen}
         onOpenChange={setColumnsOpen}
-        columns={PEOPLE_COLUMNS}
-        groups={PEOPLE_GROUPS}
+        columns={allColumns}
+        groups={allGroups}
         prefs={columnPrefs}
         locale={locale}
+        onAddAiColumn={() => setAiColOpen(true)}
+        aiColumnIds={aiColumnIds}
+        onDeleteColumn={(id) => aiColumnStore.remove(id)}
+      />
+      <AddAiColumnDialog
+        open={aiColOpen}
+        onOpenChange={setAiColOpen}
+        entity="people"
+        onCreated={(id) => {
+          if (!columnPrefs.visible.includes(id))
+            columnPrefs.setVisible([...columnPrefs.visible, id])
+        }}
       />
         </>
       )}
