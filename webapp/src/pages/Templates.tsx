@@ -997,10 +997,7 @@ export default function Templates() {
       </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent
-          showCloseButton
-          className="flex h-screen w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-[92vh] sm:max-w-5xl sm:rounded-xl"
-        >
+        <DialogContent showCloseButton fullScreen>
           <DialogHeader className="border-b p-5 text-left">
             <DialogTitle>{editing ? c.editTemplate : c.newTemplate}</DialogTitle>
             <DialogDescription>
