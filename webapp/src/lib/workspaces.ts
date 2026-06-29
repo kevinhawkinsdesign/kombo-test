@@ -7,6 +7,16 @@ import * as React from "react"
 
 export type WorkspaceItemKind = "search" | "list" | "campaign"
 
+// A lightweight summary of the workspace's source search — drives the SOURCE
+// step in the pipeline view (the prompt, its filter chips, and match counts).
+export interface WorkspaceSource {
+  prompt: string
+  filters: { label: string; value: string }[]
+  found: number
+  people: number
+  companies: number
+}
+
 export interface Workspace {
   id: string
   name: string // "" when the user hasn't named it
@@ -14,6 +24,7 @@ export interface Workspace {
   searchIds: string[]
   listIds: string[]
   campaignIds: string[]
+  source?: WorkspaceSource
   createdAt: string
 }
 
@@ -32,11 +43,24 @@ const FIELD: Record<WorkspaceItemKind, "searchIds" | "listIds" | "campaignIds"> 
 const SEED: Workspace[] = [
   {
     id: "ws_1",
-    name: "Enterprise CRO push",
+    name: "Q3 EMEA Outbound",
     color: COLORS[0],
     searchIds: [],
-    listIds: ["l_1", "l_2"],
+    listIds: ["l_1", "l_2", "l_3"],
     campaignIds: ["cm_1"],
+    source: {
+      prompt:
+        "Heads of Revenue Operations at B2B SaaS companies, 50–500 employees, in EMEA",
+      filters: [
+        { label: "Title", value: "Head of RevOps" },
+        { label: "Industry", value: "B2B SaaS" },
+        { label: "Headcount", value: "50–500" },
+        { label: "Region", value: "EMEA" },
+      ],
+      found: 2184,
+      people: 2184,
+      companies: 1120,
+    },
     createdAt: "2026-06-18T00:00:00Z",
   },
   {
