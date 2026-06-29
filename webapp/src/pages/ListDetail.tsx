@@ -525,7 +525,7 @@ export default function ListDetail() {
       <EnrichListDialog
         open={enrichOpen}
         onOpenChange={setEnrichOpen}
-        pending={pending}
+        prospects={members}
       />
 
       <ConfirmDialog

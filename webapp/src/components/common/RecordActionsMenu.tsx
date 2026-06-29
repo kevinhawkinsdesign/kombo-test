@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { MoreHorizontal, ExternalLink, FolderPlus, Send, Building2 } from "lucide-react"
+import { MoreHorizontal, ExternalLink, FolderPlus, Send, Building2, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { AddToCollectionDialog } from "@/components/common/AddToCollectionDialog"
 import { CrmExportDialog } from "@/components/common/CrmExportDialog"
+import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import type { RecordKind } from "@/lib/crm-mapping"
@@ -21,6 +22,7 @@ const COPY = {
   en: {
     actions: "Actions",
     viewProfile: "View profile",
+    enrich: "Enrich",
     addToList: "Add to list",
     addToCampaign: "Add to campaign",
     addToCrm: "Add to CRM",
@@ -28,13 +30,14 @@ const COPY = {
   es: {
     actions: "Acciones",
     viewProfile: "Ver perfil",
+    enrich: "Enriquecer",
     addToList: "Añadir a lista",
     addToCampaign: "Añadir a campaña",
     addToCrm: "Añadir al CRM",
   },
 } as const
 
-type Dialog = "list" | "campaign" | "crm" | null
+type Dialog = "list" | "campaign" | "crm" | "enrich" | null
 
 export function RecordActionsMenu({
   kind,
@@ -81,6 +84,12 @@ export function RecordActionsMenu({
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          {kind === "person" && (
+            <DropdownMenuItem onClick={() => setDialog("enrich")}>
+              <Sparkles className="size-4" />
+              {c.enrich}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => setDialog("list")}>
             <FolderPlus className="size-4" />
             {c.addToList}
@@ -115,6 +124,13 @@ export function RecordActionsMenu({
           recordKind={kind}
           record={record}
           recordName={name}
+        />
+      )}
+      {dialog === "enrich" && kind === "person" && (
+        <EnrichListDialog
+          open
+          onOpenChange={(v) => !v && setDialog(null)}
+          prospects={[record as Prospect]}
         />
       )}
     </>
