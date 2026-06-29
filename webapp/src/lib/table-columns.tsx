@@ -31,6 +31,7 @@ import { formatMoney as money, initials, prospectSource } from "@/lib/format"
 import { getRep } from "@/lib/team"
 import type { Locale } from "@/lib/locale"
 import type { Account, AccountTier, Prospect } from "@/lib/types"
+import type { AiColumnDef } from "@/lib/ai-columns"
 
 export type Loc = Record<Locale, string>
 function L(en: string, es: string): Loc {
@@ -611,6 +612,53 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
 export const PEOPLE_DEFAULT_IDS = PEOPLE_COLUMNS.filter(
   (c) => c.default && !c.pinned
 ).map((c) => c.id)
+
+/* ------------------------------ AI columns ------------------------------- */
+
+// Group custom AI columns are filed under in the column manager.
+export const AI_COLUMN_GROUP: ColGroup = {
+  id: "ai",
+  label: L("AI columns", "Columnas IA"),
+}
+
+// Plausible short "AI" answers for free-text columns, picked deterministically
+// per row + column so the demo looks fully populated and stable across renders.
+const AI_TEXT_POOL = [
+  "Strong fit",
+  "Worth a call",
+  "Recently funded",
+  "Actively hiring",
+  "Mentioned in the news",
+  "Likely champion",
+  "Uses a competitor",
+  "Budget likely",
+  "Expanding to EMEA",
+  "Early-stage adopter",
+]
+
+// Turn a user-defined AI column into a render-ready table column. The value is
+// mocked from the row id + column id so it stays consistent between renders.
+export function aiColumnToDef<T extends { id: string }>(
+  col: AiColumnDef
+): ColumnDef<T> {
+  return {
+    id: col.id,
+    label: L(col.label, col.label),
+    group: AI_COLUMN_GROUP.id,
+    minWidth: "150px",
+    render: (row, locale) => {
+      if (col.output === "score") return scoreChip(numFrom(row.id, col.id, 30, 99))
+      if (col.output === "yesno") return yesNo(hash(row.id + col.id) % 5 < 3, locale)
+      return mut(pickFrom(row.id, col.id, AI_TEXT_POOL))
+    },
+  }
+}
+
+export function aiColumnsToDefs<T extends { id: string }>(
+  cols: AiColumnDef[]
+): ColumnDef<T>[] {
+  return cols.map((c) => aiColumnToDef<T>(c))
+}
 
 /* ----------------------------- preferences store ------------------------- */
 
