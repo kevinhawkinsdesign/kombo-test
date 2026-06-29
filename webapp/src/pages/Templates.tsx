@@ -92,6 +92,30 @@ const VARIABLES: VariableDef[] = [
   { tag: "calendar_link", en: "Booking link", es: "Enlace de reserva", defEn: "Your meeting booking link", defEs: "Tu enlace para agendar" },
 ]
 
+// Dummy merge data used to render the live preview as a recipient would see it.
+const SAMPLE_DATA: Record<string, string> = {
+  first_name: "Sarah",
+  last_name: "Chen",
+  company: "Acme Corp",
+  title: "VP of Sales",
+  industry: "SaaS",
+  city: "San Francisco",
+  sender: "Alex Rivera",
+  sender_company: "Kombo",
+  sender_title: "Account Executive",
+  calendar_link: "cal.com/alex-rivera",
+}
+
+// Substitute {{tag}} with sample data; unknown tags are left literal so the
+// author can still spot a typo'd variable in the preview.
+function renderWithSample(text: string): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (whole, tag: string) =>
+    Object.prototype.hasOwnProperty.call(SAMPLE_DATA, tag)
+      ? SAMPLE_DATA[tag]
+      : whole
+  )
+}
+
 const COPY = {
   en: {
     topPerformer: "Top performer",
@@ -142,6 +166,12 @@ const COPY = {
     delete: "Delete",
     variablesTitle: "Variables",
     variablesSubtitle: "Click to insert, drag into the body, or copy.",
+    tabVariables: "Variables",
+    tabPreview: "Preview",
+    previewSampleNote: "Sample data — your real merge fields fill in at send.",
+    previewEmptyState: "Start writing to see a live preview.",
+    previewToLabel: "To",
+    previewSubjectLabel: "Subject",
     copy: "Copy",
     copied: "Copied",
     aiGenerate: "Generate with AI",
@@ -235,6 +265,12 @@ const COPY = {
     delete: "Eliminar",
     variablesTitle: "Variables",
     variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
+    tabVariables: "Variables",
+    tabPreview: "Vista previa",
+    previewSampleNote: "Datos de ejemplo — tus campos reales se rellenan al enviar.",
+    previewEmptyState: "Escribe para ver una vista previa.",
+    previewToLabel: "Para",
+    previewSubjectLabel: "Asunto",
     copy: "Copiar",
     copied: "Copiado",
     aiGenerate: "Generar con IA",
@@ -511,6 +547,7 @@ export default function Templates() {
   const [tags, setTags] = React.useState("")
   const [copiedTag, setCopiedTag] = React.useState<string | null>(null)
   const [varQuery, setVarQuery] = React.useState<string | null>(null)
+  const [sidebarTab, setSidebarTab] = React.useState<"vars" | "preview">("vars")
 
   // AI generator (method 2: prompt → draft).
   const [aiOpen, setAiOpen] = React.useState(false)
@@ -1183,54 +1220,130 @@ export default function Templates() {
               </div>
             </div>
 
-            {/* Variables sidebar */}
+            {/* Right rail: Variables | live Preview */}
             <div className="bg-muted/30 hidden flex-col overflow-hidden border-l md:flex">
-              <div className="border-b p-4">
-                <p className="flex items-center gap-1.5 text-sm font-semibold">
-                  <Braces className="text-primary size-4" />
-                  {c.variablesTitle}
-                </p>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {c.variablesSubtitle}
-                </p>
-              </div>
-              <div className="flex-1 space-y-1 overflow-y-auto p-2">
-                {VARIABLES.map((v) => (
-                  <div
-                    key={v.tag}
-                    draggable
-                    onDragStart={(e) =>
-                      e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
-                    }
-                    className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
+              <div className="flex gap-1 border-b p-2">
+                {(
+                  [
+                    { v: "vars" as const, label: c.tabVariables },
+                    { v: "preview" as const, label: c.tabPreview },
+                  ]
+                ).map((tb) => (
+                  <button
+                    key={tb.v}
+                    type="button"
+                    onClick={() => setSidebarTab(tb.v)}
+                    className={cn(
+                      "flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
+                      sidebarTab === tb.v
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
                   >
-                    <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
-                    <button
-                      type="button"
-                      onClick={() => insertVariable(v.tag)}
-                      className="min-w-0 flex-1 text-left"
-                      title={locale === "es" ? v.defEs : v.defEn}
-                    >
-                      <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
-                      <span className="text-muted-foreground block truncate text-[11px]">
-                        {locale === "es" ? v.defEs : v.defEn}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => copyVariable(v.tag)}
-                      aria-label={c.copy}
-                      className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      {copiedTag === v.tag ? (
-                        <Check className="text-chart-1 size-3.5" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
-                    </button>
-                  </div>
+                    {tb.label}
+                  </button>
                 ))}
               </div>
+
+              {sidebarTab === "vars" ? (
+                <>
+                  <div className="border-b p-4">
+                    <p className="flex items-center gap-1.5 text-sm font-semibold">
+                      <Braces className="text-primary size-4" />
+                      {c.variablesTitle}
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      {c.variablesSubtitle}
+                    </p>
+                  </div>
+                  <div className="flex-1 space-y-1 overflow-y-auto p-2">
+                    {VARIABLES.map((v) => (
+                      <div
+                        key={v.tag}
+                        draggable
+                        onDragStart={(e) =>
+                          e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
+                        }
+                        className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
+                      >
+                        <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
+                        <button
+                          type="button"
+                          onClick={() => insertVariable(v.tag)}
+                          className="min-w-0 flex-1 text-left"
+                          title={locale === "es" ? v.defEs : v.defEn}
+                        >
+                          <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
+                          <span className="text-muted-foreground block truncate text-[11px]">
+                            {locale === "es" ? v.defEs : v.defEn}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => copyVariable(v.tag)}
+                          aria-label={c.copy}
+                          className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          {copiedTag === v.tag ? (
+                            <Check className="text-chart-1 size-3.5" />
+                          ) : (
+                            <Copy className="size-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-4">
+                  {subject.trim() === "" && body.trim() === "" ? (
+                    <div className="text-muted-foreground flex h-full items-center justify-center text-center text-xs">
+                      {c.previewEmptyState}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {channel === "email" ? (
+                        <div className="bg-background overflow-hidden rounded-lg border shadow-sm">
+                          <div className="space-y-1 border-b p-3 text-xs">
+                            <div className="flex gap-2">
+                              <span className="text-muted-foreground w-12 shrink-0">
+                                {c.previewToLabel}
+                              </span>
+                              <span className="font-medium">
+                                {SAMPLE_DATA.first_name} {SAMPLE_DATA.last_name}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="text-muted-foreground w-12 shrink-0">
+                                {c.previewSubjectLabel}
+                              </span>
+                              <span className="font-medium">
+                                {renderWithSample(subject) || "—"}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-foreground/90 p-3 text-sm whitespace-pre-wrap">
+                            {renderWithSample(body)}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2">
+                          <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                            {SAMPLE_DATA.first_name[0]}
+                            {SAMPLE_DATA.last_name[0]}
+                          </span>
+                          <div className="bg-background max-w-full rounded-2xl rounded-tl-sm border p-3 text-sm whitespace-pre-wrap shadow-sm">
+                            {renderWithSample(body)}
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-muted-foreground text-[11px]">
+                        {c.previewSampleNote}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
