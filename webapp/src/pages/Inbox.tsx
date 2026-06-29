@@ -53,9 +53,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team, getRep } from "@/lib/team"
-import { useConversations, conversationStore, useTemplates } from "@/lib/store"
+import { useConversations, conversationStore } from "@/lib/store"
 import { draftReply } from "@/lib/mock-ai-reply"
 import {
   translate,
@@ -1284,11 +1285,12 @@ function Composer({
   recipientLang: ChatLang
   c: Copy
 }) {
-  const templates = useTemplates()
+  const { locale } = useLocale()
   const [reply, setReply] = React.useState(conv.aiDraft ?? "")
   const [aiUsed, setAiUsed] = React.useState(Boolean(conv.aiDraft))
   const [seed, setSeed] = React.useState(0)
   const [preview, setPreview] = React.useState(false)
+  const [templateOpen, setTemplateOpen] = React.useState(false)
   const taRef = React.useRef<HTMLTextAreaElement>(null)
 
   const CHANNEL_NAMES: Record<string, string> = {
@@ -1315,6 +1317,8 @@ function Composer({
     (text, v) => text.replaceAll(`{{${v.tag}}}`, v.value),
     reply
   )
+  // Same variables as a tag→value map, for the template picker's live preview.
+  const varsMap = Object.fromEntries(vars.map((v) => [v.tag, v.value]))
 
   function generate() {
     const next = seed + 1
@@ -1377,11 +1381,11 @@ function Composer({
     })
   }
 
+  // Insert the template body verbatim (merge variables intact) so the composer's
+  // existing Personalize / Preview pipeline renders them against this recipient.
   function applyTemplate(body: string) {
-    const filled = body
-      .replaceAll("{{first_name}}", prospect.firstName)
-      .replaceAll("{{company}}", prospect.company)
-    setReply((cur) => (cur.trim() ? `${cur}\n\n${filled}` : filled))
+    setReply((cur) => (cur.trim() ? `${cur}\n\n${body}` : body))
+    setPreview(false)
   }
 
   function send() {
@@ -1517,25 +1521,15 @@ function Composer({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8" aria-label={c.templates}>
-              <FileText className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="max-h-72 w-64 overflow-y-auto">
-            <DropdownMenuLabel>{c.templates}</DropdownMenuLabel>
-            {templates.length === 0 ? (
-              <p className="text-muted-foreground px-2 py-1.5 text-xs">{c.noTemplates}</p>
-            ) : (
-              templates.map((t) => (
-                <DropdownMenuItem key={t.id} onClick={() => applyTemplate(t.body)}>
-                  <span className="truncate">{t.name}</span>
-                </DropdownMenuItem>
-              ))
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          onClick={() => setTemplateOpen(true)}
+        >
+          <FileText className="size-4" />
+          {c.templates}
+        </Button>
 
         {/* Personalize — insert merge variables */}
         <DropdownMenu>
@@ -1596,6 +1590,16 @@ function Composer({
           {c.sendVia(channelLabel)}
         </Button>
       </div>
+
+      <TemplatePickerDialog
+        open={templateOpen}
+        onOpenChange={setTemplateOpen}
+        onInsert={(t) => applyTemplate(t.body)}
+        vars={varsMap}
+        recipientName={`${prospect.firstName} ${prospect.lastName}`}
+        channel={conv.channel}
+        locale={locale}
+      />
     </div>
   )
 }
