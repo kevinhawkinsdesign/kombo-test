@@ -36,6 +36,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { InfoHint } from "@/components/common/InfoHint"
@@ -113,17 +114,6 @@ function ChannelGlyph({
   return <Icon className={className} />
 }
 
-function triggerHint(step: BuilderStep): string {
-  const t = TRIGGERS[step.trigger.type]
-  if (step.trigger.type === "delay")
-    return step.trigger.days && step.trigger.days > 0
-      ? `${t.short} of ${step.trigger.days}d`
-      : "Immediately"
-  if (step.trigger.type === "on_no_reply")
-    return `${t.short} in ${step.trigger.days ?? 0}d`
-  return t.short
-}
-
 /* ------------------------------ the builder ------------------------------ */
 export function SequenceBuilder({
   initialSteps,
@@ -162,18 +152,34 @@ export function SequenceBuilder({
     )
   }
 
+  function makeStep(channel: SequenceChannelType): BuilderStep {
+    return {
+      id: newStepId(),
+      channel,
+      title:
+        channel === "wait" ? "Pause + review" : `New ${CHANNELS[channel].label} step`,
+      subtitle: "",
+      trigger: { type: "delay", days: 2 },
+    }
+  }
+
   function addStep(channel: SequenceChannelType) {
-    update([
-      ...steps,
-      {
-        id: newStepId(),
-        channel,
-        title:
-          channel === "wait" ? "Pause + review" : `New ${CHANNELS[channel].label} step`,
-        subtitle: "",
-        trigger: { type: "delay", days: 2 },
-      },
-    ])
+    update([...steps, makeStep(channel)])
+  }
+
+  // Insert a sequential step at a position (used by the diagram's between-step
+  // "+" controls — start, between, or end).
+  function insertStep(at: number, channel: SequenceChannelType) {
+    const next = [...steps]
+    next.splice(at, 0, { ...makeStep(channel), parallel: false })
+    update(next)
+  }
+
+  // Add a step that runs in parallel with the step at `index` (a fan-out).
+  function addParallelAfter(index: number, channel: SequenceChannelType) {
+    const next = [...steps]
+    next.splice(index + 1, 0, { ...makeStep(channel), parallel: true })
+    update(next)
   }
 
   function removeStep(id: string) {
@@ -469,7 +475,16 @@ export function SequenceBuilder({
           )}
         </ol>
       ) : (
-        <SequenceDiagram steps={steps} days={days} autoPause={autoPause} />
+        <SequenceDiagram
+          steps={steps}
+          days={days}
+          autoPause={autoPause}
+          onPatchStep={patchStep}
+          onPatchTrigger={patchTrigger}
+          onRemoveStep={removeStep}
+          onInsertStep={insertStep}
+          onAddParallel={addParallelAfter}
+        />
       )}
 
     </div>
@@ -478,18 +493,29 @@ export function SequenceBuilder({
 
 function AddStepMenu({
   onAdd,
+  children,
+  align = "end",
+  label = "Add a step",
 }: {
   onAdd: (channel: SequenceChannelType) => void
+  children?: React.ReactNode
+  align?: "start" | "center" | "end"
+  label?: string
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="sm">
-          <Plus className="size-4" />
-          Add step
-        </Button>
+        {children ?? (
+          <Button size="sm">
+            <Plus className="size-4" />
+            Add step
+          </Button>
+        )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align={align}>
+        <DropdownMenuLabel className="text-muted-foreground text-xs">
+          {label}
+        </DropdownMenuLabel>
         {SEQUENCE_CHANNELS.map((c) => {
           const meta = CHANNELS[c]
           return (
@@ -512,14 +538,27 @@ function AddStepMenu({
 }
 
 /* ------------------------------ diagram view ------------------------------ */
+// The diagram is a fully editable canvas: every node edits channel/trigger/
+// delay/parallel inline, "+" controls insert a step at the start, between any
+// two steps, or at the end, and each group can fan out a parallel step.
 function SequenceDiagram({
   steps,
   days,
   autoPause,
+  onPatchStep,
+  onPatchTrigger,
+  onRemoveStep,
+  onInsertStep,
+  onAddParallel,
 }: {
   steps: BuilderStep[]
   days: number[]
   autoPause: boolean
+  onPatchStep: (id: string, patch: Partial<BuilderStep>) => void
+  onPatchTrigger: (id: string, patch: Partial<BuilderStep["trigger"]>) => void
+  onRemoveStep: (id: string) => void
+  onInsertStep: (at: number, channel: SequenceChannelType) => void
+  onAddParallel: (index: number, channel: SequenceChannelType) => void
 }) {
   // Group consecutive parallel steps so fan-outs render side by side.
   const groups: { lead: number; steps: { step: BuilderStep; index: number }[] }[] =
@@ -536,51 +575,198 @@ function SequenceDiagram({
     <div className="bg-muted/20 overflow-x-auto rounded-xl border p-4 sm:p-6">
       <div className="mx-auto flex w-fit min-w-full flex-col items-center gap-1">
         <NodePill label="Enrolled" tone="start" />
-        {groups.map((group, gi) => (
-          <React.Fragment key={group.lead}>
-            <Connector />
-            <div className="flex items-stretch justify-center gap-3">
-              {group.steps.map(({ step, index }) => {
-                const meta = CHANNELS[step.channel]
-                return (
-                  <div
+        <InsertControl at={0} onInsert={onInsertStep} />
+        {groups.map((group, gi) => {
+          const lastIndex = group.steps[group.steps.length - 1].index
+          return (
+            <React.Fragment key={group.lead}>
+              <Connector />
+              <div className="flex items-stretch justify-center gap-3">
+                {group.steps.map(({ step, index }) => (
+                  <DiagramNode
                     key={step.id}
-                    className="bg-card flex w-44 flex-col gap-1 rounded-xl border p-3 text-center shadow-sm"
-                  >
-                    <span
-                      className={cn(
-                        "mx-auto flex size-8 items-center justify-center rounded-lg",
-                        meta.tint
-                      )}
-                    >
-                      <ChannelGlyph channel={step.channel} className="size-4" />
-                    </span>
-                    <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                      {step.parallel ? "Parallel" : `Day ${days[index]}`} · {meta.label}
-                    </span>
-                    <span className="truncate text-sm font-medium">
-                      {step.title}
-                    </span>
-                    <span className="text-muted-foreground text-[11px]">
-                      {triggerHint(step)}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            {gi === 0 && autoPause && (
-              <>
+                    step={step}
+                    index={index}
+                    dayLabel={step.parallel ? "Parallel" : `Day ${days[index]}`}
+                    onPatchStep={onPatchStep}
+                    onPatchTrigger={onPatchTrigger}
+                    onRemoveStep={onRemoveStep}
+                  />
+                ))}
+              </div>
+              {/* Fan out a parallel step alongside this group. */}
+              <AddStepMenu
+                onAdd={(c) => onAddParallel(lastIndex, c)}
+                align="center"
+                label="Add a parallel step"
+              >
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground hover:border-primary/40 mt-1 inline-flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 text-[11px] font-medium transition-colors"
+                >
+                  <GitBranch className="size-3" />
+                  Parallel step
+                </button>
+              </AddStepMenu>
+              {gi === 0 && autoPause && (
                 <span className="text-chart-1 mt-1 flex items-center gap-1 text-[11px] font-medium">
                   <Reply className="size-3" /> on reply → stop &amp; notify rep
                 </span>
-              </>
-            )}
-          </React.Fragment>
-        ))}
+              )}
+              <InsertControl at={lastIndex + 1} onInsert={onInsertStep} />
+            </React.Fragment>
+          )
+        })}
         <Connector />
         <NodePill label="Re-score & recommend" tone="end" />
       </div>
     </div>
+  )
+}
+
+// One editable node in the diagram — same controls as a timeline row.
+function DiagramNode({
+  step,
+  index,
+  dayLabel,
+  onPatchStep,
+  onPatchTrigger,
+  onRemoveStep,
+}: {
+  step: BuilderStep
+  index: number
+  dayLabel: string
+  onPatchStep: (id: string, patch: Partial<BuilderStep>) => void
+  onPatchTrigger: (id: string, patch: Partial<BuilderStep["trigger"]>) => void
+  onRemoveStep: (id: string) => void
+}) {
+  const meta = CHANNELS[step.channel]
+  return (
+    <div className="bg-card flex w-56 flex-col gap-2 rounded-xl border p-3 shadow-sm">
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            "flex size-8 shrink-0 items-center justify-center rounded-lg",
+            meta.tint
+          )}
+        >
+          <ChannelGlyph channel={step.channel} className="size-4" />
+        </span>
+        <span className="text-muted-foreground flex-1 truncate text-[10px] font-medium tracking-wide uppercase">
+          {dayLabel}
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive size-6"
+          aria-label={`Remove step ${index + 1}`}
+          onClick={() => onRemoveStep(step.id)}
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
+      </div>
+
+      <Input
+        value={step.title}
+        onChange={(e) => onPatchStep(step.id, { title: e.target.value })}
+        aria-label={`Step ${index + 1} title`}
+        className="h-8 text-sm font-medium"
+      />
+
+      <Select
+        value={step.channel}
+        onValueChange={(v) =>
+          onPatchStep(step.id, { channel: v as SequenceChannelType })
+        }
+      >
+        <SelectTrigger size="sm" className="h-8 w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {SEQUENCE_CHANNELS.map((c) => (
+            <SelectItem key={c} value={c}>
+              {CHANNELS[c].label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={step.trigger.type}
+        onValueChange={(v) =>
+          onPatchTrigger(step.id, { type: v as StepTriggerType })
+        }
+      >
+        <SelectTrigger size="sm" className="h-8 w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {STEP_TRIGGERS.map((t) => (
+            <SelectItem key={t} value={t}>
+              {TRIGGERS[t].label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {TRIGGERS[step.trigger.type].needsDays && (
+        <div className="flex items-center gap-1.5">
+          <Input
+            type="number"
+            min={0}
+            value={step.trigger.days ?? 0}
+            onChange={(e) =>
+              onPatchTrigger(step.id, {
+                days: Math.max(0, Number(e.target.value) || 0),
+              })
+            }
+            aria-label={`Step ${index + 1} delay in days`}
+            className="h-8 w-16"
+          />
+          <span className="text-muted-foreground text-xs">days</span>
+        </div>
+      )}
+
+      {index > 0 && (
+        <Button
+          type="button"
+          variant={step.parallel ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 gap-1"
+          aria-pressed={step.parallel ?? false}
+          onClick={() => onPatchStep(step.id, { parallel: !step.parallel })}
+        >
+          <GitBranch className="size-3.5" />
+          {step.parallel ? "Parallel" : "Make parallel"}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// A dashed "+" between nodes that inserts a sequential step at `at`.
+function InsertControl({
+  at,
+  onInsert,
+}: {
+  at: number
+  onInsert: (at: number, channel: SequenceChannelType) => void
+}) {
+  return (
+    <AddStepMenu
+      onAdd={(c) => onInsert(at, c)}
+      align="center"
+      label="Insert a step here"
+    >
+      <button
+        type="button"
+        aria-label="Insert step"
+        className="text-muted-foreground hover:text-primary hover:border-primary/50 bg-background my-0.5 flex size-6 items-center justify-center rounded-full border border-dashed transition-colors"
+      >
+        <Plus className="size-3.5" />
+      </button>
+    </AddStepMenu>
   )
 }
 
