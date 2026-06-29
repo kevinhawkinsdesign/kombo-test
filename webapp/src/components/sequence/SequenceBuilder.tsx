@@ -581,19 +581,43 @@ function SequenceDiagram({
           return (
             <React.Fragment key={group.lead}>
               <Connector />
-              <div className="flex items-stretch justify-center gap-3">
-                {group.steps.map(({ step, index }) => (
-                  <DiagramNode
-                    key={step.id}
-                    step={step}
-                    index={index}
-                    dayLabel={step.parallel ? "Parallel" : `Day ${days[index]}`}
-                    onPatchStep={onPatchStep}
-                    onPatchTrigger={onPatchTrigger}
-                    onRemoveStep={onRemoveStep}
-                  />
-                ))}
-              </div>
+              {group.steps.length > 1 ? (
+                // A fan-out: these steps fire together — frame them so the
+                // parallel branch reads clearly.
+                <div className="border-primary/30 bg-primary/[0.04] flex flex-col items-center gap-2 rounded-2xl border border-dashed p-2.5">
+                  <span className="text-primary inline-flex items-center gap-1 text-[10px] font-semibold tracking-wide uppercase">
+                    <GitBranch className="size-3" />
+                    In parallel
+                  </span>
+                  <div className="flex items-stretch justify-center gap-3">
+                    {group.steps.map(({ step, index }) => (
+                      <DiagramNode
+                        key={step.id}
+                        step={step}
+                        index={index}
+                        dayLabel={step.parallel ? "Parallel" : `Day ${days[index]}`}
+                        onPatchStep={onPatchStep}
+                        onPatchTrigger={onPatchTrigger}
+                        onRemoveStep={onRemoveStep}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-stretch justify-center gap-3">
+                  {group.steps.map(({ step, index }) => (
+                    <DiagramNode
+                      key={step.id}
+                      step={step}
+                      index={index}
+                      dayLabel={step.parallel ? "Parallel" : `Day ${days[index]}`}
+                      onPatchStep={onPatchStep}
+                      onPatchTrigger={onPatchTrigger}
+                      onRemoveStep={onRemoveStep}
+                    />
+                  ))}
+                </div>
+              )}
               {/* Fan out a parallel step alongside this group. */}
               <AddStepMenu
                 onAdd={(c) => onAddParallel(lastIndex, c)}

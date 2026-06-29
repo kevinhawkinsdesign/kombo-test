@@ -45,6 +45,14 @@ export function defaultSequence(): BuilderStep[] {
     },
     {
       id: newStepId(),
+      channel: "linkedin",
+      title: "Connect + note",
+      subtitle: "Runs in parallel with the WhatsApp intro",
+      trigger: { type: "delay", days: 0 },
+      parallel: true,
+    },
+    {
+      id: newStepId(),
       channel: "email",
       title: "Case study (live)",
       subtitle: "Social proof from a lookalike account",
