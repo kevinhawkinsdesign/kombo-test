@@ -43,7 +43,6 @@ import {
 } from "@/components/common/ProspectBits"
 import { prospectSource } from "@/lib/format"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
-import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { WarmIntrosPanel } from "@/pages/WarmIntros"
 import {
@@ -152,7 +151,6 @@ export default function People() {
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
-  const [manualOpen, setManualOpen] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkCampaign, setBulkCampaign] = React.useState(false)
@@ -267,9 +265,7 @@ export default function People() {
         open={addOpen}
         onOpenChange={setAddOpen}
         kind="contact"
-        onManual={() => setManualOpen(true)}
       />
-      <ProspectFormDialog open={manualOpen} onOpenChange={setManualOpen} />
 
       {/* People ↔ Warm Intros tabs (Warm Intros is V2-only; hidden if alone). */}
       {tabs.length > 1 && (
