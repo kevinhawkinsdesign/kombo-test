@@ -277,10 +277,7 @@ export function AddCampaignProspectsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton
-        className="flex h-screen w-screen max-w-none flex-col gap-0 rounded-none p-0 sm:h-[90vh] sm:max-w-3xl sm:rounded-xl"
-      >
+      <DialogContent showCloseButton fullScreen>
         <DialogHeader className="border-b p-5 text-left">
           <DialogTitle>{c.title}</DialogTitle>
           <DialogDescription>{c.desc(campaign.name)}</DialogDescription>

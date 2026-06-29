@@ -212,10 +212,7 @@ export function AddRecordsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton
-        className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0"
-      >
+      <DialogContent showCloseButton fullScreen>
         {/* Header: title, entity toggle, mode tabs */}
         <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
