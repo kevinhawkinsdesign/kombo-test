@@ -9,7 +9,6 @@ import {
   MoreHorizontal,
   Clock,
   Send,
-  Workflow,
   Sparkles,
   RefreshCw,
   CalendarClock,
@@ -686,18 +685,10 @@ export default function Campaigns() {
         title={c.pageTitle}
         description={c.pageDescription}
         action={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/sequence-builder">
-                <Workflow className="size-4" />
-                {c.buildSequence}
-              </Link>
-            </Button>
-            <Button variant="volt" onClick={() => setCreateOpen(true)}>
-              <Plus className="size-4" />
-              {c.newCampaign}
-            </Button>
-          </div>
+          <Button variant="volt" onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" />
+            {c.newCampaign}
+          </Button>
         }
       />
       <FeatureIntro
