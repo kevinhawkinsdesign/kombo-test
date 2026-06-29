@@ -302,6 +302,11 @@ const COPY = {
     filtersNoMatch: "No filters match.",
     addToGroup: (label: string) => `Add ${label.toLowerCase()}…`,
     clearAll: "Clear all",
+    aiSuggestions: "AI-powered search suggestions",
+    startTypeTitle: "Type your query",
+    startTypeDesc: "Describe who you're looking for — a title, industry, or location.",
+    startFiltersTitle: "Use search filters",
+    startFiltersDesc: "Refine your search with the filters on the left.",
     done: "Done",
     columnsBtn: "Columns",
     columnsTitle: "Customize columns",
@@ -536,6 +541,11 @@ const COPY = {
     filtersNoMatch: "Ningún filtro coincide.",
     addToGroup: (label: string) => `Añadir ${label.toLowerCase()}…`,
     clearAll: "Limpiar todo",
+    aiSuggestions: "Sugerencias de búsqueda con IA",
+    startTypeTitle: "Escribe tu consulta",
+    startTypeDesc: "Describe a quién buscas — un cargo, sector o ubicación.",
+    startFiltersTitle: "Usa los filtros",
+    startFiltersDesc: "Refina tu búsqueda con los filtros de la izquierda.",
     done: "Listo",
     columnsBtn: "Columnas",
     columnsTitle: "Personalizar columnas",
@@ -774,6 +784,11 @@ export default function Search() {
       : similarPrompt || headerPrompt || EXAMPLE_PROMPTS_EN[0]
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
+  // The home/empty state vs the results view. Arriving with a prompt, a
+  // lookalike seed, or a loaded saved search jumps straight to results.
+  const [hasSearched, setHasSearched] = React.useState(
+    Boolean(headerPrompt || incomingSeed || loadedSearch)
+  )
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [saveOpen, setSaveOpen] = React.useState(false)
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
@@ -819,6 +834,7 @@ export default function Search() {
     const text = prompt.trim()
     if (!text) return
     setInput(text)
+    setHasSearched(true)
     setThinking(true)
     setLastPrompt(text)
     window.setTimeout(() => {
@@ -862,6 +878,7 @@ export default function Search() {
   }
 
   function addFilter(group: keyof AiQuery, value: string) {
+    setHasSearched(true)
     setQuery((prev) => {
       const arr = prev[group] as string[]
       if (arr.includes(value)) return prev
@@ -871,6 +888,7 @@ export default function Search() {
 
   // Dynamic per-database facets (LinkedIn Sales Navigator / Kombo FullEnrich).
   function addFacet(id: string, value: string) {
+    setHasSearched(true)
     setQuery((prev) => {
       const cur = prev.facets[id] ?? []
       if (cur.includes(value)) return prev
@@ -932,6 +950,7 @@ export default function Search() {
   }
 
   function applyLookalike(s: LookalikeSeed, q: AiQuery, modLabel: string) {
+    setHasSearched(true)
     setSeed(s)
     setEntity(s.kind === "company" ? "companies" : "people")
     setQuery(q)
@@ -1000,6 +1019,7 @@ export default function Search() {
   function loadSearch(id: string) {
     const s = savedSearches.find((x) => x.id === id)
     if (!s) return
+    setHasSearched(true)
     setEntity(s.entity)
     setQuery(s.query)
     setLastPrompt(s.prompt)
@@ -1208,7 +1228,32 @@ export default function Search() {
       />
 
       <div className="space-y-4">
+        {/* Prospect Search tabs — People vs Companies (always shown). */}
+        <div className="bg-muted inline-flex rounded-md p-0.5">
+          <EntityTab
+            active={entity === "people"}
+            onClick={() => {
+              setEntity("people")
+              setSeed(null)
+              setSelected(new Set())
+            }}
+            icon={Users}
+            label={c.people}
+          />
+          <EntityTab
+            active={entity === "companies"}
+            onClick={() => {
+              setEntity("companies")
+              setSeed(null)
+              setSelected(new Set())
+            }}
+            icon={Building2}
+            label={c.companies}
+          />
+        </div>
+
         {/* Clay-style launcher: collapsible row of suggested starting points. */}
+        {!hasSearched && (
         <div>
           <button
             type="button"
@@ -1257,6 +1302,7 @@ export default function Search() {
             </div>
           )}
         </div>
+        )}
 
         {/* Search query bar — the prompt IS the query, no chat thread. */}
         <Card className="gap-3 p-3">
@@ -1393,7 +1439,25 @@ export default function Search() {
           </div>
         </Card>
 
-        {/* Results */}
+        {/* Filters live in a persistent sidebar; results (or the home/empty
+            state) fill the rest. */}
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <FilterSidebar
+            className="lg:w-64 lg:shrink-0"
+            query={query}
+            onAdd={addFilter}
+            onRemove={removeFilter}
+            onClear={() => setQuery({ ...EMPTY_QUERY })}
+            onAddFacet={addFacet}
+            onRemoveFacet={removeFacet}
+            facetDefs={facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)}
+            linkedinOn={linkedinOn}
+            entity={entity}
+            locale={locale}
+            c={c}
+          />
+          <div className="min-w-0 flex-1">
+            {hasSearched ? (
         <div className="min-w-0 space-y-3">
           {/* Blended controls: sources, suggested filters, filters & sort */}
           <Card className="gap-3 p-3">
@@ -1429,30 +1493,7 @@ export default function Search() {
 
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="bg-muted inline-flex rounded-md p-0.5">
-              <EntityTab
-                active={entity === "people"}
-                onClick={() => {
-                  setEntity("people")
-                  setSeed(null)
-                  setSelected(new Set())
-                }}
-                icon={Users}
-                label={c.people}
-              />
-              <EntityTab
-                active={entity === "companies"}
-                onClick={() => {
-                  setEntity("companies")
-                  setSeed(null)
-                  setSelected(new Set())
-                }}
-                icon={Building2}
-                label={c.companies}
-              />
-            </div>
-
-            <div className="ml-auto flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {/* Database selector — KomboAI, Lookalike, or LinkedIn. */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1876,6 +1917,17 @@ export default function Search() {
             </>
           )}
         </div>
+            ) : (
+              <SearchEmptyState
+                c={c}
+                entity={entity}
+                examples={examples}
+                onRun={runPrompt}
+                onUseFilters={() => setFiltersOpen(true)}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       <SaveListDialog
@@ -2192,6 +2244,318 @@ function ModChip({
     >
       {label}
     </button>
+  )
+}
+
+// Persistent filter rail — filters are exposed by default (every search uses
+// them), mirroring the catalog side of the FilterModal as an always-visible
+// sidebar. Selecting any value runs the search via onAdd/onAddFacet.
+function FilterSidebar({
+  className,
+  query,
+  onAdd,
+  onRemove,
+  onClear,
+  onAddFacet,
+  onRemoveFacet,
+  facetDefs,
+  linkedinOn,
+  entity,
+  locale,
+  c,
+}: {
+  className?: string
+  query: AiQuery
+  onAdd: (group: keyof AiQuery, value: string) => void
+  onRemove: (group: keyof AiQuery, value: string) => void
+  onClear: () => void
+  onAddFacet: (id: string, value: string) => void
+  onRemoveFacet: (id: string, value: string) => void
+  facetDefs: FacetDef[]
+  linkedinOn: boolean
+  entity: AiEntity
+  locale: Locale
+  c: Copy
+}) {
+  const [text, setText] = React.useState("")
+  const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set())
+  const q = text.trim().toLowerCase()
+
+  function toggleGroup(key: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const groups = FILTER_OPTIONS.filter(
+    (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
+  )
+  const activeCount =
+    groups.reduce((n, g) => n + (query[g.key] as string[]).length, 0) +
+    facetDefs.reduce((n, f) => n + (query.facets[f.id]?.length ?? 0), 0)
+
+  return (
+    <aside className={className}>
+      <Card className="gap-0 overflow-hidden py-0">
+        <div className="flex items-center justify-between border-b px-3 py-2.5">
+          <span className="flex items-center gap-1.5 text-sm font-semibold">
+            <SlidersHorizontal className="size-4" />
+            {c.filtersTitle}
+            {activeCount > 0 && (
+              <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                {activeCount}
+              </span>
+            )}
+          </span>
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-muted-foreground hover:text-foreground text-xs"
+            >
+              {c.clearAll}
+            </button>
+          )}
+        </div>
+        <div className="border-b p-2">
+          <div className="relative">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={c.filterTypeahead}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+        </div>
+        <div className="max-h-[24rem] overflow-y-auto p-1 lg:max-h-[calc(100vh-16rem)]">
+          {groups.map((group) => {
+            const items = group.options.filter(
+              (v) => !q || v.toLowerCase().includes(q)
+            )
+            if (items.length === 0) return null
+            const groupActive = (query[group.key] as string[]).length
+            const isOpen = q ? true : openGroups.has(group.key as string)
+            return (
+              <div
+                key={group.key}
+                className="border-border/70 border-b last:border-b-0"
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.key as string)}
+                  aria-expanded={isOpen}
+                  className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
+                >
+                  <ChevronDown
+                    className={cn(
+                      "text-muted-foreground size-3.5 shrink-0 transition-transform",
+                      !isOpen && "-rotate-90"
+                    )}
+                  />
+                  {LINKEDIN_KEYS.has(group.key) && (
+                    <LinkedinIcon className="size-3 text-[#0a66c2]" />
+                  )}
+                  <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
+                    {group.label(c)}
+                  </span>
+                  {groupActive > 0 && (
+                    <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                      {groupActive}
+                    </span>
+                  )}
+                </button>
+                {isOpen && (
+                  <div className="pb-2">
+                    <FilterGroupInput
+                      placeholder={c.addToGroup(group.label(c))}
+                      onSubmit={(value) => onAdd(group.key, value)}
+                    />
+                    {items.map((value) => {
+                      const checked = (query[group.key] as string[]).includes(value)
+                      return (
+                        <label
+                          key={value}
+                          className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() =>
+                              checked
+                                ? onRemove(group.key, value)
+                                : onAdd(group.key, value)
+                            }
+                          />
+                          <span className="flex-1 truncate">{value}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {facetDefs.map((facet) => {
+            const facetItems = facet.options.filter(
+              (v) => !q || v.toLowerCase().includes(q)
+            )
+            const hasOptions = facet.options.length > 0
+            if (hasOptions && facetItems.length === 0) return null
+            if (!hasOptions && q && !facet.label[locale].toLowerCase().includes(q))
+              return null
+            const selectedVals = query.facets[facet.id] ?? []
+            const facetActive = selectedVals.length
+            const isOpen = q ? true : openGroups.has(facet.id)
+            return (
+              <div
+                key={facet.id}
+                className="border-border/70 border-b last:border-b-0"
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(facet.id)}
+                  aria-expanded={isOpen}
+                  className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
+                >
+                  <ChevronDown
+                    className={cn(
+                      "text-muted-foreground size-3.5 shrink-0 transition-transform",
+                      !isOpen && "-rotate-90"
+                    )}
+                  />
+                  {facet.db === "linkedin" && (
+                    <LinkedinIcon className="size-3 text-[#0a66c2]" />
+                  )}
+                  <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
+                    {facet.label[locale]}
+                  </span>
+                  {facetActive > 0 && (
+                    <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                      {facetActive}
+                    </span>
+                  )}
+                </button>
+                {isOpen && (
+                  <div className="pb-2">
+                    <FilterGroupInput
+                      placeholder={c.addToGroup(facet.label[locale])}
+                      onSubmit={(value) => onAddFacet(facet.id, value)}
+                    />
+                    {facetItems.map((value) => {
+                      const checked = selectedVals.includes(value)
+                      return (
+                        <label
+                          key={value}
+                          className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() =>
+                              checked
+                                ? onRemoveFacet(facet.id, value)
+                                : onAddFacet(facet.id, value)
+                            }
+                          />
+                          <span className="flex-1 truncate">{value}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+    </aside>
+  )
+}
+
+// Home/empty state for Prospect Search: AI-powered suggestions, two ways to
+// start (type a query / use filters), and example prompts.
+function SearchEmptyState({
+  c,
+  entity,
+  examples,
+  onRun,
+  onUseFilters,
+}: {
+  c: Copy
+  entity: AiEntity
+  examples: string[]
+  onRun: (prompt: string) => void
+  onUseFilters: () => void
+}) {
+  const suggestions = libraryQueries
+    .filter((qq) => qq.entity === entity)
+    .slice(0, 6)
+  return (
+    <div className="space-y-8 py-1">
+      {suggestions.length > 0 && (
+        <div>
+          <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
+            <Sparkles className="text-primary size-4" />
+            {c.aiSuggestions}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {suggestions.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => onRun(s.prompt)}
+                className="bg-card hover:border-primary/40 hover:bg-muted/40 flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-colors"
+              >
+                <span className="text-sm leading-snug font-medium">{s.name}</span>
+                <span className="text-muted-foreground line-clamp-2 text-xs">
+                  {s.prompt}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border p-5 text-center">
+          <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
+            <SearchIcon className="text-muted-foreground size-5" />
+          </span>
+          <p className="mt-3 font-medium">{c.startTypeTitle}</p>
+          <p className="text-muted-foreground mt-1 text-sm">{c.startTypeDesc}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onUseFilters}
+          className="hover:border-primary/40 rounded-xl border p-5 text-center transition-colors"
+        >
+          <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
+            <SlidersHorizontal className="text-muted-foreground size-5" />
+          </span>
+          <p className="mt-3 font-medium">{c.startFiltersTitle}</p>
+          <p className="text-muted-foreground mt-1 text-sm">{c.startFiltersDesc}</p>
+        </button>
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+          {c.examples}
+        </p>
+        {examples.slice(0, 5).map((ex) => (
+          <button
+            key={ex}
+            type="button"
+            onClick={() => onRun(ex)}
+            className="hover:bg-muted/60 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
+          >
+            <SearchIcon className="text-muted-foreground size-4 shrink-0" />
+            <span className="truncate">{ex}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 
