@@ -658,15 +658,6 @@ const PEOPLE_ONLY_SOURCES: BuildSource[] = [
 
 const LIST_COLORS = ["#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899"]
 
-// Spotlights — LinkedIn-style quick toggles (index-matched to c.spotlights).
-const SPOTLIGHT_DEFS: { key: keyof AiQuery; value: string; needsLi: boolean }[] = [
-  { key: "linkedin", value: "Open to work", needsLi: true },
-  { key: "linkedin", value: "Changed jobs (90d)", needsLi: true },
-  { key: "linkedin", value: "Posted recently", needsLi: true },
-  { key: "signals", value: "Hiring sales", needsLi: false },
-  { key: "signals", value: "High web intent", needsLi: false },
-]
-
 function FitBadge({ fit }: { fit: number }) {
   const tone = scoreTone(fit)
   const cls =
@@ -905,17 +896,6 @@ export default function Search() {
     setLinkedinOn(on)
     if (!on) setQuery((q) => ({ ...q, linkedin: [] }))
     toast.success(c.dbSwitched(on ? c.linkedinSource : c.dbKombo))
-  }
-
-  function toggleSpotlight(i: number) {
-    const def = SPOTLIGHT_DEFS[i]
-    const active = (query[def.key] as string[]).includes(def.value)
-    if (active) {
-      removeFilter(def.key, def.value)
-      return
-    }
-    if (def.needsLi && !linkedinOn) setLinkedinOn(true)
-    addFilter(def.key, def.value)
   }
 
   function applyLookalike(s: LookalikeSeed, q: AiQuery) {
@@ -1352,38 +1332,8 @@ export default function Search() {
           <div className="min-w-0 flex-1">
             {hasSearched ? (
         <div className="min-w-0 space-y-3">
-          {/* Blended controls: sources, suggested filters, filters & sort */}
+          {/* Blended controls: sources, filters & sort */}
           <Card className="gap-3 p-3">
-          {/* Spotlights — LinkedIn-style quick toggles */}
-          {entity === "people" && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium">
-                <Sparkles className="size-3.5" />
-                {c.spotlightsLabel}
-              </span>
-              {c.spotlights.map((label, i) => {
-                const def = SPOTLIGHT_DEFS[i]
-                const active = (query[def.key] as string[]).includes(def.value)
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => toggleSpotlight(i)}
-                    aria-pressed={active}
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                      active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted"
-                    )}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex flex-wrap items-center gap-2">
