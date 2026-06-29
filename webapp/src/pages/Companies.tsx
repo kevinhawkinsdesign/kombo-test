@@ -1,16 +1,12 @@
 import * as React from "react"
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
   Plus,
-  Briefcase,
-  Users,
   Building2,
   Pencil,
   Check,
-  Table2,
-  LayoutGrid,
   Columns3,
   ScanSearch,
 } from "lucide-react"
@@ -20,9 +16,6 @@ import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Select,
   SelectContent,
@@ -49,10 +42,9 @@ import {
 } from "@/lib/table-columns"
 import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
 import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
-import { useAccounts, accountStore } from "@/lib/store"
-import { getRep } from "@/lib/team"
+import { useAccounts, accountStore, useLists } from "@/lib/store"
+import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
-import { initials, formatMoney as money } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Account, AccountTier } from "@/lib/types"
 
@@ -86,6 +78,9 @@ const COPY = {
     company: "company",
     companies: "companies",
     noMatch: "No companies match your filters.",
+    allCompanies: "All companies",
+    searchLists: "Search lists…",
+    createList: "Create list",
     accountHealth: "Account health",
     openDeals: "Open deals",
     pipeline: "Pipeline",
@@ -131,6 +126,9 @@ const COPY = {
     company: "empresa",
     companies: "empresas",
     noMatch: "Ninguna empresa coincide con tus filtros.",
+    allCompanies: "Todas las empresas",
+    searchLists: "Buscar listas…",
+    createList: "Crear lista",
     accountHealth: "Salud de la cuenta",
     openDeals: "Negocios abiertos",
     pipeline: "Pipeline",
@@ -152,14 +150,6 @@ const COPY = {
   },
 } as const
 
-function healthTone(score: number): string {
-  if (score >= 80) return "bg-chart-1/15 text-chart-1"
-  if (score >= 65) return "bg-chart-4/15 text-chart-4"
-  return "bg-muted text-muted-foreground"
-}
-
-type ViewMode = "table" | "cards"
-
 export default function Companies() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -168,7 +158,7 @@ export default function Companies() {
   const accounts = useAccounts()
   const [query, setQuery] = React.useState("")
   const [tier, setTier] = React.useState<string>(ALL)
-  const [view, setView] = React.useState<ViewMode>("table")
+  const [listFilter, setListFilter] = React.useState<string>("all")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   // URL-addressable tabs: /companies?tab=discover deep-links the Discover tab.
@@ -204,12 +194,17 @@ export default function Companies() {
     ? accounts.filter((a) => a.ownerId === impersonatingId)
     : accounts
 
+  // Company lists power the "filter by list" dropdown.
+  const companyLists = useLists().filter((l) => l.kind === "company")
+  const activeList = companyLists.find((l) => l.id === listFilter)
+
   const q = query.trim().toLowerCase()
   const results = source.filter((a) => {
     const matchesQuery =
       !q || `${a.name} ${a.industry} ${a.domain}`.toLowerCase().includes(q)
     const matchesTier = tier === ALL || a.tier === tier
-    return matchesQuery && matchesTier
+    const matchesList = !activeList || (activeList.accountIds ?? []).includes(a.id)
+    return matchesQuery && matchesTier && matchesList
   })
 
   const allSelected = results.length > 0 && results.every((a) => selectedIds.has(a.id))
@@ -317,6 +312,26 @@ export default function Companies() {
         className="mb-6"
       />
 
+      <div className="mb-4">
+        <ListSelector
+          value={listFilter}
+          onChange={setListFilter}
+          lists={companyLists.map((l) => ({
+            id: l.id,
+            name: l.name,
+            color: l.color,
+            count: l.accountIds?.length ?? 0,
+          }))}
+          allLabel={c.allCompanies}
+          allIcon={Building2}
+          allCount={source.length}
+          countNoun={(n) => `${n} ${n === 1 ? c.company : c.companies}`}
+          onCreate={() => navigate("/lists")}
+          createLabel={c.createList}
+          searchPlaceholder={c.searchLists}
+        />
+      </div>
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -340,83 +355,46 @@ export default function Companies() {
           </SelectContent>
         </Select>
 
-        {/* View toggle */}
-        <div className="bg-muted text-muted-foreground inline-flex h-9 shrink-0 items-center rounded-lg p-[3px]">
-          <ViewToggleButton
-            active={view === "table"}
-            onClick={() => setView("table")}
-            icon={Table2}
-            label={c.viewTable}
-          />
-          <ViewToggleButton
-            active={view === "cards"}
-            onClick={() => setView("cards")}
-            icon={LayoutGrid}
-            label={c.viewCards}
-          />
-        </div>
-
-        {view === "table" && (
-          <>
-            <TableViews tableKey="companies" prefs={columnPrefs} />
-            <Button
-              variant="outline"
-              className="shrink-0"
-              onClick={() => setColumnsOpen(true)}
-            >
-              <Columns3 className="size-4" />
-              <span className="hidden sm:inline">{c.columns}</span>
-            </Button>
-            <Button
-              variant={editing ? "secondary" : "outline"}
-              className="shrink-0"
-              onClick={() => setEditing((v) => !v)}
-            >
-              {editing ? (
-                <>
-                  <Check className="size-4" />
-                  {c.done}
-                </>
-              ) : (
-                <>
-                  <Pencil className="size-4" />
-                  {c.edit}
-                </>
-              )}
-            </Button>
-          </>
-        )}
+        <TableViews tableKey="companies" prefs={columnPrefs} />
+        <Button
+          variant="outline"
+          className="shrink-0"
+          onClick={() => setColumnsOpen(true)}
+        >
+          <Columns3 className="size-4" />
+          <span className="hidden sm:inline">{c.columns}</span>
+        </Button>
+        <Button
+          variant={editing ? "secondary" : "outline"}
+          className="shrink-0"
+          onClick={() => setEditing((v) => !v)}
+        >
+          {editing ? (
+            <>
+              <Check className="size-4" />
+              {c.done}
+            </>
+          ) : (
+            <>
+              <Pencil className="size-4" />
+              {c.edit}
+            </>
+          )}
+        </Button>
       </div>
 
-      <div className="text-muted-foreground mb-3 flex items-center gap-2 text-sm">
-        <span>
-          <span className="text-foreground font-medium tabular-nums">
-            {results.length}
-          </span>{" "}
-          {results.length === 1 ? c.company : c.companies}
-        </span>
-        {view === "table" && editing && (
-          <span className="text-primary flex items-center gap-1 text-xs">
-            <Pencil className="size-3" />
-            {c.editingHint}
-          </span>
-        )}
-        {view === "cards" && results.length > 0 && (
-          <label className="ml-1 flex cursor-pointer items-center gap-1.5">
-            <Checkbox
-              checked={allSelected ? true : someSelected ? "indeterminate" : false}
-              onCheckedChange={() => toggleAll()}
-            />
-            <span>{c.selectAll}</span>
-          </label>
-        )}
-      </div>
+      {editing && (
+        <p className="text-primary mb-3 flex items-center gap-1 text-xs">
+          <Pencil className="size-3" />
+          {c.editingHint}
+        </p>
+      )}
 
       {results.length === 0 ? (
         <div className="text-muted-foreground rounded-xl border border-dashed py-16 text-center text-sm">
           {c.noMatch}
         </div>
-      ) : view === "table" ? (
+      ) : (
         <DataTable
           columns={allColumns}
           visible={columnPrefs.visible}
@@ -434,17 +412,6 @@ export default function Companies() {
             someSelected,
           }}
         />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((a) => (
-            <CompanyCard
-              key={a.id}
-              account={a}
-              selected={selectedIds.has(a.id)}
-              onToggle={() => toggleRow(a)}
-            />
-          ))}
-        </div>
       )}
 
       <BulkActionsBar
@@ -489,156 +456,5 @@ export default function Companies() {
 
       <AddRecordsDialog open={addOpen} onOpenChange={setAddOpen} kind="company" />
     </Page>
-  )
-}
-
-function ViewToggleButton({
-  active,
-  onClick,
-  icon: Icon,
-  label,
-}: {
-  active: boolean
-  onClick: () => void
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex h-full items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors",
-        active ? "bg-background text-foreground shadow-sm" : "hover:text-foreground"
-      )}
-    >
-      <Icon className="size-4" />
-      <span className="hidden sm:inline">{label}</span>
-    </button>
-  )
-}
-
-function CompanyCard({
-  account: a,
-  selected,
-  onToggle,
-}: {
-  account: Account
-  selected?: boolean
-  onToggle?: () => void
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  const owner = getRep(a.ownerId)
-
-  return (
-    <div
-      className={cn(
-        "hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors",
-        selected && "border-primary ring-primary/30 ring-1"
-      )}
-    >
-      <div className="flex items-start gap-3">
-        {onToggle && (
-          <div
-            className="relative z-10 pt-0.5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Checkbox
-              checked={selected}
-              onCheckedChange={onToggle}
-              aria-label="Select"
-            />
-          </div>
-        )}
-        <span
-          className="flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold text-white"
-          style={{ backgroundColor: a.logoColor }}
-        >
-          {a.name.charAt(0)}
-        </span>
-        <div className="min-w-0 flex-1">
-          {/* Stretched link keeps the actions button out of the anchor. */}
-          <Link to={`/companies/${a.id}`} className="after:absolute after:inset-0">
-            <p className="truncate font-semibold">{a.name}</p>
-          </Link>
-          <p className="text-muted-foreground truncate text-sm">{a.domain}</p>
-        </div>
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-            healthTone(a.healthScore)
-          )}
-          title={c.accountHealth}
-        >
-          <span className="bg-current size-1.5 rounded-full opacity-80" />
-          {a.healthScore}
-        </span>
-        <RecordActionsMenu kind="company" record={a} className="relative z-10 -mt-1 -mr-1" />
-      </div>
-
-      <div className="mt-3 flex items-center gap-2">
-        <Badge variant="secondary" className="font-normal">
-          {a.tier}
-        </Badge>
-        <span className="text-muted-foreground truncate text-xs">
-          {a.industry}
-        </span>
-      </div>
-
-      <div className="text-muted-foreground mt-3 grid grid-cols-3 gap-2 text-xs">
-        <div>
-          <p className="text-foreground font-semibold tabular-nums">
-            {a.openDeals}
-          </p>
-          <p>{c.openDeals}</p>
-        </div>
-        <div>
-          <p className="text-foreground font-semibold tabular-nums">
-            {money(a.pipeline)}
-          </p>
-          <p>{c.pipeline}</p>
-        </div>
-        <div>
-          <p className="text-foreground font-semibold tabular-nums">
-            {a.contacts}
-          </p>
-          <p>{c.contacts}</p>
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-1">
-        {a.signals.slice(0, 2).map((signal) => (
-          <Badge key={signal} variant="secondary" className="font-normal">
-            {signal}
-          </Badge>
-        ))}
-      </div>
-
-      <div className="mt-auto flex items-center gap-2 pt-4">
-        {owner ? (
-          <>
-            <Avatar className="size-6">
-              <AvatarFallback
-                style={{ backgroundColor: owner.avatarColor, color: "white" }}
-                className="text-[10px] font-medium"
-              >
-                {initials(owner.name.split(" ")[0], owner.name.split(" ")[1])}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-muted-foreground text-xs">
-              {owner.name.split(" ")[0]}
-            </span>
-          </>
-        ) : (
-          <span className="text-muted-foreground flex items-center gap-1 text-xs">
-            <Users className="size-3.5" />
-            {c.unassigned}
-          </span>
-        )}
-        <Briefcase className="text-muted-foreground ml-auto size-3.5" />
-      </div>
-    </div>
   )
 }
