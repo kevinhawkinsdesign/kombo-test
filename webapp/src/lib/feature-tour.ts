@@ -16,6 +16,7 @@ export type FeatureKey =
   | "people"
   | "intros"
   | "lists"
+  | "workspaces"
   | "inbox"
   | "campaigns"
   | "sequence"
