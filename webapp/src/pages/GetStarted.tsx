@@ -10,6 +10,19 @@ import {
   Target,
   Trash2,
   Users,
+  Search,
+  Send,
+  Inbox,
+  Mail,
+  CheckSquare,
+  Briefcase,
+  GraduationCap,
+  BarChart3,
+  Puzzle,
+  Plug,
+  FolderKanban,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -60,6 +73,30 @@ const CHECKLIST: ChecklistTask[] = [
   { id: "links", icon: LinkIcon },
 ]
 
+// The product's capabilities, surfaced as an "explore what you can do" grid —
+// each tile deep-links into the feature so onboarding doubles as a tour.
+interface Capability {
+  key: string
+  to: string
+  icon: React.ComponentType<{ className?: string }>
+  tint: string
+}
+
+const CAPABILITIES: Capability[] = [
+  { key: "search", to: "/search", icon: Search, tint: "bg-primary/10 text-primary" },
+  { key: "lists", to: "/lists", icon: FolderKanban, tint: "bg-chart-3/15 text-chart-3" },
+  { key: "enrich", to: "/people", icon: Sparkles, tint: "bg-chart-5/15 text-chart-5" },
+  { key: "campaigns", to: "/campaigns", icon: Send, tint: "bg-primary/10 text-primary" },
+  { key: "inbox", to: "/inbox", icon: Inbox, tint: "bg-chart-1/15 text-chart-1" },
+  { key: "templates", to: "/templates", icon: Mail, tint: "bg-chart-4/15 text-chart-4" },
+  { key: "tasks", to: "/tasks", icon: CheckSquare, tint: "bg-chart-3/15 text-chart-3" },
+  { key: "deals", to: "/deals", icon: Briefcase, tint: "bg-primary/10 text-primary" },
+  { key: "coach", to: "/coach", icon: GraduationCap, tint: "bg-chart-5/15 text-chart-5" },
+  { key: "analytics", to: "/analytics", icon: BarChart3, tint: "bg-chart-1/15 text-chart-1" },
+  { key: "extension", to: "/extension", icon: Puzzle, tint: "bg-chart-4/15 text-chart-4" },
+  { key: "integrations", to: "/integrations", icon: Plug, tint: "bg-chart-3/15 text-chart-3" },
+]
+
 const COPY = {
   en: {
     title: "Get started",
@@ -70,6 +107,63 @@ const COPY = {
     completeCount: (done: number, total: number) =>
       `${done} of ${total} complete`,
     allSet: "You're all set 🎉",
+    exploreTitle: "Explore Kombo",
+    exploreDesc: "Everything you can do — jump in and try a capability.",
+    open: "Open",
+    features: {
+      search: {
+        title: "Prospect Search",
+        description:
+          "Find your ideal customers with AI across millions of people & companies.",
+      },
+      lists: {
+        title: "Lists & segments",
+        description:
+          "Group prospects and accounts into lists you can enrich and enroll.",
+      },
+      enrich: {
+        title: "Data enrichment",
+        description: "Reveal verified emails and direct dials for any contact.",
+      },
+      campaigns: {
+        title: "Sequences & campaigns",
+        description:
+          "Run multi-step outreach across email and LinkedIn that auto-pauses on a reply.",
+      },
+      inbox: {
+        title: "Unified inbox",
+        description:
+          "Reply to every channel in one place, with AI-drafted responses.",
+      },
+      templates: {
+        title: "Message templates",
+        description: "Save your best-performing copy and personalize it at scale.",
+      },
+      tasks: {
+        title: "Tasks",
+        description: "Stay on top of every follow-up — in-app or offline.",
+      },
+      deals: {
+        title: "Pipeline & deals",
+        description: "Track prospects from interested to won across outcome stages.",
+      },
+      coach: {
+        title: "Call coaching",
+        description: "Score calls and get actionable coaching to win more deals.",
+      },
+      analytics: {
+        title: "Analytics",
+        description: "Measure outreach performance and double down on what works.",
+      },
+      extension: {
+        title: "Chrome extension",
+        description: "Prospect and enrich directly on LinkedIn and any website.",
+      },
+      integrations: {
+        title: "CRM & integrations",
+        description: "Sync two-way with HubSpot, Salesforce, and your stack.",
+      },
+    } as Record<string, { title: string; description: string }>,
     setupChecklist: "Setup checklist",
     setupChecklistDesc: "Knock these out to unlock the full Kombo experience.",
     roleGoals: "Your role & goals",
@@ -126,6 +220,63 @@ const COPY = {
     completeCount: (done: number, total: number) =>
       `${done} de ${total} completados`,
     allSet: "¡Todo listo! 🎉",
+    exploreTitle: "Explora Kombo",
+    exploreDesc: "Todo lo que puedes hacer — entra y prueba una capacidad.",
+    open: "Abrir",
+    features: {
+      search: {
+        title: "Búsqueda de prospectos",
+        description:
+          "Encuentra a tus clientes ideales con IA entre millones de personas y empresas.",
+      },
+      lists: {
+        title: "Listas y segmentos",
+        description:
+          "Agrupa prospectos y cuentas en listas que puedes enriquecer e inscribir.",
+      },
+      enrich: {
+        title: "Enriquecimiento de datos",
+        description: "Revela correos verificados y teléfonos directos de cualquier contacto.",
+      },
+      campaigns: {
+        title: "Secuencias y campañas",
+        description:
+          "Lanza outreach multipaso por correo y LinkedIn que se pausa al recibir respuesta.",
+      },
+      inbox: {
+        title: "Bandeja unificada",
+        description:
+          "Responde a todos los canales en un solo lugar, con respuestas redactadas por IA.",
+      },
+      templates: {
+        title: "Plantillas de mensajes",
+        description: "Guarda tus textos de mayor rendimiento y personalízalos a escala.",
+      },
+      tasks: {
+        title: "Tareas",
+        description: "Mantén el control de cada seguimiento — en la app o fuera de ella.",
+      },
+      deals: {
+        title: "Pipeline y negocios",
+        description: "Sigue a los prospectos desde interesado hasta ganado por etapas.",
+      },
+      coach: {
+        title: "Coaching de llamadas",
+        description: "Evalúa llamadas y recibe coaching accionable para cerrar más.",
+      },
+      analytics: {
+        title: "Analítica",
+        description: "Mide el rendimiento del outreach y potencia lo que funciona.",
+      },
+      extension: {
+        title: "Extensión de Chrome",
+        description: "Prospecta y enriquece directamente en LinkedIn y cualquier web.",
+      },
+      integrations: {
+        title: "CRM e integraciones",
+        description: "Sincroniza en ambos sentidos con HubSpot, Salesforce y tu stack.",
+      },
+    } as Record<string, { title: string; description: string }>,
     setupChecklist: "Lista de configuración",
     setupChecklistDesc:
       "Complétalos para desbloquear toda la experiencia de Kombo.",
@@ -267,6 +418,45 @@ export default function GetStarted() {
                 </React.Fragment>
               )
             })}
+          </CardContent>
+        </Card>
+
+        {/* Explore features & capabilities */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{c.exploreTitle}</CardTitle>
+            <CardDescription>{c.exploreDesc}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {CAPABILITIES.map((cap) => {
+                const Icon = cap.icon
+                const f = c.features[cap.key]
+                return (
+                  <Link
+                    key={cap.key}
+                    to={cap.to}
+                    className="group hover:border-primary/40 hover:bg-muted/40 focus-visible:border-primary/40 focus-visible:ring-ring/50 flex flex-col gap-2 rounded-xl border p-4 transition-colors outline-none focus-visible:ring-[3px]"
+                  >
+                    <span
+                      className={cn(
+                        "flex size-9 items-center justify-center rounded-lg",
+                        cap.tint
+                      )}
+                    >
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="mt-0.5 flex items-center gap-1 text-sm font-medium">
+                      {f.title}
+                      <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                    </span>
+                    <span className="text-muted-foreground text-xs leading-relaxed">
+                      {f.description}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
           </CardContent>
         </Card>
 
