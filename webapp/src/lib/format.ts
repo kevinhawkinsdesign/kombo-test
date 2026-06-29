@@ -1,4 +1,4 @@
-import type { ProspectSource } from "@/lib/types"
+import type { CampaignStatus, ProspectSource } from "@/lib/types"
 
 export function initials(first: string, last?: string): string {
   const a = first?.[0] ?? ""
@@ -89,6 +89,18 @@ export function formatDate(iso: string): string {
     day: "numeric",
     year: "numeric",
   })
+}
+
+/** A campaign is "scheduled" when it has a future start time and isn't yet live. */
+export function isCampaignScheduled(c: {
+  status: CampaignStatus
+  scheduledAt?: string | null
+}): boolean {
+  return (
+    c.status !== "active" &&
+    c.status !== "completed" &&
+    Boolean(c.scheduledAt && new Date(c.scheduledAt).getTime() > Date.now())
+  )
 }
 
 export function scoreTone(score: number): "high" | "mid" | "low" {
