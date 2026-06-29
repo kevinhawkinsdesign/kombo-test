@@ -318,6 +318,9 @@ const COPY = {
     buildPeopleDesc: "Individual prospects & contacts.",
     buildCompanies: "Companies",
     buildCompaniesDesc: "Accounts & organizations.",
+    capLabel: "Max contacts per company",
+    capNoLimit: "No limit",
+    capChip: (n: number) => `Max ${n}/company`,
     buildPopulate: "How do you want to populate it?",
     buildNext: "Next",
     buildBack: "Back",
@@ -549,6 +552,9 @@ const COPY = {
     buildPeopleDesc: "Prospectos y contactos individuales.",
     buildCompanies: "Empresas",
     buildCompaniesDesc: "Cuentas y organizaciones.",
+    capLabel: "Máx. contactos por empresa",
+    capNoLimit: "Sin límite",
+    capChip: (n: number) => `Máx. ${n}/empresa`,
     buildPopulate: "¿Cómo quieres llenarla?",
     buildNext: "Siguiente",
     buildBack: "Atrás",
@@ -775,7 +781,11 @@ export default function Search() {
   const source: DataSource = seed ? "lookalike" : linkedinOn ? "linkedin" : "kombo"
 
   const leads = React.useMemo(
-    () => sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
+    () =>
+      capPerCompany(
+        sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
+        query.perCompanyCap
+      ),
     [seed, query, sortKey]
   )
   const companies = React.useMemo(
@@ -932,7 +942,12 @@ export default function Search() {
 
   // "Build a list": route to the chosen population method. Search-style sources
   // don't pre-create an empty list; the rest create it and route accordingly.
-  function buildList(name: string, type: AiEntity, src: BuildSource) {
+  function buildList(
+    name: string,
+    type: AiEntity,
+    src: BuildSource,
+    perCompanyCap: number | null
+  ) {
     setBuildOpen(false)
     if (src === "lookalike") {
       setLookalikeOpen(true)
@@ -941,6 +956,10 @@ export default function Search() {
     if (SEARCH_SOURCES.includes(src)) {
       setEntity(type)
       setSeed(null)
+      setQuery((q) => ({
+        ...q,
+        perCompanyCap: type === "people" ? perCompanyCap : null,
+      }))
       if (src !== "find") toast.success(c.buildSourceSoon)
       return
     }
@@ -1550,6 +1569,9 @@ export default function Search() {
                 query={query}
                 onRemove={removeFilter}
                 onRemoveFacet={removeFacet}
+                onClearCap={() =>
+                  setQuery((q) => ({ ...q, perCompanyCap: null }))
+                }
                 locale={locale}
                 c={c}
               />
@@ -2300,12 +2322,14 @@ function QueryChips({
   query,
   onRemove,
   onRemoveFacet,
+  onClearCap,
   locale,
   c,
 }: {
   query: AiQuery
   onRemove: (group: keyof AiQuery, value: string) => void
   onRemoveFacet: (id: string, value: string) => void
+  onClearCap: () => void
   locale: Locale
   c: Copy
 }) {
@@ -2315,7 +2339,8 @@ function QueryChips({
   const facetChips = Object.entries(query.facets).flatMap(([id, values]) =>
     values.map((value) => ({ id, value }))
   )
-  if (chips.length === 0 && facetChips.length === 0) {
+  const hasCap = query.perCompanyCap != null
+  if (chips.length === 0 && facetChips.length === 0 && !hasCap) {
     return (
       <span className="text-muted-foreground text-sm">
         {c.addFilter} →
@@ -2324,6 +2349,20 @@ function QueryChips({
   }
   return (
     <>
+      {hasCap && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 py-1 pr-1 pl-2.5 text-xs font-medium text-amber-700">
+          <Building2 className="size-3" />
+          {c.capChip(query.perCompanyCap as number)}
+          <button
+            type="button"
+            aria-label="Remove per-company cap"
+            onClick={onClearCap}
+            className="rounded-full p-0.5 hover:bg-black/10"
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      )}
       {chips.map(({ group, value }) => (
         <span
           key={`${group}:${value}`}
@@ -2917,11 +2956,17 @@ function BuildListDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
   c: Copy
-  onChoose: (name: string, type: AiEntity, source: BuildSource) => void
+  onChoose: (
+    name: string,
+    type: AiEntity,
+    source: BuildSource,
+    perCompanyCap: number | null
+  ) => void
 }) {
   const [step, setStep] = React.useState<"setup" | "source">("setup")
   const [name, setName] = React.useState("")
   const [type, setType] = React.useState<AiEntity>("people")
+  const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
   const [wasOpen, setWasOpen] = React.useState(false)
 
   // Reset every time the dialog opens.
@@ -2930,6 +2975,7 @@ function BuildListDialog({
     setStep("setup")
     setName("")
     setType("people")
+    setPerCompanyCap(null)
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -3046,6 +3092,31 @@ function BuildListDialog({
                 })}
               </div>
             </div>
+            {type === "people" && (
+              <div className="space-y-2">
+                <Label>{c.capLabel}</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[null, 1, 2, 3, 5, 10].map((n) => {
+                    const isActive = perCompanyCap === n
+                    return (
+                      <button
+                        key={n ?? "none"}
+                        type="button"
+                        onClick={() => setPerCompanyCap(n)}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                          isActive
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        {n === null ? c.capNoLimit : n}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="max-h-[55vh] space-y-3 overflow-y-auto py-1">
@@ -3061,7 +3132,14 @@ function BuildListDialog({
                       <button
                         key={s.key}
                         type="button"
-                        onClick={() => onChoose(name, type, s.key)}
+                        onClick={() =>
+                          onChoose(
+                            name,
+                            type,
+                            s.key,
+                            type === "people" ? perCompanyCap : null
+                          )
+                        }
                         className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors"
                       >
                         <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
@@ -3096,6 +3174,22 @@ function BuildListDialog({
       </DialogContent>
     </Dialog>
   )
+}
+
+// People search only: keep at most `cap` contacts per company, preserving the
+// incoming (sorted) order so the strongest matches per company survive.
+function capPerCompany(leads: AiLead[], cap: number | null): AiLead[] {
+  if (!cap || cap <= 0) return leads
+  const counts = new Map<string, number>()
+  const out: AiLead[] = []
+  for (const lead of leads) {
+    const key = lead.company || lead.companyDomain || lead.id
+    const n = counts.get(key) ?? 0
+    if (n >= cap) continue
+    counts.set(key, n + 1)
+    out.push(lead)
+  }
+  return out
 }
 
 function aiLeadToCriteria(query: AiQuery): SavedSearchCriteria {

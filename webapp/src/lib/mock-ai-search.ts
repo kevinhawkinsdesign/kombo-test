@@ -38,6 +38,9 @@ export interface AiQuery {
   // Sales Navigator, Kombo / FullEnrich) write here keyed by facet id, so we
   // don't need a typed field per filter.
   facets: Record<string, string[]>
+  // People search only: cap how many contacts are returned per company
+  // (e.g. "max 3 per company"). null = no limit.
+  perCompanyCap: number | null
 }
 
 export const EMPTY_QUERY: AiQuery = {
@@ -65,6 +68,7 @@ export const EMPTY_QUERY: AiQuery = {
   jobListings: [],
   keywords: "",
   facets: {},
+  perCompanyCap: null,
 }
 
 export interface AiLead {
