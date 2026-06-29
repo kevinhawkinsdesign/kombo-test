@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -7,10 +7,7 @@ import {
   Users,
   Pencil,
   Check,
-  Table2,
-  LayoutGrid,
   Columns3,
-  MapPin,
   Waypoints,
 } from "lucide-react"
 
@@ -19,8 +16,6 @@ import { useLocale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -35,12 +30,6 @@ import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
-import {
-  ProspectAvatar,
-  ScoreBadge,
-  StatusBadge,
-  SourceBadge,
-} from "@/components/common/ProspectBits"
 import { prospectSource } from "@/lib/format"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
@@ -55,7 +44,8 @@ import {
 } from "@/lib/table-columns"
 import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
 import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
-import { useProspects, prospectStore } from "@/lib/store"
+import { useProspects, prospectStore, useLists } from "@/lib/store"
+import { ListSelector } from "@/components/common/ListSelector"
 import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_LABELS } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
@@ -90,6 +80,9 @@ const COPY = {
     person: "person",
     people: "people",
     noMatch: "No people match your filters.",
+    allProspects: "All prospects",
+    searchLists: "Search lists…",
+    createList: "Create list",
     viewTable: "Table",
     viewCards: "Cards",
     columns: "Columns",
@@ -123,6 +116,9 @@ const COPY = {
     person: "persona",
     people: "personas",
     noMatch: "Ninguna persona coincide con tus filtros.",
+    allProspects: "Todos los prospectos",
+    searchLists: "Buscar listas…",
+    createList: "Crear lista",
     viewTable: "Tabla",
     viewCards: "Tarjetas",
     columns: "Columnas",
@@ -132,8 +128,6 @@ const COPY = {
     selectAll: "Seleccionar todo",
   },
 } as const
-
-type ViewMode = "table" | "cards"
 
 export default function People() {
   const { locale } = useLocale()
@@ -147,7 +141,7 @@ export default function People() {
   // Allow deep-linking a filter, e.g. account-based "/people?q=Acme".
   const [query, setQuery] = React.useState(() => searchParams.get("q") ?? "")
   const [status, setStatus] = React.useState<string>(ALL)
-  const [view, setView] = React.useState<ViewMode>("table")
+  const [listFilter, setListFilter] = React.useState<string>("all")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
@@ -173,6 +167,10 @@ export default function People() {
     [aiCols]
   )
 
+  // People lists power the "filter by list" dropdown.
+  const peopleLists = useLists().filter((l) => (l.kind ?? "people") === "people")
+  const activeList = peopleLists.find((l) => l.id === listFilter)
+
   const q = query.trim().toLowerCase()
   const results = prospects.filter((p) => {
     const matchesQuery =
@@ -181,7 +179,8 @@ export default function People() {
         .toLowerCase()
         .includes(q)
     const matchesStatus = status === ALL || p.status === status
-    return matchesQuery && matchesStatus
+    const matchesList = !activeList || activeList.prospectIds.includes(p.id)
+    return matchesQuery && matchesStatus && matchesList
   })
 
   const allSelected = results.length > 0 && results.every((p) => selectedIds.has(p.id))
@@ -302,6 +301,26 @@ export default function People() {
         className="mb-6"
       />
 
+      <div className="mb-4">
+        <ListSelector
+          value={listFilter}
+          onChange={setListFilter}
+          lists={peopleLists.map((l) => ({
+            id: l.id,
+            name: l.name,
+            color: l.color,
+            count: l.prospectIds.length,
+          }))}
+          allLabel={c.allProspects}
+          allIcon={Users}
+          allCount={prospects.length}
+          countNoun={(n) => `${n} ${n === 1 ? c.person : c.people}`}
+          onCreate={() => navigate("/lists")}
+          createLabel={c.createList}
+          searchPlaceholder={c.searchLists}
+        />
+      </div>
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -326,83 +345,46 @@ export default function People() {
           </SelectContent>
         </Select>
 
-        {/* View toggle */}
-        <div className="bg-muted text-muted-foreground inline-flex h-9 shrink-0 items-center rounded-lg p-[3px]">
-          <ViewToggleButton
-            active={view === "table"}
-            onClick={() => setView("table")}
-            icon={Table2}
-            label={c.viewTable}
-          />
-          <ViewToggleButton
-            active={view === "cards"}
-            onClick={() => setView("cards")}
-            icon={LayoutGrid}
-            label={c.viewCards}
-          />
-        </div>
-
-        {view === "table" && (
-          <>
-            <TableViews tableKey="people" prefs={columnPrefs} />
-            <Button
-              variant="outline"
-              className="shrink-0"
-              onClick={() => setColumnsOpen(true)}
-            >
-              <Columns3 className="size-4" />
-              <span className="hidden sm:inline">{c.columns}</span>
-            </Button>
-            <Button
-              variant={editing ? "secondary" : "outline"}
-              className="shrink-0"
-              onClick={() => setEditing((v) => !v)}
-            >
-              {editing ? (
-                <>
-                  <Check className="size-4" />
-                  {c.done}
-                </>
-              ) : (
-                <>
-                  <Pencil className="size-4" />
-                  {c.edit}
-                </>
-              )}
-            </Button>
-          </>
-        )}
+        <TableViews tableKey="people" prefs={columnPrefs} />
+        <Button
+          variant="outline"
+          className="shrink-0"
+          onClick={() => setColumnsOpen(true)}
+        >
+          <Columns3 className="size-4" />
+          <span className="hidden sm:inline">{c.columns}</span>
+        </Button>
+        <Button
+          variant={editing ? "secondary" : "outline"}
+          className="shrink-0"
+          onClick={() => setEditing((v) => !v)}
+        >
+          {editing ? (
+            <>
+              <Check className="size-4" />
+              {c.done}
+            </>
+          ) : (
+            <>
+              <Pencil className="size-4" />
+              {c.edit}
+            </>
+          )}
+        </Button>
       </div>
 
-      <div className="text-muted-foreground mb-3 flex items-center gap-2 text-sm">
-        <span>
-          <span className="text-foreground font-medium tabular-nums">
-            {results.length}
-          </span>{" "}
-          {results.length === 1 ? c.person : c.people}
-        </span>
-        {view === "table" && editing && (
-          <span className="text-primary flex items-center gap-1 text-xs">
-            <Pencil className="size-3" />
-            {c.editingHint}
-          </span>
-        )}
-        {view === "cards" && results.length > 0 && (
-          <label className="ml-1 flex cursor-pointer items-center gap-1.5">
-            <Checkbox
-              checked={allSelected ? true : someSelected ? "indeterminate" : false}
-              onCheckedChange={() => toggleAll()}
-            />
-            <span>{c.selectAll}</span>
-          </label>
-        )}
-      </div>
+      {editing && (
+        <p className="text-primary mb-3 flex items-center gap-1 text-xs">
+          <Pencil className="size-3" />
+          {c.editingHint}
+        </p>
+      )}
 
       {results.length === 0 ? (
         <div className="text-muted-foreground rounded-xl border border-dashed py-16 text-center text-sm">
           {c.noMatch}
         </div>
-      ) : view === "table" ? (
+      ) : (
         <DataTable
           columns={allColumns}
           visible={columnPrefs.visible}
@@ -420,17 +402,6 @@ export default function People() {
             someSelected,
           }}
         />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((p) => (
-            <ProspectCard
-              key={p.id}
-              prospect={p}
-              selected={selectedIds.has(p.id)}
-              onToggle={() => toggleRow(p)}
-            />
-          ))}
-        </div>
       )}
 
       <BulkActionsBar
@@ -486,104 +457,5 @@ export default function People() {
         </>
       )}
     </Page>
-  )
-}
-
-function ViewToggleButton({
-  active,
-  onClick,
-  icon: Icon,
-  label,
-}: {
-  active: boolean
-  onClick: () => void
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex h-full items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors",
-        active ? "bg-background text-foreground shadow-sm" : "hover:text-foreground"
-      )}
-    >
-      <Icon className="size-4" />
-      <span className="hidden sm:inline">{label}</span>
-    </button>
-  )
-}
-
-function ProspectCard({
-  prospect: p,
-  selected,
-  onToggle,
-}: {
-  prospect: Prospect
-  selected?: boolean
-  onToggle?: () => void
-}) {
-  const { locale } = useLocale()
-  return (
-    <div
-      className={cn(
-        "hover:border-primary/40 relative flex flex-col rounded-xl border p-4 transition-colors",
-        selected && "border-primary ring-primary/30 ring-1"
-      )}
-    >
-      <div className="flex items-start gap-3">
-        {onToggle && (
-          <div
-            className="relative z-10 pt-0.5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Checkbox
-              checked={selected}
-              onCheckedChange={onToggle}
-              aria-label="Select"
-            />
-          </div>
-        )}
-        <ProspectAvatar prospect={p} className="size-10" />
-        <div className="min-w-0 flex-1">
-          {/* Stretched link makes the whole card clickable without nesting
-              the actions button inside an anchor. */}
-          <Link to={`/prospects/${p.id}`} className="after:absolute after:inset-0">
-            <p className="truncate font-semibold">
-              {p.firstName} {p.lastName}
-            </p>
-          </Link>
-          <p className="text-muted-foreground truncate text-sm">{p.title}</p>
-        </div>
-        <ScoreBadge score={p.score} />
-        <RecordActionsMenu kind="person" record={p} className="relative z-10 -mt-1 -mr-1" />
-      </div>
-
-      <div className="mt-3 flex items-center gap-2">
-        <StatusBadge status={p.status} />
-        <span className="text-muted-foreground truncate text-xs">{p.company}</span>
-      </div>
-
-      <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
-        <span className="inline-flex min-w-0 items-center gap-1">
-          <MapPin className="size-3.5 shrink-0" />
-          <span className="truncate">{p.location}</span>
-        </span>
-        <span className="text-border">·</span>
-        <SourceBadge source={prospectSource(p)} locale={locale} />
-      </div>
-
-      {p.signals.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {p.signals.slice(0, 2).map((signal) => (
-            <Badge key={signal} variant="secondary" className="font-normal">
-              {signal}
-            </Badge>
-          ))}
-        </div>
-      )}
-    </div>
   )
 }
