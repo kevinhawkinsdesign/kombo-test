@@ -11,6 +11,7 @@ import {
   ArrowDownUp,
   SlidersHorizontal,
   ChevronDown,
+  Database,
   X,
 } from "lucide-react"
 
@@ -30,6 +31,7 @@ import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { prospectStore, accountStore } from "@/lib/store"
+import { facetsForDb } from "@/lib/search-facets"
 import {
   interpretPrompt,
   searchLeads,
@@ -42,7 +44,12 @@ import {
   INDUSTRY_OPTIONS,
   REGION_OPTIONS,
   HEADCOUNT_OPTIONS,
+  REVENUE_OPTIONS,
+  FOUNDED_OPTIONS,
+  GROWTH_OPTIONS,
   TECH_OPTIONS,
+  INTENT_OPTIONS,
+  SIGNAL_OPTIONS,
   type AiQuery,
   type AiLead,
   type AiCompany,
@@ -54,7 +61,10 @@ import type { AccountTier } from "@/lib/types"
 type Kind = "contact" | "company"
 type Mode = "search" | "import"
 
-// Typed filter groups (write into AiQuery fields the mock search honors).
+// Typed filter groups — the same core catalog as the Prospect Search page,
+// writing into the AiQuery fields the mock search honors. The per-database
+// facet catalog (LinkedIn Sales Navigator / Kombo FullEnrich) is layered on
+// top via facetsForDb, exactly like the search page.
 const FILTER_GROUPS: {
   key: keyof AiQuery
   en: string
@@ -64,10 +74,15 @@ const FILTER_GROUPS: {
 }[] = [
   { key: "seniority", en: "Seniority", es: "Antigüedad", options: SENIORITY_OPTIONS, scope: "people" },
   { key: "departments", en: "Department", es: "Departamento", options: DEPARTMENT_OPTIONS, scope: "people" },
-  { key: "industries", en: "Industry", es: "Sector", options: INDUSTRY_OPTIONS },
   { key: "regions", en: "Region", es: "Región", options: REGION_OPTIONS },
+  { key: "industries", en: "Industry", es: "Sector", options: INDUSTRY_OPTIONS },
   { key: "headcount", en: "Company size", es: "Tamaño de empresa", options: HEADCOUNT_OPTIONS },
+  { key: "revenue", en: "Revenue", es: "Ingresos", options: REVENUE_OPTIONS },
+  { key: "founded", en: "Founded", es: "Fundación", options: FOUNDED_OPTIONS, scope: "companies" },
+  { key: "growth", en: "Growth", es: "Crecimiento", options: GROWTH_OPTIONS, scope: "companies" },
   { key: "technologies", en: "Technology", es: "Tecnología", options: TECH_OPTIONS },
+  { key: "intent", en: "Buyer intent", es: "Intención", options: INTENT_OPTIONS, scope: "people" },
+  { key: "signals", en: "Signals", es: "Señales", options: SIGNAL_OPTIONS },
 ]
 
 const COPY = {
@@ -202,6 +217,7 @@ export function AddRecordsDialog({
   const [query, setQuery] = React.useState<AiQuery>({ ...EMPTY_QUERY })
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
+  const [linkedinOn, setLinkedinOn] = React.useState(false)
   const [wasOpen, setWasOpen] = React.useState(false)
 
   if (open && !wasOpen) {
@@ -212,6 +228,7 @@ export function AddRecordsDialog({
     setQuery({ ...EMPTY_QUERY })
     setSortKey("fit")
     setSelected(new Set())
+    setLinkedinOn(false)
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -241,6 +258,16 @@ export function AddRecordsDialog({
         ? arr.filter((v) => v !== value)
         : [...arr, value]
       return { ...prev, [key]: next }
+    })
+  }
+  function toggleFacet(facetId: string, value: string) {
+    setSelected(new Set())
+    setQuery((prev) => {
+      const cur = prev.facets[facetId] ?? []
+      const next = cur.includes(value)
+        ? cur.filter((v) => v !== value)
+        : [...cur, value]
+      return { ...prev, facets: { ...prev.facets, [facetId]: next } }
     })
   }
   function clearFilters() {
@@ -278,10 +305,10 @@ export function AddRecordsDialog({
   }
 
   const groups = FILTER_GROUPS.filter((g) => !g.scope || g.scope === entity)
-  const activeFilterCount = groups.reduce(
-    (n, g) => n + (query[g.key] as string[]).length,
-    0
-  )
+  const facetDefs = facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)
+  const activeFilterCount =
+    groups.reduce((n, g) => n + (query[g.key] as string[]).length, 0) +
+    facetDefs.reduce((n, f) => n + (query.facets[f.id]?.length ?? 0), 0)
   const sortOptions: { key: SortKey; label: string }[] =
     entity === "people"
       ? [
@@ -348,6 +375,17 @@ export function AddRecordsDialog({
                     </button>
                   )}
                 </div>
+                {/* Database — switches the per-database facet catalog. */}
+                <div className="border-b p-2">
+                  <Segmented
+                    options={[
+                      { v: "kombo", label: "Kombo", icon: Database },
+                      { v: "linkedin", label: "LinkedIn", icon: LinkedinIcon },
+                    ]}
+                    value={linkedinOn ? "linkedin" : "kombo"}
+                    onChange={(v) => setLinkedinOn(v === "linkedin")}
+                  />
+                </div>
                 <div className="p-1">
                   <TitleFilter
                     c={c}
@@ -362,6 +400,15 @@ export function AddRecordsDialog({
                       options={g.options}
                       selected={query[g.key] as string[]}
                       onToggle={(v) => toggleFilter(g.key, v)}
+                    />
+                  ))}
+                  {facetDefs.map((f) => (
+                    <FilterGroup
+                      key={f.id}
+                      label={f.label[locale]}
+                      options={f.options}
+                      selected={query.facets[f.id] ?? []}
+                      onToggle={(v) => toggleFacet(f.id, v)}
                     />
                   ))}
                 </div>
