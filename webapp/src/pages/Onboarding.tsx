@@ -1,173 +1,267 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { Check, ArrowRight, ArrowLeft, Plug, Target, Users } from "lucide-react"
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Rocket,
+  Users,
+  Database,
+  Blocks,
+  Pencil,
+} from "lucide-react"
 
 import { KomboLogo } from "@/components/KomboLogo"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { useSetup } from "@/lib/setup"
 import { cn } from "@/lib/utils"
 
-const ROLES = [
-  "RevOps",
-  "Head of Sales / VP",
-  "Account Executive",
-  "SDR / BDR",
+type StepId = "goal" | "team" | "crm" | "tools" | "source"
+
+const STEP_ORDER: StepId[] = ["goal", "team", "crm", "tools", "source"]
+
+const GOALS = [
+  "Find and enrich people",
+  "Find and enrich accounts",
+  "Enrich & score inbound leads",
+  "AI outbound messaging",
+  "Automate account research",
 ]
 
-const CRMS = ["HubSpot", "Salesforce", "Pipedrive", "None yet"]
+const TEAMS = ["RevOps", "Agency", "Marketing", "Sales", "Other"]
 
-const STEPS = [
-  { title: "Your role", icon: Users },
-  { title: "Connect CRM", icon: Plug },
-  { title: "Your ICP", icon: Target },
+const NO_CRM = "I don't have a CRM / database"
+const CRMS = [
+  "Salesforce",
+  "HubSpot",
+  "Attio",
+  "Snowflake",
+  "Marketo",
+  "Demandbase",
+  "Dynamics 365",
+  NO_CRM,
 ]
+
+const TOOLS = [
+  "Slack",
+  "Notion",
+  "Google Sheets",
+  "Zapier",
+  "Airtable",
+  "Outreach",
+  "Salesloft",
+  "Apollo",
+  "Instantly",
+  "Smartlead",
+  "Gong",
+]
+
+const STEP_META: Record<
+  StepId,
+  {
+    icon: React.ComponentType<{ className?: string }>
+    tint: string
+    title: string
+    description: string
+  }
+> = {
+  goal: {
+    icon: Rocket,
+    tint: "bg-primary/10 text-primary",
+    title: "How would you like to get started?",
+    description:
+      "Pick what you want to do first. You can always explore everything else later.",
+  },
+  team: {
+    icon: Users,
+    tint: "bg-chart-3/15 text-chart-3",
+    title: "What team are you on?",
+    description:
+      "This helps us personalize your workspace and show you relevant templates.",
+  },
+  crm: {
+    icon: Database,
+    tint: "bg-chart-5/15 text-chart-5",
+    title: "What CRM or database do you use?",
+    description:
+      "We'll help you connect your data and set up integrations to streamline your workflow.",
+  },
+  tools: {
+    icon: Blocks,
+    tint: "bg-chart-1/15 text-chart-1",
+    title: "What tools do you use?",
+    description:
+      "Tell us about your stack so we can recommend the best integrations for your workflow.",
+  },
+  source: {
+    icon: Pencil,
+    tint: "bg-chart-4/15 text-chart-4",
+    title: "How did you hear about Kombo?",
+    description: "Tell us how you got here!",
+  },
+}
 
 export default function Onboarding() {
   const navigate = useNavigate()
-  const [step, setStep] = React.useState(0)
-  const [role, setRole] = React.useState(ROLES[1])
-  const [crm, setCrm] = React.useState(CRMS[0])
-  const [industry, setIndustry] = React.useState("B2B SaaS")
-  const [titles, setTitles] = React.useState("VP Sales, CRO, Head of RevOps")
-
   const setup = useSetup()
-  const isLast = step === STEPS.length - 1
+
+  const [stepIndex, setStepIndex] = React.useState(0)
+  const [goal, setGoal] = React.useState<string | null>(null)
+  const [team, setTeam] = React.useState<string | null>(null)
+  const [crm, setCrm] = React.useState<string | null>(null)
+  const [tools, setTools] = React.useState<Set<string>>(new Set())
+  const [source, setSource] = React.useState("")
+
+  const step = STEP_ORDER[stepIndex]
+  const meta = STEP_META[step]
+  const Icon = meta.icon
+  const isLast = stepIndex === STEP_ORDER.length - 1
+
+  // Required selections gate the Continue button; tools and source are optional.
+  const canContinue =
+    step === "goal"
+      ? goal !== null
+      : step === "team"
+        ? team !== null
+        : step === "crm"
+          ? crm !== null
+          : true
+
+  function toggleTool(tool: string) {
+    setTools((prev) => {
+      const next = new Set(prev)
+      if (next.has(tool)) next.delete(tool)
+      else next.add(tool)
+      return next
+    })
+  }
+
+  function finish() {
+    // Persist what maps to the setup store; the rest tailors the experience.
+    setup.setProfile(team ?? "Sales", goal ? `Focus: ${goal}` : setup.goals)
+    if (crm && crm !== NO_CRM) setup.complete("crm")
+    toast.success("You're all set — welcome to Kombo!")
+    navigate("/get-started")
+  }
 
   function next() {
-    if (isLast) {
-      setup.setProfile(role, `Focus: ${industry} · ${titles}`)
-      if (crm !== "None yet") setup.complete("crm")
-      toast.success("You're all set — welcome to Kombo!")
-      navigate("/")
-      return
-    }
-    setStep((s) => s + 1)
+    if (isLast) finish()
+    else setStepIndex((s) => s + 1)
+  }
+
+  function back() {
+    if (stepIndex === 0) navigate("/get-started")
+    else setStepIndex((s) => s - 1)
   }
 
   return (
-    <div className="bg-muted/30 flex min-h-svh flex-col items-center justify-center p-6">
-      <div className="w-full max-w-xl">
-        <div className="mb-8 flex justify-center">
+    <div className="bg-muted/30 flex min-h-svh flex-col items-center p-6">
+      <div className="w-full max-w-2xl">
+        {/* Header: logo + progress */}
+        <div className="flex items-center justify-between py-8">
           <KomboLogo />
+          <span className="text-muted-foreground text-sm tabular-nums">
+            {stepIndex + 1} / {STEP_ORDER.length}
+          </span>
+        </div>
+        <div className="bg-border mb-10 h-1 w-full overflow-hidden rounded-full">
+          <div
+            className="bg-primary h-full rounded-full transition-[width] duration-300"
+            style={{
+              width: `${((stepIndex + 1) / STEP_ORDER.length) * 100}%`,
+            }}
+          />
         </div>
 
-        {/* Stepper */}
-        <div className="mb-8 flex items-center justify-center gap-2">
-          {STEPS.map((s, i) => (
-            <React.Fragment key={s.title}>
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors",
-                    i < step
-                      ? "bg-primary text-primary-foreground"
-                      : i === step
-                        ? "bg-primary/15 text-primary ring-primary ring-2"
-                        : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {i < step ? <Check className="size-4" /> : i + 1}
-                </div>
-                <span
-                  className={cn(
-                    "hidden text-sm sm:block",
-                    i === step ? "font-medium" : "text-muted-foreground"
-                  )}
-                >
-                  {s.title}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div className="bg-border h-px w-6" />
+        {/* Step */}
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <span
+              className={cn(
+                "flex size-12 items-center justify-center rounded-2xl",
+                meta.tint
               )}
-            </React.Fragment>
-          ))}
-        </div>
-
-        <div className="bg-card rounded-xl border p-6 shadow-sm">
-          {step === 0 && (
-            <Step
-              title="What's your role?"
-              subtitle="We'll tailor your workspace and dashboards."
             >
-              <div className="grid grid-cols-2 gap-3">
-                {ROLES.map((r) => (
-                  <Option
-                    key={r}
-                    label={r}
-                    active={role === r}
-                    onClick={() => setRole(r)}
-                  />
-                ))}
+              <Icon className="size-6" />
+            </span>
+            <div className="flex items-start gap-3">
+              <button
+                type="button"
+                onClick={back}
+                aria-label="Back"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted mt-1.5 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
+              >
+                <ArrowLeft className="size-5" />
+              </button>
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {meta.title}
+                </h1>
+                <p className="text-muted-foreground">{meta.description}</p>
               </div>
-            </Step>
-          )}
-
-          {step === 1 && (
-            <Step
-              title="Connect your CRM"
-              subtitle="Sync prospects, activities, and deals two-way."
-            >
-              <div className="grid grid-cols-2 gap-3">
-                {CRMS.map((c) => (
-                  <Option
-                    key={c}
-                    label={c}
-                    active={crm === c}
-                    onClick={() => setCrm(c)}
-                  />
-                ))}
-              </div>
-            </Step>
-          )}
-
-          {step === 2 && (
-            <Step
-              title="Define your ICP"
-              subtitle="Kombo uses this to score and recommend prospects."
-            >
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Target industry</Label>
-                  <Input
-                    id="industry"
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="titles">Target titles</Label>
-                  <Input
-                    id="titles"
-                    value={titles}
-                    onChange={(e) => setTitles(e.target.value)}
-                  />
-                </div>
-              </div>
-            </Step>
-          )}
-
-          <div className="mt-8 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => setStep((s) => Math.max(0, s - 1))}
-              disabled={step === 0}
-            >
-              <ArrowLeft className="size-4" />
-              Back
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                Skip
-              </Button>
-              <Button onClick={next}>
-                {isLast ? "Finish" : "Continue"}
-                {!isLast && <ArrowRight className="size-4" />}
-              </Button>
             </div>
+          </div>
+
+          <div className="pl-11">
+            {step === "goal" && (
+              <div className="space-y-2">
+                {GOALS.map((g) => (
+                  <RowOption
+                    key={g}
+                    label={g}
+                    selected={goal === g}
+                    onClick={() => setGoal(g)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {step === "team" && (
+              <ChipGroup
+                options={TEAMS}
+                selected={(o) => team === o}
+                onToggle={setTeam}
+              />
+            )}
+
+            {step === "crm" && (
+              <ChipGroup
+                options={CRMS}
+                selected={(o) => crm === o}
+                onToggle={setCrm}
+              />
+            )}
+
+            {step === "tools" && (
+              <ChipGroup
+                options={TOOLS}
+                selected={(o) => tools.has(o)}
+                onToggle={toggleTool}
+              />
+            )}
+
+            {step === "source" && (
+              <Textarea
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                placeholder="e.g. a colleague, a podcast, searching for prospecting tools…"
+                className="min-h-28"
+              />
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 pt-2 pl-11">
+            <Button variant="volt" disabled={!canContinue} onClick={next}>
+              {isLast ? "Start my first project" : "Continue"}
+              {!isLast && <ArrowRight className="size-4" />}
+            </Button>
+            {!isLast && (
+              <Button variant="ghost" onClick={() => navigate("/get-started")}>
+                Skip for now
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -175,43 +269,62 @@ export default function Onboarding() {
   )
 }
 
-function Step({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string
-  subtitle: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-      <p className="text-muted-foreground mt-1 mb-5 text-sm">{subtitle}</p>
-      {children}
-    </div>
-  )
-}
-
-function Option({
+function RowOption({
   label,
-  active,
+  selected,
   onClick,
 }: {
   label: string
-  active: boolean
+  selected: boolean
   onClick: () => void
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={cn(
-        "flex items-center justify-between rounded-lg border px-4 py-3 text-sm font-medium transition-colors",
-        active ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+        "flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors",
+        selected ? "border-primary bg-primary/5" : "hover:bg-muted/50"
       )}
     >
       {label}
-      {active && <Check className="text-primary size-4" />}
+      {selected && <Check className="text-primary size-4 shrink-0" />}
     </button>
+  )
+}
+
+function ChipGroup({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: string[]
+  selected: (option: string) => boolean
+  onToggle: (option: string) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const active = selected(option)
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onToggle(option)}
+            aria-pressed={active}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-medium transition-colors",
+              active
+                ? "border-primary bg-primary/5 text-primary"
+                : "hover:bg-muted/50"
+            )}
+          >
+            {active && <Check className="size-3.5 shrink-0" />}
+            {option}
+          </button>
+        )
+      })}
+    </div>
   )
 }

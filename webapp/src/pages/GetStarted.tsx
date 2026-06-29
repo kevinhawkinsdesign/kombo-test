@@ -102,6 +102,10 @@ const COPY = {
     title: "Get started",
     description:
       "Finish setting up your workspace to get the most out of Kombo.",
+    guidedTitle: "New here? Take the guided setup",
+    guidedDesc:
+      "A 2-minute walkthrough to tailor Kombo to your team, CRM, and tools.",
+    guidedCta: "Start onboarding",
     saved: "Saved",
     linkAdded: "Link added",
     completeCount: (done: number, total: number) =>
@@ -215,6 +219,10 @@ const COPY = {
     title: "Primeros pasos",
     description:
       "Termina de configurar tu espacio de trabajo para sacarle el máximo partido a Kombo.",
+    guidedTitle: "¿Nuevo por aquí? Haz la configuración guiada",
+    guidedDesc:
+      "Un recorrido de 2 minutos para adaptar Kombo a tu equipo, CRM y herramientas.",
+    guidedCta: "Empezar onboarding",
     saved: "Guardado",
     linkAdded: "Enlace añadido",
     completeCount: (done: number, total: number) =>
@@ -360,6 +368,25 @@ export default function GetStarted() {
       <PageHeading title={c.title} description={c.description} />
 
       <div className="space-y-4">
+        {/* Guided onboarding entry point */}
+        <Card className="from-primary/10 border-primary/20 bg-gradient-to-r to-transparent">
+          <CardContent className="flex flex-wrap items-center gap-4 py-1">
+            <span className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <Sparkles className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">{c.guidedTitle}</p>
+              <p className="text-muted-foreground text-sm">{c.guidedDesc}</p>
+            </div>
+            <Button variant="volt" asChild>
+              <Link to="/onboarding">
+                {c.guidedCta}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Progress */}
         <Card>
           <CardHeader>
