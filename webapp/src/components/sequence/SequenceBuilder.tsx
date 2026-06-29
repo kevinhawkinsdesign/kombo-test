@@ -135,7 +135,7 @@ export function SequenceBuilder({
   className?: string
 }) {
   const [steps, setSteps] = React.useState<BuilderStep[]>(initialSteps)
-  const [view, setView] = React.useState<"timeline" | "diagram">("timeline")
+  const [view, setView] = React.useState<"timeline" | "diagram">("diagram")
   const [autoPause, setAutoPause] = React.useState(true)
   const dragIndex = React.useRef<number | null>(null)
   const [overIndex, setOverIndex] = React.useState<number | null>(null)
@@ -203,7 +203,7 @@ export function SequenceBuilder({
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="bg-muted text-muted-foreground inline-flex h-9 items-center rounded-lg p-[3px]">
-          {(["timeline", "diagram"] as const).map((v) => (
+          {(["diagram", "timeline"] as const).map((v) => (
             <button
               key={v}
               type="button"
