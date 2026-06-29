@@ -40,8 +40,6 @@ import {
   interpretPrompt,
   searchLeads,
   lookalikeLeads,
-  smallerThan,
-  largerThan,
   LOOKALIKE_SEEDS,
   EMPTY_QUERY,
   SENIORITY_OPTIONS,
@@ -65,9 +63,6 @@ const COPY = {
     thinking: "Kai is searching…",
     seedLabel: "Find people similar to",
     pickSeed: "Pick a person or company",
-    modSmaller: "But smaller",
-    modLarger: "But larger",
-    modRegion: "Same region",
     allIndustries: "All industries",
     allSeniority: "All seniority",
     allRegions: "All regions",
@@ -92,9 +87,6 @@ const COPY = {
     thinking: "Kai está buscando…",
     seedLabel: "Buscar personas similares a",
     pickSeed: "Elige una persona o empresa",
-    modSmaller: "Más pequeñas",
-    modLarger: "Más grandes",
-    modRegion: "Misma región",
     allIndustries: "Todos los sectores",
     allSeniority: "Toda la antigüedad",
     allRegions: "Todas las regiones",
@@ -170,7 +162,6 @@ export function AddCampaignProspectsDialog({
 
   // Lookalike
   const [seedId, setSeedId] = React.useState<string>("")
-  const [mods, setMods] = React.useState<Set<string>>(new Set())
 
   // Reset when the dialog opens.
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -187,7 +178,6 @@ export function AddCampaignProspectsDialog({
       setAiQuery(null)
       setThinking(false)
       setSeedId("")
-      setMods(new Set())
     }
   }
 
@@ -215,14 +205,11 @@ export function AddCampaignProspectsDialog({
   )
 
   const seed = LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
-  const lookalikeResults = React.useMemo(() => {
-    if (!seed) return []
-    const q: AiQuery = { ...EMPTY_QUERY }
-    if (mods.has("smaller")) q.headcount = smallerThan(seed.headcount)
-    if (mods.has("larger")) q.headcount = largerThan(seed.headcount)
-    if (mods.has("region")) q.regions = [seed.region]
-    return lookalikeLeads(seed, q)
-  }, [seed, mods])
+  // A lookalike must start from a specific selected person or company.
+  const lookalikeResults = React.useMemo(
+    () => (seed ? lookalikeLeads(seed, { ...EMPTY_QUERY }) : []),
+    [seed]
+  )
 
   function runPrompt() {
     const text = prompt.trim()
@@ -250,17 +237,6 @@ export function AddCampaignProspectsDialog({
       return next
     })
   }
-  function toggleMod(m: string) {
-    setMods((prev) => {
-      const next = new Set(prev)
-      if (m === "smaller") next.delete("larger")
-      if (m === "larger") next.delete("smaller")
-      if (next.has(m)) next.delete(m)
-      else next.add(m)
-      return next
-    })
-  }
-
   const totalSelected = selectedProspects.size + selectedLeads.size
 
   function handleAdd() {
@@ -368,24 +344,6 @@ export function AddCampaignProspectsDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <div className="flex flex-wrap gap-1.5">
-                {(["smaller", "larger", "region"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => toggleMod(m)}
-                    aria-pressed={mods.has(m)}
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                      mods.has(m)
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "hover:bg-muted"
-                    )}
-                  >
-                    {m === "smaller" ? c.modSmaller : m === "larger" ? c.modLarger : c.modRegion}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
           {(mode === "ai" || mode === "lookalike") && (

@@ -82,8 +82,6 @@ import {
   searchCompanies,
   lookalikeLeads,
   lookalikeCompanies,
-  smallerThan,
-  largerThan,
   LOOKALIKE_SEEDS,
   estimatedTotal,
   queryTitle,
@@ -249,24 +247,16 @@ const COPY = {
     lookalike: "Lookalikes",
     lookalikeTitle: "Find lookalikes",
     lookalikeDesc:
-      "Lookalike search starts from a person or company you already like. Kai finds similar records — refine with the modifiers below.",
+      "Pick a person or company you already like — Kai finds records similar to that specific seed. Refine further with the sidebar filters.",
     pickSeed: "Pick a person or company",
     companySearch: "Search a company by name…",
     useCompany: (name: string) => `Use "${name}"`,
     seedPeople: "People & customers",
     seedCompanies: "Companies",
-    modifiers: "Modifiers",
-    modSmaller: "But smaller",
-    modLarger: "But larger",
-    modRegion: "Same region",
-    modSenior: "More senior",
     findSimilar: "Find similar",
     similarTo: "Similar to",
     clearLookalike: "Clear lookalike",
-    lookalikeMsg: (name: string) =>
-      `Showing records similar to ${name}. Add modifiers or filters to narrow the match.`,
-    lookalikePrompt: (name: string, mod: string) =>
-      `Find records similar to ${name}${mod}`,
+    lookalikePrompt: (name: string) => `Find records similar to ${name}`,
     colFit: "Fit",
     colName: "Name",
     colCompany: "Company",
@@ -493,24 +483,16 @@ const COPY = {
     lookalike: "Similares",
     lookalikeTitle: "Buscar similares",
     lookalikeDesc:
-      "La búsqueda de similares parte de una persona o empresa que ya te encaja. Kai encuentra registros parecidos — refina con los modificadores de abajo.",
+      "Elige una persona o empresa que ya te encaja — Kai encuentra registros similares a ese origen concreto. Refina con los filtros de la barra lateral.",
     pickSeed: "Elige una persona o empresa",
     companySearch: "Busca una empresa por nombre…",
     useCompany: (name: string) => `Usar "${name}"`,
     seedPeople: "Personas y clientes",
     seedCompanies: "Empresas",
-    modifiers: "Modificadores",
-    modSmaller: "Pero más pequeñas",
-    modLarger: "Pero más grandes",
-    modRegion: "Misma región",
-    modSenior: "Más senior",
     findSimilar: "Buscar similares",
     similarTo: "Similar a",
     clearLookalike: "Quitar similares",
-    lookalikeMsg: (name: string) =>
-      `Mostrando registros similares a ${name}. Añade modificadores o filtros para afinar la coincidencia.`,
-    lookalikePrompt: (name: string, mod: string) =>
-      `Buscar registros similares a ${name}${mod}`,
+    lookalikePrompt: (name: string) => `Buscar registros similares a ${name}`,
     colFit: "Encaje",
     colName: "Nombre",
     colCompany: "Empresa",
@@ -934,14 +916,14 @@ export default function Search() {
     addFilter(def.key, def.value)
   }
 
-  function applyLookalike(s: LookalikeSeed, q: AiQuery, modLabel: string) {
+  function applyLookalike(s: LookalikeSeed, q: AiQuery) {
     setHasSearched(true)
     setSeed(s)
     setEntity(s.kind === "company" ? "companies" : "people")
     setQuery(q)
     setSelected(new Set())
     setLookalikeOpen(false)
-    const prompt = c.lookalikePrompt(s.name, modLabel)
+    const prompt = c.lookalikePrompt(s.name)
     setLastPrompt(prompt)
     setInput(prompt)
   }
@@ -1876,17 +1858,15 @@ function LookalikeDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
   c: Copy
-  onConfirm: (seed: LookalikeSeed, query: AiQuery, modLabel: string) => void
+  onConfirm: (seed: LookalikeSeed, query: AiQuery) => void
 }) {
   const [seedId, setSeedId] = React.useState<string | null>(null)
-  const [mods, setMods] = React.useState<Set<string>>(new Set())
   const [companyQuery, setCompanyQuery] = React.useState("")
   const [wasOpen, setWasOpen] = React.useState(false)
 
   if (open && !wasOpen) {
     setWasOpen(true)
     setSeedId(null)
-    setMods(new Set())
     setCompanyQuery("")
   }
   if (!open && wasOpen) setWasOpen(false)
@@ -1917,33 +1897,10 @@ function LookalikeDialog({
       ? customSeed
       : LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
 
-  function toggleMod(m: string) {
-    setMods((prev) => {
-      const next = new Set(prev)
-      // smaller / larger are mutually exclusive
-      if (m === "smaller" && next.has("larger")) next.delete("larger")
-      if (m === "larger" && next.has("smaller")) next.delete("smaller")
-      if (next.has(m)) next.delete(m)
-      else next.add(m)
-      return next
-    })
-  }
-
   function confirm() {
+    // A lookalike must start from a specific selected person or company.
     if (!seed) return
-    const q: AiQuery = { ...EMPTY_QUERY }
-    let modLabel = ""
-    if (mods.has("smaller")) {
-      q.headcount = smallerThan(seed.headcount)
-      modLabel = c === COPY.es ? " pero más pequeñas" : " but smaller"
-    }
-    if (mods.has("larger")) {
-      q.headcount = largerThan(seed.headcount)
-      modLabel = c === COPY.es ? " pero más grandes" : " but larger"
-    }
-    if (mods.has("region")) q.regions = [seed.region]
-    if (mods.has("senior") && seed.kind === "person") q.seniority = ["C-Level", "VP"]
-    onConfirm(seed, q, modLabel)
+    onConfirm(seed, { ...EMPTY_QUERY })
   }
 
   return (
@@ -2000,18 +1957,6 @@ function LookalikeDialog({
                   selected={seedId}
                   onSelect={setSeedId}
                 />
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{c.modifiers}</Label>
-            <div className="flex flex-wrap gap-1.5">
-              <ModChip active={mods.has("smaller")} onClick={() => toggleMod("smaller")} label={c.modSmaller} />
-              <ModChip active={mods.has("larger")} onClick={() => toggleMod("larger")} label={c.modLarger} />
-              <ModChip active={mods.has("region")} onClick={() => toggleMod("region")} label={c.modRegion} />
-              {seed?.kind === "person" && (
-                <ModChip active={mods.has("senior")} onClick={() => toggleMod("senior")} label={c.modSenior} />
               )}
             </div>
           </div>
@@ -2083,31 +2028,6 @@ function SeedGroup({
   )
 }
 
-function ModChip({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean
-  onClick: () => void
-  label: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        active
-          ? "border-primary bg-primary/10 text-primary"
-          : "hover:bg-muted"
-      )}
-    >
-      {label}
-    </button>
-  )
-}
 
 // Persistent filter rail — filters are exposed by default (every search uses
 // them), mirroring the catalog side of the FilterModal as an always-visible
