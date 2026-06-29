@@ -57,13 +57,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import {
   Table,
@@ -122,8 +115,6 @@ import {
   type LookalikeSeed,
 } from "@/lib/mock-ai-search"
 import {
-  useCampaigns,
-  campaignStore,
   listStore,
   prospectStore,
   accountStore,
@@ -133,10 +124,7 @@ import { facetsForDb, type FacetDef } from "@/lib/search-facets"
 import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import type { SavedSearchCriteria, AccountTier } from "@/lib/types"
-
-const NEW_CAMPAIGN = "__new__"
-const NO_CAMPAIGN = "__none__"
+import type { AccountTier } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -720,7 +708,6 @@ export default function Search() {
     (location.state as { lookalikeSeed?: LookalikeSeed } | null)?.lookalikeSeed ??
     null
   const similarPrompt = incomingSeed ? `${c.similarTo} ${incomingSeed.name}` : ""
-  const campaigns = useCampaigns()
   const savedSearches = useSavedSearches()
   // Arrive from a workspace with a saved-search id and the page opens preloaded.
   const incomingSearchId =
@@ -765,7 +752,6 @@ export default function Search() {
     Boolean(headerPrompt || incomingSeed || loadedSearch)
   )
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
-  const [saveOpen, setSaveOpen] = React.useState(false)
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
@@ -1401,18 +1387,6 @@ export default function Search() {
                 <span className="hidden sm:inline">{c.columnsBtn}</span>
               </Button>
 
-              {entity === "people" && (
-                <Button
-                  variant="volt"
-                  size="sm"
-                  onClick={() => setSaveOpen(true)}
-                  disabled={shownCount === 0}
-                >
-                  <ListPlus className="size-4" />
-                  {c.addToList}
-                </Button>
-              )}
-
               {/* Secondary actions tucked into one overflow menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1739,20 +1713,6 @@ export default function Search() {
       </div>
         </>
       )}
-
-      <SaveListDialog
-        open={saveOpen}
-        onOpenChange={setSaveOpen}
-        c={c}
-        leads={selectedCount > 0 ? leads.filter((l) => selected.has(l.id)) : leads}
-        defaultName={seed ? `${c.similarTo} ${seed.name}` : queryTitle(query, "people")}
-        query={query}
-        campaigns={campaigns}
-        onSaved={(listId) => {
-          setSaveOpen(false)
-          navigate(`/lists/${listId}`)
-        }}
-      />
 
       <LookalikeDialog
         open={lookalikeOpen}
@@ -3347,155 +3307,4 @@ function capPerCompany(leads: AiLead[], cap: number | null): AiLead[] {
   return out
 }
 
-function aiLeadToCriteria(query: AiQuery): SavedSearchCriteria {
-  return {
-    titles: query.titles,
-    seniority: query.seniority,
-    industries: query.industries,
-    headcount: query.headcount,
-    locations: query.regions,
-    keywords: query.keywords,
-    signals: query.signals,
-  }
-}
 
-function SaveListDialog({
-  open,
-  onOpenChange,
-  c,
-  leads,
-  defaultName,
-  query,
-  campaigns,
-  onSaved,
-}: {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-  c: Copy
-  leads: AiLead[]
-  defaultName: string
-  query: AiQuery
-  campaigns: { id: string; name: string }[]
-  onSaved: (listId: string) => void
-}) {
-  const [name, setName] = React.useState(defaultName)
-  const [campaign, setCampaign] = React.useState<string>(NO_CAMPAIGN)
-  const [wasOpen, setWasOpen] = React.useState(false)
-
-  // Reset fields each time the dialog opens (render-time, no effect).
-  if (open && !wasOpen) {
-    setWasOpen(true)
-    setName(defaultName)
-    setCampaign(NO_CAMPAIGN)
-  }
-  if (!open && wasOpen) setWasOpen(false)
-
-  function handleSave() {
-    // Materialize AI leads into real prospects.
-    const ids = leads.map((l) => {
-      const email =
-        l.emailStatus === "missing"
-          ? ""
-          : `${l.firstName}.${l.lastName}@${l.companyDomain}`.toLowerCase()
-      const p = prospectStore.create({
-        firstName: l.firstName,
-        lastName: l.lastName,
-        title: l.title,
-        company: l.company,
-        companyDomain: l.companyDomain,
-        location: l.location,
-        email,
-        linkedinUrl: `https://linkedin.com/in/${l.firstName}${l.lastName}`.toLowerCase(),
-        avatarColor: l.avatarColor,
-        score: l.fit,
-        status: "new",
-        tags: ["AI search", l.region],
-        seniority: l.seniority,
-        department: l.department,
-        headcount: l.headcount,
-        industry: l.industry,
-        revenue: l.revenue,
-        about: `${l.title} at ${l.company}.`,
-        signals: l.signals,
-      })
-      return p.id
-    })
-
-    const list = listStore.create({
-      name: name.trim() || defaultName,
-      description: `${ids.length} AI-sourced leads`,
-      color: LIST_COLORS[Math.floor(Math.random() * LIST_COLORS.length)],
-      source: "search",
-      prospectIds: ids,
-      dynamic: true,
-      criteria: aiLeadToCriteria(query),
-      enrichment: "continuous",
-      newPerWeek: Math.max(5, Math.round(ids.length * 0.4)),
-    })
-
-    if (campaign === NEW_CAMPAIGN) {
-      const camp = campaignStore.create({ name: `${list.name} outreach` })
-      campaignStore.attachList(camp.id, list.id)
-    } else if (campaign !== NO_CAMPAIGN) {
-      campaignStore.attachList(campaign, list.id)
-    }
-
-    toast.success(c.savedListToast(list.name))
-    onSaved(list.id)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{c.saveTitle}</DialogTitle>
-          <DialogDescription>{c.saveDesc(leads.length)}</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-1">
-          <div className="space-y-1.5">
-            <Label htmlFor="ai-list-name">{c.listName}</Label>
-            <Input
-              id="ai-list-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="ai-list-campaign">{c.connectCampaign}</Label>
-            <Select value={campaign} onValueChange={setCampaign}>
-              <SelectTrigger id="ai-list-campaign" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_CAMPAIGN}>{c.noCampaign}</SelectItem>
-                <SelectItem value={NEW_CAMPAIGN}>{c.newCampaign}</SelectItem>
-                {campaigns.map((cm) => (
-                  <SelectItem key={cm.id} value={cm.id}>
-                    {cm.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <p className="text-muted-foreground bg-muted/50 flex items-start gap-2 rounded-md px-3 py-2 text-xs">
-            <ArrowRight className="mt-0.5 size-3.5 shrink-0" />
-            {c.dynamicNote}
-          </p>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {c.cancel}
-          </Button>
-          <Button variant="volt" onClick={handleSave}>
-            <ListPlus className="size-4" />
-            {c.saveList}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
