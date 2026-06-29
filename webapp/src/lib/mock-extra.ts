@@ -5,6 +5,7 @@ import type {
   NotificationItem,
   Task,
 } from "./types"
+import { generateAccounts } from "./mock-bulk"
 
 export const accounts: Account[] = [
   {
@@ -171,6 +172,8 @@ export const accounts: Account[] = [
     signals: ["Replied positively", "Booked demo"],
     keyExecutives: [{ name: "Tom Becker", title: "Founder & CEO" }],
   },
+  // Bulk procedurally-generated accounts so the Companies page is fully populated.
+  ...generateAccounts(),
 ]
 
 export const deals: Deal[] = [

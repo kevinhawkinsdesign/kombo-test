@@ -9,6 +9,7 @@ import type {
   Prospect,
   ProspectList,
 } from "./types"
+import { generateProspects } from "./mock-bulk"
 
 export const currentUser: CurrentUser = {
   id: "u_1",
@@ -338,6 +339,8 @@ export const prospects: Prospect[] = [
     signals: ["Digital transformation initiative", "Budget approved for tooling"],
     enriched: false,
   },
+  // Bulk procedurally-generated prospects so the People page is fully populated.
+  ...generateProspects(),
 ]
 
 export const prospectLists: ProspectList[] = [
