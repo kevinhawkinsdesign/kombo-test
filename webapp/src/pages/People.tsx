@@ -8,6 +8,7 @@ import {
   Check,
   Columns3,
   Waypoints,
+  ScanSearch,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -33,6 +34,7 @@ import { prospectSource } from "@/lib/format"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { WarmIntrosPanel } from "@/pages/WarmIntros"
+import { DiscoverFeed } from "@/pages/Discover"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -61,7 +63,8 @@ const COPY = {
     exportedToast: (n: number) => `Exported ${n} to CSV`,
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "prospect" : "prospects"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
-    tabPeople: "People",
+    tabPeople: "Discovered",
+    tabLookalikes: "Lookalikes",
     tabIntros: "Warm Intros",
     addPerson: "Find prospects",
     introTitle: "Work your prospects like a list",
@@ -97,7 +100,8 @@ const COPY = {
     exportedToast: (n: number) => `Exportadas ${n} a CSV`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "prospecto" : "prospectos"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionados…`,
-    tabPeople: "Personas",
+    tabPeople: "Descubiertos",
+    tabLookalikes: "Similares",
     tabIntros: "Intros cálidas",
     addPerson: "Buscar prospectos",
     introTitle: "Trabaja tus prospectos como una lista",
@@ -134,9 +138,14 @@ export default function People() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { isV1 } = useReleaseMode()
-  const tab: "people" | "intros" = pathname === "/intros" ? "intros" : "people"
-  const prospects = useProspects()
   const [searchParams] = useSearchParams()
+  const tab: "people" | "lookalikes" | "intros" =
+    pathname === "/intros"
+      ? "intros"
+      : searchParams.get("tab") === "lookalikes"
+        ? "lookalikes"
+        : "people"
+  const prospects = useProspects()
   // Allow deep-linking a filter, e.g. account-based "/people?q=Acme".
   const [query, setQuery] = React.useState(() => searchParams.get("q") ?? "")
   const [status, setStatus] = React.useState<string>(ALL)
@@ -238,9 +247,15 @@ export default function People() {
     })
   }
 
-  // Warm Intros is V2-only, so V1 is left with just the People tab.
+  // Discovered + Lookalikes mirror the Companies page. Warm Intros is V2-only.
   const tabs = [
     { key: "people", to: "/people", label: c.tabPeople, icon: Users },
+    {
+      key: "lookalikes",
+      to: "/people?tab=lookalikes",
+      label: c.tabLookalikes,
+      icon: ScanSearch,
+    },
     ...(isV1
       ? []
       : [{ key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints }]),
@@ -265,7 +280,7 @@ export default function People() {
         kind="contact"
       />
 
-      {/* People ↔ Warm Intros tabs (Warm Intros is V2-only; hidden if alone). */}
+      {/* Discovered · Lookalikes · Warm Intros (Warm Intros is V2-only). */}
       {tabs.length > 1 && (
       <div className="mb-6 flex items-center gap-1 border-b">
         {tabs.map((tb) => (
@@ -289,6 +304,8 @@ export default function People() {
 
       {tab === "intros" ? (
         <WarmIntrosPanel />
+      ) : tab === "lookalikes" ? (
+        <DiscoverFeed />
       ) : (
         <>
       <FeatureIntro
