@@ -311,7 +311,7 @@ export default function Companies() {
         className="mb-6"
       />
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <ListSelector
           value={listFilter}
           onChange={setListFilter}
@@ -329,9 +329,6 @@ export default function Companies() {
           createLabel={c.createList}
           searchPlaceholder={c.searchLists}
         />
-      </div>
-
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
