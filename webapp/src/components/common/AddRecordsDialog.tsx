@@ -8,7 +8,10 @@ import {
   Users,
   Building2,
   ArrowRight,
-  MapPin,
+  ArrowDownUp,
+  SlidersHorizontal,
+  ChevronDown,
+  X,
 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -16,6 +19,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
@@ -25,16 +34,41 @@ import {
   interpretPrompt,
   searchLeads,
   searchCompanies,
+  sortLeads,
+  sortCompanies,
   EMPTY_QUERY,
+  SENIORITY_OPTIONS,
+  DEPARTMENT_OPTIONS,
+  INDUSTRY_OPTIONS,
+  REGION_OPTIONS,
+  HEADCOUNT_OPTIONS,
+  TECH_OPTIONS,
   type AiQuery,
   type AiLead,
   type AiCompany,
   type AiEntity,
+  type SortKey,
 } from "@/lib/mock-ai-search"
 import type { AccountTier } from "@/lib/types"
 
 type Kind = "contact" | "company"
 type Mode = "search" | "import"
+
+// Typed filter groups (write into AiQuery fields the mock search honors).
+const FILTER_GROUPS: {
+  key: keyof AiQuery
+  en: string
+  es: string
+  options: string[]
+  scope?: AiEntity
+}[] = [
+  { key: "seniority", en: "Seniority", es: "Antigüedad", options: SENIORITY_OPTIONS, scope: "people" },
+  { key: "departments", en: "Department", es: "Departamento", options: DEPARTMENT_OPTIONS, scope: "people" },
+  { key: "industries", en: "Industry", es: "Sector", options: INDUSTRY_OPTIONS },
+  { key: "regions", en: "Region", es: "Región", options: REGION_OPTIONS },
+  { key: "headcount", en: "Company size", es: "Tamaño de empresa", options: HEADCOUNT_OPTIONS },
+  { key: "technologies", en: "Technology", es: "Tecnología", options: TECH_OPTIONS },
+]
 
 const COPY = {
   en: {
@@ -44,23 +78,34 @@ const COPY = {
     company: "Companies",
     search: "Search",
     import: "Import",
-    searchPeoplePlaceholder:
-      "Search the people database — e.g. VPs of Sales at SaaS companies in EMEA",
-    searchCompanyPlaceholder:
-      "Search the company database — e.g. Series B fintechs hiring sales reps",
+    searchPeoplePlaceholder: "Search people — e.g. VPs of Sales at SaaS companies",
+    searchCompanyPlaceholder: "Search companies — e.g. Series B fintechs hiring sales",
     run: "Search",
+    filters: "Filters",
+    clearAll: "Clear all",
+    jobTitle: "Job title",
+    addTitle: "Add a job title…",
     results: (n: number) => `${n.toLocaleString()} ${n === 1 ? "result" : "results"}`,
     selectAll: "Select all",
     selectedCount: (n: number) => `${n} selected`,
+    sortFit: "Best match",
+    sortName: "Name (A–Z)",
+    sortCompany: "Company",
+    sortSize: "Company size",
+    sortRecent: "Most recent",
+    colName: "Name",
+    colCompany: "Company",
+    colIndustry: "Industry",
+    colSize: "Size",
+    colRegion: "Region",
+    colFit: "Fit",
     addSelectedPeople: (n: number) =>
       n > 0 ? `Add ${n} ${n === 1 ? "prospect" : "prospects"}` : "Add prospects",
     addSelectedCompanies: (n: number) =>
       n > 0 ? `Add ${n} ${n === 1 ? "company" : "companies"}` : "Add companies",
-    noResults: "No matches — try a broader search.",
-    addedPeople: (n: number) =>
-      `${n} ${n === 1 ? "prospect" : "prospects"} added`,
-    addedCompanies: (n: number) =>
-      `${n} ${n === 1 ? "company" : "companies"} added`,
+    noResults: "No matches — broaden your search or filters.",
+    addedPeople: (n: number) => `${n} ${n === 1 ? "prospect" : "prospects"} added`,
+    addedCompanies: (n: number) => `${n} ${n === 1 ? "company" : "companies"} added`,
     importTitle: "Import from a file or source",
     importSubtitle:
       "Include either First Name, Last Name & Company, or a LinkedIn profile URL.",
@@ -82,24 +127,34 @@ const COPY = {
     company: "Empresas",
     search: "Buscar",
     import: "Importar",
-    searchPeoplePlaceholder:
-      "Busca en la base de personas — p. ej. VPs de Ventas en empresas SaaS de EMEA",
-    searchCompanyPlaceholder:
-      "Busca en la base de empresas — p. ej. fintechs Serie B contratando ventas",
+    searchPeoplePlaceholder: "Busca personas — p. ej. VPs de Ventas en empresas SaaS",
+    searchCompanyPlaceholder: "Busca empresas — p. ej. fintechs Serie B contratando ventas",
     run: "Buscar",
-    results: (n: number) =>
-      `${n.toLocaleString()} ${n === 1 ? "resultado" : "resultados"}`,
+    filters: "Filtros",
+    clearAll: "Limpiar todo",
+    jobTitle: "Cargo",
+    addTitle: "Añadir un cargo…",
+    results: (n: number) => `${n.toLocaleString()} ${n === 1 ? "resultado" : "resultados"}`,
     selectAll: "Seleccionar todo",
     selectedCount: (n: number) => `${n} seleccionados`,
+    sortFit: "Mejor coincidencia",
+    sortName: "Nombre (A–Z)",
+    sortCompany: "Empresa",
+    sortSize: "Tamaño de empresa",
+    sortRecent: "Más reciente",
+    colName: "Nombre",
+    colCompany: "Empresa",
+    colIndustry: "Sector",
+    colSize: "Tamaño",
+    colRegion: "Región",
+    colFit: "Encaje",
     addSelectedPeople: (n: number) =>
       n > 0 ? `Añadir ${n} ${n === 1 ? "prospecto" : "prospectos"}` : "Añadir prospectos",
     addSelectedCompanies: (n: number) =>
       n > 0 ? `Añadir ${n} ${n === 1 ? "empresa" : "empresas"}` : "Añadir empresas",
-    noResults: "Sin coincidencias — prueba una búsqueda más amplia.",
-    addedPeople: (n: number) =>
-      `${n} ${n === 1 ? "prospecto añadido" : "prospectos añadidos"}`,
-    addedCompanies: (n: number) =>
-      `${n} ${n === 1 ? "empresa añadida" : "empresas añadidas"}`,
+    noResults: "Sin coincidencias — amplía tu búsqueda o filtros.",
+    addedPeople: (n: number) => `${n} ${n === 1 ? "prospecto añadido" : "prospectos añadidos"}`,
+    addedCompanies: (n: number) => `${n} ${n === 1 ? "empresa añadida" : "empresas añadidas"}`,
     importTitle: "Importar desde un archivo o fuente",
     importSubtitle:
       "Incluye Nombre, Apellido y Empresa, o una URL de perfil de LinkedIn.",
@@ -123,10 +178,10 @@ function entityFromKind(kind: Kind): AiEntity {
 }
 
 /**
- * Full-screen "add records" modal. Adding prospects or companies is always a
- * search within a database, or an import from a file / external source — never
- * a manual form. The same modal serves both, with the People/Companies toggle
- * pre-set by whichever button opened it.
+ * Full-screen, full-featured "add records" search. Adding prospects or
+ * companies is always a search within a database (with filters, sorting, a
+ * results table and multi-select) or an import from a file / source — never a
+ * manual form. The same modal serves both, with the entity toggle pre-set.
  */
 export function AddRecordsDialog({
   open,
@@ -145,34 +200,53 @@ export function AddRecordsDialog({
   const [mode, setMode] = React.useState<Mode>("search")
   const [input, setInput] = React.useState("")
   const [query, setQuery] = React.useState<AiQuery>({ ...EMPTY_QUERY })
+  const [sortKey, setSortKey] = React.useState<SortKey>("fit")
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [wasOpen, setWasOpen] = React.useState(false)
 
-  // Reset on every open so the modal always starts clean on the right entity.
   if (open && !wasOpen) {
     setWasOpen(true)
     setEntity(entityFromKind(kind))
     setMode("search")
     setInput("")
     setQuery({ ...EMPTY_QUERY })
+    setSortKey("fit")
     setSelected(new Set())
   }
   if (!open && wasOpen) setWasOpen(false)
 
-  const leads = React.useMemo(() => searchLeads(query), [query])
-  const companies = React.useMemo(() => searchCompanies(query), [query])
+  const leads = React.useMemo(
+    () => sortLeads(searchLeads(query), sortKey),
+    [query, sortKey]
+  )
+  const companies = React.useMemo(
+    () => sortCompanies(searchCompanies(query), sortKey),
+    [query, sortKey]
+  )
   const rowsCount = entity === "people" ? leads.length : companies.length
 
   function switchEntity(next: AiEntity) {
     setEntity(next)
     setSelected(new Set())
   }
-
   function runSearch() {
-    setQuery(interpretPrompt(input).query)
+    setQuery((prev) => ({ ...interpretPrompt(input).query, facets: prev.facets }))
     setSelected(new Set())
   }
-
+  function toggleFilter(key: keyof AiQuery, value: string) {
+    setSelected(new Set())
+    setQuery((prev) => {
+      const arr = prev[key] as string[]
+      const next = arr.includes(value)
+        ? arr.filter((v) => v !== value)
+        : [...arr, value]
+      return { ...prev, [key]: next }
+    })
+  }
+  function clearFilters() {
+    setQuery((prev) => ({ ...EMPTY_QUERY, keywords: prev.keywords }))
+    setSelected(new Set())
+  }
   function toggle(id: string) {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -181,42 +255,55 @@ export function AddRecordsDialog({
       return next
     })
   }
-
   function toggleAll() {
     const ids = entity === "people" ? leads.map((l) => l.id) : companies.map((co) => co.id)
-    setSelected((prev) =>
-      prev.size === ids.length ? new Set() : new Set(ids)
-    )
+    setSelected((prev) => (prev.size === ids.length ? new Set() : new Set(ids)))
   }
-
   function addSelected() {
     if (selected.size === 0) return
     if (entity === "people") {
       const chosen = leads.filter((l) => selected.has(l.id))
-      chosen.forEach((l) => materializeLead(l))
+      chosen.forEach(materializeLead)
       toast.success(c.addedPeople(chosen.length))
     } else {
       const chosen = companies.filter((co) => selected.has(co.id))
-      chosen.forEach((co) => materializeCompany(co))
+      chosen.forEach(materializeCompany)
       toast.success(c.addedCompanies(chosen.length))
     }
     onOpenChange(false)
   }
-
   function leave(to: string) {
     onOpenChange(false)
     navigate(to)
   }
 
+  const groups = FILTER_GROUPS.filter((g) => !g.scope || g.scope === entity)
+  const activeFilterCount = groups.reduce(
+    (n, g) => n + (query[g.key] as string[]).length,
+    0
+  )
+  const sortOptions: { key: SortKey; label: string }[] =
+    entity === "people"
+      ? [
+          { key: "fit", label: c.sortFit },
+          { key: "name", label: c.sortName },
+          { key: "company", label: c.sortCompany },
+          { key: "recent", label: c.sortRecent },
+        ]
+      : [
+          { key: "fit", label: c.sortFit },
+          { key: "name", label: c.sortName },
+          { key: "headcount", label: c.sortSize },
+          { key: "recent", label: c.sortRecent },
+        ]
+  const sortLabel = sortOptions.find((o) => o.key === sortKey)?.label ?? c.sortFit
   const title = entity === "people" ? c.addPeople : c.addCompanies
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton fullScreen>
-        {/* Header: title, entity toggle, mode tabs */}
         <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
-
           <Segmented
             options={[
               { v: "people" as AiEntity, label: c.contact, icon: Users },
@@ -225,7 +312,6 @@ export function AddRecordsDialog({
             value={entity}
             onChange={switchEntity}
           />
-
           <Segmented
             className="ml-auto"
             options={[
@@ -239,86 +325,149 @@ export function AddRecordsDialog({
 
         {mode === "search" ? (
           <>
-            {/* Prompt bar */}
-            <div className="border-b px-6 py-4">
-              <div className="mx-auto flex max-w-3xl gap-2">
-                <div className="relative flex-1">
-                  <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                  <Input
-                    autoFocus
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && runSearch()}
-                    placeholder={
-                      entity === "people"
-                        ? c.searchPeoplePlaceholder
-                        : c.searchCompanyPlaceholder
-                    }
-                    clearable={false}
-                    className="h-11 pl-9"
-                  />
-                </div>
-                <Button variant="volt" className="h-11" onClick={runSearch}>
-                  <Search className="size-4" />
-                  {c.run}
-                </Button>
-              </div>
-            </div>
-
-            {/* Results */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-3xl px-6 py-3">
-                <div className="mb-2 flex items-center gap-3">
-                  <Checkbox
-                    checked={selected.size > 0 && selected.size === rowsCount}
-                    onCheckedChange={toggleAll}
-                    aria-label={c.selectAll}
-                  />
-                  <span className="text-muted-foreground text-sm">
-                    {c.results(rowsCount)}
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              {/* Filters rail — exposed by default */}
+              <aside className="hidden w-64 shrink-0 flex-col overflow-y-auto border-r md:flex">
+                <div className="flex items-center justify-between border-b px-3 py-2.5">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold">
+                    <SlidersHorizontal className="size-4" />
+                    {c.filters}
+                    {activeFilterCount > 0 && (
+                      <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                        {activeFilterCount}
+                      </span>
+                    )}
                   </span>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="text-muted-foreground hover:text-foreground text-xs"
+                    >
+                      {c.clearAll}
+                    </button>
+                  )}
+                </div>
+                <div className="p-1">
+                  <TitleFilter
+                    c={c}
+                    values={query.titles}
+                    onAdd={(v) => toggleFilter("titles", v)}
+                    onRemove={(v) => toggleFilter("titles", v)}
+                  />
+                  {groups.map((g) => (
+                    <FilterGroup
+                      key={g.key as string}
+                      label={locale === "es" ? g.es : g.en}
+                      options={g.options}
+                      selected={query[g.key] as string[]}
+                      onToggle={(v) => toggleFilter(g.key, v)}
+                    />
+                  ))}
+                </div>
+              </aside>
+
+              {/* Main: prompt + sort, then results table */}
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex flex-wrap items-center gap-2 border-b px-6 py-3">
+                  <div className="relative min-w-[16rem] flex-1">
+                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                    <Input
+                      autoFocus
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                      placeholder={
+                        entity === "people"
+                          ? c.searchPeoplePlaceholder
+                          : c.searchCompanyPlaceholder
+                      }
+                      clearable={false}
+                      className="h-10 pl-9"
+                    />
+                  </div>
+                  <Button variant="volt" className="h-10" onClick={runSearch}>
+                    <Search className="size-4" />
+                    {c.run}
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="h-10">
+                        <ArrowDownUp className="size-4" />
+                        <span className="hidden sm:inline">{sortLabel}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {sortOptions.map((o) => (
+                        <DropdownMenuItem key={o.key} onClick={() => setSortKey(o.key)}>
+                          {o.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
-                {rowsCount === 0 ? (
-                  <p className="text-muted-foreground py-16 text-center text-sm">
-                    {c.noResults}
-                  </p>
-                ) : entity === "people" ? (
-                  <div className="divide-y rounded-lg border">
-                    {leads.map((l) => (
-                      <LeadRow
-                        key={l.id}
-                        lead={l}
-                        checked={selected.has(l.id)}
-                        onToggle={() => toggle(l.id)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="divide-y rounded-lg border">
-                    {companies.map((co) => (
-                      <CompanyRow
-                        key={co.id}
-                        company={co}
-                        checked={selected.has(co.id)}
-                        onToggle={() => toggle(co.id)}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div className="text-muted-foreground border-b px-6 py-1.5 text-xs">
+                  {c.results(rowsCount)}
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {rowsCount === 0 ? (
+                    <p className="text-muted-foreground py-16 text-center text-sm">
+                      {c.noResults}
+                    </p>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-muted-foreground sticky top-0 text-xs">
+                        <tr>
+                          <th className="w-10 px-3 py-2">
+                            <Checkbox
+                              checked={selected.size > 0 && selected.size === rowsCount}
+                              onCheckedChange={toggleAll}
+                              aria-label={c.selectAll}
+                            />
+                          </th>
+                          <th className="px-2 py-2 text-left font-medium">{c.colName}</th>
+                          <th className="px-2 py-2 text-left font-medium">
+                            {entity === "people" ? c.colCompany : c.colIndustry}
+                          </th>
+                          <th className="hidden px-2 py-2 text-left font-medium sm:table-cell">
+                            {entity === "people" ? c.colRegion : c.colSize}
+                          </th>
+                          <th className="px-2 py-2 text-right font-medium">{c.colFit}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {entity === "people"
+                          ? leads.map((l) => (
+                              <LeadRow
+                                key={l.id}
+                                lead={l}
+                                checked={selected.has(l.id)}
+                                onToggle={() => toggle(l.id)}
+                              />
+                            ))
+                          : companies.map((co) => (
+                              <CompanyRow
+                                key={co.id}
+                                company={co}
+                                checked={selected.has(co.id)}
+                                onToggle={() => toggle(co.id)}
+                              />
+                            ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Footer */}
+            {/* Action bar */}
             <footer className="flex items-center justify-between border-t px-6 py-3">
               <span className="text-muted-foreground text-sm tabular-nums">
                 {c.selectedCount(selected.size)}
               </span>
-              <Button
-                variant="volt"
-                disabled={selected.size === 0}
-                onClick={addSelected}
-              >
+              <Button variant="volt" disabled={selected.size === 0} onClick={addSelected}>
                 {entity === "people"
                   ? c.addSelectedPeople(selected.size)
                   : c.addSelectedCompanies(selected.size)}
@@ -382,6 +531,116 @@ function Segmented<T extends string>({
   )
 }
 
+function TitleFilter({
+  c,
+  values,
+  onAdd,
+  onRemove,
+}: {
+  c: Copy
+  values: string[]
+  onAdd: (v: string) => void
+  onRemove: (v: string) => void
+}) {
+  const [text, setText] = React.useState("")
+  return (
+    <div className="border-border/70 border-b px-2 py-2">
+      <p className="text-muted-foreground mb-1.5 text-[11px] font-medium tracking-wide uppercase">
+        {c.jobTitle}
+      </p>
+      <Input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && text.trim()) {
+            e.preventDefault()
+            onAdd(text.trim())
+            setText("")
+          }
+        }}
+        placeholder={c.addTitle}
+        clearable={false}
+        className="h-8 text-sm"
+      />
+      {values.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {values.map((v) => (
+            <span
+              key={v}
+              className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2 text-xs font-medium"
+            >
+              {v}
+              <button
+                type="button"
+                aria-label={`Remove ${v}`}
+                onClick={() => onRemove(v)}
+                className="rounded-full p-0.5 hover:bg-black/10"
+              >
+                <X className="size-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FilterGroup({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string
+  options: string[]
+  selected: string[]
+  onToggle: (v: string) => void
+}) {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <div className="border-border/70 border-b last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
+      >
+        <ChevronDown
+          className={cn(
+            "text-muted-foreground size-3.5 shrink-0 transition-transform",
+            !open && "-rotate-90"
+          )}
+        />
+        <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
+          {label}
+        </span>
+        {selected.length > 0 && (
+          <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+            {selected.length}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="pb-2">
+          {options.map((value) => (
+            <label
+              key={value}
+              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+            >
+              <Checkbox
+                checked={selected.includes(value)}
+                onCheckedChange={() => onToggle(value)}
+              />
+              <span className="flex-1 truncate">{value}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function LeadRow({
   lead: l,
   checked,
@@ -392,30 +651,34 @@ function LeadRow({
   onToggle: () => void
 }) {
   return (
-    <label className="hover:bg-muted/40 flex cursor-pointer items-center gap-3 px-3 py-2.5">
-      <Checkbox checked={checked} onCheckedChange={onToggle} aria-label={`${l.firstName} ${l.lastName}`} />
-      <span
-        className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-        style={{ backgroundColor: l.avatarColor }}
-      >
-        {initials(l.firstName, l.lastName)}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">
-          {l.firstName} {l.lastName}
-        </p>
-        <p className="text-muted-foreground truncate text-xs">
-          {l.title} · {l.company}
-        </p>
-      </div>
-      <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:flex">
-        <MapPin className="size-3.5" />
-        {l.region}
-      </span>
-      <Badge variant="secondary" className="tabular-nums">
-        {l.fit}
-      </Badge>
-    </label>
+    <tr className="hover:bg-muted/40 border-b last:border-b-0">
+      <td className="px-3 py-2.5 align-middle">
+        <Checkbox checked={checked} onCheckedChange={onToggle} aria-label={`${l.firstName} ${l.lastName}`} />
+      </td>
+      <td className="px-2 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+            style={{ backgroundColor: l.avatarColor }}
+          >
+            {initials(l.firstName, l.lastName)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-medium">
+              {l.firstName} {l.lastName}
+            </p>
+            <p className="text-muted-foreground truncate text-xs">{l.title}</p>
+          </div>
+        </div>
+      </td>
+      <td className="text-muted-foreground px-2 py-2.5">{l.company}</td>
+      <td className="text-muted-foreground hidden px-2 py-2.5 sm:table-cell">{l.region}</td>
+      <td className="px-2 py-2.5 text-right">
+        <Badge variant="secondary" className="tabular-nums">
+          {l.fit}
+        </Badge>
+      </td>
+    </tr>
   )
 }
 
@@ -429,28 +692,32 @@ function CompanyRow({
   onToggle: () => void
 }) {
   return (
-    <label className="hover:bg-muted/40 flex cursor-pointer items-center gap-3 px-3 py-2.5">
-      <Checkbox checked={checked} onCheckedChange={onToggle} aria-label={co.name} />
-      <span
-        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
-        style={{ backgroundColor: co.logoColor }}
-      >
-        {co.name.charAt(0)}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{co.name}</p>
-        <p className="text-muted-foreground truncate text-xs">
-          {co.industry} · {co.headcount}
-        </p>
-      </div>
-      <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:flex">
-        <MapPin className="size-3.5" />
-        {co.region}
-      </span>
-      <Badge variant="secondary" className="tabular-nums">
-        {co.fit}
-      </Badge>
-    </label>
+    <tr className="hover:bg-muted/40 border-b last:border-b-0">
+      <td className="px-3 py-2.5 align-middle">
+        <Checkbox checked={checked} onCheckedChange={onToggle} aria-label={co.name} />
+      </td>
+      <td className="px-2 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
+            style={{ backgroundColor: co.logoColor }}
+          >
+            {co.name.charAt(0)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-medium">{co.name}</p>
+            <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
+          </div>
+        </div>
+      </td>
+      <td className="text-muted-foreground px-2 py-2.5">{co.industry}</td>
+      <td className="text-muted-foreground hidden px-2 py-2.5 sm:table-cell">{co.headcount}</td>
+      <td className="px-2 py-2.5 text-right">
+        <Badge variant="secondary" className="tabular-nums">
+          {co.fit}
+        </Badge>
+      </td>
+    </tr>
   )
 }
 
@@ -471,7 +738,7 @@ function ImportPane({
     key: string
     label: string
     icon: React.ComponentType<{ className?: string }>
-    brand?: "hubspot" | "linkedin"
+    brand: "hubspot" | "linkedin"
     onClick: () => void
   }[] = [
     { key: "hubspot", label: c.hubspot, icon: Plug, brand: "hubspot", onClick: onConnect },
