@@ -12,7 +12,7 @@ import {
   Table2,
   LayoutGrid,
   Columns3,
-  Telescope,
+  ScanSearch,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -67,8 +67,8 @@ const COPY = {
     exportedToast: (n: number) => `Exported ${n} to CSV`,
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
-    tabCompanies: "Companies",
-    tabDiscover: "Discover",
+    tabCompanies: "Discovered",
+    tabDiscover: "Lookalikes",
     addCompany: "Add company",
     addCompanyToast: "Add company — coming soon",
     introTitle: "Target the accounts that fit",
@@ -112,8 +112,8 @@ const COPY = {
     exportedToast: (n: number) => `Exportadas ${n} a CSV`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
-    tabCompanies: "Empresas",
-    tabDiscover: "Descubrir",
+    tabCompanies: "Descubiertas",
+    tabDiscover: "Similares",
     addCompany: "Añadir empresa",
     addCompanyToast: "Añadir empresa — próximamente",
     introTitle: "Apunta a las cuentas que encajan",
@@ -284,7 +284,7 @@ export default function Companies() {
         {(
           [
             { key: "companies", label: c.tabCompanies, icon: Building2 },
-            { key: "discover", label: c.tabDiscover, icon: Telescope },
+            { key: "discover", label: c.tabDiscover, icon: ScanSearch },
           ] as const
         ).map((m) => (
           <button
