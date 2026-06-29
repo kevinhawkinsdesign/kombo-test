@@ -40,7 +40,15 @@ import {
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -177,6 +185,16 @@ const COPY = {
     cancelSchedule: "Cancel",
     sentScheduled: "Scheduled reply sent",
     scheduleCancelled: "Scheduled reply cancelled",
+    sendLater: "Send later",
+    scheduleSend: "Schedule send",
+    inOneHour: "In 1 hour",
+    tomorrowMorning: "Tomorrow, 8:00 AM",
+    mondayMorning: "Monday, 8:00 AM",
+    pickDateTime: "Pick date & time…",
+    scheduleTitle: "Schedule this reply",
+    scheduleWhen: "Send at",
+    scheduleConfirm: "Schedule",
+    scheduledToast: (d: string) => `Reply scheduled for ${d}`,
     bold: "Bold",
     italic: "Italic",
     draftReadyTag: "Draft ready",
@@ -277,6 +295,16 @@ const COPY = {
     cancelSchedule: "Cancelar",
     sentScheduled: "Respuesta programada enviada",
     scheduleCancelled: "Respuesta programada cancelada",
+    sendLater: "Enviar más tarde",
+    scheduleSend: "Programar envío",
+    inOneHour: "En 1 hora",
+    tomorrowMorning: "Mañana, 8:00",
+    mondayMorning: "Lunes, 8:00",
+    pickDateTime: "Elegir fecha y hora…",
+    scheduleTitle: "Programar esta respuesta",
+    scheduleWhen: "Enviar el",
+    scheduleConfirm: "Programar",
+    scheduledToast: (d: string) => `Respuesta programada para ${d}`,
     bold: "Negrita",
     italic: "Cursiva",
     draftReadyTag: "Borrador listo",
@@ -403,6 +431,29 @@ function avatarColorFor(id: string): string {
 
 function snoozeUntilISO(hours: number): string {
   return new Date(Date.now() + hours * 3600 * 1000).toISOString()
+}
+
+// 8:00 AM local time, `daysAhead` days from today (used for send scheduling).
+function morningISO(daysAhead: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + daysAhead)
+  d.setHours(8, 0, 0, 0)
+  return d.toISOString()
+}
+
+// 8:00 AM local time on the next Monday (always at least one day out).
+function nextMondayMorningISO(): string {
+  const d = new Date()
+  const add = (8 - d.getDay()) % 7 || 7
+  d.setDate(d.getDate() + add)
+  d.setHours(8, 0, 0, 0)
+  return d.toISOString()
+}
+
+// Format a Date as a `datetime-local` input value (local time, no zone).
+function toLocalInputValue(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function formatWhen(iso: string): string {
@@ -1291,6 +1342,8 @@ function Composer({
   const [seed, setSeed] = React.useState(0)
   const [preview, setPreview] = React.useState(false)
   const [templateOpen, setTemplateOpen] = React.useState(false)
+  const [customOpen, setCustomOpen] = React.useState(false)
+  const [customValue, setCustomValue] = React.useState("")
   const taRef = React.useRef<HTMLTextAreaElement>(null)
 
   const CHANNEL_NAMES: Record<string, string> = {
@@ -1397,6 +1450,30 @@ function Composer({
     setAiUsed(false)
     setPreview(false)
     toast.success(c.replySent(prospect.firstName))
+  }
+
+  // Queue the reply to go out at `iso`. The scheduled banner (which reads the
+  // stored draft) takes over once the composer clears.
+  function scheduleSend(iso: string) {
+    if (!reply.trim()) return
+    const out = renderedReply.trim()
+    conversationStore.schedule(conv.id, iso, out)
+    setReply("")
+    setAiUsed(false)
+    setPreview(false)
+    setCustomOpen(false)
+    toast.success(c.scheduledToast(formatWhen(iso)))
+  }
+
+  function openCustomSchedule() {
+    // Default the picker to one hour out, in local time.
+    setCustomValue(toLocalInputValue(new Date(Date.now() + 3600 * 1000)))
+    setCustomOpen(true)
+  }
+
+  function confirmCustomSchedule() {
+    if (!customValue) return
+    scheduleSend(new Date(customValue).toISOString())
   }
 
   const showTranslate = reply.trim().length > 0 && detectLang(reply) !== recipientLang
@@ -1585,11 +1662,80 @@ function Composer({
           </Button>
         )}
 
-        <Button size="sm" variant="volt" className="ml-auto" disabled={!reply.trim()} onClick={send}>
-          <Send className="size-4" />
-          {c.sendVia(channelLabel)}
-        </Button>
+        <div className="ml-auto flex items-center">
+          <Button
+            size="sm"
+            variant="volt"
+            className="rounded-r-none"
+            disabled={!reply.trim()}
+            onClick={send}
+          >
+            <Send className="size-4" />
+            {c.sendVia(channelLabel)}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="volt"
+                className="rounded-l-none border-l border-white/25 px-2"
+                disabled={!reply.trim()}
+                aria-label={c.sendLater}
+              >
+                <ChevronDown className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{c.scheduleSend}</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => scheduleSend(snoozeUntilISO(1))}>
+                <Clock className="size-4" />
+                {c.inOneHour}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => scheduleSend(morningISO(1))}>
+                <CalendarClock className="size-4" />
+                {c.tomorrowMorning}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => scheduleSend(nextMondayMorningISO())}>
+                <CalendarClock className="size-4" />
+                {c.mondayMorning}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={openCustomSchedule}>
+                <CalendarClock className="size-4" />
+                {c.pickDateTime}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+
+      {/* Custom date/time scheduling */}
+      <Dialog open={customOpen} onOpenChange={setCustomOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{c.scheduleTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="schedule-when">{c.scheduleWhen}</Label>
+            <Input
+              id="schedule-when"
+              type="datetime-local"
+              value={customValue}
+              min={toLocalInputValue(new Date())}
+              onChange={(e) => setCustomValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomOpen(false)}>
+              {c.cancelSchedule}
+            </Button>
+            <Button variant="volt" disabled={!customValue} onClick={confirmCustomSchedule}>
+              <CalendarClock className="size-4" />
+              {c.scheduleConfirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <TemplatePickerDialog
         open={templateOpen}

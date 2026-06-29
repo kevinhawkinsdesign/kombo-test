@@ -235,6 +235,9 @@ export interface Campaign {
   goal?: string // free-text goal / intent
   listId?: string // the single attached list (1-to-1)
   enrolledIds?: string[] // manually-added prospect ids
+  // When set to a future ISO time, the campaign is queued to start then rather
+  // than sending immediately. Cleared once it activates (or the user cancels).
+  scheduledAt?: string | null
 }
 
 export interface CoachRecording {

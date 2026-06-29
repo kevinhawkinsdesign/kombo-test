@@ -20,6 +20,8 @@ import {
   Sparkles,
   Zap,
   AlertTriangle,
+  CalendarClock,
+  ChevronDown,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -80,7 +82,7 @@ import { getProspect } from "@/lib/mock-data"
 import { useCampaigns, useLists, campaignStore, listStore } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
-import { formatDate, relativeTime } from "@/lib/format"
+import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
 import type {
@@ -124,6 +126,19 @@ const COPY = {
     addProspects: "Add prospects",
     paused: (name: string) => `${name} paused`,
     activated: (name: string) => `${name} activated`,
+    scheduleStart: "Schedule start…",
+    tomorrowMorning: "Tomorrow, 8:00 AM",
+    mondayMorning: "Monday, 8:00 AM",
+    scheduleTitle: "Schedule campaign start",
+    scheduleDesc: "Choose when this campaign should begin sending.",
+    scheduleWhen: "Start sending at",
+    scheduleConfirm: "Schedule start",
+    scheduledBadge: "Scheduled",
+    startsAt: (d: string) => `Starts ${d}`,
+    startNow: "Start now",
+    cancelSchedule: "Cancel schedule",
+    scheduledToast: (d: string) => `Campaign scheduled to start ${d}`,
+    scheduleCancelledToast: "Start schedule cancelled",
     enrolled: "Enrolled",
     openRate: "Open rate",
     replyRate: "Reply rate",
@@ -241,6 +256,19 @@ const COPY = {
     addProspects: "Añadir prospectos",
     paused: (name: string) => `${name} en pausa`,
     activated: (name: string) => `${name} activada`,
+    scheduleStart: "Programar inicio…",
+    tomorrowMorning: "Mañana, 8:00",
+    mondayMorning: "Lunes, 8:00",
+    scheduleTitle: "Programar inicio de campaña",
+    scheduleDesc: "Elige cuándo debe empezar a enviar esta campaña.",
+    scheduleWhen: "Empezar a enviar el",
+    scheduleConfirm: "Programar inicio",
+    scheduledBadge: "Programada",
+    startsAt: (d: string) => `Empieza el ${d}`,
+    startNow: "Iniciar ahora",
+    cancelSchedule: "Cancelar programación",
+    scheduledToast: (d: string) => `Campaña programada para iniciar el ${d}`,
+    scheduleCancelledToast: "Programación de inicio cancelada",
     enrolled: "Inscritos",
     openRate: "Tasa de apertura",
     replyRate: "Tasa de respuesta",
@@ -334,6 +362,39 @@ const STATUS_VARIANT: Record<
   paused: "secondary",
   draft: "outline",
   completed: "default",
+}
+
+// 8:00 AM local time, `daysAhead` days from today.
+function morningISO(daysAhead: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + daysAhead)
+  d.setHours(8, 0, 0, 0)
+  return d.toISOString()
+}
+
+// 8:00 AM local time on the next Monday (always at least one day out).
+function nextMondayMorningISO(): string {
+  const d = new Date()
+  const add = (8 - d.getDay()) % 7 || 7
+  d.setDate(d.getDate() + add)
+  d.setHours(8, 0, 0, 0)
+  return d.toISOString()
+}
+
+// Format a Date as a `datetime-local` input value (local time, no zone).
+function toLocalInputValue(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function formatWhen(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
 }
 
 const ENROLLMENT_VARIANT: Record<
@@ -446,6 +507,8 @@ export default function CampaignDetail() {
   const [addOpen, setAddOpen] = React.useState(false)
   const [attachListId, setAttachListId] = React.useState("")
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
+  const [scheduleOpen, setScheduleOpen] = React.useState(false)
+  const [scheduleValue, setScheduleValue] = React.useState("")
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
   const { spend } = useCredits()
@@ -507,9 +570,33 @@ export default function CampaignDetail() {
   const missingEmails = hasEmailStep ? Math.round(camp.enrolled * 0.22) : 0
   const enrichCost = missingEmails * 2
 
+  const scheduled = isCampaignScheduled(camp)
+
   function activate() {
-    campaignStore.update(camp.id, { status: "active" })
+    campaignStore.update(camp.id, { status: "active", scheduledAt: null })
     toast.success(c.activated(camp.name))
+  }
+
+  // Queue the campaign to begin sending at `iso` instead of going live now.
+  function scheduleStart(iso: string) {
+    campaignStore.update(camp.id, { status: "draft", scheduledAt: iso })
+    setScheduleOpen(false)
+    toast.success(c.scheduledToast(formatWhen(iso)))
+  }
+
+  function openCustomSchedule() {
+    setScheduleValue(toLocalInputValue(new Date(Date.now() + 24 * 3600 * 1000)))
+    setScheduleOpen(true)
+  }
+
+  function confirmCustomSchedule() {
+    if (!scheduleValue) return
+    scheduleStart(new Date(scheduleValue).toISOString())
+  }
+
+  function cancelSchedule() {
+    campaignStore.update(camp.id, { scheduledAt: null })
+    toast.success(c.scheduleCancelledToast)
   }
 
   // Create a fresh people list and attach it to this campaign in one click.
@@ -548,7 +635,7 @@ export default function CampaignDetail() {
     // free to leave — we notify them when it's done.
     const toastId = toast.loading(c.enrichingToast(missingEmails))
     window.setTimeout(() => {
-      campaignStore.update(camp.id, { status: "active" })
+      campaignStore.update(camp.id, { status: "active", scheduledAt: null })
       toast.success(c.enrichedToast(missingEmails), { id: toastId })
     }, 1800)
   }
@@ -568,10 +655,23 @@ export default function CampaignDetail() {
             <h1 className="text-2xl font-semibold tracking-tight">
               {campaign.name}
             </h1>
-            <Badge variant={STATUS_VARIANT[campaign.status]}>
-              {c.statusLabel[campaign.status]}
-            </Badge>
+            {scheduled ? (
+              <Badge variant="secondary" className="gap-1">
+                <CalendarClock className="size-3" />
+                {c.scheduledBadge}
+              </Badge>
+            ) : (
+              <Badge variant={STATUS_VARIANT[campaign.status]}>
+                {c.statusLabel[campaign.status]}
+              </Badge>
+            )}
           </div>
+          {scheduled && campaign.scheduledAt && (
+            <p className="text-primary flex items-center gap-1.5 text-sm font-medium">
+              <CalendarClock className="size-3.5" />
+              {c.startsAt(formatWhen(campaign.scheduledAt))}
+            </p>
+          )}
           <p className="text-muted-foreground text-sm">
             {c.createdSteps(formatDate(campaign.createdAt), steps.length)}
           </p>
@@ -584,19 +684,61 @@ export default function CampaignDetail() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="volt" onClick={handlePrimaryAction}>
-            {campaign.status === "active" ? (
-              <>
-                <Pause className="size-4" />
-                {c.pause}
-              </>
-            ) : (
-              <>
+          {campaign.status === "active" ? (
+            <Button variant="volt" onClick={handlePrimaryAction}>
+              <Pause className="size-4" />
+              {c.pause}
+            </Button>
+          ) : scheduled ? (
+            <>
+              <Button variant="volt" onClick={activate}>
+                <Play className="size-4" />
+                {c.startNow}
+              </Button>
+              <Button variant="outline" onClick={cancelSchedule}>
+                <X className="size-4" />
+                {c.cancelSchedule}
+              </Button>
+            </>
+          ) : (
+            <div className="flex items-center">
+              <Button
+                variant="volt"
+                className="rounded-r-none"
+                onClick={handlePrimaryAction}
+              >
                 <Play className="size-4" />
                 {c.activate}
-              </>
-            )}
-          </Button>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="volt"
+                    className="rounded-l-none border-l border-white/25 px-2"
+                    aria-label={c.scheduleStart}
+                  >
+                    <ChevronDown className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => scheduleStart(morningISO(1))}>
+                    <CalendarClock className="size-4" />
+                    {c.tomorrowMorning}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => scheduleStart(nextMondayMorningISO())}
+                  >
+                    <CalendarClock className="size-4" />
+                    {c.mondayMorning}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openCustomSchedule}>
+                    <CalendarClock className="size-4" />
+                    {c.scheduleStart}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="size-4" />
             {c.edit}
@@ -1230,6 +1372,43 @@ export default function CampaignDetail() {
             <Button variant="volt" onClick={enrichAndActivate}>
               <Zap className="size-4" />
               {c.enrichAndActivate} · {enrichCost}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarClock className="text-primary size-5" />
+              {c.scheduleTitle}
+            </DialogTitle>
+            <DialogDescription>{c.scheduleDesc}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label htmlFor="campaign-schedule" className="text-sm font-medium">
+              {c.scheduleWhen}
+            </label>
+            <Input
+              id="campaign-schedule"
+              type="datetime-local"
+              value={scheduleValue}
+              min={toLocalInputValue(new Date())}
+              onChange={(e) => setScheduleValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleOpen(false)}>
+              {c.cancel}
+            </Button>
+            <Button
+              variant="volt"
+              disabled={!scheduleValue}
+              onClick={confirmCustomSchedule}
+            >
+              <CalendarClock className="size-4" />
+              {c.scheduleConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

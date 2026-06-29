@@ -12,6 +12,7 @@ import {
   Workflow,
   Sparkles,
   RefreshCw,
+  CalendarClock,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -57,7 +58,7 @@ import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { downloadCsv } from "@/lib/csv"
-import { formatDate } from "@/lib/format"
+import { formatDate, isCampaignScheduled } from "@/lib/format"
 import { useLocale } from "@/lib/locale"
 import type { Campaign, CampaignStatus } from "@/lib/types"
 
@@ -96,6 +97,8 @@ const COPY = {
     statusCompleted: "Completed",
     paused: (name: string) => `${name} paused`,
     activated: (name: string) => `${name} activated`,
+    scheduled: "Scheduled",
+    startsAt: (d: string) => `Starts ${d}`,
     newCampaign: "New campaign",
     createIntro: "Give your campaign a name to get started.",
     campaignName: "Campaign name",
@@ -165,6 +168,8 @@ const COPY = {
     statusCompleted: "Completada",
     paused: (name: string) => `${name} en pausa`,
     activated: (name: string) => `${name} activada`,
+    scheduled: "Programada",
+    startsAt: (d: string) => `Empieza el ${d}`,
     newCampaign: "Nueva campaña",
     createIntro: "Asigna un nombre a tu campaña para empezar.",
     campaignName: "Nombre de la campaña",
@@ -243,6 +248,7 @@ function CampaignCard({
   const replyRate = campaign.enrolled
     ? Math.round((campaign.replied / campaign.enrolled) * 100)
     : 0
+  const scheduled = isCampaignScheduled(campaign)
 
   function toggleStatus() {
     const nextStatus: CampaignStatus =
@@ -268,9 +274,16 @@ function CampaignCard({
                 {campaign.name}
               </Link>
             </CardTitle>
-            <Badge variant={STATUS_VARIANT[campaign.status]}>
-              {c.statusLabel[campaign.status]}
-            </Badge>
+            {scheduled ? (
+              <Badge variant="secondary" className="gap-1">
+                <CalendarClock className="size-3" />
+                {c.scheduled}
+              </Badge>
+            ) : (
+              <Badge variant={STATUS_VARIANT[campaign.status]}>
+                {c.statusLabel[campaign.status]}
+              </Badge>
+            )}
           </div>
           <p className="text-muted-foreground text-xs">
             {c.createdSteps(
@@ -278,6 +291,12 @@ function CampaignCard({
               campaign.steps.length
             )}
           </p>
+          {scheduled && campaign.scheduledAt && (
+            <p className="text-primary flex items-center gap-1.5 text-xs font-medium">
+              <CalendarClock className="size-3" />
+              {c.startsAt(formatDate(campaign.scheduledAt))}
+            </p>
+          )}
           {audience && (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
               <Link to={`/lists/${audience.id}`}>
