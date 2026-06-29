@@ -226,6 +226,7 @@ const COPY = {
     startHere: "Start here",
     crmSoon: "Your CRM · soon",
     searchBtn: "Search",
+    clearQuery: "Clear search",
     spotlightsLabel: "Spotlights",
     matchLabel: "Matches",
     spotlights: ["Open to work", "Changed jobs", "Recently active", "Hiring", "High intent"],
@@ -462,6 +463,7 @@ const COPY = {
     startHere: "Empieza aquí",
     crmSoon: "Tu CRM · pronto",
     searchBtn: "Buscar",
+    clearQuery: "Borrar búsqueda",
     spotlightsLabel: "Destacados",
     matchLabel: "Coincide",
     spotlights: ["Open to work", "Cambió de empleo", "Activos recientemente", "Contratando", "Alta intención"],
@@ -1245,8 +1247,22 @@ export default function Search() {
                 placeholder={c.inputPlaceholder}
                 rows={2}
                 aria-label={c.srTitle}
-                className="max-h-40 min-h-12 resize-y pl-9"
+                className="max-h-40 min-h-12 resize-y pr-9 pl-9"
               />
+              {input.length > 0 && (
+                <button
+                  type="button"
+                  aria-label={c.clearQuery}
+                  title={c.clearQuery}
+                  onClick={() => {
+                    setInput("")
+                    document.getElementById("search-prompt")?.focus()
+                  }}
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2.5 right-2.5 flex size-6 items-center justify-center rounded-md transition-colors"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
             </div>
             <Button
               type="submit"
@@ -2096,8 +2112,9 @@ function FilterSidebar({
             <button
               type="button"
               onClick={onClear}
-              className="text-muted-foreground hover:text-foreground text-xs"
+              className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium transition-colors"
             >
+              <X className="size-3.5" />
               {c.clearAll}
             </button>
           )}
