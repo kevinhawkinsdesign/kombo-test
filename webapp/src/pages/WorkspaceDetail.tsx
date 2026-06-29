@@ -336,7 +336,9 @@ export default function WorkspaceDetail() {
             onRemove={(sid) =>
               workspaceStore.dissociate(workspace.id, "search", sid)
             }
-            onOpen={() => navigate("/search")}
+            onOpen={(s) =>
+              navigate("/search", { state: { loadSearchId: s.id } })
+            }
           />
         ) : step === "audience" ? (
           <AudiencePanel
