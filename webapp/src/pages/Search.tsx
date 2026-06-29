@@ -225,6 +225,11 @@ const COPY = {
     followersOf: "Followers of",
     jobListings: "Job listings on LinkedIn",
     srTitle: "Search",
+    heroTitle: "Describe your ideal customer",
+    heroSubtitle: "Search across 250M+ professionals and companies — or pick a quick start.",
+    heroPlaceholder: "e.g. Heads of RevOps at Series B SaaS companies in EMEA…",
+    startHere: "Start here",
+    crmSoon: "Your CRM · soon",
     searchBtn: "Search",
     spotlightsLabel: "Spotlights",
     matchLabel: "Matches",
@@ -464,6 +469,11 @@ const COPY = {
     followersOf: "Seguidores de",
     jobListings: "Ofertas de empleo en LinkedIn",
     srTitle: "Buscar",
+    heroTitle: "Describe tu cliente ideal",
+    heroSubtitle: "Busca entre más de 250M de profesionales y empresas — o elige un inicio rápido.",
+    heroPlaceholder: "p. ej. Heads de RevOps en SaaS Serie B en EMEA…",
+    startHere: "Empieza aquí",
+    crmSoon: "Tu CRM · pronto",
     searchBtn: "Buscar",
     spotlightsLabel: "Destacados",
     matchLabel: "Coincide",
@@ -795,7 +805,6 @@ export default function Search() {
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [buildOpen, setBuildOpen] = React.useState(false)
-  const [quickOpen, setQuickOpen] = React.useState(true)
   const [bulkIds, setBulkIds] = React.useState<string[]>([])
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
   const [bulkCampaignOpen, setBulkCampaignOpen] = React.useState(false)
@@ -1214,6 +1223,19 @@ export default function Search() {
 
   return (
     <Page>
+      {!hasSearched ? (
+        <SearchHome
+          c={c}
+          input={input}
+          setInput={setInput}
+          onRun={runPrompt}
+          entity={entity}
+          setEntity={setEntity}
+          examples={examples}
+          quickActions={quickActions}
+        />
+      ) : (
+        <>
       {/* AI is native to the product, so the page isn't labelled "AI Search". */}
       <h1 className="text-xl font-semibold tracking-tight">{c.srTitle}</h1>
       <p className="text-muted-foreground mt-1 mb-6 max-w-3xl text-sm">{c.description}</p>
@@ -1251,58 +1273,6 @@ export default function Search() {
             label={c.companies}
           />
         </div>
-
-        {/* Clay-style launcher: collapsible row of suggested starting points. */}
-        {!hasSearched && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setQuickOpen((v) => !v)}
-            aria-expanded={quickOpen}
-            className="text-muted-foreground hover:text-foreground mb-2 flex items-center gap-1 text-sm font-medium"
-          >
-            <ChevronDown
-              className={cn(
-                "size-4 transition-transform",
-                !quickOpen && "-rotate-90"
-              )}
-            />
-            {c.quickStart}
-          </button>
-          {quickOpen && (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-              {quickActions.map((a) => {
-                const Icon = a.icon
-                return (
-                  <button
-                    key={a.key}
-                    type="button"
-                    onClick={a.onClick}
-                    className="bg-card hover:border-primary/40 hover:bg-muted/40 flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "flex size-7 shrink-0 items-center justify-center rounded-lg",
-                          a.tint
-                        )}
-                      >
-                        <Icon className="size-4" />
-                      </span>
-                      <span className="text-sm leading-tight font-semibold">
-                        {a.title}
-                      </span>
-                    </span>
-                    <span className="text-muted-foreground text-xs leading-snug">
-                      {a.desc}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
-        )}
 
         {/* Search query bar — the prompt IS the query, no chat thread. */}
         <Card className="gap-3 p-3">
@@ -1929,6 +1899,8 @@ export default function Search() {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       <SaveListDialog
         open={saveOpen}
@@ -2554,6 +2526,147 @@ function SearchEmptyState({
             <span className="truncate">{ex}</span>
           </button>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// The home / empty state: a centered hero with the AI prompt, suggested
+// searches, and the "Start here" quick actions. Shown only before a search has
+// run — once results exist, the page switches to the working layout.
+function SearchHome({
+  c,
+  input,
+  setInput,
+  onRun,
+  entity,
+  setEntity,
+  examples,
+  quickActions,
+}: {
+  c: Copy
+  input: string
+  setInput: (v: string) => void
+  onRun: (prompt: string) => void
+  entity: AiEntity
+  setEntity: (e: AiEntity) => void
+  examples: string[]
+  quickActions: {
+    key: string
+    icon: React.ComponentType<{ className?: string }>
+    tint: string
+    title: string
+    onClick: () => void
+  }[]
+}) {
+  return (
+    <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center py-8">
+      <h1 className="text-center text-3xl font-semibold tracking-tight sm:text-4xl">
+        {c.heroTitle}
+      </h1>
+      <p className="text-muted-foreground mt-2 text-center text-sm">
+        {c.heroSubtitle}
+      </p>
+
+      {/* Database / entity tabs */}
+      <div className="bg-muted mt-6 inline-flex rounded-lg p-[3px]">
+        <EntityTab
+          active={entity === "people"}
+          onClick={() => setEntity("people")}
+          icon={Users}
+          label={c.people}
+        />
+        <EntityTab
+          active={entity === "companies"}
+          onClick={() => setEntity("companies")}
+          icon={Building2}
+          label={c.companies}
+        />
+        <span className="text-muted-foreground/60 inline-flex cursor-not-allowed items-center gap-1.5 rounded-[5px] px-3 py-1.5 text-sm font-medium">
+          {c.crmSoon}
+        </span>
+      </div>
+
+      {/* AI prompt */}
+      <form
+        className="mt-3 w-full"
+        onSubmit={(e) => {
+          e.preventDefault()
+          onRun(input)
+        }}
+      >
+        <div className="relative">
+          <Textarea
+            id="search-prompt"
+            autoFocus
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                onRun(input)
+              }
+            }}
+            placeholder={c.heroPlaceholder}
+            rows={3}
+            className="resize-none rounded-xl p-4 pr-14 text-base"
+          />
+          <Button
+            type="submit"
+            variant="volt"
+            size="icon"
+            disabled={!input.trim()}
+            className="absolute right-3 bottom-3 rounded-lg"
+            aria-label={c.searchBtn}
+          >
+            <ArrowRight className="size-4" />
+          </Button>
+        </div>
+      </form>
+
+      {/* Suggested searches */}
+      <div className="mt-4 w-full space-y-0.5">
+        {examples.slice(0, 4).map((ex) => (
+          <button
+            key={ex}
+            type="button"
+            onClick={() => onRun(ex)}
+            className="hover:bg-muted/60 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
+          >
+            <SearchIcon className="text-muted-foreground size-4 shrink-0" />
+            <span className="truncate">{ex}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Quick actions — "Start here" */}
+      <div className="mt-7 w-full">
+        <p className="text-muted-foreground mb-2 text-center text-[11px] font-medium tracking-wide uppercase">
+          {c.startHere}
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {quickActions.map((a) => {
+            const Icon = a.icon
+            return (
+              <button
+                key={a.key}
+                type="button"
+                onClick={a.onClick}
+                className="hover:border-primary/40 hover:bg-muted/40 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors"
+              >
+                <span
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded",
+                    a.tint
+                  )}
+                >
+                  <Icon className="size-3" />
+                </span>
+                {a.title}
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
