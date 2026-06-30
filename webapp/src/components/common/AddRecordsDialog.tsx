@@ -30,7 +30,7 @@ import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
-import { prospectStore, accountStore } from "@/lib/store"
+import { prospectStore, accountStore, listStore } from "@/lib/store"
 import { facetsForDb } from "@/lib/search-facets"
 import {
   interpretPrompt,
@@ -202,10 +202,14 @@ export function AddRecordsDialog({
   open,
   onOpenChange,
   kind,
+  listId,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   kind: Kind
+  // When set, materialized records are also added to this list (used from a
+  // list detail page so the full-screen search/import flow is reused there).
+  listId?: string
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -290,11 +294,13 @@ export function AddRecordsDialog({
     if (selected.size === 0) return
     if (entity === "people") {
       const chosen = leads.filter((l) => selected.has(l.id))
-      chosen.forEach(materializeLead)
+      const newIds = chosen.map(materializeLead)
+      if (listId) listStore.addProspects(listId, newIds)
       toast.success(c.addedPeople(chosen.length))
     } else {
       const chosen = companies.filter((co) => selected.has(co.id))
-      chosen.forEach(materializeCompany)
+      const newIds = chosen.map(materializeCompany)
+      if (listId) listStore.addAccounts(listId, newIds)
       toast.success(c.addedCompanies(chosen.length))
     }
     onOpenChange(false)
@@ -855,8 +861,8 @@ function ImportPane({
 
 /* ----------------------------- materializers ----------------------------- */
 
-function materializeLead(l: AiLead): void {
-  prospectStore.create({
+function materializeLead(l: AiLead): string {
+  return prospectStore.create({
     firstName: l.firstName,
     lastName: l.lastName,
     title: l.title,
@@ -880,17 +886,17 @@ function materializeLead(l: AiLead): void {
     signals: l.signals,
     source: "search",
     enriched: false,
-  })
+  }).id
 }
 
-function materializeCompany(co: AiCompany): void {
+function materializeCompany(co: AiCompany): string {
   const tier: AccountTier =
     co.headcountNum >= 1000
       ? "Enterprise"
       : co.headcountNum >= 200
         ? "Mid-market"
         : "SMB"
-  accountStore.create({
+  return accountStore.create({
     name: co.name,
     domain: co.domain,
     industry: co.industry,
@@ -907,5 +913,5 @@ function materializeCompany(co: AiCompany): void {
     about: "",
     signals: co.signals,
     keyExecutives: [],
-  })
+  }).id
 }
