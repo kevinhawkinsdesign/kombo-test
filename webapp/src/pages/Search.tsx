@@ -25,6 +25,8 @@ import {
   LayoutTemplate,
   Database,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Columns3,
   Plug,
   Download,
@@ -308,6 +310,10 @@ const COPY = {
     buildPopulate: "How do you want to populate it?",
     buildNext: "Next",
     buildBack: "Back",
+    selectPage: "Select page",
+    deselectPage: "Deselect page",
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     srcFindPeople: "Find people",
     srcFindPeopleDesc: "Search our database for matching prospects.",
     srcFindCompanies: "Find companies",
@@ -543,6 +549,10 @@ const COPY = {
     buildPopulate: "¿Cómo quieres llenarla?",
     buildNext: "Siguiente",
     buildBack: "Atrás",
+    selectPage: "Seleccionar página",
+    deselectPage: "Deseleccionar página",
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Buscar personas",
     srcFindPeopleDesc: "Busca prospectos que coincidan en nuestra base.",
     srcFindCompanies: "Buscar empresas",
@@ -651,6 +661,11 @@ const LEAD_GROUPS: ColGroup[] = [
   { id: "engagement", label: { en: "Engagement", es: "Interacción" } },
 ]
 const LEAD_DEFAULT_IDS = ["fit", "company", "region", "email", "signals"]
+
+// Results are paged so "select page" never grabs the whole (1000+) result set.
+const RESULTS_PER_PAGE = 25
+// Caps offered for "max contacts per company" — matches the build-a-list dialog.
+const PER_COMPANY_CAPS: (number | null)[] = [null, 1, 2, 3, 5, 10]
 
 const COMPANY_RESULT_GROUPS: ColGroup[] = [
   { id: "company", label: { en: "Company", es: "Empresa" } },
@@ -809,6 +824,36 @@ export default function Search() {
   const creditBase = selectedCount > 0 ? selectedCount : estTotal
   const projectedCredits = Math.round(creditBase * CREDITS_PER_LEAD)
 
+  // Pagination — so "select page" imports a controlled batch instead of every
+  // matching result. Reset to the first page whenever the result set changes.
+  const [page, setPage] = React.useState(0)
+  const pageCount = Math.max(1, Math.ceil(shownCount / RESULTS_PER_PAGE))
+  const resultSig = `${entity}|${sortKey}|${seed?.id ?? ""}|${JSON.stringify(query)}`
+  const [pageSig, setPageSig] = React.useState(resultSig)
+  if (resultSig !== pageSig) {
+    setPageSig(resultSig)
+    setPage(0)
+  }
+  const safePage = Math.min(page, pageCount - 1)
+  const pageStart = safePage * RESULTS_PER_PAGE
+  const pageEnd = Math.min(pageStart + RESULTS_PER_PAGE, shownCount)
+  const pagedLeads =
+    entity === "people" ? leads.slice(pageStart, pageEnd) : []
+  const pagedCompanies =
+    entity === "companies" ? companies.slice(pageStart, pageEnd) : []
+  const pagedIds =
+    entity === "people"
+      ? pagedLeads.map((l) => l.id)
+      : pagedCompanies.map((co) => co.id)
+  const perCompanyCap = query.perCompanyCap
+
+  // Set the per-company cap (people only). Capping changes which rows show, so
+  // drop the selection to avoid keeping now-hidden rows selected.
+  function setMaxPerCompany(cap: number | null) {
+    setQuery((q) => ({ ...q, perCompanyCap: cap }))
+    setSelected(new Set())
+  }
+
   // A prompt is treated as a search query — interpret it into structured
   // filters and run the search (with a brief "thinking" beat). No chat.
   const runPrompt = React.useCallback((prompt: string) => {
@@ -882,11 +927,18 @@ export default function Search() {
     })
   }
 
+  // Select / deselect the current page (capped + paged), so a single click
+  // never imports more than one page of results at a time.
   function toggleAll() {
-    const ids = entity === "people" ? leads.map((l) => l.id) : companies.map((c) => c.id)
-    setSelected((prev) =>
-      ids.every((id) => prev.has(id)) ? new Set() : new Set(ids)
-    )
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (pagedIds.every((id) => next.has(id))) {
+        pagedIds.forEach((id) => next.delete(id))
+      } else {
+        pagedIds.forEach((id) => next.add(id))
+      }
+      return next
+    })
   }
 
   // Pick the database to search. Lookalike needs a seed, so it opens the picker;
@@ -985,11 +1037,9 @@ export default function Search() {
   }
 
   const allSelected =
-    shownCount > 0 &&
-    (entity === "people" ? leads : companies).every((r) => selected.has(r.id))
+    pagedIds.length > 0 && pagedIds.every((id) => selected.has(id))
   const someSelected =
-    !allSelected &&
-    (entity === "people" ? leads : companies).some((r) => selected.has(r.id))
+    !allSelected && pagedIds.some((id) => selected.has(id))
 
   // Customizable columns — the same ColumnManager + DataTable as People/Companies.
   const leadColPrefs = useColumnPrefs("search-people", LEAD_DEFAULT_IDS)
@@ -1613,12 +1663,80 @@ export default function Search() {
             </span>
           </div>
 
+          {/* Selection controls — keep imports small: pick a page at a time and,
+              for people, cap how many contacts come from each company. */}
+          {shownCount > 0 && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-1">
+              <Button
+                variant={allSelected ? "secondary" : "outline"}
+                size="sm"
+                onClick={toggleAll}
+              >
+                <Checkbox checked={allSelected} className="pointer-events-none" />
+                {allSelected ? c.deselectPage : c.selectPage}
+              </Button>
+
+              {entity === "people" && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-muted-foreground text-xs font-medium">
+                    {c.capLabel}
+                  </span>
+                  {PER_COMPANY_CAPS.map((n) => {
+                    const active = perCompanyCap === n
+                    return (
+                      <button
+                        key={n ?? "none"}
+                        type="button"
+                        onClick={() => setMaxPerCompany(n)}
+                        aria-pressed={active}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          active
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        {n === null ? c.capNoLimit : n}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              <div className="ml-auto flex items-center gap-1">
+                <span className="text-muted-foreground px-1 text-xs tabular-nums">
+                  {c.pageRange(pageStart + 1, pageEnd, shownCount)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={safePage === 0}
+                  onClick={() => setPage(Math.max(0, safePage - 1))}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={safePage >= pageCount - 1}
+                  onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Results table — shared DataTable + ColumnManager (like People). */}
           {entity === "people" ? (
             <DataTable
               columns={leadColumns}
               visible={leadColPrefs.visible}
-              rows={leads}
+              rows={pagedLeads}
               rowKey={(l) => l.id}
               locale={locale}
               selection={leadSelection}
@@ -1628,7 +1746,7 @@ export default function Search() {
             <DataTable
               columns={companyColumns}
               visible={companyColPrefs.visible}
-              rows={companies}
+              rows={pagedCompanies}
               rowKey={(co) => co.id}
               locale={locale}
               selection={companySelection}
