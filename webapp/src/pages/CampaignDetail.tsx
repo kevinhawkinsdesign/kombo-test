@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowUp,
   ArrowDown,
+  Columns3,
   Mail,
   MessageSquare,
   MessageCircle,
@@ -47,14 +48,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -76,6 +69,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
+import {
+  useColumnPrefs,
+  type ColumnDef,
+  type ColGroup,
+} from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
 import { getProspect } from "@/lib/mock-data"
@@ -89,6 +89,7 @@ import type {
   CampaignStatus,
   StepChannel,
   EnrollmentStatus,
+  Prospect,
 } from "@/lib/types"
 
 const COPY = {
@@ -124,6 +125,7 @@ const COPY = {
     activate: "Activate",
     edit: "Edit",
     addProspects: "Add prospects",
+    columns: "Columns",
     paused: (name: string) => `${name} paused`,
     activated: (name: string) => `${name} activated`,
     scheduleStart: "Schedule start…",
@@ -254,6 +256,7 @@ const COPY = {
     activate: "Activar",
     edit: "Editar",
     addProspects: "Añadir prospectos",
+    columns: "Columnas",
     paused: (name: string) => `${name} en pausa`,
     activated: (name: string) => `${name} activada`,
     scheduleStart: "Programar inicio…",
@@ -408,6 +411,28 @@ const ENROLLMENT_VARIANT: Record<
   bounced: "destructive",
 }
 
+// One row of the Prospects tab — a normalized view over both mock enrollments
+// and manually-added prospects so they share the customizable DataTable.
+interface CampaignProspectRow {
+  id: string
+  prospect: Prospect | undefined
+  currentStep: number
+  status: EnrollmentStatus
+  lastTouchLabel: string
+  manual: boolean
+}
+
+const PROSPECT_COL_GROUPS: ColGroup[] = [
+  { id: "prospect", label: { en: "Prospect", es: "Prospecto" } },
+  { id: "progress", label: { en: "Progress", es: "Progreso" } },
+]
+const PROSPECT_COL_DEFAULT_IDS = [
+  "titleCompany",
+  "currentStep",
+  "status",
+  "lastTouch",
+]
+
 const CAMPAIGN_STATUSES: CampaignStatus[] = [
   "draft",
   "active",
@@ -513,6 +538,14 @@ export default function CampaignDetail() {
   const [alertEmail, setAlertEmail] = React.useState(false)
   const { spend } = useCredits()
 
+  // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
+  // Hooks must run before the not-found early return below.
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const prospectColPrefs = useColumnPrefs(
+    "campaign-prospects",
+    PROSPECT_COL_DEFAULT_IDS
+  )
+
   if (!campaign) {
     return (
       <Page>
@@ -562,6 +595,96 @@ export default function CampaignDetail() {
 
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
   const allEnrolledIds = new Set<string>([...enrollmentIds, ...enrolledIds])
+
+  // Prospects-tab table rows: a normalized view over mock enrollments and
+  // manually-added prospects so they share the customizable DataTable.
+  const prospectRows: CampaignProspectRow[] = [
+    ...enrollments.map((e) => ({
+      id: e.prospectId,
+      prospect: getProspect(e.prospectId),
+      currentStep: e.currentStep,
+      status: e.status,
+      lastTouchLabel: relativeTime(e.lastTouch),
+      manual: false,
+    })),
+    ...manualProspects.map((p) => ({
+      id: p.id,
+      prospect: p as Prospect | undefined,
+      currentStep: 1,
+      status: "active" as EnrollmentStatus,
+      lastTouchLabel: c.justAdded,
+      manual: true,
+    })),
+  ]
+  const prospectColumns: ColumnDef<CampaignProspectRow>[] = [
+    {
+      id: "prospect",
+      label: { en: "Prospect", es: "Prospecto" },
+      group: "prospect",
+      pinned: true,
+      minWidth: "200px",
+      render: (row) =>
+        row.prospect ? (
+          <Link
+            to={`/prospects/${row.prospect.id}`}
+            className="flex items-center gap-3"
+          >
+            <ProspectAvatar prospect={row.prospect} />
+            <span className="truncate font-medium">
+              {row.prospect.firstName} {row.prospect.lastName}
+            </span>
+          </Link>
+        ) : (
+          <span className="text-muted-foreground">{c.unknownProspect}</span>
+        ),
+    },
+    {
+      id: "titleCompany",
+      label: { en: "Title / Company", es: "Cargo / Empresa" },
+      group: "prospect",
+      render: (row) =>
+        row.prospect ? (
+          <div>
+            <p className="text-sm">{row.prospect.title}</p>
+            <p className="text-muted-foreground text-xs">
+              {row.prospect.company}
+            </p>
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "currentStep",
+      label: { en: "Current step", es: "Paso actual" },
+      group: "progress",
+      render: (row) => (
+        <span className="text-sm tabular-nums">
+          {c.stepOf(row.currentStep, steps.length)}
+        </span>
+      ),
+    },
+    {
+      id: "status",
+      label: { en: "Status", es: "Estado" },
+      group: "progress",
+      render: (row) => (
+        <Badge variant={ENROLLMENT_VARIANT[row.status]}>
+          {c.enrollmentLabel[row.status]}
+        </Badge>
+      ),
+    },
+    {
+      id: "lastTouch",
+      label: { en: "Last touch", es: "Último contacto" },
+      group: "progress",
+      render: (row) => (
+        <span className="text-muted-foreground text-sm">
+          {row.lastTouchLabel}
+        </span>
+      ),
+    },
+  ]
 
   // Enrichment gate: a campaign with an email step shouldn't launch while some
   // enrolled prospects still lack a verified email (a common mid-campaign error).
@@ -1133,133 +1256,47 @@ export default function CampaignDetail() {
         </TabsContent>
 
         {/* Prospects */}
-        <TabsContent value="prospects" className="mt-4">
+        <TabsContent value="prospects" className="mt-4 space-y-3">
           {hasProspects ? (
-            <Card className="overflow-hidden p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/40 hover:bg-muted/40">
-                      <TableHead className="pl-4">{c.thProspect}</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        {c.thTitleCompany}
-                      </TableHead>
-                      <TableHead>{c.thCurrentStep}</TableHead>
-                      <TableHead>{c.thStatus}</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        {c.thLastTouch}
-                      </TableHead>
-                      <TableHead className="w-12 pr-4" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {enrollments.map((e) => {
-                      const prospect = getProspect(e.prospectId)
-                      return (
-                        <TableRow key={e.prospectId}>
-                          <TableCell className="pl-4">
-                            {prospect ? (
-                              <Link
-                                to={`/prospects/${prospect.id}`}
-                                className="flex items-center gap-3"
-                              >
-                                <ProspectAvatar prospect={prospect} />
-                                <span className="truncate font-medium">
-                                  {prospect.firstName} {prospect.lastName}
-                                </span>
-                              </Link>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                {c.unknownProspect}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {prospect ? (
-                              <>
-                                <p className="text-muted-foreground text-sm">
-                                  {prospect.title}
-                                </p>
-                                <p className="text-muted-foreground text-xs">
-                                  {prospect.company}
-                                </p>
-                              </>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="tabular-nums">
-                            {c.stepOf(e.currentStep, steps.length)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={ENROLLMENT_VARIANT[e.status]}>
-                              {c.enrollmentLabel[e.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
-                            {relativeTime(e.lastTouch)}
-                          </TableCell>
-                          <TableCell className="pr-4" />
-                        </TableRow>
-                      )
-                    })}
-                    {manualProspects.map((prospect) => (
-                      <TableRow key={prospect.id}>
-                        <TableCell className="pl-4">
-                          <Link
-                            to={`/prospects/${prospect.id}`}
-                            className="flex items-center gap-3"
-                          >
-                            <ProspectAvatar prospect={prospect} />
-                            <span className="truncate font-medium">
-                              {prospect.firstName} {prospect.lastName}
-                            </span>
-                          </Link>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <p className="text-muted-foreground text-sm">
-                            {prospect.title}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {prospect.company}
-                          </p>
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {c.stepOf(1, steps.length)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={ENROLLMENT_VARIANT.active}>
-                            {c.enrollmentLabel.active}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
-                          {c.justAdded}
-                        </TableCell>
-                        <TableCell className="pr-4">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={c.removeProspectAria(
-                              `${prospect.firstName} ${prospect.lastName}`
-                            )}
-                            className="text-muted-foreground hover:text-destructive size-8"
-                            onClick={() => {
-                              campaignStore.removeProspect(
-                                campaign.id,
-                                prospect.id
-                              )
-                              toast.success(c.removedFromCampaign)
-                            }}
-                          >
-                            <X className="size-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+            <>
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setColumnsOpen(true)}
+                >
+                  <Columns3 className="size-4" />
+                  {c.columns}
+                </Button>
               </div>
-            </Card>
+              <DataTable
+                columns={prospectColumns}
+                visible={prospectColPrefs.visible}
+                rows={prospectRows}
+                rowKey={(r) => r.id}
+                locale={locale}
+                actions={(row) =>
+                  row.manual ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={c.removeProspectAria(
+                        row.prospect
+                          ? `${row.prospect.firstName} ${row.prospect.lastName}`
+                          : c.unknownProspect
+                      )}
+                      className="text-muted-foreground hover:text-destructive size-8"
+                      onClick={() => {
+                        campaignStore.removeProspect(campaign.id, row.id)
+                        toast.success(c.removedFromCampaign)
+                      }}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  ) : null
+                }
+              />
+            </>
           ) : (
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
@@ -1344,6 +1381,15 @@ export default function CampaignDetail() {
         onOpenChange={setAddOpen}
         campaign={campaign}
         enrolledIds={allEnrolledIds}
+      />
+
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={prospectColumns}
+        groups={PROSPECT_COL_GROUPS}
+        prefs={prospectColPrefs}
+        locale={locale}
       />
 
       <Dialog open={enrichGateOpen} onOpenChange={setEnrichGateOpen}>
