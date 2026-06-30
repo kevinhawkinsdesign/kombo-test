@@ -58,14 +58,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
+import { DataTable, type TableSelection } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useColumnPrefs,
+  type ColumnDef,
+  type ColGroup,
+} from "@/lib/table-columns"
 import { cn } from "@/lib/utils"
 import { initials, scoreTone } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
@@ -112,6 +111,7 @@ import {
   type AiEntity,
   type AiQuery,
   type AiLead,
+  type AiCompany,
   type LookalikeSeed,
 } from "@/lib/mock-ai-search"
 import {
@@ -646,6 +646,30 @@ const PEOPLE_ONLY_SOURCES: BuildSource[] = [
 
 const LIST_COLORS = ["#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899"]
 
+// Column registries for the results tables — same shared ColumnManager +
+// DataTable as People/Companies/Lists. The pinned identity column always shows;
+// the rest are toggleable/reorderable.
+const LEAD_GROUPS: ColGroup[] = [
+  { id: "identity", label: { en: "Prospect", es: "Prospecto" } },
+  { id: "company", label: { en: "Company", es: "Empresa" } },
+  { id: "engagement", label: { en: "Engagement", es: "Interacción" } },
+]
+const LEAD_DEFAULT_IDS = ["fit", "company", "region", "email", "signals"]
+
+const COMPANY_RESULT_GROUPS: ColGroup[] = [
+  { id: "company", label: { en: "Company", es: "Empresa" } },
+  { id: "firmographics", label: { en: "Firmographics", es: "Firmográficos" } },
+  { id: "signals", label: { en: "Signals", es: "Señales" } },
+]
+const COMPANY_RESULT_DEFAULT_IDS = [
+  "fit",
+  "industry",
+  "headcount",
+  "region",
+  "roles",
+  "signals",
+]
+
 function FitBadge({ fit }: { fit: number }) {
   const tone = scoreTone(fit)
   const cls =
@@ -666,6 +690,10 @@ function FitBadge({ fit }: { fit: number }) {
       {fit}
     </span>
   )
+}
+
+function mutedCell(value: React.ReactNode) {
+  return <span className="text-muted-foreground text-sm">{value}</span>
 }
 
 function MatchLine({ reasons, label }: { reasons: string[]; label: string }) {
@@ -760,9 +788,6 @@ export default function Search() {
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
   const [bulkCampaignOpen, setBulkCampaignOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
-  const [showEmail, setShowEmail] = React.useState(true)
-  const [showSignals, setShowSignals] = React.useState(false)
-  const [showRegion, setShowRegion] = React.useState(true)
   const [linkedinOn, setLinkedinOn] = React.useState(false)
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
 
@@ -966,6 +991,159 @@ export default function Search() {
   const allSelected =
     shownCount > 0 &&
     (entity === "people" ? leads : companies).every((r) => selected.has(r.id))
+  const someSelected =
+    !allSelected &&
+    (entity === "people" ? leads : companies).some((r) => selected.has(r.id))
+
+  // Customizable columns — the same ColumnManager + DataTable as People/Companies.
+  const leadColPrefs = useColumnPrefs("search-people", LEAD_DEFAULT_IDS)
+  const companyColPrefs = useColumnPrefs(
+    "search-companies",
+    COMPANY_RESULT_DEFAULT_IDS
+  )
+
+  const leadColumns = React.useMemo<ColumnDef<AiLead>[]>(
+    () => [
+      {
+        id: "prospect",
+        group: "identity",
+        pinned: true,
+        minWidth: "16rem",
+        label: { en: "Prospect", es: "Prospecto" },
+        render: (l) => (
+          <div className="flex items-center gap-3">
+            <Avatar className="size-8">
+              <AvatarImage src={portraitFor(`${l.firstName} ${l.lastName}`)} alt="" />
+              <AvatarFallback
+                style={{ backgroundColor: l.avatarColor, color: "white" }}
+                className="text-xs"
+              >
+                {initials(l.firstName, l.lastName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate font-medium">
+                {l.firstName} {l.lastName}
+              </p>
+              <p className="text-muted-foreground truncate text-xs">{l.title}</p>
+              <MatchLine reasons={matchReasons(l, query)} label={c.matchLabel} />
+            </div>
+          </div>
+        ),
+      },
+      { id: "fit", group: "identity", label: { en: "Fit", es: "Encaje" }, render: (l) => <FitBadge fit={l.fit} /> },
+      {
+        id: "company",
+        group: "company",
+        label: { en: "Company", es: "Empresa" },
+        render: (l) => (
+          <div>
+            <p className="font-medium">{l.company}</p>
+            <p className="text-muted-foreground text-xs">
+              {l.industry} · {l.headcount}
+            </p>
+          </div>
+        ),
+      },
+      { id: "seniority", group: "identity", label: { en: "Seniority", es: "Antigüedad" }, render: (l) => mutedCell(l.seniority) },
+      { id: "department", group: "identity", label: { en: "Department", es: "Departamento" }, render: (l) => mutedCell(l.department) },
+      { id: "region", group: "company", label: { en: "Region", es: "Región" }, render: (l) => mutedCell(l.region) },
+      { id: "industry", group: "company", label: { en: "Industry", es: "Sector" }, render: (l) => mutedCell(l.industry) },
+      { id: "headcount", group: "company", label: { en: "Size", es: "Tamaño" }, render: (l) => mutedCell(l.headcount) },
+      { id: "revenue", group: "company", label: { en: "Revenue", es: "Ingresos" }, render: (l) => mutedCell(l.revenue) },
+      { id: "email", group: "engagement", label: { en: "Email", es: "Email" }, render: (l) => <EmailStatus status={l.emailStatus} c={c} /> },
+      {
+        id: "signals",
+        group: "engagement",
+        label: { en: "Signals", es: "Señales" },
+        render: (l) => (
+          <div className="flex flex-wrap gap-1">
+            {l.signals.slice(0, 2).map((s) => (
+              <Badge key={s} variant="secondary" className="font-normal">
+                {s}
+              </Badge>
+            ))}
+          </div>
+        ),
+      },
+    ],
+    [query, c]
+  )
+
+  const companyColumns = React.useMemo<ColumnDef<AiCompany>[]>(
+    () => [
+      {
+        id: "company",
+        group: "company",
+        pinned: true,
+        minWidth: "16rem",
+        label: { en: "Company", es: "Empresa" },
+        render: (co) => (
+          <div className="flex items-center gap-3">
+            <span
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
+              style={{ backgroundColor: co.logoColor }}
+            >
+              {co.name.slice(0, 2)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate font-medium">{co.name}</p>
+              <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
+              <MatchLine
+                reasons={companyMatchReasons(co, query)}
+                label={c.matchLabel}
+              />
+            </div>
+          </div>
+        ),
+      },
+      { id: "fit", group: "company", label: { en: "Fit", es: "Encaje" }, render: (co) => <FitBadge fit={co.fit} /> },
+      { id: "industry", group: "firmographics", label: { en: "Industry", es: "Sector" }, render: (co) => mutedCell(co.industry) },
+      { id: "headcount", group: "firmographics", label: { en: "Size", es: "Tamaño" }, render: (co) => mutedCell(co.headcount) },
+      { id: "region", group: "firmographics", label: { en: "Region", es: "Región" }, render: (co) => mutedCell(co.region) },
+      { id: "revenue", group: "firmographics", label: { en: "Revenue", es: "Ingresos" }, render: (co) => mutedCell(co.revenue) },
+      {
+        id: "roles",
+        group: "firmographics",
+        label: { en: "Open roles", es: "Vacantes" },
+        render: (co) => (
+          <Badge variant="secondary" className="tabular-nums">
+            {co.openRoles}
+          </Badge>
+        ),
+      },
+      {
+        id: "signals",
+        group: "signals",
+        label: { en: "Signals", es: "Señales" },
+        render: (co) => (
+          <div className="flex flex-wrap gap-1">
+            {co.signals.slice(0, 2).map((s) => (
+              <Badge key={s} variant="secondary" className="font-normal">
+                {s}
+              </Badge>
+            ))}
+          </div>
+        ),
+      },
+    ],
+    [query, c]
+  )
+
+  const leadSelection: TableSelection<AiLead> = {
+    isSelected: (l) => selected.has(l.id),
+    toggle: (l) => toggleRow(l.id),
+    toggleAll,
+    allSelected,
+    someSelected,
+  }
+  const companySelection: TableSelection<AiCompany> = {
+    isSelected: (co) => selected.has(co.id),
+    toggle: (co) => toggleRow(co.id),
+    toggleAll,
+    allSelected,
+    someSelected,
+  }
 
   // Selected search/lookalike results → real records, then the standard
   // search-result actions (add to list / campaign / export / CRM).
@@ -1454,211 +1632,28 @@ export default function Search() {
             </span>
           </div>
 
-          {/* Results table */}
-          <Card className="overflow-hidden p-0">
-            <div className="overflow-x-auto">
-              {entity === "people" ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/40 hover:bg-muted/40">
-                      <TableHead className="w-10 pl-4">
-                        <Checkbox
-                          checked={allSelected}
-                          onCheckedChange={toggleAll}
-                          aria-label="Select all"
-                        />
-                      </TableHead>
-                      <TableHead className="w-14">{c.colFit}</TableHead>
-                      <TableHead>{c.colName}</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        {c.colCompany}
-                      </TableHead>
-                      {showRegion && (
-                        <TableHead className="hidden lg:table-cell">
-                          {c.colRegion}
-                        </TableHead>
-                      )}
-                      {showEmail && (
-                        <TableHead className="hidden sm:table-cell">
-                          {c.colEmail}
-                        </TableHead>
-                      )}
-                      {showSignals && (
-                        <TableHead className="hidden xl:table-cell">
-                          {c.colSignals}
-                        </TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leads.map((l) => (
-                      <TableRow key={l.id}>
-                        <TableCell className="pl-4">
-                          <Checkbox
-                            checked={selected.has(l.id)}
-                            onCheckedChange={() => toggleRow(l.id)}
-                            aria-label={`Select ${l.firstName}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <FitBadge fit={l.fit} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-8">
-                              <AvatarImage
-                                src={portraitFor(`${l.firstName} ${l.lastName}`)}
-                                alt=""
-                              />
-                              <AvatarFallback
-                                style={{ backgroundColor: l.avatarColor, color: "white" }}
-                                className="text-xs"
-                              >
-                                {initials(l.firstName, l.lastName)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0">
-                              <p className="truncate font-medium">
-                                {l.firstName} {l.lastName}
-                              </p>
-                              <p className="text-muted-foreground truncate text-xs">
-                                {l.title}
-                              </p>
-                              <MatchLine reasons={matchReasons(l, query)} label={c.matchLabel} />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <p className="font-medium">{l.company}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {l.industry} · {l.headcount}
-                          </p>
-                        </TableCell>
-                        {showRegion && (
-                          <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
-                            {l.region}
-                          </TableCell>
-                        )}
-                        {showEmail && (
-                          <TableCell className="hidden sm:table-cell">
-                            <EmailStatus status={l.emailStatus} c={c} />
-                          </TableCell>
-                        )}
-                        {showSignals && (
-                          <TableCell className="hidden xl:table-cell">
-                            <div className="flex flex-wrap gap-1">
-                              {l.signals.slice(0, 2).map((s) => (
-                                <Badge key={s} variant="secondary" className="font-normal">
-                                  {s}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                    {leads.length === 0 && <EmptyRow span={7} text={c.noResults} />}
-                  </TableBody>
-                </Table>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/40 hover:bg-muted/40">
-                      <TableHead className="w-10 pl-4">
-                        <Checkbox
-                          checked={allSelected}
-                          onCheckedChange={toggleAll}
-                          aria-label="Select all"
-                        />
-                      </TableHead>
-                      <TableHead className="w-14">{c.colFit}</TableHead>
-                      <TableHead>{c.colCompany}</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        {c.colIndustry}
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        {c.colHeadcount}
-                      </TableHead>
-                      {showRegion && (
-                        <TableHead className="hidden lg:table-cell">
-                          {c.colRegion}
-                        </TableHead>
-                      )}
-                      <TableHead className="hidden sm:table-cell">
-                        {c.colRoles}
-                      </TableHead>
-                      {showSignals && (
-                        <TableHead className="hidden xl:table-cell">
-                          {c.colSignals}
-                        </TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {companies.map((co) => (
-                      <TableRow key={co.id}>
-                        <TableCell className="pl-4">
-                          <Checkbox
-                            checked={selected.has(co.id)}
-                            onCheckedChange={() => toggleRow(co.id)}
-                            aria-label={`Select ${co.name}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <FitBadge fit={co.fit} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <span
-                              className="flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
-                              style={{ backgroundColor: co.logoColor }}
-                            >
-                              {co.name.slice(0, 2)}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="truncate font-medium">{co.name}</p>
-                              <p className="text-muted-foreground truncate text-xs">
-                                {co.domain}
-                              </p>
-                              <MatchLine reasons={companyMatchReasons(co, query)} label={c.matchLabel} />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground hidden text-sm md:table-cell">
-                          {co.industry}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
-                          {co.headcount}
-                        </TableCell>
-                        {showRegion && (
-                          <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
-                            {co.region}
-                          </TableCell>
-                        )}
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant="secondary" className="tabular-nums">
-                            {co.openRoles}
-                          </Badge>
-                        </TableCell>
-                        {showSignals && (
-                          <TableCell className="hidden xl:table-cell">
-                            <div className="flex flex-wrap gap-1">
-                              {co.signals.slice(0, 2).map((s) => (
-                                <Badge key={s} variant="secondary" className="font-normal">
-                                  {s}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                    {companies.length === 0 && <EmptyRow span={8} text={c.noResults} />}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
-          </Card>
+          {/* Results table — shared DataTable + ColumnManager (like People). */}
+          {entity === "people" ? (
+            <DataTable
+              columns={leadColumns}
+              visible={leadColPrefs.visible}
+              rows={leads}
+              rowKey={(l) => l.id}
+              locale={locale}
+              selection={leadSelection}
+              empty={c.noResults}
+            />
+          ) : (
+            <DataTable
+              columns={companyColumns}
+              visible={companyColPrefs.visible}
+              rows={companies}
+              rowKey={(co) => co.id}
+              locale={locale}
+              selection={companySelection}
+              empty={c.noResults}
+            />
+          )}
 
           {/* Search-result actions — same set for plain search & lookalike. */}
           {selectedCount > 0 && (
@@ -1737,18 +1732,25 @@ export default function Search() {
         locale={locale}
       />
 
-      <ColumnsModal
-        open={columnsOpen}
-        onOpenChange={setColumnsOpen}
-        entity={entity}
-        showRegion={showRegion}
-        setShowRegion={setShowRegion}
-        showEmail={showEmail}
-        setShowEmail={setShowEmail}
-        showSignals={showSignals}
-        setShowSignals={setShowSignals}
-        c={c}
-      />
+      {entity === "people" ? (
+        <ColumnManager
+          open={columnsOpen}
+          onOpenChange={setColumnsOpen}
+          columns={leadColumns}
+          groups={LEAD_GROUPS}
+          prefs={leadColPrefs}
+          locale={locale}
+        />
+      ) : (
+        <ColumnManager
+          open={columnsOpen}
+          onOpenChange={setColumnsOpen}
+          columns={companyColumns}
+          groups={COMPANY_RESULT_GROUPS}
+          prefs={companyColPrefs}
+          locale={locale}
+        />
+      )}
 
       <BuildListDialog
         open={buildOpen}
@@ -2496,16 +2498,6 @@ function EmailStatus({
   )
 }
 
-function EmptyRow({ span, text }: { span: number; text: string }) {
-  return (
-    <TableRow className="hover:bg-transparent">
-      <TableCell colSpan={span} className="h-32 text-center">
-        <p className="text-muted-foreground text-sm">{text}</p>
-      </TableCell>
-    </TableRow>
-  )
-}
-
 // Facets that only apply when the LinkedIn data source is on — styled in the
 // LinkedIn blue so it's obvious where they come from.
 const LINKEDIN_KEYS = new Set<keyof AiQuery>([
@@ -2970,88 +2962,6 @@ function FilterModal({
             <X className="size-4" />
             {c.clearAll}
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
-            {c.done}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-// Column show/hide for the results table — same modal shell as the full
-// column selector, scoped to the handful of optional search columns.
-function ColumnsModal({
-  open,
-  onOpenChange,
-  entity,
-  showRegion,
-  setShowRegion,
-  showEmail,
-  setShowEmail,
-  showSignals,
-  setShowSignals,
-  c,
-}: {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-  entity: AiEntity
-  showRegion: boolean
-  setShowRegion: (v: boolean) => void
-  showEmail: boolean
-  setShowEmail: (v: boolean) => void
-  showSignals: boolean
-  setShowSignals: (v: boolean) => void
-  c: Copy
-}) {
-  const always =
-    entity === "people"
-      ? [c.colFit, c.colName, c.colCompany]
-      : [c.colFit, c.colCompany, c.colIndustry, c.colHeadcount, c.colRoles]
-  const toggles = [
-    { label: c.colRegion, checked: showRegion, set: setShowRegion, show: true },
-    { label: c.colEmail, checked: showEmail, set: setShowEmail, show: entity === "people" },
-    { label: c.colSignals, checked: showSignals, set: setShowSignals, show: true },
-  ].filter((t) => t.show)
-  const shown = always.length + toggles.filter((t) => t.checked).length
-  const total = always.length + toggles.length
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] gap-0 overflow-hidden p-0 sm:max-w-md">
-        <DialogHeader className="border-b p-4">
-          <DialogTitle>{c.columnsTitle}</DialogTitle>
-          <DialogDescription>{c.columnsDesc(shown, total)}</DialogDescription>
-        </DialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto p-3">
-          <p className="text-muted-foreground mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
-            {c.alwaysShown}
-          </p>
-          {always.map((label) => (
-            <div
-              key={label}
-              className="text-muted-foreground flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-            >
-              <span className="flex-1">{label}</span>
-              <span className="bg-muted rounded px-1.5 py-0.5 text-[10px] font-medium uppercase">
-                {c.alwaysTag}
-              </span>
-            </div>
-          ))}
-          <p className="text-muted-foreground mt-3 mb-1 px-1 text-[11px] font-medium tracking-wide uppercase">
-            {c.optionalCols}
-          </p>
-          {toggles.map((t) => (
-            <label
-              key={t.label}
-              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-            >
-              <Checkbox checked={t.checked} onCheckedChange={(v) => t.set(!!v)} />
-              <span className="flex-1">{t.label}</span>
-            </label>
-          ))}
-        </div>
-        <DialogFooter className="border-t p-3">
           <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)}>
             {c.done}
           </Button>
