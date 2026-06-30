@@ -223,8 +223,6 @@ const COPY = {
     findPeople: "Find prospects",
     findPeopleToast: "Switched to people at these companies",
     quickStart: "Start here",
-    qaFindLeads: "Find leads",
-    qaFindLeadsDesc: "Find people, companies, jobs and more.",
     qaImport: "Import data",
     qaImportDesc: "Import your existing list from CRM or CSV.",
     qaAudience: "Build a list",
@@ -460,8 +458,6 @@ const COPY = {
     findPeople: "Buscar prospectos",
     findPeopleToast: "Cambiado a personas en estas empresas",
     quickStart: "Empieza aquí",
-    qaFindLeads: "Buscar leads",
-    qaFindLeadsDesc: "Encuentra personas, empresas, empleos y más.",
     qaImport: "Importar datos",
     qaImportDesc: "Importa tu lista existente desde CRM o CSV.",
     qaAudience: "Crear una lista",
@@ -1253,13 +1249,6 @@ export default function Search() {
     toast.success(c.crmToast(ids.length))
   }
 
-  // Focus the prompt box by id — avoids a render-time ref the linter would flag.
-  const focusSearch = React.useCallback(() => {
-    setEntity("people")
-    setSeed(null)
-    document.getElementById("search-prompt")?.focus()
-  }, [])
-
   // Label, description and icon for each searchable database.
   const sourceMeta = (k: DataSource) => {
     if (k === "linkedin")
@@ -1283,14 +1272,6 @@ export default function Search() {
 
   // Clay-style launcher: a row of suggested starting points above the search.
   const quickActions = [
-    {
-      key: "find",
-      icon: SearchIcon,
-      tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      title: c.qaFindLeads,
-      desc: c.qaFindLeadsDesc,
-      onClick: focusSearch,
-    },
     {
       key: "import",
       icon: Upload,
