@@ -18,7 +18,6 @@ import {
   Columns3,
   ShieldCheck,
   TriangleAlert,
-  Upload,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -26,20 +25,6 @@ import { useLocale } from "@/lib/locale"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  ProspectAvatar,
-  ScoreBadge,
-} from "@/components/common/ProspectBits"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
@@ -55,13 +40,14 @@ import {
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
+import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
 import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
-import { useLists, useProspects, useAccounts, listStore } from "@/lib/store"
+import { useLists, listStore } from "@/lib/store"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
-import type { Account, Prospect, ProspectList } from "@/lib/types"
+import type { ProspectList } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -516,11 +502,12 @@ export default function ListDetail() {
         }}
       />
 
-      {isCompany ? (
-        <AddCompaniesDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
-      ) : (
-        <AddProspectsDialog open={addOpen} onOpenChange={setAddOpen} list={list} />
-      )}
+      <AddRecordsDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        kind={isCompany ? "company" : "contact"}
+        listId={list.id}
+      />
 
       <EnrichListDialog
         open={enrichOpen}
@@ -661,386 +648,5 @@ function DynamicPlaylistPanel({ list }: { list: ProspectList }) {
         )}
       </div>
     </Card>
-  )
-}
-
-function AddProspectsDialog({
-  open,
-  onOpenChange,
-  list,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  list: ProspectList
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  const navigate = useNavigate()
-  const prospects = useProspects()
-  const [view, setView] = React.useState<"menu" | "existing">("menu")
-  const [query, setQuery] = React.useState("")
-  const [selected, setSelected] = React.useState<Set<string>>(new Set())
-
-  // Reset whenever the dialog transitions to open (adjusting state during
-  // render — the React-recommended pattern).
-  const [wasOpen, setWasOpen] = React.useState(open)
-  if (open !== wasOpen) {
-    setWasOpen(open)
-    if (open) {
-      setView("menu")
-      setQuery("")
-      setSelected(new Set())
-    }
-  }
-
-  const memberIds = React.useMemo(
-    () => new Set(list.prospectIds),
-    [list.prospectIds]
-  )
-  const q = query.trim().toLowerCase()
-  const candidates = prospects.filter(
-    (p) =>
-      !memberIds.has(p.id) &&
-      (!q ||
-        `${p.firstName} ${p.lastName} ${p.title} ${p.company}`
-          .toLowerCase()
-          .includes(q))
-  )
-
-  function leave(to: string) {
-    onOpenChange(false)
-    navigate(to)
-  }
-  // Enterprise scale: pull from any source, not a fixed checkbox list.
-  const sources = [
-    { key: "ai", icon: Sparkles, label: c.addSrcAi, onClick: () => leave("/search") },
-    { key: "existing", icon: Search, label: c.addSrcExisting, onClick: () => setView("existing") },
-    { key: "import", icon: Upload, label: c.addSrcImport, onClick: () => leave("/lists?import=1") },
-    { key: "manual", icon: Plus, label: c.addSrcManual, onClick: () => leave("/people") },
-    { key: "crm", icon: Database, label: c.addSrcCrm, onClick: () => leave("/integrations") },
-  ]
-
-  function toggle(id: string) {
-    setSelected((current) => {
-      const next = new Set(current)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function handleAdd() {
-    const ids = Array.from(selected)
-    if (ids.length === 0) return
-    listStore.addProspects(list.id, ids)
-    toast.success(c.added(ids.length))
-    onOpenChange(false)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{c.addProspectsTitle}</DialogTitle>
-          <DialogDescription>
-            {c.addProspectsDescription(list.name)}
-          </DialogDescription>
-        </DialogHeader>
-
-        {view === "menu" ? (
-          <div className="space-y-1.5 py-1">
-            {sources.map((s) => {
-              const Icon = s.icon
-              return (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={s.onClick}
-                  className="hover:border-primary/40 hover:bg-muted/40 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors"
-                >
-                  <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
-                    <Icon className="text-primary size-4" />
-                  </span>
-                  <span className="text-sm font-medium">{s.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        ) : (
-          <>
-            <div className="relative">
-              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-              <Input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={c.addSearchExisting}
-                className="pl-9"
-              />
-            </div>
-            {candidates.length === 0 ? (
-              <p className="text-muted-foreground py-8 text-center text-sm">
-                {q ? c.addNoMatch : c.allAlready}
-              </p>
-            ) : (
-              <div className="-mx-1 max-h-72 space-y-1 overflow-y-auto px-1">
-                {candidates.slice(0, 100).map((p) => (
-                  <ProspectRow
-                    key={p.id}
-                    prospect={p}
-                    checked={selected.has(p.id)}
-                    onToggle={() => toggle(p.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        <DialogFooter>
-          {view === "existing" ? (
-            <>
-              <Button variant="ghost" onClick={() => setView("menu")}>
-                {c.addBack}
-              </Button>
-              <Button
-                variant="volt"
-                onClick={handleAdd}
-                disabled={selected.size === 0}
-              >
-                {c.addSelected}
-                {selected.size > 0 ? ` (${selected.size})` : ""}
-              </Button>
-            </>
-          ) : (
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              {c.cancel}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function ProspectRow({
-  prospect,
-  checked,
-  onToggle,
-}: {
-  prospect: Prospect
-  checked: boolean
-  onToggle: () => void
-}) {
-  const checkboxId = `add-prospect-${prospect.id}`
-  return (
-    <label
-      htmlFor={checkboxId}
-      className="hover:bg-muted/60 flex cursor-pointer items-center gap-3 rounded-md px-2 py-2"
-    >
-      <Checkbox
-        id={checkboxId}
-        checked={checked}
-        onCheckedChange={onToggle}
-      />
-      <ProspectAvatar prospect={prospect} className="size-8" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">
-          {prospect.firstName} {prospect.lastName}
-        </p>
-        <p className="text-muted-foreground truncate text-xs">
-          {prospect.title} · {prospect.company}
-        </p>
-      </div>
-      <ScoreBadge score={prospect.score} />
-    </label>
-  )
-}
-
-function AddCompaniesDialog({
-  open,
-  onOpenChange,
-  list,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  list: ProspectList
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  const navigate = useNavigate()
-  const accounts = useAccounts()
-  const [view, setView] = React.useState<"menu" | "existing">("menu")
-  const [query, setQuery] = React.useState("")
-  const [selected, setSelected] = React.useState<Set<string>>(new Set())
-
-  const [wasOpen, setWasOpen] = React.useState(open)
-  if (open !== wasOpen) {
-    setWasOpen(open)
-    if (open) {
-      setView("menu")
-      setQuery("")
-      setSelected(new Set())
-    }
-  }
-
-  const memberIds = React.useMemo(
-    () => new Set(list.accountIds ?? []),
-    [list.accountIds]
-  )
-  const q = query.trim().toLowerCase()
-  const candidates = accounts.filter(
-    (a) =>
-      !memberIds.has(a.id) &&
-      (!q || `${a.name} ${a.industry} ${a.domain}`.toLowerCase().includes(q))
-  )
-
-  function leave(to: string) {
-    onOpenChange(false)
-    navigate(to)
-  }
-  const sources = [
-    { key: "ai", icon: Sparkles, label: c.addCoSrcAi, onClick: () => leave("/search") },
-    { key: "existing", icon: Search, label: c.addCoSrcExisting, onClick: () => setView("existing") },
-    { key: "import", icon: Upload, label: c.addCoSrcImport, onClick: () => leave("/lists?import=1") },
-    { key: "manual", icon: Plus, label: c.addCoSrcManual, onClick: () => leave("/companies") },
-    { key: "crm", icon: Database, label: c.addCoSrcCrm, onClick: () => leave("/integrations") },
-  ]
-
-  function toggle(id: string) {
-    setSelected((current) => {
-      const next = new Set(current)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function handleAdd() {
-    const ids = Array.from(selected)
-    if (ids.length === 0) return
-    listStore.addAccounts(list.id, ids)
-    toast.success(c.addedCo(ids.length))
-    onOpenChange(false)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{c.addCompaniesTitle}</DialogTitle>
-          <DialogDescription>
-            {c.addCompaniesDescription(list.name)}
-          </DialogDescription>
-        </DialogHeader>
-
-        {view === "menu" ? (
-          <div className="space-y-1.5 py-1">
-            {sources.map((s) => {
-              const Icon = s.icon
-              return (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={s.onClick}
-                  className="hover:border-primary/40 hover:bg-muted/40 flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors"
-                >
-                  <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
-                    <Icon className="text-primary size-4" />
-                  </span>
-                  <span className="text-sm font-medium">{s.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        ) : (
-          <>
-            <div className="relative">
-              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-              <Input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={c.addCoSearchExisting}
-                className="pl-9"
-              />
-            </div>
-            {candidates.length === 0 ? (
-              <p className="text-muted-foreground py-8 text-center text-sm">
-                {q ? c.addCoNoMatch : c.allAlreadyCo}
-              </p>
-            ) : (
-              <div className="-mx-1 max-h-72 space-y-1 overflow-y-auto px-1">
-                {candidates.slice(0, 100).map((a) => (
-                  <AccountRow
-                    key={a.id}
-                    account={a}
-                    checked={selected.has(a.id)}
-                    onToggle={() => toggle(a.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        <DialogFooter>
-          {view === "existing" ? (
-            <>
-              <Button variant="ghost" onClick={() => setView("menu")}>
-                {c.addBack}
-              </Button>
-              <Button
-                variant="volt"
-                onClick={handleAdd}
-                disabled={selected.size === 0}
-              >
-                {c.addSelected}
-                {selected.size > 0 ? ` (${selected.size})` : ""}
-              </Button>
-            </>
-          ) : (
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              {c.cancel}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function AccountRow({
-  account,
-  checked,
-  onToggle,
-}: {
-  account: Account
-  checked: boolean
-  onToggle: () => void
-}) {
-  const checkboxId = `add-account-${account.id}`
-  return (
-    <label
-      htmlFor={checkboxId}
-      className="hover:bg-muted/60 flex cursor-pointer items-center gap-3 rounded-md px-2 py-2"
-    >
-      <Checkbox id={checkboxId} checked={checked} onCheckedChange={onToggle} />
-      <span
-        className="flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold text-white"
-        style={{ backgroundColor: account.logoColor }}
-      >
-        {account.name.charAt(0)}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{account.name}</p>
-        <p className="text-muted-foreground truncate text-xs">
-          {account.industry} · {account.location}
-        </p>
-      </div>
-      <Badge variant="secondary" className="font-normal">
-        {account.tier}
-      </Badge>
-    </label>
   )
 }
