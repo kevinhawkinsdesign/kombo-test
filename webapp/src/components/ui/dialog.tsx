@@ -52,9 +52,9 @@ function DialogContent({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
-  // True viewport-filling modal: pinned to all four edges, no max-width cap,
-  // centering transform, rounding, border, or padding. Lay out children with
-  // flex inside. Use for search/import/editor surfaces that need the full canvas.
+  // Large near-fullscreen modal: centered at 90% of the viewport so a sliver of
+  // the dimmed page stays visible behind it. No padding — lay out children with
+  // flex inside. Use for search/import/editor surfaces that need a big canvas.
   fullScreen?: boolean
 }) {
   return (
@@ -65,7 +65,7 @@ function DialogContent({
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-50 duration-200",
           fullScreen
-            ? "fixed inset-0 flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden"
+            ? "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] flex h-[90dvh] w-[90vw] max-w-none translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border shadow-lg"
             : "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg",
           className
         )}
