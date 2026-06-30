@@ -98,6 +98,8 @@ const COPY = {
     run: "Search",
     filters: "Filters",
     clearAll: "Clear all",
+    findValue: "Search values…",
+    noValueMatch: "No matching values",
     jobTitle: "Job title",
     addTitle: "Add a job title…",
     results: (n: number) => `${n.toLocaleString()} ${n === 1 ? "result" : "results"}`,
@@ -147,6 +149,8 @@ const COPY = {
     run: "Buscar",
     filters: "Filtros",
     clearAll: "Limpiar todo",
+    findValue: "Buscar valores…",
+    noValueMatch: "Sin valores coincidentes",
     jobTitle: "Cargo",
     addTitle: "Añadir un cargo…",
     results: (n: number) => `${n.toLocaleString()} ${n === 1 ? "resultado" : "resultados"}`,
@@ -406,6 +410,8 @@ export function AddRecordsDialog({
                       options={g.options}
                       selected={query[g.key] as string[]}
                       onToggle={(v) => toggleFilter(g.key, v)}
+                      searchPlaceholder={c.findValue}
+                      noMatchLabel={c.noValueMatch}
                     />
                   ))}
                   {facetDefs.map((f) => (
@@ -415,6 +421,8 @@ export function AddRecordsDialog({
                       options={f.options}
                       selected={query.facets[f.id] ?? []}
                       onToggle={(v) => toggleFacet(f.id, v)}
+                      searchPlaceholder={c.findValue}
+                      noMatchLabel={c.noValueMatch}
                     />
                   ))}
                 </div>
@@ -644,13 +652,22 @@ function FilterGroup({
   options,
   selected,
   onToggle,
+  searchPlaceholder,
+  noMatchLabel,
 }: {
   label: string
   options: string[]
   selected: string[]
   onToggle: (v: string) => void
+  searchPlaceholder: string
+  noMatchLabel: string
 }) {
   const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+  // Long option lists get a free-text search so a value can be found by typing.
+  const showSearch = options.length > 6
+  const q = search.trim().toLowerCase()
+  const shown = q ? options.filter((v) => v.toLowerCase().includes(q)) : options
   return (
     <div className="border-border/70 border-b last:border-b-0">
       <button
@@ -676,7 +693,19 @@ function FilterGroup({
       </button>
       {open && (
         <div className="pb-2">
-          {options.map((value) => (
+          {showSearch && (
+            <div className="relative px-2 pt-0.5 pb-1.5">
+              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={searchPlaceholder}
+                clearable={false}
+                className="h-7 pl-7 text-xs"
+              />
+            </div>
+          )}
+          {shown.map((value) => (
             <label
               key={value}
               className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
@@ -688,6 +717,11 @@ function FilterGroup({
               <span className="flex-1 truncate">{value}</span>
             </label>
           ))}
+          {shown.length === 0 && (
+            <p className="text-muted-foreground px-2 py-1.5 text-xs">
+              {noMatchLabel}
+            </p>
+          )}
         </div>
       )}
     </div>
