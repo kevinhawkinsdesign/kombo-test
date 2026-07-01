@@ -40,7 +40,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/common/RichTextEditor"
+import { plainToHtml } from "@/lib/rich-text"
 import {
   Tabs,
   TabsContent,
@@ -1191,15 +1192,16 @@ export default function CampaignDetail() {
                           />
                         )}
 
-                        <Textarea
-                          value={step.body}
+                        <RichTextEditor
+                          value={plainToHtml(step.body)}
                           placeholder={c.messageBody}
-                          onChange={(e) =>
+                          ariaLabel={c.messageBody}
+                          onChange={(html) =>
                             campaignStore.updateStep(campaign.id, step.id, {
-                              body: e.target.value,
+                              body: html,
                             })
                           }
-                          className="min-h-20"
+                          minHeight="min-h-20"
                         />
 
                         <Separator />
