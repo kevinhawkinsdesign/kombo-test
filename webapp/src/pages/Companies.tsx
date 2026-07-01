@@ -171,6 +171,7 @@ export default function Companies() {
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
@@ -417,6 +418,7 @@ export default function Companies() {
         onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
         onAddToList={() => setBulkList(true)}
         onLookalikes={findLookalikes}
+        onFindContacts={() => setFindContactsOpen(true)}
       />
 
       <BulkAddDialog
@@ -451,6 +453,12 @@ export default function Companies() {
       />
 
       <AddRecordsDialog open={addOpen} onOpenChange={setAddOpen} kind="company" />
+      <AddRecordsDialog
+        open={findContactsOpen}
+        onOpenChange={setFindContactsOpen}
+        kind="contact"
+        scopeCompanies={selectedAccounts.map((a) => a.name)}
+      />
     </Page>
   )
 }
