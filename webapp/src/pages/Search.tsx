@@ -122,7 +122,9 @@ import {
   listStore,
   prospectStore,
   accountStore,
+  useLists,
 } from "@/lib/store"
+import { getProspect } from "@/lib/mock-data"
 import { libraryQueries } from "@/lib/mock-library"
 import { facetsForDb, type FacetDef } from "@/lib/search-facets"
 import { downloadCsv } from "@/lib/csv"
@@ -314,6 +316,7 @@ const COPY = {
     buildBack: "Back",
     selectPage: "Select page",
     deselectPage: "Deselect page",
+    hideInList: "Hide already in a list",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     srcFindPeople: "Find people",
@@ -553,6 +556,7 @@ const COPY = {
     buildBack: "Atrás",
     selectPage: "Seleccionar página",
     deselectPage: "Deseleccionar página",
+    hideInList: "Ocultar ya en una lista",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Buscar personas",
@@ -815,14 +819,31 @@ export default function Search() {
   // The active database is derived: a seed means lookalike, else LinkedIn or Kombo.
   const source: DataSource = seed ? "lookalike" : linkedinOn ? "linkedin" : "kombo"
 
-  const leads = React.useMemo(
-    () =>
-      capPerCompany(
-        sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
-        query.perCompanyCap
-      ),
-    [seed, query, sortKey]
-  )
+  // "Hide prospects already in a list": key existing list members by identity so
+  // people you've already saved don't clutter the results.
+  const [hideInList, setHideInList] = React.useState(false)
+  const lists = useLists()
+  const inListKeys = React.useMemo(() => {
+    const set = new Set<string>()
+    for (const l of lists) {
+      for (const pid of l.prospectIds) {
+        const p = getProspect(pid)
+        if (p) set.add(`${p.firstName}|${p.lastName}|${p.company}`.toLowerCase())
+      }
+    }
+    return set
+  }, [lists])
+
+  const leads = React.useMemo(() => {
+    const base = capPerCompany(
+      sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
+      query.perCompanyCap
+    )
+    if (!hideInList || inListKeys.size === 0) return base
+    return base.filter(
+      (l) => !inListKeys.has(`${l.firstName}|${l.lastName}|${l.company}`.toLowerCase())
+    )
+  }, [seed, query, sortKey, hideInList, inListKeys])
   const companies = React.useMemo(
     () =>
       sortCompanies(seed ? lookalikeCompanies(seed, query) : searchCompanies(query), sortKey),
@@ -1687,6 +1708,26 @@ export default function Search() {
                 <Checkbox checked={allSelected} className="pointer-events-none" />
                 {allSelected ? c.deselectPage : c.selectPage}
               </Button>
+
+              {entity === "people" && (
+                <button
+                  type="button"
+                  onClick={() => setHideInList((v) => !v)}
+                  aria-pressed={hideInList}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+                    hideInList
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted/60"
+                  )}
+                >
+                  <Checkbox
+                    checked={hideInList}
+                    className="pointer-events-none size-3.5"
+                  />
+                  {c.hideInList}
+                </button>
+              )}
 
               <div className="ml-auto flex items-center gap-1">
                 <span className="text-muted-foreground px-1 text-xs tabular-nums">
