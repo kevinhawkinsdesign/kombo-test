@@ -34,6 +34,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  RichTextEditor,
+  type RichTextEditorHandle,
+} from "@/components/common/RichTextEditor"
 import { Badge } from "@/components/ui/badge"
 import {
   Select,
@@ -114,6 +118,27 @@ function renderWithSample(text: string): string {
       ? SAMPLE_DATA[tag]
       : whole
   )
+}
+
+// Bodies are stored as HTML (rich text). Plain-text snippet for list rows.
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+// Normalize a body into HTML for the rich-text editor. Existing plain-text
+// bodies (seed templates, AI drafts) get their newlines turned into <br> so
+// they render as written; anything already containing tags is left as-is.
+function textToHtml(s: string): string {
+  if (/<[a-z][\s\S]*>/i.test(s)) return s
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>")
 }
 
 const COPY = {
@@ -382,7 +407,7 @@ function TemplateTable({
         <TableBody>
           {rows.map((t) => {
             const preview =
-              t.channel === "email" ? t.subject : t.body.split("\n")[0]
+              t.channel === "email" ? t.subject : stripHtml(t.body)
             return (
               <TableRow
                 key={t.id}
@@ -448,9 +473,7 @@ function TemplateCard({
   const isTopPerformer = template.replyRate > 25
   const strongReplyRate = template.replyRate >= 20
   const preview =
-    template.channel === "email"
-      ? template.subject
-      : template.body.split("\n")[0]
+    template.channel === "email" ? template.subject : stripHtml(template.body)
 
   return (
     <div
@@ -546,8 +569,6 @@ export default function Templates() {
   const [body, setBody] = React.useState("")
   const [tags, setTags] = React.useState("")
   const [copiedTag, setCopiedTag] = React.useState<string | null>(null)
-  const [varQuery, setVarQuery] = React.useState<string | null>(null)
-  const [sidebarTab, setSidebarTab] = React.useState<"vars" | "preview">("vars")
 
   // AI generator (method 2: prompt → draft).
   const [aiOpen, setAiOpen] = React.useState(false)
@@ -556,7 +577,7 @@ export default function Templates() {
   const [aiSeed, setAiSeed] = React.useState(0)
   const [aiGenerated, setAiGenerated] = React.useState(false)
 
-  const bodyRef = React.useRef<HTMLTextAreaElement>(null)
+  const bodyRef = React.useRef<RichTextEditorHandle>(null)
   const subjectRef = React.useRef<HTMLInputElement>(null)
   const activeFieldRef = React.useRef<"body" | "subject">("body")
 
@@ -571,7 +592,8 @@ export default function Templates() {
     return [...set]
   }, [folders, templates])
 
-  // Insert a {{variable}} into whichever field was last focused.
+  // Insert a {{variable}} into whichever field was last focused. The subject is
+  // a plain input; the body is the rich-text editor (inserts at its caret).
   function insertVariable(tag: string) {
     const ins = `{{${tag}}}`
     if (activeFieldRef.current === "subject" && channel === "email") {
@@ -586,41 +608,7 @@ export default function Templates() {
       })
       return
     }
-    const el = bodyRef.current
-    const start = el?.selectionStart ?? body.length
-    const end = el?.selectionEnd ?? body.length
-    const next = body.slice(0, start) + ins + body.slice(end)
-    setBody(next)
-    requestAnimationFrame(() => {
-      el?.focus()
-      el?.setSelectionRange(start + ins.length, start + ins.length)
-    })
-  }
-
-  // Type-ahead: typing "{{" in the body opens a variable autocomplete.
-  function onBodyChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    const val = e.target.value
-    setBody(val)
-    const caret = e.target.selectionStart ?? val.length
-    const m = /\{\{(\w*)$/.exec(val.slice(0, caret))
-    setVarQuery(m ? m[1] : null)
-  }
-
-  function pickTypeahead(tag: string) {
-    const el = bodyRef.current
-    if (!el) return
-    const caret = el.selectionStart ?? body.length
-    const m = /\{\{(\w*)$/.exec(body.slice(0, caret))
-    if (!m) return
-    const startIdx = caret - m[0].length
-    const ins = `{{${tag}}}`
-    const next = body.slice(0, startIdx) + ins + body.slice(caret)
-    setBody(next)
-    setVarQuery(null)
-    requestAnimationFrame(() => {
-      el.focus()
-      el.setSelectionRange(startIdx + ins.length, startIdx + ins.length)
-    })
+    bodyRef.current?.insertText(ins)
   }
 
   function copyVariable(tag: string) {
@@ -630,11 +618,6 @@ export default function Templates() {
     window.setTimeout(() => setCopiedTag((cur) => (cur === tag ? null : cur)), 1200)
   }
 
-  const typeaheadMatches =
-    varQuery !== null
-      ? VARIABLES.filter((v) => v.tag.includes(varQuery.toLowerCase())).slice(0, 6)
-      : []
-
   function openEditor(template: EmailTemplate | null, presetFolder?: string) {
     setEditing(template)
     setName(template?.name ?? "")
@@ -642,9 +625,8 @@ export default function Templates() {
     setNewFolderName("")
     setChannel(template?.channel ?? "email")
     setSubject(template?.subject ?? "")
-    setBody(template?.body ?? "")
+    setBody(textToHtml(template?.body ?? ""))
     setTags(template?.tags.join(", ") ?? "")
-    setVarQuery(null)
     activeFieldRef.current = "body"
     setAiOpen(false)
     setAiPrompt("")
@@ -666,7 +648,7 @@ export default function Templates() {
     window.setTimeout(() => {
       const draft = generateTemplate(prompt, channel, seed)
       if (channel === "email") setSubject(draft.subject)
-      setBody(draft.body)
+      setBody(textToHtml(draft.body))
       setAiSeed(seed)
       setAiGenerated(true)
       setAiBusy(false)
@@ -1005,7 +987,7 @@ export default function Templates() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[1fr_280px]">
+          <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_230px] lg:grid-cols-[minmax(0,1fr)_230px_minmax(340px,0.85fr)]">
             {/* Form */}
             <div className="space-y-4 overflow-y-auto p-5">
               {/* Method 2 — generate with our GPT agent */}
@@ -1169,40 +1151,16 @@ export default function Templates() {
 
               <div className="space-y-2">
                 <Label htmlFor="template-body">{c.body}</Label>
-                <div className="relative">
-                  <Textarea
-                    id="template-body"
-                    ref={bodyRef}
-                    value={body}
-                    onFocus={() => (activeFieldRef.current = "body")}
-                    onChange={onBodyChange}
-                    onBlur={() => window.setTimeout(() => setVarQuery(null), 150)}
-                    placeholder={c.bodyPlaceholder}
-                    className="min-h-48"
-                  />
-                  {typeaheadMatches.length > 0 && (
-                    <div className="bg-popover absolute right-2 bottom-2 z-10 w-56 overflow-hidden rounded-md border shadow-md">
-                      {typeaheadMatches.map((v) => (
-                        <button
-                          key={v.tag}
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault()
-                            pickTypeahead(v.tag)
-                          }}
-                          className="hover:bg-muted flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-sm"
-                        >
-                          <Braces className="text-primary size-3.5 shrink-0" />
-                          <span className="font-mono text-xs">{`{{${v.tag}}}`}</span>
-                          <span className="text-muted-foreground ml-auto truncate text-[11px]">
-                            {locale === "es" ? v.es : v.en}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <p className="text-muted-foreground text-xs">{c.typeaheadHint}</p>
+                <RichTextEditor
+                  ref={bodyRef}
+                  value={body}
+                  onChange={setBody}
+                  onFocus={() => (activeFieldRef.current = "body")}
+                  placeholder={c.bodyPlaceholder}
+                  ariaLabel={c.body}
+                  minHeight="min-h-48"
+                />
+                <p className="text-muted-foreground text-xs">{c.variableHint}</p>
               </div>
 
               <div className="space-y-2">
@@ -1217,130 +1175,107 @@ export default function Templates() {
               </div>
             </div>
 
-            {/* Right rail: Variables | live Preview */}
+            {/* Variables column — always visible on tablet+ */}
             <div className="bg-muted/30 hidden flex-col overflow-hidden border-l md:flex">
-              <div className="flex gap-1 border-b p-2">
-                {(
-                  [
-                    { v: "vars" as const, label: c.tabVariables },
-                    { v: "preview" as const, label: c.tabPreview },
-                  ]
-                ).map((tb) => (
-                  <button
-                    key={tb.v}
-                    type="button"
-                    onClick={() => setSidebarTab(tb.v)}
-                    className={cn(
-                      "flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
-                      sidebarTab === tb.v
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
+              <div className="border-b p-4">
+                <p className="flex items-center gap-1.5 text-sm font-semibold">
+                  <Braces className="text-primary size-4" />
+                  {c.variablesTitle}
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {c.variablesSubtitle}
+                </p>
+              </div>
+              <div className="flex-1 space-y-1 overflow-y-auto p-2">
+                {VARIABLES.map((v) => (
+                  <div
+                    key={v.tag}
+                    draggable
+                    onDragStart={(e) =>
+                      e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
+                    }
+                    className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
                   >
-                    {tb.label}
-                  </button>
+                    <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
+                    <button
+                      type="button"
+                      onClick={() => insertVariable(v.tag)}
+                      className="min-w-0 flex-1 text-left"
+                      title={locale === "es" ? v.defEs : v.defEn}
+                    >
+                      <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
+                      <span className="text-muted-foreground block truncate text-[11px]">
+                        {locale === "es" ? v.defEs : v.defEn}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyVariable(v.tag)}
+                      aria-label={c.copy}
+                      className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      {copiedTag === v.tag ? (
+                        <Check className="text-chart-1 size-3.5" />
+                      ) : (
+                        <Copy className="size-3.5" />
+                      )}
+                    </button>
+                  </div>
                 ))}
               </div>
+            </div>
 
-              {sidebarTab === "vars" ? (
-                <>
-                  <div className="border-b p-4">
-                    <p className="flex items-center gap-1.5 text-sm font-semibold">
-                      <Braces className="text-primary size-4" />
-                      {c.variablesTitle}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {c.variablesSubtitle}
-                    </p>
+            {/* Preview column — larger, always visible on desktop */}
+            <div className="bg-muted/30 hidden flex-col overflow-hidden border-l lg:flex">
+              <div className="border-b p-4">
+                <p className="text-sm font-semibold">{c.tabPreview}</p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {c.previewSampleNote}
+                </p>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {subject.trim() === "" && stripHtml(body) === "" ? (
+                  <div className="text-muted-foreground flex h-full items-center justify-center text-center text-sm">
+                    {c.previewEmptyState}
                   </div>
-                  <div className="flex-1 space-y-1 overflow-y-auto p-2">
-                    {VARIABLES.map((v) => (
-                      <div
-                        key={v.tag}
-                        draggable
-                        onDragStart={(e) =>
-                          e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
-                        }
-                        className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
-                      >
-                        <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
-                        <button
-                          type="button"
-                          onClick={() => insertVariable(v.tag)}
-                          className="min-w-0 flex-1 text-left"
-                          title={locale === "es" ? v.defEs : v.defEn}
-                        >
-                          <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
-                          <span className="text-muted-foreground block truncate text-[11px]">
-                            {locale === "es" ? v.defEs : v.defEn}
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => copyVariable(v.tag)}
-                          aria-label={c.copy}
-                          className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          {copiedTag === v.tag ? (
-                            <Check className="text-chart-1 size-3.5" />
-                          ) : (
-                            <Copy className="size-3.5" />
-                          )}
-                        </button>
+                ) : channel === "email" ? (
+                  <div className="bg-background overflow-hidden rounded-lg border shadow-sm">
+                    <div className="space-y-1 border-b p-3 text-xs">
+                      <div className="flex gap-2">
+                        <span className="text-muted-foreground w-12 shrink-0">
+                          {c.previewToLabel}
+                        </span>
+                        <span className="font-medium">
+                          {SAMPLE_DATA.first_name} {SAMPLE_DATA.last_name}
+                        </span>
                       </div>
-                    ))}
+                      <div className="flex gap-2">
+                        <span className="text-muted-foreground w-12 shrink-0">
+                          {c.previewSubjectLabel}
+                        </span>
+                        <span className="font-medium">
+                          {renderWithSample(subject) || "—"}
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className="text-foreground/90 p-4 text-sm whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                      dangerouslySetInnerHTML={{ __html: renderWithSample(body) }}
+                    />
                   </div>
-                </>
-              ) : (
-                <div className="flex-1 overflow-y-auto p-4">
-                  {subject.trim() === "" && body.trim() === "" ? (
-                    <div className="text-muted-foreground flex h-full items-center justify-center text-center text-xs">
-                      {c.previewEmptyState}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {channel === "email" ? (
-                        <div className="bg-background overflow-hidden rounded-lg border shadow-sm">
-                          <div className="space-y-1 border-b p-3 text-xs">
-                            <div className="flex gap-2">
-                              <span className="text-muted-foreground w-12 shrink-0">
-                                {c.previewToLabel}
-                              </span>
-                              <span className="font-medium">
-                                {SAMPLE_DATA.first_name} {SAMPLE_DATA.last_name}
-                              </span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="text-muted-foreground w-12 shrink-0">
-                                {c.previewSubjectLabel}
-                              </span>
-                              <span className="font-medium">
-                                {renderWithSample(subject) || "—"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-foreground/90 p-3 text-sm whitespace-pre-wrap">
-                            {renderWithSample(body)}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-start gap-2">
-                          <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
-                            {SAMPLE_DATA.first_name[0]}
-                            {SAMPLE_DATA.last_name[0]}
-                          </span>
-                          <div className="bg-background max-w-full rounded-2xl rounded-tl-sm border p-3 text-sm whitespace-pre-wrap shadow-sm">
-                            {renderWithSample(body)}
-                          </div>
-                        </div>
-                      )}
-                      <p className="text-muted-foreground text-[11px]">
-                        {c.previewSampleNote}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-start gap-2">
+                    <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                      {SAMPLE_DATA.first_name[0]}
+                      {SAMPLE_DATA.last_name[0]}
+                    </span>
+                    <div
+                      className="bg-background max-w-full rounded-2xl rounded-tl-sm border p-3 text-sm whitespace-pre-wrap shadow-sm [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                      dangerouslySetInnerHTML={{ __html: renderWithSample(body) }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
