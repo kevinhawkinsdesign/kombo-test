@@ -12,6 +12,9 @@ import {
   SlidersHorizontal,
   ChevronDown,
   Database,
+  MapPin,
+  Star,
+  CheckCircle2,
   X,
 } from "lucide-react"
 
@@ -24,6 +27,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -139,6 +144,14 @@ const COPY = {
     syncing: "Syncing — this can take a moment",
     inboundLabel: "Inbound — from your CRM",
     outboundLabel: "Outbound — external sources",
+    dbLabel: "Search in",
+    dbKombo: "Kombo",
+    dbSalesNav: "Sales Nav",
+    dbMore: "More sources",
+    dbSoon: "Soon",
+    dbGmaps: "Google Maps",
+    dbTripadvisor: "TripAdvisor",
+    dbCompanyDbs: "Company databases",
   },
   es: {
     addPeople: "Añadir prospectos",
@@ -193,6 +206,14 @@ const COPY = {
     syncing: "Sincronizando — puede tardar un momento",
     inboundLabel: "Inbound — desde tu CRM",
     outboundLabel: "Outbound — fuentes externas",
+    dbLabel: "Buscar en",
+    dbKombo: "Kombo",
+    dbSalesNav: "Sales Nav",
+    dbMore: "Más fuentes",
+    dbSoon: "Pronto",
+    dbGmaps: "Google Maps",
+    dbTripadvisor: "TripAdvisor",
+    dbCompanyDbs: "Bases de datos de empresas",
   },
 } as const
 
@@ -337,6 +358,14 @@ export function AddRecordsDialog({
 
   const groups = FILTER_GROUPS.filter((g) => !g.scope || g.scope === entity)
   const facetDefs = facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)
+
+  // Databases on the roadmap — shown as disabled "Soon" entries so the selector
+  // reads as an extensible list, not a fixed Kombo/Sales Nav toggle.
+  const comingSoonDbs = [
+    { key: "gmaps", label: c.dbGmaps, icon: <MapPin className="size-4 text-emerald-600" /> },
+    { key: "tripadvisor", label: c.dbTripadvisor, icon: <Star className="size-4 text-amber-500" /> },
+    { key: "company-dbs", label: c.dbCompanyDbs, icon: <Building2 className="text-primary size-4" /> },
+  ]
   const activeFilterCount =
     groups.reduce((n, g) => n + (query[g.key] as string[]).length, 0) +
     facetDefs.reduce((n, f) => n + (query.facets[f.id]?.length ?? 0), 0)
@@ -415,16 +444,61 @@ export function AddRecordsDialog({
                     </button>
                   )}
                 </div>
-                {/* Database — switches the per-database facet catalog. */}
+                {/* Database — switches the per-database facet catalog. Scales to
+                    N sources; extras beyond Kombo/Sales Nav are on the roadmap. */}
                 <div className="border-b p-2">
-                  <Segmented
-                    options={[
-                      { v: "kombo", label: "Kombo", icon: Database },
-                      { v: "linkedin", label: "Sales Nav", icon: LinkedinIcon },
-                    ]}
-                    value={linkedinOn ? "linkedin" : "kombo"}
-                    onChange={(v) => setLinkedinOn(v === "linkedin")}
-                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-between"
+                        title={c.dbLabel}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          {linkedinOn ? (
+                            <LinkedinIcon className="size-4 text-[#0a66c2]" />
+                          ) : (
+                            <Database className="text-primary size-4" />
+                          )}
+                          {linkedinOn ? c.dbSalesNav : c.dbKombo}
+                        </span>
+                        <ChevronDown className="text-muted-foreground size-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel className="text-muted-foreground text-xs">
+                        {c.dbLabel}
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem className="gap-2" onClick={() => setLinkedinOn(false)}>
+                        <Database className="text-primary size-4" />
+                        <span className="flex-1">{c.dbKombo}</span>
+                        {!linkedinOn && <CheckCircle2 className="text-primary size-4" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-2" onClick={() => setLinkedinOn(true)}>
+                        <LinkedinIcon className="size-4 text-[#0a66c2]" />
+                        <span className="flex-1">{c.dbSalesNav}</span>
+                        {linkedinOn && <CheckCircle2 className="text-primary size-4" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-muted-foreground text-xs">
+                        {c.dbMore}
+                      </DropdownMenuLabel>
+                      {comingSoonDbs.map((s) => (
+                        <DropdownMenuItem
+                          key={s.key}
+                          disabled
+                          className="gap-2 opacity-100"
+                        >
+                          <span className="opacity-60">{s.icon}</span>
+                          <span className="flex-1 opacity-60">{s.label}</span>
+                          <Badge variant="secondary" className="shrink-0 text-[10px]">
+                            {c.dbSoon}
+                          </Badge>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <div className="p-1">
                   <TitleFilter
