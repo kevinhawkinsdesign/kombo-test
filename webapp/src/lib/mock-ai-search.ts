@@ -900,17 +900,33 @@ export function sortCompanies(companies: AiCompany[], key: SortKey): AiCompany[]
 
 export const CREDITS_PER_LEAD = 1.7
 
+// Suggested searches on the home screen — separate people vs company sets so the
+// list adapts to the selected search type.
 export const EXAMPLE_PROMPTS_EN = [
   "VPs of Sales at European SaaS companies that recently raised funding",
   "Heads of Growth in fintech across EMEA hiring sales reps",
   "RevOps leaders at 500+ employee companies adopting AI",
-  "E-commerce companies in LATAM expanding into new markets",
+  "CTOs at Series B startups in the US expanding their teams",
 ]
 
 export const EXAMPLE_PROMPTS_ES = [
   "VPs de Ventas en empresas SaaS europeas que han levantado financiación",
   "Heads of Growth en fintech de EMEA que están contratando comerciales",
   "Líderes de RevOps en empresas de más de 500 empleados que adoptan IA",
+  "CTOs en startups Series B de EE. UU. que amplían sus equipos",
+]
+
+export const EXAMPLE_PROMPTS_COMPANIES_EN = [
+  "European SaaS companies that recently raised a Series B",
+  "Fintech companies across EMEA hiring sales reps",
+  "500+ employee companies adopting AI",
+  "E-commerce companies in LATAM expanding into new markets",
+]
+
+export const EXAMPLE_PROMPTS_COMPANIES_ES = [
+  "Empresas SaaS europeas que han levantado una Serie B",
+  "Empresas fintech de EMEA que están contratando comerciales",
+  "Empresas de más de 500 empleados que adoptan IA",
   "Empresas de e-commerce en LATAM que se expanden a nuevos mercados",
 ]
 
