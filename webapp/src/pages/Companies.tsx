@@ -41,6 +41,7 @@ import {
 } from "@/lib/table-columns"
 import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
 import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
+import { EmptyState } from "@/components/common/EmptyState"
 import { useAccounts, accountStore, useLists } from "@/lib/store"
 import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
@@ -388,9 +389,7 @@ export default function Companies() {
       )}
 
       {results.length === 0 ? (
-        <div className="text-muted-foreground rounded-xl border border-dashed py-16 text-center text-sm">
-          {c.noMatch}
-        </div>
+        <EmptyState description={c.noMatch} />
       ) : (
         <DataTable
           columns={allColumns}
