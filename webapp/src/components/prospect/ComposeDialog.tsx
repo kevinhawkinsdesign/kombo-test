@@ -15,8 +15,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import type { Channel, Prospect } from "@/lib/types"
 
 function draftFor(prospect: Prospect, channel: Channel): string {
@@ -45,7 +46,7 @@ export function ComposeDialog({
   function generate() {
     setGenerating(true)
     setTimeout(() => {
-      setBody(draftFor(prospect, channel))
+      setBody(plainToHtml(draftFor(prospect, channel)))
       setGenerating(false)
     }, 700)
   }
@@ -105,12 +106,12 @@ export function ComposeDialog({
                 Generate with AI
               </Button>
             </div>
-            <Textarea
-              id="body"
+            <RichTextEditor
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={setBody}
               placeholder="Write your message or generate a draft with AI…"
-              className="min-h-40"
+              ariaLabel="Message"
+              minHeight="min-h-40"
             />
           </div>
         </div>
@@ -120,7 +121,7 @@ export function ComposeDialog({
             Cancel
           </Button>
           <Button
-            disabled={!body.trim()}
+            disabled={!stripHtml(body)}
             onClick={() => {
               onOpenChange(false)
               toast.success(`Message sent to ${prospect.firstName}`)
