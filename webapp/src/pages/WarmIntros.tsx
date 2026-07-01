@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
+import { EmptyState } from "@/components/common/EmptyState"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import {
   introPaths,
@@ -157,9 +158,7 @@ export function WarmIntrosPanel() {
       </div>
 
       {prospects.length === 0 ? (
-        <div className="text-muted-foreground rounded-xl border border-dashed py-16 text-center text-sm">
-          {c.emptyState}
-        </div>
+        <EmptyState description={c.emptyState} />
       ) : (
         <div className="space-y-4">
           {prospects.map((p) => (

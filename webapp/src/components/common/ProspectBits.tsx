@@ -39,9 +39,11 @@ const TONE_CLASSES: Record<ReturnType<typeof scoreTone>, string> = {
 export function ScoreBadge({
   score,
   className,
+  title = "AI lead score",
 }: {
   score: number
   className?: string
+  title?: string
 }) {
   const tone = scoreTone(score)
   return (
@@ -51,7 +53,7 @@ export function ScoreBadge({
         TONE_CLASSES[tone],
         className
       )}
-      title="AI lead score"
+      title={title}
     >
       <span className="bg-current size-1.5 rounded-full opacity-80" />
       {score}

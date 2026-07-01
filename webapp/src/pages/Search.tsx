@@ -70,7 +70,8 @@ import {
   type ColGroup,
 } from "@/lib/table-columns"
 import { cn } from "@/lib/utils"
-import { initials, scoreTone } from "@/lib/format"
+import { initials } from "@/lib/format"
+import { ScoreBadge } from "@/components/common/ProspectBits"
 import { portraitFor } from "@/lib/avatars"
 import {
   interpretPrompt,
@@ -705,28 +706,6 @@ const COMPANY_RESULT_DEFAULT_IDS = [
   "signals",
 ]
 
-function FitBadge({ fit }: { fit: number }) {
-  const tone = scoreTone(fit)
-  const cls =
-    tone === "high"
-      ? "bg-chart-1/15 text-chart-1"
-      : tone === "mid"
-        ? "bg-chart-4/15 text-chart-4"
-        : "bg-muted text-muted-foreground"
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-        cls
-      )}
-      title="AI fit score"
-    >
-      <span className="bg-current size-1.5 rounded-full opacity-80" />
-      {fit}
-    </span>
-  )
-}
-
 function mutedCell(value: React.ReactNode) {
   return <span className="text-muted-foreground text-sm">{value}</span>
 }
@@ -1128,7 +1107,7 @@ export default function Search() {
           </div>
         ),
       },
-      { id: "fit", group: "identity", label: { en: "Fit", es: "Encaje" }, render: (l) => <FitBadge fit={l.fit} /> },
+      { id: "fit", group: "identity", label: { en: "Fit", es: "Encaje" }, render: (l) => <ScoreBadge score={l.fit} title="AI fit score" /> },
       {
         id: "company",
         group: "company",
@@ -1194,7 +1173,7 @@ export default function Search() {
           </div>
         ),
       },
-      { id: "fit", group: "company", label: { en: "Fit", es: "Encaje" }, render: (co) => <FitBadge fit={co.fit} /> },
+      { id: "fit", group: "company", label: { en: "Fit", es: "Encaje" }, render: (co) => <ScoreBadge score={co.fit} title="AI fit score" /> },
       { id: "industry", group: "firmographics", label: { en: "Industry", es: "Sector" }, render: (co) => mutedCell(co.industry) },
       { id: "headcount", group: "firmographics", label: { en: "Size", es: "Tamaño" }, render: (co) => mutedCell(co.headcount) },
       { id: "region", group: "firmographics", label: { en: "Region", es: "Región" }, render: (co) => mutedCell(co.region) },
