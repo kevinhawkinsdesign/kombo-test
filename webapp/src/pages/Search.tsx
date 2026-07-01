@@ -847,11 +847,13 @@ export default function Search() {
       : pagedCompanies.map((co) => co.id)
   const perCompanyCap = query.perCompanyCap
 
-  // Set the per-company cap (people only). Capping changes which rows show, so
-  // drop the selection to avoid keeping now-hidden rows selected.
+  // Set the per-company cap (people only) from the action bar. Capping trims the
+  // result set, so keep only the still-visible rows selected (rather than
+  // clearing) so the action bar — where this control lives — stays open.
   function setMaxPerCompany(cap: number | null) {
     setQuery((q) => ({ ...q, perCompanyCap: cap }))
-    setSelected(new Set())
+    const visible = new Set(capPerCompany(leads, cap).map((l) => l.id))
+    setSelected((prev) => new Set([...prev].filter((id) => visible.has(id))))
   }
 
   // A prompt is treated as a search query — interpret it into structured
@@ -1676,33 +1678,6 @@ export default function Search() {
                 {allSelected ? c.deselectPage : c.selectPage}
               </Button>
 
-              {entity === "people" && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-muted-foreground text-xs font-medium">
-                    {c.capLabel}
-                  </span>
-                  {PER_COMPANY_CAPS.map((n) => {
-                    const active = perCompanyCap === n
-                    return (
-                      <button
-                        key={n ?? "none"}
-                        type="button"
-                        onClick={() => setMaxPerCompany(n)}
-                        aria-pressed={active}
-                        className={cn(
-                          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                          active
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-muted/60"
-                        )}
-                      >
-                        {n === null ? c.capNoLimit : n}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-
               <div className="ml-auto flex items-center gap-1">
                 <span className="text-muted-foreground px-1 text-xs tabular-nums">
                   {c.pageRange(pageStart + 1, pageEnd, shownCount)}
@@ -1760,6 +1735,35 @@ export default function Search() {
               <span className="px-2 text-sm font-medium tabular-nums">
                 {c.selected(selectedCount)}
               </span>
+              {/* Max per company — an action modifier (caps the selection),
+                  not a search filter, so it lives with the actions. */}
+              {entity === "people" && (
+                <>
+                  <span className="bg-border mx-1 h-5 w-px" />
+                  <span className="text-muted-foreground pl-1 text-xs font-medium">
+                    {c.capLabel}
+                  </span>
+                  {PER_COMPANY_CAPS.map((n) => {
+                    const active = perCompanyCap === n
+                    return (
+                      <button
+                        key={n ?? "none"}
+                        type="button"
+                        onClick={() => setMaxPerCompany(n)}
+                        aria-pressed={active}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          active
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        {n === null ? c.capNoLimit : n}
+                      </button>
+                    )
+                  })}
+                </>
+              )}
               <span className="bg-border mx-1 h-5 w-px" />
               <Button variant="outline" size="sm" onClick={bulkAddToList}>
                 <ListPlus className="size-4" />
