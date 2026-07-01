@@ -84,6 +84,8 @@ import {
   CREDITS_PER_LEAD,
   EXAMPLE_PROMPTS_EN,
   EXAMPLE_PROMPTS_ES,
+  EXAMPLE_PROMPTS_COMPANIES_EN,
+  EXAMPLE_PROMPTS_COMPANIES_ES,
   SENIORITY_OPTIONS,
   REGION_OPTIONS,
   HEADCOUNT_OPTIONS,
@@ -755,7 +757,6 @@ export default function Search() {
     ? (savedSearches.find((s) => s.id === incomingSearchId) ?? null)
     : null
   const newCampaign = useNewCampaign()
-  const examples = locale === "es" ? EXAMPLE_PROMPTS_ES : EXAMPLE_PROMPTS_EN
 
   // Seed with a starter query so the page lands populated for demos — unless we
   // arrived from the header search with a prompt to run, or a lookalike seed.
@@ -769,6 +770,15 @@ export default function Search() {
           : "people"
         : initial.entity
   )
+  // Suggested searches adapt to the selected search type (people vs companies).
+  const examples =
+    entity === "companies"
+      ? locale === "es"
+        ? EXAMPLE_PROMPTS_COMPANIES_ES
+        : EXAMPLE_PROMPTS_COMPANIES_EN
+      : locale === "es"
+        ? EXAMPLE_PROMPTS_ES
+        : EXAMPLE_PROMPTS_EN
   const [query, setQuery] = React.useState<AiQuery>(
     loadedSearch
       ? loadedSearch.query
