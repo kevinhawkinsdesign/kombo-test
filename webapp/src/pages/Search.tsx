@@ -24,6 +24,8 @@ import {
   Megaphone,
   LayoutTemplate,
   Database,
+  MapPin,
+  Star,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -187,6 +189,14 @@ const COPY = {
     dbLookalikeDesc: "Find records similar to a person or company.",
     dbLinkedinDesc: "Search with LinkedIn network filters.",
     dbSwitched: (name: string) => `Now searching ${name}`,
+    dbMoreLabel: "More sources",
+    dbSoon: "Soon",
+    dbGmaps: "Google Maps",
+    dbGmapsDesc: "Local businesses with address, phone & reviews.",
+    dbTripadvisor: "TripAdvisor",
+    dbTripadvisorDesc: "Hospitality & travel venues with ratings.",
+    dbCompanyDbs: "Company databases",
+    dbCompanyDbsDesc: "Crunchbase, Apollo & other firmographic sources.",
     linkedinSource: "Sales Nav",
     linkedinHint: "Turn on to target LinkedIn-only network filters (job changes, posts, connection degree…).",
     linkedinEnabled: "LinkedIn filters enabled",
@@ -427,6 +437,14 @@ const COPY = {
     dbLookalikeDesc: "Encuentra registros similares a una persona o empresa.",
     dbLinkedinDesc: "Busca con filtros de la red de LinkedIn.",
     dbSwitched: (name: string) => `Buscando en ${name}`,
+    dbMoreLabel: "Más fuentes",
+    dbSoon: "Pronto",
+    dbGmaps: "Google Maps",
+    dbGmapsDesc: "Negocios locales con dirección, teléfono y reseñas.",
+    dbTripadvisor: "TripAdvisor",
+    dbTripadvisorDesc: "Locales de hostelería y viajes con valoraciones.",
+    dbCompanyDbs: "Bases de datos de empresas",
+    dbCompanyDbsDesc: "Crunchbase, Apollo y otras fuentes firmográficas.",
     linkedinSource: "Sales Nav",
     linkedinHint: "Actívalo para usar filtros exclusivos de LinkedIn (cambios de empleo, publicaciones, grado de conexión…).",
     linkedinEnabled: "Filtros de LinkedIn activados",
@@ -1353,6 +1371,14 @@ export default function Search() {
     }
   }
 
+  // Databases on the roadmap — shown as disabled "Soon" entries so the source
+  // selector reads as an extensible list, not a fixed Kombo/Sales Nav toggle.
+  const comingSoonSources = [
+    { key: "gmaps", label: c.dbGmaps, desc: c.dbGmapsDesc, icon: <MapPin className="size-4 text-emerald-600" /> },
+    { key: "tripadvisor", label: c.dbTripadvisor, desc: c.dbTripadvisorDesc, icon: <Star className="size-4 text-amber-500" /> },
+    { key: "company-dbs", label: c.dbCompanyDbs, desc: c.dbCompanyDbsDesc, icon: <Building2 className="text-primary size-4" /> },
+  ]
+
   // Clay-style launcher: a row of suggested starting points above the search.
   const quickActions = [
     {
@@ -1601,6 +1627,28 @@ export default function Search() {
                       </DropdownMenuItem>
                     )
                   })}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-muted-foreground text-xs">
+                    {c.dbMoreLabel}
+                  </DropdownMenuLabel>
+                  {comingSoonSources.map((s) => (
+                    <DropdownMenuItem
+                      key={s.key}
+                      disabled
+                      className="gap-2.5 py-2 opacity-100"
+                    >
+                      <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md opacity-60">
+                        {s.icon}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col opacity-60">
+                        <span className="text-sm font-medium">{s.label}</span>
+                        <span className="text-muted-foreground text-xs">{s.desc}</span>
+                      </span>
+                      <Badge variant="secondary" className="shrink-0 text-[10px]">
+                        {c.dbSoon}
+                      </Badge>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
               <DropdownMenu>
