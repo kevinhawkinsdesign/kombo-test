@@ -1,4 +1,12 @@
-import { Download, Sparkles, FolderPlus, Send, ScanSearch, X } from "lucide-react"
+import {
+  Download,
+  Sparkles,
+  FolderPlus,
+  Send,
+  ScanSearch,
+  UserSearch,
+  X,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useLocale } from "@/lib/locale"
@@ -11,6 +19,7 @@ const COPY = {
     addToList: "Add to list",
     addToCampaign: "Add to campaign",
     lookalikes: "Find lookalikes",
+    findContacts: "Find contacts",
     clear: "Clear",
   },
   es: {
@@ -20,6 +29,7 @@ const COPY = {
     addToList: "Añadir a lista",
     addToCampaign: "Añadir a campaña",
     lookalikes: "Buscar similares",
+    findContacts: "Buscar contactos",
     clear: "Limpiar",
   },
 } as const
@@ -36,6 +46,7 @@ export function BulkActionsBar({
   onAddToList,
   onAddToCampaign,
   onLookalikes,
+  onFindContacts,
 }: {
   count: number
   onClear: () => void
@@ -44,6 +55,8 @@ export function BulkActionsBar({
   onAddToList: () => void
   onAddToCampaign?: () => void
   onLookalikes: () => void
+  // Companies only: find people at the selected accounts.
+  onFindContacts?: () => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -71,6 +84,12 @@ export function BulkActionsBar({
         <Button variant="outline" size="sm" onClick={onAddToCampaign}>
           <Send className="size-4" />
           {c.addToCampaign}
+        </Button>
+      )}
+      {onFindContacts && (
+        <Button variant="outline" size="sm" onClick={onFindContacts}>
+          <UserSearch className="size-4" />
+          {c.findContacts}
         </Button>
       )}
       <Button variant="outline" size="sm" onClick={onLookalikes}>

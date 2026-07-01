@@ -89,6 +89,7 @@ const COPY = {
   en: {
     addPeople: "Add prospects",
     addCompanies: "Add companies",
+    scopeBanner: (names: string) => `Finding people at ${names}`,
     contact: "People",
     company: "Companies",
     search: "Search",
@@ -140,6 +141,7 @@ const COPY = {
   es: {
     addPeople: "Añadir prospectos",
     addCompanies: "Añadir empresas",
+    scopeBanner: (names: string) => `Buscando personas en ${names}`,
     contact: "Personas",
     company: "Empresas",
     search: "Buscar",
@@ -207,6 +209,7 @@ export function AddRecordsDialog({
   onOpenChange,
   kind,
   listId,
+  scopeCompanies,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -214,6 +217,9 @@ export function AddRecordsDialog({
   // When set, materialized records are also added to this list (used from a
   // list detail page so the full-screen search/import flow is reused there).
   listId?: string
+  // When set, the people search is scoped to these company names (account-based
+  // flow: pick companies → find their contacts).
+  scopeCompanies?: string[]
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -228,9 +234,12 @@ export function AddRecordsDialog({
   const [linkedinOn, setLinkedinOn] = React.useState(false)
   const [wasOpen, setWasOpen] = React.useState(false)
 
+  const scoped = (scopeCompanies?.length ?? 0) > 0
+
   if (open && !wasOpen) {
     setWasOpen(true)
-    setEntity(entityFromKind(kind))
+    // Scoping to companies means we're finding their people.
+    setEntity(scoped ? "people" : entityFromKind(kind))
     setMode("search")
     setInput("")
     setQuery({ ...EMPTY_QUERY })
@@ -240,10 +249,18 @@ export function AddRecordsDialog({
   }
   if (!open && wasOpen) setWasOpen(false)
 
-  const leads = React.useMemo(
-    () => sortLeads(searchLeads(query), sortKey),
-    [query, sortKey]
+  const scopeSet = React.useMemo(
+    () => new Set((scopeCompanies ?? []).map((s) => s.toLowerCase())),
+    [scopeCompanies]
   )
+  const leads = React.useMemo(() => {
+    const base = sortLeads(searchLeads(query), sortKey)
+    if (!scopeSet.size) return base
+    const filtered = base.filter((l) => scopeSet.has(l.company.toLowerCase()))
+    // Mock fallback: the demo lead catalog may not overlap the selected
+    // accounts, so still surface people rather than an empty table.
+    return filtered.length ? filtered : base
+  }, [query, sortKey, scopeSet])
   const companies = React.useMemo(
     () => sortCompanies(searchCompanies(query), sortKey),
     [query, sortKey]
@@ -359,6 +376,15 @@ export function AddRecordsDialog({
             onChange={setMode}
           />
         </header>
+
+        {scoped && (
+          <div className="text-muted-foreground bg-primary/[0.04] flex items-center gap-2 border-b px-6 py-2 text-sm">
+            <Building2 className="text-primary size-4 shrink-0" />
+            <span className="truncate">
+              {c.scopeBanner((scopeCompanies ?? []).join(", "))}
+            </span>
+          </div>
+        )}
 
         {mode === "search" ? (
           <>
