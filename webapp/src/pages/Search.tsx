@@ -2186,6 +2186,7 @@ function FilterSidebar({
                   <div className="pb-2">
                     <FilterGroupInput
                       placeholder={c.addToGroup(group.label(c))}
+                      options={group.options}
                       onSubmit={(value) => onAdd(group.key, value)}
                     />
                     {items.map((value) => {
@@ -2256,6 +2257,7 @@ function FilterSidebar({
                   <div className="pb-2">
                     <FilterGroupInput
                       placeholder={c.addToGroup(facet.label[locale])}
+                      options={facet.options}
                       onSubmit={(value) => onAddFacet(facet.id, value)}
                     />
                     {facetItems.map((value) => {
@@ -2654,16 +2656,24 @@ const FILTER_OPTIONS: {
 // that filter group — so filters aren't limited to the preset options.
 function FilterGroupInput({
   placeholder,
+  options,
   onSubmit,
 }: {
   placeholder: string
+  options: string[]
   onSubmit: (value: string) => void
 }) {
   const [value, setValue] = React.useState("")
   function submit() {
     const v = value.trim()
     if (!v) return
-    onSubmit(v)
+    // Resolve the typed text to a real option (case-insensitive) so the matching
+    // checkbox reflects the selection instead of adding an unmatched custom value.
+    const lower = v.toLowerCase()
+    const match =
+      options.find((o) => o.toLowerCase() === lower) ??
+      options.find((o) => o.toLowerCase().includes(lower))
+    onSubmit(match ?? v)
     setValue("")
   }
   return (
@@ -2943,6 +2953,7 @@ function FilterModal({
                         {/* Manual entry — type any value, not just the presets. */}
                         <FilterGroupInput
                           placeholder={c.addToGroup(group.label(c))}
+                          options={group.options}
                           onSubmit={(value) => onAdd(group.key, value)}
                         />
                         {items.map((value) => {
@@ -3020,6 +3031,7 @@ function FilterModal({
                       <div className="pb-2">
                         <FilterGroupInput
                           placeholder={c.addToGroup(facet.label[locale])}
+                          options={facet.options}
                           onSubmit={(value) => onAddFacet(facet.id, value)}
                         />
                         {facetItems.map((value) => {
