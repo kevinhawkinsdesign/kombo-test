@@ -1206,9 +1206,9 @@ export default function Search() {
               company: l.company,
               companyDomain: l.companyDomain,
               location: l.location,
-              email: `${l.firstName}.${l.lastName}@${l.companyDomain}`
-                .toLowerCase()
-                .replace(/\s+/g, ""),
+              // Freshly sourced contacts arrive with only basic data — email is
+              // revealed later via enrichment.
+              email: "",
               linkedinUrl: "",
               avatarColor: l.avatarColor,
               score: l.fit,

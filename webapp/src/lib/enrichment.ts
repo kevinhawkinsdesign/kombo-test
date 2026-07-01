@@ -1,18 +1,20 @@
 import type { Prospect } from "./types"
 
-// What to reveal when enriching. Email and phone can be bought on their own
-// (FullEnrich-style waterfall pricing); "full" adds ~30 firmographic points.
-export type EnrichScope = "email" | "phone" | "full"
+// What to reveal when enriching. The three are independent and non-overlapping:
+// "email" reveals only the verified email, "phone" only the direct dial, and
+// "profile" the ~30 firmographic/scoring data points (NOT email or phone). A
+// user can buy any combination (FullEnrich-style waterfall pricing).
+export type EnrichScope = "email" | "phone" | "profile"
 
 // Credits charged per contact, per scope.
 export const ENRICH_COST: Record<EnrichScope, number> = {
   email: 1,
   phone: 2,
-  full: 3,
+  profile: 3,
 }
 
-// Back-compat default (full enrichment).
-export const ENRICH_COST_PER_CONTACT = ENRICH_COST.full
+// Back-compat default (profile enrichment — the richest single scope).
+export const ENRICH_COST_PER_CONTACT = ENRICH_COST.profile
 
 // Enrichment runs in batches — at most this many contacts at a time.
 export const MAX_ENRICH_BATCH = 1000
@@ -24,10 +26,11 @@ export function isEnriched(prospect: Prospect): boolean {
   return prospect.enriched !== false
 }
 
-// Whether a contact still needs the given enrichment scope. Phone is gated on
-// the field itself (some enriched contacts still lack a direct dial); email and
-// full are gated on the master enrichment flag.
+// Whether a contact still needs the given enrichment scope. Email and phone are
+// gated on the field itself (so buying one clears it), while "profile" is gated
+// on the master enrichment flag that tracks the ~30 data points.
 export function needsEnrichScope(prospect: Prospect, scope: EnrichScope): boolean {
+  if (scope === "email") return !prospect.email
   if (scope === "phone") return !prospect.phone
   return !isEnriched(prospect)
 }

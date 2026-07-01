@@ -28,14 +28,16 @@ const COPY = {
     title: "Enrich contacts",
     description:
       "Reveal verified emails and direct dials, plus 30+ data points per contact.",
-    chooseScope: "What do you want to reveal?",
+    chooseScope: "What do you want to reveal? Pick any combination.",
     scopeEmail: "Verified email",
     scopePhone: "Phone number",
-    scopeFull: "Full enrichment",
+    scopeProfile: "Profile enrichment",
     scopeEmailDesc: "Verified work email",
     scopePhoneDesc: "Direct dial & mobile",
-    scopeFullDesc: "Email, phone & 30+ data points",
+    scopeProfileDesc: "Scoring + 30+ data points",
     toEnrich: "Contacts to enrich",
+    total: "Total",
+    pickOne: "Pick at least one thing to reveal.",
     cappedNote: (max: number) =>
       `Enrichment runs ${max.toLocaleString()} contacts at a time. The rest stay queued.`,
     perContact: "per contact",
@@ -54,14 +56,16 @@ const COPY = {
     title: "Enriquecer contactos",
     description:
       "Revela correos verificados y teléfonos directos, además de más de 30 datos por contacto.",
-    chooseScope: "¿Qué quieres revelar?",
+    chooseScope: "¿Qué quieres revelar? Elige cualquier combinación.",
     scopeEmail: "Correo verificado",
     scopePhone: "Teléfono",
-    scopeFull: "Enriquecimiento completo",
+    scopeProfile: "Perfil enriquecido",
     scopeEmailDesc: "Correo de trabajo verificado",
     scopePhoneDesc: "Teléfono directo y móvil",
-    scopeFullDesc: "Correo, teléfono y más de 30 datos",
+    scopeProfileDesc: "Puntuación + más de 30 datos",
     toEnrich: "Contactos por enriquecer",
+    total: "Total",
+    pickOne: "Elige al menos una cosa para revelar.",
     cappedNote: (max: number) =>
       `El enriquecimiento procesa ${max.toLocaleString()} contactos a la vez. El resto queda en cola.`,
     perContact: "por contacto",
@@ -85,6 +89,8 @@ interface EnrichListDialogProps {
   prospects: Prospect[]
 }
 
+const ALL_SCOPES: EnrichScope[] = ["email", "phone", "profile"]
+
 export function EnrichListDialog({
   open,
   onOpenChange,
@@ -93,7 +99,10 @@ export function EnrichListDialog({
   const { locale } = useLocale()
   const c = COPY[locale]
   const { balance, spend } = useCredits()
-  const [scope, setScope] = React.useState<EnrichScope>("full")
+  // The three reveals are independent — start with all selected, deselect freely.
+  const [selected, setSelected] = React.useState<Set<EnrichScope>>(
+    () => new Set(ALL_SCOPES)
+  )
 
   const scopeOptions: {
     value: EnrichScope
@@ -103,26 +112,48 @@ export function EnrichListDialog({
   }[] = [
     { value: "email", label: c.scopeEmail, desc: c.scopeEmailDesc, icon: Mail },
     { value: "phone", label: c.scopePhone, desc: c.scopePhoneDesc, icon: Phone },
-    { value: "full", label: c.scopeFull, desc: c.scopeFullDesc, icon: Database },
+    { value: "profile", label: c.scopeProfile, desc: c.scopeProfileDesc, icon: Database },
   ]
 
-  const pending = prospects.filter((p) => needsEnrichScope(p, scope))
-  const batch = pending.slice(0, MAX_ENRICH_BATCH)
-  const queued = pending.length - batch.length
-  const unit = ENRICH_COST[scope]
-  const cost = batch.length * unit
+  function toggleScope(scope: EnrichScope) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(scope)) next.delete(scope)
+      else next.add(scope)
+      return next
+    })
+  }
+
+  const scopes = ALL_SCOPES.filter((s) => selected.has(s))
+  // Contacts needing at least one selected reveal, capped to one batch.
+  const affected = prospects.filter((p) =>
+    scopes.some((s) => needsEnrichScope(p, s))
+  )
+  const batch = affected.slice(0, MAX_ENRICH_BATCH)
+  const queued = affected.length - batch.length
+  // Per-scope breakdown so the credit math is transparent.
+  const perScope = scopes
+    .map((s) => {
+      const count = batch.filter((p) => needsEnrichScope(p, s)).length
+      return { scope: s, count, unit: ENRICH_COST[s], cost: count * ENRICH_COST[s] }
+    })
+    .filter((x) => x.count > 0)
+  const cost = perScope.reduce((sum, x) => sum + x.cost, 0)
   const after = balance - cost
   const affordable = after >= 0
+  const scopeLabel = (s: EnrichScope) =>
+    scopeOptions.find((o) => o.value === s)?.label ?? s
 
   function handleEnrich() {
     if (batch.length === 0) return
-    const scopeLabel = scopeOptions.find((o) => o.value === scope)?.label ?? scope
-    const ok = spend(cost, c.usageLabel(batch.length, scopeLabel))
+    const label = scopes.map(scopeLabel).join(" + ")
+    const ok = spend(cost, c.usageLabel(batch.length, label))
     if (!ok) return
-    prospectStore.enrich(
-      batch.map((p) => p.id),
-      scope
-    )
+    // Apply each selected reveal to the contacts that still need it.
+    for (const s of scopes) {
+      const ids = batch.filter((p) => needsEnrichScope(p, s)).map((p) => p.id)
+      if (ids.length > 0) prospectStore.enrich(ids, s)
+    }
     toast.success(c.done(batch.length) + (queued > 0 ? c.queued(queued) : ""))
     onOpenChange(false)
   }
@@ -141,7 +172,7 @@ export function EnrichListDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Scope selector */}
+          {/* Scope selector — multi-select, any combination. */}
           <div className="space-y-2">
             <p className="text-muted-foreground text-xs font-medium">
               {c.chooseScope}
@@ -149,19 +180,25 @@ export function EnrichListDialog({
             <div className="grid grid-cols-3 gap-2">
               {scopeOptions.map((o) => {
                 const Icon = o.icon
-                const isActive = scope === o.value
+                const isActive = selected.has(o.value)
                 return (
                   <button
                     key={o.value}
                     type="button"
-                    onClick={() => setScope(o.value)}
+                    onClick={() => toggleScope(o.value)}
+                    aria-pressed={isActive}
                     className={cn(
-                      "flex flex-col gap-1 rounded-lg border p-2.5 text-left transition-colors",
+                      "relative flex flex-col gap-1 rounded-lg border p-2.5 text-left transition-colors",
                       isActive
                         ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
                         : "hover:bg-muted/60"
                     )}
                   >
+                    {isActive && (
+                      <span className="bg-primary text-primary-foreground absolute top-1.5 right-1.5 flex size-4 items-center justify-center rounded-full">
+                        <Check className="size-3" />
+                      </span>
+                    )}
                     <Icon
                       className={cn(
                         "size-4",
@@ -181,7 +218,12 @@ export function EnrichListDialog({
             </div>
           </div>
 
-          {batch.length === 0 ? (
+          {scopes.length === 0 ? (
+            <p className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
+              <TriangleAlert className="text-chart-4 size-4" />
+              {c.pickOne}
+            </p>
+          ) : batch.length === 0 ? (
             <p className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
               <Check className="text-chart-1 size-4" />
               {c.allEnriched}
@@ -190,12 +232,19 @@ export function EnrichListDialog({
             <>
               <div className="bg-muted/40 space-y-2 rounded-lg border p-3 text-sm">
                 <Row label={c.toEnrich} value={batch.length.toLocaleString()} />
-                <Row
-                  label={`${unit} ${c.credits} ${c.perContact}`}
-                  value={`${cost.toLocaleString()} ${c.credits}`}
-                  strong
-                />
+                {perScope.map((x) => (
+                  <Row
+                    key={x.scope}
+                    label={`${scopeLabel(x.scope)} · ${x.count.toLocaleString()} × ${x.unit}`}
+                    value={`${x.cost.toLocaleString()} ${c.credits}`}
+                  />
+                ))}
                 <div className="border-t pt-2">
+                  <Row
+                    label={c.total}
+                    value={`${cost.toLocaleString()} ${c.credits}`}
+                    strong
+                  />
                   <Row
                     label={c.balanceAfter}
                     value={`${Math.max(0, after).toLocaleString()} ${c.credits}`}
@@ -218,7 +267,7 @@ export function EnrichListDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {c.cancel}
           </Button>
-          {batch.length > 0 && (
+          {scopes.length > 0 && batch.length > 0 && (
             <Button variant="volt" onClick={handleEnrich} disabled={!affordable}>
               <Sparkles className="size-4" />
               {c.enrich(batch.length)}

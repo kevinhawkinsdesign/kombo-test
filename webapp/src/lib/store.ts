@@ -529,23 +529,26 @@ export const prospectStore = {
       ),
     })
   },
-  enrich(ids: string[], scope: EnrichScope = "full"): void {
+  enrich(ids: string[], scope: EnrichScope = "profile"): void {
     const set = new Set(ids)
     setState({
       prospects: state.prospects.map((p) => {
         if (!set.has(p.id)) return p
         const next: Prospect = { ...p }
-        if (scope === "email" || scope === "full") {
+        if (scope === "email") {
           next.email =
             p.email ||
             `${p.firstName}.${p.lastName}@${p.companyDomain}`
               .toLowerCase()
               .replace(/\s+/g, "")
         }
-        if (scope === "phone" || scope === "full") {
+        if (scope === "phone") {
           next.phone = p.phone || mockPhone(p.id)
         }
-        next.enriched = true
+        // "profile" reveals the ~30 data points — the master enrichment flag.
+        if (scope === "profile") {
+          next.enriched = true
+        }
         return next
       }),
     })
