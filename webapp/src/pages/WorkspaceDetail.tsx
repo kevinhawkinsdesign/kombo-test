@@ -59,6 +59,8 @@ const COPY = {
     searchResults: (n: number) => `${n.toLocaleString()} results`,
     openInSearch: "Open in Search",
     removeSearch: (name: string) => `Remove ${name}`,
+    removeList: "Remove from workspace",
+    removedList: (name: string) => `${name} removed from workspace`,
     searchPickerEmpty: "No saved searches yet. Save one from the Search page.",
     entityPeople: "People",
     entityCompanies: "Companies",
@@ -130,6 +132,8 @@ const COPY = {
     searchResults: (n: number) => `${n.toLocaleString()} resultados`,
     openInSearch: "Abrir en Búsqueda",
     removeSearch: (name: string) => `Eliminar ${name}`,
+    removeList: "Quitar del espacio",
+    removedList: (name: string) => `${name} quitada del espacio`,
     searchPickerEmpty: "Aún no hay búsquedas guardadas. Guarda una desde la página de Búsqueda.",
     entityPeople: "Personas",
     entityCompanies: "Empresas",
@@ -347,6 +351,13 @@ export default function WorkspaceDetail() {
             selectedList={selectedList}
             onSelectList={setSelectedListId}
             onNewList={() => setPickerOpen(true)}
+            onRemoveList={(id, name) => {
+              workspaceStore.dissociate(workspace.id, "list", id)
+              toast.success(c.removedList(name))
+              if (selectedListId === id) {
+                setSelectedListId(lists.find((l) => l.id !== id)?.id ?? null)
+              }
+            }}
             prospects={prospects}
             onPush={() => toast.success(c.pushedToast)}
             onEnrich={(name) => toast.success(c.enrichedToast(name))}
@@ -565,6 +576,7 @@ function AudiencePanel({
   selectedList,
   onSelectList,
   onNewList,
+  onRemoveList,
   prospects,
   onPush,
   onEnrich,
@@ -574,6 +586,7 @@ function AudiencePanel({
   selectedList: ProspectList | undefined
   onSelectList: (id: string) => void
   onNewList: () => void
+  onRemoveList: (id: string, name: string) => void
   prospects: Prospect[]
   onPush: () => void
   onEnrich: (name: string) => void
@@ -652,6 +665,15 @@ function AudiencePanel({
               )}
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => onRemoveList(selectedList.id, selectedList.name)}
+              >
+                <X className="size-4" />
+                {c.removeList}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
