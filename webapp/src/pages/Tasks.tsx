@@ -649,7 +649,7 @@ function TaskRow({
           >
             <Zap className="size-3.5" />
             {c.enrich}
-            <span className="text-muted-foreground">· {ENRICH_COST.full}</span>
+            <span className="text-muted-foreground">· {ENRICH_COST.profile}</span>
           </button>
         ) : (
           <span className="text-muted-foreground">{prospect.phone}</span>
