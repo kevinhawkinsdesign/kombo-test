@@ -390,7 +390,7 @@ export function AddRecordsDialog({
                   <Segmented
                     options={[
                       { v: "kombo", label: "Kombo", icon: Database },
-                      { v: "linkedin", label: "LinkedIn", icon: LinkedinIcon },
+                      { v: "linkedin", label: "Sales Nav", icon: LinkedinIcon },
                     ]}
                     value={linkedinOn ? "linkedin" : "kombo"}
                     onChange={(v) => setLinkedinOn(v === "linkedin")}
