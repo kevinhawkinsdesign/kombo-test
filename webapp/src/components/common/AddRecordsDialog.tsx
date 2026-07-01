@@ -137,6 +137,8 @@ const COPY = {
     liFollowers: "Import your LinkedIn followers",
     importingFile: "Importing — we'll add matches shortly",
     syncing: "Syncing — this can take a moment",
+    inboundLabel: "Inbound — from your CRM",
+    outboundLabel: "Outbound — external sources",
   },
   es: {
     addPeople: "Añadir prospectos",
@@ -189,6 +191,8 @@ const COPY = {
     liFollowers: "Importar tus seguidores de LinkedIn",
     importingFile: "Importando — añadiremos las coincidencias en breve",
     syncing: "Sincronizando — puede tardar un momento",
+    inboundLabel: "Inbound — desde tu CRM",
+    outboundLabel: "Outbound — fuentes externas",
   },
 } as const
 
@@ -852,17 +856,44 @@ function ImportPane({
     label: string
     icon: React.ComponentType<{ className?: string }>
     brand: "hubspot" | "linkedin"
+    group: "inbound" | "outbound"
     onClick: () => void
   }[] = [
-    { key: "hubspot", label: c.hubspot, icon: Plug, brand: "hubspot", onClick: onConnect },
-    { key: "hubspot-list", label: c.hubspotList, icon: Plug, brand: "hubspot", onClick: onConnect },
+    { key: "hubspot", label: c.hubspot, icon: Plug, brand: "hubspot", group: "inbound", onClick: onConnect },
+    { key: "hubspot-list", label: c.hubspotList, icon: Plug, brand: "hubspot", group: "inbound", onClick: onConnect },
     ...(entity === "people"
       ? [
-          { key: "li-connections", label: c.liConnections, icon: LinkedinIcon, brand: "linkedin" as const, onClick: onSync },
-          { key: "li-followers", label: c.liFollowers, icon: LinkedinIcon, brand: "linkedin" as const, onClick: onSync },
+          { key: "li-connections", label: c.liConnections, icon: LinkedinIcon, brand: "linkedin" as const, group: "outbound" as const, onClick: onSync },
+          { key: "li-followers", label: c.liFollowers, icon: LinkedinIcon, brand: "linkedin" as const, group: "outbound" as const, onClick: onSync },
         ]
       : []),
   ]
+
+  const inboundSources = sources.filter((s) => s.group === "inbound")
+  const outboundSources = sources.filter((s) => s.group === "outbound")
+
+  const renderSource = (s: (typeof sources)[number]) => {
+    const Icon = s.icon
+    return (
+      <button
+        key={s.key}
+        type="button"
+        onClick={s.onClick}
+        className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors"
+      >
+        <span
+          className={cn(
+            "flex size-7 shrink-0 items-center justify-center rounded-md",
+            s.brand === "hubspot" ? "bg-[#ff7a59]/15 text-[#ff7a59]" : "bg-[#0a66c2]/10 text-[#0a66c2]"
+          )}
+        >
+          <Icon className="size-4" />
+        </span>
+        <span className="min-w-0 flex-1 truncate">{s.label}</span>
+        <ArrowRight className="text-muted-foreground size-4 shrink-0" />
+      </button>
+    )
+  }
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -870,10 +901,20 @@ function ImportPane({
         <h2 className="text-lg font-semibold">{c.importTitle}</h2>
         <p className="text-muted-foreground mt-1 text-sm">{c.importSubtitle}</p>
 
+        {/* Inbound — contacts already in your CRM */}
+        <p className="text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase">
+          {c.inboundLabel}
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">{inboundSources.map(renderSource)}</div>
+
+        {/* Outbound — external sources (uploads + LinkedIn) */}
+        <p className="text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase">
+          {c.outboundLabel}
+        </p>
         <button
           type="button"
           onClick={onFile}
-          className="hover:border-primary/50 hover:bg-muted/40 mt-5 flex w-full flex-col items-center justify-center rounded-xl border border-dashed p-10 text-center transition-colors"
+          className="hover:border-primary/50 hover:bg-muted/40 flex w-full flex-col items-center justify-center rounded-xl border border-dashed p-10 text-center transition-colors"
         >
           <span className="bg-muted flex size-12 items-center justify-center rounded-full">
             <Upload className="text-muted-foreground size-5" />
@@ -884,36 +925,9 @@ function ImportPane({
           </span>
           <span className="text-muted-foreground mt-1 text-xs">{c.fileTypes}</span>
         </button>
-
-        <p className="text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase">
-          {c.orConnect}
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {sources.map((s) => {
-            const Icon = s.icon
-            return (
-              <button
-                key={s.key}
-                type="button"
-                onClick={s.onClick}
-                className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors"
-              >
-                <span
-                  className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-md",
-                    s.brand === "hubspot"
-                      ? "bg-[#ff7a59]/15 text-[#ff7a59]"
-                      : "bg-[#0a66c2]/10 text-[#0a66c2]"
-                  )}
-                >
-                  <Icon className="size-4" />
-                </span>
-                <span className="min-w-0 flex-1 truncate">{s.label}</span>
-                <ArrowRight className="text-muted-foreground size-4 shrink-0" />
-              </button>
-            )
-          })}
-        </div>
+        {outboundSources.length > 0 && (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">{outboundSources.map(renderSource)}</div>
+        )}
       </div>
     </div>
   )
