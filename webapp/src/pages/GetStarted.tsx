@@ -118,7 +118,7 @@ const COPY = {
       search: {
         title: "Prospect Search",
         description:
-          "Find your ideal customers with AI across millions of people & companies.",
+          "Find your ideal customers with AI across millions of prospects & companies.",
       },
       lists: {
         title: "Lists & segments",
@@ -235,7 +235,7 @@ const COPY = {
       search: {
         title: "Búsqueda de prospectos",
         description:
-          "Encuentra a tus clientes ideales con IA entre millones de personas y empresas.",
+          "Encuentra a tus clientes ideales con IA entre millones de prospectos y empresas.",
       },
       lists: {
         title: "Listas y segmentos",

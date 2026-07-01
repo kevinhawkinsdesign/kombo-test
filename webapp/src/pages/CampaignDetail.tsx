@@ -153,7 +153,7 @@ const COPY = {
     dailyPerformance: "Daily performance",
     dailyPerformanceDesc: "Sent, opened and replied per day.",
     noDailyData: "No daily data yet for this campaign.",
-    audience: "Audience",
+    audience: "Prospects",
     audienceDesc:
       "Attach a single prospect list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
     prospectsCount: (count: number) => `${count} prospects`,
@@ -284,7 +284,7 @@ const COPY = {
     dailyPerformance: "Rendimiento diario",
     dailyPerformanceDesc: "Enviados, abiertos y respondidos por día.",
     noDailyData: "Aún no hay datos diarios para esta campaña.",
-    audience: "Audiencia",
+    audience: "Prospectos",
     audienceDesc:
       "Vincula una única lista de prospectos para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
     prospectsCount: (count: number) => `${count} prospectos`,

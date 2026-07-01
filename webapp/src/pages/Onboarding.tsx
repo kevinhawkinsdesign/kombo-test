@@ -23,7 +23,7 @@ type StepId = "goal" | "team" | "crm" | "tools" | "source"
 const STEP_ORDER: StepId[] = ["goal", "team", "crm", "tools", "source"]
 
 const GOALS = [
-  "Find and enrich people",
+  "Find and enrich prospects",
   "Find and enrich accounts",
   "Enrich & score inbound leads",
   "AI outbound messaging",

@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import {
   Play,
   TrendingUp,
+  TrendingDown,
   Clock,
   Smile,
   Meh,
@@ -11,6 +12,8 @@ import {
   CheckCircle2,
   ArrowRight,
   GraduationCap,
+  ThumbsUp,
+  Target,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -27,6 +30,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
   Table,
   TableBody,
   TableCell,
@@ -38,6 +47,11 @@ import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { coachRecordings } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
+import {
+  coachLeaderboard,
+  coachTeamAvg,
+  type CoachSkill,
+} from "@/lib/mock-coach-team"
 import { formatDate } from "@/lib/format"
 import { downloadCsv } from "@/lib/csv"
 import { cn } from "@/lib/utils"
@@ -61,6 +75,9 @@ const COPY = {
       "Talk-ratio & sentiment analysis",
       "Coaching scorecards you can share",
     ],
+    tabEfficiency: "Efficiency",
+    tabPerformance: "Performance",
+    tabTeam: "Team",
     avgScore: "Average call score",
     callsAnalyzed: "Calls analyzed",
     avgTalkRatio: "Avg. talk ratio",
@@ -72,6 +89,22 @@ const COPY = {
     aiGenerated: "AI generated",
     viewFullAnalysis: "View full analysis",
     callScore: "Call score",
+    perfStrengths: "Where you're strong",
+    perfGaps: "Where to improve",
+    perfRanked: "Calls by score",
+    perfNoStrong: "Run more calls to surface consistent strengths.",
+    perfNoWeak: "No recurring weak spots — nice work.",
+    teamTitle: "Team performance",
+    teamAvgScore: "Team avg score",
+    teamCalls: "Calls analyzed",
+    teamAvgTalk: "Avg talk ratio",
+    colRep: "Rep",
+    colAvgScore: "Avg score",
+    colCalls: "Calls",
+    colTalk: "Talk ratio",
+    colTrend: "Trend",
+    colStrength: "Strength",
+    colGap: "Gap",
     sentiment: {
       positive: "Positive",
       neutral: "Neutral",
@@ -92,6 +125,15 @@ const COPY = {
     colDuration: "Duration",
     colSentiment: "Sentiment",
     colScore: "Score",
+    skill: {
+      rapport: "Rapport",
+      discovery: "Discovery",
+      nextSteps: "Next steps",
+      talkRatio: "Talk ratio",
+      objections: "Objection handling",
+      qualification: "Qualification",
+      valueFraming: "Value framing",
+    } as Record<CoachSkill, string>,
   },
   es: {
     title: "Coach de llamadas",
@@ -105,6 +147,9 @@ const COPY = {
       "Análisis de ratio de conversación y sentimiento",
       "Informes de coaching que puedes compartir",
     ],
+    tabEfficiency: "Eficiencia",
+    tabPerformance: "Rendimiento",
+    tabTeam: "Equipo",
     avgScore: "Puntuación media de llamada",
     callsAnalyzed: "Llamadas analizadas",
     avgTalkRatio: "Ratio de conversación medio",
@@ -116,6 +161,22 @@ const COPY = {
     aiGenerated: "Generado por IA",
     viewFullAnalysis: "Ver análisis completo",
     callScore: "Puntuación",
+    perfStrengths: "Dónde destacas",
+    perfGaps: "Dónde mejorar",
+    perfRanked: "Llamadas por puntuación",
+    perfNoStrong: "Analiza más llamadas para revelar fortalezas constantes.",
+    perfNoWeak: "Sin puntos débiles recurrentes — buen trabajo.",
+    teamTitle: "Rendimiento del equipo",
+    teamAvgScore: "Puntuación media del equipo",
+    teamCalls: "Llamadas analizadas",
+    teamAvgTalk: "Ratio de conversación medio",
+    colRep: "Representante",
+    colAvgScore: "Puntuación media",
+    colCalls: "Llamadas",
+    colTalk: "Ratio",
+    colTrend: "Tendencia",
+    colStrength: "Fortaleza",
+    colGap: "Brecha",
     sentiment: {
       positive: "Positivo",
       neutral: "Neutral",
@@ -136,6 +197,15 @@ const COPY = {
     colDuration: "Duración",
     colSentiment: "Sentimiento",
     colScore: "Puntuación",
+    skill: {
+      rapport: "Rapport",
+      discovery: "Descubrimiento",
+      nextSteps: "Próximos pasos",
+      talkRatio: "Ratio de conversación",
+      objections: "Manejo de objeciones",
+      qualification: "Cualificación",
+      valueFraming: "Propuesta de valor",
+    } as Record<CoachSkill, string>,
   },
 } as const
 
@@ -150,6 +220,26 @@ function scorePillClass(score: number): string {
 const avgScore = Math.round(
   coachRecordings.reduce((s, r) => s + r.score, 0) / coachRecordings.length
 )
+const avgTalkRatio = Math.round(
+  coachRecordings.reduce((s, r) => s + r.talkRatio, 0) / coachRecordings.length
+)
+
+// Cross-call strengths & gaps: the strong/weak graded sections across all calls.
+const strongSections = coachRecordings
+  .flatMap((r) =>
+    getScorecard(r.id)
+      .sections.filter((s) => s.grade === "strong")
+      .map((s) => ({ id: r.id, call: r.title, label: s.label, score: s.score }))
+  )
+  .sort((a, b) => b.score - a.score)
+const weakSections = coachRecordings
+  .flatMap((r) =>
+    getScorecard(r.id)
+      .sections.filter((s) => s.grade === "weak")
+      .map((s) => ({ id: r.id, call: r.title, label: s.label, score: s.score }))
+  )
+  .sort((a, b) => a.score - b.score)
+const rankedCalls = [...coachRecordings].sort((a, b) => b.score - a.score)
 
 export default function Coach() {
   const { locale } = useLocale()
@@ -227,50 +317,282 @@ export default function Coach() {
         <Card>
           <CardHeader>
             <CardDescription>{c.avgTalkRatio}</CardDescription>
-            <CardTitle className="text-2xl">
-              {Math.round(
-                coachRecordings.reduce((s, r) => s + r.talkRatio, 0) /
-                  coachRecordings.length
-              )}
-              %
-            </CardTitle>
+            <CardTitle className="text-2xl">{avgTalkRatio}%</CardTitle>
           </CardHeader>
         </Card>
       </div>
 
-      <CollectionToolbar
-        query={query}
-        onQueryChange={setQuery}
-        searchPlaceholder={c.search}
-        sort={sort}
-        onSortChange={setSort}
-        sortOptions={[
-          { value: "recent", label: c.sortRecent },
-          { value: "score", label: c.sortScore },
-          { value: "duration", label: c.sortDuration },
-        ]}
-        view={view}
-        onViewChange={setView}
-        cardsLabel={c.viewCards}
-        tableLabel={c.viewTable}
-        onExport={exportCsv}
-        exportLabel={c.exportLabel}
-      />
+      <Tabs defaultValue="efficiency">
+        <TabsList className="mb-6">
+          <TabsTrigger value="efficiency">{c.tabEfficiency}</TabsTrigger>
+          <TabsTrigger value="performance">{c.tabPerformance}</TabsTrigger>
+          <TabsTrigger value="team">{c.tabTeam}</TabsTrigger>
+        </TabsList>
 
-      {visible.length === 0 ? (
-        <Card className="text-muted-foreground p-8 text-center text-sm">
-          {c.noResults}
-        </Card>
-      ) : view === "table" ? (
-        <RecordingTable rows={visible} c={c} />
-      ) : (
-        <div className="space-y-4">
-          {visible.map((rec) => (
-            <RecordingCard key={rec.id} rec={rec} />
-          ))}
-        </div>
-      )}
+        <TabsContent value="efficiency">
+          <CollectionToolbar
+            query={query}
+            onQueryChange={setQuery}
+            searchPlaceholder={c.search}
+            sort={sort}
+            onSortChange={setSort}
+            sortOptions={[
+              { value: "recent", label: c.sortRecent },
+              { value: "score", label: c.sortScore },
+              { value: "duration", label: c.sortDuration },
+            ]}
+            view={view}
+            onViewChange={setView}
+            cardsLabel={c.viewCards}
+            tableLabel={c.viewTable}
+            onExport={exportCsv}
+            exportLabel={c.exportLabel}
+          />
+
+          {visible.length === 0 ? (
+            <Card className="text-muted-foreground p-8 text-center text-sm">
+              {c.noResults}
+            </Card>
+          ) : view === "table" ? (
+            <RecordingTable rows={visible} c={c} />
+          ) : (
+            <div className="space-y-4">
+              {visible.map((rec) => (
+                <RecordingCard key={rec.id} rec={rec} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <PerformanceTab c={c} />
+        </TabsContent>
+
+        <TabsContent value="team">
+          <TeamTab c={c} />
+        </TabsContent>
+      </Tabs>
     </Page>
+  )
+}
+
+function PerformanceTab({ c }: { c: Copy }) {
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ThumbsUp className="text-chart-1 size-4" />
+              {c.perfStrengths}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {strongSections.length === 0 ? (
+              <p className="text-muted-foreground text-sm">{c.perfNoStrong}</p>
+            ) : (
+              strongSections.slice(0, 4).map((s) => (
+                <Link
+                  key={`${s.id}-${s.label}`}
+                  to={`/coach/${s.id}`}
+                  className="hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
+                >
+                  <span className="min-w-0">
+                    <span className="font-medium">{s.label}</span>
+                    <span className="text-muted-foreground"> · {s.call}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      scorePillClass(s.score)
+                    )}
+                  >
+                    {s.score}
+                  </span>
+                </Link>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Target className="text-destructive size-4" />
+              {c.perfGaps}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {weakSections.length === 0 ? (
+              <p className="text-muted-foreground text-sm">{c.perfNoWeak}</p>
+            ) : (
+              weakSections.slice(0, 4).map((s) => (
+                <Link
+                  key={`${s.id}-${s.label}`}
+                  to={`/coach/${s.id}`}
+                  className="hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
+                >
+                  <span className="min-w-0">
+                    <span className="font-medium">{s.label}</span>
+                    <span className="text-muted-foreground"> · {s.call}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      scorePillClass(s.score)
+                    )}
+                  >
+                    {s.score}
+                  </span>
+                </Link>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.perfRanked}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {rankedCalls.map((r) => (
+            <Link
+              key={r.id}
+              to={`/coach/${r.id}`}
+              className="hover:bg-muted/50 -mx-2 flex items-center gap-3 rounded-md px-2 py-1.5"
+            >
+              <span
+                className={cn(
+                  "w-10 shrink-0 rounded-md px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
+                  scorePillClass(r.score)
+                )}
+              >
+                {r.score}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="text-sm font-medium">{r.title}</span>
+                <span className="text-muted-foreground text-sm">
+                  {" "}
+                  · {r.prospectName}
+                </span>
+              </span>
+              <Progress value={r.score} className="hidden w-40 sm:block" />
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function TeamTab({ c }: { c: Copy }) {
+  const rows = coachLeaderboard()
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardDescription>{c.teamAvgScore}</CardDescription>
+            <CardTitle className="text-2xl">{coachTeamAvg.score}/100</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>{c.teamCalls}</CardDescription>
+            <CardTitle className="text-2xl">{coachTeamAvg.calls}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>{c.teamAvgTalk}</CardDescription>
+            <CardTitle className="text-2xl">{coachTeamAvg.talkRatio}%</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      <Card className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{c.colRep}</TableHead>
+              <TableHead className="text-right">{c.colAvgScore}</TableHead>
+              <TableHead className="text-right">{c.colCalls}</TableHead>
+              <TableHead className="text-right">{c.colTalk}</TableHead>
+              <TableHead className="text-right">{c.colTrend}</TableHead>
+              <TableHead className="hidden md:table-cell">
+                {c.colStrength}
+              </TableHead>
+              <TableHead className="hidden md:table-cell">{c.colGap}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((m) => (
+              <TableRow key={m.repId}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white"
+                      style={{ backgroundColor: m.avatarColor }}
+                    >
+                      {m.name.charAt(0)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{m.name}</p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {m.role}
+                      </p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <span
+                    className={cn(
+                      "inline-flex rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                      scorePillClass(m.avgScore)
+                    )}
+                  >
+                    {m.avgScore}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {m.callsAnalyzed}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {m.avgTalkRatio}%
+                </TableCell>
+                <TableCell className="text-right">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-0.5 text-xs font-medium tabular-nums",
+                      m.trend >= 0 ? "text-chart-1" : "text-destructive"
+                    )}
+                  >
+                    {m.trend >= 0 ? (
+                      <TrendingUp className="size-3.5" />
+                    ) : (
+                      <TrendingDown className="size-3.5" />
+                    )}
+                    {m.trend >= 0 ? "+" : ""}
+                    {m.trend}
+                  </span>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <Badge variant="secondary" className="font-normal">
+                    {c.skill[m.topStrength]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <Badge variant="outline" className="font-normal">
+                    {c.skill[m.topGap]}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
   )
 }
 

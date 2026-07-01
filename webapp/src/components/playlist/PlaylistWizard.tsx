@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils"
 
 type Audience = "dynamic" | "static"
 
-const STEPS = ["Audience", "Enrich", "Outreach", "Review"] as const
+const STEPS = ["Prospects", "Enrich", "Outreach", "Review"] as const
 
 const FACETS: { key: keyof Omit<SavedSearchCriteria, "keywords">; label: string; options: string[] }[] = [
   { key: "titles", label: "Job titles", options: ["VP Sales", "CRO", "Head of Sales", "RevOps Lead", "Sales Director", "Account Executive"] },

@@ -23,9 +23,16 @@ import {
   Star,
   ThumbsUp,
   ThumbsDown,
+  Search,
+  Mail,
+  Zap,
+  Gauge,
+  Send,
+  Sparkles,
+  Loader2,
 } from "lucide-react"
 
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
 import { InfoHint } from "@/components/common/InfoHint"
 import { Page } from "@/components/layout/Page"
 import {
@@ -36,20 +43,29 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Segmented } from "@/components/common/Segmented"
+import { EmptyState } from "@/components/common/EmptyState"
+import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { CallScorecard } from "@/components/coach/CoachScorecard"
+import { CallQaPanel } from "@/components/coach/CallQaPanel"
 import { coachRecordings } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import { recordingDetails } from "@/lib/mock-depth"
+import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { KeyMoment } from "@/lib/types"
+import type { KeyMoment, CoachRecording } from "@/lib/types"
 
 const SENTIMENT = {
   positive: { icon: Smile, variant: "success" as const },
@@ -91,12 +107,27 @@ const COPY = {
     addNotesToCrm: "Add notes to CRM",
     pause: "Pause",
     play: "Play",
+    modeEfficiency: "Efficiency",
+    modePerformance: "Performance",
+    summary: "Summary",
+    keyInsights: "Key insights",
+    prepareFollowUp: "Prepare follow-up email",
+    followUpTitle: (name: string) => `Follow up with ${name}`,
+    followUpSubjectLabel: "Subject",
+    followUpBodyLabel: "Message",
+    followUpDefaultSubject: (company: string) => `Following up — ${company}`,
+    aiDraft: "Draft with AI",
+    sendFollowUp: "Send email",
+    followUpSent: "Follow-up email sent",
+    searchTranscript: "Search this transcript…",
+    noTranscriptMatch: "No lines match your search.",
+    notableQuotes: "Notable quotes",
+    topicJumpHint: "Click a topic to find it in the transcript",
     transcript: "Transcript",
     keyMoments: "Key moments",
     participants: "Participants",
     noTranscript: "No transcript available for this recording.",
     noKeyMoments: "No key moments captured.",
-    noParticipants: "No participant data.",
     you: "You",
     prospect: "Prospect",
     talkTime: "talk time",
@@ -113,7 +144,7 @@ const COPY = {
     avgResponseTime: "Avg response time",
     topicsDiscussed: "Topics discussed",
     objections: "Objections",
-    actionItems: "Action items",
+    actionItems: "Next steps",
     markNotDone: "Mark as not done",
     markDone: "Mark as done",
     completed: (label: string) => `Completed: ${label}`,
@@ -153,12 +184,27 @@ const COPY = {
     addNotesToCrm: "Añadir notas al CRM",
     pause: "Pausar",
     play: "Reproducir",
+    modeEfficiency: "Eficiencia",
+    modePerformance: "Rendimiento",
+    summary: "Resumen",
+    keyInsights: "Datos clave",
+    prepareFollowUp: "Preparar correo de seguimiento",
+    followUpTitle: (name: string) => `Seguimiento con ${name}`,
+    followUpSubjectLabel: "Asunto",
+    followUpBodyLabel: "Mensaje",
+    followUpDefaultSubject: (company: string) => `Seguimiento — ${company}`,
+    aiDraft: "Redactar con IA",
+    sendFollowUp: "Enviar correo",
+    followUpSent: "Correo de seguimiento enviado",
+    searchTranscript: "Busca en la transcripción…",
+    noTranscriptMatch: "Ninguna línea coincide con tu búsqueda.",
+    notableQuotes: "Frases destacadas",
+    topicJumpHint: "Toca un tema para encontrarlo en la transcripción",
     transcript: "Transcripción",
     keyMoments: "Momentos clave",
     participants: "Participantes",
     noTranscript: "No hay transcripción disponible para esta grabación.",
     noKeyMoments: "No se capturaron momentos clave.",
-    noParticipants: "Sin datos de participantes.",
     you: "Tú",
     prospect: "Prospecto",
     talkTime: "tiempo hablando",
@@ -175,7 +221,7 @@ const COPY = {
     avgResponseTime: "Tiempo medio de respuesta",
     topicsDiscussed: "Temas tratados",
     objections: "Objeciones",
-    actionItems: "Tareas pendientes",
+    actionItems: "Próximos pasos",
     markNotDone: "Marcar como pendiente",
     markDone: "Marcar como completada",
     completed: (label: string) => `Completada: ${label}`,
@@ -206,10 +252,28 @@ const COPY = {
   },
 } as const
 
+type Copy = (typeof COPY)[keyof typeof COPY]
+
 function scorePillClass(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"
   if (score >= 65) return "bg-chart-4/15 text-chart-4"
   return "bg-destructive/15 text-destructive"
+}
+
+// A call-aware first draft that seeds the follow-up composer.
+function buildFollowUpDraft(rec: CoachRecording, locale: Locale): string {
+  const first = rec.prospectName.split(" ")[0]
+  const steps = rec.nextSteps
+  if (locale === "es") {
+    const s = steps.length
+      ? `\n\nPróximos pasos:\n${steps.map((x) => `• ${x}`).join("\n")}`
+      : ""
+    return `Hola ${first}:\n\nGracias por tu tiempo hoy — un gusto hablar sobre ${rec.company}.${s}\n\nUn saludo,\nKevin`
+  }
+  const s = steps.length
+    ? `\n\nNext steps:\n${steps.map((x) => `• ${x}`).join("\n")}`
+    : ""
+  return `Hi ${first},\n\nThanks for your time today — great to talk things through with ${rec.company}.${s}\n\nBest,\nKevin`
 }
 
 export default function CoachRecordingDetail() {
@@ -219,6 +283,11 @@ export default function CoachRecordingDetail() {
   const rec = coachRecordings.find((r) => r.id === id)
   const analysis = id ? recordingDetails[id] : undefined
 
+  const [mode, setMode] = React.useState<"efficiency" | "performance">(
+    "efficiency"
+  )
+  const [transcriptQuery, setTranscriptQuery] = React.useState("")
+  const [followUpOpen, setFollowUpOpen] = React.useState(false)
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
   const [rating, setRating] = React.useState(0)
@@ -239,6 +308,18 @@ export default function CoachRecordingDetail() {
   const SentimentIcon = sentiment.icon
   const repRatio = rec.talkRatio
   const prospectRatio = 100 - rec.talkRatio
+  const scorecard = getScorecard(rec.id)
+  const quotes = scorecard.sections.filter((s) => s.quote)
+
+  const transcriptTurns = analysis?.transcript ?? []
+  const tq = transcriptQuery.trim().toLowerCase()
+  const filteredTranscript = tq
+    ? transcriptTurns.filter(
+        (t) =>
+          t.text.toLowerCase().includes(tq) ||
+          t.name.toLowerCase().includes(tq)
+      )
+    : transcriptTurns
 
   const toggleDone = (index: number, label: string) => {
     setDoneItems((prev) => {
@@ -247,6 +328,175 @@ export default function CoachRecordingDetail() {
       return next
     })
   }
+
+  // "See parts of conversations on specific topics" — jump the transcript to a
+  // topic keyword and switch to the Efficiency view where the transcript lives.
+  const jumpToTopic = (label: string) => {
+    setTranscriptQuery(label)
+    setMode("efficiency")
+  }
+
+  const participantsCard = analysis?.participants &&
+    analysis.participants.length > 0 && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.participants}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {analysis.participants.map((p) => (
+            <div key={p.name}>
+              <div className="mb-1 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="text-muted-foreground size-4" />
+                  <span className="text-sm font-medium">{p.name}</span>
+                  <Badge
+                    variant={p.role === "rep" ? "default" : "secondary"}
+                    className="capitalize"
+                  >
+                    {p.role === "rep" ? c.you : c.prospect}
+                  </Badge>
+                </div>
+                <span className="text-muted-foreground text-sm tabular-nums">
+                  {p.talkPct}% {c.talkTime}
+                </span>
+              </div>
+              <p className="text-muted-foreground mb-1.5 text-xs">{p.title}</p>
+              <div className="bg-muted h-2 overflow-hidden rounded-full">
+                <div
+                  className={cn(
+                    "h-full rounded-full",
+                    p.role === "rep" ? "bg-primary" : "bg-chart-2"
+                  )}
+                  style={{ width: `${p.talkPct}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    )
+
+  const callMetricsCard = (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{c.callAnalysis}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <div className="mb-1 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <TrendingUp className="size-3.5" />
+              {c.talkRatio}
+              <InfoHint label={c.talkRatioHintLabel}>{c.talkRatioHint}</InfoHint>
+            </span>
+            <span className="font-medium tabular-nums">
+              {c.talkRatioSplit(repRatio, prospectRatio)}
+            </span>
+          </div>
+          <div className="bg-muted flex h-6 w-full overflow-hidden rounded-md">
+            <div
+              className="bg-primary h-full transition-all"
+              style={{ width: `${repRatio}%` }}
+            />
+            <div
+              className="bg-muted h-full transition-all"
+              style={{ width: `${prospectRatio}%` }}
+            />
+          </div>
+          {repRatio > 55 && (
+            <p className="text-muted-foreground mt-1 text-xs">
+              {c.talkRatioHigh}
+            </p>
+          )}
+        </div>
+
+        {analysis && (
+          <>
+            <Separator />
+            <div className="space-y-2.5 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <MessageCircleQuestion className="size-4" />
+                  {c.questionsAsked}
+                </span>
+                <span className="font-medium tabular-nums">
+                  {analysis.questionsAsked}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Clock className="size-4" />
+                  {c.longestMonologue}
+                </span>
+                <span className="font-medium tabular-nums">
+                  {analysis.longestMonologueMin} {c.min}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Timer className="size-4" />
+                  {c.avgResponseTime}
+                </span>
+                <span className="font-medium tabular-nums">
+                  {analysis.patience}s
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+
+  const actionItemsCard = analysis && analysis.actionItems.length > 0 && (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{c.actionItems}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {analysis.actionItems.map((item, i) => {
+          const done = doneItems[i] ?? false
+          return (
+            <div
+              key={item}
+              className="bg-muted/50 flex items-center gap-2 rounded-md px-3 py-2 text-sm"
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6 shrink-0"
+                onClick={() => toggleDone(i, item)}
+                aria-label={done ? c.markNotDone : c.markDone}
+              >
+                {done ? (
+                  <CheckCircle2 className="text-primary size-4" />
+                ) : (
+                  <Circle className="text-muted-foreground size-4" />
+                )}
+              </Button>
+              <span
+                className={cn(
+                  "flex-1",
+                  done && "text-muted-foreground line-through"
+                )}
+              >
+                {item}
+              </span>
+            </div>
+          )
+        })}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => toast.success(c.tasksCreated)}
+        >
+          <ListChecks className="size-4" />
+          {c.createTasks}
+        </Button>
+      </CardContent>
+    </Card>
+  )
 
   return (
     <Page>
@@ -286,17 +536,11 @@ export default function CoachRecordingDetail() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => toast.info(c.reanalyzing)}
-            >
+            <Button variant="outline" onClick={() => toast.info(c.reanalyzing)}>
               <RefreshCw className="size-4" />
               {c.reanalyze}
             </Button>
-            <Button
-              variant="volt"
-              onClick={() => toast.success(c.notesAdded)}
-            >
+            <Button variant="volt" onClick={() => toast.success(c.notesAdded)}>
               <Building2 className="size-4" />
               {c.addNotesToCrm}
             </Button>
@@ -333,422 +577,473 @@ export default function CoachRecordingDetail() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          <CallScorecard scorecard={getScorecard(rec.id)} />
+      {/* Two intents: Efficiency (work the deal) vs Performance (get better). */}
+      <Segmented
+        className="mb-6 w-fit"
+        options={[
+          { v: "efficiency", label: c.modeEfficiency, icon: Zap },
+          { v: "performance", label: c.modePerformance, icon: Gauge },
+        ]}
+        value={mode}
+        onChange={setMode}
+      />
 
-          <Card>
-            <CardContent>
-              <Tabs defaultValue="transcript">
-                <TabsList className="mb-4 max-w-full overflow-x-auto">
-                  <TabsTrigger value="transcript">{c.transcript}</TabsTrigger>
-                  <TabsTrigger value="moments">{c.keyMoments}</TabsTrigger>
-                  <TabsTrigger value="participants">
-                    {c.participants}
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="transcript">
-                  {analysis && analysis.transcript.length > 0 ? (
-                    <div className="space-y-3">
-                      {analysis.transcript.map((turn) => (
-                        <div
-                          key={turn.id}
-                          className={cn(
-                            "rounded-md px-3 py-2 text-sm",
-                            turn.speaker === "rep"
-                              ? "bg-muted"
-                              : "border-primary border-l-2 pl-3"
-                          )}
-                        >
-                          <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
-                            <span className="font-medium">{turn.name}</span>
-                            <span className="tabular-nums">{turn.time}</span>
-                          </div>
-                          <p>{turn.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground py-6 text-center text-sm">
-                      {c.noTranscript}
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="moments">
-                  {analysis && analysis.keyMoments.length > 0 ? (
-                    <ol className="space-y-3">
-                      {analysis.keyMoments.map((moment, i) => {
-                        const style = MOMENT_STYLES[moment.type]
-                        return (
-                          <li
-                            key={`${moment.time}-${i}`}
-                            className="flex items-start gap-3"
-                          >
-                            <span className="text-muted-foreground mt-0.5 w-12 shrink-0 font-mono text-xs tabular-nums">
-                              {moment.time}
-                            </span>
-                            <span
-                              className={cn(
-                                "mt-1.5 size-2 shrink-0 rounded-full",
-                                style.dot
-                              )}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm">{moment.label}</p>
-                              <span
-                                className={cn(
-                                  "mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
-                                  style.badge
-                                )}
-                              >
-                                {c.moments[moment.type]}
-                              </span>
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ol>
-                  ) : (
-                    <p className="text-muted-foreground py-6 text-center text-sm">
-                      {c.noKeyMoments}
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="participants">
-                  {analysis?.participants && analysis.participants.length > 0 ? (
-                    <div className="space-y-4">
-                      {analysis.participants.map((p) => (
-                        <div key={p.name}>
-                          <div className="mb-1 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Users className="text-muted-foreground size-4" />
-                              <span className="text-sm font-medium">
-                                {p.name}
-                              </span>
-                              <Badge
-                                variant={
-                                  p.role === "rep" ? "default" : "secondary"
-                                }
-                                className="capitalize"
-                              >
-                                {p.role === "rep" ? c.you : c.prospect}
-                              </Badge>
-                            </div>
-                            <span className="text-muted-foreground text-sm tabular-nums">
-                              {p.talkPct}% {c.talkTime}
-                            </span>
-                          </div>
-                          <p className="text-muted-foreground mb-1.5 text-xs">
-                            {p.title}
-                          </p>
-                          <div className="bg-muted h-2 overflow-hidden rounded-full">
-                            <div
-                              className={cn(
-                                "h-full rounded-full",
-                                p.role === "rep" ? "bg-primary" : "bg-chart-2"
-                              )}
-                              style={{ width: `${p.talkPct}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground py-6 text-center text-sm">
-                      {c.noParticipants}
-                    </p>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.callAnalysis}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <TrendingUp className="size-3.5" />
-                    {c.talkRatio}
-                    <InfoHint label={c.talkRatioHintLabel}>
-                      {c.talkRatioHint}
-                    </InfoHint>
-                  </span>
-                  <span className="font-medium tabular-nums">
-                    {c.talkRatioSplit(repRatio, prospectRatio)}
-                  </span>
-                </div>
-                <div className="bg-muted flex h-6 w-full overflow-hidden rounded-md">
-                  <div
-                    className="bg-primary h-full transition-all"
-                    style={{ width: `${repRatio}%` }}
-                  />
-                  <div
-                    className="bg-muted h-full transition-all"
-                    style={{ width: `${prospectRatio}%` }}
-                  />
-                </div>
-                {repRatio > 55 && (
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {c.talkRatioHigh}
-                  </p>
+      {mode === "efficiency" ? (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            {/* Summary — what happened, at a glance */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{c.summary}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm">{scorecard.headline}</p>
+                {rec.highlights.length > 0 && (
+                  <ul className="space-y-1.5">
+                    {rec.highlights.map((h) => (
+                      <li
+                        key={h}
+                        className="text-muted-foreground flex items-start gap-2 text-sm"
+                      >
+                        <CheckCircle2 className="text-chart-1 mt-0.5 size-4 shrink-0" />
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
                 )}
-              </div>
+              </CardContent>
+            </Card>
 
-              {analysis && (
-                <>
-                  <Separator />
-                  <div className="space-y-2.5 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground flex items-center gap-2">
-                        <MessageCircleQuestion className="size-4" />
-                        {c.questionsAsked}
-                      </span>
-                      <span className="font-medium tabular-nums">
-                        {analysis.questionsAsked}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground flex items-center gap-2">
-                        <Clock className="size-4" />
-                        {c.longestMonologue}
-                      </span>
-                      <span className="font-medium tabular-nums">
-                        {analysis.longestMonologueMin} {c.min}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground flex items-center gap-2">
-                        <Timer className="size-4" />
-                        {c.avgResponseTime}
-                      </span>
-                      <span className="font-medium tabular-nums">
-                        {analysis.patience}s
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {analysis && analysis.topics.length > 0 && (
+            {/* Transcript with free-text search */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{c.topicsDiscussed}</CardTitle>
+              <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
+                <CardTitle className="text-base">{c.transcript}</CardTitle>
+                <div className="relative w-52 max-w-[55%]">
+                  <Search className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
+                  <Input
+                    value={transcriptQuery}
+                    onChange={(e) => setTranscriptQuery(e.target.value)}
+                    placeholder={c.searchTranscript}
+                    className="h-8 pl-7 text-sm"
+                    aria-label={c.searchTranscript}
+                  />
+                </div>
               </CardHeader>
-              <CardContent className="space-y-2.5">
-                {analysis.topics.map((topic) => (
-                  <div key={topic.label}>
-                    <div className="mb-1 flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        {topic.label}
-                      </span>
-                      <span className="font-medium tabular-nums">
-                        {topic.pct}%
-                      </span>
-                    </div>
-                    <div className="bg-muted h-2.5 overflow-hidden rounded-md">
+              <CardContent>
+                {transcriptTurns.length === 0 ? (
+                  <p className="text-muted-foreground py-6 text-center text-sm">
+                    {c.noTranscript}
+                  </p>
+                ) : filteredTranscript.length === 0 ? (
+                  <EmptyState variant="plain" description={c.noTranscriptMatch} />
+                ) : (
+                  <div className="space-y-3">
+                    {filteredTranscript.map((turn) => (
                       <div
-                        className="bg-primary h-full rounded-md transition-all"
-                        style={{ width: `${topic.pct}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {analysis && analysis.objections.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{c.objections}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2">
-                {analysis.objections.map((objection) => (
-                  <Badge
-                    key={objection}
-                    variant="outline"
-                    className="font-normal"
-                  >
-                    {objection}
-                  </Badge>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {analysis && analysis.actionItems.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{c.actionItems}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {analysis.actionItems.map((item, i) => {
-                  const done = doneItems[i] ?? false
-                  return (
-                    <div
-                      key={item}
-                      className="bg-muted/50 flex items-center gap-2 rounded-md px-3 py-2 text-sm"
-                    >
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-6 shrink-0"
-                        onClick={() => toggleDone(i, item)}
-                        aria-label={done ? c.markNotDone : c.markDone}
-                      >
-                        {done ? (
-                          <CheckCircle2 className="text-primary size-4" />
-                        ) : (
-                          <Circle className="text-muted-foreground size-4" />
-                        )}
-                      </Button>
-                      <span
+                        key={turn.id}
                         className={cn(
-                          "flex-1",
-                          done && "text-muted-foreground line-through"
+                          "rounded-md px-3 py-2 text-sm",
+                          turn.speaker === "rep"
+                            ? "bg-muted"
+                            : "border-primary border-l-2 pl-3"
                         )}
                       >
-                        {item}
-                      </span>
-                    </div>
-                  )
-                })}
+                        <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
+                          <span className="font-medium">{turn.name}</span>
+                          <span className="tabular-nums">{turn.time}</span>
+                        </div>
+                        <p>{turn.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card>
+              <CardContent>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="volt"
                   className="w-full"
-                  onClick={() => toast.success(c.tasksCreated)}
+                  onClick={() => setFollowUpOpen(true)}
                 >
-                  <ListChecks className="size-4" />
-                  {c.createTasks}
+                  <Mail className="size-4" />
+                  {c.prepareFollowUp}
                 </Button>
               </CardContent>
             </Card>
-          )}
 
-          {analysis && analysis.coachingTips.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <GraduationCap className="text-primary size-4" />
-                  {c.coachingTips}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {analysis.coachingTips.map((tip) => (
-                  <div
-                    key={tip}
-                    className="bg-primary/10 text-primary rounded px-3 py-2 text-sm font-medium"
-                  >
-                    {tip}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+            {participantsCard}
 
-          {analysis?.personality && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Brain className="text-primary size-4" />
-                  {c.personalityRead}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Badge variant="secondary">{analysis.personality.disc}</Badge>
-                <p className="text-muted-foreground text-sm">
-                  {analysis.personality.summary}
-                </p>
-                <Separator />
-                <ul className="space-y-1.5">
-                  {analysis.personality.tips.map((tip) => (
-                    <li
-                      key={tip}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+            {/* Key insights — deal-relevant facts to act on */}
+            {analysis &&
+              (analysis.topics.length > 0 ||
+                analysis.objections.length > 0 ||
+                analysis.personality) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{c.keyInsights}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {analysis.topics.length > 0 && (
+                      <div className="space-y-2.5">
+                        {analysis.topics.map((topic) => (
+                          <div key={topic.label}>
+                            <div className="mb-1 flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">
+                                {topic.label}
+                              </span>
+                              <span className="font-medium tabular-nums">
+                                {topic.pct}%
+                              </span>
+                            </div>
+                            <div className="bg-muted h-2.5 overflow-hidden rounded-md">
+                              <div
+                                className="bg-primary h-full rounded-md transition-all"
+                                style={{ width: `${topic.pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {analysis.objections.length > 0 && (
+                      <div>
+                        <p className="text-muted-foreground mb-1.5 text-xs font-medium">
+                          {c.objections}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.objections.map((objection) => (
+                            <Badge
+                              key={objection}
+                              variant="outline"
+                              className="font-normal"
+                            >
+                              {objection}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analysis.personality && (
+                      <div>
+                        <p className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-xs font-medium">
+                          <Brain className="size-3.5" />
+                          {c.personalityRead}
+                        </p>
+                        <Badge variant="secondary">
+                          {analysis.personality.disc}
+                        </Badge>
+                        <p className="text-muted-foreground mt-2 text-sm">
+                          {analysis.personality.summary}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => {
-                      setRating(n)
-                      toast.success(c.thanksFeedback)
-                    }}
-                    aria-label={c.rateStar(n)}
-                  >
-                    <Star
-                      className={cn(
-                        "size-6 transition-colors",
-                        n <= rating
-                          ? "fill-chart-4 text-chart-4"
-                          : "text-muted-foreground/40"
-                      )}
-                    />
-                  </button>
-                ))}
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm">
-                  {c.wasHelpful}
-                </span>
-                <div className="flex gap-1">
-                  <Button
-                    variant={helpful === true ? "default" : "outline"}
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.helpful}
-                    onClick={() => {
-                      setHelpful(true)
-                      toast.success(c.gladHelped)
-                    }}
-                  >
-                    <ThumbsUp className="size-4" />
-                  </Button>
-                  <Button
-                    variant={helpful === false ? "default" : "outline"}
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.notHelpful}
-                    onClick={() => {
-                      setHelpful(false)
-                      toast.info(c.willImprove)
-                    }}
-                  >
-                    <ThumbsDown className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {actionItemsCard}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <CallScorecard scorecard={scorecard} />
+
+            {/* Notable quotes — verbatim, tagged by section */}
+            {quotes.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{c.notableQuotes}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {quotes.map((s) => (
+                    <blockquote
+                      key={s.label}
+                      className="border-muted-foreground/30 border-l-2 pl-3"
+                    >
+                      <p className="text-sm italic">“{s.quote}”</p>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {s.label}
+                      </p>
+                    </blockquote>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {analysis && analysis.keyMoments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{c.keyMoments}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ol className="space-y-3">
+                    {analysis.keyMoments.map((moment, i) => {
+                      const style = MOMENT_STYLES[moment.type]
+                      return (
+                        <li
+                          key={`${moment.time}-${i}`}
+                          className="flex items-start gap-3"
+                        >
+                          <span className="text-muted-foreground mt-0.5 w-12 shrink-0 font-mono text-xs tabular-nums">
+                            {moment.time}
+                          </span>
+                          <span
+                            className={cn(
+                              "mt-1.5 size-2 shrink-0 rounded-full",
+                              style.dot
+                            )}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm">{moment.label}</p>
+                            <span
+                              className={cn(
+                                "mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
+                                style.badge
+                              )}
+                            >
+                              {c.moments[moment.type]}
+                            </span>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Ask precise questions about this call */}
+            <CallQaPanel recordingId={rec.id} />
+          </div>
+
+          <div className="space-y-6">
+            {callMetricsCard}
+
+            {/* Drill into specific topics — jumps the transcript */}
+            {analysis && analysis.topics.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {c.topicsDiscussed}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2.5">
+                  <p className="text-muted-foreground text-xs">
+                    {c.topicJumpHint}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.topics.map((topic) => (
+                      <button
+                        key={topic.label}
+                        type="button"
+                        onClick={() => jumpToTopic(topic.label)}
+                        className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors"
+                      >
+                        {topic.label}
+                        <span className="text-muted-foreground tabular-nums">
+                          {topic.pct}%
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {analysis && analysis.coachingTips.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <GraduationCap className="text-primary size-4" />
+                    {c.coachingTips}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {analysis.coachingTips.map((tip) => (
+                    <div
+                      key={tip}
+                      className="bg-primary/10 text-primary rounded px-3 py-2 text-sm font-medium"
+                    >
+                      {tip}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => {
+                        setRating(n)
+                        toast.success(c.thanksFeedback)
+                      }}
+                      aria-label={c.rateStar(n)}
+                    >
+                      <Star
+                        className={cn(
+                          "size-6 transition-colors",
+                          n <= rating
+                            ? "fill-chart-4 text-chart-4"
+                            : "text-muted-foreground/40"
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">
+                    {c.wasHelpful}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button
+                      variant={helpful === true ? "default" : "outline"}
+                      size="icon"
+                      className="size-8"
+                      aria-label={c.helpful}
+                      onClick={() => {
+                        setHelpful(true)
+                        toast.success(c.gladHelped)
+                      }}
+                    >
+                      <ThumbsUp className="size-4" />
+                    </Button>
+                    <Button
+                      variant={helpful === false ? "default" : "outline"}
+                      size="icon"
+                      className="size-8"
+                      aria-label={c.notHelpful}
+                      onClick={() => {
+                        setHelpful(false)
+                        toast.info(c.willImprove)
+                      }}
+                    >
+                      <ThumbsDown className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      <FollowUpDialog
+        open={followUpOpen}
+        onOpenChange={setFollowUpOpen}
+        rec={rec}
+        c={c}
+        locale={locale}
+      />
     </Page>
+  )
+}
+
+function FollowUpDialog({
+  open,
+  onOpenChange,
+  rec,
+  c,
+  locale,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  rec: CoachRecording
+  c: Copy
+  locale: Locale
+}) {
+  const [subject, setSubject] = React.useState("")
+  const [body, setBody] = React.useState("")
+  const [generating, setGenerating] = React.useState(false)
+  const [wasOpen, setWasOpen] = React.useState(false)
+
+  // Seed a call-aware draft each time the dialog opens (adjust state during
+  // render — reseeds on the open→true transition without an effect).
+  if (open && !wasOpen) {
+    setWasOpen(true)
+    setSubject(c.followUpDefaultSubject(rec.company))
+    setBody(plainToHtml(buildFollowUpDraft(rec, locale)))
+  } else if (!open && wasOpen) {
+    setWasOpen(false)
+  }
+
+  function generate() {
+    setGenerating(true)
+    setTimeout(() => {
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale)))
+      setGenerating(false)
+    }, 600)
+  }
+
+  const hasText = stripHtml(body).trim().length > 0
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>{c.followUpTitle(rec.prospectName)}</DialogTitle>
+          <DialogDescription>{rec.company}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>{c.followUpSubjectLabel}</Label>
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label>{c.followUpBodyLabel}</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={generate}
+                disabled={generating}
+              >
+                {generating ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {c.aiDraft}
+              </Button>
+            </div>
+            <RichTextEditor
+              value={body}
+              onChange={setBody}
+              minHeight="min-h-44"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="volt"
+            disabled={!hasText}
+            onClick={() => {
+              onOpenChange(false)
+              toast.success(c.followUpSent)
+            }}
+          >
+            <Send className="size-4" />
+            {c.sendFollowUp}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
