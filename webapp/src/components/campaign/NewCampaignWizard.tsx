@@ -56,7 +56,7 @@ const COPY = {
       "What outcome are you driving? Book demos, revive cold leads, expand into a new segment…",
     cancel: "Cancel",
     create: "Create campaign",
-    created: (name: string) => `"${name}" created — set up its audience`,
+    created: (name: string) => `"${name}" created — set up its prospects`,
   },
   es: {
     title: "Nueva campaña",
