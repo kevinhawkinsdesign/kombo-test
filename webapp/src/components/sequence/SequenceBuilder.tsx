@@ -176,10 +176,12 @@ export function SequenceBuilder({
   }
 
   // Add a step that runs in parallel with the step at `index` (a fan-out).
+  // Parallel flows only read clearly in the diagram, so switch to it.
   function addParallelAfter(index: number, channel: SequenceChannelType) {
     const next = [...steps]
     next.splice(index + 1, 0, { ...makeStep(channel), parallel: true })
     update(next)
+    setView("diagram")
   }
 
   function removeStep(id: string) {
@@ -406,7 +408,11 @@ export function SequenceBuilder({
                             aria-label={`Step ${index + 1} delay in days`}
                             className="h-8 w-16"
                           />
-                          <span className="text-muted-foreground text-xs">days</span>
+                          <span className="text-muted-foreground text-xs">
+                            {index === 0
+                              ? "days after campaign start"
+                              : "days after previous step"}
+                          </span>
                         </div>
                       )}
 
@@ -417,9 +423,12 @@ export function SequenceBuilder({
                           size="sm"
                           className="h-8 gap-1"
                           aria-pressed={step.parallel ?? false}
-                          onClick={() =>
-                            patchStep(step.id, { parallel: !step.parallel })
-                          }
+                          onClick={() => {
+                            const enabling = !step.parallel
+                            patchStep(step.id, { parallel: enabling })
+                            // Parallel branches only read clearly in the diagram.
+                            if (enabling) setView("diagram")
+                          }}
                         >
                           <GitBranch className="size-3.5" />
                           Parallel
