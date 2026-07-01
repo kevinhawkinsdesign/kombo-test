@@ -29,8 +29,6 @@ import {
   MousePointerClick,
   UserCheck,
   Tag,
-  Bold,
-  Italic,
   ChevronDown,
   X,
   PanelLeftClose,
@@ -41,7 +39,12 @@ import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import {
+  RichTextEditor,
+  type RichTextEditorHandle,
+} from "@/components/common/RichTextEditor"
+import { MessageBody } from "@/components/common/MessageBody"
+import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import {
   Dialog,
   DialogContent,
@@ -900,7 +903,7 @@ export default function Inbox() {
                       {last?.direction === "outbound" && (
                         <span className="text-muted-foreground">↩ </span>
                       )}
-                      {last?.body}
+                      {stripHtml(last?.body ?? "")}
                     </p>
                     <div className="mt-1.5 flex items-center gap-1.5">
                       {conv.status && <StatusBadge status={conv.status} locale={locale} />}
@@ -1211,7 +1214,7 @@ export default function Inbox() {
                           : "bg-muted rounded-bl-sm"
                       )}
                     >
-                      <p className="whitespace-pre-wrap">{showTr ? translate(m.body, locale) : m.body}</p>
+                      <MessageBody html={showTr ? translate(m.body, locale) : m.body} />
                       {showTr && (
                         <p className={cn("mt-1 text-[10px] italic", outbound ? "text-primary-foreground/70" : "text-muted-foreground")}>
                           {c.translatedFrom(LANG_LABEL[msgLang])}
@@ -1344,7 +1347,7 @@ function Composer({
   const [templateOpen, setTemplateOpen] = React.useState(false)
   const [customOpen, setCustomOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
-  const taRef = React.useRef<HTMLTextAreaElement>(null)
+  const taRef = React.useRef<RichTextEditorHandle>(null)
 
   const CHANNEL_NAMES: Record<string, string> = {
     email: c.email,
@@ -1356,7 +1359,10 @@ function Composer({
   }
   const channelLabel = CHANNEL_NAMES[conv.channel] ?? c.email
   const firstName = currentUser.name.split(" ")[0]
-  const showDraftChip = aiUsed && reply.trim().length > 0
+  // The reply is rich HTML — check its text content for emptiness.
+  const replyText = stripHtml(reply)
+  const hasText = replyText.length > 0
+  const showDraftChip = aiUsed && hasText
 
   // Personalization variables resolved against the recipient + sender.
   const vars: { tag: string; value: string }[] = [
@@ -1376,7 +1382,7 @@ function Composer({
   function generate() {
     const next = seed + 1
     setSeed(next)
-    setReply(draftReply(prospect, conv, next))
+    setReply(plainToHtml(draftReply(prospect, conv, next)))
     setAiUsed(true)
   }
 
@@ -1384,65 +1390,39 @@ function Composer({
   function refineTone(label: string) {
     const next = seed + 1
     setSeed(next)
-    setReply(draftReply(prospect, conv, next))
+    setReply(plainToHtml(draftReply(prospect, conv, next)))
     setAiUsed(true)
     toast.success(c.refined(label))
   }
   function refineLength(kind: "shorter" | "longer", label: string) {
     setReply((cur) => {
-      if (!cur.trim()) return cur
+      const plain = stripHtml(cur)
+      if (!plain) return cur
       if (kind === "shorter") {
-        const parts = cur.split(/(?<=[.!?])\s+/)
-        return parts.slice(0, Math.max(1, Math.ceil(parts.length / 2))).join(" ")
+        const parts = plain.split(/(?<=[.!?])\s+/)
+        return plainToHtml(
+          parts.slice(0, Math.max(1, Math.ceil(parts.length / 2))).join(" ")
+        )
       }
-      return `${cur}\n\nHappy to share more detail or hop on a quick call if it helps.`
+      return `${cur}<br><br>Happy to share more detail or hop on a quick call if it helps.`
     })
     toast.success(c.refined(label))
   }
 
-  function wrap(marker: string) {
-    const ta = taRef.current
-    if (!ta) {
-      setReply((r) => `${r}${marker}${marker}`)
-      return
-    }
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    const sel = reply.slice(start, end)
-    setReply(reply.slice(0, start) + marker + sel + marker + reply.slice(end))
-    requestAnimationFrame(() => {
-      ta.focus()
-      const pos = sel ? end + marker.length * 2 : start + marker.length
-      ta.setSelectionRange(pos, pos)
-    })
-  }
-
-  // Insert a {{variable}} at the cursor (or append if the field isn't focused).
+  // Insert a {{variable}} at the editor caret.
   function insertVar(tag: string) {
-    const ins = `{{${tag}}}`
-    const ta = taRef.current
-    if (!ta) {
-      setReply((r) => r + ins)
-      return
-    }
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    setReply(reply.slice(0, start) + ins + reply.slice(end))
-    requestAnimationFrame(() => {
-      ta.focus()
-      ta.setSelectionRange(start + ins.length, start + ins.length)
-    })
+    taRef.current?.insertText(`{{${tag}}}`)
   }
 
-  // Insert the template body verbatim (merge variables intact) so the composer's
-  // existing Personalize / Preview pipeline renders them against this recipient.
+  // Insert the template body (merge variables intact) so the composer's
+  // Personalize / Preview pipeline renders them against this recipient.
   function applyTemplate(body: string) {
-    setReply((cur) => (cur.trim() ? `${cur}\n\n${body}` : body))
+    setReply((cur) => (stripHtml(cur) ? `${cur}<br><br>${body}` : body))
     setPreview(false)
   }
 
   function send() {
-    if (!reply.trim()) return
+    if (!hasText) return
     // Send with personalization variables filled in.
     const out = renderedReply.trim()
     conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed)
@@ -1455,7 +1435,7 @@ function Composer({
   // Queue the reply to go out at `iso`. The scheduled banner (which reads the
   // stored draft) takes over once the composer clears.
   function scheduleSend(iso: string) {
-    if (!reply.trim()) return
+    if (!hasText) return
     const out = renderedReply.trim()
     conversationStore.schedule(conv.id, iso, out)
     setReply("")
@@ -1476,7 +1456,7 @@ function Composer({
     scheduleSend(new Date(customValue).toISOString())
   }
 
-  const showTranslate = reply.trim().length > 0 && detectLang(reply) !== recipientLang
+  const showTranslate = hasText && detectLang(replyText) !== recipientLang
 
   return (
     <div className="space-y-2 border-t p-4">
@@ -1511,45 +1491,38 @@ function Composer({
       )}
 
       {preview ? (
-        <div className="min-h-24 rounded-md border p-3 text-sm whitespace-pre-wrap">
-          {renderedReply.trim() ? (
-            renderedReply
-          ) : (
-            <span className="text-muted-foreground">
-              {c.replyTo(prospect.firstName)}
-            </span>
-          )}
-        </div>
+        stripHtml(renderedReply) ? (
+          <MessageBody
+            html={renderedReply}
+            className="min-h-24 rounded-md border p-3 text-sm"
+          />
+        ) : (
+          <div className="text-muted-foreground min-h-24 rounded-md border p-3 text-sm">
+            {c.replyTo(prospect.firstName)}
+          </div>
+        )
       ) : (
-        <Textarea
+        <RichTextEditor
           ref={taRef}
           value={reply}
-          onChange={(e) => {
-            setReply(e.target.value)
-            if (e.target.value.trim() === "") setAiUsed(false)
+          onChange={(html) => {
+            setReply(html)
+            if (stripHtml(html) === "") setAiUsed(false)
           }}
           placeholder={c.replyTo(prospect.firstName)}
-          className={cn(
-            "min-h-24 resize-none",
-            showDraftChip && "border-primary/30 bg-primary/[0.03]"
-          )}
+          ariaLabel={c.replyTo(prospect.firstName)}
+          minHeight="min-h-24"
+          className={cn(showDraftChip && "border-primary/30 bg-primary/[0.03]")}
         />
       )}
 
       <div className="flex flex-wrap items-center gap-1.5">
         <Button variant="outline" size="sm" onClick={generate}>
           <Wand2 className="size-4" />
-          {reply.trim() ? c.regenerate : c.generate}
+          {hasText ? c.regenerate : c.generate}
         </Button>
 
         <div className="bg-border/60 mx-0.5 hidden h-5 w-px sm:block" />
-
-        <Button variant="ghost" size="icon" className="size-8" aria-label={c.bold} onClick={() => wrap("**")}>
-          <Bold className="size-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="size-8" aria-label={c.italic} onClick={() => wrap("*")}>
-          <Italic className="size-4" />
-        </Button>
 
         {/* Tone rewrite */}
         <DropdownMenu>
@@ -1558,7 +1531,7 @@ function Composer({
               variant="ghost"
               size="sm"
               className="text-muted-foreground"
-              disabled={!reply.trim()}
+              disabled={!hasText}
             >
               <Sparkles className="size-4" />
               {c.tone}
@@ -1582,7 +1555,7 @@ function Composer({
               variant="ghost"
               size="sm"
               className="text-muted-foreground"
-              disabled={!reply.trim()}
+              disabled={!hasText}
             >
               <Languages className="size-4 rotate-90" />
               {c.length}
@@ -1640,7 +1613,7 @@ function Composer({
           variant="ghost"
           size="sm"
           className="text-muted-foreground"
-          disabled={!reply.trim()}
+          disabled={!hasText}
           onClick={() => setPreview((v) => !v)}
         >
           {preview ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -1667,7 +1640,7 @@ function Composer({
             size="sm"
             variant="volt"
             className="rounded-r-none"
-            disabled={!reply.trim()}
+            disabled={!hasText}
             onClick={send}
           >
             <Send className="size-4" />
@@ -1679,7 +1652,7 @@ function Composer({
                 size="sm"
                 variant="volt"
                 className="rounded-l-none border-l border-white/25 px-2"
-                disabled={!reply.trim()}
+                disabled={!hasText}
                 aria-label={c.sendLater}
               >
                 <ChevronDown className="size-4" />
