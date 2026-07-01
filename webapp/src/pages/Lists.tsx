@@ -90,7 +90,7 @@ const COPY = {
     imported: (count: number) =>
       `${count} prospects imported into a new list`,
     needEnrich: (count: number) => `${count} to enrich`,
-    peopleList: "People",
+    peopleList: "Prospects",
     companyList: "Companies",
     search: "Search lists…",
     viewCards: "Cards",
@@ -147,7 +147,7 @@ const COPY = {
     imported: (count: number) =>
       `${count} prospectos importados a una nueva lista`,
     needEnrich: (count: number) => `${count} por enriquecer`,
-    peopleList: "Personas",
+    peopleList: "Prospectos",
     companyList: "Empresas",
     search: "Buscar listas…",
     viewCards: "Tarjetas",

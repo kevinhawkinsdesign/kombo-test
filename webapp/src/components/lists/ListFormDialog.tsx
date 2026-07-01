@@ -101,7 +101,7 @@ export function ListFormDialog({
               <div className="grid grid-cols-2 gap-2">
                 {(
                   [
-                    { value: "people", label: "People", icon: Users },
+                    { value: "people", label: "Prospects", icon: Users },
                     { value: "company", label: "Companies", icon: Building2 },
                   ] as const
                 ).map((opt) => {

@@ -62,7 +62,7 @@ const COPY = {
     removeList: "Remove from workspace",
     removedList: (name: string) => `${name} removed from workspace`,
     searchPickerEmpty: "No saved searches yet. Save one from the Search page.",
-    entityPeople: "People",
+    entityPeople: "Prospects",
     entityCompanies: "Companies",
     summary: (lists: number, campaigns: number) =>
       `${lists} ${lists === 1 ? "list" : "lists"} · ${campaigns} live ${campaigns === 1 ? "campaign" : "campaigns"} · synced recently`,
@@ -77,7 +77,7 @@ const COPY = {
     titleCampaign: "Campaign",
     found: (n: number) => `${n.toLocaleString()} found`,
     listsPeople: (l: number, p: number) =>
-      `${l} ${l === 1 ? "list" : "lists"} · ${p.toLocaleString()} people`,
+      `${l} ${l === 1 ? "list" : "lists"} · ${p.toLocaleString()} prospects`,
     multichannel: "multichannel",
     stComplete: "complete",
     stEnriching: "enriching",
@@ -85,7 +85,7 @@ const COPY = {
     stReady: "ready",
     addFilter: "Add filter",
     matching: (p: number, co: number) =>
-      `Matching ${p.toLocaleString()} people across ${co.toLocaleString()} companies — push results into a list to start enriching.`,
+      `Matching ${p.toLocaleString()} prospects across ${co.toLocaleString()} companies — push results into a list to start enriching.`,
     noSource: "No source search yet.",
     runSearch: "Run a search",
     newList: "New list",
@@ -102,7 +102,7 @@ const COPY = {
     stQueued: "Queued",
     stPending: "Pending",
     tableFoot: (n: number, e: number) =>
-      `${n} people · ${e} enriched · auto-refreshing every 24h`,
+      `${n} prospects · ${e} enriched · auto-refreshing every 24h`,
     noLists: "No lists yet — push search results into a list.",
     pull: (lists: number, enrolled: number, reply: number) =>
       `Pulling from ${lists === 1 ? "1 list" : `all ${lists} lists`} · ${enrolled.toLocaleString()} enrolled · ${reply}% reply rate`,
@@ -135,7 +135,7 @@ const COPY = {
     removeList: "Quitar del espacio",
     removedList: (name: string) => `${name} quitada del espacio`,
     searchPickerEmpty: "Aún no hay búsquedas guardadas. Guarda una desde la página de Búsqueda.",
-    entityPeople: "Personas",
+    entityPeople: "Prospectos",
     entityCompanies: "Empresas",
     summary: (lists: number, campaigns: number) =>
       `${lists} ${lists === 1 ? "lista" : "listas"} · ${campaigns} ${campaigns === 1 ? "campaña activa" : "campañas activas"} · sincronizado hace poco`,
@@ -150,7 +150,7 @@ const COPY = {
     titleCampaign: "Campaña",
     found: (n: number) => `${n.toLocaleString()} encontrados`,
     listsPeople: (l: number, p: number) =>
-      `${l} ${l === 1 ? "lista" : "listas"} · ${p.toLocaleString()} personas`,
+      `${l} ${l === 1 ? "lista" : "listas"} · ${p.toLocaleString()} prospectos`,
     multichannel: "multicanal",
     stComplete: "completo",
     stEnriching: "enriqueciendo",
@@ -158,7 +158,7 @@ const COPY = {
     stReady: "listo",
     addFilter: "Añadir filtro",
     matching: (p: number, co: number) =>
-      `${p.toLocaleString()} personas en ${co.toLocaleString()} empresas — envía resultados a una lista para enriquecer.`,
+      `${p.toLocaleString()} prospectos en ${co.toLocaleString()} empresas — envía resultados a una lista para enriquecer.`,
     noSource: "Aún no hay búsqueda de origen.",
     runSearch: "Ejecutar búsqueda",
     newList: "Nueva lista",
@@ -175,7 +175,7 @@ const COPY = {
     stQueued: "En cola",
     stPending: "Pendiente",
     tableFoot: (n: number, e: number) =>
-      `${n} personas · ${e} enriquecidos · actualización cada 24 h`,
+      `${n} prospectos · ${e} enriquecidos · actualización cada 24 h`,
     noLists: "Aún no hay listas — envía resultados a una lista.",
     pull: (lists: number, enrolled: number, reply: number) =>
       `Desde ${lists === 1 ? "1 lista" : `${lists} listas`} · ${enrolled.toLocaleString()} inscritos · ${reply}% de respuesta`,

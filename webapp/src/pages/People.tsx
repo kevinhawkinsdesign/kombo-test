@@ -58,7 +58,7 @@ const STATUSES = Object.keys(STATUS_LABELS) as ProspectStatus[]
 
 const COPY = {
   en: {
-    title: "People",
+    title: "Prospects",
     description:
       "Everyone you've found — across searches, imports, lists & campaigns. Select to enrich, export, or add to a list or campaign.",
     exportedToast: (n: number) => `Exported ${n} to CSV`,
@@ -74,15 +74,15 @@ const COPY = {
     introPoints: [
       "Sort and filter by score, status & seniority",
       "Switch between table and card views",
-      "Add a person to a list or campaign",
+      "Add a prospect to a list or campaign",
       "Export the filtered set to CSV",
     ],
     searchPlaceholder: "Search by name, title, company, or email…",
     status: "Status",
     allStatuses: "All statuses",
-    person: "person",
-    people: "people",
-    noMatch: "No people match your filters.",
+    person: "prospect",
+    people: "prospects",
+    noMatch: "No prospects match your filters.",
     allProspects: "All prospects",
     searchLists: "Search lists…",
     createList: "Create list",
@@ -95,9 +95,9 @@ const COPY = {
     selectAll: "Select all",
   },
   es: {
-    title: "Personas",
+    title: "Prospectos",
     description:
-      "Todas las personas que has encontrado — de búsquedas, importaciones, listas y campañas. Selecciona para enriquecer, exportar o añadir a una lista o campaña.",
+      "Todos los prospectos que has encontrado — de búsquedas, importaciones, listas y campañas. Selecciona para enriquecer, exportar o añadir a una lista o campaña.",
     exportedToast: (n: number) => `Exportadas ${n} a CSV`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "prospecto" : "prospectos"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionados…`,
@@ -111,15 +111,15 @@ const COPY = {
     introPoints: [
       "Ordena y filtra por puntuación, estado y seniority",
       "Cambia entre vista de tabla y tarjetas",
-      "Añade una persona a una lista o campaña",
+      "Añade un prospecto a una lista o campaña",
       "Exporta el conjunto filtrado a CSV",
     ],
     searchPlaceholder: "Busca por nombre, cargo, empresa o correo…",
     status: "Estado",
     allStatuses: "Todos los estados",
-    person: "persona",
-    people: "personas",
-    noMatch: "Ninguna persona coincide con tus filtros.",
+    person: "prospecto",
+    people: "prospectos",
+    noMatch: "Ningún prospecto coincide con tus filtros.",
     allProspects: "Todos los prospectos",
     searchLists: "Buscar listas…",
     createList: "Crear lista",

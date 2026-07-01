@@ -21,7 +21,7 @@ const COPY = {
   en: {
     title: "Recommended for you today",
     description: "Fresh, in-ICP picks with a buying signal — one click to save.",
-    people: "People",
+    people: "Prospects",
     companies: "Companies",
     add: "Add",
     added: "Added",
@@ -33,7 +33,7 @@ const COPY = {
     title: "Recomendado para ti hoy",
     description:
       "Selección fresca dentro de tu ICP con señal de compra — guarda con un clic.",
-    people: "Personas",
+    people: "Prospectos",
     companies: "Empresas",
     add: "Añadir",
     added: "Añadido",

@@ -58,7 +58,7 @@ const COPY = {
       "An endless stream of prospects who look like the customers you already win — fresh every time.",
     introTitle: "Lookalikes of your best customers, on tap",
     introDescription:
-      "Kombo studies the accounts you've closed and keeps surfacing net-new people who match. Add the good ones to a list, skip the rest — the feed never runs dry.",
+      "Kombo studies the accounts you've closed and keeps surfacing net-new prospects who match. Add the good ones to a list, skip the rest — the feed never runs dry.",
     introPoints: [
       "Seeded from your won deals and champions",
       "Every card shows why it's a match",
@@ -94,7 +94,7 @@ const COPY = {
       "Un flujo infinito de prospectos parecidos a los clientes que ya ganas — siempre fresco.",
     introTitle: "Lookalikes de tus mejores clientes, siempre a mano",
     introDescription:
-      "Kombo estudia las cuentas que has cerrado y sigue mostrando personas nuevas que encajan. Añade las buenas a una lista y descarta el resto — el flujo nunca se agota.",
+      "Kombo estudia las cuentas que has cerrado y sigue mostrando prospectos nuevos que encajan. Añade las buenas a una lista y descarta el resto — el flujo nunca se agota.",
     introPoints: [
       "Basado en tus negocios ganados y campeones",
       "Cada tarjeta muestra por qué encaja",

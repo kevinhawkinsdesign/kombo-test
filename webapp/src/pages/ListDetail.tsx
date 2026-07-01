@@ -94,7 +94,7 @@ const COPY = {
     lastSynced: (date: string) => `Last synced ${date}`,
     addProspectsTitle: "Add prospects",
     addProspectsDescription: (name: string) =>
-      `Pull people into "${name}" from any source.`,
+      `Pull prospects into "${name}" from any source.`,
     allAlready: "Every prospect is already in this list.",
     cancel: "Cancel",
     addSelected: "Add selected",
@@ -121,7 +121,7 @@ const COPY = {
     // Warn before campaign
     warnTitle: "Some contacts aren't enriched",
     warnDescription: (count: number) =>
-      `${count} ${count === 1 ? "contact" : "contacts"} in this list ${count === 1 ? "hasn't" : "haven't"} been enriched. Campaigns reach more people and bounce less when contacts have verified data. Enrich now, or start anyway?`,
+      `${count} ${count === 1 ? "contact" : "contacts"} in this list ${count === 1 ? "hasn't" : "haven't"} been enriched. Campaigns reach more prospects and bounce less when contacts have verified data. Enrich now, or start anyway?`,
     enrichFirst: "Enrich first",
     startAnyway: "Start anyway",
     // Company lists
@@ -188,7 +188,7 @@ const COPY = {
     lastSynced: (date: string) => `Última sincronización ${date}`,
     addProspectsTitle: "Añadir prospectos",
     addProspectsDescription: (name: string) =>
-      `Trae personas a "${name}" desde cualquier fuente.`,
+      `Trae prospectos a "${name}" desde cualquier fuente.`,
     allAlready: "Todos los prospectos ya están en esta lista.",
     cancel: "Cancelar",
     addSelected: "Añadir seleccionados",
@@ -216,7 +216,7 @@ const COPY = {
     // Warn before campaign
     warnTitle: "Algunos contactos no están enriquecidos",
     warnDescription: (count: number) =>
-      `${count} ${count === 1 ? "contacto" : "contactos"} de esta lista no ${count === 1 ? "ha sido enriquecido" : "han sido enriquecidos"}. Las campañas llegan a más personas y rebotan menos cuando los contactos tienen datos verificados. ¿Enriquecer ahora o iniciar de todos modos?`,
+      `${count} ${count === 1 ? "contacto" : "contactos"} de esta lista no ${count === 1 ? "ha sido enriquecido" : "han sido enriquecidos"}. Las campañas llegan a más prospectos y rebotan menos cuando los contactos tienen datos verificados. ¿Enriquecer ahora o iniciar de todos modos?`,
     enrichFirst: "Enriquecer primero",
     startAnyway: "Iniciar de todos modos",
     // Company lists
