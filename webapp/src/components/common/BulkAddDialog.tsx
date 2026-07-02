@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { AddCostConfirm } from "@/components/common/AddCostConfirm"
 import { useLists, useCampaigns, listStore, campaignStore } from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import type { RecordKind } from "@/lib/crm-mapping"
@@ -30,6 +31,8 @@ const COPY = {
     enrolledIn: (n: number, l: string) => `Added ${n} to ${l}`,
     noLists: "No lists yet — type a name to create one.",
     noCampaigns: "No campaigns yet — type a name to create one.",
+    addToListAction: "Add to list",
+    addToCampaignAction: "Add to campaign",
   },
   es: {
     listTitle: (n: number) => `Añadir ${n} a una lista`,
@@ -45,10 +48,19 @@ const COPY = {
     enrolledIn: (n: number, l: string) => `Añadidos ${n} a ${l}`,
     noLists: "Aún no hay listas — escribe un nombre para crear una.",
     noCampaigns: "Aún no hay campañas — escribe un nombre para crear una.",
+    addToListAction: "Añadir a lista",
+    addToCampaignAction: "Añadir a campaña",
   },
 } as const
 
 const NEW_LIST_COLORS = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899"]
+
+// A staged add, pending the credit-cost confirmation. "create" makes a new
+// list/campaign named `name`; the others target an existing one by id.
+type Pending =
+  | { type: "list"; id: string; name: string }
+  | { type: "campaign"; id: string; name: string }
+  | { type: "create"; name: string }
 
 /**
  * Adds a multi-selection of records to a chosen list or campaign in one shot
@@ -75,6 +87,10 @@ export function BulkAddDialog({
   const lists = useLists()
   const campaigns = useCampaigns()
   const [query, setQuery] = React.useState("")
+  // A chosen target awaiting the credit-cost confirmation — the actual commit
+  // only runs once the user confirms (see commit()).
+  const [pending, setPending] = React.useState<Pending | null>(null)
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
 
   const q = query.trim().toLowerCase()
   const n = ids.length
@@ -96,25 +112,49 @@ export function BulkAddDialog({
   function close() {
     onOpenChange(false)
     setQuery("")
+    setPending(null)
+    setConfirmOpen(false)
     onDone?.()
   }
 
+  // Choosing a target no longer commits directly — it stages the action and
+  // opens the credit-cost confirmation, so the estimate is the last step.
   function addToList(listId: string, name: string) {
-    if (recordKind === "company") listStore.addAccounts(listId, ids)
-    else listStore.addProspects(listId, ids)
-    toast.success(c.addedToList(n, name))
-    close()
+    setPending({ type: "list", id: listId, name })
+    setConfirmOpen(true)
   }
 
   function addToCampaign(campaignId: string, name: string) {
-    campaignStore.addProspects(campaignId, ids)
-    toast.success(c.enrolledIn(n, name))
-    close()
+    setPending({ type: "campaign", id: campaignId, name })
+    setConfirmOpen(true)
   }
 
   function createAndAdd() {
     const name = query.trim()
     if (!name) return
+    setPending({ type: "create", name })
+    setConfirmOpen(true)
+  }
+
+  // Runs only after the user confirms the estimate: create-if-needed, add,
+  // toast, navigate, and close.
+  function commit() {
+    if (!pending) return
+    if (pending.type === "list") {
+      if (recordKind === "company") listStore.addAccounts(pending.id, ids)
+      else listStore.addProspects(pending.id, ids)
+      toast.success(c.addedToList(n, pending.name))
+      close()
+      return
+    }
+    if (pending.type === "campaign") {
+      campaignStore.addProspects(pending.id, ids)
+      toast.success(c.enrolledIn(n, pending.name))
+      close()
+      return
+    }
+    // pending.type === "create"
+    const name = pending.name
     if (mode === "list") {
       const list = listStore.create({
         name,
@@ -122,12 +162,17 @@ export function BulkAddDialog({
         color: NEW_LIST_COLORS[name.length % NEW_LIST_COLORS.length],
         kind: recordKind === "company" ? "company" : "people",
       })
-      addToList(list.id, name)
+      if (recordKind === "company") listStore.addAccounts(list.id, ids)
+      else listStore.addProspects(list.id, ids)
+      toast.success(c.addedToList(n, name))
+      close()
       // Open the brand-new list so the user sees what they just made.
       navigate(`/lists/${list.id}`)
     } else {
       const cp = campaignStore.create({ name })
-      addToCampaign(cp.id, name)
+      campaignStore.addProspects(cp.id, ids)
+      toast.success(c.enrolledIn(n, name))
+      close()
       navigate(`/campaigns/${cp.id}`)
     }
   }
@@ -137,11 +182,16 @@ export function BulkAddDialog({
   const placeholder = mode === "list" ? c.searchLists : c.searchCampaigns
 
   return (
+    <>
     <Dialog
       open={open}
       onOpenChange={(v) => {
         onOpenChange(v)
-        if (!v) setQuery("")
+        if (!v) {
+          setQuery("")
+          setPending(null)
+          setConfirmOpen(false)
+        }
       }}
     >
       <DialogContent className="sm:max-w-md">
@@ -239,5 +289,16 @@ export function BulkAddDialog({
         </div>
       </DialogContent>
     </Dialog>
+
+    <AddCostConfirm
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      count={n}
+      entity={recordKind === "company" ? "companies" : "people"}
+      targetName={pending?.name}
+      actionLabel={mode === "list" ? c.addToListAction : c.addToCampaignAction}
+      onConfirm={commit}
+    />
+    </>
   )
 }
