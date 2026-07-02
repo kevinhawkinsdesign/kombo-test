@@ -11,6 +11,39 @@
       rel="stylesheet"
     />
     <title>Kombo 2.0</title>
+    <script>
+      // Self-heal for stale static hosting: GitHub Pages' CDN can serve a
+      // cached index.html that points at a hashed bundle a later deploy
+      // removed, which renders a blank page. If the app's script/stylesheet
+      // fails to load, reload once with a cache-buster so the browser fetches
+      // fresh HTML + assets. Guarded to run at most once until a load succeeds.
+      (function () {
+        window.addEventListener(
+          "error",
+          function (e) {
+            var t = e && e.target
+            if (!t || !t.tagName) return
+            var tag = t.tagName.toUpperCase()
+            var url = t.src || t.href || ""
+            if ((tag !== "SCRIPT" && tag !== "LINK") || !/\/assets\//.test(url))
+              return
+            try {
+              if (sessionStorage.getItem("kb-reloaded-once")) return
+              sessionStorage.setItem("kb-reloaded-once", "1")
+            } catch (_) {}
+            var u = new URL(window.location.href)
+            u.searchParams.set("cb", Date.now().toString(36))
+            window.location.replace(u.toString())
+          },
+          true
+        )
+        window.addEventListener("load", function () {
+          try {
+            sessionStorage.removeItem("kb-reloaded-once")
+          } catch (_) {}
+        })
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
