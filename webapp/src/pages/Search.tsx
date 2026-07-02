@@ -21,8 +21,6 @@ import {
   MoreHorizontal,
   Upload,
   SlidersHorizontal,
-  Megaphone,
-  LayoutTemplate,
   Database,
   MapPin,
   Star,
@@ -117,7 +115,6 @@ import {
   type CatalogFilterDef,
 } from "@/components/common/FilterCatalog"
 import { downloadCsv } from "@/lib/csv"
-import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { HomeModules } from "@/components/home/HomeModules"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import type { AccountTier } from "@/lib/types"
@@ -720,7 +717,6 @@ export default function Search() {
   const loadedSearch = incomingSearchId
     ? (savedSearches.find((s) => s.id === incomingSearchId) ?? null)
     : null
-  const newCampaign = useNewCampaign()
 
   // This component serves two routes: "/" is Home (the "Describe your ideal
   // customer" hero) and "/search" opens the search page pristine — no query,
@@ -1253,42 +1249,6 @@ export default function Search() {
     }
   }
 
-  // Clay-style launcher: a row of suggested starting points above the search.
-  const quickActions = [
-    {
-      key: "import",
-      icon: Upload,
-      tint: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-      title: c.qaImport,
-      desc: c.qaImportDesc,
-      onClick: () => navigate("/lists?import=1"),
-    },
-    {
-      key: "audience",
-      icon: SlidersHorizontal,
-      tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-      title: c.qaAudience,
-      desc: c.qaAudienceDesc,
-      onClick: () => setBuildOpen(true),
-    },
-    {
-      key: "campaign",
-      icon: Megaphone,
-      tint: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-      title: c.qaCampaign,
-      desc: c.qaCampaignDesc,
-      onClick: () => newCampaign.open(),
-    },
-    {
-      key: "template",
-      icon: LayoutTemplate,
-      tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
-      title: c.qaTemplate,
-      desc: c.qaTemplateDesc,
-      onClick: () => navigate("/templates"),
-    },
-  ]
-
   return (
     <Page>
       {!hasSearched ? (
@@ -1299,8 +1259,6 @@ export default function Search() {
           onRun={runPrompt}
           entity={entity}
           setEntity={setEntity}
-          examples={examples}
-          quickActions={quickActions}
         />
       ) : (
         <>
@@ -2211,9 +2169,8 @@ function SearchEmptyState({
   )
 }
 
-// The home / empty state: a centered hero with the AI prompt, suggested
-// searches, and the "Start here" quick actions. Shown only before a search has
-// run — once results exist, the page switches to the working layout.
+// The home hero: the permanent AI search prompt + entity tabs. The
+// customizable module grid renders below it (see HomeModules).
 function SearchHome({
   c,
   input,
@@ -2221,8 +2178,6 @@ function SearchHome({
   onRun,
   entity,
   setEntity,
-  examples,
-  quickActions,
 }: {
   c: Copy
   input: string
@@ -2230,14 +2185,6 @@ function SearchHome({
   onRun: (prompt: string) => void
   entity: AiEntity
   setEntity: (e: AiEntity) => void
-  examples: string[]
-  quickActions: {
-    key: string
-    icon: React.ComponentType<{ className?: string }>
-    tint: string
-    title: string
-    onClick: () => void
-  }[]
 }) {
   return (
     <div className="mx-auto max-w-5xl py-8">
@@ -2303,51 +2250,6 @@ function SearchHome({
           </Button>
         </div>
       </form>
-
-      {/* Suggested searches */}
-      <div className="mt-4 w-full space-y-0.5">
-        {examples.slice(0, 4).map((ex) => (
-          <button
-            key={ex}
-            type="button"
-            onClick={() => onRun(ex)}
-            className="hover:bg-muted/60 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
-          >
-            <SearchIcon className="text-muted-foreground size-4 shrink-0" />
-            <span className="truncate">{ex}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Quick actions — "Start here" */}
-      <div className="mt-7 w-full">
-        <p className="text-muted-foreground mb-2 text-center text-[11px] font-medium tracking-wide uppercase">
-          {c.startHere}
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {quickActions.map((a) => {
-            const Icon = a.icon
-            return (
-              <button
-                key={a.key}
-                type="button"
-                onClick={a.onClick}
-                className="hover:border-primary/40 hover:bg-muted/40 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors"
-              >
-                <span
-                  className={cn(
-                    "flex size-5 shrink-0 items-center justify-center rounded",
-                    a.tint
-                  )}
-                >
-                  <Icon className="size-3" />
-                </span>
-                {a.title}
-              </button>
-            )
-          })}
-        </div>
-      </div>
       </div>
 
       {/* Modular, customizable cards below the permanent search. */}
