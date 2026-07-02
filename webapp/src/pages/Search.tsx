@@ -118,6 +118,7 @@ import {
 } from "@/components/common/FilterCatalog"
 import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
+import { HomeModules } from "@/components/home/HomeModules"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import type { AccountTier } from "@/lib/types"
 
@@ -2241,7 +2242,10 @@ function SearchHome({
   }[]
 }) {
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center py-8">
+    <div className="mx-auto max-w-5xl py-8">
+      {/* The search hero stays permanently at the top; the customizable module
+          grid flows below it. The hero keeps its narrow, centered column. */}
+      <div className="mx-auto flex max-w-2xl flex-col items-center">
       <h1 className="text-center text-3xl font-semibold tracking-tight sm:text-4xl">
         {c.heroTitle}
       </h1>
@@ -2349,6 +2353,10 @@ function SearchHome({
           })}
         </div>
       </div>
+      </div>
+
+      {/* Modular, customizable cards below the permanent search. */}
+      <HomeModules />
     </div>
   )
 }
