@@ -81,10 +81,6 @@ import {
   queryTitle,
   savedSearchStore,
   useSavedSearches,
-  EXAMPLE_PROMPTS_EN,
-  EXAMPLE_PROMPTS_ES,
-  EXAMPLE_PROMPTS_COMPANIES_EN,
-  EXAMPLE_PROMPTS_COMPANIES_ES,
   REGION_OPTIONS,
   INDUSTRY_OPTIONS,
   sortLeads,
@@ -732,28 +728,16 @@ export default function Search() {
           : "people"
         : "people"
   )
-  // Suggested searches adapt to the selected search type (people vs companies).
-  const examples =
-    entity === "companies"
-      ? locale === "es"
-        ? EXAMPLE_PROMPTS_COMPANIES_ES
-        : EXAMPLE_PROMPTS_COMPANIES_EN
-      : locale === "es"
-        ? EXAMPLE_PROMPTS_ES
-        : EXAMPLE_PROMPTS_EN
   const [query, setQuery] = React.useState<AiQuery>(
     loadedSearch ? loadedSearch.query : { ...EMPTY_QUERY }
   )
   const [lastPrompt, setLastPrompt] = React.useState(
     loadedSearch ? loadedSearch.prompt : similarPrompt
   )
-  // The Home hero stays pre-filled with an example for demos; /search is empty.
+  // The search box starts empty (placeholder only) — unless we arrived with a
+  // lookalike seed or a header prompt, or reopened a saved search.
   const [input, setInput] = React.useState(
-    loadedSearch
-      ? loadedSearch.prompt
-      : similarPrompt ||
-          headerPrompt ||
-          (isHomeRoute ? EXAMPLE_PROMPTS_EN[0] : "")
+    loadedSearch ? loadedSearch.prompt : similarPrompt || headerPrompt || ""
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [hasSearched, setHasSearched] = React.useState(!isHomeRoute)
@@ -1740,12 +1724,7 @@ export default function Search() {
           )}
         </div>
             ) : (
-              <SearchEmptyState
-                c={c}
-                entity={entity}
-                examples={examples}
-                onRun={runPrompt}
-              />
+              <SearchEmptyState c={c} entity={entity} onRun={runPrompt} />
             )}
           </div>
         </div>
@@ -2136,17 +2115,14 @@ function FilterSidebar({
   )
 }
 
-// Home/empty state for Prospect Search: AI-powered suggestions, two ways to
-// start (type a query / use filters), and example prompts.
+// Pristine /search state: AI-powered suggestions + a "type your query" prompt.
 function SearchEmptyState({
   c,
   entity,
-  examples,
   onRun,
 }: {
   c: Copy
   entity: AiEntity
-  examples: string[]
   onRun: (prompt: string) => void
 }) {
   // Three suggestions so the row always fits on a single line.
@@ -2186,23 +2162,6 @@ function SearchEmptyState({
         <p className="mt-3 font-medium">{c.startTypeTitle}</p>
         <p className="text-muted-foreground mt-1 text-sm">{c.startTypeDesc}</p>
         <p className="text-muted-foreground/80 mt-1 text-xs">{c.filtersAfterSearch}</p>
-      </div>
-
-      <div className="space-y-1">
-        <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-          {c.examples}
-        </p>
-        {examples.slice(0, 5).map((ex) => (
-          <button
-            key={ex}
-            type="button"
-            onClick={() => onRun(ex)}
-            className="hover:bg-muted/60 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
-          >
-            <SearchIcon className="text-muted-foreground size-4 shrink-0" />
-            <span className="truncate">{ex}</span>
-          </button>
-        ))}
       </div>
     </div>
   )
