@@ -724,9 +724,10 @@ export default function Search() {
     : null
   const newCampaign = useNewCampaign()
 
-  // Seed with a starter query so the page lands populated for demos — unless we
-  // arrived from the header search with a prompt to run, or a lookalike seed.
-  const initial = React.useMemo(() => interpretPrompt(EXAMPLE_PROMPTS_EN[0]), [])
+  // This component serves two routes: "/" is Home (the "Describe your ideal
+  // customer" hero) and "/search" opens the search page pristine — no query,
+  // no filters — showing its empty state until the user searches.
+  const isHomeRoute = location.pathname === "/"
   const [entity, setEntity] = React.useState<AiEntity>(
     loadedSearch
       ? loadedSearch.entity
@@ -734,7 +735,7 @@ export default function Search() {
         ? incomingSeed.kind === "company"
           ? "companies"
           : "people"
-        : initial.entity
+        : "people"
   )
   // Suggested searches adapt to the selected search type (people vs companies).
   const examples =
@@ -746,24 +747,20 @@ export default function Search() {
         ? EXAMPLE_PROMPTS_ES
         : EXAMPLE_PROMPTS_EN
   const [query, setQuery] = React.useState<AiQuery>(
-    loadedSearch
-      ? loadedSearch.query
-      : incomingSeed || headerPrompt
-        ? { ...EMPTY_QUERY }
-        : initial.query
+    loadedSearch ? loadedSearch.query : { ...EMPTY_QUERY }
   )
   const [lastPrompt, setLastPrompt] = React.useState(
-    loadedSearch ? loadedSearch.prompt : similarPrompt || EXAMPLE_PROMPTS_EN[0]
+    loadedSearch ? loadedSearch.prompt : similarPrompt
   )
+  // The Home hero stays pre-filled with an example for demos; /search is empty.
   const [input, setInput] = React.useState(
     loadedSearch
       ? loadedSearch.prompt
-      : similarPrompt || headerPrompt || EXAMPLE_PROMPTS_EN[0]
+      : similarPrompt ||
+          headerPrompt ||
+          (isHomeRoute ? EXAMPLE_PROMPTS_EN[0] : "")
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
-  // This component serves two routes: "/" is Home (the "Describe your ideal
-  // customer" hero) and "/search" opens straight into the results view.
-  const isHomeRoute = location.pathname === "/"
   const [hasSearched, setHasSearched] = React.useState(!isHomeRoute)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
@@ -775,6 +772,21 @@ export default function Search() {
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
   const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>("kombo")
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
+
+  // The search page is "pristine" until something defines a search — a prompt,
+  // a lookalike seed, an active filter, or an in-flight interpretation.
+  // Pristine shows the empty state instead of the whole unfiltered pool.
+  const searchStarted =
+    thinking ||
+    Boolean(seed) ||
+    lastPrompt.trim() !== "" ||
+    Object.entries(query).some(([k, v]) =>
+      k === "facets"
+        ? Object.values(v as Record<string, string[]>).some((a) => a.length > 0)
+        : Array.isArray(v)
+          ? v.length > 0
+          : typeof v === "string" && v.trim() !== ""
+    )
 
   // The active database. A seed means Lookalike; Google Maps / TripAdvisor are
   // company-only, so fall back to Kombo when viewing People.
@@ -1433,7 +1445,7 @@ export default function Search() {
             c={c}
           />
           <div className="min-w-0 flex-1">
-            {hasSearched ? (
+            {searchStarted ? (
         <div className="min-w-0 space-y-3">
           {/* Blended controls: sources, filters & sort */}
           <Card className="gap-3 p-3">
