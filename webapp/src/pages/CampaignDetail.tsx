@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   CalendarClock,
   ChevronDown,
+  Ban,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -81,19 +82,28 @@ import {
 } from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
-import { getProspect } from "@/lib/mock-data"
+import { getProspect, currentUser } from "@/lib/mock-data"
+import { team } from "@/lib/team"
 import { useCampaigns, useLists, campaignStore, listStore } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
 import type {
   CampaignStatus,
   StepChannel,
   EnrollmentStatus,
   Prospect,
 } from "@/lib/types"
+
+// Sending accounts: the current user first, then teammates, deduped by id.
+const ACCOUNT_OPTIONS = [
+  { id: currentUser.id, name: currentUser.name },
+  ...team
+    .filter((m) => m.id !== currentUser.id)
+    .map((m) => ({ id: m.id, name: m.name })),
+]
 
 const COPY = {
   en: {
@@ -108,9 +118,9 @@ const COPY = {
     } as Record<StepChannel, string>,
     statusLabel: {
       active: "Active",
-      paused: "Paused",
+      paused: "Inactive",
       draft: "Draft",
-      completed: "Completed",
+      completed: "Ended",
     } as Record<CampaignStatus, string>,
     enrollmentLabel: {
       replied: "Replied",
@@ -124,8 +134,24 @@ const COPY = {
     campaigns: "Campaigns",
     createdSteps: (date: string, steps: number) =>
       `Created ${date} · ${steps} steps`,
-    pause: "Pause",
+    pause: "Make inactive",
     activate: "Activate",
+    endCampaign: "End campaign",
+    endConfirmTitle: "End this campaign?",
+    endConfirmBody:
+      "Ending unschedules all incomplete sequences (messages not yet sent). This cannot be resumed.",
+    endConfirm: "End campaign",
+    ended: (name: string) => `${name} ended`,
+    account: "Account",
+    language: "Language",
+    english: "English",
+    spanish: "Español",
+    sendingSettings: "Sending",
+    sendingSettingsDesc:
+      "Choose which account this campaign sends from and in what language.",
+    locksAfterActivation: "Locks after activation",
+    senderSaved: "Sending settings updated",
+    alreadyMessagedSkipped: "Already-messaged recipients are skipped",
     edit: "Edit",
     addProspects: "Add prospects",
     columns: "Columns",
@@ -248,9 +274,9 @@ const COPY = {
     } as Record<StepChannel, string>,
     statusLabel: {
       active: "Activa",
-      paused: "En pausa",
+      paused: "Inactiva",
       draft: "Borrador",
-      completed: "Completada",
+      completed: "Finalizada",
     } as Record<CampaignStatus, string>,
     enrollmentLabel: {
       replied: "Respondió",
@@ -264,8 +290,24 @@ const COPY = {
     campaigns: "Campañas",
     createdSteps: (date: string, steps: number) =>
       `Creada el ${date} · ${steps} pasos`,
-    pause: "Pausar",
+    pause: "Desactivar",
     activate: "Activar",
+    endCampaign: "Finalizar campaña",
+    endConfirmTitle: "¿Finalizar esta campaña?",
+    endConfirmBody:
+      "Al finalizar se desprograman todas las secuencias incompletas (mensajes aún no enviados). No se puede reanudar.",
+    endConfirm: "Finalizar campaña",
+    ended: (name: string) => `${name} finalizada`,
+    account: "Cuenta",
+    language: "Idioma",
+    english: "English",
+    spanish: "Español",
+    sendingSettings: "Envío",
+    sendingSettingsDesc:
+      "Elige desde qué cuenta se envía esta campaña y en qué idioma.",
+    locksAfterActivation: "Se bloquea al activar",
+    senderSaved: "Ajustes de envío actualizados",
+    alreadyMessagedSkipped: "Se omiten los destinatarios ya contactados",
     edit: "Editar",
     addProspects: "Añadir prospectos",
     columns: "Columnas",
@@ -556,6 +598,7 @@ export default function CampaignDetail() {
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
   const [scheduleOpen, setScheduleOpen] = React.useState(false)
   const [scheduleValue, setScheduleValue] = React.useState("")
+  const [endOpen, setEndOpen] = React.useState(false)
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
   const { spend } = useCredits()
@@ -723,9 +766,42 @@ export default function CampaignDetail() {
 
   const scheduled = isCampaignScheduled(camp)
 
+  // Sending settings are locked once the campaign goes live or is ended.
+  const senderEditable =
+    camp.status !== "active" && camp.status !== "completed"
+  const accountId = camp.senderAccountId ?? currentUser.id
+  const accountName = camp.senderAccount ?? currentUser.name
+  const language: Locale = camp.language ?? "en"
+  const langLabel = language === "es" ? c.spanish : c.english
+
+  function saveSender(next: {
+    senderAccountId: string
+    senderAccount: string
+    language: Locale
+  }) {
+    campaignStore.setSender(camp.id, next)
+    toast.success(c.senderSaved)
+  }
+
   function activate() {
-    campaignStore.update(camp.id, { status: "active", scheduledAt: null })
-    toast.success(c.activated(camp.name))
+    const reactivatingWithHistory =
+      camp.status === "paused" && (camp.messagedIds?.length ?? 0) > 0
+    campaignStore.activate(camp.id, {
+      senderAccountId: accountId,
+      senderAccount: accountName,
+      language,
+    })
+    toast.success(c.activated(camp.name), {
+      description: reactivatingWithHistory
+        ? c.alreadyMessagedSkipped
+        : undefined,
+    })
+  }
+
+  function endCampaign() {
+    campaignStore.end(camp.id)
+    setEndOpen(false)
+    toast.success(c.ended(camp.name))
   }
 
   // Queue the campaign to begin sending at `iso` instead of going live now.
@@ -765,7 +841,7 @@ export default function CampaignDetail() {
 
   function handlePrimaryAction() {
     if (camp.status === "active") {
-      campaignStore.update(camp.id, { status: "paused" })
+      campaignStore.deactivate(camp.id)
       toast.success(c.paused(camp.name))
       return
     }
@@ -786,7 +862,11 @@ export default function CampaignDetail() {
     // free to leave — we notify them when it's done.
     const toastId = toast.loading(c.enrichingToast(missingEmails))
     window.setTimeout(() => {
-      campaignStore.update(camp.id, { status: "active", scheduledAt: null })
+      campaignStore.activate(camp.id, {
+        senderAccountId: accountId,
+        senderAccount: accountName,
+        language,
+      })
       toast.success(c.enrichedToast(missingEmails), { id: toastId })
     }, 1800)
   }
@@ -898,6 +978,16 @@ export default function CampaignDetail() {
             <UserPlus className="size-4" />
             {c.addProspects}
           </Button>
+          {campaign.status !== "completed" && (
+            <Button
+              variant="outline"
+              className="text-muted-foreground hover:text-destructive"
+              onClick={() => setEndOpen(true)}
+            >
+              <Ban className="size-4" />
+              {c.endCampaign}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -963,6 +1053,93 @@ export default function CampaignDetail() {
               ) : (
                 <p className="text-muted-foreground py-12 text-center text-sm">
                   {c.noDailyData}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Sending — account + language, locked once active/ended */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.sendingSettings}</CardTitle>
+              <CardDescription>{c.sendingSettingsDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="campaign-account"
+                    className="text-sm font-medium"
+                  >
+                    {c.account}
+                  </label>
+                  {senderEditable ? (
+                    <Select
+                      value={accountId}
+                      onValueChange={(v) => {
+                        const a =
+                          ACCOUNT_OPTIONS.find((o) => o.id === v) ??
+                          ACCOUNT_OPTIONS[0]
+                        saveSender({
+                          senderAccountId: a.id,
+                          senderAccount: a.name,
+                          language,
+                        })
+                      }}
+                    >
+                      <SelectTrigger id="campaign-account" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ACCOUNT_OPTIONS.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="rounded-md border px-3 py-2 text-sm">
+                      {accountName}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="campaign-language"
+                    className="text-sm font-medium"
+                  >
+                    {c.language}
+                  </label>
+                  {senderEditable ? (
+                    <Select
+                      value={language}
+                      onValueChange={(v) =>
+                        saveSender({
+                          senderAccountId: accountId,
+                          senderAccount: accountName,
+                          language: v as Locale,
+                        })
+                      }
+                    >
+                      <SelectTrigger id="campaign-language" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">{c.english}</SelectItem>
+                        <SelectItem value="es">{c.spanish}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="rounded-md border px-3 py-2 text-sm">
+                      {langLabel}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {!senderEditable && (
+                <p className="text-muted-foreground text-xs">
+                  {c.locksAfterActivation}
                 </p>
               )}
             </CardContent>
@@ -1511,6 +1688,29 @@ export default function CampaignDetail() {
             >
               <CalendarClock className="size-4" />
               {c.scheduleConfirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={endOpen} onOpenChange={setEndOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="bg-destructive/15 text-destructive flex size-7 items-center justify-center rounded-md">
+                <Ban className="size-4" />
+              </span>
+              {c.endConfirmTitle}
+            </DialogTitle>
+            <DialogDescription>{c.endConfirmBody}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEndOpen(false)}>
+              {c.cancel}
+            </Button>
+            <Button variant="destructive" onClick={endCampaign}>
+              <Ban className="size-4" />
+              {c.endConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

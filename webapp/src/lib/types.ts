@@ -2,6 +2,8 @@
 // These mirror the concepts used in the Kombo chrome extension
 // (prospects, lists, inbox, campaigns, coaching, CRM) but are UI-only.
 
+import type { Locale } from "./locale"
+
 export type ProspectStatus =
   | "new"
   | "contacted"
@@ -238,6 +240,16 @@ export interface Campaign {
   // When set to a future ISO time, the campaign is queued to start then rather
   // than sending immediately. Cleared once it activates (or the user cancels).
   scheduledAt?: string | null
+  // Sending account + language. Both default to the current user and locale and
+  // stay editable until the campaign is made active. All optional for
+  // back-compat with seeded campaigns.
+  senderAccount?: string // display name of the account the campaign sends from
+  senderAccountId?: string
+  language?: Locale
+  endedAt?: string | null // ISO when the campaign was Ended
+  // Recipient ids that already received at least one message, so re-activation
+  // after being made inactive skips them.
+  messagedIds?: string[]
 }
 
 export interface CoachRecording {

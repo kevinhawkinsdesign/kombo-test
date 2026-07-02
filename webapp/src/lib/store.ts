@@ -5,6 +5,7 @@ import {
   prospectLists as seedLists,
   campaigns as seedCampaigns,
   conversations as seedConversations,
+  currentUser,
   setLiveProspects,
   setLiveLists,
   setLiveCampaigns,
@@ -34,6 +35,7 @@ import type {
   ChatLang,
   ConvStatus,
 } from "./types"
+import type { Locale } from "./locale"
 import type { EnrichScope } from "./enrichment"
 
 // Deterministic mock direct-dial derived from a contact id, so the same
@@ -329,7 +331,11 @@ export const templateStore = {
 }
 
 export const campaignStore = {
-  create(data: Pick<Campaign, "name"> & Partial<Campaign>): Campaign {
+  // The caller passes the current locale so a new campaign defaults its
+  // send language to what the user is working in.
+  create(
+    data: Pick<Campaign, "name"> & Partial<Campaign> & { locale?: Locale }
+  ): Campaign {
     const campaign: Campaign = {
       id: uid("cm"),
       name: data.name,
@@ -343,6 +349,9 @@ export const campaignStore = {
       goal: data.goal,
       listId: data.listId,
       enrolledIds: data.enrolledIds,
+      senderAccount: data.senderAccount ?? currentUser.name,
+      senderAccountId: data.senderAccountId ?? currentUser.id,
+      language: data.language ?? data.locale ?? "en",
     }
     setState({ campaigns: [campaign, ...state.campaigns] })
     return campaign
@@ -479,6 +488,74 @@ export const campaignStore = {
           enrolledIds: (c.enrolledIds ?? []).filter((id) => id !== prospectId),
           enrolled: had ? Math.max(0, c.enrolled - 1) : c.enrolled,
         }
+      }),
+    })
+  },
+  // Activate the campaign now: clears any queued start, applies an optional
+  // account/language override, and marks the currently-enrolled recipients as
+  // messaged (union of manual enrolledIds and the attached list's members) so
+  // a later re-activation skips anyone who already received a message.
+  activate(
+    id: string,
+    opts?: { senderAccountId?: string; senderAccount?: string; language?: Locale }
+  ): void {
+    const campaign = state.campaigns.find((c) => c.id === id)
+    if (!campaign) return
+    const listMembers = campaign.listId
+      ? state.lists.find((l) => l.id === campaign.listId)?.prospectIds ?? []
+      : []
+    const recipients = Array.from(
+      new Set([...(campaign.enrolledIds ?? []), ...listMembers])
+    )
+    const messagedIds = Array.from(
+      new Set([...(campaign.messagedIds ?? []), ...recipients])
+    )
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              status: "active",
+              scheduledAt: null,
+              senderAccountId: opts?.senderAccountId ?? c.senderAccountId,
+              senderAccount: opts?.senderAccount ?? c.senderAccount,
+              language: opts?.language ?? c.language,
+              messagedIds,
+            }
+          : c
+      ),
+    })
+  },
+  // Make a campaign inactive. Keeps messagedIds so re-activation skips them.
+  deactivate(id: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === id ? { ...c, status: "paused" } : c
+      ),
+    })
+  },
+  // End a campaign: unschedule all incomplete sequences (messages not yet sent)
+  // and mark it finished. Cannot be resumed.
+  end(id: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === id
+          ? { ...c, status: "completed", endedAt: nowISO(), scheduledAt: null }
+          : c
+      ),
+    })
+  },
+  // Update the sending account / language. Only allowed while the campaign is
+  // still editable (not yet active and not ended).
+  setSender(
+    id: string,
+    patch: { senderAccountId: string; senderAccount: string; language: Locale }
+  ): void {
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== id) return c
+        if (c.status === "active" || c.status === "completed") return c
+        return { ...c, ...patch }
       }),
     })
   },
