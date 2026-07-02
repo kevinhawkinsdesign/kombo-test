@@ -1,6 +1,7 @@
 import type { ComponentType } from "react"
 import {
   Home,
+  LayoutDashboard,
   Sparkles,
   Inbox,
   Search,
@@ -36,7 +37,8 @@ export interface AppDestination {
 // Flat, searchable index of every in-app destination. Used by the top-bar
 // "search the app" combobox to jump straight to a page.
 export const APP_DESTINATIONS: AppDestination[] = [
-  { to: "/", labelKey: "nav.home", icon: Home, keywords: ["home", "overview", "dashboard"] },
+  { to: "/", labelKey: "nav.home", icon: Home, keywords: ["home", "search", "ideal customer"] },
+  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, keywords: ["kpis", "pipeline", "leaderboard", "metrics", "overview"] },
   { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles, keywords: ["signals", "copilot", "kai", "automations", "approvals"] },
   { to: "/inbox", labelKey: "nav.inbox", icon: Inbox, keywords: ["messages", "replies", "conversations"] },
   { to: "/search", labelKey: "nav.search", icon: Search, keywords: ["prospects", "find", "leads", "people"] },

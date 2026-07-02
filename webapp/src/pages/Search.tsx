@@ -774,11 +774,10 @@ export default function Search() {
       : similarPrompt || headerPrompt || EXAMPLE_PROMPTS_EN[0]
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
-  // The home/empty state vs the results view. Arriving with a prompt, a
-  // lookalike seed, or a loaded saved search jumps straight to results.
-  const [hasSearched, setHasSearched] = React.useState(
-    Boolean(headerPrompt || incomingSeed || loadedSearch)
-  )
+  // This component serves two routes: "/" is Home (the "Describe your ideal
+  // customer" hero) and "/search" opens straight into the results view.
+  const isHomeRoute = location.pathname === "/"
+  const [hasSearched, setHasSearched] = React.useState(!isHomeRoute)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const [filtersOpen, setFiltersOpen] = React.useState(false)
@@ -876,22 +875,30 @@ export default function Search() {
 
   // A prompt is treated as a search query — interpret it into structured
   // filters and run the search (with a brief "thinking" beat). No chat.
-  const runPrompt = React.useCallback((prompt: string) => {
-    const text = prompt.trim()
-    if (!text) return
-    setInput(text)
-    setHasSearched(true)
-    setThinking(true)
-    setLastPrompt(text)
-    window.setTimeout(() => {
-      const { query: q, entity: e, seed: s } = interpretPrompt(text)
-      setEntity(e)
-      setQuery(q)
-      setSeed(s ?? null)
-      setSelected(new Set())
-      setThinking(false)
-    }, 900)
-  }, [])
+  // From Home, hand the prompt to /search so the URL matches the results.
+  const runPrompt = React.useCallback(
+    (prompt: string) => {
+      const text = prompt.trim()
+      if (!text) return
+      if (isHomeRoute) {
+        navigate(`/search?q=${encodeURIComponent(text)}`)
+        return
+      }
+      setInput(text)
+      setHasSearched(true)
+      setThinking(true)
+      setLastPrompt(text)
+      window.setTimeout(() => {
+        const { query: q, entity: e, seed: s } = interpretPrompt(text)
+        setEntity(e)
+        setQuery(q)
+        setSeed(s ?? null)
+        setSelected(new Set())
+        setThinking(false)
+      }, 900)
+    },
+    [isHomeRoute, navigate]
+  )
 
   // Run a prompt handed over from the header search exactly once.
   const ranHeaderPrompt = React.useRef(false)

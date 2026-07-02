@@ -2,6 +2,7 @@ import * as React from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
   Home,
+  LayoutDashboard,
   Building2,
   FolderKanban,
   Inbox,
@@ -81,9 +82,11 @@ interface NavGroup {
 
 const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
-// Always-visible top destinations.
+// Always-visible top destinations. Home (the "Describe your ideal customer"
+// hero) exists in both releases; the sales Dashboard is a separate v2 page.
 const primary: NavItem[] = [
-  { to: "/", labelKey: "nav.home", icon: Home, isNew: true },
+  { to: "/", labelKey: "nav.home", icon: Home },
+  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   {
     to: "/copilot",
     labelKey: "nav.copilot",
@@ -653,11 +656,11 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
-// v1 has no dashboard/signals — lead with Search (the v1 home) and prospecting.
+// v1 has no dashboard/signals — Home (the search hero), then prospecting.
 const bottomBarItemsV1: NavItem[] = [
+  { to: "/", labelKey: "nav.home", icon: Home },
   { to: "/search", labelKey: "nav.search", icon: Search },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
-  { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
   {
     to: "/inbox",
     labelKey: "nav.inbox",
