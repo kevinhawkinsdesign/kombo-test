@@ -15,7 +15,7 @@ const KEY = "kombo-release-mode"
 // Pages that don't exist in the Chrome extension yet — hidden in v1. Keep this
 // in sync with the `isNew` flags on the nav config in AppSidebar.tsx.
 export const V2_ONLY_PATHS = [
-  "/", // manager dashboard
+  "/dashboard", // manager dashboard
   "/copilot",
   "/intros",
   "/extension",
@@ -26,14 +26,14 @@ export const V2_ONLY_PATHS = [
   "/deals",
 ] as const
 
-// Where v1 lands when the user hits a hidden route (incl. the "/" dashboard).
-// Prospect Search is the core "find prospects" job and the extension's home.
-export const V1_HOME = "/search"
+// Where v1 lands when the user hits a hidden route. Home ("/") is the
+// "Describe your ideal customer" hero in both releases.
+export const V1_HOME = "/"
 
 /** True when `pathname` belongs to a surface that only exists in v2. */
 export function isV2OnlyPath(pathname: string): boolean {
-  return V2_ONLY_PATHS.some((p) =>
-    p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(`${p}/`)
+  return V2_ONLY_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
   )
 }
 
