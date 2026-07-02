@@ -16,6 +16,11 @@ export const ENRICH_COST: Record<EnrichScope, number> = {
 // Back-compat default (profile enrichment — the richest single scope).
 export const ENRICH_COST_PER_CONTACT = ENRICH_COST.profile
 
+// Credits to save a record to a list. A saved search itself is free; saving
+// prospects costs per contact, saving companies is free. Enrichment is charged
+// separately, afterwards, by scope (ENRICH_COST above).
+export const SAVE_COST = { prospect: 2, company: 0 } as const
+
 // Enrichment runs in batches — at most this many contacts at a time.
 export const MAX_ENRICH_BATCH = 1000
 
