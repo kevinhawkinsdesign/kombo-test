@@ -18,6 +18,7 @@ import {
   Columns3,
   ShieldCheck,
   TriangleAlert,
+  UserSearch,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -128,6 +129,7 @@ const COPY = {
     companies: "companies",
     companiesHeading: "Companies",
     addCompanies: "Add companies",
+    findContacts: "Find contacts",
     removeCompany: (name: string) => `Remove ${name} from list`,
     emptyStateCo: "No companies yet. Add some to get started.",
     addCompaniesTitle: "Add companies",
@@ -223,6 +225,7 @@ const COPY = {
     companies: "empresas",
     companiesHeading: "Empresas",
     addCompanies: "Añadir empresas",
+    findContacts: "Buscar contactos",
     removeCompany: (name: string) => `Quitar a ${name} de la lista`,
     emptyStateCo: "Aún no hay empresas. Añade algunas para empezar.",
     addCompaniesTitle: "Añadir empresas",
@@ -252,6 +255,7 @@ export default function ListDetail() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
@@ -407,6 +411,16 @@ export default function ListDetail() {
             <Columns3 className="size-4" />
             <span className="hidden sm:inline">{c.columns}</span>
           </Button>
+          {isCompany && accountMembers.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFindContactsOpen(true)}
+            >
+              <UserSearch className="size-4" />
+              {c.findContacts}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="size-4" />
             {isCompany ? c.addCompanies : c.addProspects}
@@ -508,6 +522,15 @@ export default function ListDetail() {
         kind={isCompany ? "company" : "contact"}
         listId={list.id}
       />
+
+      {isCompany && (
+        <AddRecordsDialog
+          open={findContactsOpen}
+          onOpenChange={setFindContactsOpen}
+          kind="contact"
+          scopeCompanies={accountMembers.map((a) => a.name)}
+        />
+      )}
 
       <EnrichListDialog
         open={enrichOpen}
