@@ -112,8 +112,6 @@ import {
   JOB_LISTING_OPTIONS,
   sortLeads,
   sortCompanies,
-  matchReasons,
-  companyMatchReasons,
   type SortKey,
   EMPTY_QUERY,
   type AiEntity,
@@ -130,7 +128,7 @@ import {
 } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { libraryQueries } from "@/lib/mock-library"
-import { facetsForDb, type FacetDef } from "@/lib/search-facets"
+import { facetsForDb, type FacetDef, type FacetDb } from "@/lib/search-facets"
 import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
@@ -640,8 +638,28 @@ const COPY = {
 type Copy = (typeof COPY)[keyof typeof COPY]
 
 // Which database the search runs against. Replaces the old LinkedIn on/off toggle.
-type DataSource = "kombo" | "lookalike" | "linkedin"
-const DATA_SOURCES: DataSource[] = ["kombo", "lookalike", "linkedin"]
+type DataSource =
+  | "kombo"
+  | "lookalike"
+  | "linkedin"
+  | "google_maps"
+  | "tripadvisor"
+// Selectable databases per entity — Google Maps + TripAdvisor are company-only.
+const PEOPLE_SOURCES: DataSource[] = ["kombo", "lookalike", "linkedin"]
+const COMPANY_SOURCES: DataSource[] = [
+  "kombo",
+  "lookalike",
+  "linkedin",
+  "google_maps",
+  "tripadvisor",
+]
+// A source maps to its facet catalog (kombo + lookalike share the Kombo set).
+function facetDbForSource(s: DataSource): FacetDb {
+  if (s === "linkedin") return "linkedin"
+  if (s === "google_maps") return "google_maps"
+  if (s === "tripadvisor") return "tripadvisor"
+  return "kombo"
+}
 
 // How a freshly-built list gets populated.
 type BuildSource =
@@ -709,18 +727,6 @@ const COMPANY_RESULT_DEFAULT_IDS = [
 
 function mutedCell(value: React.ReactNode) {
   return <span className="text-muted-foreground text-sm">{value}</span>
-}
-
-function MatchLine({ reasons, label }: { reasons: string[]; label: string }) {
-  if (reasons.length === 0) return null
-  return (
-    <p className="text-chart-1 mt-0.5 flex items-center gap-1 text-[11px]">
-      <CheckCircle2 className="size-3 shrink-0" />
-      <span className="truncate">
-        {label}: {reasons.slice(0, 3).join(" · ")}
-      </span>
-    </p>
-  )
 }
 
 function sortLabel(key: SortKey, c: Copy): string {
@@ -811,11 +817,19 @@ export default function Search() {
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
   const [bulkCampaignOpen, setBulkCampaignOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
-  const [linkedinOn, setLinkedinOn] = React.useState(false)
+  const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>("kombo")
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
 
-  // The active database is derived: a seed means lookalike, else LinkedIn or Kombo.
-  const source: DataSource = seed ? "lookalike" : linkedinOn ? "linkedin" : "kombo"
+  // The active database. A seed means Lookalike; Google Maps / TripAdvisor are
+  // company-only, so fall back to Kombo when viewing People.
+  const effectiveDb: Exclude<DataSource, "lookalike"> =
+    entity === "people" && (db === "google_maps" || db === "tripadvisor")
+      ? "kombo"
+      : db
+  const source: DataSource = seed ? "lookalike" : effectiveDb
+  const linkedinOn = source === "linkedin"
+  // Local-business sources expose only their own facets (no firmographic groups).
+  const localSource = source === "google_maps" || source === "tripadvisor"
 
   // "Hide prospects already in a list": key existing list members by identity so
   // people you've already saved don't clutter the results.
@@ -980,16 +994,15 @@ export default function Search() {
   // Kombo / LinkedIn just flip the LinkedIn-filter set on or off.
   function selectSource(next: DataSource) {
     if (next === "lookalike") {
-      if (linkedinOn) setLinkedinOn(false)
+      setDb("kombo")
       setQuery((q) => ({ ...q, linkedin: [] }))
       setLookalikeOpen(true)
       return
     }
     setSeed(null)
-    const on = next === "linkedin"
-    setLinkedinOn(on)
-    if (!on) setQuery((q) => ({ ...q, linkedin: [] }))
-    toast.success(c.dbSwitched(on ? c.linkedinSource : c.dbKombo))
+    setDb(next)
+    if (next !== "linkedin") setQuery((q) => ({ ...q, linkedin: [] }))
+    toast.success(c.dbSwitched(sourceMeta(next).label))
   }
 
   function applyLookalike(s: LookalikeSeed, q: AiQuery) {
@@ -1107,7 +1120,6 @@ export default function Search() {
                 {l.firstName} {l.lastName}
               </p>
               <p className="text-muted-foreground truncate text-xs">{l.title}</p>
-              <MatchLine reasons={matchReasons(l, query)} label={c.matchLabel} />
             </div>
           </div>
         ),
@@ -1148,7 +1160,7 @@ export default function Search() {
         ),
       },
     ],
-    [query, c]
+    [c]
   )
 
   const companyColumns = React.useMemo<ColumnDef<AiCompany>[]>(
@@ -1170,10 +1182,6 @@ export default function Search() {
             <div className="min-w-0">
               <p className="truncate font-medium">{co.name}</p>
               <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
-              <MatchLine
-                reasons={companyMatchReasons(co, query)}
-                label={c.matchLabel}
-              />
             </div>
           </div>
         ),
@@ -1208,7 +1216,7 @@ export default function Search() {
         ),
       },
     ],
-    [query, c]
+    []
   )
 
   const leadSelection: TableSelection<AiLead> = {
@@ -1348,20 +1356,24 @@ export default function Search() {
         desc: c.dbLookalikeDesc,
         icon: <ScanSearch className="text-primary size-4" />,
       }
+    if (k === "google_maps")
+      return {
+        label: c.dbGmaps,
+        desc: c.dbGmapsDesc,
+        icon: <MapPin className="size-4 text-emerald-600" />,
+      }
+    if (k === "tripadvisor")
+      return {
+        label: c.dbTripadvisor,
+        desc: c.dbTripadvisorDesc,
+        icon: <Star className="size-4 text-amber-500" />,
+      }
     return {
       label: c.dbKombo,
       desc: c.dbKomboDesc,
       icon: <Database className="text-primary size-4" />,
     }
   }
-
-  // Databases on the roadmap — shown as disabled "Soon" entries so the source
-  // selector reads as an extensible list, not a fixed Kombo/Sales Nav toggle.
-  const comingSoonSources = [
-    { key: "gmaps", label: c.dbGmaps, desc: c.dbGmapsDesc, icon: <MapPin className="size-4 text-emerald-600" /> },
-    { key: "tripadvisor", label: c.dbTripadvisor, desc: c.dbTripadvisorDesc, icon: <Star className="size-4 text-amber-500" /> },
-    { key: "company-dbs", label: c.dbCompanyDbs, desc: c.dbCompanyDbsDesc, icon: <Building2 className="text-primary size-4" /> },
-  ]
 
   // Clay-style launcher: a row of suggested starting points above the search.
   const quickActions = [
@@ -1561,8 +1573,9 @@ export default function Search() {
             onClear={() => setQuery({ ...EMPTY_QUERY })}
             onAddFacet={addFacet}
             onRemoveFacet={removeFacet}
-            facetDefs={facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)}
+            facetDefs={facetsForDb(facetDbForSource(source), entity)}
             linkedinOn={linkedinOn}
+            minimal={localSource}
             entity={entity}
             locale={locale}
             c={c}
@@ -1588,7 +1601,7 @@ export default function Search() {
                   <DropdownMenuLabel className="text-muted-foreground text-xs">
                     {c.dbLabel}
                   </DropdownMenuLabel>
-                  {DATA_SOURCES.map((k) => {
+                  {(entity === "companies" ? COMPANY_SOURCES : PEOPLE_SOURCES).map((k) => {
                     const meta = sourceMeta(k)
                     return (
                       <DropdownMenuItem
@@ -1611,28 +1624,6 @@ export default function Search() {
                       </DropdownMenuItem>
                     )
                   })}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-muted-foreground text-xs">
-                    {c.dbMoreLabel}
-                  </DropdownMenuLabel>
-                  {comingSoonSources.map((s) => (
-                    <DropdownMenuItem
-                      key={s.key}
-                      disabled
-                      className="gap-2.5 py-2 opacity-100"
-                    >
-                      <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md opacity-60">
-                        {s.icon}
-                      </span>
-                      <span className="flex min-w-0 flex-1 flex-col opacity-60">
-                        <span className="text-sm font-medium">{s.label}</span>
-                        <span className="text-muted-foreground text-xs">{s.desc}</span>
-                      </span>
-                      <Badge variant="secondary" className="shrink-0 text-[10px]">
-                        {c.dbSoon}
-                      </Badge>
-                    </DropdownMenuItem>
-                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
               <DropdownMenu>
@@ -1905,8 +1896,9 @@ export default function Search() {
         onClear={() => setQuery({ ...EMPTY_QUERY })}
         c={c}
         linkedinOn={linkedinOn}
+        minimal={localSource}
         entity={entity}
-        facetDefs={facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)}
+        facetDefs={facetsForDb(facetDbForSource(source), entity)}
         onAddFacet={addFacet}
         onRemoveFacet={removeFacet}
         locale={locale}
@@ -2150,6 +2142,7 @@ function FilterSidebar({
   onRemoveFacet,
   facetDefs,
   linkedinOn,
+  minimal,
   entity,
   locale,
   c,
@@ -2163,6 +2156,7 @@ function FilterSidebar({
   onRemoveFacet: (id: string, value: string) => void
   facetDefs: FacetDef[]
   linkedinOn: boolean
+  minimal?: boolean
   entity: AiEntity
   locale: Locale
   c: Copy
@@ -2180,9 +2174,11 @@ function FilterSidebar({
     })
   }
 
-  const groups = FILTER_OPTIONS.filter(
-    (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
-  )
+  const groups = minimal
+    ? []
+    : FILTER_OPTIONS.filter(
+        (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
+      )
   const activeCount =
     groups.reduce((n, g) => n + (query[g.key] as string[]).length, 0) +
     facetDefs.reduce((n, f) => n + (query.facets[f.id]?.length ?? 0), 0)
@@ -2792,6 +2788,7 @@ function FilterModal({
   onClear,
   c,
   linkedinOn,
+  minimal,
   entity,
   facetDefs,
   onAddFacet,
@@ -2806,6 +2803,7 @@ function FilterModal({
   onClear: () => void
   c: Copy
   linkedinOn: boolean
+  minimal?: boolean
   entity: AiEntity
   facetDefs: FacetDef[]
   onAddFacet: (id: string, value: string) => void
@@ -2827,10 +2825,12 @@ function FilterModal({
 
   const groups = React.useMemo(
     () =>
-      FILTER_OPTIONS.filter(
-        (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
-      ),
-    [linkedinOn, entity]
+      minimal
+        ? []
+        : FILTER_OPTIONS.filter(
+            (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
+          ),
+    [linkedinOn, entity, minimal]
   )
 
   const active = groups

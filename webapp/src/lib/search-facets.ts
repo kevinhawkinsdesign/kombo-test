@@ -1,9 +1,11 @@
 import type { AiEntity } from "@/lib/mock-ai-search"
 import type { Locale } from "@/lib/locale"
 
-// Which database a facet belongs to. The active database (Kombo / LinkedIn)
-// decides which catalog of filters is shown in the filter modal.
-export type FacetDb = "linkedin" | "kombo"
+// Which database a facet belongs to. The active database decides which catalog
+// of filters is shown. Kombo (Cognism) + Lookalike (Ocean) share the "kombo"
+// set; Sales Nav (Unipile) uses "linkedin"; the local-business sources bring
+// their own minimal catalogs.
+export type FacetDb = "linkedin" | "kombo" | "google_maps" | "tripadvisor"
 
 export interface FacetDef {
   id: string
@@ -98,6 +100,14 @@ export const SEARCH_FACETS: FacetDef[] = [
   { id: "fe_funding_stage", db: "kombo", scope: "companies", label: { en: "Funding stage", es: "Etapa de financiación" }, options: ["Pre-seed", "Seed", "Series A", "Series B", "Series C", "Series D+", "Public", "Bootstrapped"] },
   { id: "fe_naics", db: "kombo", scope: "companies", label: { en: "NAICS code", es: "Código NAICS" }, options: ["5112 — Software", "5415 — Computer services", "5221 — Banking", "3345 — Electronics"] },
   { id: "fe_sic", db: "kombo", scope: "companies", label: { en: "SIC code", es: "Código SIC" }, options: ["7372 — Prepackaged software", "7389 — Business services", "6022 — Banks"] },
+
+  /* ---------------------- Google Maps (local businesses) ------------------- */
+  // Faithful to the extension: Google Maps company search is query + location
+  // only (the free-text prompt is the query; location is the sole facet).
+  { id: "gm_location", db: "google_maps", scope: "companies", label: { en: "Location", es: "Ubicación" }, options: [] },
+
+  /* ------------------------- TripAdvisor (venues) -------------------------- */
+  { id: "ta_location", db: "tripadvisor", scope: "companies", label: { en: "Location", es: "Ubicación" }, options: [] },
 ]
 
 export function facetsForDb(db: FacetDb, entity: AiEntity): FacetDef[] {
