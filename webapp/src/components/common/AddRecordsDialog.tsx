@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { prospectStore, accountStore, listStore } from "@/lib/store"
 import { integrations } from "@/lib/mock-data"
+import { ENRICH_COST, MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import { facetsForDb } from "@/lib/search-facets"
 import {
   interpretPrompt,
@@ -116,6 +117,16 @@ const COPY = {
     results: (n: number) => `${n.toLocaleString()} ${n === 1 ? "result" : "results"}`,
     selectAll: "Select all",
     selectedCount: (n: number) => `${n} selected`,
+    selectPage: "Select page",
+    deselectPage: "Deselect page",
+    selectAllN: (n: number) => `Select all ${n.toLocaleString()}`,
+    capLabel: "Max / company",
+    capOff: "Off",
+    prev: "Prev",
+    next: "Next",
+    pageOf: (a: number, b: number) => `Page ${a} of ${b}`,
+    enrichEstimate: (n: number) =>
+      `≈ ${n.toLocaleString()} credits to enrich after · saving is free`,
     sortFit: "Best match",
     sortName: "Name (A–Z)",
     sortCompany: "Company",
@@ -195,6 +206,16 @@ const COPY = {
     results: (n: number) => `${n.toLocaleString()} ${n === 1 ? "resultado" : "resultados"}`,
     selectAll: "Seleccionar todo",
     selectedCount: (n: number) => `${n} seleccionados`,
+    selectPage: "Seleccionar página",
+    deselectPage: "Deseleccionar página",
+    selectAllN: (n: number) => `Seleccionar todos (${n.toLocaleString()})`,
+    capLabel: "Máx / empresa",
+    capOff: "Todos",
+    prev: "Anterior",
+    next: "Siguiente",
+    pageOf: (a: number, b: number) => `Página ${a} de ${b}`,
+    enrichEstimate: (n: number) =>
+      `≈ ${n.toLocaleString()} créditos para enriquecer después · guardar es gratis`,
     sortFit: "Mejor coincidencia",
     sortName: "Nombre (A–Z)",
     sortCompany: "Empresa",
@@ -269,6 +290,30 @@ function entityFromKind(kind: Kind): AiEntity {
 const CONNECTED_CRM =
   integrations.find((i) => i.category === "crm" && i.connected)?.name ?? null
 
+// Results paging + selection limits for the add flow.
+const PAGE_SIZE = 25
+const MAX_SELECT = MAX_ENRICH_BATCH // 1,000
+const CAP_OPTIONS: (number | null)[] = [null, 1, 2, 3, 5, 10]
+// Saving is free; the cost is enrichment (the full email + phone + profile
+// waterfall), surfaced as a projected estimate at selection time.
+const FULL_ENRICH = ENRICH_COST.email + ENRICH_COST.phone + ENRICH_COST.profile
+
+// People search: keep at most `cap` contacts per company (order preserved).
+function capLeads(leads: AiLead[], cap: number | null): AiLead[] {
+  if (cap == null) return leads
+  const seen = new Map<string, number>()
+  const out: AiLead[] = []
+  for (const l of leads) {
+    const key = l.company.toLowerCase()
+    const n = seen.get(key) ?? 0
+    if (n < cap) {
+      out.push(l)
+      seen.set(key, n + 1)
+    }
+  }
+  return out
+}
+
 /**
  * Full-screen, full-featured "add records" search. Adding prospects or
  * companies is always a search within a database (with filters, sorting, a
@@ -304,6 +349,8 @@ export function AddRecordsDialog({
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [linkedinOn, setLinkedinOn] = React.useState(false)
   const [wasOpen, setWasOpen] = React.useState(false)
+  const [page, setPage] = React.useState(0)
+  const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
 
   const scoped = (scopeCompanies?.length ?? 0) > 0
 
@@ -317,6 +364,8 @@ export function AddRecordsDialog({
     setSortKey("fit")
     setSelected(new Set())
     setLinkedinOn(false)
+    setPage(0)
+    setPerCompanyCap(null)
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -336,18 +385,21 @@ export function AddRecordsDialog({
     () => sortCompanies(searchCompanies(query), sortKey),
     [query, sortKey]
   )
-  const rowsCount = entity === "people" ? leads.length : companies.length
 
   function switchEntity(next: AiEntity) {
     setEntity(next)
     setSelected(new Set())
+    setPage(0)
+    setPerCompanyCap(null)
   }
   function runSearch() {
     setQuery((prev) => ({ ...interpretPrompt(input).query, facets: prev.facets }))
     setSelected(new Set())
+    setPage(0)
   }
   function toggleFilter(key: keyof AiQuery, value: string) {
     setSelected(new Set())
+    setPage(0)
     setQuery((prev) => {
       const arr = prev[key] as string[]
       const next = arr.includes(value)
@@ -358,6 +410,7 @@ export function AddRecordsDialog({
   }
   function toggleFacet(facetId: string, value: string) {
     setSelected(new Set())
+    setPage(0)
     setQuery((prev) => {
       const cur = prev.facets[facetId] ?? []
       const next = cur.includes(value)
@@ -369,6 +422,7 @@ export function AddRecordsDialog({
   function clearFilters() {
     setQuery((prev) => ({ ...EMPTY_QUERY, keywords: prev.keywords }))
     setSelected(new Set())
+    setPage(0)
   }
   function toggle(id: string) {
     setSelected((prev) => {
@@ -378,9 +432,25 @@ export function AddRecordsDialog({
       return next
     })
   }
-  function toggleAll() {
-    const ids = entity === "people" ? leads.map((l) => l.id) : companies.map((co) => co.id)
-    setSelected((prev) => (prev.size === ids.length ? new Set() : new Set(ids)))
+  function selectPage() {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (allPageSelected) pageIds.forEach((id) => next.delete(id))
+      else pageIds.forEach((id) => next.add(id))
+      return next
+    })
+  }
+  function selectAllResults() {
+    setSelected(new Set(allIds.slice(0, MAX_SELECT)))
+  }
+  function applyCap(cap: number | null) {
+    setPerCompanyCap(cap)
+    setPage(0)
+    if (cap != null && entity === "people") {
+      setSelected(
+        new Set(capLeads(leads, cap).map((l) => l.id).slice(0, MAX_SELECT))
+      )
+    }
   }
   function addSelected() {
     if (selected.size === 0) return
@@ -415,6 +485,28 @@ export function AddRecordsDialog({
   const activeFilterCount =
     groups.reduce((n, g) => n + (query[g.key] as string[]).length, 0) +
     facetDefs.reduce((n, f) => n + (query.facets[f.id]?.length ?? 0), 0)
+
+  // Per-company cap (people) → paged results → page/all selection. Plain consts
+  // so the React compiler can memoize them (manual useMemo isn't preservable
+  // here); capLeads is pure and cheap.
+  const cappedLeads = capLeads(leads, entity === "people" ? perCompanyCap : null)
+  const total = entity === "people" ? cappedLeads.length : companies.length
+  const allIds =
+    entity === "people"
+      ? cappedLeads.map((l) => l.id)
+      : companies.map((co) => co.id)
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pageStart = currentPage * PAGE_SIZE
+  const pageLeads = cappedLeads.slice(pageStart, pageStart + PAGE_SIZE)
+  const pageCompanies = companies.slice(pageStart, pageStart + PAGE_SIZE)
+  const pageIds =
+    entity === "people"
+      ? pageLeads.map((l) => l.id)
+      : pageCompanies.map((co) => co.id)
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selected.has(id))
+  const selectableCount = Math.min(total, MAX_SELECT)
   const sortOptions: { key: SortKey; label: string }[] =
     entity === "people"
       ? [
@@ -618,12 +710,53 @@ export function AddRecordsDialog({
                   </DropdownMenu>
                 </div>
 
-                <div className="text-muted-foreground border-b px-6 py-1.5 text-xs">
-                  {c.results(rowsCount)}
+                {/* Results toolbar: count, page/all selection, per-company cap */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-6 py-2 text-xs">
+                  <span className="text-muted-foreground">{c.results(total)}</span>
+                  {total > 0 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={selectPage}
+                        className="text-primary font-medium hover:underline"
+                      >
+                        {allPageSelected ? c.deselectPage : c.selectPage}
+                      </button>
+                      {selected.size < selectableCount && (
+                        <button
+                          type="button"
+                          onClick={selectAllResults}
+                          className="text-primary font-medium hover:underline"
+                        >
+                          {c.selectAllN(selectableCount)}
+                        </button>
+                      )}
+                      {entity === "people" && (
+                        <div className="ml-auto flex items-center gap-1">
+                          <span className="text-muted-foreground">{c.capLabel}</span>
+                          {CAP_OPTIONS.map((cap) => (
+                            <button
+                              key={String(cap)}
+                              type="button"
+                              onClick={() => applyCap(cap)}
+                              className={cn(
+                                "rounded-md border px-2 py-0.5 font-medium transition-colors",
+                                perCompanyCap === cap
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "text-muted-foreground hover:bg-muted/50"
+                              )}
+                            >
+                              {cap ?? c.capOff}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                  {rowsCount === 0 ? (
+                  {total === 0 ? (
                     <p className="text-muted-foreground py-16 text-center text-sm">
                       {c.noResults}
                     </p>
@@ -633,8 +766,8 @@ export function AddRecordsDialog({
                         <tr>
                           <th className="w-10 px-3 py-2">
                             <Checkbox
-                              checked={selected.size > 0 && selected.size === rowsCount}
-                              onCheckedChange={toggleAll}
+                              checked={allPageSelected}
+                              onCheckedChange={selectPage}
                               aria-label={c.selectAll}
                             />
                           </th>
@@ -650,7 +783,7 @@ export function AddRecordsDialog({
                       </thead>
                       <tbody>
                         {entity === "people"
-                          ? leads.map((l) => (
+                          ? pageLeads.map((l) => (
                               <LeadRow
                                 key={l.id}
                                 lead={l}
@@ -658,7 +791,7 @@ export function AddRecordsDialog({
                                 onToggle={() => toggle(l.id)}
                               />
                             ))
-                          : companies.map((co) => (
+                          : pageCompanies.map((co) => (
                               <CompanyRow
                                 key={co.id}
                                 company={co}
@@ -670,14 +803,47 @@ export function AddRecordsDialog({
                     </table>
                   )}
                 </div>
+
+                {pageCount > 1 && (
+                  <div className="flex items-center justify-center gap-3 border-t px-6 py-2 text-xs">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7"
+                      disabled={currentPage === 0}
+                      onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    >
+                      {c.prev}
+                    </Button>
+                    <span className="text-muted-foreground tabular-nums">
+                      {c.pageOf(currentPage + 1, pageCount)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7"
+                      disabled={currentPage >= pageCount - 1}
+                      onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                    >
+                      {c.next}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Action bar */}
-            <footer className="flex items-center justify-between border-t px-6 py-3">
-              <span className="text-muted-foreground text-sm tabular-nums">
-                {c.selectedCount(selected.size)}
-              </span>
+            <footer className="flex items-center justify-between gap-3 border-t px-6 py-3">
+              <div className="min-w-0">
+                <span className="text-muted-foreground text-sm tabular-nums">
+                  {c.selectedCount(selected.size)}
+                </span>
+                {selected.size > 0 && (
+                  <span className="text-muted-foreground ml-2 text-xs">
+                    {c.enrichEstimate(selected.size * FULL_ENRICH)}
+                  </span>
+                )}
+              </div>
               <Button variant="volt" disabled={selected.size === 0} onClick={addSelected}>
                 {entity === "people"
                   ? c.addSelectedPeople(selected.size)
