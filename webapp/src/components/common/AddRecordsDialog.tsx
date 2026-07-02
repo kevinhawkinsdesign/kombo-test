@@ -18,6 +18,7 @@ import {
   Compass,
   Cloud,
   Link2,
+  Columns3,
   X,
 } from "lucide-react"
 
@@ -37,9 +38,19 @@ import {
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Segmented } from "@/components/common/Segmented"
 import { PerCompanyCap } from "@/components/common/PerCompanyCap"
+import { DataTable, type TableSelection } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
+import { useColumnPrefs } from "@/lib/table-columns"
+import {
+  LEAD_RESULT_COLUMNS,
+  COMPANY_RESULT_COLUMNS,
+  LEAD_RESULT_GROUPS,
+  LEAD_RESULT_DEFAULT_IDS,
+  COMPANY_RESULT_GROUPS,
+  COMPANY_RESULT_DEFAULT_IDS,
+} from "@/lib/search-result-columns"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
-import { initials } from "@/lib/format"
 import { prospectStore, accountStore, listStore } from "@/lib/store"
 import { integrations } from "@/lib/mock-data"
 import { MAX_ENRICH_BATCH, SAVE_COST } from "@/lib/enrichment"
@@ -140,6 +151,7 @@ const COPY = {
     colSize: "Size",
     colRegion: "Region",
     colFit: "Fit",
+    columns: "Columns",
     addSelectedPeople: (n: number) =>
       n > 0 ? `Add ${n} ${n === 1 ? "prospect" : "prospects"}` : "Add prospects",
     addSelectedCompanies: (n: number) =>
@@ -230,6 +242,7 @@ const COPY = {
     colSize: "Tamaño",
     colRegion: "Región",
     colFit: "Encaje",
+    columns: "Columnas",
     addSelectedPeople: (n: number) =>
       n > 0 ? `Añadir ${n} ${n === 1 ? "prospecto" : "prospectos"}` : "Añadir prospectos",
     addSelectedCompanies: (n: number) =>
@@ -350,6 +363,12 @@ export function AddRecordsDialog({
   const [wasOpen, setWasOpen] = React.useState(false)
   const [page, setPage] = React.useState(0)
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+
+  // Customizable result columns — the same shared registry + ColumnManager the
+  // Search page uses, so the add-modal exposes the identical columns + picker.
+  const leadColPrefs = useColumnPrefs("add-people", LEAD_RESULT_DEFAULT_IDS)
+  const companyColPrefs = useColumnPrefs("add-companies", COMPANY_RESULT_DEFAULT_IDS)
 
   const scoped = (scopeCompanies?.length ?? 0) > 0
 
@@ -365,6 +384,7 @@ export function AddRecordsDialog({
     setLinkedinOn(false)
     setPage(0)
     setPerCompanyCap(null)
+    setColumnsOpen(false)
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -505,7 +525,25 @@ export function AddRecordsDialog({
       : pageCompanies.map((co) => co.id)
   const allPageSelected =
     pageIds.length > 0 && pageIds.every((id) => selected.has(id))
+  const somePageSelected = pageIds.some((id) => selected.has(id))
   const selectableCount = Math.min(total, MAX_SELECT)
+
+  // Selection wiring for the shared DataTable. The header checkbox toggles the
+  // current page (matching the "Select page" affordance in the toolbar).
+  const leadSelection: TableSelection<AiLead> = {
+    isSelected: (l) => selected.has(l.id),
+    toggle: (l) => toggle(l.id),
+    toggleAll: selectPage,
+    allSelected: allPageSelected,
+    someSelected: somePageSelected && !allPageSelected,
+  }
+  const companySelection: TableSelection<AiCompany> = {
+    isSelected: (co) => selected.has(co.id),
+    toggle: (co) => toggle(co.id),
+    toggleAll: selectPage,
+    allSelected: allPageSelected,
+    someSelected: somePageSelected && !allPageSelected,
+  }
   const sortOptions: { key: SortKey; label: string }[] =
     entity === "people"
       ? [
@@ -524,6 +562,7 @@ export function AddRecordsDialog({
   const title = entity === "people" ? c.addPeople : c.addCompanies
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton fullScreen>
         <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
@@ -707,6 +746,14 @@ export function AddRecordsDialog({
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  <Button
+                    variant="outline"
+                    className="h-10"
+                    onClick={() => setColumnsOpen(true)}
+                  >
+                    <Columns3 className="size-4" />
+                    <span className="hidden sm:inline">{c.columns}</span>
+                  </Button>
                 </div>
 
                 {/* Results toolbar: count, page/all selection, per-company cap */}
@@ -744,52 +791,27 @@ export function AddRecordsDialog({
                   )}
                 </div>
 
-                <div className="flex-1 overflow-y-auto">
-                  {total === 0 ? (
-                    <p className="text-muted-foreground py-16 text-center text-sm">
-                      {c.noResults}
-                    </p>
+                <div className="flex-1 overflow-y-auto px-6 py-3">
+                  {entity === "people" ? (
+                    <DataTable
+                      columns={LEAD_RESULT_COLUMNS}
+                      visible={leadColPrefs.visible}
+                      rows={pageLeads}
+                      rowKey={(l) => l.id}
+                      locale={locale}
+                      selection={leadSelection}
+                      empty={c.noResults}
+                    />
                   ) : (
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted/40 text-muted-foreground sticky top-0 text-xs">
-                        <tr>
-                          <th className="w-10 px-3 py-2">
-                            <Checkbox
-                              checked={allPageSelected}
-                              onCheckedChange={selectPage}
-                              aria-label={c.selectAll}
-                            />
-                          </th>
-                          <th className="px-2 py-2 text-left font-medium">{c.colName}</th>
-                          <th className="px-2 py-2 text-left font-medium">
-                            {entity === "people" ? c.colCompany : c.colIndustry}
-                          </th>
-                          <th className="hidden px-2 py-2 text-left font-medium sm:table-cell">
-                            {entity === "people" ? c.colRegion : c.colSize}
-                          </th>
-                          <th className="px-2 py-2 text-right font-medium">{c.colFit}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {entity === "people"
-                          ? pageLeads.map((l) => (
-                              <LeadRow
-                                key={l.id}
-                                lead={l}
-                                checked={selected.has(l.id)}
-                                onToggle={() => toggle(l.id)}
-                              />
-                            ))
-                          : pageCompanies.map((co) => (
-                              <CompanyRow
-                                key={co.id}
-                                company={co}
-                                checked={selected.has(co.id)}
-                                onToggle={() => toggle(co.id)}
-                              />
-                            ))}
-                      </tbody>
-                    </table>
+                    <DataTable
+                      columns={COMPANY_RESULT_COLUMNS}
+                      visible={companyColPrefs.visible}
+                      rows={pageCompanies}
+                      rowKey={(co) => co.id}
+                      locale={locale}
+                      selection={companySelection}
+                      empty={c.noResults}
+                    />
                   )}
                 </div>
 
@@ -863,6 +885,27 @@ export function AddRecordsDialog({
         )}
       </DialogContent>
     </Dialog>
+
+    {entity === "people" ? (
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={LEAD_RESULT_COLUMNS}
+        groups={LEAD_RESULT_GROUPS}
+        prefs={leadColPrefs}
+        locale={locale}
+      />
+    ) : (
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={COMPANY_RESULT_COLUMNS}
+        groups={COMPANY_RESULT_GROUPS}
+        prefs={companyColPrefs}
+        locale={locale}
+      />
+    )}
+    </>
   )
 }
 
@@ -1011,86 +1054,6 @@ function FilterGroup({
         </div>
       )}
     </div>
-  )
-}
-
-function LeadRow({
-  lead: l,
-  checked,
-  onToggle,
-}: {
-  lead: AiLead
-  checked: boolean
-  onToggle: () => void
-}) {
-  return (
-    <tr className="hover:bg-muted/40 border-b last:border-b-0">
-      <td className="px-3 py-2.5 align-middle">
-        <Checkbox checked={checked} onCheckedChange={onToggle} aria-label={`${l.firstName} ${l.lastName}`} />
-      </td>
-      <td className="px-2 py-2.5">
-        <div className="flex items-center gap-2.5">
-          <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
-            style={{ backgroundColor: l.avatarColor }}
-          >
-            {initials(l.firstName, l.lastName)}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-medium">
-              {l.firstName} {l.lastName}
-            </p>
-            <p className="text-muted-foreground truncate text-xs">{l.title}</p>
-          </div>
-        </div>
-      </td>
-      <td className="text-muted-foreground px-2 py-2.5">{l.company}</td>
-      <td className="text-muted-foreground hidden px-2 py-2.5 sm:table-cell">{l.region}</td>
-      <td className="px-2 py-2.5 text-right">
-        <Badge variant="secondary" className="tabular-nums">
-          {l.fit}
-        </Badge>
-      </td>
-    </tr>
-  )
-}
-
-function CompanyRow({
-  company: co,
-  checked,
-  onToggle,
-}: {
-  company: AiCompany
-  checked: boolean
-  onToggle: () => void
-}) {
-  return (
-    <tr className="hover:bg-muted/40 border-b last:border-b-0">
-      <td className="px-3 py-2.5 align-middle">
-        <Checkbox checked={checked} onCheckedChange={onToggle} aria-label={co.name} />
-      </td>
-      <td className="px-2 py-2.5">
-        <div className="flex items-center gap-2.5">
-          <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
-            style={{ backgroundColor: co.logoColor }}
-          >
-            {co.name.charAt(0)}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-medium">{co.name}</p>
-            <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
-          </div>
-        </div>
-      </td>
-      <td className="text-muted-foreground px-2 py-2.5">{co.industry}</td>
-      <td className="text-muted-foreground hidden px-2 py-2.5 sm:table-cell">{co.headcount}</td>
-      <td className="px-2 py-2.5 text-right">
-        <Badge variant="secondary" className="tabular-nums">
-          {co.fit}
-        </Badge>
-      </td>
-    </tr>
   )
 }
 
