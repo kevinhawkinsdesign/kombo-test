@@ -102,11 +102,14 @@ export const SEARCH_FACETS: FacetDef[] = [
   { id: "fe_sic", db: "kombo", scope: "companies", label: { en: "SIC code", es: "Código SIC" }, options: ["7372 — Prepackaged software", "7389 — Business services", "6022 — Banks"] },
 
   /* ---------------------- Google Maps (local businesses) ------------------- */
-  // Faithful to the extension: Google Maps company search is query + location
-  // only (the free-text prompt is the query; location is the sole facet).
+  // Faithful to the extension: Google Maps company search exposes two free-text
+  // filters — Keywords (the search query) and Location.
+  { id: "gm_keywords", db: "google_maps", scope: "companies", label: { en: "Keywords", es: "Palabras clave" }, options: [] },
   { id: "gm_location", db: "google_maps", scope: "companies", label: { en: "Location", es: "Ubicación" }, options: [] },
 
   /* ------------------------- TripAdvisor (venues) -------------------------- */
+  // Same as Google Maps: Keywords + Location free-text filters.
+  { id: "ta_keywords", db: "tripadvisor", scope: "companies", label: { en: "Keywords", es: "Palabras clave" }, options: [] },
   { id: "ta_location", db: "tripadvisor", scope: "companies", label: { en: "Location", es: "Ubicación" }, options: [] },
 ]
 
