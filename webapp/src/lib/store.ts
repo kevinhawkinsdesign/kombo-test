@@ -37,6 +37,10 @@ import type {
 } from "./types"
 import type { Locale } from "./locale"
 import type { EnrichScope } from "./enrichment"
+import {
+  blacklistedCompanies as seedBlacklist,
+  type BlacklistedCompany,
+} from "./mock-settings"
 
 // Deterministic mock direct-dial derived from a contact id, so the same
 // contact always "reveals" the same number across renders.
@@ -58,6 +62,8 @@ interface StoreState {
   templates: EmailTemplate[]
   accounts: Account[]
   conversations: Conversation[]
+  // Companies KomboAI must never surface in search results or campaigns.
+  blacklist: BlacklistedCompany[]
   convSeedVersion?: number
 }
 
@@ -77,6 +83,7 @@ function seed(): StoreState {
     templates: seedTemplates,
     accounts: seedAccounts,
     conversations: seedConversations,
+    blacklist: seedBlacklist,
     convSeedVersion: CONV_SEED_VERSION,
   }
 }
@@ -99,6 +106,7 @@ function load(): StoreState {
         conversations: convOutdated
           ? base.conversations
           : parsed.conversations ?? base.conversations,
+        blacklist: parsed.blacklist ?? base.blacklist,
         convSeedVersion: CONV_SEED_VERSION,
       }
     }
@@ -186,6 +194,28 @@ export function useAccounts(): Account[] {
 }
 export function useConversations(): Conversation[] {
   return useSlice((s) => s.conversations)
+}
+export function useBlacklist(): BlacklistedCompany[] {
+  return useSlice((s) => s.blacklist)
+}
+
+// Build a fast-lookup Set of lowercased company names + domains. Used to
+// exclude blacklisted companies from search results and campaign enrollment.
+function keysFromBlacklist(list: BlacklistedCompany[]): Set<string> {
+  const set = new Set<string>()
+  for (const b of list) {
+    if (b.name) set.add(b.name.trim().toLowerCase())
+    if (b.domain) set.add(b.domain.trim().toLowerCase())
+  }
+  return set
+}
+export function blacklistedKeySet(): Set<string> {
+  return keysFromBlacklist(state.blacklist)
+}
+// Reactive variant for components that must re-filter as the blacklist changes.
+export function useBlacklistedKeys(): Set<string> {
+  const list = useBlacklist()
+  return React.useMemo(() => keysFromBlacklist(list), [list])
 }
 
 /* ------------------------------- actions ------------------------------- */
@@ -719,6 +749,37 @@ export const conversationStore = {
   },
   remove(id: string): void {
     setState({ conversations: state.conversations.filter((c) => c.id !== id) })
+  },
+}
+
+export const blacklistStore = {
+  add(company: Omit<BlacklistedCompany, "id"> & Partial<Pick<BlacklistedCompany, "id">>): BlacklistedCompany {
+    const entry: BlacklistedCompany = {
+      id: company.id ?? uid("bl"),
+      name: company.name,
+      domain: company.domain,
+      reason: company.reason,
+    }
+    // De-dupe on name so associating a list twice doesn't pile up entries.
+    const existing = new Set(state.blacklist.map((b) => b.name.toLowerCase()))
+    if (existing.has(entry.name.toLowerCase())) return entry
+    setState({ blacklist: [...state.blacklist, entry] })
+    return entry
+  },
+  addMany(companies: Array<Omit<BlacklistedCompany, "id">>): void {
+    const existing = new Set(state.blacklist.map((b) => b.name.toLowerCase()))
+    const additions: BlacklistedCompany[] = []
+    for (const co of companies) {
+      const key = co.name.toLowerCase()
+      if (!co.name.trim() || existing.has(key)) continue
+      existing.add(key)
+      additions.push({ id: uid("bl"), name: co.name, domain: co.domain, reason: co.reason })
+    }
+    if (additions.length === 0) return
+    setState({ blacklist: [...state.blacklist, ...additions] })
+  },
+  remove(id: string): void {
+    setState({ blacklist: state.blacklist.filter((b) => b.id !== id) })
   },
 }
 

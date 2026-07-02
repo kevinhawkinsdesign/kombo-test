@@ -31,7 +31,12 @@ import {
 } from "@/components/ui/select"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { useProspects, campaignStore, prospectStore } from "@/lib/store"
+import {
+  useProspects,
+  campaignStore,
+  prospectStore,
+  blacklistedKeySet,
+} from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
@@ -74,6 +79,8 @@ const COPY = {
     enrolled: (n: number) => `${n} ${n === 1 ? "prospect" : "prospects"} enrolled`,
     selected: (n: number) => `${n} selected`,
     clear: "Clear",
+    blacklistedSkipped: (n: number) =>
+      `${n} ${n === 1 ? "prospect" : "prospects"} skipped — company is blacklisted`,
   },
   es: {
     title: "Añadir prospectos",
@@ -98,6 +105,8 @@ const COPY = {
     enrolled: (n: number) => `${n} ${n === 1 ? "prospecto inscrito" : "prospectos inscritos"}`,
     selected: (n: number) => `${n} seleccionados`,
     clear: "Limpiar",
+    blacklistedSkipped: (n: number) =>
+      `${n} ${n === 1 ? "prospecto omitido" : "prospectos omitidos"} — empresa en lista negra`,
   },
 } as const
 
@@ -240,12 +249,37 @@ export function AddCampaignProspectsDialog({
   const totalSelected = selectedProspects.size + selectedLeads.size
 
   function handleAdd() {
-    const ids = [...selectedProspects]
+    // Skip anyone whose company is on the blacklist — those companies must
+    // never be enrolled into a campaign.
+    const blocked = blacklistedKeySet()
+    const isBlocked = (company: string, domain: string) =>
+      blocked.size > 0 &&
+      (blocked.has(company.trim().toLowerCase()) ||
+        blocked.has(domain.trim().toLowerCase()))
+
+    const ids: string[] = []
+    let skipped = 0
+    selectedProspects.forEach((id) => {
+      const p = prospects.find((x) => x.id === id)
+      if (p && isBlocked(p.company, p.companyDomain)) {
+        skipped += 1
+        return
+      }
+      ids.push(id)
+    })
     selectedLeads.forEach((lead) => {
+      if (isBlocked(lead.company, lead.companyDomain)) {
+        skipped += 1
+        return
+      }
       const created = prospectStore.create(leadToProspectInput(lead))
       ids.push(created.id)
     })
-    if (ids.length === 0) return
+    if (skipped > 0) toast.info(c.blacklistedSkipped(skipped))
+    if (ids.length === 0) {
+      onOpenChange(false)
+      return
+    }
     campaignStore.addProspects(campaign.id, ids)
     toast.success(c.enrolled(ids.length))
     onOpenChange(false)

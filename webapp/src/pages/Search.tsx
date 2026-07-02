@@ -105,6 +105,7 @@ import {
   prospectStore,
   accountStore,
   useLists,
+  useBlacklistedKeys,
 } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { libraryQueries } from "@/lib/mock-library"
@@ -812,21 +813,39 @@ export default function Search() {
     return set
   }, [lists])
 
+  // Companies the user blacklisted are excluded from every result set here in
+  // the page (reactive) — searchLeads / searchCompanies stay pure.
+  const blacklistedKeys = useBlacklistedKeys()
+
   const leads = React.useMemo(() => {
-    const base = capPerCompany(
+    let base = capPerCompany(
       sortLeads(seed ? lookalikeLeads(seed, query) : searchLeads(query), sortKey),
       query.perCompanyCap
     )
+    if (blacklistedKeys.size > 0) {
+      base = base.filter(
+        (l) =>
+          !blacklistedKeys.has(l.company.toLowerCase()) &&
+          !blacklistedKeys.has(l.companyDomain.toLowerCase())
+      )
+    }
     if (!hideInList || inListKeys.size === 0) return base
     return base.filter(
       (l) => !inListKeys.has(`${l.firstName}|${l.lastName}|${l.company}`.toLowerCase())
     )
-  }, [seed, query, sortKey, hideInList, inListKeys])
-  const companies = React.useMemo(
-    () =>
-      sortCompanies(seed ? lookalikeCompanies(seed, query) : searchCompanies(query), sortKey),
-    [seed, query, sortKey]
-  )
+  }, [seed, query, sortKey, hideInList, inListKeys, blacklistedKeys])
+  const companies = React.useMemo(() => {
+    const base = sortCompanies(
+      seed ? lookalikeCompanies(seed, query) : searchCompanies(query),
+      sortKey
+    )
+    if (blacklistedKeys.size === 0) return base
+    return base.filter(
+      (co) =>
+        !blacklistedKeys.has(co.name.toLowerCase()) &&
+        !blacklistedKeys.has(co.domain.toLowerCase())
+    )
+  }, [seed, query, sortKey, blacklistedKeys])
   const shownCount = entity === "people" ? leads.length : companies.length
   const estTotal = estimatedTotal(shownCount, entity)
   const selectedCount = selected.size
