@@ -732,10 +732,18 @@ function FilterGroup({
 }) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState("")
-  // Long option lists get a free-text search so a value can be found by typing.
-  const showSearch = options.length > 6
   const q = search.trim().toLowerCase()
   const shown = q ? options.filter((v) => v.toLowerCase().includes(q)) : options
+
+  // Enter adds the top match, or the raw typed value when the connected API
+  // would return an option we don't render — every filter is free-text
+  // searchable so a value can always be found (or typed) regardless of length.
+  function commitTyped() {
+    const value = shown[0] ?? search.trim()
+    if (!value) return
+    if (!selected.includes(value)) onToggle(value)
+    setSearch("")
+  }
   return (
     <div className="border-border/70 border-b last:border-b-0">
       <button
@@ -761,18 +769,22 @@ function FilterGroup({
       </button>
       {open && (
         <div className="pb-2">
-          {showSearch && (
-            <div className="relative px-2 pt-0.5 pb-1.5">
-              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                clearable={false}
-                className="h-7 pl-7 text-xs"
-              />
-            </div>
-          )}
+          <div className="relative px-2 pt-0.5 pb-1.5">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  commitTyped()
+                }
+              }}
+              placeholder={searchPlaceholder}
+              clearable={false}
+              className="h-7 pl-7 text-xs"
+            />
+          </div>
           {shown.map((value) => (
             <label
               key={value}
