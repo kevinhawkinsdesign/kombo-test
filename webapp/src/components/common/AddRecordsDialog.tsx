@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Segmented } from "@/components/common/Segmented"
+import { PerCompanyCap } from "@/components/common/PerCompanyCap"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
@@ -122,6 +123,7 @@ const COPY = {
     selectAllN: (n: number) => `Select all ${n.toLocaleString()}`,
     capLabel: "Max / company",
     capOff: "Off",
+    capAria: "Max contacts per company",
     prev: "Prev",
     next: "Next",
     pageOf: (a: number, b: number) => `Page ${a} of ${b}`,
@@ -211,6 +213,7 @@ const COPY = {
     selectAllN: (n: number) => `Seleccionar todos (${n.toLocaleString()})`,
     capLabel: "Máx / empresa",
     capOff: "Todos",
+    capAria: "Máx contactos por empresa",
     prev: "Anterior",
     next: "Siguiente",
     pageOf: (a: number, b: number) => `Página ${a} de ${b}`,
@@ -293,7 +296,6 @@ const CONNECTED_CRM =
 // Results paging + selection limits for the add flow.
 const PAGE_SIZE = 25
 const MAX_SELECT = MAX_ENRICH_BATCH // 1,000
-const CAP_OPTIONS: (number | null)[] = [null, 1, 2, 3, 5, 10]
 // Saving is free; the cost is enrichment (the full email + phone + profile
 // waterfall), surfaced as a projected estimate at selection time.
 const FULL_ENRICH = ENRICH_COST.email + ENRICH_COST.phone + ENRICH_COST.profile
@@ -732,24 +734,14 @@ export function AddRecordsDialog({
                         </button>
                       )}
                       {entity === "people" && (
-                        <div className="ml-auto flex items-center gap-1">
-                          <span className="text-muted-foreground">{c.capLabel}</span>
-                          {CAP_OPTIONS.map((cap) => (
-                            <button
-                              key={String(cap)}
-                              type="button"
-                              onClick={() => applyCap(cap)}
-                              className={cn(
-                                "rounded-md border px-2 py-0.5 font-medium transition-colors",
-                                perCompanyCap === cap
-                                  ? "border-primary bg-primary/10 text-primary"
-                                  : "text-muted-foreground hover:bg-muted/50"
-                              )}
-                            >
-                              {cap ?? c.capOff}
-                            </button>
-                          ))}
-                        </div>
+                        <PerCompanyCap
+                          className="ml-auto"
+                          value={perCompanyCap}
+                          onChange={applyCap}
+                          label={c.capLabel}
+                          offLabel={c.capOff}
+                          ariaLabel={c.capAria}
+                        />
                       )}
                     </>
                   )}

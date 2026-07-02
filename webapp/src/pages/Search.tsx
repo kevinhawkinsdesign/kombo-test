@@ -72,6 +72,7 @@ import {
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { ScoreBadge } from "@/components/common/ProspectBits"
+import { PerCompanyCap } from "@/components/common/PerCompanyCap"
 import { portraitFor } from "@/lib/avatars"
 import {
   interpretPrompt,
@@ -689,8 +690,6 @@ const LEAD_DEFAULT_IDS = ["fit", "company", "region", "email", "signals"]
 
 // Results are paged so "select page" never grabs the whole (1000+) result set.
 const RESULTS_PER_PAGE = 25
-// Caps offered for "max contacts per company" — matches the build-a-list dialog.
-const PER_COMPANY_CAPS: (number | null)[] = [null, 1, 2, 3, 5, 10]
 
 const COMPANY_RESULT_GROUPS: ColGroup[] = [
   { id: "company", label: { en: "Company", es: "Empresa" } },
@@ -1818,28 +1817,13 @@ export default function Search() {
               {entity === "people" && (
                 <>
                   <span className="bg-border mx-1 h-5 w-px" />
-                  <span className="text-muted-foreground pl-1 text-xs font-medium">
-                    {c.capLabel}
-                  </span>
-                  {PER_COMPANY_CAPS.map((n) => {
-                    const active = perCompanyCap === n
-                    return (
-                      <button
-                        key={n ?? "none"}
-                        type="button"
-                        onClick={() => setMaxPerCompany(n)}
-                        aria-pressed={active}
-                        className={cn(
-                          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                          active
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-muted/60"
-                        )}
-                      >
-                        {n === null ? c.capNoLimit : n}
-                      </button>
-                    )
-                  })}
+                  <PerCompanyCap
+                    value={perCompanyCap}
+                    onChange={setMaxPerCompany}
+                    label={c.capLabel}
+                    offLabel={c.capNoLimit}
+                    ariaLabel={c.capLabel}
+                  />
                 </>
               )}
               <span className="bg-border mx-1 h-5 w-px" />
@@ -3313,26 +3297,12 @@ function BuildListDialog({
             {type === "people" && (
               <div className="space-y-2">
                 <Label>{c.capLabel}</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {[null, 1, 2, 3, 5, 10].map((n) => {
-                    const isActive = perCompanyCap === n
-                    return (
-                      <button
-                        key={n ?? "none"}
-                        type="button"
-                        onClick={() => setPerCompanyCap(n)}
-                        className={cn(
-                          "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                          isActive
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-muted/60"
-                        )}
-                      >
-                        {n === null ? c.capNoLimit : n}
-                      </button>
-                    )
-                  })}
-                </div>
+                <PerCompanyCap
+                  value={perCompanyCap}
+                  onChange={setPerCompanyCap}
+                  offLabel={c.capNoLimit}
+                  ariaLabel={c.capLabel}
+                />
               </div>
             )}
           </div>
