@@ -1,9 +1,38 @@
 import * as React from "react"
-import { ChevronDown, Plus, X } from "lucide-react"
+import {
+  Activity,
+  Briefcase,
+  Building2,
+  Calendar,
+  CircleDollarSign,
+  CircleUser,
+  Cpu,
+  Eye,
+  Factory,
+  GraduationCap,
+  Languages,
+  ListOrdered,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Minus,
+  Newspaper,
+  Phone,
+  Plus,
+  Repeat,
+  Search,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  Users,
+  X,
+  Zap,
+} from "lucide-react"
 
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
 import type { FilterSection } from "@/lib/search-facets"
@@ -60,6 +89,64 @@ const COPY = {
 type CatalogCopy = (typeof COPY)[keyof typeof COPY]
 
 const SECTION_ORDER: FilterSection[] = ["contact", "company", "intent"]
+
+type IconType = React.ComponentType<{ className?: string }>
+
+// Semantic leading icon per filter (Enginy-style). Resolved by keywords in the
+// filter id + label so both the typed groups and every facet catalog map
+// without per-entry metadata; falls back by section.
+const ICON_RULES: [RegExp, IconType][] = [
+  [/title|cargo|persona\b/, Briefcase],
+  [/keyword|palabras/, Search],
+  [/region|geo|country|location|ubicaci|hq|sede|pa[ií]s/, MapPin],
+  [/industr|sector|naics|sic\b/, Factory],
+  [/seniority|management|antig|nivel/, Users],
+  [/function|department|funci|departamento/, Target],
+  [/years|años|founded|fundaci/, Calendar],
+  [/experience|experiencia/, Star],
+  [/revenue|ingresos|funding|financiaci/, CircleDollarSign],
+  [/headcount|size|tama|plantilla|employees|growth|crecimiento/, TrendingUp],
+  [/technolog|tecnolog/, Cpu],
+  [/language|idioma/, Languages],
+  [/school|escuela|educa/, GraduationCap],
+  [/first name|last name|nombre|apellido|gender|género/, CircleUser],
+  [/email/, Mail],
+  [/contact info|datos de contacto|phone|tel[eé]fono/, Phone],
+  [/posted|publicó|post\b/, MessageSquare],
+  [/changed jobs|cambió/, Repeat],
+  [/viewed|vio\b/, Eye],
+  [/news|noticias/, Newspaper],
+  [/fortune|list|lista/, ListOrdered],
+  [/signal|señal|intent|intención|activit|actividad/, Activity],
+  [/compan|empresa|account|cuenta/, Building2],
+  [/connection|conexi|follower|seguidor|group|grupo|colleague|network/, Users],
+]
+
+const SECTION_FALLBACK: Record<FilterSection, IconType> = {
+  contact: CircleUser,
+  company: Building2,
+  intent: Zap,
+}
+
+function filterIcon(f: CatalogFilterDef): IconType {
+  const hay = `${f.id} ${f.label}`.toLowerCase()
+  for (const [re, icon] of ICON_RULES) if (re.test(hay)) return icon
+  return SECTION_FALLBACK[f.section]
+}
+
+// Filters where AI can suggest values (Enginy marks these with a sparkle):
+// job titles, geography/locations and industries.
+function isAiSuggestable(f: CatalogFilterDef): boolean {
+  return /title|cargo|region|geo|country|location|ubicaci|hq|sede|pa[ií]s|industr|sector/.test(
+    `${f.id} ${f.label}`.toLowerCase()
+  )
+}
+
+// Single-option Intent filters render as one-tap toggle rows (Enginy style)
+// instead of an expandable Include/Exclude list.
+function isToggleFilter(f: CatalogFilterDef): boolean {
+  return f.section === "intent" && f.options.length === 1
+}
 
 // Global-typeahead visibility: filters with options show when any option
 // matches; option-less (free-text) filters match on their label.
@@ -121,24 +208,72 @@ export function FilterCatalog({
           <p className="text-muted-foreground bg-muted/40 px-2 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
             {copy.sections[section]}
           </p>
-          {sectionFilters.map((f) => (
-            <FilterRow
-              key={f.id}
-              filter={f}
-              copy={copy}
-              // A global search force-expands the matching filters.
-              open={q ? true : openFilters.has(f.id)}
-              onToggleOpen={() => toggleOpen(f.id)}
-              values={selected(f.id)}
-              globalQuery={q}
-              onInclude={onInclude}
-              onExclude={onExclude}
-              onRemove={onRemove}
-              onClear={onClear}
-            />
-          ))}
+          {sectionFilters.map((f) =>
+            isToggleFilter(f) ? (
+              <ToggleRow
+                key={f.id}
+                filter={f}
+                copy={copy}
+                on={selected(f.id).length > 0}
+                onChange={(checked) =>
+                  checked ? onInclude(f.id, f.options[0]) : onClear(f.id)
+                }
+              />
+            ) : (
+              <FilterRow
+                key={f.id}
+                filter={f}
+                copy={copy}
+                // A global search force-expands the matching filters.
+                open={q ? true : openFilters.has(f.id)}
+                onToggleOpen={() => toggleOpen(f.id)}
+                values={selected(f.id)}
+                globalQuery={q}
+                onInclude={onInclude}
+                onExclude={onExclude}
+                onRemove={onRemove}
+                onClear={onClear}
+              />
+            )
+          )}
         </div>
       ))}
+    </div>
+  )
+}
+
+// One-tap Intent filter (single option) — Enginy renders these as switches.
+function ToggleRow({
+  filter,
+  copy,
+  on,
+  onChange,
+}: {
+  filter: CatalogFilterDef
+  copy: CatalogCopy
+  on: boolean
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <div className="border-border/70 flex items-center gap-2 border-b px-2 py-2 last:border-b-0">
+      {React.createElement(filterIcon(filter), {
+        className: cn(
+          "size-3.5 shrink-0",
+          filter.linkedin ? "text-[#0a66c2]" : "text-muted-foreground"
+        ),
+      })}
+      <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+        {filter.label}
+      </span>
+      {filter.popular && (
+        <Badge
+          variant="secondary"
+          className="text-primary bg-primary/10 rounded-full px-1.5 py-0.5 text-[10px] leading-none"
+        >
+          {copy.popular}
+        </Badge>
+      )}
+      <Switch checked={on} onCheckedChange={onChange} aria-label={filter.label} />
     </div>
   )
 }
@@ -219,18 +354,15 @@ function FilterRow({
           type="button"
           onClick={onToggleOpen}
           aria-expanded={open}
-          className="hover:bg-muted/40 flex min-w-0 flex-1 items-center gap-1.5 px-2 py-2 text-left"
+          className="hover:bg-muted/40 flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left"
         >
-          <ChevronDown
-            className={cn(
-              "text-muted-foreground size-3.5 shrink-0 transition-transform",
-              !open && "-rotate-90"
-            )}
-          />
-          {filter.linkedin && (
-            <LinkedinIcon className="size-3 shrink-0 text-[#0a66c2]" />
-          )}
-          <span className="text-muted-foreground min-w-0 flex-1 truncate text-[11px] font-medium tracking-wide uppercase">
+          {React.createElement(filterIcon(filter), {
+            className: cn(
+              "size-3.5 shrink-0",
+              filter.linkedin ? "text-[#0a66c2]" : "text-muted-foreground"
+            ),
+          })}
+          <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
             {filter.label}
           </span>
           {filter.popular && (
@@ -252,11 +384,26 @@ function FilterRow({
             type="button"
             onClick={() => onClear(filter.id)}
             aria-label={copy.clearAria(filter.label)}
-            className="text-muted-foreground hover:text-foreground shrink-0 px-2 py-1 text-xs font-medium"
+            className="text-muted-foreground hover:text-foreground shrink-0 px-1 py-1 text-xs font-medium"
           >
             {copy.clear}
           </button>
         )}
+        {isAiSuggestable(filter) && (
+          <Sparkles
+            className="text-muted-foreground/70 size-3.5 shrink-0"
+            aria-hidden="true"
+          />
+        )}
+        <button
+          type="button"
+          onClick={onToggleOpen}
+          aria-expanded={open}
+          aria-label={filter.label}
+          className="text-muted-foreground hover:text-foreground shrink-0 px-2 py-2"
+        >
+          {open ? <Minus className="size-4" /> : <Plus className="size-4" />}
+        </button>
       </div>
 
       {open && (
