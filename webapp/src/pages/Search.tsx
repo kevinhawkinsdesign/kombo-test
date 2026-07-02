@@ -32,7 +32,6 @@ import {
   Columns3,
   Plug,
   Download,
-  Send,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -263,7 +262,6 @@ const COPY = {
     selected: (n: number) => `${n} selected`,
     clearSel: "Clear",
     bulkList: "Add to list",
-    bulkCampaign: "Add to campaign",
     bulkExport: "Export",
     bulkCrm: "Add to CRM",
     crmToast: (n: number) => `Sent ${n} to your CRM`,
@@ -513,7 +511,6 @@ const COPY = {
     selected: (n: number) => `${n} seleccionados`,
     clearSel: "Limpiar",
     bulkList: "Añadir a lista",
-    bulkCampaign: "Añadir a campaña",
     bulkExport: "Exportar",
     bulkCrm: "Añadir al CRM",
     crmToast: (n: number) => `Enviados ${n} a tu CRM`,
@@ -775,7 +772,6 @@ export default function Search() {
   const [buildOpen, setBuildOpen] = React.useState(false)
   const [bulkIds, setBulkIds] = React.useState<string[]>([])
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
-  const [bulkCampaignOpen, setBulkCampaignOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
   const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>("kombo")
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
@@ -1165,13 +1161,6 @@ export default function Search() {
     setBulkIds(ids)
     setSelected(new Set())
     setBulkListOpen(true)
-  }
-  function bulkAddToCampaign() {
-    const ids = materializeSelected()
-    if (ids.length === 0) return
-    setBulkIds(ids)
-    setSelected(new Set())
-    setBulkCampaignOpen(true)
   }
   function bulkExportSelected() {
     if (entity === "people") {
@@ -1700,12 +1689,6 @@ export default function Search() {
                 <ListPlus className="size-4" />
                 {c.bulkList}
               </Button>
-              {entity === "people" && (
-                <Button variant="outline" size="sm" onClick={bulkAddToCampaign}>
-                  <Send className="size-4" />
-                  {c.bulkCampaign}
-                </Button>
-              )}
               <Button variant="outline" size="sm" onClick={bulkExportSelected}>
                 <Download className="size-4" />
                 {c.bulkExport}
@@ -1801,13 +1784,6 @@ export default function Search() {
         onOpenChange={setBulkListOpen}
         mode="list"
         recordKind={entity === "people" ? "person" : "company"}
-        ids={bulkIds}
-      />
-      <BulkAddDialog
-        open={bulkCampaignOpen}
-        onOpenChange={setBulkCampaignOpen}
-        mode="campaign"
-        recordKind="person"
         ids={bulkIds}
       />
     </Page>
