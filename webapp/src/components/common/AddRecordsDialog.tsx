@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { prospectStore, accountStore, listStore } from "@/lib/store"
 import { integrations } from "@/lib/mock-data"
-import { ENRICH_COST, MAX_ENRICH_BATCH } from "@/lib/enrichment"
+import { MAX_ENRICH_BATCH, SAVE_COST } from "@/lib/enrichment"
 import { facetsForDb } from "@/lib/search-facets"
 import {
   interpretPrompt,
@@ -127,8 +127,8 @@ const COPY = {
     prev: "Prev",
     next: "Next",
     pageOf: (a: number, b: number) => `Page ${a} of ${b}`,
-    enrichEstimate: (n: number) =>
-      `≈ ${n.toLocaleString()} credits to enrich after · saving is free`,
+    saveEstimate: (n: number) => `≈ ${n.toLocaleString()} credits to save`,
+    freeToSave: "Free to save",
     sortFit: "Best match",
     sortName: "Name (A–Z)",
     sortCompany: "Company",
@@ -217,8 +217,8 @@ const COPY = {
     prev: "Anterior",
     next: "Siguiente",
     pageOf: (a: number, b: number) => `Página ${a} de ${b}`,
-    enrichEstimate: (n: number) =>
-      `≈ ${n.toLocaleString()} créditos para enriquecer después · guardar es gratis`,
+    saveEstimate: (n: number) => `≈ ${n.toLocaleString()} créditos para guardar`,
+    freeToSave: "Guardar es gratis",
     sortFit: "Mejor coincidencia",
     sortName: "Nombre (A–Z)",
     sortCompany: "Empresa",
@@ -296,9 +296,6 @@ const CONNECTED_CRM =
 // Results paging + selection limits for the add flow.
 const PAGE_SIZE = 25
 const MAX_SELECT = MAX_ENRICH_BATCH // 1,000
-// Saving is free; the cost is enrichment (the full email + phone + profile
-// waterfall), surfaced as a projected estimate at selection time.
-const FULL_ENRICH = ENRICH_COST.email + ENRICH_COST.phone + ENRICH_COST.profile
 
 // People search: keep at most `cap` contacts per company (order preserved).
 function capLeads(leads: AiLead[], cap: number | null): AiLead[] {
@@ -832,7 +829,9 @@ export function AddRecordsDialog({
                 </span>
                 {selected.size > 0 && (
                   <span className="text-muted-foreground ml-2 text-xs">
-                    {c.enrichEstimate(selected.size * FULL_ENRICH)}
+                    {entity === "people"
+                      ? c.saveEstimate(selected.size * SAVE_COST.prospect)
+                      : c.freeToSave}
                   </span>
                 )}
               </div>

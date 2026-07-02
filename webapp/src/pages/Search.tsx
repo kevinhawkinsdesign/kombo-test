@@ -73,6 +73,7 @@ import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { ScoreBadge } from "@/components/common/ProspectBits"
 import { PerCompanyCap } from "@/components/common/PerCompanyCap"
+import { SAVE_COST } from "@/lib/enrichment"
 import { portraitFor } from "@/lib/avatars"
 import {
   interpretPrompt,
@@ -85,7 +86,6 @@ import {
   queryTitle,
   savedSearchStore,
   useSavedSearches,
-  CREDITS_PER_LEAD,
   EXAMPLE_PROMPTS_EN,
   EXAMPLE_PROMPTS_ES,
   EXAMPLE_PROMPTS_COMPANIES_EN,
@@ -178,7 +178,8 @@ const COPY = {
     companies: "Companies",
     resultsFor: "Results",
     estLeads: (n: number) => `Est. ${n.toLocaleString()} total`,
-    perLead: `${CREDITS_PER_LEAD} credits / lead`,
+    perProspect: (n: number) => `${n} credits / prospect`,
+    freeToSave: "Free to save",
     projected: (n: number) => `≈ ${n.toLocaleString()} credits`,
     getMore: "Get more leads",
     getMoreToast: "Expanding the search across the full database…",
@@ -426,7 +427,8 @@ const COPY = {
     companies: "Empresas",
     resultsFor: "Resultados",
     estLeads: (n: number) => `Est. ${n.toLocaleString()} en total`,
-    perLead: `${CREDITS_PER_LEAD} créditos / lead`,
+    perProspect: (n: number) => `${n} créditos / prospecto`,
+    freeToSave: "Guardar es gratis",
     projected: (n: number) => `≈ ${n.toLocaleString()} créditos`,
     getMore: "Conseguir más leads",
     getMoreToast: "Ampliando la búsqueda a toda la base de datos…",
@@ -849,7 +851,11 @@ export default function Search() {
   const estTotal = estimatedTotal(shownCount, entity)
   const selectedCount = selected.size
   const creditBase = selectedCount > 0 ? selectedCount : estTotal
-  const projectedCredits = Math.round(creditBase * CREDITS_PER_LEAD)
+  // Saving to a list costs per prospect; companies are free. A saved search is
+  // free either way.
+  const perRecordCost =
+    entity === "people" ? SAVE_COST.prospect : SAVE_COST.company
+  const projectedCredits = creditBase * perRecordCost
 
   // Pagination — so "select page" imports a controlled batch instead of every
   // matching result. Reset to the first page whenever the result set changes.
@@ -1713,13 +1719,22 @@ export default function Search() {
               <CircleDashed className="size-3.5" />
               {c.estLeads(estTotal)}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <Coins className="text-chart-4 size-3.5" />
-              {c.perLead}
-            </span>
-            <span className="text-foreground font-medium">
-              {c.projected(projectedCredits)}
-            </span>
+            {perRecordCost > 0 ? (
+              <>
+                <span className="inline-flex items-center gap-1">
+                  <Coins className="text-chart-4 size-3.5" />
+                  {c.perProspect(perRecordCost)}
+                </span>
+                <span className="text-foreground font-medium">
+                  {c.projected(projectedCredits)}
+                </span>
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <Coins className="text-chart-4 size-3.5" />
+                {c.freeToSave}
+              </span>
+            )}
           </div>
 
           {/* Selection controls — keep imports small: pick a page at a time and,
