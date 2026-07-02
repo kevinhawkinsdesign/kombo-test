@@ -230,6 +230,7 @@ const COPY = {
     findSimilar: "Find similar",
     similarTo: "Similar to",
     clearLookalike: "Clear lookalike",
+    mapAreaHint: "Approximate search area — results are matched around this location.",
     lookalikePrompt: (name: string) => `Find records similar to ${name}`,
     colFit: "Fit",
     colName: "Name",
@@ -468,6 +469,7 @@ const COPY = {
     findSimilar: "Buscar similares",
     similarTo: "Similar a",
     clearLookalike: "Quitar similares",
+    mapAreaHint: "Área de búsqueda aproximada — los resultados se buscan alrededor de esta ubicación.",
     lookalikePrompt: (name: string) => `Buscar registros similares a ${name}`,
     colFit: "Encaje",
     colName: "Nombre",
@@ -757,6 +759,8 @@ export default function Search() {
   const linkedinOn = source === "linkedin"
   // Local-business sources expose only their own facets (no firmographic groups).
   const localSource = source === "google_maps" || source === "tripadvisor"
+  // Values typed into the Google Maps "Location" facet — drives the map preview.
+  const gmLocationValues = query.facets["gm_location"] ?? []
 
   // "Hide prospects already in a list": key existing list members by identity so
   // people you've already saved don't clutter the results.
@@ -1541,6 +1545,11 @@ export default function Search() {
             </div>
           )}
 
+          {!thinking && source === "google_maps" && entity === "companies" &&
+            gmLocationValues.length > 0 && (
+              <LocationMapPreview locations={gmLocationValues} c={c} />
+            )}
+
           {!thinking && (
             <>
           {/* Stats strip */}
@@ -2262,6 +2271,50 @@ function EntityTab({
       <Icon className="size-4" />
       {label}
     </button>
+  )
+}
+
+// A stylized, read-only map preview for local-business sources (Google Maps
+// today) — confirms the searched location with a pin and a soft circle
+// standing in for the matching radius/region. No live map API is wired up in
+// this prototype, so the "map" is a decorative CSS/SVG backdrop rather than a
+// real tile layer; it only appears once the user has typed a Location value.
+function LocationMapPreview({ locations, c }: { locations: string[]; c: Copy }) {
+  const label = locations.join(" · ")
+  return (
+    <Card className="gap-0 overflow-hidden p-0">
+      <div className="relative flex h-40 items-center justify-center overflow-hidden bg-emerald-50 dark:bg-emerald-950/30">
+        {/* Decorative street-grid backdrop. */}
+        <svg
+          className="absolute inset-0 size-full opacity-40"
+          aria-hidden="true"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <pattern id="map-grid" width="34" height="34" patternUnits="userSpaceOnUse">
+              <path
+                d="M 34 0 L 0 0 0 34"
+                fill="none"
+                className="stroke-emerald-700/25 dark:stroke-emerald-300/20"
+                strokeWidth="1"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#map-grid)" />
+        </svg>
+        {/* Radius / region overlay, centered on the pin. */}
+        <span className="border-emerald-600/50 bg-emerald-500/10 absolute size-28 rounded-full border-2 border-dashed" />
+        <span className="border-emerald-600/25 bg-emerald-500/5 absolute size-40 rounded-full border" />
+        <span className="bg-emerald-600 relative flex size-8 items-center justify-center rounded-full text-white shadow-md">
+          <MapPin className="size-4" />
+        </span>
+        <span className="bg-background/90 text-foreground absolute bottom-2 left-2 inline-flex max-w-[85%] items-center gap-1.5 truncate rounded-full px-2.5 py-1 text-xs font-medium shadow-sm">
+          <MapPin className="text-emerald-600 size-3 shrink-0" />
+          <span className="truncate">{label}</span>
+        </span>
+      </div>
+      <p className="text-muted-foreground px-3 py-2 text-xs">{c.mapAreaHint}</p>
+    </Card>
   )
 }
 
