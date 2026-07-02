@@ -26,3 +26,6 @@ ls -1t ../app/assets | tail -n +41 | while IFS= read -r f; do
 done
 
 echo "Deployed to app/ (kept $(ls -1 ../app/assets | wc -l | tr -d ' ') asset files)"
+# Pages build-frequency note: if deploys start showing deployment_queued timeouts,
+# after a burst of merges, wait ~20-30 min for GitHub's Pages build queue to clear,
+# then push any small change to trigger a fresh pages-build-deployment run.
