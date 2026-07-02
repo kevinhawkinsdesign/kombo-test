@@ -19,6 +19,8 @@ import {
   UserPlus,
   X,
   Sparkles,
+  CheckCircle2,
+  Circle,
   Zap,
   AlertTriangle,
   CalendarClock,
@@ -184,6 +186,15 @@ const COPY = {
     sequenceSaved: "Sequence saved",
     noSteps: "This sequence has no steps yet.",
     addStep: "Add step",
+    setupTitle: "Finish setting up this campaign",
+    setupDesc: "A campaign needs a sequence and prospects before it can run.",
+    setupSequenceLabel: "Build your sequence",
+    setupSequenceDesc: "Add the emails and steps this campaign will send.",
+    setupSequenceCta: "Build sequence",
+    setupProspectsLabel: "Add prospects",
+    setupProspectsDesc: "Attach a list or enroll the prospects to contact.",
+    setupProspectsCta: "Add prospects",
+    setupDone: "Done",
     thProspect: "Prospect",
     thTitleCompany: "Title / Company",
     thCurrentStep: "Current step",
@@ -315,6 +326,15 @@ const COPY = {
     sequenceSaved: "Secuencia guardada",
     noSteps: "Esta secuencia aún no tiene pasos.",
     addStep: "Añadir paso",
+    setupTitle: "Termina de configurar esta campaña",
+    setupDesc: "Una campaña necesita una secuencia y prospectos antes de ejecutarse.",
+    setupSequenceLabel: "Crea tu secuencia",
+    setupSequenceDesc: "Añade los correos y pasos que enviará esta campaña.",
+    setupSequenceCta: "Crear secuencia",
+    setupProspectsLabel: "Añade prospectos",
+    setupProspectsDesc: "Vincula una lista o inscribe los prospectos a contactar.",
+    setupProspectsCta: "Añadir prospectos",
+    setupDone: "Listo",
     thProspect: "Prospecto",
     thTitleCompany: "Cargo / Empresa",
     thCurrentStep: "Paso actual",
@@ -532,6 +552,7 @@ export default function CampaignDetail() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [attachListId, setAttachListId] = React.useState("")
+  const [tab, setTab] = React.useState("overview")
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
   const [scheduleOpen, setScheduleOpen] = React.useState(false)
   const [scheduleValue, setScheduleValue] = React.useState("")
@@ -593,6 +614,12 @@ export default function CampaignDetail() {
     .map(getProspect)
     .filter((p): p is NonNullable<typeof p> => Boolean(p))
   const hasProspects = enrollments.length > 0 || manualProspects.length > 0
+
+  // Guided setup: a campaign is ready once it has a sequence and a prospect
+  // source (an attached list or manually-enrolled prospects).
+  const hasSequence = steps.length > 0
+  const hasFeed = hasProspects || Boolean(attachedList)
+  const setupComplete = hasSequence && hasFeed
 
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
   const allEnrolledIds = new Set<string>([...enrollmentIds, ...enrolledIds])
@@ -881,7 +908,7 @@ export default function CampaignDetail() {
         <Kpi label={c.meetings} value={campaign.meetings} />
       </div>
 
-      <Tabs defaultValue="overview" className="mt-6">
+      <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList>
           <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
           <TabsTrigger value="sequence">{c.tabSequence}</TabsTrigger>
@@ -891,6 +918,33 @@ export default function CampaignDetail() {
 
         {/* Overview */}
         <TabsContent value="overview" className="mt-4 space-y-4">
+          {!setupComplete && (
+            <Card className="border-primary/30 bg-primary/[0.03]">
+              <CardHeader>
+                <CardTitle className="text-base">{c.setupTitle}</CardTitle>
+                <CardDescription>{c.setupDesc}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <SetupStep
+                  done={hasSequence}
+                  label={c.setupSequenceLabel}
+                  desc={c.setupSequenceDesc}
+                  actionLabel={c.setupSequenceCta}
+                  doneLabel={c.setupDone}
+                  onAction={() => setTab("sequence")}
+                />
+                <SetupStep
+                  done={hasFeed}
+                  label={c.setupProspectsLabel}
+                  desc={c.setupProspectsDesc}
+                  actionLabel={c.setupProspectsCta}
+                  doneLabel={c.setupDone}
+                  onAction={() => setTab("prospects")}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{c.dailyPerformance}</CardTitle>
@@ -1466,6 +1520,53 @@ export default function CampaignDetail() {
 }
 
 /* ------------------------------ sub-components ----------------------------- */
+// One row of the guided-setup checklist on the campaign Overview.
+function SetupStep({
+  done,
+  label,
+  desc,
+  actionLabel,
+  doneLabel,
+  onAction,
+}: {
+  done: boolean
+  label: string
+  desc: string
+  actionLabel: string
+  doneLabel: string
+  onAction: () => void
+}) {
+  return (
+    <div className="bg-background flex items-center gap-3 rounded-lg border px-3 py-2.5">
+      {done ? (
+        <CheckCircle2 className="text-chart-1 size-5 shrink-0" />
+      ) : (
+        <Circle className="text-muted-foreground size-5 shrink-0" />
+      )}
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "text-sm font-medium",
+            done && "text-muted-foreground"
+          )}
+        >
+          {label}
+        </p>
+        <p className="text-muted-foreground text-xs">{desc}</p>
+      </div>
+      {done ? (
+        <span className="text-chart-1 shrink-0 text-xs font-medium">
+          {doneLabel}
+        </span>
+      ) : (
+        <Button size="sm" onClick={onAction} className="shrink-0">
+          {actionLabel}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 function AddStepMenu({
   onAdd,
 }: {
