@@ -1,7 +1,7 @@
 import * as React from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
-  LayoutDashboard,
+  Home,
   Building2,
   FolderKanban,
   Inbox,
@@ -62,7 +62,6 @@ import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
 import { useReleaseMode, isV2OnlyPath } from "@/lib/release-mode"
-import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 
 interface NavItem {
   to: string
@@ -84,7 +83,7 @@ const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
 // Always-visible top destinations.
 const primary: NavItem[] = [
-  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
+  { to: "/", labelKey: "nav.home", icon: Home, isNew: true },
   {
     to: "/copilot",
     labelKey: "nav.copilot",
@@ -438,12 +437,6 @@ function SidebarContent({
       g.items.some((it) => isActivePath(pathname, it.to))
     )?.key ?? null
   const { openKey, setOpen } = useAccordionGroup(activeGroupKey)
-  const newCampaign = useNewCampaign()
-
-  function startNewCampaign() {
-    onNavigate?.()
-    newCampaign.open()
-  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -466,35 +459,6 @@ function SidebarContent({
 
         <div className={cn("pb-2", collapsed ? "px-2" : "px-3")}>
           <ProspectSearchTrigger collapsed={collapsed} onNavigate={onNavigate} />
-        </div>
-
-        <div className={cn(collapsed ? "px-2" : "px-3")}>
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/70 mx-auto flex"
-                  aria-label={t("nav.newCampaign")}
-                  onClick={startNewCampaign}
-                >
-                  <Send className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{t("nav.newCampaign")}</TooltipContent>
-            </Tooltip>
-          ) : (
-            <Button
-              variant="secondary"
-              className="bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/70 w-full justify-start gap-2"
-              size="sm"
-              onClick={startNewCampaign}
-            >
-              <Send className="size-4" />
-              {t("nav.newCampaign")}
-            </Button>
-          )}
         </div>
 
         {progress < 100 &&
@@ -678,7 +642,7 @@ export function AppSidebar() {
 
 // Primary destinations shown in the native-style bottom bar on mobile.
 const bottomBarItems: NavItem[] = [
-  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { to: "/", labelKey: "nav.home", icon: Home },
   { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
