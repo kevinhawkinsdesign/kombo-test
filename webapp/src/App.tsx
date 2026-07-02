@@ -76,10 +76,10 @@ function App() {
         {/* Home is the "Describe your ideal customer" hero (v1 + v2); the
             sales Dashboard is its own page, and /search goes straight to the
             results view. */}
-        <Route path="/" element={<Search />} />
+        <Route path="/" element={<Search key="home" />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/copilot" element={<Copilot />} />
-        <Route path="/search" element={<Search />} />
+        <Route path="/search" element={<Search key="search" />} />
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />

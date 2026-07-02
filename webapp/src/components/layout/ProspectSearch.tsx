@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -30,7 +30,7 @@ export function ProspectSearch() {
   return null
 }
 
-/** Sidebar primary CTA — opens the prospect search page. */
+/** Sidebar primary CTA — a real link to the prospect search page. */
 export function ProspectSearchTrigger({
   collapsed,
   onNavigate,
@@ -38,13 +38,7 @@ export function ProspectSearchTrigger({
   collapsed?: boolean
   onNavigate?: () => void
 }) {
-  const navigate = useNavigate()
   const { t } = useLocale()
-
-  function open() {
-    onNavigate?.()
-    navigate(SEARCH_PATH)
-  }
 
   if (collapsed) {
     return (
@@ -55,9 +49,11 @@ export function ProspectSearchTrigger({
             size="icon"
             className="mx-auto flex"
             aria-label={t("nav.search")}
-            onClick={open}
+            asChild
           >
-            <Search className="size-4" />
+            <NavLink to={SEARCH_PATH} onClick={onNavigate}>
+              <Search className="size-4" />
+            </NavLink>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">{t("nav.search")}</TooltipContent>
@@ -66,9 +62,11 @@ export function ProspectSearchTrigger({
   }
 
   return (
-    <Button variant="volt" size="sm" className="w-full justify-start gap-2" onClick={open}>
-      <Search className="size-4" />
-      {t("nav.search")}
+    <Button variant="volt" size="sm" className="w-full justify-start gap-2" asChild>
+      <NavLink to={SEARCH_PATH} onClick={onNavigate}>
+        <Search className="size-4" />
+        {t("nav.search")}
+      </NavLink>
     </Button>
   )
 }

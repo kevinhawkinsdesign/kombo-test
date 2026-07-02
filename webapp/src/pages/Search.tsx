@@ -2134,9 +2134,10 @@ function SearchEmptyState({
   examples: string[]
   onRun: (prompt: string) => void
 }) {
+  // Three suggestions so the row always fits on a single line.
   const suggestions = libraryQueries
     .filter((qq) => qq.entity === entity)
-    .slice(0, 6)
+    .slice(0, 3)
   return (
     <div className="space-y-8 py-1">
       {suggestions.length > 0 && (
@@ -2145,7 +2146,7 @@ function SearchEmptyState({
             <Sparkles className="text-primary size-4" />
             {c.aiSuggestions}
           </p>
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-3">
             {suggestions.map((s) => (
               <button
                 key={s.id}
