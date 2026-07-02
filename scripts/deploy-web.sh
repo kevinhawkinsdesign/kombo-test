@@ -15,6 +15,11 @@ mkdir -p ../app/assets
 cp -r dist/assets/. ../app/assets/
 cp dist/index.html ../app/index.html
 
+# Record the current JS bundle hash so the app can auto-refresh when a newer
+# deploy is available (see the version check in index.html).
+BUNDLE_HASH="$(grep -oE 'index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1 | sed -E 's/index-(.*)\.js/\1/')"
+printf '%s\n' "$BUNDLE_HASH" > ../app/version.txt
+
 # Keep the 40 most-recently-modified asset files; drop older ones.
 ls -1t ../app/assets | tail -n +41 | while IFS= read -r f; do
   rm -f "../app/assets/$f"
