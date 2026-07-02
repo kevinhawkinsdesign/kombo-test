@@ -53,7 +53,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
@@ -151,6 +150,7 @@ const COPY = {
       "Scoring fit and enriching results",
     ],
     refine: "Quick refine",
+    save: "Save",
     saved: "Saved searches",
     saveThis: "Save this search",
     noSaved: "No saved searches yet.",
@@ -398,6 +398,7 @@ const COPY = {
       "Puntuando el encaje y enriqueciendo resultados",
     ],
     refine: "Refinar rápido",
+    save: "Guardar",
     saved: "Búsquedas guardadas",
     saveThis: "Guardar esta búsqueda",
     noSaved: "Aún no hay búsquedas guardadas.",
@@ -1342,19 +1343,31 @@ export default function Search() {
               )}
               <span className="hidden sm:inline">{c.searchBtn}</span>
             </Button>
+            {/* Split button: primary Save action + a dropdown to reopen
+                previously saved searches. */}
+            <div className="inline-flex">
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-1.5 rounded-r-none"
+              onClick={saveSearch}
+            >
+              <Bookmark className="size-4" />
+              <span className="hidden sm:inline">{c.save}</span>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" className="gap-1.5">
-                  <Bookmark className="size-4" />
-                  <span className="hidden sm:inline">{c.saved}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="-ml-px rounded-l-none"
+                  aria-label={c.saved}
+                >
+                  <ChevronDown className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuItem onClick={saveSearch}>
-                  <Bookmark className="size-4" />
-                  {c.saveThis}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuLabel className="text-muted-foreground text-xs">
                   {c.saved}
                 </DropdownMenuLabel>
@@ -1395,6 +1408,7 @@ export default function Search() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </form>
         </Card>
 
