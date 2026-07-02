@@ -15,8 +15,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { useLocale } from "@/lib/locale"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useLocale, type Locale } from "@/lib/locale"
 import { campaignStore } from "@/lib/store"
+import { currentUser } from "@/lib/mock-data"
+import { team } from "@/lib/team"
+
+// Sending accounts: the current user first, then teammates, deduped by id.
+const ACCOUNT_OPTIONS = [
+  { id: currentUser.id, name: currentUser.name },
+  ...team
+    .filter((m) => m.id !== currentUser.id)
+    .map((m) => ({ id: m.id, name: m.name })),
+]
 
 /* ----------------------------- context ---------------------------------- */
 
@@ -54,6 +71,10 @@ const COPY = {
     goalLabel: "Goal / intent",
     goalPlaceholder:
       "What outcome are you driving? Book demos, revive cold leads, expand into a new segment…",
+    accountLabel: "Account",
+    languageLabel: "Language",
+    english: "English",
+    spanish: "Español",
     cancel: "Cancel",
     create: "Create campaign",
     created: (name: string) => `"${name}" created — set up its prospects`,
@@ -66,6 +87,10 @@ const COPY = {
     goalLabel: "Objetivo / intención",
     goalPlaceholder:
       "¿Qué resultado buscas? Agendar demos, reactivar leads fríos, entrar en un nuevo segmento…",
+    accountLabel: "Cuenta",
+    languageLabel: "Idioma",
+    english: "English",
+    spanish: "Español",
     cancel: "Cancelar",
     create: "Crear campaña",
     created: (name: string) => `«${name}» creada — configura su audiencia`,
@@ -87,6 +112,8 @@ function NewCampaignWizard({
 
   const [name, setName] = React.useState("")
   const [goal, setGoal] = React.useState("")
+  const [accountId, setAccountId] = React.useState(currentUser.id)
+  const [language, setLanguage] = React.useState<Locale>(locale)
 
   // Reset on open (render-time, per React guidance — no cascading effect).
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -95,6 +122,8 @@ function NewCampaignWizard({
     if (open) {
       setName("")
       setGoal("")
+      setAccountId(currentUser.id)
+      setLanguage(locale)
     }
   }
 
@@ -102,10 +131,15 @@ function NewCampaignWizard({
 
   function create() {
     if (!canCreate) return
+    const account =
+      ACCOUNT_OPTIONS.find((a) => a.id === accountId) ?? ACCOUNT_OPTIONS[0]
     const campaign = campaignStore.create({
       name: name.trim(),
       goal: goal.trim() || undefined,
       status: "draft",
+      senderAccountId: account.id,
+      senderAccount: account.name,
+      language,
     })
     onOpenChange(false)
     toast.success(c.created(campaign.name))
@@ -143,6 +177,38 @@ function NewCampaignWizard({
               placeholder={c.goalPlaceholder}
               className="min-h-20"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="campaign-account">{c.accountLabel}</Label>
+              <Select value={accountId} onValueChange={setAccountId}>
+                <SelectTrigger id="campaign-account" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACCOUNT_OPTIONS.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="campaign-language">{c.languageLabel}</Label>
+              <Select
+                value={language}
+                onValueChange={(v) => setLanguage(v as Locale)}
+              >
+                <SelectTrigger id="campaign-language" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{c.english}</SelectItem>
+                  <SelectItem value="es">{c.spanish}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
