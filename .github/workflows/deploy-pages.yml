@@ -1,0 +1,54 @@
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Needed so the workflow can check out the repo, mint an OIDC token to
+# authenticate to the Pages deployment API, and publish to the Pages
+# environment. No write access to repo contents is required since this
+# workflow never commits anything back.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run
+# in-progress and latest queued. Do NOT cancel in-progress runs: the prior
+# incident (4 deploys stuck in "deployment_queued" after ~12 rapid
+# squash-merges in under 2 hours) was caused by too many deployments piling
+# up faster than the Pages API could process them, not by any single
+# deployment running too long. Canceling an in-progress actions/deploy-pages
+# run can leave a deployment half-published at the Pages API, which would
+# make that failure mode worse, not better. With cancel-in-progress left
+# false, GitHub Actions concurrency groups still auto-drop stale *queued*
+# runs whenever a newer push queues behind them, so a burst of rapid pushes
+# collapses to "one running + at most one waiting" instead of a growing
+# backlog of queued deployments.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload app/ as the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./app
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
