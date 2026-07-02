@@ -41,13 +41,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Remove VCS metadata before publishing
+        run: rm -rf .git
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload app/ as the Pages artifact
+      # The repo root also holds a marketing site (index.html, about.html,
+      # etc.) alongside the web app under app/. The legacy "deploy from a
+      # branch" Pages source always served the WHOLE repo tree at the base
+      # URL, so the marketing site lived at "/" and the web app at "/app/".
+      # Uploading only "./app" here would collapse the app to the site root
+      # and 404 both the marketing site and the "/app/" URL everyone already
+      # has bookmarked — upload the repo root to preserve both paths exactly.
+      - name: Upload repository as the Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./app
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
