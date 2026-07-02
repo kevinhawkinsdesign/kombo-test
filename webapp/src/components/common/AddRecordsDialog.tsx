@@ -15,6 +15,9 @@ import {
   MapPin,
   Star,
   CheckCircle2,
+  Compass,
+  Cloud,
+  Link2,
   X,
 } from "lucide-react"
 
@@ -37,6 +40,7 @@ import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { prospectStore, accountStore, listStore } from "@/lib/store"
+import { integrations } from "@/lib/mock-data"
 import { facetsForDb } from "@/lib/search-facets"
 import {
   interpretPrompt,
@@ -130,21 +134,38 @@ const COPY = {
     noResults: "No matches — broaden your search or filters.",
     addedPeople: (n: number) => `${n} ${n === 1 ? "prospect" : "prospects"} added`,
     addedCompanies: (n: number) => `${n} ${n === 1 ? "company" : "companies"} added`,
-    importTitle: "Import from a file or source",
+    importTitle: "Import from a file, link, or source",
     importSubtitle:
-      "Include either First Name, Last Name & Company, or a LinkedIn profile URL.",
+      "Bring in prospects or companies from a spreadsheet, a URL, or a connected tool.",
     dropHere: "Drag and drop your file here or ",
     browse: "browse",
     fileTypes: "Supports CSV and Excel files (.csv, .xlsx, .xls)",
-    orConnect: "Or import from a connected source",
-    hubspot: "Import from HubSpot",
-    hubspotList: "Import from a HubSpot List",
-    liConnections: "Import your LinkedIn connections",
-    liFollowers: "Import your LinkedIn followers",
+    fileLabel: "Upload a file",
+    linkLabel: "Import from a link",
+    linkHintPeople: "Paste a URL and we'll import the people from it via our API.",
+    linkHintCompanies:
+      "Paste a URL and we'll import the companies from it via our API.",
+    connectLabel: "Connect a source",
+    hubspot: "HubSpot",
+    hubspotList: "HubSpot list",
+    liConnections: "LinkedIn connections",
+    liFollowers: "LinkedIn followers",
+    crmViews: (crm: string) => `${crm} views`,
+    connectCrm: "Connect a CRM",
+    snLeads: "Sales Navigator leads link",
+    snCompanies: "Sales Navigator companies link",
+    liPost: "LinkedIn post link",
+    liSearch: "LinkedIn search results link",
+    snLeadsPh: "Paste a Sales Navigator leads search URL",
+    snCompaniesPh: "Paste a Sales Navigator companies search URL",
+    liPostPh: "Paste a LinkedIn post URL — we'll import everyone who engaged",
+    liSearchPh: "Paste a LinkedIn search results URL",
+    importBtn: "Import",
+    linkBack: "Choose another method",
+    importingLink: (label: string) =>
+      `Importing from ${label} — we'll add matches shortly`,
     importingFile: "Importing — we'll add matches shortly",
     syncing: "Syncing — this can take a moment",
-    inboundLabel: "Inbound — from your CRM",
-    outboundLabel: "Outbound — external sources",
     dbLabel: "Search in",
     dbKombo: "Kombo",
     dbSalesNav: "Sales Nav",
@@ -192,21 +213,39 @@ const COPY = {
     noResults: "Sin coincidencias — amplía tu búsqueda o filtros.",
     addedPeople: (n: number) => `${n} ${n === 1 ? "prospecto añadido" : "prospectos añadidos"}`,
     addedCompanies: (n: number) => `${n} ${n === 1 ? "empresa añadida" : "empresas añadidas"}`,
-    importTitle: "Importar desde un archivo o fuente",
+    importTitle: "Importar desde un archivo, enlace o fuente",
     importSubtitle:
-      "Incluye Nombre, Apellido y Empresa, o una URL de perfil de LinkedIn.",
+      "Trae prospectos o empresas desde una hoja de cálculo, una URL o una herramienta conectada.",
     dropHere: "Arrastra tu archivo aquí o ",
     browse: "explora",
     fileTypes: "Admite archivos CSV y Excel (.csv, .xlsx, .xls)",
-    orConnect: "O importa desde una fuente conectada",
-    hubspot: "Importar desde HubSpot",
-    hubspotList: "Importar de una lista de HubSpot",
-    liConnections: "Importar tus conexiones de LinkedIn",
-    liFollowers: "Importar tus seguidores de LinkedIn",
+    fileLabel: "Sube un archivo",
+    linkLabel: "Importar desde un enlace",
+    linkHintPeople:
+      "Pega una URL y importaremos las personas desde ella con nuestra API.",
+    linkHintCompanies:
+      "Pega una URL y importaremos las empresas desde ella con nuestra API.",
+    connectLabel: "Conecta una fuente",
+    hubspot: "HubSpot",
+    hubspotList: "Lista de HubSpot",
+    liConnections: "Conexiones de LinkedIn",
+    liFollowers: "Seguidores de LinkedIn",
+    crmViews: (crm: string) => `Vistas de ${crm}`,
+    connectCrm: "Conecta un CRM",
+    snLeads: "Enlace de leads de Sales Navigator",
+    snCompanies: "Enlace de empresas de Sales Navigator",
+    liPost: "Enlace de publicación de LinkedIn",
+    liSearch: "Enlace de resultados de búsqueda de LinkedIn",
+    snLeadsPh: "Pega una URL de búsqueda de leads de Sales Navigator",
+    snCompaniesPh: "Pega una URL de búsqueda de empresas de Sales Navigator",
+    liPostPh: "Pega la URL de una publicación de LinkedIn — importaremos a quienes interactuaron",
+    liSearchPh: "Pega una URL de resultados de búsqueda de LinkedIn",
+    importBtn: "Importar",
+    linkBack: "Elegir otro método",
+    importingLink: (label: string) =>
+      `Importando desde ${label} — añadiremos las coincidencias en breve`,
     importingFile: "Importando — añadiremos las coincidencias en breve",
     syncing: "Sincronizando — puede tardar un momento",
-    inboundLabel: "Inbound — desde tu CRM",
-    outboundLabel: "Outbound — fuentes externas",
     dbLabel: "Buscar en",
     dbKombo: "Kombo",
     dbSalesNav: "Sales Nav",
@@ -223,6 +262,12 @@ type Copy = (typeof COPY)[keyof typeof COPY]
 function entityFromKind(kind: Kind): AiEntity {
   return kind === "company" ? "companies" : "people"
 }
+
+// The CRM the user has connected — the "views" import method is dynamic and
+// points at whichever CRM is integrated (Salesforce in the mockups is just an
+// example). Null when no CRM is connected yet.
+const CONNECTED_CRM =
+  integrations.find((i) => i.category === "crm" && i.connected)?.name ?? null
 
 /**
  * Full-screen, full-featured "add records" search. Adding prospects or
@@ -653,6 +698,10 @@ export function AddRecordsDialog({
               toast.success(c.syncing)
               onOpenChange(false)
             }}
+            onLinkImport={(label) => {
+              toast.success(c.importingLink(label))
+              onOpenChange(false)
+            }}
           />
         )}
       </DialogContent>
@@ -888,58 +937,92 @@ function CompanyRow({
   )
 }
 
+type ImportMethod = {
+  key: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  tint: string
+}
+
 function ImportPane({
   entity,
   c,
   onFile,
   onConnect,
   onSync,
+  onLinkImport,
 }: {
   entity: AiEntity
   c: Copy
   onFile: () => void
   onConnect: () => void
   onSync: () => void
+  onLinkImport: (label: string) => void
 }) {
-  const sources: {
-    key: string
-    label: string
-    icon: React.ComponentType<{ className?: string }>
-    brand: "hubspot" | "linkedin"
-    group: "inbound" | "outbound"
-    onClick: () => void
-  }[] = [
-    { key: "hubspot", label: c.hubspot, icon: Plug, brand: "hubspot", group: "inbound", onClick: onConnect },
-    { key: "hubspot-list", label: c.hubspotList, icon: Plug, brand: "hubspot", group: "inbound", onClick: onConnect },
-    ...(entity === "people"
+  // Which "link" method is being entered, plus the pasted URL.
+  const [activeLink, setActiveLink] = React.useState<string | null>(null)
+  const [url, setUrl] = React.useState("")
+
+  const linkTint = "bg-[#0a66c2]/10 text-[#0a66c2]"
+
+  // Link-based imports: paste a URL, the API pulls the records from it.
+  const linkMethods: (ImportMethod & { placeholder: string })[] =
+    entity === "people"
       ? [
-          { key: "li-connections", label: c.liConnections, icon: LinkedinIcon, brand: "linkedin" as const, group: "outbound" as const, onClick: onSync },
-          { key: "li-followers", label: c.liFollowers, icon: LinkedinIcon, brand: "linkedin" as const, group: "outbound" as const, onClick: onSync },
+          { key: "sn-leads", label: c.snLeads, placeholder: c.snLeadsPh, icon: Compass, tint: linkTint },
+          { key: "li-post", label: c.liPost, placeholder: c.liPostPh, icon: LinkedinIcon, tint: linkTint },
+          { key: "li-search", label: c.liSearch, placeholder: c.liSearchPh, icon: LinkedinIcon, tint: linkTint },
         ]
+      : [
+          { key: "sn-companies", label: c.snCompanies, placeholder: c.snCompaniesPh, icon: Compass, tint: linkTint },
+        ]
+
+  // The CRM "views" method is dynamic — it reflects whichever CRM is connected
+  // (its contact lists / segments), or prompts to connect one when none is.
+  const crmMethod: ImportMethod & { onClick: () => void } = CONNECTED_CRM
+    ? {
+        key: "crm-views",
+        label: c.crmViews(CONNECTED_CRM),
+        icon: CONNECTED_CRM === "HubSpot" ? Plug : Cloud,
+        tint:
+          CONNECTED_CRM === "HubSpot"
+            ? "bg-[#ff7a59]/15 text-[#ff7a59]"
+            : "bg-[#00a1e0]/10 text-[#00a1e0]",
+        onClick: onConnect,
+      }
+    : {
+        key: "connect-crm",
+        label: c.connectCrm,
+        icon: Database,
+        tint: "bg-muted text-muted-foreground",
+        onClick: onConnect,
+      }
+
+  const connectMethods: (ImportMethod & { onClick: () => void })[] = [
+    crmMethod,
+    ...(entity === "people"
+      ? [{ key: "li-followers", label: c.liFollowers, icon: LinkedinIcon, tint: linkTint, onClick: onSync }]
       : []),
   ]
 
-  const inboundSources = sources.filter((s) => s.group === "inbound")
-  const outboundSources = sources.filter((s) => s.group === "outbound")
+  const active = linkMethods.find((m) => m.key === activeLink)
+  const ActiveIcon = active?.icon
+  const sectionLabel =
+    "text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase"
 
-  const renderSource = (s: (typeof sources)[number]) => {
-    const Icon = s.icon
+  const renderMethod = (m: ImportMethod, onClick: () => void) => {
+    const Icon = m.icon
     return (
       <button
-        key={s.key}
+        key={m.key}
         type="button"
-        onClick={s.onClick}
+        onClick={onClick}
         className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors"
       >
-        <span
-          className={cn(
-            "flex size-7 shrink-0 items-center justify-center rounded-md",
-            s.brand === "hubspot" ? "bg-[#ff7a59]/15 text-[#ff7a59]" : "bg-[#0a66c2]/10 text-[#0a66c2]"
-          )}
-        >
+        <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-md", m.tint)}>
           <Icon className="size-4" />
         </span>
-        <span className="min-w-0 flex-1 truncate">{s.label}</span>
+        <span className="min-w-0 flex-1 truncate">{m.label}</span>
         <ArrowRight className="text-muted-foreground size-4 shrink-0" />
       </button>
     )
@@ -951,16 +1034,8 @@ function ImportPane({
         <h2 className="text-lg font-semibold">{c.importTitle}</h2>
         <p className="text-muted-foreground mt-1 text-sm">{c.importSubtitle}</p>
 
-        {/* Inbound — contacts already in your CRM */}
-        <p className="text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase">
-          {c.inboundLabel}
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">{inboundSources.map(renderSource)}</div>
-
-        {/* Outbound — external sources (uploads + LinkedIn) */}
-        <p className="text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase">
-          {c.outboundLabel}
-        </p>
+        {/* Upload a file */}
+        <p className={sectionLabel}>{c.fileLabel}</p>
         <button
           type="button"
           onClick={onFile}
@@ -975,9 +1050,71 @@ function ImportPane({
           </span>
           <span className="text-muted-foreground mt-1 text-xs">{c.fileTypes}</span>
         </button>
-        {outboundSources.length > 0 && (
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">{outboundSources.map(renderSource)}</div>
+
+        {/* Import from a link — paste a URL, the API pulls the records */}
+        <p className={sectionLabel}>{c.linkLabel}</p>
+        <p className="text-muted-foreground -mt-1 mb-2 text-xs">
+          {entity === "people" ? c.linkHintPeople : c.linkHintCompanies}
+        </p>
+        {active && ActiveIcon ? (
+          <div className="space-y-2 rounded-lg border p-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-md", active.tint)}>
+                <ActiveIcon className="size-4" />
+              </span>
+              {active.label}
+            </div>
+            <div className="flex gap-2">
+              <div className="relative min-w-0 flex-1">
+                <Link2 className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+                <Input
+                  autoFocus
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && url.trim()) {
+                      e.preventDefault()
+                      onLinkImport(active.label)
+                    }
+                  }}
+                  placeholder={active.placeholder}
+                  clearable={false}
+                  className="h-9 pl-8"
+                />
+              </div>
+              <Button
+                variant="volt"
+                className="h-9"
+                disabled={!url.trim()}
+                onClick={() => onLinkImport(active.label)}
+              >
+                {c.importBtn}
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveLink(null)}
+              className="text-muted-foreground hover:text-foreground text-xs"
+            >
+              {c.linkBack}
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {linkMethods.map((m) =>
+              renderMethod(m, () => {
+                setActiveLink(m.key)
+                setUrl("")
+              })
+            )}
+          </div>
         )}
+
+        {/* Connect a source */}
+        <p className={sectionLabel}>{c.connectLabel}</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {connectMethods.map((m) => renderMethod(m, m.onClick))}
+        </div>
       </div>
     </div>
   )
