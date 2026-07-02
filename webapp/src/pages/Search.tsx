@@ -287,8 +287,7 @@ const COPY = {
     aiSuggestions: "AI-powered search suggestions",
     startTypeTitle: "Type your query",
     startTypeDesc: "Describe who you're looking for — a title, industry, or location.",
-    startFiltersTitle: "Use search filters",
-    startFiltersDesc: "Refine your search with the filters on the left.",
+    filtersAfterSearch: "Filters unlock once you run a search.",
     done: "Done",
     columnsBtn: "Columns",
     columnsTitle: "Customize columns",
@@ -536,8 +535,7 @@ const COPY = {
     aiSuggestions: "Sugerencias de búsqueda con IA",
     startTypeTitle: "Escribe tu consulta",
     startTypeDesc: "Describe a quién buscas — un cargo, sector o ubicación.",
-    startFiltersTitle: "Usa los filtros",
-    startFiltersDesc: "Refina tu búsqueda con los filtros de la izquierda.",
+    filtersAfterSearch: "Los filtros se activan al ejecutar una búsqueda.",
     done: "Listo",
     columnsBtn: "Columnas",
     columnsTitle: "Personalizar columnas",
@@ -1425,8 +1423,10 @@ export default function Search() {
         </Card>
 
         {/* Filters live in a persistent sidebar; results (or the home/empty
-            state) fill the rest. */}
+            state) fill the rest. People are looked up via API, so filtering
+            only opens once a search has started. */}
         <div className="flex flex-col gap-6 lg:flex-row">
+          {searchStarted && (
           <FilterSidebar
             className="lg:w-64 lg:shrink-0"
             query={query}
@@ -1444,6 +1444,7 @@ export default function Search() {
             locale={locale}
             c={c}
           />
+          )}
           <div className="min-w-0 flex-1">
             {searchStarted ? (
         <div className="min-w-0 space-y-3">
@@ -1729,7 +1730,6 @@ export default function Search() {
                 entity={entity}
                 examples={examples}
                 onRun={runPrompt}
-                onUseFilters={() => setFiltersOpen(true)}
               />
             )}
           </div>
@@ -2128,13 +2128,11 @@ function SearchEmptyState({
   entity,
   examples,
   onRun,
-  onUseFilters,
 }: {
   c: Copy
   entity: AiEntity
   examples: string[]
   onRun: (prompt: string) => void
-  onUseFilters: () => void
 }) {
   const suggestions = libraryQueries
     .filter((qq) => qq.entity === entity)
@@ -2165,25 +2163,13 @@ function SearchEmptyState({
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border p-5 text-center">
-          <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
-            <SearchIcon className="text-muted-foreground size-5" />
-          </span>
-          <p className="mt-3 font-medium">{c.startTypeTitle}</p>
-          <p className="text-muted-foreground mt-1 text-sm">{c.startTypeDesc}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onUseFilters}
-          className="hover:border-primary/40 rounded-xl border p-5 text-center transition-colors"
-        >
-          <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
-            <SlidersHorizontal className="text-muted-foreground size-5" />
-          </span>
-          <p className="mt-3 font-medium">{c.startFiltersTitle}</p>
-          <p className="text-muted-foreground mt-1 text-sm">{c.startFiltersDesc}</p>
-        </button>
+      <div className="rounded-xl border p-5 text-center">
+        <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
+          <SearchIcon className="text-muted-foreground size-5" />
+        </span>
+        <p className="mt-3 font-medium">{c.startTypeTitle}</p>
+        <p className="text-muted-foreground mt-1 text-sm">{c.startTypeDesc}</p>
+        <p className="text-muted-foreground/80 mt-1 text-xs">{c.filtersAfterSearch}</p>
       </div>
 
       <div className="space-y-1">
