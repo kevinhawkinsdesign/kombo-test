@@ -19,13 +19,11 @@ import {
   Cloud,
   Link2,
   Columns3,
-  X,
 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
@@ -54,7 +52,13 @@ import { cn } from "@/lib/utils"
 import { prospectStore, accountStore, listStore } from "@/lib/store"
 import { integrations } from "@/lib/mock-data"
 import { MAX_ENRICH_BATCH, SAVE_COST } from "@/lib/enrichment"
-import { facetsForDb } from "@/lib/search-facets"
+import { facetsForDb, facetSection } from "@/lib/search-facets"
+import { SEARCH_FILTER_GROUPS } from "@/lib/search-filter-groups"
+import { excludeValue } from "@/lib/filter-polarity"
+import {
+  FilterCatalog,
+  type CatalogFilterDef,
+} from "@/components/common/FilterCatalog"
 import {
   interpretPrompt,
   searchLeads,
@@ -62,17 +66,6 @@ import {
   sortLeads,
   sortCompanies,
   EMPTY_QUERY,
-  SENIORITY_OPTIONS,
-  DEPARTMENT_OPTIONS,
-  INDUSTRY_OPTIONS,
-  REGION_OPTIONS,
-  HEADCOUNT_OPTIONS,
-  REVENUE_OPTIONS,
-  FOUNDED_OPTIONS,
-  GROWTH_OPTIONS,
-  TECH_OPTIONS,
-  INTENT_OPTIONS,
-  SIGNAL_OPTIONS,
   type AiQuery,
   type AiLead,
   type AiCompany,
@@ -83,30 +76,6 @@ import type { AccountTier } from "@/lib/types"
 
 type Kind = "contact" | "company"
 type Mode = "search" | "import"
-
-// Typed filter groups — the same core catalog as the Prospect Search page,
-// writing into the AiQuery fields the mock search honors. The per-database
-// facet catalog (LinkedIn Sales Navigator / Kombo FullEnrich) is layered on
-// top via facetsForDb, exactly like the search page.
-const FILTER_GROUPS: {
-  key: keyof AiQuery
-  en: string
-  es: string
-  options: string[]
-  scope?: AiEntity
-}[] = [
-  { key: "seniority", en: "Seniority", es: "Antigüedad", options: SENIORITY_OPTIONS, scope: "people" },
-  { key: "departments", en: "Department", es: "Departamento", options: DEPARTMENT_OPTIONS, scope: "people" },
-  { key: "regions", en: "Region", es: "Región", options: REGION_OPTIONS },
-  { key: "industries", en: "Industry", es: "Sector", options: INDUSTRY_OPTIONS },
-  { key: "headcount", en: "Company size", es: "Tamaño de empresa", options: HEADCOUNT_OPTIONS },
-  { key: "revenue", en: "Revenue", es: "Ingresos", options: REVENUE_OPTIONS },
-  { key: "founded", en: "Founded", es: "Fundación", options: FOUNDED_OPTIONS, scope: "companies" },
-  { key: "growth", en: "Growth", es: "Crecimiento", options: GROWTH_OPTIONS, scope: "companies" },
-  { key: "technologies", en: "Technology", es: "Tecnología", options: TECH_OPTIONS },
-  { key: "intent", en: "Buyer intent", es: "Intención", options: INTENT_OPTIONS, scope: "people" },
-  { key: "signals", en: "Signals", es: "Señales", options: SIGNAL_OPTIONS },
-]
 
 const COPY = {
   en: {
@@ -416,26 +385,55 @@ export function AddRecordsDialog({
     setSelected(new Set())
     setPage(0)
   }
-  function toggleFilter(key: keyof AiQuery, value: string) {
+  // Filter mutations (typed groups + facets). Every change resets the
+  // selection & page, like the old toggle handlers did. Values arrive raw —
+  // excluded ones carry the "!" prefix (see filter-polarity.ts).
+  function resetSelection() {
     setSelected(new Set())
     setPage(0)
+  }
+  function addGroupValue(key: keyof AiQuery, value: string) {
+    resetSelection()
     setQuery((prev) => {
       const arr = prev[key] as string[]
-      const next = arr.includes(value)
-        ? arr.filter((v) => v !== value)
-        : [...arr, value]
-      return { ...prev, [key]: next }
+      return arr.includes(value) ? prev : { ...prev, [key]: [...arr, value] }
     })
   }
-  function toggleFacet(facetId: string, value: string) {
-    setSelected(new Set())
-    setPage(0)
+  function removeGroupValue(key: keyof AiQuery, value: string) {
+    resetSelection()
+    setQuery((prev) => ({
+      ...prev,
+      [key]: (prev[key] as string[]).filter((v) => v !== value),
+    }))
+  }
+  function clearGroupValues(key: keyof AiQuery) {
+    resetSelection()
+    setQuery((prev) => ({ ...prev, [key]: [] }))
+  }
+  function addFacetValue(facetId: string, value: string) {
+    resetSelection()
     setQuery((prev) => {
       const cur = prev.facets[facetId] ?? []
-      const next = cur.includes(value)
-        ? cur.filter((v) => v !== value)
-        : [...cur, value]
-      return { ...prev, facets: { ...prev.facets, [facetId]: next } }
+      if (cur.includes(value)) return prev
+      return { ...prev, facets: { ...prev.facets, [facetId]: [...cur, value] } }
+    })
+  }
+  function removeFacetValue(facetId: string, value: string) {
+    resetSelection()
+    setQuery((prev) => {
+      const next = (prev.facets[facetId] ?? []).filter((v) => v !== value)
+      const facets = { ...prev.facets }
+      if (next.length) facets[facetId] = next
+      else delete facets[facetId]
+      return { ...prev, facets }
+    })
+  }
+  function clearFacetValues(facetId: string) {
+    resetSelection()
+    setQuery((prev) => {
+      const facets = { ...prev.facets }
+      delete facets[facetId]
+      return { ...prev, facets }
     })
   }
   function clearFilters() {
@@ -491,8 +489,32 @@ export function AddRecordsDialog({
     navigate(to)
   }
 
-  const groups = FILTER_GROUPS.filter((g) => !g.scope || g.scope === entity)
+  const groups = SEARCH_FILTER_GROUPS.filter(
+    (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
+  )
   const facetDefs = facetsForDb(linkedinOn ? "linkedin" : "kombo", entity)
+
+  // Typed groups + per-database facets flattened into the shared sectioned
+  // catalog; handlers dispatch by id (group key vs facet id — no overlap).
+  const groupKeys = new Set<string>(groups.map((g) => g.key as string))
+  const catalogFilters: CatalogFilterDef[] = [
+    ...groups.map((g) => ({
+      id: g.key as string,
+      label: g.label[locale],
+      options: g.options,
+      section: g.section,
+      popular: g.popular,
+      linkedin: g.linkedinOnly,
+    })),
+    ...facetDefs.map((f) => ({
+      id: f.id,
+      label: f.label[locale],
+      options: f.options,
+      section: facetSection(f),
+      popular: f.popular,
+      linkedin: f.db === "linkedin",
+    })),
+  ]
 
   // Databases on the roadmap — shown as disabled "Soon" entries so the selector
   // reads as an extensible list, not a fixed Kombo/Sales Nav toggle.
@@ -677,34 +699,35 @@ export function AddRecordsDialog({
                   </DropdownMenu>
                 </div>
                 <div className="p-1">
-                  <TitleFilter
-                    c={c}
-                    values={query.titles}
-                    onAdd={(v) => toggleFilter("titles", v)}
-                    onRemove={(v) => toggleFilter("titles", v)}
+                  <FilterCatalog
+                    filters={catalogFilters}
+                    selected={(id) =>
+                      groupKeys.has(id)
+                        ? (query[id as keyof AiQuery] as string[])
+                        : (query.facets[id] ?? [])
+                    }
+                    onInclude={(id, v) =>
+                      groupKeys.has(id)
+                        ? addGroupValue(id as keyof AiQuery, v)
+                        : addFacetValue(id, v)
+                    }
+                    onExclude={(id, v) =>
+                      groupKeys.has(id)
+                        ? addGroupValue(id as keyof AiQuery, excludeValue(v))
+                        : addFacetValue(id, excludeValue(v))
+                    }
+                    onRemove={(id, v) =>
+                      groupKeys.has(id)
+                        ? removeGroupValue(id as keyof AiQuery, v)
+                        : removeFacetValue(id, v)
+                    }
+                    onClear={(id) =>
+                      groupKeys.has(id)
+                        ? clearGroupValues(id as keyof AiQuery)
+                        : clearFacetValues(id)
+                    }
+                    locale={locale}
                   />
-                  {groups.map((g) => (
-                    <FilterGroup
-                      key={g.key as string}
-                      label={locale === "es" ? g.es : g.en}
-                      options={g.options}
-                      selected={query[g.key] as string[]}
-                      onToggle={(v) => toggleFilter(g.key, v)}
-                      searchPlaceholder={c.findValue}
-                      noMatchLabel={c.noValueMatch}
-                    />
-                  ))}
-                  {facetDefs.map((f) => (
-                    <FilterGroup
-                      key={f.id}
-                      label={f.label[locale]}
-                      options={f.options}
-                      selected={query.facets[f.id] ?? []}
-                      onToggle={(v) => toggleFacet(f.id, v)}
-                      searchPlaceholder={c.findValue}
-                      noMatchLabel={c.noValueMatch}
-                    />
-                  ))}
                 </div>
               </aside>
 
@@ -906,154 +929,6 @@ export function AddRecordsDialog({
       />
     )}
     </>
-  )
-}
-
-function TitleFilter({
-  c,
-  values,
-  onAdd,
-  onRemove,
-}: {
-  c: Copy
-  values: string[]
-  onAdd: (v: string) => void
-  onRemove: (v: string) => void
-}) {
-  const [text, setText] = React.useState("")
-  return (
-    <div className="border-border/70 border-b px-2 py-2">
-      <p className="text-muted-foreground mb-1.5 text-[11px] font-medium tracking-wide uppercase">
-        {c.jobTitle}
-      </p>
-      <Input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && text.trim()) {
-            e.preventDefault()
-            onAdd(text.trim())
-            setText("")
-          }
-        }}
-        placeholder={c.addTitle}
-        clearable={false}
-        className="h-8 text-sm"
-      />
-      {values.length > 0 && (
-        <div className="mt-1.5 flex flex-wrap gap-1">
-          {values.map((v) => (
-            <span
-              key={v}
-              className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2 text-xs font-medium"
-            >
-              {v}
-              <button
-                type="button"
-                aria-label={`Remove ${v}`}
-                onClick={() => onRemove(v)}
-                className="rounded-full p-0.5 hover:bg-black/10"
-              >
-                <X className="size-3" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function FilterGroup({
-  label,
-  options,
-  selected,
-  onToggle,
-  searchPlaceholder,
-  noMatchLabel,
-}: {
-  label: string
-  options: string[]
-  selected: string[]
-  onToggle: (v: string) => void
-  searchPlaceholder: string
-  noMatchLabel: string
-}) {
-  const [open, setOpen] = React.useState(false)
-  const [search, setSearch] = React.useState("")
-  const q = search.trim().toLowerCase()
-  const shown = q ? options.filter((v) => v.toLowerCase().includes(q)) : options
-
-  // Enter adds the top match, or the raw typed value when the connected API
-  // would return an option we don't render — every filter is free-text
-  // searchable so a value can always be found (or typed) regardless of length.
-  function commitTyped() {
-    const value = shown[0] ?? search.trim()
-    if (!value) return
-    if (!selected.includes(value)) onToggle(value)
-    setSearch("")
-  }
-  return (
-    <div className="border-border/70 border-b last:border-b-0">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
-      >
-        <ChevronDown
-          className={cn(
-            "text-muted-foreground size-3.5 shrink-0 transition-transform",
-            !open && "-rotate-90"
-          )}
-        />
-        <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
-          {label}
-        </span>
-        {selected.length > 0 && (
-          <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
-            {selected.length}
-          </span>
-        )}
-      </button>
-      {open && (
-        <div className="pb-2">
-          <div className="relative px-2 pt-0.5 pb-1.5">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault()
-                  commitTyped()
-                }
-              }}
-              placeholder={searchPlaceholder}
-              clearable={false}
-              className="h-7 pl-7 text-xs"
-            />
-          </div>
-          {shown.map((value) => (
-            <label
-              key={value}
-              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-            >
-              <Checkbox
-                checked={selected.includes(value)}
-                onCheckedChange={() => onToggle(value)}
-              />
-              <span className="flex-1 truncate">{value}</span>
-            </label>
-          ))}
-          {shown.length === 0 && (
-            <p className="text-muted-foreground px-2 py-1.5 text-xs">
-              {noMatchLabel}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
   )
 }
 
