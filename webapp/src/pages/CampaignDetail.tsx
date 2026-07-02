@@ -978,10 +978,12 @@ export default function CampaignDetail() {
             <UserPlus className="size-4" />
             {c.addProspects}
           </Button>
-          {campaign.status !== "completed" && (
+          {/* End is the destructive, irreversible opposite of Activate — only
+              offered once the campaign has been started (active or inactive). */}
+          {(campaign.status === "active" || campaign.status === "paused") && (
             <Button
               variant="outline"
-              className="text-muted-foreground hover:text-destructive"
+              className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => setEndOpen(true)}
             >
               <Ban className="size-4" />
