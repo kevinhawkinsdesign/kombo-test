@@ -217,7 +217,6 @@ const COPY = {
     heroSubtitle: "Search across 250M+ professionals and companies — or pick a quick start.",
     heroPlaceholder: "e.g. Heads of RevOps at Series B SaaS companies in EMEA…",
     startHere: "Start here",
-    crmSoon: "Your CRM · soon",
     searchBtn: "Search",
     clearQuery: "Clear search",
     spotlightsLabel: "Spotlights",
@@ -465,7 +464,6 @@ const COPY = {
     heroSubtitle: "Busca entre más de 250M de profesionales y empresas — o elige un inicio rápido.",
     heroPlaceholder: "p. ej. Heads de RevOps en SaaS Serie B en EMEA…",
     startHere: "Empieza aquí",
-    crmSoon: "Tu CRM · pronto",
     searchBtn: "Buscar",
     clearQuery: "Borrar búsqueda",
     spotlightsLabel: "Destacados",
@@ -2267,9 +2265,6 @@ function SearchHome({
           icon={Building2}
           label={c.companies}
         />
-        <span className="text-muted-foreground/60 inline-flex cursor-not-allowed items-center gap-1.5 rounded-[5px] px-3 py-1.5 text-sm font-medium">
-          {c.crmSoon}
-        </span>
       </div>
 
       {/* AI prompt */}
