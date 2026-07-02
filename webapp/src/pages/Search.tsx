@@ -1507,10 +1507,35 @@ export default function Search() {
                 <span className="hidden sm:inline">{c.columnsBtn}</span>
               </Button>
 
-              {/* Secondary actions tucked into one overflow menu */}
+              {/* Secondary actions: inline when there's room, collapsed into an
+                  overflow menu only when the toolbar runs out of space. */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden lg:inline-flex"
+                onClick={() => setLookalikeOpen(true)}
+              >
+                <ScanSearch className="size-4" />
+                {c.lookalike}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden lg:inline-flex"
+                onClick={saveSearch}
+                disabled={shownCount === 0}
+              >
+                <Bookmark className="size-4" />
+                {c.saveThis}
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label={c.more}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label={c.more}
+                    className="lg:hidden"
+                  >
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
