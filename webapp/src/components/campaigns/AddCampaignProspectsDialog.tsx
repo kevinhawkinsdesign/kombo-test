@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
+import { AddCostConfirm } from "@/components/common/AddCostConfirm"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   useProspects,
@@ -172,6 +173,9 @@ export function AddCampaignProspectsDialog({
   // Lookalike
   const [seedId, setSeedId] = React.useState<string>("")
 
+  // Credit-cost confirmation shown as the last step before enrolling.
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
+
   // Reset when the dialog opens.
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
@@ -187,6 +191,7 @@ export function AddCampaignProspectsDialog({
       setAiQuery(null)
       setThinking(false)
       setSeedId("")
+      setConfirmOpen(false)
     }
   }
 
@@ -248,7 +253,14 @@ export function AddCampaignProspectsDialog({
   }
   const totalSelected = selectedProspects.size + selectedLeads.size
 
+  // The footer button opens the credit-cost confirmation; enrollment only runs
+  // once the user confirms (see commitAdd).
   function handleAdd() {
+    if (totalSelected === 0) return
+    setConfirmOpen(true)
+  }
+
+  function commitAdd() {
     // Skip anyone whose company is on the blacklist — those companies must
     // never be enrolled into a campaign.
     const blocked = blacklistedKeySet()
@@ -286,6 +298,7 @@ export function AddCampaignProspectsDialog({
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton fullScreen>
         <DialogHeader className="border-b p-5 text-left">
@@ -449,6 +462,16 @@ export function AddCampaignProspectsDialog({
         </div>
       </DialogContent>
     </Dialog>
+
+    <AddCostConfirm
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      count={totalSelected}
+      entity="people"
+      targetName={campaign.name}
+      onConfirm={commitAdd}
+    />
+    </>
   )
 }
 

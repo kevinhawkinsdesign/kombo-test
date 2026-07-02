@@ -38,6 +38,7 @@ import { Segmented } from "@/components/common/Segmented"
 import { PerCompanyCap } from "@/components/common/PerCompanyCap"
 import { DataTable, type TableSelection } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
+import { AddCostConfirm } from "@/components/common/AddCostConfirm"
 import { useColumnPrefs } from "@/lib/table-columns"
 import {
   LEAD_RESULT_COLUMNS,
@@ -333,6 +334,7 @@ export function AddRecordsDialog({
   const [page, setPage] = React.useState(0)
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
 
   // Customizable result columns — the same shared registry + ColumnManager the
   // Search page uses, so the add-modal exposes the identical columns + picker.
@@ -354,6 +356,7 @@ export function AddRecordsDialog({
     setPage(0)
     setPerCompanyCap(null)
     setColumnsOpen(false)
+    setConfirmOpen(false)
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -469,7 +472,14 @@ export function AddRecordsDialog({
       )
     }
   }
+  // Footer "Add" opens the credit-cost confirmation; the commit only runs once
+  // the user confirms (see commitSelected), so the estimate is always the last
+  // step before spending credits.
   function addSelected() {
+    if (selected.size === 0) return
+    setConfirmOpen(true)
+  }
+  function commitSelected() {
     if (selected.size === 0) return
     if (entity === "people") {
       const chosen = leads.filter((l) => selected.has(l.id))
@@ -928,6 +938,14 @@ export function AddRecordsDialog({
         locale={locale}
       />
     )}
+
+    <AddCostConfirm
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      count={selected.size}
+      entity={entity}
+      onConfirm={commitSelected}
+    />
     </>
   )
 }
