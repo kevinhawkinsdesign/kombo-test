@@ -89,26 +89,8 @@ import {
   EXAMPLE_PROMPTS_ES,
   EXAMPLE_PROMPTS_COMPANIES_EN,
   EXAMPLE_PROMPTS_COMPANIES_ES,
-  SENIORITY_OPTIONS,
   REGION_OPTIONS,
-  HEADCOUNT_OPTIONS,
   INDUSTRY_OPTIONS,
-  SIGNAL_OPTIONS,
-  TITLE_OPTIONS,
-  DEPARTMENT_OPTIONS,
-  TECH_OPTIONS,
-  REVENUE_OPTIONS,
-  INTENT_OPTIONS,
-  FOUNDED_OPTIONS,
-  GROWTH_OPTIONS,
-  LINKEDIN_OPTIONS,
-  CONNECTION_OPTIONS,
-  PROFILE_LANGUAGE_OPTIONS,
-  SERVICE_CATEGORY_OPTIONS,
-  SCHOOL_OPTIONS,
-  COMPANY_NAME_OPTIONS,
-  PERSON_NAME_OPTIONS,
-  JOB_LISTING_OPTIONS,
   sortLeads,
   sortCompanies,
   type SortKey,
@@ -127,7 +109,13 @@ import {
 } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { libraryQueries } from "@/lib/mock-library"
-import { facetsForDb, type FacetDef, type FacetDb } from "@/lib/search-facets"
+import { facetsForDb, facetSection, type FacetDef, type FacetDb } from "@/lib/search-facets"
+import { SEARCH_FILTER_GROUPS } from "@/lib/search-filter-groups"
+import { baseValue, excludeValue, isExcluded } from "@/lib/filter-polarity"
+import {
+  FilterCatalog,
+  type CatalogFilterDef,
+} from "@/components/common/FilterCatalog"
 import { downloadCsv } from "@/lib/csv"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
@@ -294,6 +282,7 @@ const COPY = {
         : `${n} active · search or describe filters with AI, then tick to apply.`,
     activeFilters: "Active filters",
     noActiveFilters: "No filters yet — pick from the list.",
+    notChip: (v: string) => `Not: ${v}`,
     filtersNoMatch: "No filters match.",
     addToGroup: (label: string) => `Add ${label.toLowerCase()}…`,
     clearAll: "Clear all",
@@ -543,6 +532,7 @@ const COPY = {
         : `${n} activos · busca o describe filtros con IA y luego márcalos para aplicarlos.`,
     activeFilters: "Filtros activos",
     noActiveFilters: "Aún no hay filtros — elige de la lista.",
+    notChip: (v: string) => `No: ${v}`,
     filtersNoMatch: "Ningún filtro coincide.",
     addToGroup: (label: string) => `Añadir ${label.toLowerCase()}…`,
     clearAll: "Limpiar todo",
@@ -925,6 +915,11 @@ export default function Search() {
     })
   }
 
+  // Per-filter "Clear" — wipe every selected value of one typed group.
+  function clearFilterGroup(group: keyof AiQuery) {
+    setQuery((prev) => ({ ...prev, [group]: [] }))
+  }
+
   // Dynamic per-database facets (LinkedIn Sales Navigator / Kombo FullEnrich).
   function addFacet(id: string, value: string) {
     setHasSearched(true)
@@ -941,6 +936,13 @@ export default function Search() {
       const facets = { ...prev.facets }
       if (next.length) facets[id] = next
       else delete facets[id]
+      return { ...prev, facets }
+    })
+  }
+  function clearFacet(id: string) {
+    setQuery((prev) => {
+      const facets = { ...prev.facets }
+      delete facets[id]
       return { ...prev, facets }
     })
   }
@@ -1430,8 +1432,10 @@ export default function Search() {
             onAdd={addFilter}
             onRemove={removeFilter}
             onClear={() => setQuery({ ...EMPTY_QUERY })}
+            onClearGroup={clearFilterGroup}
             onAddFacet={addFacet}
             onRemoveFacet={removeFacet}
+            onClearFacet={clearFacet}
             facetDefs={facetsForDb(facetDbForSource(source), entity)}
             linkedinOn={linkedinOn}
             minimal={localSource}
@@ -1753,6 +1757,7 @@ export default function Search() {
         onAdd={addFilter}
         onRemove={removeFilter}
         onClear={() => setQuery({ ...EMPTY_QUERY })}
+        onClearGroup={clearFilterGroup}
         c={c}
         linkedinOn={linkedinOn}
         minimal={localSource}
@@ -1760,6 +1765,7 @@ export default function Search() {
         facetDefs={facetsForDb(facetDbForSource(source), entity)}
         onAddFacet={addFacet}
         onRemoveFacet={removeFacet}
+        onClearFacet={clearFacet}
         locale={locale}
       />
 
@@ -1989,16 +1995,18 @@ function SeedGroup({
 
 
 // Persistent filter rail — filters are exposed by default (every search uses
-// them), mirroring the catalog side of the FilterModal as an always-visible
-// sidebar. Selecting any value runs the search via onAdd/onAddFacet.
+// them), rendering the shared sectioned FilterCatalog (Include/Exclude per
+// value) as an always-visible sidebar. Selecting any value runs the search.
 function FilterSidebar({
   className,
   query,
   onAdd,
   onRemove,
   onClear,
+  onClearGroup,
   onAddFacet,
   onRemoveFacet,
+  onClearFacet,
   facetDefs,
   linkedinOn,
   minimal,
@@ -2011,8 +2019,10 @@ function FilterSidebar({
   onAdd: (group: keyof AiQuery, value: string) => void
   onRemove: (group: keyof AiQuery, value: string) => void
   onClear: () => void
+  onClearGroup: (group: keyof AiQuery) => void
   onAddFacet: (id: string, value: string) => void
   onRemoveFacet: (id: string, value: string) => void
+  onClearFacet: (id: string) => void
   facetDefs: FacetDef[]
   linkedinOn: boolean
   minimal?: boolean
@@ -2021,26 +2031,37 @@ function FilterSidebar({
   c: Copy
 }) {
   const [text, setText] = React.useState("")
-  const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set())
-  const q = text.trim().toLowerCase()
-
-  function toggleGroup(key: string) {
-    setOpenGroups((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
 
   const groups = minimal
     ? []
-    : FILTER_OPTIONS.filter(
+    : SEARCH_FILTER_GROUPS.filter(
         (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
       )
   const activeCount =
     groups.reduce((n, g) => n + (query[g.key] as string[]).length, 0) +
     facetDefs.reduce((n, f) => n + (query.facets[f.id]?.length ?? 0), 0)
+
+  // Typed groups + per-database facets, flattened into the shared catalog
+  // shape; handlers dispatch by id (group key vs facet id — no overlap).
+  const groupKeys = new Set<string>(groups.map((g) => g.key as string))
+  const catalogFilters: CatalogFilterDef[] = [
+    ...groups.map((g) => ({
+      id: g.key as string,
+      label: g.label[locale],
+      options: g.options,
+      section: g.section,
+      popular: g.popular,
+      linkedin: g.linkedinOnly,
+    })),
+    ...facetDefs.map((f) => ({
+      id: f.id,
+      label: f.label[locale],
+      options: f.options,
+      section: facetSection(f),
+      popular: f.popular,
+      linkedin: f.db === "linkedin",
+    })),
+  ]
 
   return (
     <aside className={className}>
@@ -2078,144 +2099,34 @@ function FilterSidebar({
           </div>
         </div>
         <div className="max-h-[24rem] overflow-y-auto p-1 lg:max-h-[calc(100vh-16rem)]">
-          {groups.map((group) => {
-            const items = group.options.filter(
-              (v) => !q || v.toLowerCase().includes(q)
-            )
-            if (items.length === 0) return null
-            const groupActive = (query[group.key] as string[]).length
-            const isOpen = q ? true : openGroups.has(group.key as string)
-            return (
-              <div
-                key={group.key}
-                className="border-border/70 border-b last:border-b-0"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.key as string)}
-                  aria-expanded={isOpen}
-                  className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
-                >
-                  <ChevronDown
-                    className={cn(
-                      "text-muted-foreground size-3.5 shrink-0 transition-transform",
-                      !isOpen && "-rotate-90"
-                    )}
-                  />
-                  {LINKEDIN_KEYS.has(group.key) && (
-                    <LinkedinIcon className="size-3 text-[#0a66c2]" />
-                  )}
-                  <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
-                    {group.label(c)}
-                  </span>
-                  {groupActive > 0 && (
-                    <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
-                      {groupActive}
-                    </span>
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="pb-2">
-                    <FilterGroupInput
-                      placeholder={c.addToGroup(group.label(c))}
-                      options={group.options}
-                      onSubmit={(value) => onAdd(group.key, value)}
-                    />
-                    {items.map((value) => {
-                      const checked = (query[group.key] as string[]).includes(value)
-                      return (
-                        <label
-                          key={value}
-                          className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-                        >
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={() =>
-                              checked
-                                ? onRemove(group.key, value)
-                                : onAdd(group.key, value)
-                            }
-                          />
-                          <span className="flex-1 truncate">{value}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-          {facetDefs.map((facet) => {
-            const facetItems = facet.options.filter(
-              (v) => !q || v.toLowerCase().includes(q)
-            )
-            const hasOptions = facet.options.length > 0
-            if (hasOptions && facetItems.length === 0) return null
-            if (!hasOptions && q && !facet.label[locale].toLowerCase().includes(q))
-              return null
-            const selectedVals = query.facets[facet.id] ?? []
-            const facetActive = selectedVals.length
-            const isOpen = q ? true : openGroups.has(facet.id)
-            return (
-              <div
-                key={facet.id}
-                className="border-border/70 border-b last:border-b-0"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(facet.id)}
-                  aria-expanded={isOpen}
-                  className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
-                >
-                  <ChevronDown
-                    className={cn(
-                      "text-muted-foreground size-3.5 shrink-0 transition-transform",
-                      !isOpen && "-rotate-90"
-                    )}
-                  />
-                  {facet.db === "linkedin" && (
-                    <LinkedinIcon className="size-3 text-[#0a66c2]" />
-                  )}
-                  <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
-                    {facet.label[locale]}
-                  </span>
-                  {facetActive > 0 && (
-                    <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
-                      {facetActive}
-                    </span>
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="pb-2">
-                    <FilterGroupInput
-                      placeholder={c.addToGroup(facet.label[locale])}
-                      options={facet.options}
-                      onSubmit={(value) => onAddFacet(facet.id, value)}
-                    />
-                    {facetItems.map((value) => {
-                      const checked = selectedVals.includes(value)
-                      return (
-                        <label
-                          key={value}
-                          className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-                        >
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={() =>
-                              checked
-                                ? onRemoveFacet(facet.id, value)
-                                : onAddFacet(facet.id, value)
-                            }
-                          />
-                          <span className="flex-1 truncate">{value}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          <FilterCatalog
+            filters={catalogFilters}
+            selected={(id) =>
+              groupKeys.has(id)
+                ? (query[id as keyof AiQuery] as string[])
+                : (query.facets[id] ?? [])
+            }
+            onInclude={(id, v) =>
+              groupKeys.has(id) ? onAdd(id as keyof AiQuery, v) : onAddFacet(id, v)
+            }
+            onExclude={(id, v) =>
+              groupKeys.has(id)
+                ? onAdd(id as keyof AiQuery, excludeValue(v))
+                : onAddFacet(id, excludeValue(v))
+            }
+            onRemove={(id, v) =>
+              groupKeys.has(id)
+                ? onRemove(id as keyof AiQuery, v)
+                : onRemoveFacet(id, v)
+            }
+            onClear={(id) =>
+              groupKeys.has(id)
+                ? onClearGroup(id as keyof AiQuery)
+                : onClearFacet(id)
+            }
+            locale={locale}
+            query={text}
+          />
         </div>
       </Card>
     </aside>
@@ -2521,92 +2432,6 @@ const LINKEDIN_KEYS = new Set<keyof AiQuery>([
   "jobListings",
 ])
 
-const FILTER_OPTIONS: {
-  key: keyof AiQuery
-  label: (c: Copy) => string
-  options: string[]
-  linkedinOnly?: boolean
-  scope?: AiEntity
-}[] = [
-  { key: "titles", label: (c) => c.titles, options: TITLE_OPTIONS, scope: "people" },
-  { key: "seniority", label: (c) => c.seniority, options: SENIORITY_OPTIONS, scope: "people" },
-  { key: "departments", label: (c) => c.departments, options: DEPARTMENT_OPTIONS, scope: "people" },
-  { key: "regions", label: (c) => c.regions, options: REGION_OPTIONS },
-  { key: "industries", label: (c) => c.industries, options: INDUSTRY_OPTIONS },
-  { key: "headcount", label: (c) => c.headcountF, options: HEADCOUNT_OPTIONS },
-  { key: "revenue", label: (c) => c.revenue, options: REVENUE_OPTIONS },
-  { key: "founded", label: (c) => c.founded, options: FOUNDED_OPTIONS, scope: "companies" },
-  { key: "growth", label: (c) => c.growth, options: GROWTH_OPTIONS, scope: "companies" },
-  { key: "technologies", label: (c) => c.technologies, options: TECH_OPTIONS },
-  { key: "intent", label: (c) => c.intent, options: INTENT_OPTIONS, scope: "people" },
-  { key: "signals", label: (c) => c.signals, options: SIGNAL_OPTIONS },
-  { key: "linkedin", label: (c) => c.linkedinFilters, options: LINKEDIN_OPTIONS, linkedinOnly: true, scope: "people" },
-  // LinkedIn-only facets (People & Company search).
-  { key: "connections", label: (c) => c.connections, options: CONNECTION_OPTIONS, linkedinOnly: true },
-  { key: "profileLanguages", label: (c) => c.profileLanguages, options: PROFILE_LANGUAGE_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "serviceCategories", label: (c) => c.serviceCategories, options: SERVICE_CATEGORY_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "schools", label: (c) => c.schools, options: SCHOOL_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "currentCompanies", label: (c) => c.currentCompanies, options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "pastCompanies", label: (c) => c.pastCompanies, options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "connectionsOf", label: (c) => c.connectionsOf, options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "followersOf", label: (c) => c.followersOf, options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people" },
-  { key: "jobListings", label: (c) => c.jobListings, options: JOB_LISTING_OPTIONS, linkedinOnly: true, scope: "companies" },
-]
-
-// Type-ahead "Add filter": type to filter suggestions across every field, or
-// type any custom value and add it as a title (manual entry).
-// Per-group manual entry: type any value and press Enter (or +) to add it to
-// that filter group — so filters aren't limited to the preset options.
-function FilterGroupInput({
-  placeholder,
-  options,
-  onSubmit,
-}: {
-  placeholder: string
-  options: string[]
-  onSubmit: (value: string) => void
-}) {
-  const [value, setValue] = React.useState("")
-  function submit() {
-    const v = value.trim()
-    if (!v) return
-    // Resolve the typed text to a real option (case-insensitive) so the matching
-    // checkbox reflects the selection instead of adding an unmatched custom value.
-    const lower = v.toLowerCase()
-    const match =
-      options.find((o) => o.toLowerCase() === lower) ??
-      options.find((o) => o.toLowerCase().includes(lower))
-    onSubmit(match ?? v)
-    setValue("")
-  }
-  return (
-    <div className="relative px-2 pb-1">
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault()
-            submit()
-          }
-        }}
-        placeholder={placeholder}
-        className="h-7 pr-7 text-xs"
-      />
-      {value.trim() && (
-        <button
-          type="button"
-          aria-label={placeholder}
-          onClick={submit}
-          className="text-primary hover:bg-muted absolute top-1/2 right-3 flex size-5 -translate-y-1/2 items-center justify-center rounded"
-        >
-          <Plus className="size-3.5" />
-        </button>
-      )}
-    </div>
-  )
-}
-
 // Filters live in a roomy two-pane modal (same shape as Customize columns):
 // active filters on the left, the full searchable catalog on the right.
 function FilterModal({
@@ -2616,6 +2441,7 @@ function FilterModal({
   onAdd,
   onRemove,
   onClear,
+  onClearGroup,
   c,
   linkedinOn,
   minimal,
@@ -2623,6 +2449,7 @@ function FilterModal({
   facetDefs,
   onAddFacet,
   onRemoveFacet,
+  onClearFacet,
   locale,
 }: {
   open: boolean
@@ -2631,6 +2458,7 @@ function FilterModal({
   onAdd: (group: keyof AiQuery, value: string) => void
   onRemove: (group: keyof AiQuery, value: string) => void
   onClear: () => void
+  onClearGroup: (group: keyof AiQuery) => void
   c: Copy
   linkedinOn: boolean
   minimal?: boolean
@@ -2638,30 +2466,38 @@ function FilterModal({
   facetDefs: FacetDef[]
   onAddFacet: (id: string, value: string) => void
   onRemoveFacet: (id: string, value: string) => void
+  onClearFacet: (id: string) => void
   locale: Locale
 }) {
   const [text, setText] = React.useState("")
-  const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set())
   const q = text.trim().toLowerCase()
 
-  function toggleGroup(key: string) {
-    setOpenGroups((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
+  const groups = minimal
+    ? []
+    : SEARCH_FILTER_GROUPS.filter(
+        (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
+      )
 
-  const groups = React.useMemo(
-    () =>
-      minimal
-        ? []
-        : FILTER_OPTIONS.filter(
-            (g) => !(g.linkedinOnly && !linkedinOn) && !(g.scope && g.scope !== entity)
-          ),
-    [linkedinOn, entity, minimal]
-  )
+  // Typed groups + facets mapped onto the shared sectioned catalog.
+  const groupKeys = new Set<string>(groups.map((g) => g.key as string))
+  const catalogFilters: CatalogFilterDef[] = [
+    ...groups.map((g) => ({
+      id: g.key as string,
+      label: g.label[locale],
+      options: g.options,
+      section: g.section,
+      popular: g.popular,
+      linkedin: g.linkedinOnly,
+    })),
+    ...facetDefs.map((f) => ({
+      id: f.id,
+      label: f.label[locale],
+      options: f.options,
+      section: facetSection(f),
+      popular: f.popular,
+      linkedin: f.db === "linkedin",
+    })),
+  ]
 
   const active = groups
     .map((g) => ({ g, values: query[g.key] as string[] }))
@@ -2721,30 +2557,38 @@ function FilterModal({
                         {LINKEDIN_KEYS.has(g.key) && (
                           <LinkedinIcon className="size-3 text-[#0a66c2]" />
                         )}
-                        {g.label(c)}
+                        {g.label[locale]}
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        {values.map((value) => (
-                          <span
-                            key={value}
-                            className={cn(
-                              "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
-                              LINKEDIN_KEYS.has(g.key)
-                                ? "bg-[#0a66c2]/10 text-[#0a66c2]"
-                                : "bg-primary/10 text-primary"
-                            )}
-                          >
-                            {value}
-                            <button
-                              type="button"
-                              aria-label={`Remove ${value}`}
-                              onClick={() => onRemove(g.key, value)}
-                              className="rounded-full p-0.5 hover:bg-black/10"
+                        {values.map((value) => {
+                          const neg = isExcluded(value)
+                          const chipLabel = neg
+                            ? c.notChip(baseValue(value))
+                            : value
+                          return (
+                            <span
+                              key={value}
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
+                                neg
+                                  ? "bg-destructive/10 text-destructive"
+                                  : LINKEDIN_KEYS.has(g.key)
+                                    ? "bg-[#0a66c2]/10 text-[#0a66c2]"
+                                    : "bg-primary/10 text-primary"
+                              )}
                             >
-                              <X className="size-3" />
-                            </button>
-                          </span>
-                        ))}
+                              {chipLabel}
+                              <button
+                                type="button"
+                                aria-label={`Remove ${chipLabel}`}
+                                onClick={() => onRemove(g.key, value)}
+                                className="rounded-full p-0.5 hover:bg-black/10"
+                              >
+                                <X className="size-3" />
+                              </button>
+                            </span>
+                          )
+                        })}
                       </div>
                     </div>
                   ))}
@@ -2754,22 +2598,33 @@ function FilterModal({
                         {f.label[locale]}
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        {values.map((value) => (
-                          <span
-                            key={value}
-                            className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium"
-                          >
-                            {value}
-                            <button
-                              type="button"
-                              aria-label={`Remove ${value}`}
-                              onClick={() => onRemoveFacet(f.id, value)}
-                              className="rounded-full p-0.5 hover:bg-black/10"
+                        {values.map((value) => {
+                          const neg = isExcluded(value)
+                          const chipLabel = neg
+                            ? c.notChip(baseValue(value))
+                            : value
+                          return (
+                            <span
+                              key={value}
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-xs font-medium",
+                                neg
+                                  ? "bg-destructive/10 text-destructive"
+                                  : "bg-primary/10 text-primary"
+                              )}
                             >
-                              <X className="size-3" />
-                            </button>
-                          </span>
-                        ))}
+                              {chipLabel}
+                              <button
+                                type="button"
+                                aria-label={`Remove ${chipLabel}`}
+                                onClick={() => onRemoveFacet(f.id, value)}
+                                className="rounded-full p-0.5 hover:bg-black/10"
+                              >
+                                <X className="size-3" />
+                              </button>
+                            </span>
+                          )
+                        })}
                       </div>
                     </div>
                   ))}
@@ -2821,150 +2676,38 @@ function FilterModal({
                   </button>
                 </div>
               )}
-              {groups.map((group) => {
-                const items = group.options.filter(
-                  (v) => !q || v.toLowerCase().includes(q)
-                )
-                if (items.length === 0) return null
-                const groupActive = (query[group.key] as string[]).length
-                // Collapsed by default; a search query force-expands matches.
-                const isOpen = q ? true : openGroups.has(group.key as string)
-                return (
-                  <div key={group.key} className="border-border/70 border-b last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(group.key as string)}
-                      aria-expanded={isOpen}
-                      className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
-                    >
-                      <ChevronDown
-                        className={cn(
-                          "text-muted-foreground size-3.5 shrink-0 transition-transform",
-                          !isOpen && "-rotate-90"
-                        )}
-                      />
-                      {LINKEDIN_KEYS.has(group.key) && (
-                        <LinkedinIcon className="size-3 text-[#0a66c2]" />
-                      )}
-                      <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
-                        {group.label(c)}
-                      </span>
-                      {groupActive > 0 && (
-                        <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
-                          {groupActive}
-                        </span>
-                      )}
-                    </button>
-                    {isOpen && (
-                      <div className="pb-2">
-                        {/* Manual entry — type any value, not just the presets. */}
-                        <FilterGroupInput
-                          placeholder={c.addToGroup(group.label(c))}
-                          options={group.options}
-                          onSubmit={(value) => onAdd(group.key, value)}
-                        />
-                        {items.map((value) => {
-                          const checked = (query[group.key] as string[]).includes(
-                            value
-                          )
-                          return (
-                            <label
-                              key={value}
-                              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-                            >
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={() =>
-                                  checked
-                                    ? onRemove(group.key, value)
-                                    : onAdd(group.key, value)
-                                }
-                              />
-                              <span className="flex-1 truncate">{value}</span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-              {/* Per-database facets (LinkedIn Sales Navigator / Kombo FullEnrich). */}
-              {facetDefs.map((facet) => {
-                const facetItems = facet.options.filter(
-                  (v) => !q || v.toLowerCase().includes(q)
-                )
-                const hasOptions = facet.options.length > 0
-                if (hasOptions && facetItems.length === 0) return null
-                if (
-                  !hasOptions &&
-                  q &&
-                  !facet.label[locale].toLowerCase().includes(q)
-                )
-                  return null
-                const selectedVals = query.facets[facet.id] ?? []
-                const facetActive = selectedVals.length
-                const isOpen = q ? true : openGroups.has(facet.id)
-                return (
-                  <div
-                    key={facet.id}
-                    className="border-border/70 border-b last:border-b-0"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(facet.id)}
-                      aria-expanded={isOpen}
-                      className="hover:bg-muted/40 flex w-full items-center gap-1.5 px-2 py-2 text-left"
-                    >
-                      <ChevronDown
-                        className={cn(
-                          "text-muted-foreground size-3.5 shrink-0 transition-transform",
-                          !isOpen && "-rotate-90"
-                        )}
-                      />
-                      {facet.db === "linkedin" && (
-                        <LinkedinIcon className="size-3 text-[#0a66c2]" />
-                      )}
-                      <span className="text-muted-foreground flex-1 text-[11px] font-medium tracking-wide uppercase">
-                        {facet.label[locale]}
-                      </span>
-                      {facetActive > 0 && (
-                        <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
-                          {facetActive}
-                        </span>
-                      )}
-                    </button>
-                    {isOpen && (
-                      <div className="pb-2">
-                        <FilterGroupInput
-                          placeholder={c.addToGroup(facet.label[locale])}
-                          options={facet.options}
-                          onSubmit={(value) => onAddFacet(facet.id, value)}
-                        />
-                        {facetItems.map((value) => {
-                          const checked = selectedVals.includes(value)
-                          return (
-                            <label
-                              key={value}
-                              className="hover:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-                            >
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={() =>
-                                  checked
-                                    ? onRemoveFacet(facet.id, value)
-                                    : onAddFacet(facet.id, value)
-                                }
-                              />
-                              <span className="flex-1 truncate">{value}</span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              {/* Shared sectioned catalog — typed groups + per-database facets
+                  with per-value Include | Exclude and per-filter Clear. */}
+              <FilterCatalog
+                filters={catalogFilters}
+                selected={(id) =>
+                  groupKeys.has(id)
+                    ? (query[id as keyof AiQuery] as string[])
+                    : (query.facets[id] ?? [])
+                }
+                onInclude={(id, v) =>
+                  groupKeys.has(id)
+                    ? onAdd(id as keyof AiQuery, v)
+                    : onAddFacet(id, v)
+                }
+                onExclude={(id, v) =>
+                  groupKeys.has(id)
+                    ? onAdd(id as keyof AiQuery, excludeValue(v))
+                    : onAddFacet(id, excludeValue(v))
+                }
+                onRemove={(id, v) =>
+                  groupKeys.has(id)
+                    ? onRemove(id as keyof AiQuery, v)
+                    : onRemoveFacet(id, v)
+                }
+                onClear={(id) =>
+                  groupKeys.has(id)
+                    ? onClearGroup(id as keyof AiQuery)
+                    : onClearFacet(id)
+                }
+                locale={locale}
+                query={text}
+              />
               {q && !anyVisible && !anyFacetVisible && exact && (
                 <p className="text-muted-foreground p-3 text-sm">
                   {c.filtersNoMatch}

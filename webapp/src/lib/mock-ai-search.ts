@@ -7,6 +7,8 @@
 
 import * as React from "react"
 
+import { matchAny, matchValue, splitSelection } from "@/lib/filter-polarity"
+
 export type AiEntity = "people" | "companies"
 
 export interface AiQuery {
@@ -621,55 +623,61 @@ function scoreLead(lead: AiLead, q: AiQuery): number {
     score += cond ? weight : 0
     if (cond) matched += 1
   }
+  // Score only against the INCLUDE side of each selection — exclusions filter
+  // records out but never boost fit.
   if (q.titles.length) {
     asked += 1
-    bump(q.titles.includes(lead.title), 16)
+    bump(splitSelection(q.titles).include.includes(lead.title), 16)
   }
   if (q.seniority.length) {
     asked += 1
-    bump(q.seniority.includes(lead.seniority), 12)
+    bump(splitSelection(q.seniority).include.includes(lead.seniority), 12)
   }
   if (q.regions.length) {
     asked += 1
-    bump(q.regions.includes(lead.region), 10)
+    bump(splitSelection(q.regions).include.includes(lead.region), 10)
   }
   if (q.industries.length) {
     asked += 1
-    bump(q.industries.includes(lead.industry), 10)
+    bump(splitSelection(q.industries).include.includes(lead.industry), 10)
   }
   if (q.headcount.length) {
     asked += 1
-    bump(q.headcount.includes(lead.headcount), 8)
+    bump(splitSelection(q.headcount).include.includes(lead.headcount), 8)
   }
   if (q.signals.length) {
     asked += 1
-    const overlap = lead.signals.filter((s) => q.signals.includes(s)).length
+    const inc = splitSelection(q.signals).include
+    const overlap = lead.signals.filter((s) => inc.includes(s)).length
     score += Math.min(overlap, 2) * 9
     if (overlap > 0) matched += 1
   }
   if (q.departments.length) {
     asked += 1
-    bump(q.departments.includes(lead.department), 8)
+    bump(splitSelection(q.departments).include.includes(lead.department), 8)
   }
   if (q.technologies.length) {
     asked += 1
-    const overlap = lead.technologies.filter((t) => q.technologies.includes(t)).length
+    const inc = splitSelection(q.technologies).include
+    const overlap = lead.technologies.filter((t) => inc.includes(t)).length
     score += Math.min(overlap, 2) * 7
     if (overlap > 0) matched += 1
   }
   if (q.revenue.length) {
     asked += 1
-    bump(q.revenue.includes(lead.revenue), 7)
+    bump(splitSelection(q.revenue).include.includes(lead.revenue), 7)
   }
   if (q.intent.length) {
     asked += 1
-    const overlap = lead.intent.filter((t) => q.intent.includes(t)).length
+    const inc = splitSelection(q.intent).include
+    const overlap = lead.intent.filter((t) => inc.includes(t)).length
     score += Math.min(overlap, 2) * 10
     if (overlap > 0) matched += 1
   }
   if (q.linkedin.length) {
     asked += 1
-    const overlap = lead.linkedin.filter((t) => q.linkedin.includes(t)).length
+    const inc = splitSelection(q.linkedin).include
+    const overlap = lead.linkedin.filter((t) => inc.includes(t)).length
     score += Math.min(overlap, 2) * 9
     if (overlap > 0) matched += 1
   }
@@ -680,18 +688,27 @@ function scoreLead(lead: AiLead, q: AiQuery): number {
 
 function scoreCompany(co: AiCompany, q: AiQuery): number {
   let score = 60
-  if (q.regions.length) score += q.regions.includes(co.region) ? 12 : -4
-  if (q.industries.length) score += q.industries.includes(co.industry) ? 14 : -6
-  if (q.headcount.length) score += q.headcount.includes(co.headcount) ? 10 : 0
-  if (q.revenue.length) score += q.revenue.includes(co.revenue) ? 8 : 0
-  if (q.founded.length) score += q.founded.includes(foundedBand(co.foundedYear)) ? 8 : 0
-  if (q.growth.length) score += q.growth.includes(co.growth) ? 9 : 0
+  // Score only against the INCLUDE side — exclusions never boost fit.
+  if (q.regions.length)
+    score += splitSelection(q.regions).include.includes(co.region) ? 12 : -4
+  if (q.industries.length)
+    score += splitSelection(q.industries).include.includes(co.industry) ? 14 : -6
+  if (q.headcount.length)
+    score += splitSelection(q.headcount).include.includes(co.headcount) ? 10 : 0
+  if (q.revenue.length)
+    score += splitSelection(q.revenue).include.includes(co.revenue) ? 8 : 0
+  if (q.founded.length)
+    score += splitSelection(q.founded).include.includes(foundedBand(co.foundedYear)) ? 8 : 0
+  if (q.growth.length)
+    score += splitSelection(q.growth).include.includes(co.growth) ? 9 : 0
   if (q.technologies.length) {
-    const overlap = co.technologies.filter((t) => q.technologies.includes(t)).length
+    const inc = splitSelection(q.technologies).include
+    const overlap = co.technologies.filter((t) => inc.includes(t)).length
     score += Math.min(overlap, 2) * 8
   }
   if (q.signals.length) {
-    const overlap = co.signals.filter((s) => q.signals.includes(s)).length
+    const inc = splitSelection(q.signals).include
+    const overlap = co.signals.filter((s) => inc.includes(s)).length
     score += Math.min(overlap, 2) * 10
   }
   return Math.max(45, Math.min(99, Math.round(score)))
@@ -701,17 +718,17 @@ export function searchLeads(q: AiQuery): AiLead[] {
   const kw = q.keywords.trim().toLowerCase()
   return LEAD_POOL.map((l) => ({ ...l, fit: scoreLead(l, q) }))
     .filter((l) => {
-      if (q.titles.length && !q.titles.includes(l.title)) return false
-      if (q.seniority.length && !q.seniority.includes(l.seniority)) return false
-      if (q.regions.length && !q.regions.includes(l.region)) return false
-      if (q.industries.length && !q.industries.includes(l.industry)) return false
-      if (q.headcount.length && !q.headcount.includes(l.headcount)) return false
-      if (q.departments.length && !q.departments.includes(l.department)) return false
-      if (q.revenue.length && !q.revenue.includes(l.revenue)) return false
-      if (q.technologies.length && !l.technologies.some((t) => q.technologies.includes(t))) return false
-      if (q.intent.length && !l.intent.some((t) => q.intent.includes(t))) return false
-      if (q.signals.length && !l.signals.some((s) => q.signals.includes(s))) return false
-      if (q.linkedin.length && !l.linkedin.some((t) => q.linkedin.includes(t))) return false
+      if (q.titles.length && !matchValue(q.titles, l.title)) return false
+      if (q.seniority.length && !matchValue(q.seniority, l.seniority)) return false
+      if (q.regions.length && !matchValue(q.regions, l.region)) return false
+      if (q.industries.length && !matchValue(q.industries, l.industry)) return false
+      if (q.headcount.length && !matchValue(q.headcount, l.headcount)) return false
+      if (q.departments.length && !matchValue(q.departments, l.department)) return false
+      if (q.revenue.length && !matchValue(q.revenue, l.revenue)) return false
+      if (q.technologies.length && !matchAny(q.technologies, l.technologies)) return false
+      if (q.intent.length && !matchAny(q.intent, l.intent)) return false
+      if (q.signals.length && !matchAny(q.signals, l.signals)) return false
+      if (q.linkedin.length && !matchAny(q.linkedin, l.linkedin)) return false
       if (kw) {
         const hay = `${l.firstName} ${l.lastName} ${l.title} ${l.company} ${l.industry}`.toLowerCase()
         if (!hay.includes(kw)) return false
@@ -725,14 +742,14 @@ export function searchCompanies(q: AiQuery): AiCompany[] {
   const kw = q.keywords.trim().toLowerCase()
   return COMPANY_POOL.map((c) => ({ ...c, fit: scoreCompany(c, q) }))
     .filter((c) => {
-      if (q.regions.length && !q.regions.includes(c.region)) return false
-      if (q.industries.length && !q.industries.includes(c.industry)) return false
-      if (q.headcount.length && !q.headcount.includes(c.headcount)) return false
-      if (q.revenue.length && !q.revenue.includes(c.revenue)) return false
-      if (q.founded.length && !q.founded.includes(foundedBand(c.foundedYear))) return false
-      if (q.growth.length && !q.growth.includes(c.growth)) return false
-      if (q.technologies.length && !c.technologies.some((t) => q.technologies.includes(t))) return false
-      if (q.signals.length && !c.signals.some((s) => q.signals.includes(s))) return false
+      if (q.regions.length && !matchValue(q.regions, c.region)) return false
+      if (q.industries.length && !matchValue(q.industries, c.industry)) return false
+      if (q.headcount.length && !matchValue(q.headcount, c.headcount)) return false
+      if (q.revenue.length && !matchValue(q.revenue, c.revenue)) return false
+      if (q.founded.length && !matchValue(q.founded, foundedBand(c.foundedYear))) return false
+      if (q.growth.length && !matchValue(q.growth, c.growth)) return false
+      if (q.technologies.length && !matchAny(q.technologies, c.technologies)) return false
+      if (q.signals.length && !matchAny(q.signals, c.signals)) return false
       if (kw && !`${c.name} ${c.industry}`.toLowerCase().includes(kw)) return false
       return true
     })
