@@ -30,6 +30,7 @@ import {
   Columns3,
   Plug,
   Download,
+  FolderPlus,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -318,6 +319,8 @@ const COPY = {
     selectPage: "Select page",
     deselectPage: "Deselect page",
     hideInList: "Hide already in a list",
+    hideInCrm: "Hide already in CRM",
+    addRowToList: "Add to list",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     srcFindPeople: "Find prospects",
@@ -574,6 +577,8 @@ const COPY = {
     selectPage: "Seleccionar página",
     deselectPage: "Deseleccionar página",
     hideInList: "Ocultar ya en una lista",
+    hideInCrm: "Ocultar ya en el CRM",
+    addRowToList: "Añadir a lista",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Buscar prospectos",
@@ -868,6 +873,8 @@ export default function Search() {
   // "Hide prospects already in a list": key existing list members by identity so
   // people you've already saved don't clutter the results.
   const [hideInList, setHideInList] = React.useState(false)
+  // "Hide already in CRM": applies to both people and company results.
+  const [hideInCrm, setHideInCrm] = React.useState(false)
   const lists = useLists()
   const inListKeys = React.useMemo(() => {
     const set = new Set<string>()
@@ -896,23 +903,27 @@ export default function Search() {
           !blacklistedKeys.has(l.companyDomain.toLowerCase())
       )
     }
+    if (hideInCrm) base = base.filter((l) => !l.inCrm)
     if (!hideInList || inListKeys.size === 0) return base
     return base.filter(
       (l) => !inListKeys.has(`${l.firstName}|${l.lastName}|${l.company}`.toLowerCase())
     )
-  }, [seed, query, sortKey, hideInList, inListKeys, blacklistedKeys])
+  }, [seed, query, sortKey, hideInList, inListKeys, blacklistedKeys, hideInCrm])
   const companies = React.useMemo(() => {
-    const base = sortCompanies(
+    let base = sortCompanies(
       seed ? lookalikeCompanies(seed, query) : searchCompanies(query),
       sortKey
     )
-    if (blacklistedKeys.size === 0) return base
-    return base.filter(
-      (co) =>
-        !blacklistedKeys.has(co.name.toLowerCase()) &&
-        !blacklistedKeys.has(co.domain.toLowerCase())
-    )
-  }, [seed, query, sortKey, blacklistedKeys])
+    if (blacklistedKeys.size > 0) {
+      base = base.filter(
+        (co) =>
+          !blacklistedKeys.has(co.name.toLowerCase()) &&
+          !blacklistedKeys.has(co.domain.toLowerCase())
+      )
+    }
+    if (hideInCrm) base = base.filter((co) => !co.inCrm)
+    return base
+  }, [seed, query, sortKey, blacklistedKeys, hideInCrm])
   const shownCount = entity === "people" ? leads.length : companies.length
   const estTotal = estimatedTotal(shownCount, entity)
   const selectedCount = selected.size
@@ -1208,6 +1219,13 @@ export default function Search() {
       return materializeLeadsToIds(leads.filter((l) => selected.has(l.id)))
     }
     return materializeCompaniesToIds(companies.filter((co) => selected.has(co.id)))
+  }
+
+  // Per-row "Add to list" — same materialize-then-add flow as the bulk action,
+  // just scoped to a single search-result row.
+  function addRowToList(ids: string[]) {
+    setBulkIds(ids)
+    setBulkListOpen(true)
   }
   function bulkAddToList() {
     const ids = materializeSelected()
@@ -1677,6 +1695,24 @@ export default function Search() {
                 </button>
               )}
 
+              <button
+                type="button"
+                onClick={() => setHideInCrm((v) => !v)}
+                aria-pressed={hideInCrm}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+                  hideInCrm
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted/60"
+                )}
+              >
+                <Checkbox
+                  checked={hideInCrm}
+                  className="pointer-events-none size-3.5"
+                />
+                {c.hideInCrm}
+              </button>
+
               <div className="ml-auto flex items-center gap-1">
                 <span className="text-muted-foreground px-1 text-xs tabular-nums">
                   {c.pageRange(pageStart + 1, pageEnd, shownCount)}
@@ -1715,6 +1751,17 @@ export default function Search() {
               locale={locale}
               selection={leadSelection}
               empty={c.noResults}
+              actions={(l) => (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.addRowToList}
+                  onClick={() => addRowToList(materializeLeadsToIds([l]))}
+                >
+                  <FolderPlus className="size-4" />
+                </Button>
+              )}
             />
           ) : (
             <DataTable
@@ -1725,6 +1772,17 @@ export default function Search() {
               locale={locale}
               selection={companySelection}
               empty={c.noResults}
+              actions={(co) => (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.addRowToList}
+                  onClick={() => addRowToList(materializeCompaniesToIds([co]))}
+                >
+                  <FolderPlus className="size-4" />
+                </Button>
+              )}
             />
           )}
 
