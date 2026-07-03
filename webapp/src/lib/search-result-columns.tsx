@@ -1,13 +1,18 @@
-import { CheckCircle2, CircleDashed, X } from "lucide-react"
+import * as React from "react"
+import { toast } from "sonner"
+import { CheckCircle2, CircleDashed, X, Lock, Building2 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScoreBadge } from "@/components/common/ProspectBits"
 import type { ColumnDef, ColGroup } from "@/lib/table-columns"
-import type { AiLead, AiCompany } from "@/lib/mock-ai-search"
+import { mockLeadEmail, mockLeadPhone, type AiLead, type AiCompany } from "@/lib/mock-ai-search"
 import type { Locale } from "@/lib/locale"
 import { portraitFor } from "@/lib/avatars"
 import { initials } from "@/lib/format"
+import { useCredits } from "@/lib/credits"
+import { ENRICH_COST } from "@/lib/enrichment"
+import { cn } from "@/lib/utils"
 
 // Shared result-table column registries for AI search results (people +
 // companies). Used by both the full Search page and the Add-records dialog so
@@ -18,7 +23,7 @@ export const LEAD_RESULT_GROUPS: ColGroup[] = [
   { id: "company", label: { en: "Company", es: "Empresa" } },
   { id: "engagement", label: { en: "Engagement", es: "Interacción" } },
 ]
-export const LEAD_RESULT_DEFAULT_IDS = ["fit", "company", "region", "email", "signals"]
+export const LEAD_RESULT_DEFAULT_IDS = ["fit", "company", "region", "email", "phone", "crm", "signals"]
 
 export const COMPANY_RESULT_GROUPS: ColGroup[] = [
   { id: "company", label: { en: "Company", es: "Empresa" } },
@@ -31,6 +36,7 @@ export const COMPANY_RESULT_DEFAULT_IDS = [
   "headcount",
   "region",
   "roles",
+  "crm",
   "signals",
 ]
 
@@ -38,32 +44,150 @@ function mutedCell(value: React.ReactNode) {
   return <span className="text-muted-foreground text-sm">{value}</span>
 }
 
-const EMAIL_COPY: Record<Locale, { verified: string; likely: string; missing: string }> = {
-  en: { verified: "Verified", likely: "Likely", missing: "Missing" },
-  es: { verified: "Verificado", likely: "Probable", missing: "Sin email" },
+const REVEAL_COPY: Record<
+  Locale,
+  {
+    missing: string
+    noPhone: string
+    findEmail: string
+    findPhone: string
+    emailRevealed: (name: string) => string
+    phoneRevealed: (name: string) => string
+    mobile: string
+    direct: string
+    inCrm: string
+  }
+> = {
+  en: {
+    missing: "Missing",
+    noPhone: "No number",
+    findEmail: "Find email",
+    findPhone: "Find number",
+    emailRevealed: (name) => `Email found for ${name}`,
+    phoneRevealed: (name) => `Phone number found for ${name}`,
+    mobile: "Mobile",
+    direct: "Direct dial",
+    inCrm: "In CRM",
+  },
+  es: {
+    missing: "Sin email",
+    noPhone: "Sin número",
+    findEmail: "Buscar email",
+    findPhone: "Buscar número",
+    emailRevealed: (name) => `Email encontrado para ${name}`,
+    phoneRevealed: (name) => `Número encontrado para ${name}`,
+    mobile: "Móvil",
+    direct: "Línea directa",
+    inCrm: "En el CRM",
+  },
 }
 
-function EmailStatus({ status, locale }: { status: AiLead["emailStatus"]; locale: Locale }) {
-  const t = EMAIL_COPY[locale]
-  if (status === "verified")
-    return (
-      <span className="text-chart-1 inline-flex items-center gap-1 text-xs font-medium">
-        <CheckCircle2 className="size-3.5" />
-        {t.verified}
-      </span>
-    )
-  if (status === "likely")
-    return (
-      <span className="text-chart-4 inline-flex items-center gap-1 text-xs font-medium">
-        <CircleDashed className="size-3.5" />
-        {t.likely}
-      </span>
-    )
+function RevealPill({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-      <X className="size-3.5" />
-      {t.missing}
-    </span>
+    <button
+      type="button"
+      onClick={onClick}
+      className="border-primary/30 text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap"
+    >
+      <Lock className="size-3" />
+      {label} +
+    </button>
+  )
+}
+
+function EmailCell({ lead, locale }: { lead: AiLead; locale: Locale }) {
+  const t = REVEAL_COPY[locale]
+  const { spend } = useCredits()
+  const [revealed, setRevealed] = React.useState(false)
+
+  if (lead.emailStatus === "missing") {
+    return (
+      <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+        <X className="size-3.5" />
+        {t.missing}
+      </span>
+    )
+  }
+
+  if (revealed) {
+    const verified = lead.emailStatus === "verified"
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 text-xs font-medium",
+          verified ? "text-chart-1" : "text-chart-4"
+        )}
+      >
+        {verified ? (
+          <CheckCircle2 className="size-3.5 shrink-0" />
+        ) : (
+          <CircleDashed className="size-3.5 shrink-0" />
+        )}
+        <span className="truncate">{mockLeadEmail(lead)}</span>
+      </span>
+    )
+  }
+
+  return (
+    <RevealPill
+      label={t.findEmail}
+      onClick={() => {
+        if (spend(ENRICH_COST.email, `Email reveal · ${lead.firstName} ${lead.lastName}`, "email")) {
+          setRevealed(true)
+          toast.success(t.emailRevealed(`${lead.firstName} ${lead.lastName}`))
+        }
+      }}
+    />
+  )
+}
+
+function PhoneCell({ lead, locale }: { lead: AiLead; locale: Locale }) {
+  const t = REVEAL_COPY[locale]
+  const { spend } = useCredits()
+  const [revealed, setRevealed] = React.useState(false)
+
+  if (lead.phoneStatus === "none") {
+    return (
+      <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+        <X className="size-3.5" />
+        {t.noPhone}
+      </span>
+    )
+  }
+
+  if (revealed) {
+    return (
+      <span className="text-foreground inline-flex items-center gap-1.5 text-xs font-medium">
+        <CheckCircle2 className="text-chart-1 size-3.5 shrink-0" />
+        <span className="truncate">{mockLeadPhone(lead)}</span>
+        <span className="text-muted-foreground font-normal">
+          · {lead.phoneStatus === "mobile" ? t.mobile : t.direct}
+        </span>
+      </span>
+    )
+  }
+
+  return (
+    <RevealPill
+      label={t.findPhone}
+      onClick={() => {
+        if (spend(ENRICH_COST.phone, `Phone reveal · ${lead.firstName} ${lead.lastName}`, "phone")) {
+          setRevealed(true)
+          toast.success(t.phoneRevealed(`${lead.firstName} ${lead.lastName}`))
+        }
+      }}
+    />
+  )
+}
+
+function CrmBadge({ inCrm, locale }: { inCrm: boolean; locale: Locale }) {
+  const t = REVEAL_COPY[locale]
+  if (!inCrm) return <span className="text-muted-foreground text-xs">—</span>
+  return (
+    <Badge variant="secondary" className="inline-flex items-center gap-1 font-normal">
+      <Building2 className="size-3" />
+      {t.inCrm}
+    </Badge>
   )
 }
 
@@ -114,7 +238,9 @@ export const LEAD_RESULT_COLUMNS: ColumnDef<AiLead>[] = [
   { id: "industry", group: "company", label: { en: "Industry", es: "Sector" }, render: (l) => mutedCell(l.industry) },
   { id: "headcount", group: "company", label: { en: "Size", es: "Tamaño" }, render: (l) => mutedCell(l.headcount) },
   { id: "revenue", group: "company", label: { en: "Revenue", es: "Ingresos" }, render: (l) => mutedCell(l.revenue) },
-  { id: "email", group: "engagement", label: { en: "Email", es: "Email" }, render: (l, locale) => <EmailStatus status={l.emailStatus} locale={locale} /> },
+  { id: "email", group: "engagement", label: { en: "Email", es: "Email" }, render: (l, locale) => <EmailCell lead={l} locale={locale} /> },
+  { id: "phone", group: "engagement", label: { en: "Phone", es: "Teléfono" }, render: (l, locale) => <PhoneCell lead={l} locale={locale} /> },
+  { id: "crm", group: "engagement", label: { en: "CRM", es: "CRM" }, render: (l, locale) => <CrmBadge inCrm={l.inCrm} locale={locale} /> },
   {
     id: "signals",
     group: "engagement",
@@ -168,6 +294,7 @@ export const COMPANY_RESULT_COLUMNS: ColumnDef<AiCompany>[] = [
       </Badge>
     ),
   },
+  { id: "crm", group: "firmographics", label: { en: "CRM", es: "CRM" }, render: (co, locale) => <CrmBadge inCrm={co.inCrm} locale={locale} /> },
   {
     id: "signals",
     group: "signals",

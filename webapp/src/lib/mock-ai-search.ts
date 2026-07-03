@@ -96,6 +96,7 @@ export interface AiLead {
   signals: string[]
   lastActiveDays: number // days since last LinkedIn/web activity (for sorting)
   fit: number // 0-100, computed against the active query
+  inCrm: boolean // already synced to a connected CRM
 }
 
 export interface AiCompany {
@@ -115,6 +116,7 @@ export interface AiCompany {
   signals: string[]
   openRoles: number
   fit: number
+  inCrm: boolean // already synced to a connected CRM
 }
 
 /* ----------------------------- option vocab ----------------------------- */
@@ -476,6 +478,23 @@ function subset<T>(pool: T[], seed: number, threshold: number): T[] {
   return pool.filter((_, s) => rand(seed * 13 + s * 7) > threshold)
 }
 
+// Deterministic mock email/phone derived from the lead itself, so the same
+// lead always "reveals" the same values across renders (mirrors the
+// materialized-Prospect reveal in lib/store.ts, but for unmaterialized
+// search-result rows).
+export function mockLeadEmail(l: AiLead): string {
+  return `${l.firstName}.${l.lastName}@${l.companyDomain}`.toLowerCase().replace(/\s+/g, "")
+}
+
+export function mockLeadPhone(l: AiLead): string {
+  let h = 0
+  for (let i = 0; i < l.id.length; i++) h = (h * 31 + l.id.charCodeAt(i)) >>> 0
+  const area = 200 + (h % 800)
+  const mid = 100 + ((h >> 4) % 900)
+  const last = 1000 + ((h >> 8) % 9000)
+  return `+1 (${area}) ${mid}-${last}`
+}
+
 function baseLeads(): AiLead[] {
   return NAMES.map(([firstName, lastName], i) => {
     const co = pick(COMPANIES, i * 3 + 1)
@@ -490,6 +509,7 @@ function baseLeads(): AiLead[] {
     const tech = subset(TECH_OPTIONS, i + 1, 0.7)
     const intent = subset(INTENT_OPTIONS, i + 5, 0.74)
     const linkedin = subset(LINKEDIN_OPTIONS, i + 9, 0.66)
+    const inCrm = rand(i * 4 + 8) > 0.7
     return {
       id: `ai_${i + 1}`,
       firstName,
@@ -513,6 +533,7 @@ function baseLeads(): AiLead[] {
       signals: signals.length ? signals : [LEAD_SIGNALS_POOL[i % LEAD_SIGNALS_POOL.length]],
       lastActiveDays: Math.floor(rand(i * 8 + 3) * 60),
       fit: 0,
+      inCrm,
     }
   })
 }
@@ -545,6 +566,7 @@ function baseCompanies(): AiCompany[] {
       signals: signals.length ? signals : [SIGNAL_OPTIONS[i % SIGNAL_OPTIONS.length]],
       openRoles: Math.floor(rand(i * 11) * 14) + 1,
       fit: 0,
+      inCrm: rand(i * 21 + 6) > 0.65,
     }
   })
 }
