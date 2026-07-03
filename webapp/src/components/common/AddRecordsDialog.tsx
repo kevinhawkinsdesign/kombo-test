@@ -94,6 +94,7 @@ const COPY = {
     import: "Import",
     splashSearchTitle: "Search",
     splashSearchDesc: "Describe who you're looking for and search our database directly.",
+    splashSearchWithFilters: "Search with filters",
     splashGuideTitle: "Guide me",
     splashGuideDesc: "Answer a few quick questions and we'll build the search for you.",
     splashGuideCta: "Start guided search",
@@ -192,6 +193,7 @@ const COPY = {
     import: "Importar",
     splashSearchTitle: "Buscar",
     splashSearchDesc: "Describe a quién buscas y busca directamente en nuestra base de datos.",
+    splashSearchWithFilters: "Buscar con filtros",
     splashGuideTitle: "Guíame",
     splashGuideDesc: "Responde unas preguntas rápidas y crearemos la búsqueda por ti.",
     splashGuideCta: "Iniciar búsqueda guiada",
@@ -416,6 +418,12 @@ export function AddRecordsDialog({
   // to the results screen — "the screen they get today".
   function runSplashSearch() {
     runSearch()
+    setScreen("results")
+  }
+  // "Search with filters" skips the AI prompt — it jumps to the same results
+  // screen with the filters rail (always visible there) ready to build a
+  // query from scratch instead of describing it in the prompt.
+  function runSplashWithFilters() {
     setScreen("results")
   }
   // Filter mutations (typed groups + facets). Every change resets the
@@ -651,6 +659,7 @@ export function AddRecordsDialog({
               input={input}
               onInputChange={setInput}
               onSubmit={runSplashSearch}
+              onSearchWithFilters={runSplashWithFilters}
               onGuideMe={() => setScreen("wizard")}
               c={c}
             />
@@ -1040,6 +1049,7 @@ function SplashScreen({
   input,
   onInputChange,
   onSubmit,
+  onSearchWithFilters,
   onGuideMe,
   c,
 }: {
@@ -1048,6 +1058,7 @@ function SplashScreen({
   input: string
   onInputChange: (v: string) => void
   onSubmit: () => void
+  onSearchWithFilters: () => void
   onGuideMe: () => void
   c: Copy
 }) {
@@ -1093,6 +1104,16 @@ function SplashScreen({
             <ArrowRight className="size-4" />
           </Button>
         </form>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onSearchWithFilters}
+          className="text-muted-foreground hover:text-foreground gap-1.5"
+        >
+          <SlidersHorizontal className="size-3.5" />
+          {c.splashSearchWithFilters}
+        </Button>
       </div>
 
       <button

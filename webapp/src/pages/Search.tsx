@@ -216,6 +216,7 @@ const COPY = {
     heroSubtitle: "Search across 250M+ professionals and companies — or pick a quick start.",
     heroPlaceholder: "e.g. Heads of RevOps at Series B SaaS companies in EMEA…",
     searchBtn: "Search",
+    searchWithFilters: "Search with filters",
     clearQuery: "Clear search",
     spotlightsLabel: "Spotlights",
     matchLabel: "Matches",
@@ -471,6 +472,7 @@ const COPY = {
     heroSubtitle: "Busca entre más de 250M de profesionales y empresas — o elige un inicio rápido.",
     heroPlaceholder: "p. ej. Heads de RevOps en SaaS Serie B en EMEA…",
     searchBtn: "Buscar",
+    searchWithFilters: "Buscar con filtros",
     clearQuery: "Borrar búsqueda",
     spotlightsLabel: "Destacados",
     matchLabel: "Coincide",
@@ -778,6 +780,9 @@ export default function Search() {
   const [params] = useSearchParams()
   const location = useLocation()
   const headerPrompt = params.get("q")
+  // "Search with filters" (Home hero + splash) skips the AI prompt and jumps
+  // straight to the filterable results view via ?filters=1.
+  const [filtersRequested] = React.useState(() => params.get("filters") === "1")
   // Lookalike is just a search: arrive here with a seed (from People/Companies
   // "Find lookalikes") and the page opens in lookalike mode, results and all.
   const incomingSeed =
@@ -835,6 +840,7 @@ export default function Search() {
   // a lookalike seed, an active filter, or an in-flight interpretation.
   // Pristine shows the empty state instead of the whole unfiltered pool.
   const searchStarted =
+    filtersRequested ||
     thinking ||
     Boolean(seed) ||
     lastPrompt.trim() !== "" ||
@@ -1281,6 +1287,7 @@ export default function Search() {
           input={input}
           setInput={setInput}
           onRun={runPrompt}
+          onSearchWithFilters={() => navigate("/search?filters=1")}
           entity={entity}
           setEntity={setEntity}
         />
@@ -2589,6 +2596,7 @@ function SearchHome({
   input,
   setInput,
   onRun,
+  onSearchWithFilters,
   entity,
   setEntity,
 }: {
@@ -2596,6 +2604,7 @@ function SearchHome({
   input: string
   setInput: (v: string) => void
   onRun: (prompt: string) => void
+  onSearchWithFilters: () => void
   entity: AiEntity
   setEntity: (e: AiEntity) => void
 }) {
@@ -2714,6 +2723,17 @@ function SearchHome({
           />
         )}
       </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={onSearchWithFilters}
+        className="text-muted-foreground hover:text-foreground mt-2 gap-1.5"
+      >
+        <SlidersHorizontal className="size-3.5" />
+        {c.searchWithFilters}
+      </Button>
       </div>
       </div>
 
