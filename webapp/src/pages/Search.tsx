@@ -152,6 +152,9 @@ const COPY = {
     save: "Save",
     saved: "Saved searches",
     saveThis: "Save this search",
+    saveSearchDesc:
+      "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
+    saveNameLabel: "Search name",
     noSaved: "No saved searches yet.",
     savedToast: "Search saved with its prompt history",
     loadedToast: "Saved search loaded",
@@ -227,6 +230,7 @@ const COPY = {
       "Pick a person or company you already like — Kai finds records similar to that specific seed. Refine further with the sidebar filters.",
     pickSeed: "Pick a prospect or company",
     companySearch: "Search a company by name…",
+    personSearch: "Search a prospect by name…",
     useCompany: (name: string) => `Use "${name}"`,
     seedPeople: "Prospects & customers",
     seedCompanies: "Companies",
@@ -403,6 +407,9 @@ const COPY = {
     save: "Guardar",
     saved: "Búsquedas guardadas",
     saveThis: "Guardar esta búsqueda",
+    saveSearchDesc:
+      "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
+    saveNameLabel: "Nombre de la búsqueda",
     noSaved: "Aún no hay búsquedas guardadas.",
     savedToast: "Búsqueda guardada con su historial de prompts",
     loadedToast: "Búsqueda guardada cargada",
@@ -478,6 +485,7 @@ const COPY = {
       "Elige una persona o empresa que ya te encaja — Kai encuentra registros similares a ese origen concreto. Refina con los filtros de la barra lateral.",
     pickSeed: "Elige un prospecto o empresa",
     companySearch: "Busca una empresa por nombre…",
+    personSearch: "Busca un prospecto por nombre…",
     useCompany: (name: string) => `Usar "${name}"`,
     seedPeople: "Prospectos y clientes",
     seedCompanies: "Empresas",
@@ -812,6 +820,8 @@ export default function Search() {
   const [hasSearched, setHasSearched] = React.useState(!isHomeRoute)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
+  const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
+  const [saveName, setSaveName] = React.useState("")
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [buildOpen, setBuildOpen] = React.useState(false)
@@ -1077,9 +1087,9 @@ export default function Search() {
     setInput(prompt)
   }
 
-  function saveSearch() {
+  function saveSearch(name: string) {
     savedSearchStore.create({
-      name: queryTitle(query, entity),
+      name,
       entity,
       query,
       prompt: lastPrompt,
@@ -1087,6 +1097,16 @@ export default function Search() {
       resultCount: shownCount,
     })
     toast.success(c.savedToast)
+  }
+
+  function openSaveDialog() {
+    setSaveName(queryTitle(query, entity))
+    setSaveDialogOpen(true)
+  }
+
+  function confirmSave() {
+    saveSearch(saveName.trim() || queryTitle(query, entity))
+    setSaveDialogOpen(false)
   }
 
   // "Build a list": route to the chosen population method. Search-style sources
@@ -1353,7 +1373,8 @@ export default function Search() {
               type="button"
               variant="outline"
               className="gap-1.5 rounded-r-none"
-              onClick={saveSearch}
+              onClick={openSaveDialog}
+              disabled={shownCount === 0}
             >
               <Bookmark className="size-4" />
               <span className="hidden sm:inline">{c.save}</span>
@@ -1525,7 +1546,7 @@ export default function Search() {
                 variant="outline"
                 size="sm"
                 className="hidden lg:inline-flex"
-                onClick={saveSearch}
+                onClick={openSaveDialog}
                 disabled={shownCount === 0}
               >
                 <Bookmark className="size-4" />
@@ -1548,7 +1569,7 @@ export default function Search() {
                     {c.lookalike}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={saveSearch}
+                    onClick={openSaveDialog}
                     disabled={shownCount === 0}
                   >
                     <Bookmark className="size-4" />
@@ -1768,8 +1789,42 @@ export default function Search() {
         open={lookalikeOpen}
         onOpenChange={setLookalikeOpen}
         c={c}
+        defaultEntity={entity}
         onConfirm={applyLookalike}
       />
+
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bookmark className="text-primary size-5" />
+              {c.saveThis}
+            </DialogTitle>
+            <DialogDescription>{c.saveSearchDesc}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="save-search-name">{c.saveNameLabel}</Label>
+            <Input
+              id="save-search-name"
+              autoFocus
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmSave()
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+              {c.cancel}
+            </Button>
+            <Button variant="volt" onClick={confirmSave}>
+              <Bookmark className="size-4" />
+              {c.save}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <FilterModal
         open={filtersOpen}
@@ -1832,38 +1887,43 @@ function LookalikeDialog({
   open,
   onOpenChange,
   c,
+  defaultEntity,
   onConfirm,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   c: Copy
+  defaultEntity: AiEntity
   onConfirm: (seed: LookalikeSeed, query: AiQuery) => void
 }) {
+  const [seedKind, setSeedKind] = React.useState<"person" | "company">(
+    defaultEntity === "companies" ? "company" : "person"
+  )
   const [seedId, setSeedId] = React.useState<string | null>(null)
-  const [companyQuery, setCompanyQuery] = React.useState("")
+  const [seedQuery, setSeedQuery] = React.useState("")
   const [wasOpen, setWasOpen] = React.useState(false)
 
   if (open && !wasOpen) {
     setWasOpen(true)
+    setSeedKind(defaultEntity === "companies" ? "company" : "person")
     setSeedId(null)
-    setCompanyQuery("")
+    setSeedQuery("")
   }
   if (!open && wasOpen) setWasOpen(false)
 
-  const q = companyQuery.trim()
+  const q = seedQuery.trim()
   const ql = q.toLowerCase()
   const match = (s: LookalikeSeed) => !ql || s.name.toLowerCase().includes(ql)
-  const people = LOOKALIKE_SEEDS.filter((s) => s.kind === "person" && match(s))
-  const companies = LOOKALIKE_SEEDS.filter((s) => s.kind === "company" && match(s))
-  // Typed a company we don't have a seed for? Build an ad-hoc one to search from.
+  const seeds = LOOKALIKE_SEEDS.filter((s) => s.kind === seedKind && match(s))
+  // Typed a name we don't have a seed for? Build an ad-hoc one to search from.
   const hasExact = LOOKALIKE_SEEDS.some(
-    (s) => s.kind === "company" && s.name.toLowerCase() === ql
+    (s) => s.kind === seedKind && s.name.toLowerCase() === ql
   )
   const customSeed: LookalikeSeed | null =
     q && !hasExact
       ? {
           id: "custom",
-          kind: "company",
+          kind: seedKind,
           name: q,
           sub: `${q} · custom seed`,
           industry: INDUSTRY_OPTIONS[0] ?? "SaaS",
@@ -1875,6 +1935,11 @@ function LookalikeDialog({
     seedId === "custom"
       ? customSeed
       : LOOKALIKE_SEEDS.find((s) => s.id === seedId) ?? null
+
+  function selectKind(kind: "person" | "company") {
+    setSeedKind(kind)
+    setSeedId(null)
+  }
 
   function confirm() {
     // A lookalike must start from a specific selected person or company.
@@ -1894,18 +1959,33 @@ function LookalikeDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-1">
+          <div className="bg-muted inline-flex rounded-md p-0.5">
+            <EntityTab
+              active={seedKind === "person"}
+              onClick={() => selectKind("person")}
+              icon={Users}
+              label={c.people}
+            />
+            <EntityTab
+              active={seedKind === "company"}
+              onClick={() => selectKind("company")}
+              icon={Building2}
+              label={c.companies}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>{c.pickSeed}</Label>
             <div className="relative">
               <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <Input
-                value={companyQuery}
-                onChange={(e) => setCompanyQuery(e.target.value)}
-                placeholder={c.companySearch}
+                value={seedQuery}
+                onChange={(e) => setSeedQuery(e.target.value)}
+                placeholder={seedKind === "company" ? c.companySearch : c.personSearch}
                 className="pl-9"
               />
             </div>
-            <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
+            <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
               {customSeed && (
                 <button
                   type="button"
@@ -1917,25 +1997,16 @@ function LookalikeDialog({
                       : "hover:bg-muted/60"
                   )}
                 >
-                  <Building2 className="text-primary size-4 shrink-0" />
+                  {seedKind === "company" ? (
+                    <Building2 className="text-primary size-4 shrink-0" />
+                  ) : (
+                    <Users className="text-primary size-4 shrink-0" />
+                  )}
                   <span className="font-medium">{c.useCompany(customSeed.name)}</span>
                 </button>
               )}
-              {companies.length > 0 && (
-                <SeedGroup
-                  label={c.seedCompanies}
-                  seeds={companies}
-                  selected={seedId}
-                  onSelect={setSeedId}
-                />
-              )}
-              {people.length > 0 && (
-                <SeedGroup
-                  label={c.seedPeople}
-                  seeds={people}
-                  selected={seedId}
-                  onSelect={setSeedId}
-                />
+              {seeds.length > 0 && (
+                <SeedGroup seeds={seeds} selected={seedId} onSelect={setSeedId} />
               )}
             </div>
           </div>
@@ -1961,16 +2032,18 @@ function SeedGroup({
   selected,
   onSelect,
 }: {
-  label: string
+  label?: string
   seeds: LookalikeSeed[]
   selected: string | null
   onSelect: (id: string) => void
 }) {
   return (
     <div>
-      <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-        {label}
-      </p>
+      {label && (
+        <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+          {label}
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
         {seeds.map((s) => (
           <button
