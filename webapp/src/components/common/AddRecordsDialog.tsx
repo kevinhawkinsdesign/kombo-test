@@ -629,15 +629,32 @@ export function AddRecordsDialog({
       <DialogContent showCloseButton fullScreen>
         {screen !== "results" && <DialogTitle className="sr-only">{title}</DialogTitle>}
         {screen === "splash" ? (
-          <SplashScreen
-            entity={entity}
-            onEntityChange={switchEntity}
-            input={input}
-            onInputChange={setInput}
-            onSubmit={runSplashSearch}
-            onGuideMe={() => setScreen("wizard")}
-            c={c}
-          />
+          <>
+            <div className="flex items-center justify-center border-b px-6 py-3">
+              <Segmented
+                options={[
+                  { v: "search" as Mode, label: c.search, icon: Search },
+                  { v: "import" as Mode, label: c.import, icon: Upload },
+                ]}
+                value={mode}
+                onChange={(next) => {
+                  setMode(next)
+                  // "Search" stays on the splash; "Import" jumps straight to
+                  // today's import screen (same one the results view offers).
+                  if (next === "import") setScreen("results")
+                }}
+              />
+            </div>
+            <SplashScreen
+              entity={entity}
+              onEntityChange={switchEntity}
+              input={input}
+              onInputChange={setInput}
+              onSubmit={runSplashSearch}
+              onGuideMe={() => setScreen("wizard")}
+              c={c}
+            />
+          </>
         ) : screen === "wizard" ? (
           <WizardPlaceholder onBack={() => setScreen("splash")} c={c} />
         ) : (
