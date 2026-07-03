@@ -44,7 +44,7 @@ function load(): ReleaseMode {
   } catch {
     /* ignore malformed storage */
   }
-  return "v2"
+  return "v1"
 }
 
 let mode: ReleaseMode = load()
