@@ -8,6 +8,7 @@ import {
   Users,
   Building2,
   ArrowRight,
+  ArrowLeft,
   ArrowDownUp,
   SlidersHorizontal,
   ChevronDown,
@@ -77,6 +78,10 @@ import type { AccountTier } from "@/lib/types"
 
 type Kind = "contact" | "company"
 type Mode = "search" | "import"
+// "splash" is the entry pre-step (Search vs Guide Me); "wizard" is the guided
+// flow's placeholder landing until its question steps are specified; "results"
+// is today's existing search/import screen.
+type Screen = "splash" | "wizard" | "results"
 
 const COPY = {
   en: {
@@ -87,6 +92,13 @@ const COPY = {
     company: "Companies",
     search: "Search",
     import: "Import",
+    splashSearchTitle: "Search",
+    splashSearchDesc: "Describe who you're looking for and search our database directly.",
+    splashGuideTitle: "Guide me",
+    splashGuideDesc: "Answer a few quick questions and we'll build the search for you.",
+    splashGuideCta: "Start guided search",
+    splashBack: "Back",
+    wizardComingSoon: "The guided steps are coming soon.",
     searchPeoplePlaceholder: "Search prospects — e.g. VPs of Sales at SaaS companies",
     searchCompanyPlaceholder: "Search companies — e.g. Series B fintechs hiring sales",
     run: "Search",
@@ -178,6 +190,13 @@ const COPY = {
     company: "Empresas",
     search: "Buscar",
     import: "Importar",
+    splashSearchTitle: "Buscar",
+    splashSearchDesc: "Describe a quién buscas y busca directamente en nuestra base de datos.",
+    splashGuideTitle: "Guíame",
+    splashGuideDesc: "Responde unas preguntas rápidas y crearemos la búsqueda por ti.",
+    splashGuideCta: "Iniciar búsqueda guiada",
+    splashBack: "Atrás",
+    wizardComingSoon: "Los pasos guiados llegarán pronto.",
     searchPeoplePlaceholder: "Busca prospectos — p. ej. VPs de Ventas en empresas SaaS",
     searchCompanyPlaceholder: "Busca empresas — p. ej. fintechs Serie B contratando ventas",
     run: "Buscar",
@@ -325,6 +344,7 @@ export function AddRecordsDialog({
 
   const [entity, setEntity] = React.useState<AiEntity>(entityFromKind(kind))
   const [mode, setMode] = React.useState<Mode>("search")
+  const [screen, setScreen] = React.useState<Screen>("results")
   const [input, setInput] = React.useState("")
   const [query, setQuery] = React.useState<AiQuery>({ ...EMPTY_QUERY })
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
@@ -348,6 +368,10 @@ export function AddRecordsDialog({
     // Scoping to companies means we're finding their people.
     setEntity(scoped ? "people" : entityFromKind(kind))
     setMode("search")
+    // A scoped open (e.g. "Find contacts" from a company list) already has
+    // clear intent — skip the splash and land straight on results, same as
+    // before this screen existed.
+    setScreen(scoped ? "results" : "splash")
     setInput("")
     setQuery({ ...EMPTY_QUERY })
     setSortKey("fit")
@@ -387,6 +411,12 @@ export function AddRecordsDialog({
     setQuery((prev) => ({ ...interpretPrompt(input).query, facets: prev.facets }))
     setSelected(new Set())
     setPage(0)
+  }
+  // Submitting the splash screen's search box runs the same search and moves
+  // to the results screen — "the screen they get today".
+  function runSplashSearch() {
+    runSearch()
+    setScreen("results")
   }
   // Filter mutations (typed groups + facets). Every change resets the
   // selection & page, like the old toggle handlers did. Values arrive raw —
@@ -597,6 +627,21 @@ export function AddRecordsDialog({
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton fullScreen>
+        {screen !== "results" && <DialogTitle className="sr-only">{title}</DialogTitle>}
+        {screen === "splash" ? (
+          <SplashScreen
+            entity={entity}
+            onEntityChange={switchEntity}
+            input={input}
+            onInputChange={setInput}
+            onSubmit={runSplashSearch}
+            onGuideMe={() => setScreen("wizard")}
+            c={c}
+          />
+        ) : screen === "wizard" ? (
+          <WizardPlaceholder onBack={() => setScreen("splash")} c={c} />
+        ) : (
+        <>
         <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
           <Segmented
@@ -916,6 +961,8 @@ export function AddRecordsDialog({
             }}
           />
         )}
+        </>
+        )}
       </DialogContent>
     </Dialog>
 
@@ -947,6 +994,128 @@ export function AddRecordsDialog({
       onConfirm={commitSelected}
     />
     </>
+  )
+}
+
+// A row of numbered circles previewing the guided flow's step count — shown
+// both on the splash's "Guide me" side and on the wizard placeholder itself.
+function StepPreview() {
+  return (
+    <div className="flex items-center gap-1.5">
+      {[1, 2, 3].map((n, i) => (
+        <React.Fragment key={n}>
+          <span className="border-primary/40 text-primary bg-primary/5 flex size-7 items-center justify-center rounded-full border text-xs font-semibold">
+            {n}
+          </span>
+          {i < 2 && <span className="bg-border h-px w-4" />}
+        </React.Fragment>
+      ))}
+    </div>
+  )
+}
+
+// The pre-step splash screen: a vertical split between a direct search (left,
+// submits into today's existing results screen) and the entry point for a
+// guided, step-by-step wizard (right — its actual questions arrive later).
+function SplashScreen({
+  entity,
+  onEntityChange,
+  input,
+  onInputChange,
+  onSubmit,
+  onGuideMe,
+  c,
+}: {
+  entity: AiEntity
+  onEntityChange: (e: AiEntity) => void
+  input: string
+  onInputChange: (v: string) => void
+  onSubmit: () => void
+  onGuideMe: () => void
+  c: Copy
+}) {
+  return (
+    <div className="divide-border flex min-h-0 flex-1 divide-x">
+      <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+        <span className="bg-primary/10 flex size-12 items-center justify-center rounded-full">
+          <Search className="text-primary size-5" />
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold">{c.splashSearchTitle}</h2>
+          <p className="text-muted-foreground mt-1 max-w-xs text-sm">{c.splashSearchDesc}</p>
+        </div>
+        <Segmented
+          options={[
+            { v: "people" as AiEntity, label: c.contact, icon: Users },
+            { v: "companies" as AiEntity, label: c.company, icon: Building2 },
+          ]}
+          value={entity}
+          onChange={onEntityChange}
+        />
+        <form
+          className="flex w-full max-w-sm items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            onSubmit()
+          }}
+        >
+          <div className="relative min-w-0 flex-1">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              autoFocus
+              value={input}
+              onChange={(e) => onInputChange(e.target.value)}
+              placeholder={
+                entity === "people" ? c.searchPeoplePlaceholder : c.searchCompanyPlaceholder
+              }
+              clearable={false}
+              className="h-10 pl-9"
+            />
+          </div>
+          <Button type="submit" variant="volt" size="icon" className="h-10 shrink-0" aria-label={c.run}>
+            <ArrowRight className="size-4" />
+          </Button>
+        </form>
+      </div>
+
+      <button
+        type="button"
+        onClick={onGuideMe}
+        className="hover:bg-muted/40 flex min-w-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center transition-colors"
+      >
+        <span className="bg-primary/10 flex size-12 items-center justify-center rounded-full">
+          <Compass className="text-primary size-5" />
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold">{c.splashGuideTitle}</h2>
+          <p className="text-muted-foreground mt-1 max-w-xs text-sm">{c.splashGuideDesc}</p>
+        </div>
+        <StepPreview />
+        <span className="text-primary inline-flex items-center gap-1 text-sm font-medium">
+          {c.splashGuideCta}
+          <ArrowRight className="size-4" />
+        </span>
+      </button>
+    </div>
+  )
+}
+
+// Placeholder landing for the guided wizard — the real question-by-question
+// flow (steps + logic tree) is coming in a follow-up; this just proves out the
+// entry point and gives users a way back to the splash in the meantime.
+function WizardPlaceholder({ onBack, c }: { onBack: () => void; c: Copy }) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+      <StepPreview />
+      <span className="bg-muted flex size-12 items-center justify-center rounded-full">
+        <Compass className="text-muted-foreground size-5" />
+      </span>
+      <p className="text-muted-foreground max-w-xs text-sm">{c.wizardComingSoon}</p>
+      <Button variant="outline" onClick={onBack} className="gap-1.5">
+        <ArrowLeft className="size-4" />
+        {c.splashBack}
+      </Button>
+    </div>
   )
 }
 
