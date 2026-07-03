@@ -8,7 +8,6 @@ import {
   Check,
   Columns3,
   Waypoints,
-  ScanSearch,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -34,7 +33,6 @@ import { prospectSource } from "@/lib/format"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { WarmIntrosPanel } from "@/pages/WarmIntros"
-import { DiscoverFeed } from "@/pages/Discover"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -65,7 +63,6 @@ const COPY = {
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "prospect" : "prospects"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     tabPeople: "Discovered",
-    tabLookalikes: "Lookalikes",
     tabIntros: "Warm Intros",
     addPerson: "Find prospects",
     introTitle: "Work your prospects like a list",
@@ -102,7 +99,6 @@ const COPY = {
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "prospecto" : "prospectos"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionados…`,
     tabPeople: "Descubiertos",
-    tabLookalikes: "Similares",
     tabIntros: "Intros cálidas",
     addPerson: "Buscar prospectos",
     introTitle: "Trabaja tus prospectos como una lista",
@@ -140,12 +136,7 @@ export default function People() {
   const { pathname } = useLocation()
   const { isV1 } = useReleaseMode()
   const [searchParams] = useSearchParams()
-  const tab: "people" | "lookalikes" | "intros" =
-    pathname === "/intros"
-      ? "intros"
-      : searchParams.get("tab") === "lookalikes"
-        ? "lookalikes"
-        : "people"
+  const tab: "people" | "intros" = pathname === "/intros" ? "intros" : "people"
   const prospects = useProspects()
   // Allow deep-linking a filter, e.g. account-based "/people?q=Acme".
   const [query, setQuery] = React.useState(() => searchParams.get("q") ?? "")
@@ -248,15 +239,9 @@ export default function People() {
     })
   }
 
-  // Discovered + Lookalikes mirror the Companies page. Warm Intros is V2-only.
+  // Warm Intros is V2-only.
   const tabs = [
     { key: "people", to: "/people", label: c.tabPeople, icon: Users },
-    {
-      key: "lookalikes",
-      to: "/people?tab=lookalikes",
-      label: c.tabLookalikes,
-      icon: ScanSearch,
-    },
     ...(isV1
       ? []
       : [{ key: "intros", to: "/intros", label: c.tabIntros, icon: Waypoints }]),
@@ -305,8 +290,6 @@ export default function People() {
 
       {tab === "intros" ? (
         <WarmIntrosPanel />
-      ) : tab === "lookalikes" ? (
-        <DiscoverFeed />
       ) : (
         <>
       <FeatureIntro
