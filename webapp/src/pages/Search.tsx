@@ -102,7 +102,7 @@ import {
   useBlacklistedKeys,
 } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
-import { libraryQueries } from "@/lib/mock-library"
+import { libraryQueries, type LibraryQuery } from "@/lib/mock-library"
 import { facetsForDb, facetSection, type FacetDef, type FacetDb } from "@/lib/search-facets"
 import { SEARCH_FILTER_GROUPS } from "@/lib/search-filter-groups"
 import { baseValue, excludeValue, isExcluded } from "@/lib/filter-polarity"
@@ -282,6 +282,9 @@ const COPY = {
     addToGroup: (label: string) => `Add ${label.toLowerCase()}…`,
     clearAll: "Clear all",
     aiSuggestions: "AI-powered search suggestions",
+    runThisSearch: "Run this search",
+    viewAll: "View all",
+    rowSelectAll: "Select all",
     startTypeTitle: "Type your query",
     startTypeDesc: "Describe who you're looking for — a title, industry, or location.",
     filtersAfterSearch: "Filters unlock once you run a search.",
@@ -530,6 +533,9 @@ const COPY = {
     addToGroup: (label: string) => `Añadir ${label.toLowerCase()}…`,
     clearAll: "Limpiar todo",
     aiSuggestions: "Sugerencias de búsqueda con IA",
+    runThisSearch: "Ejecutar esta búsqueda",
+    viewAll: "Ver todo",
+    rowSelectAll: "Seleccionar todo",
     startTypeTitle: "Escribe tu consulta",
     startTypeDesc: "Describe a quién buscas — un cargo, sector o ubicación.",
     filtersAfterSearch: "Los filtros se activan al ejecutar una búsqueda.",
@@ -695,6 +701,66 @@ function sortLabel(key: SortKey, c: Copy): string {
     default:
       return c.sortFit
   }
+}
+
+// Turn preview leads/companies (from a live search or the empty-state
+// suggestion carousels) into real prospectStore/accountStore records, so
+// they can be added to a list, exported, or pushed to a CRM like any other
+// search result.
+function materializeLeadsToIds(records: AiLead[]): string[] {
+  return records.map(
+    (l) =>
+      prospectStore.create({
+        firstName: l.firstName,
+        lastName: l.lastName,
+        title: l.title,
+        company: l.company,
+        companyDomain: l.companyDomain,
+        location: l.location,
+        // Freshly sourced contacts arrive with only basic data — email is
+        // revealed later via enrichment.
+        email: "",
+        linkedinUrl: "",
+        avatarColor: l.avatarColor,
+        score: l.fit,
+        status: "new",
+        tags: [],
+        seniority: l.seniority,
+        department: l.department,
+        headcount: l.headcount,
+        industry: l.industry,
+        revenue: l.revenue,
+        about: "",
+        signals: l.signals,
+        source: "search",
+        enriched: false,
+      }).id
+  )
+}
+
+function materializeCompaniesToIds(records: AiCompany[]): string[] {
+  return records.map((co) => {
+    const tier: AccountTier =
+      co.headcountNum >= 1000 ? "Enterprise" : co.headcountNum >= 200 ? "Mid-market" : "SMB"
+    return accountStore.create({
+      name: co.name,
+      domain: co.domain,
+      industry: co.industry,
+      employees: co.headcount,
+      revenue: co.revenue,
+      location: co.location,
+      logoColor: co.logoColor,
+      tier,
+      healthScore: co.fit,
+      openDeals: 0,
+      pipeline: 0,
+      contacts: 0,
+      ownerId: "",
+      about: "",
+      signals: co.signals,
+      keyExecutives: [],
+    }).id
+  })
 }
 
 export default function Search() {
@@ -877,7 +943,11 @@ export default function Search() {
   // filters and run the search (with a brief "thinking" beat). No chat.
   // From Home, hand the prompt to /search so the URL matches the results.
   const runPrompt = React.useCallback(
-    (prompt: string) => {
+    // forcedEntity: interpretPrompt's entity guess is a naive regex over the
+    // free-text prompt (e.g. "VPs of Sales at companies with..." reads
+    // "companies" and misclassifies a people search). Curated suggestions
+    // already know their entity — pass it through to skip the guess.
+    (prompt: string, forcedEntity?: AiEntity) => {
       const text = prompt.trim()
       if (!text) return
       if (isHomeRoute) {
@@ -890,7 +960,7 @@ export default function Search() {
       setLastPrompt(text)
       window.setTimeout(() => {
         const { query: q, entity: e, seed: s } = interpretPrompt(text)
-        setEntity(e)
+        setEntity(forcedEntity ?? e)
         setQuery(q)
         setSeed(s ?? null)
         setSelected(new Set())
@@ -1109,65 +1179,9 @@ export default function Search() {
   // search-result actions (add to list / campaign / export / CRM).
   function materializeSelected(): string[] {
     if (entity === "people") {
-      return leads
-        .filter((l) => selected.has(l.id))
-        .map(
-          (l) =>
-            prospectStore.create({
-              firstName: l.firstName,
-              lastName: l.lastName,
-              title: l.title,
-              company: l.company,
-              companyDomain: l.companyDomain,
-              location: l.location,
-              // Freshly sourced contacts arrive with only basic data — email is
-              // revealed later via enrichment.
-              email: "",
-              linkedinUrl: "",
-              avatarColor: l.avatarColor,
-              score: l.fit,
-              status: "new",
-              tags: [],
-              seniority: l.seniority,
-              department: l.department,
-              headcount: l.headcount,
-              industry: l.industry,
-              revenue: l.revenue,
-              about: "",
-              signals: l.signals,
-              source: "search",
-              enriched: false,
-            }).id
-        )
+      return materializeLeadsToIds(leads.filter((l) => selected.has(l.id)))
     }
-    return companies
-      .filter((co) => selected.has(co.id))
-      .map((co) => {
-        const tier: AccountTier =
-          co.headcountNum >= 1000
-            ? "Enterprise"
-            : co.headcountNum >= 200
-              ? "Mid-market"
-              : "SMB"
-        return accountStore.create({
-          name: co.name,
-          domain: co.domain,
-          industry: co.industry,
-          employees: co.headcount,
-          revenue: co.revenue,
-          location: co.location,
-          logoColor: co.logoColor,
-          tier,
-          healthScore: co.fit,
-          openDeals: 0,
-          pipeline: 0,
-          contacts: 0,
-          ownerId: "",
-          about: "",
-          signals: co.signals,
-          keyExecutives: [],
-        }).id
-      })
+    return materializeCompaniesToIds(companies.filter((co) => selected.has(co.id)))
   }
   function bulkAddToList() {
     const ids = materializeSelected()
@@ -1734,7 +1748,15 @@ export default function Search() {
           )}
         </div>
             ) : (
-              <SearchEmptyState c={c} entity={entity} onRun={runPrompt} />
+              <SearchEmptyState
+                c={c}
+                entity={entity}
+                onRun={(prompt) => runPrompt(prompt, entity)}
+                onAddToList={(ids) => {
+                  setBulkIds(ids)
+                  setBulkListOpen(true)
+                }}
+              />
             )}
           </div>
         </div>
@@ -2130,41 +2152,55 @@ function SearchEmptyState({
   c,
   entity,
   onRun,
+  onAddToList,
 }: {
   c: Copy
   entity: AiEntity
   onRun: (prompt: string) => void
+  onAddToList: (ids: string[]) => void
 }) {
-  // Three suggestions so the row always fits on a single line.
-  const suggestions = libraryQueries
-    .filter((qq) => qq.entity === entity)
-    .slice(0, 3)
-  return (
-    <div className="space-y-8 py-1">
-      {suggestions.length > 0 && (
-        <div>
-          <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
-            <Sparkles className="text-primary size-4" />
-            {c.aiSuggestions}
-          </p>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {suggestions.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => onRun(s.prompt)}
-                className="bg-card hover:border-primary/40 hover:bg-muted/40 flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-colors"
-              >
-                <span className="text-sm leading-snug font-medium">{s.name}</span>
-                <span className="text-muted-foreground line-clamp-2 text-xs">
-                  {s.prompt}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+  // LibraryQuery.entity is singular ("company"), AiEntity is plural
+  // ("companies") — they describe the same thing but don't share a literal.
+  const suggestions = React.useMemo(
+    () =>
+      libraryQueries.filter((qq) =>
+        entity === "companies" ? qq.entity === "company" : qq.entity === "people"
+      ),
+    [entity]
+  )
 
+  // Selection spans every row — a record only counts once even if it shows
+  // up in more than one suggestion's sample.
+  const [selected, setSelected] = React.useState<Map<string, AiLead | AiCompany>>(
+    new Map()
+  )
+  const selectedCount = selected.size
+
+  const toggleRecord = React.useCallback((record: AiLead | AiCompany) => {
+    setSelected((prev) => {
+      const next = new Map(prev)
+      if (next.has(record.id)) next.delete(record.id)
+      else next.set(record.id, record)
+      return next
+    })
+  }, [])
+
+  const setRowSelected = React.useCallback(
+    (records: (AiLead | AiCompany)[], on: boolean) => {
+      setSelected((prev) => {
+        const next = new Map(prev)
+        for (const r of records) {
+          if (on) next.set(r.id, r)
+          else next.delete(r.id)
+        }
+        return next
+      })
+    },
+    []
+  )
+
+  if (suggestions.length === 0) {
+    return (
       <div className="rounded-xl border p-5 text-center">
         <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
           <SearchIcon className="text-muted-foreground size-5" />
@@ -2173,7 +2209,303 @@ function SearchEmptyState({
         <p className="text-muted-foreground mt-1 text-sm">{c.startTypeDesc}</p>
         <p className="text-muted-foreground/80 mt-1 text-xs">{c.filtersAfterSearch}</p>
       </div>
+    )
+  }
+
+  return (
+    <div className="space-y-8 py-1 pb-24">
+      <p className="flex items-center gap-1.5 text-sm font-semibold">
+        <Sparkles className="text-primary size-4" />
+        {c.aiSuggestions}
+      </p>
+
+      {suggestions.map((s) => (
+        <SuggestionRow
+          key={s.id}
+          suggestion={s}
+          entity={entity}
+          onRun={onRun}
+          selected={selected}
+          onToggleRecord={toggleRecord}
+          onSetRowSelected={setRowSelected}
+          c={c}
+        />
+      ))}
+
+      {selectedCount > 0 && (
+        <div className="bg-background sticky bottom-4 z-20 flex flex-wrap items-center gap-1.5 rounded-xl border p-2 shadow-lg">
+          <span className="px-2 text-sm font-medium tabular-nums">
+            {c.selected(selectedCount)}
+          </span>
+          <span className="bg-border mx-1 h-5 w-px" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const records = [...selected.values()]
+              const ids =
+                entity === "people"
+                  ? materializeLeadsToIds(records as AiLead[])
+                  : materializeCompaniesToIds(records as AiCompany[])
+              setSelected(new Map())
+              onAddToList(ids)
+            }}
+          >
+            <ListPlus className="size-4" />
+            {c.bulkList}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const records = [...selected.values()]
+              if (entity === "people") {
+                const rows = records as AiLead[]
+                downloadCsv(
+                  "prospects.csv",
+                  ["Name", "Title", "Company", "Region", "Fit"],
+                  rows.map((l) => [
+                    `${l.firstName} ${l.lastName}`,
+                    l.title,
+                    l.company,
+                    l.region,
+                    l.fit,
+                  ])
+                )
+              } else {
+                const rows = records as AiCompany[]
+                downloadCsv(
+                  "companies.csv",
+                  ["Company", "Industry", "Region", "Headcount", "Fit"],
+                  rows.map((co) => [co.name, co.industry, co.region, co.headcount, co.fit])
+                )
+              }
+            }}
+          >
+            <Download className="size-4" />
+            {c.bulkExport}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              toast.success(c.crmToast(selectedCount))
+              setSelected(new Map())
+            }}
+          >
+            <Plug className="size-4" />
+            {c.bulkCrm}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto"
+            onClick={() => setSelected(new Map())}
+          >
+            <X className="size-4" />
+            {c.clearSel}
+          </Button>
+        </div>
+      )}
     </div>
+  )
+}
+
+// One Netflix-style carousel row: a suggested query's name/description (the
+// whole header is clickable and runs that search with its filters + prompt
+// pre-applied) plus a horizontally-scrolling sample of matching records.
+// Cards outnumber what fits in view — the row overflows and scrolls via
+// drag/wheel, with hover-reveal prev/next buttons for the carousel feel.
+function SuggestionRow({
+  suggestion,
+  entity,
+  onRun,
+  selected,
+  onToggleRecord,
+  onSetRowSelected,
+  c,
+}: {
+  suggestion: LibraryQuery
+  entity: AiEntity
+  onRun: (prompt: string) => void
+  selected: Map<string, AiLead | AiCompany>
+  onToggleRecord: (record: AiLead | AiCompany) => void
+  onSetRowSelected: (records: (AiLead | AiCompany)[], on: boolean) => void
+  c: Copy
+}) {
+  const { query } = React.useMemo(
+    () => interpretPrompt(suggestion.prompt),
+    [suggestion.prompt]
+  )
+  const cards = React.useMemo(
+    () =>
+      entity === "companies"
+        ? searchCompanies(query).slice(0, 12)
+        : searchLeads(query).slice(0, 12),
+    [entity, query]
+  )
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+
+  if (cards.length === 0) return null
+
+  const rowAllSelected = cards.every((r) => selected.has(r.id))
+
+  function scrollByPage(dir: 1 | -1) {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" })
+  }
+
+  return (
+    <div className="group/row">
+      <div className="mb-2 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => onRun(suggestion.prompt)}
+          className="min-w-0 flex-1 truncate text-left"
+        >
+          <span className="text-sm font-semibold">{suggestion.name}</span>
+          <span className="text-muted-foreground ml-2 hidden text-xs sm:inline">
+            {suggestion.description}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onSetRowSelected(cards, !rowAllSelected)}
+          className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-xs"
+        >
+          <Checkbox checked={rowAllSelected} className="pointer-events-none" />
+          <span className="hidden sm:inline">{c.rowSelectAll}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onRun(suggestion.prompt)}
+          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-xs font-medium"
+        >
+          {c.viewAll}
+          <ArrowRight className="size-3.5" />
+        </button>
+      </div>
+
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1"
+        >
+          {entity === "companies"
+            ? (cards as AiCompany[]).map((co) => (
+                <CompanyPosterCard
+                  key={co.id}
+                  co={co}
+                  selected={selected.has(co.id)}
+                  onToggle={() => onToggleRecord(co)}
+                />
+              ))
+            : (cards as AiLead[]).map((l) => (
+                <LeadPosterCard
+                  key={l.id}
+                  l={l}
+                  selected={selected.has(l.id)}
+                  onToggle={() => onToggleRecord(l)}
+                />
+              ))}
+        </div>
+
+        <button
+          type="button"
+          aria-label="Scroll left"
+          onClick={() => scrollByPage(-1)}
+          className="bg-background/95 absolute top-1/2 -left-3 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border opacity-0 shadow-md transition-opacity group-hover/row:flex group-hover/row:opacity-100 hover:bg-muted sm:flex"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Scroll right"
+          onClick={() => scrollByPage(1)}
+          className="bg-background/95 absolute top-1/2 -right-3 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border opacity-0 shadow-md transition-opacity group-hover/row:flex group-hover/row:opacity-100 hover:bg-muted sm:flex"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function LeadPosterCard({
+  l,
+  selected,
+  onToggle,
+}: {
+  l: AiLead
+  selected: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={selected}
+      className={cn(
+        "bg-card relative w-36 shrink-0 snap-start rounded-lg border p-3 text-left transition-colors",
+        selected ? "border-primary ring-primary/30 ring-2" : "hover:border-primary/40"
+      )}
+    >
+      <Checkbox
+        checked={selected}
+        className="pointer-events-none bg-background absolute top-2 right-2"
+      />
+      <Avatar className="size-9">
+        <AvatarImage src={portraitFor(`${l.firstName} ${l.lastName}`)} alt="" />
+        <AvatarFallback
+          style={{ backgroundColor: l.avatarColor, color: "white" }}
+          className="text-xs"
+        >
+          {initials(l.firstName, l.lastName)}
+        </AvatarFallback>
+      </Avatar>
+      <p className="mt-2 truncate text-sm font-medium">
+        {l.firstName} {l.lastName}
+      </p>
+      <p className="text-muted-foreground truncate text-xs">{l.title}</p>
+      <p className="text-muted-foreground truncate text-xs">{l.company}</p>
+    </button>
+  )
+}
+
+function CompanyPosterCard({
+  co,
+  selected,
+  onToggle,
+}: {
+  co: AiCompany
+  selected: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={selected}
+      className={cn(
+        "bg-card relative w-36 shrink-0 snap-start rounded-lg border p-3 text-left transition-colors",
+        selected ? "border-primary ring-primary/30 ring-2" : "hover:border-primary/40"
+      )}
+    >
+      <Checkbox
+        checked={selected}
+        className="pointer-events-none bg-background absolute top-2 right-2"
+      />
+      <span
+        className="flex size-9 items-center justify-center rounded-md text-xs font-semibold text-white"
+        style={{ backgroundColor: co.logoColor }}
+      >
+        {co.name.slice(0, 2)}
+      </span>
+      <p className="mt-2 truncate text-sm font-medium">{co.name}</p>
+      <p className="text-muted-foreground truncate text-xs">{co.industry}</p>
+      <p className="text-muted-foreground truncate text-xs">{co.headcount}</p>
+    </button>
   )
 }
 
