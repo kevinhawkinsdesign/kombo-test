@@ -320,7 +320,9 @@ interface CompanySeed {
   logoColor: string
 }
 
-const COMPANIES: CompanySeed[] = [
+// Hand-picked, recognizable companies — kept first so their ids (aic_1..aic_20)
+// and names stay stable for anything referencing them by position/name.
+const HAND_COMPANIES: CompanySeed[] = [
   { name: "Fever", domain: "feverup.com", industry: "E-commerce", region: "EMEA", location: "Madrid, ES", headcount: "501-1000", revenue: "$100M-$250M", logoColor: "#E5006D" },
   { name: "Softonic", domain: "softonic.com", industry: "SaaS", region: "EMEA", location: "Barcelona, ES", headcount: "201-500", revenue: "$50M-$100M", logoColor: "#008BE6" },
   { name: "Clarity AI", domain: "clarity.ai", industry: "Fintech", region: "EMEA", location: "Madrid, ES", headcount: "201-500", revenue: "$50M-$100M", logoColor: "#1F6FEB" },
@@ -343,7 +345,9 @@ const COMPANIES: CompanySeed[] = [
   { name: "Kavak", domain: "kavak.com", industry: "E-commerce", region: "LATAM", location: "Mexico City, MX", headcount: "1000+", revenue: "$500M-$1B", logoColor: "#2563EB" },
 ]
 
-const NAMES: [string, string][] = [
+// Hand-picked, recognizable people — kept first so their ids (ai_1..ai_36) and
+// names stay stable for anything referencing them by position/name.
+const HAND_NAMES: [string, string][] = [
   ["Sofia", "Rossi"], ["Lucas", "Müller"], ["Emma", "Dubois"], ["Mateo", "García"],
   ["Olivia", "Jensen"], ["Hugo", "Silva"], ["Marie", "Laurent"], ["Liam", "O'Brien"],
   ["Camila", "Fernández"], ["Noah", "Schmidt"], ["Valentina", "Costa"], ["Daniel", "Novak"],
@@ -357,16 +361,95 @@ const NAMES: [string, string][] = [
 
 const TITLES: { title: string; seniority: string; department: string }[] = [
   { title: "Chief Revenue Officer", seniority: "C-Level", department: "Sales" },
+  { title: "Chief Financial Officer", seniority: "C-Level", department: "Finance" },
   { title: "VP of Sales", seniority: "VP", department: "Sales" },
   { title: "VP of Revenue", seniority: "VP", department: "Sales" },
-  { title: "Head of Sales", seniority: "Head", department: "Sales" },
-  { title: "Director of Sales", seniority: "Director", department: "Sales" },
-  { title: "Head of Sales Development", seniority: "Head", department: "Sales" },
   { title: "VP of Marketing", seniority: "VP", department: "Marketing" },
+  { title: "VP of Customer Success", seniority: "VP", department: "Customer Success" },
+  { title: "VP of Engineering", seniority: "VP", department: "Engineering" },
+  { title: "Head of Sales", seniority: "Head", department: "Sales" },
+  { title: "Head of Sales Development", seniority: "Head", department: "Sales" },
   { title: "Head of Growth", seniority: "Head", department: "Marketing" },
-  { title: "Director of RevOps", seniority: "Director", department: "Operations" },
+  { title: "Head of Product", seniority: "Head", department: "Product" },
+  { title: "Director of Sales", seniority: "Director", department: "Sales" },
+  { title: "Director of RevOps", seniority: "Director", department: "RevOps" },
+  { title: "Director of Engineering", seniority: "Director", department: "Engineering" },
   { title: "Sales Manager", seniority: "Manager", department: "Sales" },
+  { title: "RevOps Manager", seniority: "Manager", department: "RevOps" },
+  { title: "IT Manager", seniority: "Manager", department: "IT" },
+  { title: "HR Business Partner", seniority: "Manager", department: "HR" },
 ]
+
+// Procedurally-generated companies/people so filtered searches — and the
+// Search page's carousels/tables — reliably fill up with results instead of
+// running thin after 2-3 filters. Deterministic (index-seeded, no Date/Math.random)
+// so builds stay stable; spans every region/headcount band so facets like
+// "APAC" or "11-50 employees" (previously unrepresented) actually match.
+const GEN_COMPANY_PREFIX = [
+  "Nimbus", "Vertex", "Quanta", "Lumen", "Apex", "Northwind", "Cobalt", "Helix",
+  "Brightwave", "Strata", "Cinder", "Vela", "Orbit", "Pioneer", "Cascade", "Aurora",
+  "Beacon", "Ember", "Forge", "Glide", "Harbor", "Ionic", "Junction", "Keystone",
+  "Lattice", "Meridian", "Novel", "Oakline", "Pulse", "Quill", "Ridge", "Summit",
+  "Tide", "Union", "Vantage", "Wren", "Zephyr", "Atlas", "Bolt", "Crest",
+]
+const GEN_COMPANY_SUFFIX = [
+  "Labs", "AI", "Systems", "Cloud", "Works", "Technologies", "Data", "Logic",
+  "Health", "Pay", "Commerce", "Security", "Analytics", "Robotics", "Networks",
+  "Software", "Digital", "Group", "Bio", "Energy",
+]
+const GEN_COMPANY_TLD = [".com", ".io", ".ai", ".co"]
+const LOCATIONS_BY_REGION: Record<string, string[]> = {
+  EMEA: ["Madrid, ES", "Barcelona, ES", "Paris, FR", "Berlin, DE", "Munich, DE", "Amsterdam, NL", "London, UK", "Dublin, IE", "Stockholm, SE", "Copenhagen, DK", "Milan, IT", "Lisbon, PT"],
+  "North America": ["New York, US", "San Francisco, US", "Austin, TX", "Toronto, CA", "Chicago, IL", "Seattle, WA", "Boston, MA", "Denver, CO"],
+  LATAM: ["Santiago, CL", "São Paulo, BR", "Bogotá, CO", "Mexico City, MX", "Buenos Aires, AR", "Lima, PE"],
+  APAC: ["Singapore, SG", "Sydney, AU", "Tokyo, JP", "Bengaluru, IN", "Seoul, KR", "Auckland, NZ"],
+}
+
+function generatedCompanies(n: number): CompanySeed[] {
+  const out: CompanySeed[] = []
+  for (let i = 0; i < n; i++) {
+    const prefix = pick(GEN_COMPANY_PREFIX, i)
+    const suffix = pick(GEN_COMPANY_SUFFIX, Math.floor(i / GEN_COMPANY_PREFIX.length) + i * 3)
+    const name = `${prefix} ${suffix}`
+    const slug = `${prefix}${suffix}`.toLowerCase()
+    const region = pick(REGION_OPTIONS, i * 5 + 2)
+    out.push({
+      name,
+      domain: `${slug}${pick(GEN_COMPANY_TLD, i)}`,
+      industry: pick(INDUSTRY_OPTIONS, i * 7 + 3),
+      region,
+      location: pick(LOCATIONS_BY_REGION[region], i * 11 + 1),
+      headcount: pick(HEADCOUNT_OPTIONS, i * 3 + 1),
+      revenue: pick(REVENUE_OPTIONS, i * 9 + 4),
+      logoColor: pick(AVATAR_COLORS, i),
+    })
+  }
+  return out
+}
+
+const GEN_FIRST = [
+  "Sarah", "Marcus", "Aisha", "James", "Priya", "Ethan", "Amara", "Ravi", "Nadia", "Theo",
+  "Freya", "Idris", "Aria", "Nikhil", "Greta", "Bjorn", "Farah", "Oscar", "Yuki", "Kai",
+  "Zoe", "Tariq", "Ingrid", "Lena", "Sven", "Anaïs", "Jonas", "Leon", "Maya", "Omar",
+  "Hannah", "David", "Mateusz", "Lucia", "Idil", "Sione", "Wei", "Noor", "Bianca", "Rafael",
+]
+const GEN_LAST = [
+  "Chen", "Riley", "Khan", "Vargas", "Park", "Sharma", "Walsh", "Meyer", "Haddad", "Tanaka",
+  "Okafor", "Berg", "Lindqvist", "Romano", "Nair", "Moretti", "Kapoor", "Fischer", "Bensaïd", "Marín",
+  "Johansson", "Diallo", "Reyes", "Weber", "Patel", "Sato", "Voss", "Holm", "Aziz", "Petrova",
+  "O'Connor", "Costa", "Haddad", "Nowak", "Silveira", "Kim", "Osei", "Lindgren", "Ferreira", "Blomqvist",
+]
+
+function generatedNames(n: number): [string, string][] {
+  const out: [string, string][] = []
+  for (let i = 0; i < n; i++) {
+    out.push([pick(GEN_FIRST, i * 7 + 3), pick(GEN_LAST, i * 13 + 5)])
+  }
+  return out
+}
+
+const COMPANIES: CompanySeed[] = [...HAND_COMPANIES, ...generatedCompanies(90)]
+const NAMES: [string, string][] = [...HAND_NAMES, ...generatedNames(230)]
 
 const LEAD_SIGNALS_POOL = SIGNAL_OPTIONS
 
