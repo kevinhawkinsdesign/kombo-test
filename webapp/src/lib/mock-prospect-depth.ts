@@ -77,7 +77,7 @@ export function getHistory(p: Prospect): HistoryEvent[] {
   const added = new Date(p.addedAt).getTime()
   const day = 86400000
   const events: HistoryEvent[] = [
-    { id: `${p.id}_h1`, type: "added", label: "Added to Kombo", detail: "from Prospect Search", timestamp: new Date(added).toISOString() },
+    { id: `${p.id}_h1`, type: "added", label: "Added to Kombo", detail: "from Find Prospects", timestamp: new Date(added).toISOString() },
     { id: `${p.id}_h2`, type: "enriched", label: "Enriched", detail: "30 data points appended", timestamp: new Date(added + day * 0.1).toISOString() },
   ]
   if (["contacted", "replied", "meeting", "customer"].includes(p.status)) {

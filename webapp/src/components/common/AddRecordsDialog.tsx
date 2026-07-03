@@ -20,6 +20,7 @@ import {
   Cloud,
   Link2,
   Columns3,
+  Download,
 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -57,6 +58,7 @@ import { MAX_ENRICH_BATCH, SAVE_COST } from "@/lib/enrichment"
 import { facetsForDb, facetSection } from "@/lib/search-facets"
 import { SEARCH_FILTER_GROUPS } from "@/lib/search-filter-groups"
 import { excludeValue } from "@/lib/filter-polarity"
+import { downloadCsv } from "@/lib/csv"
 import {
   FilterCatalog,
   type CatalogFilterDef,
@@ -149,6 +151,7 @@ const COPY = {
     browse: "browse",
     fileTypes: "Supports CSV and Excel files (.csv, .xlsx, .xls)",
     fileLabel: "Upload a file",
+    downloadTemplate: "Download template",
     linkLabel: "Import from a link",
     linkHintPeople: "Paste a URL and we'll import the people from it via our API.",
     linkHintCompanies:
@@ -248,6 +251,7 @@ const COPY = {
     browse: "explora",
     fileTypes: "Admite archivos CSV y Excel (.csv, .xlsx, .xls)",
     fileLabel: "Sube un archivo",
+    downloadTemplate: "Descargar plantilla",
     linkLabel: "Importar desde un enlace",
     linkHintPeople:
       "Pega una URL y importaremos las personas desde ella con nuestra API.",
@@ -425,6 +429,23 @@ export function AddRecordsDialog({
   // query from scratch instead of describing it in the prompt.
   function runSplashWithFilters() {
     setScreen("results")
+  }
+  // A blank CSV matching the columns the file-upload importer expects, with
+  // one example row so it's clear what goes in each column.
+  function downloadImportTemplate() {
+    if (entity === "people") {
+      downloadCsv(
+        "kombo-prospects-template.csv",
+        ["First Name", "Last Name", "Email", "Title", "Company", "LinkedIn URL"],
+        [["Jane", "Doe", "jane@acme.com", "VP of Sales", "Acme Inc", "linkedin.com/in/janedoe"]]
+      )
+    } else {
+      downloadCsv(
+        "kombo-companies-template.csv",
+        ["Company Name", "Website", "Industry", "Headcount", "Region"],
+        [["Acme Inc", "acme.com", "SaaS", "51-200", "North America"]]
+      )
+    }
   }
   // Filter mutations (typed groups + facets). Every change resets the
   // selection & page, like the old toggle handlers did. Values arrive raw —
@@ -985,6 +1006,7 @@ export function AddRecordsDialog({
               toast.success(c.importingLink(label))
               onOpenChange(false)
             }}
+            onDownloadTemplate={downloadImportTemplate}
           />
         )}
         </>
@@ -1171,6 +1193,7 @@ function ImportPane({
   onConnect,
   onSync,
   onLinkImport,
+  onDownloadTemplate,
 }: {
   entity: AiEntity
   c: Copy
@@ -1178,6 +1201,7 @@ function ImportPane({
   onConnect: () => void
   onSync: () => void
   onLinkImport: (label: string) => void
+  onDownloadTemplate: () => void
 }) {
   // Which "link" method is being entered, plus the pasted URL.
   const [activeLink, setActiveLink] = React.useState<string | null>(null)
@@ -1255,7 +1279,17 @@ function ImportPane({
         <p className="text-muted-foreground mt-1 text-sm">{c.importSubtitle}</p>
 
         {/* Upload a file */}
-        <p className={sectionLabel}>{c.fileLabel}</p>
+        <div className="flex items-center justify-between">
+          <p className={sectionLabel}>{c.fileLabel}</p>
+          <button
+            type="button"
+            onClick={onDownloadTemplate}
+            className="text-primary inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
+          >
+            <Download className="size-3.5" />
+            {c.downloadTemplate}
+          </button>
+        </div>
         <button
           type="button"
           onClick={onFile}

@@ -33,7 +33,7 @@ const INITIAL_USAGE: CreditUsage[] = [
   { id: "cu_1", label: "Email reveal · Aisha Khan", amount: 1, timestamp: "2026-06-16T14:00:00Z", category: "email" },
   { id: "cu_2", label: "Bulk enrich · Q3 Enterprise (24)", amount: 48, timestamp: "2026-06-16T10:30:00Z", category: "enrichment" },
   { id: "cu_3", label: "Phone reveal · Grace Liu", amount: 2, timestamp: "2026-06-15T16:10:00Z", category: "phone" },
-  { id: "cu_4", label: "Prospect search export (50)", amount: 50, timestamp: "2026-06-15T09:00:00Z", category: "export" },
+  { id: "cu_4", label: "Find Prospects export (50)", amount: 50, timestamp: "2026-06-15T09:00:00Z", category: "export" },
   { id: "cu_5", label: "AI lookalike search · Vicio", amount: 5, timestamp: "2026-06-14T15:40:00Z", category: "ai" },
   { id: "cu_6", label: "Email reveal · Sarah Chen", amount: 1, timestamp: "2026-06-14T11:20:00Z", category: "email" },
   { id: "cu_7", label: "Bulk enrich · RevOps Champions (18)", amount: 36, timestamp: "2026-06-13T13:05:00Z", category: "enrichment" },
