@@ -116,7 +116,7 @@ const COPY = {
     open: "Open",
     features: {
       search: {
-        title: "Prospect Search",
+        title: "Find Prospects",
         description:
           "Find your ideal customers with AI across millions of prospects & companies.",
       },
@@ -233,7 +233,7 @@ const COPY = {
     open: "Abrir",
     features: {
       search: {
-        title: "Búsqueda de prospectos",
+        title: "Buscar prospectos",
         description:
           "Encuentra a tus clientes ideales con IA entre millones de prospectos y empresas.",
       },
