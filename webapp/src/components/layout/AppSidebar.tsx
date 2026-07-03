@@ -1,7 +1,6 @@
 import * as React from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
-  Home,
   LayoutDashboard,
   Building2,
   FolderKanban,
@@ -32,12 +31,13 @@ import {
   Settings2,
   Puzzle,
   Workflow,
+  Radar,
   Search,
+  SlidersHorizontal,
   LayoutGrid,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
-import { ProspectSearchTrigger } from "@/components/layout/ProspectSearch"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -82,10 +82,10 @@ interface NavGroup {
 
 const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
-// Always-visible top destinations. Home (the "Describe your ideal customer"
+// Always-visible top destinations. Search (the "Describe your ideal customer"
 // hero) exists in both releases; the sales Dashboard is a separate v2 page.
 const primary: NavItem[] = [
-  { to: "/", labelKey: "nav.home", icon: Home },
+  { to: "/", labelKey: "nav.searchHome", icon: Search },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   {
     to: "/copilot",
@@ -95,6 +95,8 @@ const primary: NavItem[] = [
     isNew: true,
   },
   { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
+  { to: "/search", labelKey: "nav.search", icon: Radar },
+  { to: "/ai-search", labelKey: "nav.aiSearch", icon: SlidersHorizontal },
   {
     to: "/inbox",
     labelKey: "nav.inbox",
@@ -460,10 +462,6 @@ function SidebarContent({
           </NavLink>
         </div>
 
-        <div className={cn("pb-2", collapsed ? "px-2" : "px-3")}>
-          <ProspectSearchTrigger collapsed={collapsed} onNavigate={onNavigate} />
-        </div>
-
         {progress < 100 &&
           (collapsed ? (
             <div className="px-2 pt-2">
@@ -645,7 +643,7 @@ export function AppSidebar() {
 
 // Primary destinations shown in the native-style bottom bar on mobile.
 const bottomBarItems: NavItem[] = [
-  { to: "/", labelKey: "nav.home", icon: Home },
+  { to: "/", labelKey: "nav.searchHome", icon: Search },
   { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
@@ -656,10 +654,10 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
-// v1 has no dashboard/signals — Home (the search hero), then prospecting.
+// v1 has no dashboard/signals — Search (the search hero), then prospecting.
 const bottomBarItemsV1: NavItem[] = [
-  { to: "/", labelKey: "nav.home", icon: Home },
-  { to: "/search", labelKey: "nav.search", icon: Search },
+  { to: "/", labelKey: "nav.searchHome", icon: Search },
+  { to: "/search", labelKey: "nav.search", icon: Radar },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
     to: "/inbox",

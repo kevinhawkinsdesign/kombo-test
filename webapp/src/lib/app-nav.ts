@@ -1,6 +1,6 @@
 import type { ComponentType } from "react"
 import {
-  Home,
+  Radar,
   LayoutDashboard,
   Sparkles,
   Inbox,
@@ -37,11 +37,11 @@ export interface AppDestination {
 // Flat, searchable index of every in-app destination. Used by the top-bar
 // "search the app" combobox to jump straight to a page.
 export const APP_DESTINATIONS: AppDestination[] = [
-  { to: "/", labelKey: "nav.home", icon: Home, keywords: ["home", "search", "ideal customer"] },
+  { to: "/", labelKey: "nav.searchHome", icon: Search, keywords: ["home", "search", "ideal customer"] },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, keywords: ["kpis", "pipeline", "leaderboard", "metrics", "overview"] },
   { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles, keywords: ["signals", "copilot", "kai", "automations", "approvals"] },
   { to: "/inbox", labelKey: "nav.inbox", icon: Inbox, keywords: ["messages", "replies", "conversations"] },
-  { to: "/search", labelKey: "nav.search", icon: Search, keywords: ["prospects", "find", "leads", "people"] },
+  { to: "/search", labelKey: "nav.search", icon: Radar, keywords: ["prospects", "find", "leads", "people", "signals"] },
   { to: "/companies", labelKey: "nav.companies", icon: Building2, keywords: ["accounts", "discover"] },
   { to: "/people", labelKey: "nav.people", icon: Users, keywords: ["prospects", "contacts", "leads", "persons"] },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban, keywords: ["segments"] },

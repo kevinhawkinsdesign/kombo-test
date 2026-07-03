@@ -8,6 +8,7 @@ import Onboarding from "@/pages/Onboarding"
 import Dashboard from "@/pages/Dashboard"
 import Copilot from "@/pages/Copilot"
 import Search from "@/pages/Search"
+import AiSearch from "@/pages/AiSearch"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
 import People from "@/pages/People"
@@ -80,6 +81,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/copilot" element={<Copilot />} />
         <Route path="/search" element={<Search key="search" />} />
+        <Route path="/ai-search" element={<AiSearch />} />
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />

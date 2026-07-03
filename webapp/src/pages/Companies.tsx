@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Search as SearchIcon,
@@ -7,7 +7,6 @@ import {
   Pencil,
   Check,
   Columns3,
-  ScanSearch,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -30,7 +29,6 @@ import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { downloadCsv } from "@/lib/csv"
-import { DiscoverFeed } from "@/pages/Discover"
 import {
   COMPANY_COLUMNS,
   COMPANY_GROUPS,
@@ -45,7 +43,6 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { useAccounts, accountStore, useLists } from "@/lib/store"
 import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
-import { cn } from "@/lib/utils"
 import type { Account, AccountTier } from "@/lib/types"
 
 const ALL = "all"
@@ -59,8 +56,6 @@ const COPY = {
     exportedToast: (n: number) => `Exported ${n} to CSV`,
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
-    tabCompanies: "Discovered",
-    tabDiscover: "Lookalikes",
     addCompany: "Find companies",
     addCompanyToast: "Add company — coming soon",
     introTitle: "Target the accounts that fit",
@@ -107,8 +102,6 @@ const COPY = {
     exportedToast: (n: number) => `Exportadas ${n} a CSV`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
-    tabCompanies: "Descubiertas",
-    tabDiscover: "Similares",
     addCompany: "Buscar empresas",
     addCompanyToast: "Añadir empresa — próximamente",
     introTitle: "Apunta a las cuentas que encajan",
@@ -161,14 +154,6 @@ export default function Companies() {
   const [listFilter, setListFilter] = React.useState<string>("all")
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
-  // URL-addressable tabs: /companies?tab=discover deep-links the Discover tab.
-  const [searchParams, setSearchParams] = useSearchParams()
-  const mode: "companies" | "discover" =
-    searchParams.get("tab") === "discover" ? "discover" : "companies"
-  const setMode = (m: "companies" | "discover") =>
-    setSearchParams(m === "discover" ? { tab: "discover" } : {}, {
-      replace: true,
-    })
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
@@ -276,34 +261,6 @@ export default function Companies() {
         }
       />
 
-      <div className="mb-6 flex items-center gap-1 border-b">
-        {(
-          [
-            { key: "companies", label: c.tabCompanies, icon: Building2 },
-            { key: "discover", label: c.tabDiscover, icon: ScanSearch },
-          ] as const
-        ).map((m) => (
-          <button
-            key={m.key}
-            type="button"
-            onClick={() => setMode(m.key)}
-            className={cn(
-              "-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
-              mode === m.key
-                ? "border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground border-transparent"
-            )}
-          >
-            <m.icon className="size-4" />
-            {m.label}
-          </button>
-        ))}
-      </div>
-
-      {mode === "discover" ? (
-        <DiscoverFeed />
-      ) : (
-        <>
       <FeatureIntro
         featureKey="companies"
         icon={Building2}
@@ -427,8 +384,6 @@ export default function Companies() {
         recordKind="company"
         ids={selectedIdsArr}
       />
-        </>
-      )}
 
       <ColumnManager
         open={columnsOpen}

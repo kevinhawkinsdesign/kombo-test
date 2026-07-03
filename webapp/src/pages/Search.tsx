@@ -1784,6 +1784,7 @@ export default function Search() {
                   setBulkIds(ids)
                   setBulkListOpen(true)
                 }}
+                onOpenLookalike={() => setLookalikeOpen(true)}
               />
             )}
           </div>
@@ -2233,11 +2234,13 @@ function SearchEmptyState({
   entity,
   onRun,
   onAddToList,
+  onOpenLookalike,
 }: {
   c: Copy
   entity: AiEntity
   onRun: (prompt: string) => void
   onAddToList: (ids: string[]) => void
+  onOpenLookalike: () => void
 }) {
   // LibraryQuery.entity is singular ("company"), AiEntity is plural
   // ("companies") — they describe the same thing but don't share a literal.
@@ -2298,6 +2301,15 @@ function SearchEmptyState({
         <Sparkles className="text-primary size-4" />
         {c.aiSuggestions}
       </p>
+
+      <LookalikeSuggestionRow
+        entity={entity}
+        onOpenLookalike={onOpenLookalike}
+        selected={selected}
+        onToggleRecord={toggleRecord}
+        onSetRowSelected={setRowSelected}
+        c={c}
+      />
 
       {suggestions.map((s) => (
         <SuggestionRow
@@ -2387,6 +2399,124 @@ function SearchEmptyState({
           </Button>
         </div>
       )}
+    </div>
+  )
+}
+
+// Lookalikes as one carousel row (folded in from the old per-page Lookalikes
+// tab): previews records similar to one representative seed; the header and
+// "View all" both open the full seed picker so the user can choose any seed.
+function LookalikeSuggestionRow({
+  entity,
+  onOpenLookalike,
+  selected,
+  onToggleRecord,
+  onSetRowSelected,
+  c,
+}: {
+  entity: AiEntity
+  onOpenLookalike: () => void
+  selected: Map<string, AiLead | AiCompany>
+  onToggleRecord: (record: AiLead | AiCompany) => void
+  onSetRowSelected: (records: (AiLead | AiCompany)[], on: boolean) => void
+  c: Copy
+}) {
+  const seed = LOOKALIKE_SEEDS.find(
+    (s) => s.kind === (entity === "companies" ? "company" : "person")
+  )
+  const cards = React.useMemo(
+    () =>
+      !seed
+        ? []
+        : entity === "companies"
+          ? lookalikeCompanies(seed, EMPTY_QUERY).slice(0, 12)
+          : lookalikeLeads(seed, EMPTY_QUERY).slice(0, 12),
+    [entity, seed]
+  )
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+
+  if (!seed || cards.length === 0) return null
+
+  const rowAllSelected = cards.every((r) => selected.has(r.id))
+
+  function scrollByPage(dir: 1 | -1) {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" })
+  }
+
+  return (
+    <div className="group/row">
+      <div className="mb-2 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onOpenLookalike}
+          className="min-w-0 flex-1 truncate text-left"
+        >
+          <span className="text-sm font-semibold">{c.lookalike}</span>
+          <span className="text-muted-foreground ml-2 hidden text-xs sm:inline">
+            {c.similarTo} {seed.name}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onSetRowSelected(cards, !rowAllSelected)}
+          className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-xs"
+        >
+          <Checkbox checked={rowAllSelected} className="pointer-events-none" />
+          <span className="hidden sm:inline">{c.rowSelectAll}</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenLookalike}
+          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-xs font-medium"
+        >
+          {c.viewAll}
+          <ArrowRight className="size-3.5" />
+        </button>
+      </div>
+
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          className="scrollbar-hide flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1"
+        >
+          {entity === "companies"
+            ? (cards as AiCompany[]).map((co) => (
+                <CompanyPosterCard
+                  key={co.id}
+                  co={co}
+                  selected={selected.has(co.id)}
+                  onToggle={() => onToggleRecord(co)}
+                />
+              ))
+            : (cards as AiLead[]).map((l) => (
+                <LeadPosterCard
+                  key={l.id}
+                  l={l}
+                  selected={selected.has(l.id)}
+                  onToggle={() => onToggleRecord(l)}
+                />
+              ))}
+        </div>
+
+        <button
+          type="button"
+          aria-label="Scroll left"
+          onClick={() => scrollByPage(-1)}
+          className="bg-background/95 absolute top-1/2 -left-3 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border opacity-0 shadow-md transition-opacity group-hover/row:flex group-hover/row:opacity-100 hover:bg-muted sm:flex"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Scroll right"
+          onClick={() => scrollByPage(1)}
+          className="bg-background/95 absolute top-1/2 -right-3 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border opacity-0 shadow-md transition-opacity group-hover/row:flex group-hover/row:opacity-100 hover:bg-muted sm:flex"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
     </div>
   )
 }
@@ -2527,7 +2657,7 @@ function LeadPosterCard({
       onClick={onToggle}
       aria-pressed={selected}
       className={cn(
-        "bg-card relative w-36 shrink-0 snap-start rounded-lg border p-3 text-left transition-colors",
+        "bg-card relative w-44 shrink-0 snap-start rounded-lg border p-3 text-left transition-colors",
         selected ? "border-primary ring-primary/30 ring-2" : "hover:border-primary/40"
       )}
     >
@@ -2535,20 +2665,20 @@ function LeadPosterCard({
         checked={selected}
         className="pointer-events-none bg-background absolute top-2 right-2"
       />
-      <Avatar className="size-9">
-        <AvatarImage src={portraitFor(`${l.firstName} ${l.lastName}`)} alt="" />
-        <AvatarFallback
-          style={{ backgroundColor: l.avatarColor, color: "white" }}
-          className="text-xs"
-        >
-          {initials(l.firstName, l.lastName)}
-        </AvatarFallback>
-      </Avatar>
-      <p className="mt-2 truncate text-sm font-medium">
+      <p className="truncate pr-6 text-sm font-medium">
         {l.firstName} {l.lastName}
       </p>
       <p className="text-muted-foreground truncate text-xs">{l.title}</p>
       <p className="text-muted-foreground truncate text-xs">{l.company}</p>
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <span className="bg-chart-1/15 text-chart-1 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+          {l.fit}%
+        </span>
+        <span className="text-muted-foreground truncate text-[11px]">{l.location}</span>
+      </div>
+      <p className="text-muted-foreground mt-1 truncate text-[11px]">
+        {l.industry} · {l.region} · {l.headcount}
+      </p>
     </button>
   )
 }
@@ -2568,7 +2698,7 @@ function CompanyPosterCard({
       onClick={onToggle}
       aria-pressed={selected}
       className={cn(
-        "bg-card relative w-36 shrink-0 snap-start rounded-lg border p-3 text-left transition-colors",
+        "bg-card relative w-44 shrink-0 snap-start rounded-lg border p-3 text-left transition-colors",
         selected ? "border-primary ring-primary/30 ring-2" : "hover:border-primary/40"
       )}
     >
@@ -2576,15 +2706,17 @@ function CompanyPosterCard({
         checked={selected}
         className="pointer-events-none bg-background absolute top-2 right-2"
       />
-      <span
-        className="flex size-9 items-center justify-center rounded-md text-xs font-semibold text-white"
-        style={{ backgroundColor: co.logoColor }}
-      >
-        {co.name.slice(0, 2)}
-      </span>
-      <p className="mt-2 truncate text-sm font-medium">{co.name}</p>
-      <p className="text-muted-foreground truncate text-xs">{co.industry}</p>
-      <p className="text-muted-foreground truncate text-xs">{co.headcount}</p>
+      <p className="truncate pr-6 text-sm font-medium">{co.name}</p>
+      <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <span className="bg-chart-1/15 text-chart-1 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+          {co.fit}%
+        </span>
+        <span className="text-muted-foreground truncate text-[11px]">{co.location}</span>
+      </div>
+      <p className="text-muted-foreground mt-1 truncate text-[11px]">
+        {co.industry} · {co.region} · {co.headcount}
+      </p>
     </button>
   )
 }

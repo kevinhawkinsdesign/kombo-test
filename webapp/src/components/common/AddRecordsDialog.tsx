@@ -333,6 +333,8 @@ export function AddRecordsDialog({
   kind,
   listId,
   scopeCompanies,
+  allowEntityToggle = false,
+  startOnResults = false,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -343,6 +345,14 @@ export function AddRecordsDialog({
   // When set, the people search is scoped to these company names (account-based
   // flow: pick companies → find their contacts).
   scopeCompanies?: string[]
+  // Every existing entry point already knows its entity (a Prospects list,
+  // a Companies list, "Find contacts" from an account, etc.) — the
+  // Prospects/Companies toggle only makes sense for a generic, unscoped
+  // entry point (the sidebar's "AI Search").
+  allowEntityToggle?: boolean
+  // Skip the splash and land straight on the filterable results screen —
+  // used by the sidebar's "AI Search" entry point.
+  startOnResults?: boolean
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -368,6 +378,8 @@ export function AddRecordsDialog({
   const companyColPrefs = useColumnPrefs("add-companies", COMPANY_RESULT_DEFAULT_IDS)
 
   const scoped = (scopeCompanies?.length ?? 0) > 0
+  // Only opens that actually visited the splash have anywhere to go "back" to.
+  const cameFromSplash = !scoped && !startOnResults
 
   if (open && !wasOpen) {
     setWasOpen(true)
@@ -377,7 +389,7 @@ export function AddRecordsDialog({
     // A scoped open (e.g. "Find contacts" from a company list) already has
     // clear intent — skip the splash and land straight on results, same as
     // before this screen existed.
-    setScreen(scoped ? "results" : "splash")
+    setScreen(scoped || startOnResults ? "results" : "splash")
     setInput("")
     setQuery({ ...EMPTY_QUERY })
     setSortKey("fit")
@@ -677,6 +689,7 @@ export function AddRecordsDialog({
             <SplashScreen
               entity={entity}
               onEntityChange={switchEntity}
+              showEntityToggle={allowEntityToggle}
               input={input}
               onInputChange={setInput}
               onSubmit={runSplashSearch}
@@ -690,7 +703,21 @@ export function AddRecordsDialog({
         ) : (
         <>
         <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
+          {cameFromSplash && (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("search")
+                setScreen("splash")
+              }}
+              aria-label={c.splashBack}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted -ml-1.5 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
+            >
+              <ArrowLeft className="size-4" />
+            </button>
+          )}
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
+          {allowEntityToggle && (
           <Segmented
             options={[
               { v: "people" as AiEntity, label: c.contact, icon: Users },
@@ -699,6 +726,7 @@ export function AddRecordsDialog({
             value={entity}
             onChange={switchEntity}
           />
+          )}
           <Segmented
             className="ml-auto"
             options={[
@@ -1068,6 +1096,7 @@ function StepPreview() {
 function SplashScreen({
   entity,
   onEntityChange,
+  showEntityToggle,
   input,
   onInputChange,
   onSubmit,
@@ -1077,6 +1106,7 @@ function SplashScreen({
 }: {
   entity: AiEntity
   onEntityChange: (e: AiEntity) => void
+  showEntityToggle: boolean
   input: string
   onInputChange: (v: string) => void
   onSubmit: () => void
@@ -1094,6 +1124,7 @@ function SplashScreen({
           <h2 className="text-lg font-semibold">{c.splashSearchTitle}</h2>
           <p className="text-muted-foreground mt-1 max-w-xs text-sm">{c.splashSearchDesc}</p>
         </div>
+        {showEntityToggle && (
         <Segmented
           options={[
             { v: "people" as AiEntity, label: c.contact, icon: Users },
@@ -1102,6 +1133,7 @@ function SplashScreen({
           value={entity}
           onChange={onEntityChange}
         />
+        )}
         <form
           className="flex w-full max-w-sm items-center gap-2"
           onSubmit={(e) => {
