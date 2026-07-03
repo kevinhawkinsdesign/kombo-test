@@ -52,9 +52,9 @@
   --chart-4: oklch(0.723 0.17 70);
   --chart-5: oklch(0.52 0.3 300);
 
-  /* Dark "slate" sidebar in both themes (brand lockup is built for dark
-     backgrounds) — lifted off pure-black so chrome and icons stay legible. */
-  --sidebar: oklch(0.235 0.014 286);
+  /* True-black sidebar in both themes (brand lockup is built for dark
+     backgrounds). */
+  --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(0.97 0.004 308);
   --sidebar-primary: oklch(0.64 0.19 284);
   --sidebar-primary-foreground: oklch(0.985 0.004 308);

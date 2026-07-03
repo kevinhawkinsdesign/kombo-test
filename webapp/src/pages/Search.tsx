@@ -2687,7 +2687,7 @@ function SearchHome({
               }}
               placeholder={c.heroPlaceholder}
               rows={3}
-              className="resize-none rounded-xl p-4 pr-14 text-base"
+              className="resize-none items-center rounded-xl p-4 pr-14 text-base"
             />
             <Button
               type="submit"

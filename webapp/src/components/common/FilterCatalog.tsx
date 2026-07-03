@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
 import type { FilterSection } from "@/lib/search-facets"
 import { baseValue, excludeValue, isExcluded, splitSelection } from "@/lib/filter-polarity"
+import { useIcps } from "@/lib/mock-icps"
 
 // One filter in the catalog — typed AiQuery groups and per-database facets
 // both map onto this shape (the caller dispatches by id).
@@ -66,6 +67,7 @@ const COPY = {
     includeAria: (v: string) => `Include ${v}`,
     excludeAria: (v: string) => `Exclude ${v}`,
     clearAria: (label: string) => `Clear ${label}`,
+    autoAddIcpTitles: "Auto-add your ICP job titles",
   },
   es: {
     include: "Incluir",
@@ -83,6 +85,7 @@ const COPY = {
     includeAria: (v: string) => `Incluir ${v}`,
     excludeAria: (v: string) => `Excluir ${v}`,
     clearAria: (label: string) => `Limpiar ${label}`,
+    autoAddIcpTitles: "Añadir automáticamente los cargos de tu PCI",
   },
 } as const
 
@@ -308,6 +311,13 @@ function FilterRow({
   const included = new Set(include)
   const excluded = new Set(exclude)
 
+  const icps = useIcps()
+  const primaryIcp = icps.find((i) => i.primary) ?? icps[0]
+  const missingIcpTitles =
+    filter.id === "titles" && primaryIcp
+      ? primaryIcp.titles.filter((title) => !included.has(title))
+      : []
+
   const shownOptions = filter.options.filter((o) => {
     const lo = o.toLowerCase()
     return (!globalQuery || lo.includes(globalQuery)) && (!t || lo.includes(t))
@@ -467,6 +477,17 @@ function FilterRow({
               </button>
             )}
           </div>
+
+          {missingIcpTitles.length > 0 && (
+            <button
+              type="button"
+              onClick={() => missingIcpTitles.forEach((title) => onInclude(filter.id, title))}
+              className="text-primary hover:underline flex w-full items-center gap-1.5 px-2 pb-2 text-left text-xs font-medium"
+            >
+              <Sparkles className="size-3.5 shrink-0" />
+              {copy.autoAddIcpTitles}
+            </button>
+          )}
 
           {/* Option rows — value left, Include | Exclude right. */}
           {shownOptions.map((value) => {
