@@ -12,6 +12,7 @@ import { HOME_MODULES, type HomeModuleDef } from "@/components/home/home-modules
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -76,12 +77,18 @@ export function HomeModules() {
           {t.empty}
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        // Capped at 2 columns (not a wider xl:3 breakpoint) so the Signals
+        // module's row-span-2 lands beside the two stacked suggestion cards
+        // exactly as designed, at every viewport size ≥ sm.
+        <div className="grid gap-4 sm:grid-cols-2">
           {enabledDefs.map((m) => {
             const Icon = m.icon
             const Body = m.Component
             return (
-              <Card key={m.id} className="gap-3 p-4">
+              <Card
+                key={m.id}
+                className={cn("gap-3 p-4", m.rowSpan === 2 && "sm:row-span-2")}
+              >
                 <div className="flex items-center gap-2">
                   <Icon className="text-primary size-4" />
                   <h3 className="text-sm font-semibold">{m.title[locale]}</h3>
