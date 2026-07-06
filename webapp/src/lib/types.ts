@@ -423,6 +423,7 @@ export interface CampaignDailyStat {
   sent: number
   opened: number
   replied: number
+  bounced: number
 }
 
 export type EnrollmentStatus =

@@ -34,6 +34,7 @@ const PALETTE = {
   lime: "#8dab00", // Olive (brand success)
   teal: "#14b8a6",
   amber: "#f59e0b",
+  rose: "#f43f5e", // matches the "bounced"/destructive tone used elsewhere
 }
 
 function useChartTheme() {
@@ -49,6 +50,7 @@ function useChartTheme() {
     tooltipTitle: dark ? "#fafafa" : "#18181b",
     tooltipBody: dark ? "#d4d4d8" : "#3f3f46",
     border: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+    danger: PALETTE.rose,
   }
 }
 
@@ -249,11 +251,13 @@ export function CampaignDailyChart({
   sent,
   opened,
   replied,
+  bounced,
 }: {
   labels: string[]
   sent: number[]
   opened: number[]
   replied: number[]
+  bounced: number[]
 }) {
   const t = useChartTheme()
 
@@ -327,6 +331,15 @@ export function CampaignDailyChart({
             data: replied,
             backgroundColor: t.accent,
             hoverBackgroundColor: hexAlpha(t.accent, 0.85),
+            borderRadius: 4,
+            categoryPercentage: 0.6,
+            barPercentage: 0.9,
+          },
+          {
+            label: "Bounced",
+            data: bounced,
+            backgroundColor: hexAlpha(t.danger, 0.75),
+            hoverBackgroundColor: t.danger,
             borderRadius: 4,
             categoryPercentage: 0.6,
             barPercentage: 0.9,

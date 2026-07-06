@@ -97,7 +97,9 @@ const VARIABLES: VariableDef[] = [
 ]
 
 // Dummy merge data used to render the live preview as a recipient would see it.
-const SAMPLE_DATA: Record<string, string> = {
+// Exported for reuse anywhere else that previews a template outside a single
+// recipient's context (e.g. picking a template for a Campaign sequence step).
+export const SAMPLE_DATA: Record<string, string> = {
   first_name: "Sarah",
   last_name: "Chen",
   company: "Acme Corp",

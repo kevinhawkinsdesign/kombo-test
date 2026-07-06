@@ -15,11 +15,13 @@ function buildDaily(
   return seed.map((sent, i) => {
     const opened = Math.round(sent * (0.55 + (i % 3) * 0.05))
     const replied = Math.round(opened * (0.18 + (i % 2) * 0.04))
+    const bounced = Math.round(sent * (0.02 + (i % 4) * 0.01))
     return {
       date: new Date(base + i * 86400000).toISOString(),
       sent,
       opened,
       replied,
+      bounced,
     }
   })
 }
