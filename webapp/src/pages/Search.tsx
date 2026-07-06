@@ -37,6 +37,7 @@ import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale, type Locale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import {
@@ -113,9 +114,16 @@ import type { AccountTier } from "@/lib/types"
 
 const COPY = {
   en: {
-    title: "Signals",
+    title: "Search",
     description:
+      "Search your entire prospect and company database — filter, sort, and save results as a dynamic list.",
+    signalsTitle: "Signals",
+    signalsDescription:
       "AI-matched prospects and companies, scored and ready to search, save, or add to a campaign.",
+    inputPlaceholder: "e.g. VPs of Sales at European SaaS that just raised…",
+    searchBtn: "Search",
+    clearQuery: "Clear search",
+    srTitle: "Search",
     introTitle: "Prospect with a prompt",
     introDescription:
       "Ask in plain English or build an advanced query by hand. Kai returns a fit-scored table of prospects or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
@@ -361,9 +369,16 @@ const COPY = {
     ],
   },
   es: {
-    title: "Señales",
+    title: "Buscar",
     description:
+      "Busca en toda tu base de datos de prospectos y empresas — filtra, ordena y guarda los resultados como una lista dinámica.",
+    signalsTitle: "Señales",
+    signalsDescription:
       "Prospectos y empresas emparejados por IA, puntuados y listos para buscar, guardar o añadir a una campaña.",
+    inputPlaceholder: "p. ej. VPs de Ventas en SaaS europeo que acaban de levantar…",
+    searchBtn: "Buscar",
+    clearQuery: "Borrar búsqueda",
+    srTitle: "Buscar",
     introTitle: "Prospecta con un prompt",
     introDescription:
       "Pregunta en lenguaje natural o crea una consulta avanzada a mano. Kai devuelve una tabla de prospectos o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
@@ -758,15 +773,20 @@ export default function Search() {
   const [params] = useSearchParams()
   const location = useLocation()
   const headerPrompt = params.get("q")
-  // "Search with filters" (Home hero + splash) skips the AI prompt and jumps
-  // straight to the filterable results view via ?filters=1.
-  const [filtersRequested] = React.useState(() => params.get("filters") === "1")
   // Lookalike is just a search: arrive here with a seed (from People/Companies
   // "Find lookalikes") and the page opens in lookalike mode, results and all.
   const incomingSeed =
     (location.state as { lookalikeSeed?: LookalikeSeed } | null)?.lookalikeSeed ??
     null
   const similarPrompt = incomingSeed ? `${c.similarTo} ${incomingSeed.name}` : ""
+  // Arrive from the Signals page with a ready-made structured query (a signal
+  // row's "View all" or its edited filters) — skip prompt interpretation.
+  const incomingQuery =
+    (
+      location.state as {
+        prefilledQuery?: { query: AiQuery; entity: AiEntity; label: string }
+      } | null
+    )?.prefilledQuery ?? null
   const savedSearches = useSavedSearches()
   // Arrive from a workspace with a saved-search id and the page opens preloaded.
   const incomingSearchId =
@@ -778,17 +798,34 @@ export default function Search() {
   const [entity, setEntity] = React.useState<AiEntity>(
     loadedSearch
       ? loadedSearch.entity
-      : incomingSeed
-        ? incomingSeed.kind === "company"
-          ? "companies"
+      : incomingQuery
+        ? incomingQuery.entity
+        : incomingSeed
+          ? incomingSeed.kind === "company"
+            ? "companies"
+            : "people"
           : "people"
-        : "people"
   )
   const [query, setQuery] = React.useState<AiQuery>(
-    loadedSearch ? loadedSearch.query : { ...EMPTY_QUERY }
+    loadedSearch
+      ? loadedSearch.query
+      : incomingQuery
+        ? incomingQuery.query
+        : { ...EMPTY_QUERY }
   )
   const [lastPrompt, setLastPrompt] = React.useState(
-    loadedSearch ? loadedSearch.prompt : similarPrompt
+    loadedSearch
+      ? loadedSearch.prompt
+      : incomingQuery
+        ? incomingQuery.label
+        : similarPrompt
+  )
+  const [input, setInput] = React.useState(
+    loadedSearch
+      ? loadedSearch.prompt
+      : incomingQuery
+        ? incomingQuery.label
+        : similarPrompt || headerPrompt || ""
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
@@ -803,22 +840,6 @@ export default function Search() {
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
   const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>("kombo")
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
-
-  // The search page is "pristine" until something defines a search — a prompt,
-  // a lookalike seed, an active filter, or an in-flight interpretation.
-  // Pristine shows the empty state instead of the whole unfiltered pool.
-  const searchStarted =
-    filtersRequested ||
-    thinking ||
-    Boolean(seed) ||
-    lastPrompt.trim() !== "" ||
-    Object.entries(query).some(([k, v]) =>
-      k === "facets"
-        ? Object.values(v as Record<string, string[]>).some((a) => a.length > 0)
-        : Array.isArray(v)
-          ? v.length > 0
-          : typeof v === "string" && v.trim() !== ""
-    )
 
   // The active database. A seed means Lookalike; Google Maps / TripAdvisor are
   // company-only, so fall back to Kombo when viewing People.
@@ -939,6 +960,7 @@ export default function Search() {
     (prompt: string, forcedEntity?: AiEntity) => {
       const text = prompt.trim()
       if (!text) return
+      setInput(text)
       setThinking(true)
       setLastPrompt(text)
       window.setTimeout(() => {
@@ -1052,17 +1074,9 @@ export default function Search() {
     setQuery(q)
     setSelected(new Set())
     setLookalikeOpen(false)
-    setLastPrompt(c.lookalikePrompt(s.name))
-  }
-
-  // Run a signal suggestion row's (possibly edited) query directly — it's
-  // already a structured AiQuery, so no prompt interpretation needed.
-  function runQuery(q: AiQuery, ent: AiEntity, label: string) {
-    setEntity(ent)
-    setQuery(q)
-    setSeed(null)
-    setSelected(new Set())
-    setLastPrompt(label)
+    const prompt = c.lookalikePrompt(s.name)
+    setLastPrompt(prompt)
+    setInput(prompt)
   }
 
   function saveSearch(name: string) {
@@ -1275,11 +1289,64 @@ export default function Search() {
           />
         </div>
 
-        {/* Filters live in a persistent sidebar; results (or the home/empty
-            state) fill the rest. People are looked up via API, so filtering
-            only opens once a search has started. */}
+        {/* Search query bar — the prompt IS the query, no chat thread. */}
+        <Card className="p-3">
+          <form
+            className="flex items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              runPrompt(input)
+            }}
+          >
+            <div className="relative flex-1">
+              <SearchIcon className="text-muted-foreground pointer-events-none absolute top-3 left-3 size-4" />
+              <Textarea
+                id="search-prompt"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    runPrompt(input)
+                  }
+                }}
+                placeholder={c.inputPlaceholder}
+                rows={2}
+                aria-label={c.srTitle}
+                className="max-h-40 min-h-12 resize-y pr-9 pl-9"
+              />
+              {input.length > 0 && (
+                <button
+                  type="button"
+                  aria-label={c.clearQuery}
+                  title={c.clearQuery}
+                  onClick={() => {
+                    setInput("")
+                    document.getElementById("search-prompt")?.focus()
+                  }}
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2.5 right-2.5 flex size-6 items-center justify-center rounded-md transition-colors"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+            <Button
+              type="submit"
+              variant="volt"
+              disabled={!input.trim() || thinking}
+            >
+              {thinking ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <SearchIcon className="size-4" />
+              )}
+              <span className="hidden sm:inline">{c.searchBtn}</span>
+            </Button>
+          </form>
+        </Card>
+
+        {/* Filters live in a persistent sidebar; results fill the rest. */}
         <div className="flex flex-col gap-6 lg:flex-row">
-          {searchStarted && (
           <FilterSidebar
             className="lg:w-64 lg:shrink-0"
             query={query}
@@ -1297,9 +1364,7 @@ export default function Search() {
             locale={locale}
             c={c}
           />
-          )}
           <div className="min-w-0 flex-1">
-            {searchStarted ? (
         <div className="min-w-0 space-y-3">
           {/* Blended controls: sources, filters & sort */}
           <Card className="gap-3 p-3">
@@ -1647,19 +1712,6 @@ export default function Search() {
             </>
           )}
         </div>
-            ) : (
-              <SearchEmptyState
-                c={c}
-                locale={locale}
-                entity={entity}
-                onRunQuery={runQuery}
-                onAddToList={(ids) => {
-                  setBulkIds(ids)
-                  setBulkListOpen(true)
-                }}
-                onOpenLookalike={() => setLookalikeOpen(true)}
-              />
-            )}
           </div>
         </div>
       </div>
@@ -1750,6 +1802,74 @@ export default function Search() {
         onOpenChange={setBuildOpen}
         c={c}
         onChoose={buildList}
+      />
+
+      <BulkAddDialog
+        open={bulkListOpen}
+        onOpenChange={setBulkListOpen}
+        mode="list"
+        recordKind={entity === "people" ? "person" : "company"}
+        ids={bulkIds}
+      />
+    </Page>
+  )
+}
+
+// Signals: the AI-suggestion feed (curated carousel rows) only — a separate
+// page from Search. Rows manage their own local query/results; picking one
+// (or "View all") hands the structured query to the Search page via
+// navigation state rather than rendering results here.
+export function Signals() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const navigate = useNavigate()
+  const [entity, setEntity] = React.useState<AiEntity>("people")
+  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
+  const [bulkIds, setBulkIds] = React.useState<string[]>([])
+  const [bulkListOpen, setBulkListOpen] = React.useState(false)
+
+  function runQuery(query: AiQuery, ent: AiEntity, label: string) {
+    navigate("/search", { state: { prefilledQuery: { query, entity: ent, label } } })
+  }
+
+  return (
+    <Page>
+      <PageHeading title={c.signalsTitle} description={c.signalsDescription} />
+      <div className="space-y-3">
+        <div className="bg-muted inline-flex rounded-md p-0.5">
+          <EntityTab
+            active={entity === "people"}
+            onClick={() => setEntity("people")}
+            icon={Users}
+            label={c.people}
+          />
+          <EntityTab
+            active={entity === "companies"}
+            onClick={() => setEntity("companies")}
+            icon={Building2}
+            label={c.companies}
+          />
+        </div>
+
+        <SearchEmptyState
+          c={c}
+          locale={locale}
+          entity={entity}
+          onRunQuery={runQuery}
+          onAddToList={(ids) => {
+            setBulkIds(ids)
+            setBulkListOpen(true)
+          }}
+          onOpenLookalike={() => setLookalikeOpen(true)}
+        />
+      </div>
+
+      <LookalikeDialog
+        open={lookalikeOpen}
+        onOpenChange={setLookalikeOpen}
+        c={c}
+        defaultEntity={entity}
+        onConfirm={(seed) => navigate("/search", { state: { lookalikeSeed: seed } })}
       />
 
       <BulkAddDialog
