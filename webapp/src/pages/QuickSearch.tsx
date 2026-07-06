@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 
 /**
- * Sidebar "AI Search" entry point: opens the Add-records modal on its usual
+ * Sidebar "Search" entry point: opens the Add-records modal on its usual
  * splash landing (Search vs Guide me), with the entity toggle visible since
- * — unlike every other entry point — this one has no scoped context to lock
- * it to.
+ * this is an unscoped entry point (not tied to a specific list/account).
+ * Kept distinct from "Signals" (the AI-suggestion feed at /search).
  */
-export default function AiSearch() {
+export default function QuickSearch() {
   const navigate = useNavigate()
 
   return (

@@ -26,8 +26,9 @@ export const V2_ONLY_PATHS = [
   "/deals",
 ] as const
 
-// Where v1 lands when the user hits a hidden route. Home ("/") is the
-// "Describe your ideal customer" hero in both releases.
+// Where v1 lands when the user hits a hidden route. Home ("/") — the
+// quick-actions launcher + customizable module grid — exists in both
+// releases.
 export const V1_HOME = "/"
 
 /** True when `pathname` belongs to a surface that only exists in v2. */
