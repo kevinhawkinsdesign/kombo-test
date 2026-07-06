@@ -18,23 +18,35 @@ const TEMPLATES: Record<ConvStatus | "default", ((p: Prospect) => string)[]> = {
     (p) =>
       `Glad this landed, ${p.firstName}. Happy to share a short Loom first if that's easier, then a live session. Which do you prefer? Either way I'll tailor it to ${p.company}.`,
   ],
-  positive: [
+  qualified: [
     (p) =>
-      `Appreciate that, ${p.firstName}! Sounds like the fit is there. Want me to set up a quick session to map this to ${p.company}'s workflow? I'll keep it tight.`,
+      `Glad this landed, ${p.firstName} — sounds like a solid fit. I'll send our security overview and anything else procurement needs. Want me to set a short call with your reviewer to fast-track questions?`,
     (p) =>
-      `Thanks ${p.firstName} — that's exactly the reaction we hope for. I'll send a couple of times that could work; grab whichever is easiest.`,
+      `Appreciate that, ${p.firstName}! Let's keep the momentum — happy to loop in whoever else at ${p.company} needs to weigh in before next steps.`,
   ],
-  referred: [
+  disqualified: [
     (p) =>
-      `Thanks for the intro, ${p.firstName} — really appreciate you pointing me in the right direction. I'll reach out to them directly and keep you posted. Anything I should know before I do?`,
+      `Thanks for the clarity, ${p.firstName} — sounds like this isn't the right fit for ${p.company} right now. I'll close this out on my end. Wishing you a strong quarter.`,
     (p) =>
-      `That's super helpful, ${p.firstName}. I'll loop them in this week. If it's easier, feel free to forward my note — happy to draft something short you can pass along.`,
+      `Understood, ${p.firstName}, appreciate you saving us both the back-and-forth. Door's open if that ever changes.`,
   ],
-  bad_timing: [
+  need_review: [
     (p) =>
-      `Totally understand, ${p.firstName} — timing is everything. I'll check back in a quarter. In the meantime I'll send one short resource on what teams like ${p.company} did to prep, no strings attached.`,
+      `Thanks for the intro, ${p.firstName} — really appreciate you pointing me in the right direction. I'll reach out directly and keep you posted. Anything I should know before I do?`,
     (p) =>
-      `No problem at all, ${p.firstName}. I'll set a reminder to reconnect later this year. If anything changes sooner, you know where to find me.`,
+      `No problem at all, ${p.firstName}. I'll set a reminder to reconnect later. In the meantime I'll send one short resource on what teams like ${p.company} did to prep, no strings attached.`,
+  ],
+  won: [
+    (p) =>
+      `Thrilled to have ${p.company} on board, ${p.firstName}! I'll get onboarding scheduled and make sure your team has everything they need from day one.`,
+    (p) =>
+      `This is great news, ${p.firstName} — thank you for the trust. I'll send over next steps and introduce you to the onboarding team shortly.`,
+  ],
+  lost: [
+    (p) =>
+      `Appreciate you being straight with me, ${p.firstName} — I won't keep your inbox busy. If priorities shift at ${p.company}, I'm one reply away. Wishing you a strong quarter.`,
+    (p) =>
+      `Understood, ${p.firstName}, and thanks for the quick reply. I'll close the loop here. Door's open if the timing ever changes.`,
   ],
   not_interested: [
     (p) =>

@@ -638,7 +638,7 @@ export const conversations: Conversation[] = [
       },
     ],
   },
-  // — LinkedIn, positive sentiment (5h ago) —
+  // — LinkedIn, interested (5h ago) —
   {
     id: "c_6",
     prospectId: "p_5",
@@ -646,7 +646,7 @@ export const conversations: Conversation[] = [
     subject: "Talent Garden — prospecting",
     unread: 0,
     lastMessageAt: "2026-06-23T10:20:00Z",
-    status: "positive",
+    status: "interested",
     aiDraft:
       "Thanks, Priya — that's exactly the reaction we hope for. Want me to set up a tight 20-minute session to map this to Talent Garden's workflow? I'll send a couple of times.",
     messages: [
@@ -669,7 +669,7 @@ export const conversations: Conversation[] = [
       },
     ],
   },
-  // — LinkedIn, referred to someone else (8h ago) —
+  // — LinkedIn, referred to someone else, needs review (8h ago) —
   {
     id: "c_12",
     prospectId: "p_7",
@@ -677,7 +677,7 @@ export const conversations: Conversation[] = [
     subject: "Weekendesk Foods — intro",
     unread: 1,
     lastMessageAt: "2026-06-23T07:00:00Z",
-    status: "referred",
+    status: "need_review",
     aiDraft:
       "Thanks for pointing me the right way, Elena — I really appreciate it. I'll reach out to your Head of Growth directly and keep you in the loop. Anything I should know before I do?",
     events: [
@@ -685,7 +685,7 @@ export const conversations: Conversation[] = [
         id: "e_8",
         kind: "tag",
         label: "Auto-tagged as",
-        status: "referred",
+        status: "need_review",
         timestamp: "2026-06-23T07:00:30Z",
       },
     ],
@@ -709,7 +709,7 @@ export const conversations: Conversation[] = [
       },
     ],
   },
-  // — Email, Spanish, bad timing (1d ago) —
+  // — Email, Spanish, bad timing → needs review (1d ago) —
   {
     id: "c_7",
     prospectId: "p_4",
@@ -718,7 +718,7 @@ export const conversations: Conversation[] = [
     unread: 1,
     lastMessageAt: "2026-06-22T15:30:00Z",
     recipientLang: "es",
-    status: "bad_timing",
+    status: "need_review",
     aiDraft:
       "Lo entiendo perfectamente, Diego — el momento lo es todo. Vuelvo a contactarte en Q4. Mientras tanto te envío un recurso breve sobre cómo equipos como Edicom se prepararon, sin compromiso.",
     messages: [
@@ -751,7 +751,7 @@ export const conversations: Conversation[] = [
     subject: "Next steps + procurement",
     unread: 0,
     lastMessageAt: "2026-06-22T09:15:00Z",
-    status: "positive",
+    status: "qualified",
     aiDraft:
       "Glad the demo landed, Wei. I'll send our security overview and SOC 2 report straight to procurement. Want me to set a 15-minute call with your reviewer to fast-track any questions?",
     messages: [

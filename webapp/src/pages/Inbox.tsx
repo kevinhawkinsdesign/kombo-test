@@ -99,7 +99,7 @@ const COPY = {
     unread: "Unread",
     scheduled: "Scheduled",
     sent: "Sent",
-    tags: "Tags",
+    tags: "Outcomes",
     search: "Search prospects, companies…",
     filters: "Filters",
     channel: "Channel",
@@ -152,11 +152,11 @@ const COPY = {
     draftTranslated: (lang: string) => `Draft translated to ${lang}`,
     more: "More",
     // new
-    setStatus: "Set tag",
-    clearStatus: "Clear tag",
-    statusToast: (label: string) => `Tagged as ${label}`,
-    statusClearedToast: "Tag removed",
-    autoTaggedAs: "Auto-tagged as",
+    setStatus: "Set Outcome",
+    clearStatus: "Clear outcome",
+    statusToast: (label: string) => `Outcome set to ${label}`,
+    statusClearedToast: "Outcome cleared",
+    autoTaggedAs: "Outcome detected as",
     aiGenerated: "AI-Generated",
     newDivider: "New",
     replyAs: "Reply as",
@@ -211,7 +211,7 @@ const COPY = {
     unread: "Sin leer",
     scheduled: "Programados",
     sent: "Enviados",
-    tags: "Etiquetas",
+    tags: "Resultados",
     search: "Buscar prospectos, empresas…",
     filters: "Filtros",
     channel: "Canal",
@@ -263,11 +263,11 @@ const COPY = {
     writeIn: (flag: string, lang: string) => `Escribir en ${flag} ${lang}`,
     draftTranslated: (lang: string) => `Borrador traducido a ${lang}`,
     more: "Más",
-    setStatus: "Etiquetar",
-    clearStatus: "Quitar etiqueta",
-    statusToast: (label: string) => `Etiquetado como ${label}`,
-    statusClearedToast: "Etiqueta eliminada",
-    autoTaggedAs: "Etiquetado como",
+    setStatus: "Definir resultado",
+    clearStatus: "Quitar resultado",
+    statusToast: (label: string) => `Resultado definido: ${label}`,
+    statusClearedToast: "Resultado eliminado",
+    autoTaggedAs: "Resultado detectado:",
     aiGenerated: "Generado por IA",
     newDivider: "Nuevo",
     replyAs: "Responder como",
@@ -330,40 +330,17 @@ const FOLDERS: { id: Folder; key: Folder; icon: typeof InboxIcon }[] = [
   { id: "sent", key: "sent", icon: Send },
 ]
 
-// Sentiment palette encodes the funnel: open → won → handed-off → paused → closed.
+// Outcomes are a fixed list (not user-customizable tags) encoding the funnel:
+// working it → won → needs attention → lost.
 const STATUS_META: Record<
   ConvStatus,
   { en: string; es: string; dot: string; badge: string }
 > = {
-  meeting_booked: {
-    en: "Meeting booked",
-    es: "Reunión",
-    dot: "bg-emerald-500",
-    badge: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
-  },
   interested: {
     en: "Interested",
     es: "Interesado",
     dot: "bg-sky-500",
     badge: "bg-sky-500/12 text-sky-700 dark:text-sky-300",
-  },
-  positive: {
-    en: "Positive",
-    es: "Positivo",
-    dot: "bg-teal-500",
-    badge: "bg-teal-500/12 text-teal-700 dark:text-teal-300",
-  },
-  referred: {
-    en: "Referred",
-    es: "Derivado",
-    dot: "bg-indigo-500",
-    badge: "bg-indigo-500/12 text-indigo-700 dark:text-indigo-300",
-  },
-  bad_timing: {
-    en: "Bad timing",
-    es: "Mal momento",
-    dot: "bg-amber-500",
-    badge: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
   },
   not_interested: {
     en: "Not interested",
@@ -371,15 +348,53 @@ const STATUS_META: Record<
     dot: "bg-rose-500",
     badge: "bg-rose-500/12 text-rose-700 dark:text-rose-300",
   },
+  qualified: {
+    en: "Qualified",
+    es: "Calificado",
+    dot: "bg-indigo-500",
+    badge: "bg-indigo-500/12 text-indigo-700 dark:text-indigo-300",
+  },
+  disqualified: {
+    en: "Disqualified",
+    es: "Descalificado",
+    dot: "bg-red-600",
+    badge: "bg-red-600/12 text-red-700 dark:text-red-300",
+  },
+  meeting_booked: {
+    en: "Meeting booked",
+    es: "Reunión",
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
+  },
+  need_review: {
+    en: "Need review",
+    es: "Revisar",
+    dot: "bg-amber-500",
+    badge: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
+  },
+  won: {
+    en: "Won",
+    es: "Ganado",
+    dot: "bg-green-600",
+    badge: "bg-green-600/12 text-green-700 dark:text-green-300",
+  },
+  lost: {
+    en: "Lost",
+    es: "Perdido",
+    dot: "bg-slate-500",
+    badge: "bg-slate-500/12 text-slate-700 dark:text-slate-300",
+  },
 }
 
 const STATUS_ORDER: ConvStatus[] = [
-  "meeting_booked",
   "interested",
-  "positive",
-  "referred",
-  "bad_timing",
   "not_interested",
+  "qualified",
+  "disqualified",
+  "meeting_booked",
+  "need_review",
+  "won",
+  "lost",
 ]
 
 const EVENT_META: Record<
