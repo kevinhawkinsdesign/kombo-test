@@ -89,7 +89,7 @@ const primary: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
-  { to: "/signals", labelKey: "nav.search", icon: Radar },
+  { to: "/signals", labelKey: "nav.search", icon: Radar, isNew: true },
   {
     to: "/inbox",
     labelKey: "nav.inbox",
@@ -702,10 +702,9 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
-// v1 has no dashboard/signals — Home, then Signals, then prospecting.
+// v1 has no dashboard/signals — Home, then prospecting.
 const bottomBarItemsV1: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
-  { to: "/signals", labelKey: "nav.search", icon: Radar },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
     to: "/inbox",
