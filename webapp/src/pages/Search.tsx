@@ -8,6 +8,7 @@ import {
   X,
   Loader2,
   Bookmark,
+  Trash2,
   Building2,
   Users,
   ArrowRight,
@@ -81,6 +82,7 @@ import {
   queryTitle,
   savedSearchStore,
   useSavedSearches,
+  type SavedAiSearch,
   REGION_OPTIONS,
   INDUSTRY_OPTIONS,
   sortLeads,
@@ -124,6 +126,9 @@ const COPY = {
     searchBtn: "Search",
     clearQuery: "Clear search",
     srTitle: "Search",
+    idleTitle: "Write a prompt to search",
+    idleDesc:
+      "Describe who you're looking for above, or open filters to build a query by hand — matching prospects and companies runs a live search.",
     introTitle: "Prospect with a prompt",
     introDescription:
       "Ask in plain English or build an advanced query by hand. Kai returns a fit-scored table of prospects or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
@@ -151,11 +156,15 @@ const COPY = {
     ],
     refine: "Quick refine",
     save: "Save",
+    saved: "Saved searches",
     saveThis: "Save this search",
     saveSearchDesc:
       "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
     saveNameLabel: "Search name",
+    noSaved: "No saved searches yet.",
     savedToast: "Search saved with its prompt history",
+    loadedToast: "Saved search loaded",
+    removedSaved: "Saved search removed",
     people: "Prospects",
     companies: "Companies",
     resultsFor: "Results",
@@ -379,6 +388,9 @@ const COPY = {
     searchBtn: "Buscar",
     clearQuery: "Borrar búsqueda",
     srTitle: "Buscar",
+    idleTitle: "Escribe un prompt para buscar",
+    idleDesc:
+      "Describe a quién buscas arriba, o abre los filtros para crear una consulta a mano — buscar prospectos y empresas ejecuta una búsqueda en vivo.",
     introTitle: "Prospecta con un prompt",
     introDescription:
       "Pregunta en lenguaje natural o crea una consulta avanzada a mano. Kai devuelve una tabla de prospectos o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
@@ -406,11 +418,15 @@ const COPY = {
     ],
     refine: "Refinar rápido",
     save: "Guardar",
+    saved: "Búsquedas guardadas",
     saveThis: "Guardar esta búsqueda",
     saveSearchDesc:
       "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
     saveNameLabel: "Nombre de la búsqueda",
+    noSaved: "Aún no hay búsquedas guardadas.",
     savedToast: "Búsqueda guardada con su historial de prompts",
+    loadedToast: "Búsqueda guardada cargada",
+    removedSaved: "Búsqueda guardada eliminada",
     people: "Prospectos",
     companies: "Empresas",
     resultsFor: "Resultados",
@@ -773,6 +789,11 @@ export default function Search() {
   const [params] = useSearchParams()
   const location = useLocation()
   const headerPrompt = params.get("q")
+  // "Search with filters" (from /find, or the idle state's own button below)
+  // skips the AI prompt and jumps straight to the filterable results view.
+  const [filtersRequested, setFiltersRequested] = React.useState(
+    () => params.get("filters") === "1"
+  )
   // Lookalike is just a search: arrive here with a seed (from People/Companies
   // "Find lookalikes") and the page opens in lookalike mode, results and all.
   const incomingSeed =
@@ -840,6 +861,24 @@ export default function Search() {
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
   const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>("kombo")
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
+
+  // Matching prospects/companies live behind a costly API call, so the page
+  // stays idle — no query, no results — until the user defines a search: a
+  // submitted prompt, a lookalike seed, an active filter, or an in-flight
+  // interpretation. "Search with filters" (a query param or the idle state's
+  // own button) skips the prompt and opens the filter sidebar directly.
+  const searchStarted =
+    filtersRequested ||
+    thinking ||
+    Boolean(seed) ||
+    lastPrompt.trim() !== "" ||
+    Object.entries(query).some(([k, v]) =>
+      k === "facets"
+        ? Object.values(v as Record<string, string[]>).some((a) => a.length > 0)
+        : Array.isArray(v)
+          ? v.length > 0
+          : typeof v === "string" && v.trim() !== ""
+    )
 
   // The active database. A seed means Lookalike; Google Maps / TripAdvisor are
   // company-only, so fall back to Kombo when viewing People.
@@ -1101,6 +1140,19 @@ export default function Search() {
     setSaveDialogOpen(false)
   }
 
+  // Reopen a saved search directly — an entry point from the idle state, no
+  // need to run a fresh search first.
+  function loadSearch(id: string) {
+    const s = savedSearches.find((x) => x.id === id)
+    if (!s) return
+    setEntity(s.entity)
+    setQuery(s.query)
+    setLastPrompt(s.prompt)
+    setInput(s.prompt)
+    setSelected(new Set())
+    toast.success(c.loadedToast)
+  }
+
   // "Build a list": route to the chosen population method. Search-style sources
   // don't pre-create an empty list; the rest create it and route accordingly.
   function buildList(
@@ -1345,7 +1397,22 @@ export default function Search() {
           </form>
         </Card>
 
-        {/* Filters live in a persistent sidebar; results fill the rest. */}
+        {/* Matching runs a real (costly) query, so nothing renders — no
+            filter sidebar, no results — until a search actually starts. */}
+        {!searchStarted && (
+          <SearchIdleState
+            c={c}
+            savedSearches={savedSearches}
+            onOpenFilters={() => setFiltersRequested(true)}
+            onLoadSearch={loadSearch}
+            onRemoveSearch={(id) => {
+              savedSearchStore.remove(id)
+              toast.success(c.removedSaved)
+            }}
+          />
+        )}
+
+        {searchStarted && (
         <div className="flex flex-col gap-6 lg:flex-row">
           <FilterSidebar
             className="lg:w-64 lg:shrink-0"
@@ -1714,6 +1781,7 @@ export default function Search() {
         </div>
           </div>
         </div>
+        )}
       </div>
       </>
 
@@ -2769,6 +2837,86 @@ function CompanyPosterCard({
         {co.industry} · {co.region} · {co.headcount}
       </p>
     </button>
+  )
+}
+
+// Shown until the user defines a search — matching runs a real (costly)
+// query, so the page holds off rendering the filter sidebar or any results.
+// Saved searches are a separate entry point: reopen one directly, no need to
+// run anything first.
+function SearchIdleState({
+  c,
+  savedSearches,
+  onOpenFilters,
+  onLoadSearch,
+  onRemoveSearch,
+}: {
+  c: Copy
+  savedSearches: SavedAiSearch[]
+  onOpenFilters: () => void
+  onLoadSearch: (id: string) => void
+  onRemoveSearch: (id: string) => void
+}) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-20 text-center">
+      <span className="bg-muted flex size-12 items-center justify-center rounded-full">
+        <SearchIcon className="text-muted-foreground size-5" />
+      </span>
+      <p className="text-lg font-semibold">{c.idleTitle}</p>
+      <p className="text-muted-foreground max-w-md text-sm">{c.idleDesc}</p>
+      <div className="mt-1 flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={onOpenFilters}>
+          <SlidersHorizontal className="size-4" />
+          {c.searchWithFilters}
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Bookmark className="size-4" />
+              {c.saved}
+              <ChevronDown className="text-muted-foreground size-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-72">
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+              {c.saved}
+            </DropdownMenuLabel>
+            {savedSearches.length === 0 ? (
+              <p className="text-muted-foreground px-2 py-1.5 text-xs">
+                {c.noSaved}
+              </p>
+            ) : (
+              savedSearches.map((s) => (
+                <div
+                  key={s.id}
+                  className="hover:bg-muted/60 flex items-center gap-2 rounded-sm px-2 py-1.5"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onLoadSearch(s.id)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p className="truncate text-sm font-medium">{s.name}</p>
+                    <p className="text-muted-foreground truncate text-xs">
+                      {s.entity === "people" ? c.people : c.companies} ·{" "}
+                      {s.resultCount}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Remove"
+                    onClick={() => onRemoveSearch(s.id)}
+                    className="text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
   )
 }
 
