@@ -360,6 +360,75 @@ export const templateStore = {
   },
 }
 
+// Applies `fn` to whichever array in the one-level-deep step tree actually
+// contains `stepId` — the top-level list, or a branch's replySteps/
+// noReplySteps — and returns a new tree with that array replaced. Steps
+// inside a branch never carry their own `branch`, so this never needs to
+// recurse deeper than one level.
+function updateStepTree(
+  steps: CampaignStep[],
+  stepId: string,
+  fn: (list: CampaignStep[], index: number) => CampaignStep[]
+): CampaignStep[] {
+  const index = steps.findIndex((s) => s.id === stepId)
+  if (index !== -1) return fn(steps, index)
+  return steps.map((s) =>
+    s.branch
+      ? {
+          ...s,
+          branch: {
+            replySteps: updateStepTree(s.branch.replySteps, stepId, fn),
+            noReplySteps: updateStepTree(s.branch.noReplySteps, stepId, fn),
+          },
+        }
+      : s
+  )
+}
+
+// Flattens the tree in render order (a branching step, then its reply
+// steps, then its no-reply steps, then the next top-level step) — used for
+// cosmetic per-step stats that degrade by position.
+export function flattenCampaignSteps(steps: CampaignStep[]): CampaignStep[] {
+  return steps.flatMap((s) =>
+    s.branch ? [s, ...s.branch.replySteps, ...s.branch.noReplySteps] : [s]
+  )
+}
+
+export function findCampaignStep(
+  steps: CampaignStep[],
+  stepId: string
+): CampaignStep | undefined {
+  for (const s of steps) {
+    if (s.id === stepId) return s
+    if (s.branch) {
+      const found =
+        findCampaignStep(s.branch.replySteps, stepId) ??
+        findCampaignStep(s.branch.noReplySteps, stepId)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
+// Finds the array a step actually lives in (top-level, or a branch's reply/
+// no-reply track) plus its index there — the collection that "move up/down"
+// and "is first/last" checks need to reason about.
+export function locateCampaignStep(
+  steps: CampaignStep[],
+  stepId: string
+): { list: CampaignStep[]; index: number } {
+  const topIndex = steps.findIndex((s) => s.id === stepId)
+  if (topIndex !== -1) return { list: steps, index: topIndex }
+  for (const s of steps) {
+    if (!s.branch) continue
+    const reply = locateCampaignStep(s.branch.replySteps, stepId)
+    if (reply.index !== -1) return reply
+    const noReply = locateCampaignStep(s.branch.noReplySteps, stepId)
+    if (noReply.index !== -1) return noReply
+  }
+  return { list: steps, index: -1 }
+}
+
 export const campaignStore = {
   // The caller passes the current locale so a new campaign defaults its
   // send language to what the user is working in.
@@ -436,6 +505,8 @@ export const campaignStore = {
     })
     return created
   },
+  // Works whether stepId lives in the top-level sequence or inside a
+  // branch's reply/no-reply track.
   updateStep(
     campaignId: string,
     stepId: string,
@@ -446,8 +517,8 @@ export const campaignStore = {
         c.id === campaignId
           ? {
               ...c,
-              steps: c.steps.map((s) =>
-                s.id === stepId ? { ...s, ...patch } : s
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.map((s, i) => (i === index ? { ...s, ...patch } : s))
               ),
             }
           : c
@@ -458,23 +529,107 @@ export const campaignStore = {
     setState({
       campaigns: state.campaigns.map((c) =>
         c.id === campaignId
-          ? { ...c, steps: c.steps.filter((s) => s.id !== stepId) }
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.filter((_, i) => i !== index)
+              ),
+            }
           : c
       ),
     })
   },
+  // Moves within whichever list (top-level, or a branch track) the step
+  // belongs to — branches don't reorder relative to each other.
   moveStep(campaignId: string, stepId: string, dir: -1 | 1): void {
     setState({
-      campaigns: state.campaigns.map((c) => {
-        if (c.id !== campaignId) return c
-        const index = c.steps.findIndex((s) => s.id === stepId)
-        const target = index + dir
-        if (index === -1 || target < 0 || target >= c.steps.length) return c
-        const steps = [...c.steps]
-        const [moved] = steps.splice(index, 1)
-        steps.splice(target, 0, moved)
-        return { ...c, steps }
-      }),
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) => {
+                const target = index + dir
+                if (target < 0 || target >= list.length) return list
+                const next = [...list]
+                const [moved] = next.splice(index, 1)
+                next.splice(target, 0, moved)
+                return next
+              }),
+            }
+          : c
+      ),
+    })
+  },
+  // Adds a fresh, blank fork to a step — a single reply/no-reply deviation
+  // that reconnects into the next step in the parent array. A step already
+  // inside a branch can't itself branch (enforced by the UI only offering
+  // this on top-level steps).
+  addBranch(campaignId: string, stepId: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.map((s, i) =>
+                  i === index
+                    ? { ...s, branch: { replySteps: [], noReplySteps: [] } }
+                    : s
+                )
+              ),
+            }
+          : c
+      ),
+    })
+  },
+  removeBranch(campaignId: string, stepId: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.map((s, i) =>
+                  i === index ? { ...s, branch: undefined } : s
+                )
+              ),
+            }
+          : c
+      ),
+    })
+  },
+  // Adds a blank step to one track of a branch.
+  addBranchStep(
+    campaignId: string,
+    parentStepId: string,
+    track: "reply" | "noReply",
+    channel: StepChannel
+  ): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, parentStepId, (list, index) =>
+                list.map((s, i) => {
+                  if (i !== index || !s.branch) return s
+                  const step: CampaignStep = {
+                    id: uid("s"),
+                    channel,
+                    delayDays: 3,
+                    subject: "",
+                    body: "",
+                  }
+                  const key = track === "reply" ? "replySteps" : "noReplySteps"
+                  return {
+                    ...s,
+                    branch: { ...s.branch, [key]: [...s.branch[key], step] },
+                  }
+                })
+              ),
+            }
+          : c
+      ),
     })
   },
   attachList(campaignId: string, listId: string): void {
