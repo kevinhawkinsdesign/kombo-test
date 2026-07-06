@@ -115,6 +115,8 @@ const COPY = {
     backToInbox: "Back",
     viewProfile: "Profile",
     createTask: "Create task",
+    bulkSelected: (n: number) => `${n} selected`,
+    clearSelection: "Clear",
     replyTo: (name: string) => `Reply to ${name}…`,
     via: "via",
     send: "Send",
@@ -228,6 +230,8 @@ const COPY = {
     backToInbox: "Volver",
     viewProfile: "Perfil",
     createTask: "Crear tarea",
+    bulkSelected: (n: number) => `${n} seleccionados`,
+    clearSelection: "Limpiar",
     replyTo: (name: string) => `Responder a ${name}…`,
     via: "por",
     send: "Enviar",
@@ -525,6 +529,7 @@ export default function Inbox() {
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   // Focus mode: collapse the folder rail + conversation list to give the open
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
@@ -623,6 +628,39 @@ export default function Inbox() {
       : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = list.length
   const filtersActive = channelFilter !== "all" || unreadOnly
+
+  // Selection doesn't carry over when the user switches folders/outcomes.
+  const viewSig = `${view.kind}:${view.id}`
+  const [selSig, setSelSig] = React.useState(viewSig)
+  if (viewSig !== selSig) {
+    setSelSig(viewSig)
+    if (selectedIds.size > 0) setSelectedIds(new Set())
+  }
+
+  function toggleSelectRow(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function bulkSetOutcome(status: ConvStatus | undefined) {
+    selectedIds.forEach((id) => conversationStore.setStatus(id, status))
+    toast.success(
+      status ? c.statusToast(STATUS_META[status][locale === "es" ? "es" : "en"]) : c.statusClearedToast
+    )
+    setSelectedIds(new Set())
+  }
+  function bulkMarkRead(read: boolean) {
+    selectedIds.forEach((id) => (read ? conversationStore.markRead(id) : conversationStore.markUnread(id)))
+    setSelectedIds(new Set())
+  }
+  function bulkArchive() {
+    selectedIds.forEach((id) => conversationStore.archive(id))
+    toast.success(c.archived)
+    setSelectedIds(new Set())
+  }
 
   function openConversation(id: string) {
     setActiveId(id)
@@ -883,11 +921,16 @@ export default function Inbox() {
               const assignee = assigneeName(conv.assigneeId)
               const draft = hasReadyDraft(conv)
               return (
-                <button
+                <div
                   key={conv.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => openConversation(conv.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openConversation(conv.id)
+                  }}
                   className={cn(
-                    "relative flex w-full gap-3 border-b px-4 py-3 text-left transition-colors",
+                    "relative flex w-full cursor-pointer gap-3 border-b px-4 py-3 text-left transition-colors",
                     conv.id === effectiveActive?.id
                       ? "bg-muted/60"
                       : "hover:bg-muted/40"
@@ -896,6 +939,16 @@ export default function Inbox() {
                   {conv.id === effectiveActive?.id && (
                     <span className="bg-primary absolute inset-y-0 left-0 w-0.5" />
                   )}
+                  <div
+                    className="flex shrink-0 items-center pt-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Checkbox
+                      checked={selectedIds.has(conv.id)}
+                      onCheckedChange={() => toggleSelectRow(conv.id)}
+                      aria-label="Select conversation"
+                    />
+                  </div>
                   <div className="relative shrink-0">
                     <ProspectAvatar prospect={p} className="size-9" />
                     <span className="bg-background absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full">
@@ -969,11 +1022,61 @@ export default function Inbox() {
                   {conv.unread > 0 && (
                     <span className="bg-primary mt-1.5 size-2 shrink-0 rounded-full" />
                   )}
-                </button>
+                </div>
               )
             })
           )}
         </div>
+
+        {selectedIds.size > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 border-t p-2">
+            <span className="px-2 text-sm font-medium tabular-nums">
+              {c.bulkSelected(selectedIds.size)}
+            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Tag className="size-4" />
+                  {c.setStatus}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {STATUS_ORDER.map((s) => (
+                  <DropdownMenuItem key={s} onClick={() => bulkSetOutcome(s)}>
+                    <span className={cn("size-2 rounded-full", STATUS_META[s].dot)} />
+                    {STATUS_META[s][locale === "es" ? "es" : "en"]}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => bulkSetOutcome(undefined)}>
+                  <X className="size-4" />
+                  {c.clearStatus}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={() => bulkMarkRead(true)}>
+              <MailOpen className="size-4" />
+              {c.markRead}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => bulkMarkRead(false)}>
+              <Mail className="size-4" />
+              {c.markUnread}
+            </Button>
+            <Button variant="outline" size="sm" onClick={bulkArchive}>
+              <Archive className="size-4" />
+              {c.archive}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              <X className="size-4" />
+              {c.clearSelection}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Thread */}
