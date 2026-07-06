@@ -25,8 +25,6 @@ import { Badge } from "@/components/ui/badge"
 import { InfoHint } from "@/components/common/InfoHint"
 import { DailyRecommendations } from "@/components/dashboard/DailyRecommendations"
 import { TodayPanel } from "@/components/dashboard/TodayPanel"
-import { KaiSuggestion } from "@/components/kai/KaiSuggestion"
-import { copilotActions } from "@/lib/mock-copilot"
 import { useView } from "@/lib/view-context"
 import { useSetup } from "@/lib/setup"
 import { getScopeData, leaderboard, type TeamMember } from "@/lib/team"
@@ -60,11 +58,6 @@ const COPY = {
     teamDescription: (quota: string) =>
       `Team pipeline and forecast · quota ${quota} this quarter`,
     findProspects: "Find prospects",
-    kaiTitle: (count: number) =>
-      `Kai spotted ${count} signals worth acting on`,
-    reviewInCopilot: "Review signals",
-    kaiBody:
-      "Replies, job changes, and intent signals across your accounts — each with a recommended next move.",
     whatIs: (label: string) => `What is ${label}?`,
     vsLastQuarter: "vs. last quarter",
     pipelineForecast: "Pipeline & forecast",
@@ -112,11 +105,6 @@ const COPY = {
     teamDescription: (quota: string) =>
       `Pipeline y previsión del equipo · cuota ${quota} este trimestre`,
     findProspects: "Buscar prospectos",
-    kaiTitle: (count: number) =>
-      `Kai detectó ${count} señales que vale la pena atender`,
-    reviewInCopilot: "Revisar señales",
-    kaiBody:
-      "Respuestas, cambios de empleo y señales de intención en tus cuentas — cada una con el siguiente paso recomendado.",
     whatIs: (label: string) => `¿Qué es ${label}?`,
     vsLastQuarter: "vs. trimestre anterior",
     pipelineForecast: "Pipeline y previsión",
@@ -253,21 +241,6 @@ export default function Dashboard() {
       />
 
       <SetupBanner />
-
-      {!impersonating && copilotActions.length > 0 && (
-        <KaiSuggestion
-          className="mb-6"
-          dismissKey="dashboard-copilot"
-          title={c.kaiTitle(copilotActions.length)}
-          action={
-            <Button asChild size="sm" variant="outline">
-              <Link to="/copilot">{c.reviewInCopilot}</Link>
-            </Button>
-          }
-        >
-          {c.kaiBody}
-        </KaiSuggestion>
-      )}
 
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

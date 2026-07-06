@@ -46,8 +46,6 @@ export const GLOSSARY: Record<string, string> = {
   "value proposition":
     "A short statement of the concrete value you deliver and why it matters to this buyer.",
   USP: "Unique Selling Point — what makes you clearly different from alternatives.",
-  copilot:
-    "An AI assistant that watches for signals and recommends the next best action for each prospect.",
   autopilot:
     "Lets Kai run routine steps for you automatically, within rules you set.",
 }
