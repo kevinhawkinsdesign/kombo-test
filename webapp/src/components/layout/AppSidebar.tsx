@@ -87,7 +87,7 @@ const primary: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
-  { to: "/find", labelKey: "nav.quickSearch", icon: Search },
+  { to: "/search", labelKey: "nav.quickSearch", icon: Search },
   { to: "/signals", labelKey: "nav.search", icon: Radar },
   {
     to: "/inbox",
