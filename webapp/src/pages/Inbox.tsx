@@ -34,6 +34,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ListTodo,
+  Reply,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -97,6 +98,7 @@ const COPY = {
     inbox: "Inbox",
     drafts: "AI Drafts",
     unread: "Unread",
+    needs_reply: "Need to Reply",
     scheduled: "Scheduled",
     sent: "Sent",
     tags: "Outcomes",
@@ -209,6 +211,7 @@ const COPY = {
     inbox: "Bandeja",
     drafts: "Borradores IA",
     unread: "Sin leer",
+    needs_reply: "Por responder",
     scheduled: "Programados",
     sent: "Enviados",
     tags: "Resultados",
@@ -320,12 +323,13 @@ const COPY = {
 
 type Copy = (typeof COPY)[Locale]
 
-type Folder = "inbox" | "drafts" | "unread" | "scheduled" | "sent"
+type Folder = "inbox" | "drafts" | "unread" | "needs_reply" | "scheduled" | "sent"
 
 const FOLDERS: { id: Folder; key: Folder; icon: typeof InboxIcon }[] = [
   { id: "inbox", key: "inbox", icon: InboxIcon },
   { id: "drafts", key: "drafts", icon: Wand2 },
   { id: "unread", key: "unread", icon: MailOpen },
+  { id: "needs_reply", key: "needs_reply", icon: Reply },
   { id: "scheduled", key: "scheduled", icon: CalendarClock },
   { id: "sent", key: "sent", icon: Send },
 ]
@@ -433,6 +437,11 @@ function awaitingReply(conv: Conversation): boolean {
 function hasReadyDraft(conv: Conversation): boolean {
   return Boolean(conv.aiDraft) && awaitingReply(conv) && !isScheduled(conv) && !conv.archived
 }
+// Read, but the ball is still in our court — distinct from "Unread" (haven't
+// looked yet) and from archiving (marks the thread as done/handled).
+function needsReply(conv: Conversation): boolean {
+  return awaitingReply(conv) && conv.unread === 0 && !isScheduled(conv)
+}
 
 const ES_LOCATIONS = ["madrid", "barcelona", "valencia", "spain", "es", "méxico", "mexico", "bogotá", "santiago", "são paulo", "lima", "buenos aires"]
 function defaultLang(p: Prospect | undefined): ChatLang {
@@ -531,6 +540,8 @@ export default function Inbox() {
           return visible.filter(hasReadyDraft).length
         case "unread":
           return visible.filter((x) => x.unread > 0).length
+        case "needs_reply":
+          return visible.filter(needsReply).length
         case "scheduled":
           return visible.filter(isScheduled).length
         case "sent":
@@ -579,6 +590,8 @@ export default function Inbox() {
           return hasReadyDraft(conv)
         case "unread":
           return conv.unread > 0
+        case "needs_reply":
+          return needsReply(conv)
         case "scheduled":
           return isScheduled(conv)
         case "sent":
