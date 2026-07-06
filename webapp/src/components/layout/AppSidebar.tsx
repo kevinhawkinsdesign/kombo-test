@@ -34,6 +34,7 @@ import {
   Home,
   Search,
   LayoutGrid,
+  Compass,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -139,6 +140,7 @@ const manageGroup: NavGroup = {
   labelKey: "nav.manage",
   icon: Settings2,
   items: [
+    { to: "/onboarding", labelKey: "nav.onboarding", icon: Compass },
     { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
     { to: "/team", labelKey: "nav.team", icon: Users },
     { to: "/usage", labelKey: "nav.usage", icon: Zap },

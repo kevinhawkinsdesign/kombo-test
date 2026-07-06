@@ -23,6 +23,7 @@ import {
   Plug,
   Settings,
   Rocket,
+  Compass,
 } from "lucide-react"
 
 export interface AppDestination {
@@ -60,6 +61,7 @@ export const APP_DESTINATIONS: AppDestination[] = [
   { to: "/integrations", labelKey: "nav.integrations", icon: Plug, keywords: ["connect", "salesforce", "hubspot", "crm"] },
   { to: "/settings", labelKey: "nav.settings", icon: Settings, keywords: ["preferences", "profile", "account", "password"] },
   { to: "/get-started", labelKey: "nav.getStarted", icon: Rocket, keywords: ["onboarding", "setup"] },
+  { to: "/onboarding", labelKey: "nav.onboarding", icon: Compass, keywords: ["setup", "wizard", "icp", "get started"] },
 ]
 
 // Shown when the search box is focused but empty — common jump-off points.
