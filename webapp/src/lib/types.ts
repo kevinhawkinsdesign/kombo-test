@@ -177,9 +177,20 @@ export interface Message {
   aiGenerated?: boolean // outbound message was drafted by Kai
 }
 
-// A non-message activity that happened in the thread (connection sent,
-// post liked, auto-tag applied, email opened). Rendered as a quiet system row.
-export type ConvEventKind = "connection" | "like" | "view" | "open" | "click" | "tag"
+// A non-message activity that happened in the thread (connection sent, post
+// liked, auto-tag applied, email opened, a campaign step firing, a task
+// changing state). Rendered as a quiet system row.
+export type ConvEventKind =
+  | "connection"
+  | "like"
+  | "view"
+  | "open"
+  | "click"
+  | "tag"
+  | "step"
+  | "task"
+
+export type TaskEventState = "todo" | "reminder" | "done"
 
 export interface ConvEvent {
   id: string
@@ -188,6 +199,8 @@ export interface ConvEvent {
   detail?: string
   timestamp: string
   status?: ConvStatus // for kind === "tag"
+  stepChannel?: SequenceChannelType // for kind === "step"
+  taskState?: TaskEventState // for kind === "task"
 }
 
 export interface Conversation {

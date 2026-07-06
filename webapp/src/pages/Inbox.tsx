@@ -35,6 +35,12 @@ import {
   PanelLeftOpen,
   ListTodo,
   Reply,
+  Phone,
+  Bot,
+  MessageCircle,
+  Circle,
+  AlarmClock,
+  CheckCircle2,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -70,7 +76,7 @@ import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialo
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team, getRep } from "@/lib/team"
-import { useConversations, conversationStore } from "@/lib/store"
+import { useConversations, conversationStore, useTasks } from "@/lib/store"
 import { draftReply } from "@/lib/mock-ai-reply"
 import {
   translate,
@@ -89,6 +95,9 @@ import type {
   ConvEventKind,
   ConvStatus,
   Prospect,
+  SequenceChannelType,
+  Task,
+  TaskEventState,
 } from "@/lib/types"
 
 type Locale = "en" | "es"
@@ -415,6 +424,40 @@ const EVENT_META: Record<
   open: { en: "Opened your email", es: "Abrió tu correo", icon: MailOpen },
   click: { en: "Clicked your link", es: "Hizo clic en tu enlace", icon: MousePointerClick },
   tag: { en: "Auto-tagged as", es: "Etiquetado como", icon: Tag },
+  step: { en: "Sequence step sent", es: "Paso de secuencia enviado", icon: Send },
+  task: { en: "Task update", es: "Actualización de tarea", icon: ListTodo },
+}
+
+// Campaign sequence steps — same channel vocabulary as the sequence builder
+// (email, LinkedIn, WhatsApp, human call, AI/agentic call), rendered here as
+// quiet system rows in the conversation timeline.
+const STEP_META: Record<
+  SequenceChannelType,
+  { en: string; es: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  email: { en: "Email step sent", es: "Paso de email enviado", icon: Mail },
+  linkedin: { en: "LinkedIn message sent", es: "Mensaje de LinkedIn enviado", icon: LinkedinIcon },
+  whatsapp: { en: "WhatsApp message sent", es: "Mensaje de WhatsApp enviado", icon: MessageCircle },
+  call: { en: "Call logged", es: "Llamada registrada", icon: Phone },
+  ai_call: { en: "AI call placed", es: "Llamada de IA realizada", icon: Bot },
+  wait: { en: "Sequence step", es: "Paso de secuencia", icon: Clock },
+}
+
+const TASK_STATE_META: Record<
+  TaskEventState,
+  { en: string; es: string; icon: typeof InboxIcon }
+> = {
+  todo: { en: "Task", es: "Tarea", icon: Circle },
+  reminder: { en: "Task reminder", es: "Recordatorio de tarea", icon: AlarmClock },
+  done: { en: "Task completed", es: "Tarea completada", icon: CheckCircle2 },
+}
+
+// Derive a coarse display state for a task in the conversation timeline —
+// Task itself only tracks done/not-done, so "reminder" is anything due soon.
+function taskEventState(t: Task): TaskEventState {
+  if (t.done) return "done"
+  const dueInMs = new Date(t.dueDate).getTime() - Date.now()
+  return dueInMs < 2 * 24 * 3600 * 1000 ? "reminder" : "todo"
 }
 
 type View = { kind: "folder"; id: Folder } | { kind: "tag"; id: ConvStatus }
@@ -519,6 +562,7 @@ export default function Inbox() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const conversations = useConversations()
+  const tasks = useTasks()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
   const [activeId, setActiveId] = React.useState<string | undefined>()
@@ -689,6 +733,17 @@ export default function Inbox() {
   // Interleave messages + activity events by timestamp.
   const timeline = React.useMemo(() => {
     if (!effectiveActive) return []
+    // Tasks linked to this prospect show up as timeline rows too, so the
+    // "Create task" flow (Inbox header) is visible right where it was created.
+    const taskEvents: ConvEvent[] = tasks
+      .filter((t) => t.prospectId === effectiveActive.prospectId)
+      .map((t) => ({
+        id: `task_${t.id}`,
+        kind: "task",
+        label: t.title,
+        timestamp: t.dueDate,
+        taskState: taskEventState(t),
+      }))
     const items: (
       | { type: "msg"; at: number; msg: Conversation["messages"][number] }
       | { type: "event"; at: number; ev: ConvEvent }
@@ -698,14 +753,14 @@ export default function Inbox() {
         at: new Date(msg.timestamp).getTime(),
         msg,
       })),
-      ...(effectiveActive.events ?? []).map((ev) => ({
+      ...[...(effectiveActive.events ?? []), ...taskEvents].map((ev) => ({
         type: "event" as const,
         at: new Date(ev.timestamp).getTime(),
         ev,
       })),
     ]
     return items.sort((a, b) => a.at - b.at)
-  }, [effectiveActive])
+  }, [effectiveActive, tasks])
 
   return (
     <div className="flex h-[calc(100svh-4rem)]">
@@ -1309,9 +1364,22 @@ export default function Inbox() {
             {timeline.map((item) => {
               if (item.type === "event") {
                 const ev = item.ev
-                const meta = EVENT_META[ev.kind]
+                // "step" and "task" vary their icon/label by channel or task
+                // state rather than a single fixed EVENT_META entry.
+                const stepMeta = ev.kind === "step" && ev.stepChannel ? STEP_META[ev.stepChannel] : undefined
+                const taskMeta = ev.kind === "task" && ev.taskState ? TASK_STATE_META[ev.taskState] : undefined
+                const meta = stepMeta ?? taskMeta ?? EVENT_META[ev.kind]
                 const Icon = meta.icon
-                const label = ev.kind === "tag" ? c.autoTaggedAs : locale === "es" ? meta.es : meta.en
+                const label =
+                  ev.kind === "tag"
+                    ? c.autoTaggedAs
+                    : ev.kind === "task"
+                      ? locale === "es"
+                        ? `${meta.es}: ${ev.label}`
+                        : `${meta.en}: ${ev.label}`
+                      : locale === "es"
+                        ? meta.es
+                        : meta.en
                 return (
                   <div
                     key={ev.id}

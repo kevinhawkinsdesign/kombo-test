@@ -649,6 +649,21 @@ export const conversations: Conversation[] = [
     status: "interested",
     aiDraft:
       "Thanks, Priya — that's exactly the reaction we hope for. Want me to set up a tight 20-minute session to map this to Talent Garden's workflow? I'll send a couple of times.",
+    events: [
+      {
+        id: "e_20",
+        kind: "step",
+        label: "Sequence step sent",
+        stepChannel: "linkedin",
+        timestamp: "2026-06-23T08:00:00Z",
+      },
+      {
+        id: "e_21",
+        kind: "view",
+        label: "Viewed their profile",
+        timestamp: "2026-06-23T08:15:00Z",
+      },
+    ],
     messages: [
       {
         id: "m_14",
@@ -721,6 +736,27 @@ export const conversations: Conversation[] = [
     status: "need_review",
     aiDraft:
       "Lo entiendo perfectamente, Diego — el momento lo es todo. Vuelvo a contactarte en Q4. Mientras tanto te envío un recurso breve sobre cómo equipos como Edicom se prepararon, sin compromiso.",
+    events: [
+      {
+        id: "e_22",
+        kind: "step",
+        label: "Sequence step sent",
+        stepChannel: "email",
+        timestamp: "2026-06-22T10:30:00Z",
+      },
+      {
+        id: "e_23",
+        kind: "open",
+        label: "Opened your email",
+        timestamp: "2026-06-22T14:00:00Z",
+      },
+      {
+        id: "e_24",
+        kind: "click",
+        label: "Clicked your link",
+        timestamp: "2026-06-22T14:05:00Z",
+      },
+    ],
     messages: [
       {
         id: "m_18",
