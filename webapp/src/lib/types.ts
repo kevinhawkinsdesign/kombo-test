@@ -154,14 +154,17 @@ export interface CoachScorecard {
 
 export type ChatLang = "en" | "es"
 
-// Intent the conversation has been auto-tagged with (sentiment of the reply).
+// Outcome the conversation has been set to — a fixed list, not a
+// user-customizable tag (see the "Outcome" picker in the Inbox).
 export type ConvStatus =
   | "interested"
-  | "meeting_booked"
-  | "referred"
-  | "bad_timing"
   | "not_interested"
-  | "positive"
+  | "qualified"
+  | "disqualified"
+  | "meeting_booked"
+  | "need_review"
+  | "won"
+  | "lost"
 
 export interface Message {
   id: string
