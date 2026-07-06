@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Plus,
@@ -12,8 +12,6 @@ import {
   Sparkles,
   RefreshCw,
   CalendarClock,
-  FileText,
-  X,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -26,18 +24,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -61,10 +49,8 @@ import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate, isCampaignScheduled } from "@/lib/format"
 import { useLocale } from "@/lib/locale"
-import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
-import { SAMPLE_DATA } from "@/pages/Templates"
-import { normalizeChannel } from "@/pages/CampaignDetail"
-import type { Campaign, CampaignStatus, EmailTemplate } from "@/lib/types"
+import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
+import type { Campaign, CampaignStatus } from "@/lib/types"
 
 interface CampaignAudience {
   id: string
@@ -104,15 +90,6 @@ const COPY = {
     scheduled: "Scheduled",
     startsAt: (d: string) => `Starts ${d}`,
     newCampaign: "New campaign",
-    createIntro: "Give your campaign a name to get started.",
-    campaignName: "Campaign name",
-    namePlaceholder: "Q3 outbound — VP Sales",
-    startFromTemplate: "Start from a template",
-    templatePicked: (name: string) => `Starting from "${name}"`,
-    clearTemplate: "Remove template",
-    cancel: "Cancel",
-    create: "Create",
-    campaignCreated: "Campaign created",
     campaignDuplicated: "Campaign duplicated",
     campaignDeleted: "Campaign deleted",
     pageTitle: "Campaigns",
@@ -178,15 +155,6 @@ const COPY = {
     scheduled: "Programada",
     startsAt: (d: string) => `Empieza el ${d}`,
     newCampaign: "Nueva campaña",
-    createIntro: "Asigna un nombre a tu campaña para empezar.",
-    campaignName: "Nombre de la campaña",
-    namePlaceholder: "Outbound Q3 — VP de Ventas",
-    startFromTemplate: "Empezar con una plantilla",
-    templatePicked: (name: string) => `Empezando con «${name}»`,
-    clearTemplate: "Quitar plantilla",
-    cancel: "Cancelar",
-    create: "Crear",
-    campaignCreated: "Campaña creada",
     campaignDuplicated: "Campaña duplicada",
     campaignDeleted: "Campaña eliminada",
     pageTitle: "Campañas",
@@ -532,140 +500,12 @@ function CampaignTable({
   )
 }
 
-function CreateCampaignDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  const navigate = useNavigate()
-  const [name, setName] = React.useState("")
-  const [template, setTemplate] = React.useState<EmailTemplate | null>(null)
-  const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
-
-  // Reset the form whenever the dialog transitions to open. Adjusting state
-  // during render is the React-recommended pattern over a cascading effect.
-  const [wasOpen, setWasOpen] = React.useState(open)
-  if (open !== wasOpen) {
-    setWasOpen(open)
-    if (open) {
-      setName("")
-      setTemplate(null)
-    }
-  }
-
-  const trimmedName = name.trim()
-
-  function handleCreate() {
-    if (!trimmedName) return
-    const campaign = campaignStore.create({ name: trimmedName })
-    if (template) {
-      const channel = normalizeChannel(template.channel)
-      campaignStore.addStepFromTemplate(campaign.id, {
-        channel,
-        subject: channel === "email" ? template.subject : undefined,
-        body: template.body,
-      })
-    }
-    toast.success(c.campaignCreated)
-    onOpenChange(false)
-    navigate(`/campaigns/${campaign.id}`)
-  }
-
-  return (
-    <>
-      {/* Content unmounts (rather than staying open behind it) while the
-          template picker is showing — two simultaneously-open Radix Dialog
-          roots otherwise dismiss each other on outside interaction. */}
-      <Dialog open={open && !templatePickerOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{c.newCampaign}</DialogTitle>
-            <DialogDescription>{c.createIntro}</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault()
-              handleCreate()
-            }}
-            className="space-y-3"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="campaign-name">{c.campaignName}</Label>
-              <Input
-                id="campaign-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder={c.namePlaceholder}
-                autoFocus
-              />
-            </div>
-
-            {template ? (
-              <div className="border-primary/30 bg-primary/[0.03] flex items-center gap-2 rounded-lg border p-2.5 text-sm">
-                <FileText className="text-primary size-4 shrink-0" />
-                <span className="min-w-0 flex-1 truncate">
-                  {c.templatePicked(template.name)}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-6"
-                  aria-label={c.clearTemplate}
-                  onClick={() => setTemplate(null)}
-                >
-                  <X className="size-3.5" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setTemplatePickerOpen(true)}
-              >
-                <FileText className="size-4" />
-                {c.startFromTemplate}
-              </Button>
-            )}
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
-                {c.cancel}
-              </Button>
-              <Button type="submit" variant="volt" disabled={!trimmedName}>
-                {c.create}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <TemplatePickerDialog
-        open={templatePickerOpen}
-        onOpenChange={setTemplatePickerOpen}
-        onInsert={setTemplate}
-        vars={SAMPLE_DATA}
-        locale={locale}
-      />
-    </>
-  )
-}
-
 export default function Campaigns() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const campaigns = useCampaigns()
   const lists = useLists()
-  const [createOpen, setCreateOpen] = React.useState(false)
+  const { open: openNewCampaign } = useNewCampaign()
   const [pendingDelete, setPendingDelete] = React.useState<Campaign | null>(
     null
   )
@@ -752,7 +592,7 @@ export default function Campaigns() {
         title={c.pageTitle}
         description={c.pageDescription}
         action={
-          <Button variant="volt" onClick={() => setCreateOpen(true)}>
+          <Button variant="volt" onClick={openNewCampaign}>
             <Plus className="size-4" />
             {c.newCampaign}
           </Button>
@@ -813,7 +653,6 @@ export default function Campaigns() {
         />
       )}
 
-      <CreateCampaignDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ConfirmDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => {
