@@ -75,11 +75,11 @@ function App() {
         }
       >
         {/* Home is a quick-actions launcher + the customizable module grid;
-            the sales Dashboard is its own page; /search is the filterable
-            search + results page (with its own search box); /signals is the
-            separate AI-suggestion feed (curated carousel rows); /find is the
-            dedicated hero search page (prompt + module grid). All three are
-            distinct pages, not one component switching on state. */}
+            the sales Dashboard is its own page; /search (the sidebar's
+            "Search" item) is the filterable search + results page, with its
+            own search box; /signals is the separate AI-suggestion feed
+            (curated carousel rows). /find is the earlier hero-prompt search
+            page — kept as a route but no longer linked from the main nav. */}
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/search" element={<Search />} />
