@@ -32,8 +32,8 @@ import {
   Puzzle,
   Workflow,
   Radar,
+  Home,
   Search,
-  SlidersHorizontal,
   LayoutGrid,
 } from "lucide-react"
 
@@ -82,10 +82,10 @@ interface NavGroup {
 
 const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
-// Always-visible top destinations. Search (the "Describe your ideal customer"
-// hero) exists in both releases; the sales Dashboard is a separate v2 page.
+// Always-visible top destinations. Home (quick actions + customizable
+// widgets) exists in both releases; the sales Dashboard is a separate v2 page.
 const primary: NavItem[] = [
-  { to: "/", labelKey: "nav.searchHome", icon: Search },
+  { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   {
     to: "/copilot",
@@ -95,8 +95,8 @@ const primary: NavItem[] = [
     isNew: true,
   },
   { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
+  { to: "/find", labelKey: "nav.quickSearch", icon: Search },
   { to: "/search", labelKey: "nav.search", icon: Radar },
-  { to: "/ai-search", labelKey: "nav.aiSearch", icon: SlidersHorizontal },
   {
     to: "/inbox",
     labelKey: "nav.inbox",
@@ -643,7 +643,7 @@ export function AppSidebar() {
 
 // Primary destinations shown in the native-style bottom bar on mobile.
 const bottomBarItems: NavItem[] = [
-  { to: "/", labelKey: "nav.searchHome", icon: Search },
+  { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
@@ -654,9 +654,9 @@ const bottomBarItems: NavItem[] = [
   },
 ]
 
-// v1 has no dashboard/signals — Search (the search hero), then prospecting.
+// v1 has no dashboard/signals — Home, then Signals, then prospecting.
 const bottomBarItemsV1: NavItem[] = [
-  { to: "/", labelKey: "nav.searchHome", icon: Search },
+  { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/search", labelKey: "nav.search", icon: Radar },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {

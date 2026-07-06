@@ -10,7 +10,6 @@ import * as React from "react"
 export type FeatureKey =
   | "copilot"
   | "search"
-  | "ai-search"
   | "discover"
   | "companies"
   | "people"

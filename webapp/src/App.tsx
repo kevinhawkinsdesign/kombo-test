@@ -7,8 +7,9 @@ import Signup from "@/pages/Signup"
 import Onboarding from "@/pages/Onboarding"
 import Dashboard from "@/pages/Dashboard"
 import Copilot from "@/pages/Copilot"
+import Home from "@/pages/Home"
 import Search from "@/pages/Search"
-import AiSearch from "@/pages/AiSearch"
+import QuickSearch from "@/pages/QuickSearch"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
 import People from "@/pages/People"
@@ -74,14 +75,15 @@ function App() {
           </RequireAuth>
         }
       >
-        {/* Home is the "Describe your ideal customer" hero (v1 + v2); the
-            sales Dashboard is its own page, and /search goes straight to the
-            results view. */}
-        <Route path="/" element={<Search key="home" />} />
+        {/* Home is a quick-actions launcher + the customizable module grid;
+            the sales Dashboard is its own page; /search (Signals) is the
+            AI-suggestion feed + results view; /find is the direct-query
+            modal launcher, kept distinct from Signals. */}
+        <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/copilot" element={<Copilot />} />
-        <Route path="/search" element={<Search key="search" />} />
-        <Route path="/ai-search" element={<AiSearch />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/find" element={<QuickSearch />} />
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />

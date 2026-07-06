@@ -34,13 +34,12 @@ import {
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
-import { Page } from "@/components/layout/Page"
+import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale, type Locale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import {
   Dialog,
@@ -112,17 +111,14 @@ import {
   type CatalogFilterDef,
 } from "@/components/common/FilterCatalog"
 import { downloadCsv } from "@/lib/csv"
-import { HomeModules } from "@/components/home/HomeModules"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import { portraitFor } from "@/lib/avatars"
-import { initials } from "@/lib/format"
 import type { AccountTier } from "@/lib/types"
 
 const COPY = {
   en: {
-    title: "AI Search",
+    title: "Signals",
     description:
-      "Describe who you're looking for. Kai searches our database of prospects and companies — or applies AI to build a custom table you can save as a list and run as a campaign.",
+      "AI-matched prospects and companies, scored and ready to search, save, or add to a campaign.",
     introTitle: "Prospect with a prompt",
     introDescription:
       "Ask in plain English or build an advanced query by hand. Kai returns a fit-scored table of prospects or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
@@ -378,9 +374,9 @@ const COPY = {
     ],
   },
   es: {
-    title: "Búsqueda con IA",
+    title: "Señales",
     description:
-      "Describe a quién buscas. Kai busca en nuestra base de prospectos y empresas — o aplica IA para construir una tabla a medida que puedes guardar como lista y lanzar como campaña.",
+      "Prospectos y empresas emparejados por IA, puntuados y listos para buscar, guardar o añadir a una campaña.",
     introTitle: "Prospecta con un prompt",
     introDescription:
       "Pregunta en lenguaje natural o crea una consulta avanzada a mano. Kai devuelve una tabla de prospectos o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
@@ -802,10 +798,6 @@ export default function Search() {
     ? (savedSearches.find((s) => s.id === incomingSearchId) ?? null)
     : null
 
-  // This component serves two routes: "/" is Home (the "Describe your ideal
-  // customer" hero) and "/search" opens the search page pristine — no query,
-  // no filters — showing its empty state until the user searches.
-  const isHomeRoute = location.pathname === "/"
   const [entity, setEntity] = React.useState<AiEntity>(
     loadedSearch
       ? loadedSearch.entity
@@ -827,7 +819,6 @@ export default function Search() {
     loadedSearch ? loadedSearch.prompt : similarPrompt || headerPrompt || ""
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
-  const [hasSearched, setHasSearched] = React.useState(!isHomeRoute)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
@@ -968,7 +959,6 @@ export default function Search() {
 
   // A prompt is treated as a search query — interpret it into structured
   // filters and run the search (with a brief "thinking" beat). No chat.
-  // From Home, hand the prompt to /search so the URL matches the results.
   const runPrompt = React.useCallback(
     // forcedEntity: interpretPrompt's entity guess is a naive regex over the
     // free-text prompt (e.g. "VPs of Sales at companies with..." reads
@@ -977,12 +967,7 @@ export default function Search() {
     (prompt: string, forcedEntity?: AiEntity) => {
       const text = prompt.trim()
       if (!text) return
-      if (isHomeRoute) {
-        navigate(`/search?q=${encodeURIComponent(text)}`)
-        return
-      }
       setInput(text)
-      setHasSearched(true)
       setThinking(true)
       setLastPrompt(text)
       window.setTimeout(() => {
@@ -994,7 +979,7 @@ export default function Search() {
         setThinking(false)
       }, 900)
     },
-    [isHomeRoute, navigate]
+    []
   )
 
   // Run a prompt handed over from the header search exactly once.
@@ -1014,7 +999,6 @@ export default function Search() {
   }
 
   function addFilter(group: keyof AiQuery, value: string) {
-    setHasSearched(true)
     setQuery((prev) => {
       const arr = prev[group] as string[]
       if (arr.includes(value)) return prev
@@ -1029,7 +1013,6 @@ export default function Search() {
 
   // Dynamic per-database facets (LinkedIn Sales Navigator / Kombo FullEnrich).
   function addFacet(id: string, value: string) {
-    setHasSearched(true)
     setQuery((prev) => {
       const cur = prev.facets[id] ?? []
       if (cur.includes(value)) return prev
@@ -1093,7 +1076,6 @@ export default function Search() {
   }
 
   function applyLookalike(s: LookalikeSeed, q: AiQuery) {
-    setHasSearched(true)
     setSeed(s)
     setEntity(s.kind === "company" ? "companies" : "people")
     setQuery(q)
@@ -1172,7 +1154,6 @@ export default function Search() {
   function loadSearch(id: string) {
     const s = savedSearches.find((x) => x.id === id)
     if (!s) return
-    setHasSearched(true)
     setEntity(s.entity)
     setQuery(s.query)
     setLastPrompt(s.prompt)
@@ -1299,20 +1280,8 @@ export default function Search() {
 
   return (
     <Page>
-      {!hasSearched ? (
-        <SearchHome
-          c={c}
-          input={input}
-          setInput={setInput}
-          onRun={runPrompt}
-          onSearchWithFilters={() => navigate("/search?filters=1")}
-          entity={entity}
-          setEntity={setEntity}
-        />
-      ) : (
-        <>
-      {/* Results view stays lean — the dense table is the focus, so the page
-          title, blurb and intro panel live only on the pre-search home. */}
+      <>
+      <PageHeading title={c.title} description={c.description} />
       <div className="space-y-3">
         {/* Prospect Search tabs — People vs Companies (always shown). */}
         <div className="bg-muted inline-flex rounded-md p-0.5">
@@ -1848,8 +1817,7 @@ export default function Search() {
           </div>
         </div>
       </div>
-        </>
-      )}
+      </>
 
       <LookalikeDialog
         open={lookalikeOpen}
@@ -2776,288 +2744,6 @@ function CompanyPosterCard({
         {co.industry} · {co.region} · {co.headcount}
       </p>
     </button>
-  )
-}
-
-// The home hero: the permanent AI search prompt + entity tabs. The
-// customizable module grid renders below it (see HomeModules).
-function SearchHome({
-  c,
-  input,
-  setInput,
-  onRun,
-  onSearchWithFilters,
-  entity,
-  setEntity,
-}: {
-  c: Copy
-  input: string
-  setInput: (v: string) => void
-  onRun: (prompt: string) => void
-  onSearchWithFilters: () => void
-  entity: AiEntity
-  setEntity: (e: AiEntity) => void
-}) {
-  // The live preview dropdown opens once there's text to interpret, and
-  // closes on outside click / Escape / submit — a pointerdown listener
-  // (rather than textarea onBlur) so clicking a button inside the preview
-  // (e.g. "See all") doesn't get dismissed by the blur firing first.
-  const previewRef = React.useRef<HTMLDivElement>(null)
-  const [previewOpen, setPreviewOpen] = React.useState(false)
-
-  React.useEffect(() => {
-    if (!previewOpen) return
-    function handlePointerDown(e: PointerEvent) {
-      if (previewRef.current && !previewRef.current.contains(e.target as Node)) {
-        setPreviewOpen(false)
-      }
-    }
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setPreviewOpen(false)
-    }
-    document.addEventListener("pointerdown", handlePointerDown)
-    document.addEventListener("keydown", handleKeyDown)
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown)
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [previewOpen])
-
-  return (
-    <div className="mx-auto max-w-5xl py-8">
-      {/* The search hero stays permanently at the top; the customizable module
-          grid flows below it. The hero keeps its narrow, centered column. */}
-      <div className="mx-auto flex max-w-2xl flex-col items-center">
-      <h1 className="text-center text-3xl font-semibold tracking-tight sm:text-4xl">
-        {c.heroTitle}
-      </h1>
-      <p className="text-muted-foreground mt-2 text-center text-sm">
-        {c.heroSubtitle}
-      </p>
-
-      {/* Entity tabs + AI prompt share one ref so switching tabs while the
-          preview is open counts as "inside" — it should update the live
-          preview for the new entity, not dismiss it. */}
-      <div ref={previewRef} className="flex w-full flex-col items-center">
-      {/* Database / entity tabs */}
-      <div className="bg-muted mt-6 inline-flex rounded-lg p-[3px]">
-        <EntityTab
-          active={entity === "people"}
-          onClick={() => setEntity("people")}
-          icon={Users}
-          label={c.people}
-        />
-        <EntityTab
-          active={entity === "companies"}
-          onClick={() => setEntity("companies")}
-          icon={Building2}
-          label={c.companies}
-        />
-      </div>
-
-      {/* AI prompt */}
-      <div className="relative mt-3 w-full">
-        <form
-          className="w-full"
-          onSubmit={(e) => {
-            e.preventDefault()
-            setPreviewOpen(false)
-            onRun(input)
-          }}
-        >
-          <div className="relative">
-            <Textarea
-              id="search-prompt"
-              autoFocus
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value)
-                setPreviewOpen(e.target.value.trim().length > 0)
-              }}
-              onFocus={() => {
-                if (input.trim()) setPreviewOpen(true)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  setPreviewOpen(false)
-                  onRun(input)
-                }
-              }}
-              placeholder={c.heroPlaceholder}
-              rows={3}
-              className="resize-none items-center rounded-xl p-4 pr-14 text-base"
-            />
-            <Button
-              type="submit"
-              variant="volt"
-              size="icon"
-              disabled={!input.trim()}
-              className="absolute right-3 bottom-3 rounded-lg"
-              aria-label={c.searchBtn}
-            >
-              <ArrowRight className="size-4" />
-            </Button>
-          </div>
-        </form>
-
-        {previewOpen && input.trim() && (
-          <AiSearchPreview
-            input={input}
-            entity={entity}
-            c={c}
-            onSeeAll={() => {
-              setPreviewOpen(false)
-              onRun(input)
-            }}
-          />
-        )}
-      </div>
-
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={onSearchWithFilters}
-        className="text-muted-foreground hover:text-foreground mt-2 gap-1.5"
-      >
-        <SlidersHorizontal className="size-3.5" />
-        {c.searchWithFilters}
-      </Button>
-      </div>
-      </div>
-
-      {/* Modular, customizable cards below the permanent search. */}
-      <HomeModules />
-    </div>
-  )
-}
-
-// Live typeahead preview: as the user types on the home search box, show
-// which filters Kai has picked up (checked once detected) and a sample of 5
-// matching results — so the search feels understood before running it.
-function AiSearchPreview({
-  input,
-  entity,
-  onSeeAll,
-  c,
-}: {
-  input: string
-  entity: AiEntity
-  onSeeAll: () => void
-  c: Copy
-}) {
-  const { query } = React.useMemo(() => interpretPrompt(input), [input])
-
-  const results = React.useMemo(
-    () => (entity === "companies" ? searchCompanies(query) : searchLeads(query)),
-    [entity, query]
-  )
-  const sample = results.slice(0, 5)
-  const total = estimatedTotal(results.length, entity)
-  const entityLabel = entity === "companies" ? c.companies : c.people
-
-  const chips: { key: string; label: string; active: boolean }[] =
-    entity === "companies"
-      ? [
-          { key: "location", label: c.previewLocation, active: query.regions.length > 0 },
-          { key: "industry", label: c.previewIndustry, active: query.industries.length > 0 },
-          { key: "size", label: c.previewSize, active: query.headcount.length > 0 },
-          { key: "growth", label: c.previewGrowth, active: query.growth.length > 0 },
-          { key: "signals", label: c.previewSignals, active: query.signals.length > 0 },
-        ]
-      : [
-          { key: "location", label: c.previewLocation, active: query.regions.length > 0 },
-          {
-            key: "role",
-            label: c.previewRole,
-            active: query.titles.length > 0 || query.seniority.length > 0,
-          },
-          { key: "industry", label: c.previewIndustry, active: query.industries.length > 0 },
-          { key: "size", label: c.previewSize, active: query.headcount.length > 0 },
-          { key: "signals", label: c.previewSignals, active: query.signals.length > 0 },
-        ]
-
-  return (
-    <Card className="absolute inset-x-0 top-full z-20 mt-2 gap-0 overflow-hidden p-0 shadow-lg">
-      <div className="flex flex-wrap gap-2 border-b p-3">
-        {chips.map((chip) => (
-          <span
-            key={chip.key}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-              chip.active
-                ? "border-chart-1/40 bg-chart-1/10 text-chart-1"
-                : "text-muted-foreground border-border"
-            )}
-          >
-            {chip.active ? (
-              <CheckCircle2 className="size-3.5" />
-            ) : (
-              <CircleDashed className="size-3.5" />
-            )}
-            {chip.label}
-          </span>
-        ))}
-      </div>
-
-      <div className="flex items-center justify-between px-3 py-2.5">
-        <p className="text-sm font-medium">
-          {entityLabel} ({total.toLocaleString()})
-        </p>
-        <Button variant="ghost" size="sm" className="gap-1" onClick={onSeeAll}>
-          {entity === "companies" ? c.previewSeeAllCompanies : c.previewSeeAllPeople}
-          <ArrowRight className="size-3.5" />
-        </Button>
-      </div>
-
-      {sample.length > 0 ? (
-        <div className="divide-y border-t">
-          {entity === "companies"
-            ? (sample as AiCompany[]).map((co) => (
-                <div key={co.id} className="flex items-center gap-3 px-3 py-2.5">
-                  <span
-                    className="flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
-                    style={{ backgroundColor: co.logoColor }}
-                  >
-                    {co.name.slice(0, 2)}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{co.name}</p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {co.industry} · {co.headcount}
-                    </p>
-                  </div>
-                </div>
-              ))
-            : (sample as AiLead[]).map((l) => (
-                <div key={l.id} className="flex items-center gap-3 px-3 py-2.5">
-                  <Avatar className="size-8 shrink-0">
-                    <AvatarImage src={portraitFor(`${l.firstName} ${l.lastName}`)} alt="" />
-                    <AvatarFallback
-                      style={{ backgroundColor: l.avatarColor, color: "white" }}
-                      className="text-xs"
-                    >
-                      {initials(l.firstName, l.lastName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {l.firstName} {l.lastName}
-                    </p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {l.title} · {l.company}
-                    </p>
-                  </div>
-                </div>
-              ))}
-        </div>
-      ) : (
-        <p className="text-muted-foreground border-t px-3 py-6 text-center text-sm">
-          {c.previewEmpty}
-        </p>
-      )}
-    </Card>
   )
 }
 

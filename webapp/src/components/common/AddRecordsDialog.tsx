@@ -334,7 +334,6 @@ export function AddRecordsDialog({
   listId,
   scopeCompanies,
   allowEntityToggle = false,
-  startOnResults = false,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -348,11 +347,9 @@ export function AddRecordsDialog({
   // Every existing entry point already knows its entity (a Prospects list,
   // a Companies list, "Find contacts" from an account, etc.) — the
   // Prospects/Companies toggle only makes sense for a generic, unscoped
-  // entry point (the sidebar's "AI Search").
+  // entry point (Home's "Find prospects & companies" quick action, and the
+  // sidebar's "Search" nav item).
   allowEntityToggle?: boolean
-  // Skip the splash and land straight on the filterable results screen —
-  // used by the sidebar's "AI Search" entry point.
-  startOnResults?: boolean
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -379,7 +376,7 @@ export function AddRecordsDialog({
 
   const scoped = (scopeCompanies?.length ?? 0) > 0
   // Only opens that actually visited the splash have anywhere to go "back" to.
-  const cameFromSplash = !scoped && !startOnResults
+  const cameFromSplash = !scoped
 
   if (open && !wasOpen) {
     setWasOpen(true)
@@ -389,7 +386,7 @@ export function AddRecordsDialog({
     // A scoped open (e.g. "Find contacts" from a company list) already has
     // clear intent — skip the splash and land straight on results, same as
     // before this screen existed.
-    setScreen(scoped || startOnResults ? "results" : "splash")
+    setScreen(scoped ? "results" : "splash")
     setInput("")
     setQuery({ ...EMPTY_QUERY })
     setSortKey("fit")
