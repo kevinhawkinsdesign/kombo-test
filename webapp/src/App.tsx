@@ -6,7 +6,6 @@ import Login from "@/pages/Login"
 import Signup from "@/pages/Signup"
 import Onboarding from "@/pages/Onboarding"
 import Dashboard from "@/pages/Dashboard"
-import Copilot from "@/pages/Copilot"
 import Home from "@/pages/Home"
 import Search from "@/pages/Search"
 import QuickSearch from "@/pages/QuickSearch"
@@ -77,11 +76,10 @@ function App() {
       >
         {/* Home is a quick-actions launcher + the customizable module grid;
             the sales Dashboard is its own page; /search (Signals) is the
-            AI-suggestion feed + results view; /find is the direct-query
-            modal launcher, kept distinct from Signals. */}
+            AI-suggestion feed + results view; /find is the dedicated search
+            page (hero + module grid), kept distinct from Signals. */}
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/copilot" element={<Copilot />} />
         <Route path="/search" element={<Search />} />
         <Route path="/find" element={<QuickSearch />} />
         <Route path="/prospects/:id" element={<ProspectProfile />} />

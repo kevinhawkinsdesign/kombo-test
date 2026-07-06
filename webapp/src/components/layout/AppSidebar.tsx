@@ -14,7 +14,6 @@ import {
   Users,
   Plug,
   Settings,
-  Sparkles,
   Gift,
   Zap,
   Menu,
@@ -59,7 +58,6 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { conversations } from "@/lib/mock-data"
-import { copilotActions } from "@/lib/mock-copilot"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
 import { useReleaseMode, isV2OnlyPath } from "@/lib/release-mode"
@@ -87,13 +85,6 @@ const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 const primary: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
-  {
-    to: "/copilot",
-    labelKey: "nav.copilot",
-    icon: Sparkles,
-    badge: String(copilotActions.length),
-    isNew: true,
-  },
   { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
   { to: "/find", labelKey: "nav.quickSearch", icon: Search },
   { to: "/search", labelKey: "nav.search", icon: Radar },
@@ -644,7 +635,6 @@ export function AppSidebar() {
 // Primary destinations shown in the native-style bottom bar on mobile.
 const bottomBarItems: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
-  { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
     to: "/inbox",

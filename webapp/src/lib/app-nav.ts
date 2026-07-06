@@ -2,7 +2,6 @@ import type { ComponentType } from "react"
 import {
   Radar,
   LayoutDashboard,
-  Sparkles,
   Inbox,
   Home,
   Building2,
@@ -39,7 +38,6 @@ export interface AppDestination {
 export const APP_DESTINATIONS: AppDestination[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home, keywords: ["home", "quick actions", "widgets", "dashboard"] },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, keywords: ["kpis", "pipeline", "leaderboard", "metrics", "overview"] },
-  { to: "/copilot", labelKey: "nav.copilot", icon: Sparkles, keywords: ["signals", "copilot", "kai", "automations", "approvals"] },
   { to: "/inbox", labelKey: "nav.inbox", icon: Inbox, keywords: ["messages", "replies", "conversations"] },
   { to: "/search", labelKey: "nav.search", icon: Radar, keywords: ["prospects", "find", "leads", "people", "signals"] },
   { to: "/companies", labelKey: "nav.companies", icon: Building2, keywords: ["accounts", "discover"] },

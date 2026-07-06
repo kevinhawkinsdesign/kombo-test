@@ -16,7 +16,6 @@ const KEY = "kombo-release-mode"
 // in sync with the `isNew` flags on the nav config in AppSidebar.tsx.
 export const V2_ONLY_PATHS = [
   "/dashboard", // manager dashboard
-  "/copilot",
   "/intros",
   "/extension",
   "/sequences",

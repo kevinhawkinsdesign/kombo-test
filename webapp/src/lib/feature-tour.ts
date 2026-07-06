@@ -8,7 +8,6 @@ import * as React from "react"
  */
 
 export type FeatureKey =
-  | "copilot"
   | "search"
   | "discover"
   | "companies"
