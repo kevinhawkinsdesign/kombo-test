@@ -411,6 +411,31 @@ export const campaignStore = {
       }),
     })
   },
+  // Same as addStep, but seeded from a saved Template's content instead of
+  // starting blank. The caller resolves the template's Channel to a
+  // StepChannel first (channels a campaign step can't represent, like
+  // "messenger", already fall back to "email").
+  addStepFromTemplate(
+    campaignId: string,
+    data: { channel: StepChannel; subject?: string; body: string }
+  ): CampaignStep | undefined {
+    let created: CampaignStep | undefined
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== campaignId) return c
+        const step: CampaignStep = {
+          id: uid("s"),
+          channel: data.channel,
+          delayDays: c.steps.length === 0 ? 0 : 3,
+          subject: data.subject ?? "",
+          body: data.body,
+        }
+        created = step
+        return { ...c, steps: [...c.steps, step] }
+      }),
+    })
+    return created
+  },
   updateStep(
     campaignId: string,
     stepId: string,

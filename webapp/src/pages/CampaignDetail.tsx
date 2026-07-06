@@ -26,9 +26,12 @@ import {
   CalendarClock,
   ChevronDown,
   Ban,
+  FileText,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
+import { SAMPLE_DATA } from "@/pages/Templates"
 
 import { Page } from "@/components/layout/Page"
 import {
@@ -99,6 +102,7 @@ import type {
   StepChannel,
   EnrollmentStatus,
   Prospect,
+  EmailTemplate,
 } from "@/lib/types"
 
 // Sending accounts: the current user first, then teammates, deduped by id.
@@ -204,6 +208,7 @@ const COPY = {
     sent: "Sent",
     opened: "Opened",
     replied: "Replied",
+    bounced: "Bounced",
     moveStepUp: "Move step up",
     moveStepDown: "Move step down",
     removeStep: "Remove step",
@@ -219,6 +224,7 @@ const COPY = {
     sequenceSaved: "Sequence saved",
     noSteps: "This sequence has no steps yet.",
     addStep: "Add step",
+    useTemplate: "Use a template",
     groupEmail: "Email",
     groupMessaging: "Messaging",
     groupLinkedin: "LinkedIn",
@@ -366,6 +372,7 @@ const COPY = {
     sent: "Enviados",
     opened: "Aperturas",
     replied: "Respuestas",
+    bounced: "Rebotes",
     moveStepUp: "Subir paso",
     moveStepDown: "Bajar paso",
     removeStep: "Eliminar paso",
@@ -381,6 +388,7 @@ const COPY = {
     sequenceSaved: "Secuencia guardada",
     noSteps: "Esta secuencia aún no tiene pasos.",
     addStep: "Añadir paso",
+    useTemplate: "Usar una plantilla",
     groupEmail: "Correo",
     groupMessaging: "Mensajería",
     groupLinkedin: "LinkedIn",
@@ -558,7 +566,7 @@ function channelMeta(channel: string): ChannelMeta {
   return CHANNELS.email
 }
 
-function normalizeChannel(channel: string): StepChannel {
+export function normalizeChannel(channel: string): StepChannel {
   if (channel in CHANNELS) return channel as StepChannel
   if (channel === "linkedin") return "linkedin_message"
   return "email"
@@ -608,6 +616,7 @@ export default function CampaignDetail() {
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
   const [selectedStepId, setSelectedStepId] = React.useState<string | undefined>(undefined)
+  const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
   const { spend } = useCredits()
 
   // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
@@ -629,12 +638,23 @@ export default function CampaignDetail() {
     )
   }
 
+  const campaignId = campaign.id
   const steps = campaign.steps
   // Falls back to the last step — so adding a new one selects it immediately,
   // and removing the selected step lands on a step that still exists.
   const selectedStep =
     steps.find((s) => s.id === selectedStepId) ?? steps[steps.length - 1]
   const enrolledIds = campaign.enrolledIds ?? []
+
+  function insertStepFromTemplate(template: EmailTemplate) {
+    const channel = normalizeChannel(template.channel)
+    const created = campaignStore.addStepFromTemplate(campaignId, {
+      channel,
+      subject: channel === "email" ? template.subject : undefined,
+      body: template.body,
+    })
+    setSelectedStepId(created?.id)
+  }
 
   const openRate = campaign.enrolled
     ? Math.round((campaign.opened / campaign.enrolled) * 100)
@@ -652,8 +672,9 @@ export default function CampaignDetail() {
       sent: acc.sent + d.sent,
       opened: acc.opened + d.opened,
       replied: acc.replied + d.replied,
+      bounced: acc.bounced + d.bounced,
     }),
-    { sent: 0, opened: 0, replied: 0 }
+    { sent: 0, opened: 0, replied: 0, bounced: 0 }
   )
 
   const attachedList = campaign.listId
@@ -1061,6 +1082,7 @@ export default function CampaignDetail() {
                     sent={daily.map((d) => d.sent)}
                     opened={daily.map((d) => d.opened)}
                     replied={daily.map((d) => d.replied)}
+                    bounced={daily.map((d) => d.bounced)}
                   />
                 </div>
               ) : (
@@ -1288,7 +1310,7 @@ export default function CampaignDetail() {
               <CardTitle className="text-base">{c.summary}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <div>
                   <p className="text-lg font-semibold tabular-nums">
                     {totals.sent}
@@ -1306,6 +1328,12 @@ export default function CampaignDetail() {
                     {totals.replied}
                   </p>
                   <p className="text-muted-foreground text-xs">{c.replied}</p>
+                </div>
+                <div>
+                  <p className="text-destructive text-lg font-semibold tabular-nums">
+                    {totals.bounced}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.bounced}</p>
                 </div>
               </div>
             </CardContent>
@@ -1372,6 +1400,13 @@ export default function CampaignDetail() {
                       setSelectedStepId(undefined)
                     }}
                   />
+                  <Button
+                    variant="outline"
+                    onClick={() => setTemplatePickerOpen(true)}
+                  >
+                    <FileText className="size-4" />
+                    {c.useTemplate}
+                  </Button>
                 </div>
 
                 {/* Detail panel — the selected step's full editor. */}
@@ -1549,11 +1584,20 @@ export default function CampaignDetail() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p className="text-muted-foreground text-sm">{c.noSteps}</p>
-                <AddStepMenu
-                  onAdd={(channel) =>
-                    campaignStore.addStep(campaign.id, channel)
-                  }
-                />
+                <div className="flex gap-2">
+                  <AddStepMenu
+                    onAdd={(channel) =>
+                      campaignStore.addStep(campaign.id, channel)
+                    }
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => setTemplatePickerOpen(true)}
+                  >
+                    <FileText className="size-4" />
+                    {c.useTemplate}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -1685,6 +1729,14 @@ export default function CampaignDetail() {
         onOpenChange={setAddOpen}
         campaign={campaign}
         enrolledIds={allEnrolledIds}
+      />
+
+      <TemplatePickerDialog
+        open={templatePickerOpen}
+        onOpenChange={setTemplatePickerOpen}
+        onInsert={insertStepFromTemplate}
+        vars={SAMPLE_DATA}
+        locale={locale}
       />
 
       <ColumnManager
