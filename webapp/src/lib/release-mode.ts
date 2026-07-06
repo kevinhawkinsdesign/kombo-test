@@ -26,9 +26,10 @@ export const V2_ONLY_PATHS = [
 ] as const
 
 // Where v1 lands when the user hits a hidden route. Home ("/") — the
-// quick-actions launcher + customizable module grid — exists in both
-// releases.
+// quick-actions launcher + customizable module grid — only exists in v1;
+// v2 has no separate home, the Overview dashboard is the landing page.
 export const V1_HOME = "/"
+export const V2_HOME = "/dashboard"
 
 /** True when `pathname` belongs to a surface that only exists in v2. */
 export function isV2OnlyPath(pathname: string): boolean {

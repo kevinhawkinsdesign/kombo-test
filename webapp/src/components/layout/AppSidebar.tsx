@@ -167,8 +167,15 @@ function NavRow({
   inset?: boolean
 }) {
   const { t } = useLocale()
+  const { pathname } = useLocation()
   const Icon = item.icon
   const label = t(item.labelKey)
+  // Compute the class as a plain string (not NavLink's function-className
+  // form) — collapsed rows wrap this in a Radix Tooltip/Slot via `asChild`,
+  // which merges props by string-concatenating `className`. A function value
+  // gets coerced with `String()` there, corrupting the class into its own
+  // source code, which silently drops all the color/layout utilities.
+  const isActive = isActivePath(pathname, item.to)
 
   const link = (
     <NavLink
@@ -176,16 +183,14 @@ function NavRow({
       end={item.to === "/"}
       onClick={onNavigate}
       aria-label={collapsed ? label : undefined}
-      className={({ isActive }) =>
-        cn(
-          "group flex items-center rounded-md text-sm font-medium transition-colors",
-          collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2",
-          inset && !collapsed && "py-1.5",
-          isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-accent/60"
-        )
-      }
+      className={cn(
+        "group flex items-center rounded-md text-sm font-medium transition-colors",
+        collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2",
+        inset && !collapsed && "py-1.5",
+        isActive
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-sidebar-foreground hover:bg-sidebar-accent/60"
+      )}
     >
       <span className="relative">
         <Icon
@@ -320,12 +325,26 @@ function CollapsedGroupPopover({
     0
   )
 
+  // Open on hover (with a short close delay so moving the pointer from the
+  // trigger to the popover content doesn't flicker it shut), in addition to
+  // the default click behavior.
+  const closeTimer = React.useRef<number | null>(null)
+  const openOnHover = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current)
+    setOpen(true)
+  }
+  const closeOnHoverEnd = () => {
+    closeTimer.current = window.setTimeout(() => setOpen(false), 150)
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
           aria-label={label}
+          onMouseEnter={openOnHover}
+          onMouseLeave={closeOnHoverEnd}
           className={cn(
             "relative flex size-9 items-center justify-center rounded-md text-sm font-medium transition-colors",
             hasActive
@@ -348,6 +367,8 @@ function CollapsedGroupPopover({
         side="right"
         align="start"
         sideOffset={8}
+        onMouseEnter={openOnHover}
+        onMouseLeave={closeOnHoverEnd}
         className="bg-sidebar text-sidebar-foreground border-sidebar-border w-56 p-1.5"
       >
         <p className="text-sidebar-foreground/60 px-2 py-1 text-[11px] font-medium tracking-wide uppercase">
@@ -420,7 +441,10 @@ function SidebarContent({
   // (V2_ONLY_PATHS), not the `isNew` badge — so a page can ship in v1 and still
   // be badged "New" (e.g. Analytics).
   const inV1 = (to: string) => !isV2OnlyPath(to)
-  const visiblePrimary = isV1 ? primary.filter((it) => inV1(it.to)) : primary
+  // v2 has no separate Home — Overview (the dashboard) is the landing page.
+  const visiblePrimary = isV1
+    ? primary.filter((it) => inV1(it.to))
+    : primary.filter((it) => it.to !== "/")
   const visibleGroups = isV1
     ? groups
         .map((g) => ({ ...g, items: g.items.filter((it) => inV1(it.to)) }))
@@ -634,9 +658,10 @@ export function AppSidebar() {
   )
 }
 
-// Primary destinations shown in the native-style bottom bar on mobile.
+// Primary destinations shown in the native-style bottom bar on mobile. v2 has
+// no separate Home — Overview (the dashboard) is the landing page.
 const bottomBarItems: NavItem[] = [
-  { to: "/", labelKey: "nav.searchHome", icon: Home },
+  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
   {
     to: "/inbox",
