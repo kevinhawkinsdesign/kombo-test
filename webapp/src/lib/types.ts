@@ -55,6 +55,8 @@ export interface Prospect {
   enriched?: boolean
   // How this prospect entered the workspace. Undefined reads as "search".
   source?: ProspectSource
+  // The rep who owns this lead. Undefined reads as unassigned.
+  ownerId?: string
 }
 
 export interface SavedSearchCriteria {
@@ -96,6 +98,9 @@ export interface ProspectList {
   // Undefined reads as "auto_campaign" so existing dynamic lists stay valid.
   reviewMode?: ReviewMode
   lastSyncedAt?: string
+  // Default owner stamped onto prospects that enter via this list (unless a
+  // prospect already has an owner — this never overwrites one).
+  assigneeId?: string
 }
 
 // --- Sequence / diagram builder ---
