@@ -1823,7 +1823,10 @@ export function Signals() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
-  const [entity, setEntity] = React.useState<AiEntity>("people")
+  // Every curated signal here (funding, LinkedIn hiring, exec hires) is a
+  // company-level attribute, so this page only ever searches companies —
+  // no People/Companies toggle needed.
+  const entity: AiEntity = "companies"
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
   const [bulkIds, setBulkIds] = React.useState<string[]>([])
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
@@ -1836,21 +1839,6 @@ export function Signals() {
     <Page>
       <PageHeading title={c.signalsTitle} description={c.signalsDescription} />
       <div className="space-y-3">
-        <div className="bg-muted inline-flex rounded-md p-0.5">
-          <EntityTab
-            active={entity === "people"}
-            onClick={() => setEntity("people")}
-            icon={Users}
-            label={c.people}
-          />
-          <EntityTab
-            active={entity === "companies"}
-            onClick={() => setEntity("companies")}
-            icon={Building2}
-            label={c.companies}
-          />
-        </div>
-
         <SearchEmptyState
           c={c}
           locale={locale}
@@ -1876,7 +1864,7 @@ export function Signals() {
         open={bulkListOpen}
         onOpenChange={setBulkListOpen}
         mode="list"
-        recordKind={entity === "people" ? "person" : "company"}
+        recordKind="company"
         ids={bulkIds}
       />
     </Page>
