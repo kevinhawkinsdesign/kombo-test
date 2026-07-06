@@ -6,13 +6,15 @@ import { ProspectSearch } from "@/components/layout/ProspectSearch"
 import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
 import { NewCampaignProvider } from "@/components/campaign/NewCampaignWizard"
-import { useReleaseMode, isV2OnlyPath, V1_HOME } from "@/lib/release-mode"
+import { useReleaseMode, isV2OnlyPath, V1_HOME, V2_HOME } from "@/lib/release-mode"
 
 export function AppLayout() {
   const { isV1 } = useReleaseMode()
   const { pathname } = useLocation()
   // In v1 the new (extension-less) pages don't exist — bounce to the v1 home.
   const blockedInV1 = isV1 && isV2OnlyPath(pathname)
+  // v2 has no separate home — the Overview dashboard is the landing page.
+  const blockedInV2 = !isV1 && pathname === V1_HOME
 
   return (
     <NewCampaignProvider>
@@ -29,7 +31,13 @@ export function AppLayout() {
         <ImpersonationBanner />
         <AppHeader />
         <main id="main-content" className="flex-1 pb-16 md:pb-0">
-          {blockedInV1 ? <Navigate to={V1_HOME} replace /> : <Outlet />}
+          {blockedInV1 ? (
+            <Navigate to={V1_HOME} replace />
+          ) : blockedInV2 ? (
+            <Navigate to={V2_HOME} replace />
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
       <MobileBottomNav />
