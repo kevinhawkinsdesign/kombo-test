@@ -31,6 +31,7 @@ import {
   Plug,
   Download,
   FolderPlus,
+  Link2,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -89,6 +90,7 @@ import {
   sortCompanies,
   type SortKey,
   EMPTY_QUERY,
+  parseDomainList,
   type AiEntity,
   type AiQuery,
   type AiLead,
@@ -129,6 +131,21 @@ const COPY = {
     idleTitle: "Write a prompt to search",
     idleDesc:
       "Describe who you're looking for above, or open filters to build a query by hand — matching prospects and companies runs a live search.",
+    companyListBtn: "Company list",
+    companyListDialogTitle: "Search a list of company URLs",
+    companyListDialogDesc:
+      "Paste company websites or domains — one per line, or comma-separated. We'll find prospects at these companies; refine further with location and other filters.",
+    companyListPlaceholder: "acme.com\nhttps://example.com\nwww.another-co.io",
+    companyListApply: "Search",
+    companyListDetected: (n: number) =>
+      `${n} ${n === 1 ? "company" : "companies"} detected`,
+    companyListEmpty: "Paste at least one company URL or domain.",
+    domainListScoped: (n: number) =>
+      `Scoped to ${n} ${n === 1 ? "company" : "companies"} from your list`,
+    domainListPrompt: (n: number) =>
+      `Prospects at ${n} ${n === 1 ? "company" : "companies"} from your list`,
+    editList: "Edit list",
+    clearList: "Clear list",
     introTitle: "Prospect with a prompt",
     introDescription:
       "Ask in plain English or build an advanced query by hand. Kai returns a fit-scored table of prospects or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
@@ -391,6 +408,21 @@ const COPY = {
     idleTitle: "Escribe un prompt para buscar",
     idleDesc:
       "Describe a quién buscas arriba, o abre los filtros para crear una consulta a mano — buscar prospectos y empresas ejecuta una búsqueda en vivo.",
+    companyListBtn: "Lista de empresas",
+    companyListDialogTitle: "Buscar una lista de URLs de empresas",
+    companyListDialogDesc:
+      "Pega sitios web o dominios de empresas — uno por línea, o separados por comas. Encontraremos prospectos en estas empresas; refina con ubicación y otros filtros.",
+    companyListPlaceholder: "acme.com\nhttps://ejemplo.com\nwww.otra-empresa.io",
+    companyListApply: "Buscar",
+    companyListDetected: (n: number) =>
+      `${n} ${n === 1 ? "empresa detectada" : "empresas detectadas"}`,
+    companyListEmpty: "Pega al menos una URL o dominio de empresa.",
+    domainListScoped: (n: number) =>
+      `Limitado a ${n} ${n === 1 ? "empresa" : "empresas"} de tu lista`,
+    domainListPrompt: (n: number) =>
+      `Prospectos en ${n} ${n === 1 ? "empresa" : "empresas"} de tu lista`,
+    editList: "Editar lista",
+    clearList: "Quitar lista",
     introTitle: "Prospecta con un prompt",
     introDescription:
       "Pregunta en lenguaje natural o crea una consulta avanzada a mano. Kai devuelve una tabla de prospectos o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
@@ -851,6 +883,7 @@ export default function Search() {
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
+  const [domainListOpen, setDomainListOpen] = React.useState(false)
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
   const [saveName, setSaveName] = React.useState("")
   const [filtersOpen, setFiltersOpen] = React.useState(false)
@@ -1114,6 +1147,19 @@ export default function Search() {
     setSelected(new Set())
     setLookalikeOpen(false)
     const prompt = c.lookalikePrompt(s.name)
+    setLastPrompt(prompt)
+    setInput(prompt)
+  }
+
+  // Scope the search to a pasted list of company URLs/domains — finds
+  // prospects at those companies, refinable with the usual filters.
+  function applyDomainList(domains: string[]) {
+    setSeed(null)
+    setEntity("people")
+    setQuery((q) => ({ ...q, companyDomains: domains }))
+    setSelected(new Set())
+    setDomainListOpen(false)
+    const prompt = c.domainListPrompt(domains.length)
     setLastPrompt(prompt)
     setInput(prompt)
   }
@@ -1404,6 +1450,7 @@ export default function Search() {
             c={c}
             savedSearches={savedSearches}
             onOpenFilters={() => setFiltersRequested(true)}
+            onOpenCompanyList={() => setDomainListOpen(true)}
             onLoadSearch={loadSearch}
             onRemoveSearch={(id) => {
               savedSearchStore.remove(id)
@@ -1517,6 +1564,15 @@ export default function Search() {
                 variant="outline"
                 size="sm"
                 className="hidden lg:inline-flex"
+                onClick={() => setDomainListOpen(true)}
+              >
+                <Link2 className="size-4" />
+                {c.companyListBtn}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden lg:inline-flex"
                 onClick={openSaveDialog}
                 disabled={shownCount === 0}
               >
@@ -1538,6 +1594,10 @@ export default function Search() {
                   <DropdownMenuItem onClick={() => setLookalikeOpen(true)}>
                     <ScanSearch className="size-4" />
                     {c.lookalike}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDomainListOpen(true)}>
+                    <Link2 className="size-4" />
+                    {c.companyListBtn}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={openSaveDialog}
@@ -1568,6 +1628,33 @@ export default function Search() {
               >
                 <X className="size-3" />
                 {c.clearLookalike}
+              </button>
+            </div>
+          )}
+
+          {/* Company-list scope banner */}
+          {!thinking && query.companyDomains.length > 0 && (
+            <div className="border-primary/30 bg-primary/5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+              <Link2 className="text-primary size-4 shrink-0" />
+              <span className="text-muted-foreground">
+                {c.domainListScoped(query.companyDomains.length)}
+              </span>
+              <button
+                type="button"
+                onClick={() => setDomainListOpen(true)}
+                className="text-primary text-xs font-medium hover:underline"
+              >
+                {c.editList}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setQuery((q) => ({ ...q, companyDomains: [] }))
+                }
+                className="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-xs"
+              >
+                <X className="size-3" />
+                {c.clearList}
               </button>
             </div>
           )}
@@ -1791,6 +1878,14 @@ export default function Search() {
         c={c}
         defaultEntity={entity}
         onConfirm={applyLookalike}
+      />
+
+      <CompanyListDialog
+        open={domainListOpen}
+        onOpenChange={setDomainListOpen}
+        c={c}
+        initialDomains={query.companyDomains}
+        onApply={applyDomainList}
       />
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
@@ -2075,6 +2170,72 @@ function LookalikeDialog({
           <Button variant="volt" onClick={confirm} disabled={!seed}>
             <ScanSearch className="size-4" />
             {c.findSimilar}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// Paste a list of company URLs/domains — resolves to prospects at those
+// companies (people search) or the matching companies themselves.
+function CompanyListDialog({
+  open,
+  onOpenChange,
+  c,
+  initialDomains,
+  onApply,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  c: Copy
+  initialDomains: string[]
+  onApply: (domains: string[]) => void
+}) {
+  const [text, setText] = React.useState("")
+  const [wasOpen, setWasOpen] = React.useState(false)
+
+  if (open && !wasOpen) {
+    setWasOpen(true)
+    setText(initialDomains.join("\n"))
+  }
+  if (!open && wasOpen) setWasOpen(false)
+
+  const domains = React.useMemo(() => parseDomainList(text), [text])
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Link2 className="text-primary size-5" />
+            {c.companyListDialogTitle}
+          </DialogTitle>
+          <DialogDescription>{c.companyListDialogDesc}</DialogDescription>
+        </DialogHeader>
+        <Textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={c.companyListPlaceholder}
+          rows={8}
+          className="font-mono text-xs"
+        />
+        <p className="text-muted-foreground text-xs">
+          {domains.length > 0
+            ? c.companyListDetected(domains.length)
+            : c.companyListEmpty}
+        </p>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {c.cancel}
+          </Button>
+          <Button
+            variant="volt"
+            disabled={domains.length === 0}
+            onClick={() => onApply(domains)}
+          >
+            <SearchIcon className="size-4" />
+            {c.companyListApply}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -2848,12 +3009,14 @@ function SearchIdleState({
   c,
   savedSearches,
   onOpenFilters,
+  onOpenCompanyList,
   onLoadSearch,
   onRemoveSearch,
 }: {
   c: Copy
   savedSearches: SavedAiSearch[]
   onOpenFilters: () => void
+  onOpenCompanyList: () => void
   onLoadSearch: (id: string) => void
   onRemoveSearch: (id: string) => void
 }) {
@@ -2864,10 +3027,14 @@ function SearchIdleState({
       </span>
       <p className="text-lg font-semibold">{c.idleTitle}</p>
       <p className="text-muted-foreground max-w-md text-sm">{c.idleDesc}</p>
-      <div className="mt-1 flex items-center gap-2">
+      <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" size="sm" onClick={onOpenFilters}>
           <SlidersHorizontal className="size-4" />
           {c.searchWithFilters}
+        </Button>
+        <Button variant="outline" size="sm" onClick={onOpenCompanyList}>
+          <Link2 className="size-4" />
+          {c.companyListBtn}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

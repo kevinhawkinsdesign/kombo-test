@@ -36,6 +36,10 @@ export interface AiQuery {
   followersOf: string[] // people: creator they follow
   jobListings: string[] // company: has open job listings
   keywords: string
+  // Scope to a pasted list of company URLs/domains (normalized, no protocol
+  // or "www."). People search finds prospects at these companies; company
+  // search filters to just these companies.
+  companyDomains: string[]
   // Extensible facet bucket: the large per-database filter catalogs (LinkedIn
   // Sales Navigator, Kombo / FullEnrich) write here keyed by facet id, so we
   // don't need a typed field per filter.
@@ -69,8 +73,29 @@ export const EMPTY_QUERY: AiQuery = {
   followersOf: [],
   jobListings: [],
   keywords: "",
+  companyDomains: [],
   facets: {},
   perCompanyCap: null,
+}
+
+/** Strip protocol, "www.", path, query string, and trailing slash, lowercase. */
+export function normalizeDomain(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/.*$/, "")
+    .replace(/[?#].*$/, "")
+}
+
+/** Parse a pasted block of URLs/domains (newline, comma, or space separated). */
+export function parseDomainList(raw: string): string[] {
+  const domains = raw
+    .split(/[\n,]+/)
+    .map((s) => normalizeDomain(s))
+    .filter(Boolean)
+  return [...new Set(domains)]
 }
 
 export interface AiLead {
@@ -714,6 +739,7 @@ export function isQueryEmpty(q: AiQuery): boolean {
     q.growth.length === 0 &&
     q.linkedin.length === 0 &&
     q.keywords.trim() === "" &&
+    q.companyDomains.length === 0 &&
     Object.values(q.facets).every((v) => v.length === 0)
   )
 }
@@ -834,6 +860,11 @@ export function searchLeads(q: AiQuery): AiLead[] {
       if (q.intent.length && !matchAny(q.intent, l.intent)) return false
       if (q.signals.length && !matchAny(q.signals, l.signals)) return false
       if (q.linkedin.length && !matchAny(q.linkedin, l.linkedin)) return false
+      if (
+        q.companyDomains.length &&
+        !q.companyDomains.includes(normalizeDomain(l.companyDomain))
+      )
+        return false
       if (kw) {
         const hay = `${l.firstName} ${l.lastName} ${l.title} ${l.company} ${l.industry}`.toLowerCase()
         if (!hay.includes(kw)) return false
@@ -855,6 +886,11 @@ export function searchCompanies(q: AiQuery): AiCompany[] {
       if (q.growth.length && !matchValue(q.growth, c.growth)) return false
       if (q.technologies.length && !matchAny(q.technologies, c.technologies)) return false
       if (q.signals.length && !matchAny(q.signals, c.signals)) return false
+      if (
+        q.companyDomains.length &&
+        !q.companyDomains.includes(normalizeDomain(c.domain))
+      )
+        return false
       if (kw && !`${c.name} ${c.industry}`.toLowerCase().includes(kw)) return false
       return true
     })
