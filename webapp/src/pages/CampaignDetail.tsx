@@ -44,7 +44,7 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
-import { plainToHtml } from "@/lib/rich-text"
+import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import {
   Tabs,
   TabsContent,
@@ -54,7 +54,9 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -70,6 +72,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
@@ -206,12 +210,18 @@ const COPY = {
     stepChannelAria: (n: number) => `Step ${n} channel`,
     wait: "Wait",
     daysBeforeSending: "days before sending",
+    sendImmediately: "Send immediately",
+    waitDays: (n: number) => `Wait ${n} ${n === 1 ? "day" : "days"}`,
+    actionNeeded: "Action needed",
     subjectLine: "Subject line",
     messageBody: "Message body",
     saveSequence: "Save sequence",
     sequenceSaved: "Sequence saved",
     noSteps: "This sequence has no steps yet.",
     addStep: "Add step",
+    groupEmail: "Email",
+    groupMessaging: "Messaging",
+    groupLinkedin: "LinkedIn",
     setupTitle: "Finish setting up this campaign",
     setupDesc: "A campaign needs a sequence and prospects before it can run.",
     setupSequenceLabel: "Build your sequence",
@@ -362,12 +372,18 @@ const COPY = {
     stepChannelAria: (n: number) => `Canal del paso ${n}`,
     wait: "Espera",
     daysBeforeSending: "días antes de enviar",
+    sendImmediately: "Enviar inmediatamente",
+    waitDays: (n: number) => `Esperar ${n} ${n === 1 ? "día" : "días"}`,
+    actionNeeded: "Necesita acción",
     subjectLine: "Asunto",
     messageBody: "Cuerpo del mensaje",
     saveSequence: "Guardar secuencia",
     sequenceSaved: "Secuencia guardada",
     noSteps: "Esta secuencia aún no tiene pasos.",
     addStep: "Añadir paso",
+    groupEmail: "Correo",
+    groupMessaging: "Mensajería",
+    groupLinkedin: "LinkedIn",
     setupTitle: "Termina de configurar esta campaña",
     setupDesc: "Una campaña necesita una secuencia y prospectos antes de ejecutarse.",
     setupSequenceLabel: "Crea tu secuencia",
@@ -534,16 +550,6 @@ const CHANNELS: Record<StepChannel, ChannelMeta> = {
   },
 }
 
-const CHANNEL_ORDER: StepChannel[] = [
-  "email",
-  "sms",
-  "whatsapp",
-  "instagram",
-  "linkedin_message",
-  "linkedin_dm",
-  "linkedin_inmail",
-]
-
 // Tolerant lookup so previously-persisted localStorage data (e.g. the legacy
 // "linkedin" channel, or any unknown value) still renders.
 function channelMeta(channel: string): ChannelMeta {
@@ -601,6 +607,7 @@ export default function CampaignDetail() {
   const [endOpen, setEndOpen] = React.useState(false)
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
+  const [selectedStepId, setSelectedStepId] = React.useState<string | undefined>(undefined)
   const { spend } = useCredits()
 
   // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
@@ -623,6 +630,10 @@ export default function CampaignDetail() {
   }
 
   const steps = campaign.steps
+  // Falls back to the last step — so adding a new one selects it immediately,
+  // and removing the selected step lands on a step that still exists.
+  const selectedStep =
+    steps.find((s) => s.id === selectedStepId) ?? steps[steps.length - 1]
   const enrolledIds = campaign.enrolledIds ?? []
 
   const openRate = campaign.enrolled
@@ -1305,8 +1316,68 @@ export default function CampaignDetail() {
         <TabsContent value="sequence" className="mt-4 space-y-4">
           {steps.length > 0 ? (
             <>
-              <div className="space-y-3">
-                {steps.map((step, i) => {
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+                {/* Step list — pick a step to edit it on the right. */}
+                <div className="flex shrink-0 flex-col gap-2 lg:w-72">
+                  {steps.map((step) => {
+                    const meta = channelMeta(step.channel)
+                    const selected = step.id === selectedStep.id
+                    const needsAction = stripHtml(step.body).trim().length === 0
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => setSelectedStepId(step.id)}
+                        aria-current={selected}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors",
+                          selected
+                            ? "border-primary bg-primary/[0.04]"
+                            : "hover:bg-muted/40"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                            meta.tint
+                          )}
+                        >
+                          <meta.Icon className="size-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
+                            {c.channelLabel[normalizeChannel(step.channel)]}
+                          </p>
+                          <p className="text-muted-foreground truncate text-xs">
+                            {step.delayDays === 0
+                              ? c.sendImmediately
+                              : c.waitDays(step.delayDays)}
+                          </p>
+                        </div>
+                        {needsAction && (
+                          <Badge
+                            variant="destructive"
+                            className="shrink-0 gap-1 text-[10px] font-normal"
+                          >
+                            <AlertTriangle className="size-3" />
+                            {c.actionNeeded}
+                          </Badge>
+                        )}
+                      </button>
+                    )
+                  })}
+                  <AddStepMenu
+                    onAdd={(channel) => {
+                      campaignStore.addStep(campaign.id, channel)
+                      setSelectedStepId(undefined)
+                    }}
+                  />
+                </div>
+
+                {/* Detail panel — the selected step's full editor. */}
+                {(() => {
+                  const step = selectedStep
+                  const i = steps.findIndex((s) => s.id === step.id)
                   const meta = channelMeta(step.channel)
                   const isEmail = normalizeChannel(step.channel) === "email"
                   const sent = Math.max(
@@ -1316,12 +1387,9 @@ export default function CampaignDetail() {
                   const opened = Math.round(sent * 0.62)
                   const replied = Math.round(opened * 0.24)
                   return (
-                    <Card key={step.id}>
+                    <Card className="flex-1">
                       <CardContent className="space-y-3">
                         <div className="flex flex-wrap items-center gap-3">
-                          <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium tabular-nums">
-                            {i + 1}
-                          </span>
                           <span
                             className={cn(
                               "flex size-8 shrink-0 items-center justify-center rounded-lg",
@@ -1346,10 +1414,15 @@ export default function CampaignDetail() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {CHANNEL_ORDER.map((channelKey) => (
-                                <SelectItem key={channelKey} value={channelKey}>
-                                  {c.channelLabel[channelKey]}
-                                </SelectItem>
+                              {CHANNEL_GROUPS.map((group) => (
+                                <SelectGroup key={group.labelKey}>
+                                  <SelectLabel>{c[group.labelKey]}</SelectLabel>
+                                  {group.channels.map((channelKey) => (
+                                    <SelectItem key={channelKey} value={channelKey}>
+                                      {c.channelLabel[channelKey]}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
                               ))}
                             </SelectContent>
                           </Select>
@@ -1381,9 +1454,10 @@ export default function CampaignDetail() {
                               size="icon"
                               aria-label={c.removeStep}
                               className="text-muted-foreground hover:text-destructive"
-                              onClick={() =>
+                              onClick={() => {
                                 campaignStore.removeStep(campaign.id, step.id)
-                              }
+                                setSelectedStepId(undefined)
+                              }}
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -1462,15 +1536,10 @@ export default function CampaignDetail() {
                       </CardContent>
                     </Card>
                   )
-                })}
+                })()}
               </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <AddStepMenu
-                  onAdd={(channel) =>
-                    campaignStore.addStep(campaign.id, channel)
-                  }
-                />
+              <div className="flex justify-end">
                 <Button onClick={() => toast.success(c.sequenceSaved)}>
                   {c.saveSequence}
                 </Button>
@@ -1769,6 +1838,17 @@ function SetupStep({
   )
 }
 
+// Grouped like Lemlist's step picker (Suggestions / LinkedIn actions / Phone
+// & Messaging, adapted to the channels we actually support).
+const CHANNEL_GROUPS: { labelKey: "groupEmail" | "groupMessaging" | "groupLinkedin"; channels: StepChannel[] }[] = [
+  { labelKey: "groupEmail", channels: ["email"] },
+  { labelKey: "groupMessaging", channels: ["sms", "whatsapp", "instagram"] },
+  {
+    labelKey: "groupLinkedin",
+    channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],
+  },
+]
+
 function AddStepMenu({
   onAdd,
 }: {
@@ -1785,25 +1865,33 @@ function AddStepMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        {CHANNEL_ORDER.map((channelKey) => {
-          const meta = CHANNELS[channelKey]
-          return (
-            <DropdownMenuItem
-              key={channelKey}
-              onClick={() => onAdd(channelKey)}
-            >
-              <span
-                className={cn(
-                  "flex size-6 items-center justify-center rounded-md",
-                  meta.tint
-                )}
-              >
-                <meta.Icon className="size-3.5" />
-              </span>
-              {c.channelLabel[channelKey]}
-            </DropdownMenuItem>
-          )
-        })}
+        {CHANNEL_GROUPS.map((group, gi) => (
+          <React.Fragment key={group.labelKey}>
+            {gi > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+              {c[group.labelKey]}
+            </DropdownMenuLabel>
+            {group.channels.map((channelKey) => {
+              const meta = CHANNELS[channelKey]
+              return (
+                <DropdownMenuItem
+                  key={channelKey}
+                  onClick={() => onAdd(channelKey)}
+                >
+                  <span
+                    className={cn(
+                      "flex size-6 items-center justify-center rounded-md",
+                      meta.tint
+                    )}
+                  >
+                    <meta.Icon className="size-3.5" />
+                  </span>
+                  {c.channelLabel[channelKey]}
+                </DropdownMenuItem>
+              )
+            })}
+          </React.Fragment>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   )
