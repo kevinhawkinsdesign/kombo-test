@@ -8,7 +8,6 @@ import {
   X,
   Loader2,
   Bookmark,
-  Trash2,
   Building2,
   Users,
   ArrowRight,
@@ -38,7 +37,6 @@ import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale, type Locale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import {
@@ -102,7 +100,6 @@ import {
   useBlacklistedKeys,
 } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
-import { libraryQueries, type LibraryQuery } from "@/lib/mock-library"
 import { facetsForDb, facetSection, type FacetDef, type FacetDb } from "@/lib/search-facets"
 import { SEARCH_FILTER_GROUPS } from "@/lib/search-filter-groups"
 import { baseValue, excludeValue, isExcluded } from "@/lib/filter-polarity"
@@ -131,7 +128,6 @@ const COPY = {
     assistantName: "Kai",
     chatHint: "Describe your ideal prospects, or pick an example.",
     examples: "Examples",
-    inputPlaceholder: "e.g. VPs of Sales at European SaaS that just raised…",
     thinking: "Kai is searching…",
     starter:
       "Here's a starter table for VPs of Sales at European SaaS companies that recently raised. Refine it with a prompt or edit the filters on the right.",
@@ -147,15 +143,11 @@ const COPY = {
     ],
     refine: "Quick refine",
     save: "Save",
-    saved: "Saved searches",
     saveThis: "Save this search",
     saveSearchDesc:
       "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
     saveNameLabel: "Search name",
-    noSaved: "No saved searches yet.",
     savedToast: "Search saved with its prompt history",
-    loadedToast: "Saved search loaded",
-    removedSaved: "Saved search removed",
     people: "Prospects",
     companies: "Companies",
     resultsFor: "Results",
@@ -208,13 +200,10 @@ const COPY = {
     connectionsOf: "Connections of",
     followersOf: "Followers of",
     jobListings: "Job listings on LinkedIn",
-    srTitle: "Search",
     heroTitle: "Describe your ideal customer",
     heroSubtitle: "Search across 250M+ professionals and companies — or pick a quick start.",
     heroPlaceholder: "e.g. Heads of RevOps at Series B SaaS companies in EMEA…",
-    searchBtn: "Search",
     searchWithFilters: "Search with filters",
-    clearQuery: "Clear search",
     spotlightsLabel: "Spotlights",
     matchLabel: "Matches",
     spotlights: ["Open to work", "Changed jobs", "Recently active", "Hiring", "High intent"],
@@ -287,9 +276,7 @@ const COPY = {
     runThisSearch: "Run this search",
     viewAll: "View all",
     rowSelectAll: "Select all",
-    startTypeTitle: "Type your query",
-    startTypeDesc: "Describe who you're looking for — a title, industry, or location.",
-    filtersAfterSearch: "Filters unlock once you run a search.",
+    editFilters: "Edit",
     done: "Done",
     columnsBtn: "Columns",
     columnsTitle: "Customize columns",
@@ -389,7 +376,6 @@ const COPY = {
     assistantName: "Kai",
     chatHint: "Describe tus prospectos ideales, o elige un ejemplo.",
     examples: "Ejemplos",
-    inputPlaceholder: "p. ej. VPs de Ventas en SaaS europeo que acaban de levantar…",
     thinking: "Kai está buscando…",
     starter:
       "Aquí tienes una tabla inicial de VPs de Ventas en empresas SaaS europeas que han levantado financiación recientemente. Refínala con un prompt o edita los filtros de la derecha.",
@@ -405,15 +391,11 @@ const COPY = {
     ],
     refine: "Refinar rápido",
     save: "Guardar",
-    saved: "Búsquedas guardadas",
     saveThis: "Guardar esta búsqueda",
     saveSearchDesc:
       "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
     saveNameLabel: "Nombre de la búsqueda",
-    noSaved: "Aún no hay búsquedas guardadas.",
     savedToast: "Búsqueda guardada con su historial de prompts",
-    loadedToast: "Búsqueda guardada cargada",
-    removedSaved: "Búsqueda guardada eliminada",
     people: "Prospectos",
     companies: "Empresas",
     resultsFor: "Resultados",
@@ -466,13 +448,10 @@ const COPY = {
     connectionsOf: "Conexiones de",
     followersOf: "Seguidores de",
     jobListings: "Ofertas de empleo en LinkedIn",
-    srTitle: "Buscar",
     heroTitle: "Describe tu cliente ideal",
     heroSubtitle: "Busca entre más de 250M de profesionales y empresas — o elige un inicio rápido.",
     heroPlaceholder: "p. ej. Heads de RevOps en SaaS Serie B en EMEA…",
-    searchBtn: "Buscar",
     searchWithFilters: "Buscar con filtros",
-    clearQuery: "Borrar búsqueda",
     spotlightsLabel: "Destacados",
     matchLabel: "Coincide",
     spotlights: ["Open to work", "Cambió de empleo", "Activos recientemente", "Contratando", "Alta intención"],
@@ -545,9 +524,7 @@ const COPY = {
     runThisSearch: "Ejecutar esta búsqueda",
     viewAll: "Ver todo",
     rowSelectAll: "Seleccionar todo",
-    startTypeTitle: "Escribe tu consulta",
-    startTypeDesc: "Describe a quién buscas — un cargo, sector o ubicación.",
-    filtersAfterSearch: "Los filtros se activan al ejecutar una búsqueda.",
+    editFilters: "Editar",
     done: "Listo",
     columnsBtn: "Columnas",
     columnsTitle: "Personalizar columnas",
@@ -813,11 +790,6 @@ export default function Search() {
   const [lastPrompt, setLastPrompt] = React.useState(
     loadedSearch ? loadedSearch.prompt : similarPrompt
   )
-  // The search box starts empty (placeholder only) — unless we arrived with a
-  // lookalike seed or a header prompt, or reopened a saved search.
-  const [input, setInput] = React.useState(
-    loadedSearch ? loadedSearch.prompt : similarPrompt || headerPrompt || ""
-  )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
@@ -967,7 +939,6 @@ export default function Search() {
     (prompt: string, forcedEntity?: AiEntity) => {
       const text = prompt.trim()
       if (!text) return
-      setInput(text)
       setThinking(true)
       setLastPrompt(text)
       window.setTimeout(() => {
@@ -1081,9 +1052,17 @@ export default function Search() {
     setQuery(q)
     setSelected(new Set())
     setLookalikeOpen(false)
-    const prompt = c.lookalikePrompt(s.name)
-    setLastPrompt(prompt)
-    setInput(prompt)
+    setLastPrompt(c.lookalikePrompt(s.name))
+  }
+
+  // Run a signal suggestion row's (possibly edited) query directly — it's
+  // already a structured AiQuery, so no prompt interpretation needed.
+  function runQuery(q: AiQuery, ent: AiEntity, label: string) {
+    setEntity(ent)
+    setQuery(q)
+    setSeed(null)
+    setSelected(new Set())
+    setLastPrompt(label)
   }
 
   function saveSearch(name: string) {
@@ -1149,17 +1128,6 @@ export default function Search() {
       return
     }
     navigate(`/lists/${list.id}`)
-  }
-
-  function loadSearch(id: string) {
-    const s = savedSearches.find((x) => x.id === id)
-    if (!s) return
-    setEntity(s.entity)
-    setQuery(s.query)
-    setLastPrompt(s.prompt)
-    setInput(s.prompt)
-    setSelected(new Set())
-    toast.success(c.loadedToast)
   }
 
   const allSelected =
@@ -1306,129 +1274,6 @@ export default function Search() {
             label={c.companies}
           />
         </div>
-
-        {/* Search query bar — the prompt IS the query, no chat thread. */}
-        <Card className="p-3">
-          <form
-            className="flex items-end gap-2"
-            onSubmit={(e) => {
-              e.preventDefault()
-              runPrompt(input)
-            }}
-          >
-            <div className="relative flex-1">
-              <SearchIcon className="text-muted-foreground pointer-events-none absolute top-3 left-3 size-4" />
-              <Textarea
-                id="search-prompt"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    runPrompt(input)
-                  }
-                }}
-                placeholder={c.inputPlaceholder}
-                rows={2}
-                aria-label={c.srTitle}
-                className="max-h-40 min-h-12 resize-y pr-9 pl-9"
-              />
-              {input.length > 0 && (
-                <button
-                  type="button"
-                  aria-label={c.clearQuery}
-                  title={c.clearQuery}
-                  onClick={() => {
-                    setInput("")
-                    document.getElementById("search-prompt")?.focus()
-                  }}
-                  className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2.5 right-2.5 flex size-6 items-center justify-center rounded-md transition-colors"
-                >
-                  <X className="size-4" />
-                </button>
-              )}
-            </div>
-            <Button
-              type="submit"
-              variant="volt"
-              disabled={!input.trim() || thinking}
-            >
-              {thinking ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <SearchIcon className="size-4" />
-              )}
-              <span className="hidden sm:inline">{c.searchBtn}</span>
-            </Button>
-            {/* Split button: primary Save action + a dropdown to reopen
-                previously saved searches. */}
-            <div className="inline-flex">
-            <Button
-              type="button"
-              variant="outline"
-              className="gap-1.5 rounded-r-none"
-              onClick={openSaveDialog}
-              disabled={shownCount === 0}
-            >
-              <Bookmark className="size-4" />
-              <span className="hidden sm:inline">{c.save}</span>
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="-ml-px rounded-l-none"
-                  aria-label={c.saved}
-                >
-                  <ChevronDown className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel className="text-muted-foreground text-xs">
-                  {c.saved}
-                </DropdownMenuLabel>
-                {savedSearches.length === 0 ? (
-                  <p className="text-muted-foreground px-2 py-1.5 text-xs">
-                    {c.noSaved}
-                  </p>
-                ) : (
-                  savedSearches.map((s) => (
-                    <div
-                      key={s.id}
-                      className="hover:bg-muted/60 flex items-center gap-2 rounded-sm px-2 py-1.5"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => loadSearch(s.id)}
-                        className="min-w-0 flex-1 text-left"
-                      >
-                        <p className="truncate text-sm font-medium">{s.name}</p>
-                        <p className="text-muted-foreground truncate text-xs">
-                          {s.entity === "people" ? c.people : c.companies} ·{" "}
-                          {s.resultCount}
-                        </p>
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="Remove"
-                        onClick={() => {
-                          savedSearchStore.remove(s.id)
-                          toast.success(c.removedSaved)
-                        }}
-                        className="text-muted-foreground hover:text-destructive shrink-0"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            </div>
-          </form>
-        </Card>
 
         {/* Filters live in a persistent sidebar; results (or the home/empty
             state) fill the rest. People are looked up via API, so filtering
@@ -1805,8 +1650,9 @@ export default function Search() {
             ) : (
               <SearchEmptyState
                 c={c}
+                locale={locale}
                 entity={entity}
-                onRun={(prompt) => runPrompt(prompt, entity)}
+                onRunQuery={runQuery}
                 onAddToList={(ids) => {
                   setBulkIds(ids)
                   setBulkListOpen(true)
@@ -2257,27 +2103,19 @@ function FilterSidebar({
 // Pristine /search state: AI-powered suggestions + a "type your query" prompt.
 function SearchEmptyState({
   c,
+  locale,
   entity,
-  onRun,
+  onRunQuery,
   onAddToList,
   onOpenLookalike,
 }: {
   c: Copy
+  locale: Locale
   entity: AiEntity
-  onRun: (prompt: string) => void
+  onRunQuery: (query: AiQuery, entity: AiEntity, label: string) => void
   onAddToList: (ids: string[]) => void
   onOpenLookalike: () => void
 }) {
-  // LibraryQuery.entity is singular ("company"), AiEntity is plural
-  // ("companies") — they describe the same thing but don't share a literal.
-  const suggestions = React.useMemo(
-    () =>
-      libraryQueries.filter((qq) =>
-        entity === "companies" ? qq.entity === "company" : qq.entity === "people"
-      ),
-    [entity]
-  )
-
   // Selection spans every row — a record only counts once even if it shows
   // up in more than one suggestion's sample.
   const [selected, setSelected] = React.useState<Map<string, AiLead | AiCompany>>(
@@ -2308,19 +2146,6 @@ function SearchEmptyState({
     []
   )
 
-  if (suggestions.length === 0) {
-    return (
-      <div className="rounded-xl border p-5 text-center">
-        <span className="bg-muted mx-auto flex size-10 items-center justify-center rounded-full">
-          <SearchIcon className="text-muted-foreground size-5" />
-        </span>
-        <p className="mt-3 font-medium">{c.startTypeTitle}</p>
-        <p className="text-muted-foreground mt-1 text-sm">{c.startTypeDesc}</p>
-        <p className="text-muted-foreground/80 mt-1 text-xs">{c.filtersAfterSearch}</p>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-8 py-1 pb-24">
       <p className="flex items-center gap-1.5 text-sm font-semibold">
@@ -2337,12 +2162,13 @@ function SearchEmptyState({
         c={c}
       />
 
-      {suggestions.map((s) => (
-        <SuggestionRow
-          key={s.id}
-          suggestion={s}
+      {SIGNAL_ROW_DEFS.map((def) => (
+        <SignalSuggestionRow
+          key={def.tag}
+          def={def}
           entity={entity}
-          onRun={onRun}
+          locale={locale}
+          onRunQuery={onRunQuery}
           selected={selected}
           onToggleRecord={toggleRecord}
           onSetRowSelected={setRowSelected}
@@ -2497,6 +2323,14 @@ function LookalikeSuggestionRow({
           onClick={onOpenLookalike}
           className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-xs font-medium"
         >
+          <SlidersHorizontal className="size-3.5" />
+          <span className="hidden sm:inline">{c.editFilters}</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenLookalike}
+          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-xs font-medium"
+        >
           {c.viewAll}
           <ArrowRight className="size-3.5" />
         </button>
@@ -2546,33 +2380,88 @@ function LookalikeSuggestionRow({
     </div>
   )
 }
+// The three literal "signals" the Signals page surfaces as editable rows —
+// each backed by a real signal tag (see SIGNAL_OPTIONS in mock-ai-search),
+// with a friendlier display name where it differs from the underlying tag.
+const SIGNAL_ROW_DEFS: {
+  tag: string
+  title: { en: string; es: string }
+  description: { en: string; es: string }
+}[] = [
+  {
+    tag: "Recently funded",
+    title: { en: "Recently funded", es: "Financiación reciente" },
+    description: {
+      en: "Companies that recently raised a funding round.",
+      es: "Empresas que acaban de levantar financiación.",
+    },
+  },
+  {
+    tag: "Hiring sales",
+    title: { en: "Hiring on LinkedIn", es: "Contratando en LinkedIn" },
+    description: {
+      en: "Companies actively posting sales roles on LinkedIn.",
+      es: "Empresas publicando activamente roles de ventas en LinkedIn.",
+    },
+  },
+  {
+    tag: "New exec hire",
+    title: { en: "New exec hire", es: "Nueva contratación ejecutiva" },
+    description: {
+      en: "Companies that just hired a new senior leader.",
+      es: "Empresas que acaban de contratar a un nuevo líder.",
+    },
+  },
+]
 
-// One Netflix-style carousel row: a suggested query's name/description (the
-// whole header is clickable and runs that search with its filters + prompt
-// pre-applied) plus a horizontally-scrolling sample of matching records.
-// Cards outnumber what fits in view — the row overflows and scrolls via
-// drag/wheel, with hover-reveal prev/next buttons for the carousel feel.
-function SuggestionRow({
-  suggestion,
+// A signal-based carousel row (Recently funded / Hiring on LinkedIn / New
+// exec hire): starts from a fixed signal tag, but the row's own Edit button
+// opens the same filter catalog used on the full results page — scoped to
+// just this row's query — so the user can layer on extra criteria without
+// losing the signal that defines the row.
+function SignalSuggestionRow({
+  def,
   entity,
-  onRun,
+  locale,
+  onRunQuery,
   selected,
   onToggleRecord,
   onSetRowSelected,
   c,
 }: {
-  suggestion: LibraryQuery
+  def: (typeof SIGNAL_ROW_DEFS)[number]
   entity: AiEntity
-  onRun: (prompt: string) => void
+  locale: Locale
+  onRunQuery: (query: AiQuery, entity: AiEntity, label: string) => void
   selected: Map<string, AiLead | AiCompany>
   onToggleRecord: (record: AiLead | AiCompany) => void
   onSetRowSelected: (records: (AiLead | AiCompany)[], on: boolean) => void
   c: Copy
 }) {
-  const { query } = React.useMemo(
-    () => interpretPrompt(suggestion.prompt),
-    [suggestion.prompt]
+  const baseQuery = React.useMemo(
+    (): AiQuery => ({ ...EMPTY_QUERY, signals: [def.tag] }),
+    [def.tag]
   )
+  const [query, setQuery] = React.useState<AiQuery>(baseQuery)
+  const [editOpen, setEditOpen] = React.useState(false)
+
+  function addFilter(group: keyof AiQuery, value: string) {
+    setQuery((prev) => {
+      const arr = prev[group] as string[]
+      if (arr.includes(value)) return prev
+      return { ...prev, [group]: [...arr, value] }
+    })
+  }
+  function removeFilter(group: keyof AiQuery, value: string) {
+    setQuery((prev) => ({
+      ...prev,
+      [group]: (prev[group] as string[]).filter((v) => v !== value),
+    }))
+  }
+  function clearFilterGroup(group: keyof AiQuery) {
+    setQuery((prev) => ({ ...prev, [group]: [] }))
+  }
+
   const cards = React.useMemo(
     () =>
       entity === "companies"
@@ -2585,6 +2474,8 @@ function SuggestionRow({
   if (cards.length === 0) return null
 
   const rowAllSelected = cards.every((r) => selected.has(r.id))
+  const title = def.title[locale]
+  const description = def.description[locale]
 
   function scrollByPage(dir: 1 | -1) {
     const el = scrollRef.current
@@ -2597,12 +2488,12 @@ function SuggestionRow({
       <div className="mb-2 flex items-center gap-3">
         <button
           type="button"
-          onClick={() => onRun(suggestion.prompt)}
+          onClick={() => onRunQuery(query, entity, title)}
           className="min-w-0 flex-1 truncate text-left"
         >
-          <span className="text-sm font-semibold">{suggestion.name}</span>
+          <span className="text-sm font-semibold">{title}</span>
           <span className="text-muted-foreground ml-2 hidden text-xs sm:inline">
-            {suggestion.description}
+            {description}
           </span>
         </button>
         <button
@@ -2615,7 +2506,15 @@ function SuggestionRow({
         </button>
         <button
           type="button"
-          onClick={() => onRun(suggestion.prompt)}
+          onClick={() => setEditOpen(true)}
+          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-xs font-medium"
+        >
+          <SlidersHorizontal className="size-3.5" />
+          <span className="hidden sm:inline">{c.editFilters}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onRunQuery(query, entity, title)}
           className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-xs font-medium"
         >
           {c.viewAll}
@@ -2664,6 +2563,24 @@ function SuggestionRow({
           <ChevronRight className="size-4" />
         </button>
       </div>
+
+      <FilterModal
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        query={query}
+        onAdd={addFilter}
+        onRemove={removeFilter}
+        onClear={() => setQuery(baseQuery)}
+        onClearGroup={clearFilterGroup}
+        c={c}
+        linkedinOn={false}
+        entity={entity}
+        facetDefs={[]}
+        onAddFacet={() => {}}
+        onRemoveFacet={() => {}}
+        onClearFacet={() => {}}
+        locale={locale}
+      />
     </div>
   )
 }
