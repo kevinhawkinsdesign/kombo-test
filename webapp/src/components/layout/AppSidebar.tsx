@@ -83,11 +83,12 @@ const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 
 // Always-visible top destinations. Home (quick actions + customizable
 // widgets) exists in both releases; the sales Dashboard is a separate v2 page.
+// "Search" is rendered separately, as its own special button just under the
+// logo — not part of this list.
 const primary: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
   { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
-  { to: "/search", labelKey: "nav.quickSearch", icon: Search },
   { to: "/signals", labelKey: "nav.search", icon: Radar },
   {
     to: "/inbox",
@@ -459,6 +460,23 @@ function SidebarContent({
       g.items.some((it) => isActivePath(pathname, it.to))
     )?.key ?? null
   const { openKey, setOpen } = useAccordionGroup(activeGroupKey)
+  const searchActive = isActivePath(pathname, "/search")
+  const searchLabel = t("nav.quickSearch")
+  const searchButton = (
+    <NavLink
+      to="/search"
+      onClick={onNavigate}
+      aria-label={collapsed ? searchLabel : undefined}
+      className={cn(
+        "bg-sidebar-accent/80 hover:bg-sidebar-accent text-sidebar-foreground border-sidebar-border flex items-center rounded-md border text-sm font-semibold transition-colors",
+        collapsed ? "size-9 justify-center" : "gap-3 px-3 py-2",
+        searchActive && "ring-sidebar-ring ring-1"
+      )}
+    >
+      <Search className={cn("shrink-0", collapsed ? "size-5" : "size-4")} strokeWidth={2.25} />
+      {!collapsed && <span className="flex-1">{searchLabel}</span>}
+    </NavLink>
+  )
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -477,6 +495,19 @@ function SidebarContent({
           >
             {collapsed ? <KomboMark /> : <KomboLockup className="h-7" />}
           </NavLink>
+        </div>
+
+        {/* Search: a special secondary button, first item under the logo —
+            distinct from the plain nav rows below it. */}
+        <div className={cn(collapsed ? "px-2 pt-2" : "px-3 pt-2")}>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>{searchButton}</TooltipTrigger>
+              <TooltipContent side="right">{searchLabel}</TooltipContent>
+            </Tooltip>
+          ) : (
+            searchButton
+          )}
         </div>
 
         {progress < 100 &&
