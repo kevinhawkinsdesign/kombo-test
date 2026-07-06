@@ -247,6 +247,15 @@ export interface CampaignStep {
   // hand (a call, a manual LinkedIn touch, etc.) instead of auto-sending.
   // `subject` becomes the task title and `body` becomes optional notes.
   isManualTask?: boolean
+  // One deviation off the main line: replies go down one track, non-replies
+  // down the other, and both tracks reconnect into the next step in the
+  // parent array — a single fork+remerge, not a nested branching tree.
+  // Branch steps never carry their own `branch` (enforced by the UI, not
+  // this type) so the model stays exactly one level deep.
+  branch?: {
+    replySteps: CampaignStep[]
+    noReplySteps: CampaignStep[]
+  }
 }
 
 export interface Campaign {

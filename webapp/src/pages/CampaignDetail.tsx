@@ -28,6 +28,9 @@ import {
   Ban,
   FileText,
   ListTodo,
+  GitFork,
+  CornerDownRight,
+  MessageCircleReply,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -94,7 +97,15 @@ import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team } from "@/lib/team"
-import { useCampaigns, useLists, campaignStore, listStore } from "@/lib/store"
+import {
+  useCampaigns,
+  useLists,
+  campaignStore,
+  listStore,
+  findCampaignStep,
+  locateCampaignStep,
+  flattenCampaignSteps,
+} from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
@@ -106,6 +117,7 @@ import type {
   EnrollmentStatus,
   Prospect,
   EmailTemplate,
+  CampaignStep,
 } from "@/lib/types"
 
 // Sending accounts: the current user first, then teammates, deduped by id.
@@ -229,6 +241,12 @@ const COPY = {
     taskTitlePlaceholder: "Task title, e.g. \"Call to follow up\"",
     taskNotesPlaceholder: "Notes for the rep (optional)",
     manualTaskFooter: "This step creates a task for the assigned rep — it doesn't send automatically.",
+    addBranchLabel: "Add reply / no-reply branch",
+    addBranchDesc: "One deviation off the main line — both tracks reconnect into the next step.",
+    replyTrack: "If they reply",
+    noReplyTrack: "If they don't reply",
+    removeBranchAria: "Remove branch",
+    remergeCaption: "Merges back into the next step",
     saveSequence: "Save sequence",
     sequenceSaved: "Sequence saved",
     noSteps: "This sequence has no steps yet.",
@@ -399,6 +417,12 @@ const COPY = {
     taskTitlePlaceholder: "Título de la tarea, p. ej. «Llamar para dar seguimiento»",
     taskNotesPlaceholder: "Notas para el vendedor (opcional)",
     manualTaskFooter: "Este paso crea una tarea para el vendedor asignado — no se envía automáticamente.",
+    addBranchLabel: "Añadir bifurcación de respuesta / sin respuesta",
+    addBranchDesc: "Una desviación de la línea principal — ambos caminos se reconectan en el siguiente paso.",
+    replyTrack: "Si responden",
+    noReplyTrack: "Si no responden",
+    removeBranchAria: "Quitar bifurcación",
+    remergeCaption: "Se reconecta con el siguiente paso",
     saveSequence: "Guardar secuencia",
     sequenceSaved: "Secuencia guardada",
     noSteps: "Esta secuencia aún no tiene pasos.",
@@ -655,10 +679,11 @@ export default function CampaignDetail() {
 
   const campaignId = campaign.id
   const steps = campaign.steps
-  // Falls back to the last step — so adding a new one selects it immediately,
-  // and removing the selected step lands on a step that still exists.
+  // Falls back to the last top-level step — so adding a new one selects it
+  // immediately, and removing the selected step lands on a step that still
+  // exists. Searches branch tracks too, since a selected step can live there.
   const selectedStep =
-    steps.find((s) => s.id === selectedStepId) ?? steps[steps.length - 1]
+    findCampaignStep(steps, selectedStepId ?? "") ?? steps[steps.length - 1]
   const enrolledIds = campaign.enrolledIds ?? []
 
   function insertStepFromTemplate(template: EmailTemplate) {
@@ -669,6 +694,66 @@ export default function CampaignDetail() {
       body: template.body,
     })
     setSelectedStepId(created?.id)
+  }
+
+  // A single step row — reused for the top-level list and both branch
+  // tracks, so a nested step looks and behaves identically to a top-level
+  // one, just indented under its fork.
+  function renderStepRow(step: CampaignStep) {
+    const meta = channelMeta(step.channel)
+    const selected = step.id === selectedStep.id
+    const needsAction = step.isManualTask
+      ? stripHtml(step.subject ?? "").trim().length === 0
+      : stripHtml(step.body).trim().length === 0
+    return (
+      <button
+        key={step.id}
+        type="button"
+        onClick={() => setSelectedStepId(step.id)}
+        aria-current={selected}
+        className={cn(
+          "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors",
+          selected
+            ? "border-primary bg-primary/[0.04]"
+            : "hover:bg-muted/40"
+        )}
+      >
+        <span
+          className={cn(
+            "flex size-8 shrink-0 items-center justify-center rounded-lg",
+            meta.tint
+          )}
+        >
+          <meta.Icon className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">
+            {c.channelLabel[normalizeChannel(step.channel)]}
+          </p>
+          <p className="text-muted-foreground truncate text-xs">
+            {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
+          </p>
+        </div>
+        {step.isManualTask && (
+          <Badge
+            variant="secondary"
+            className="shrink-0 gap-1 text-[10px] font-normal"
+          >
+            <ListTodo className="size-3" />
+            {c.manualTaskBadge}
+          </Badge>
+        )}
+        {needsAction && (
+          <Badge
+            variant="destructive"
+            className="shrink-0 gap-1 text-[10px] font-normal"
+          >
+            <AlertTriangle className="size-3" />
+            {c.actionNeeded}
+          </Badge>
+        )}
+      </button>
+    )
   }
 
   const openRate = campaign.enrolled
@@ -1362,64 +1447,28 @@ export default function CampaignDetail() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                 {/* Step list — pick a step to edit it on the right. */}
                 <div className="flex shrink-0 flex-col gap-2 lg:w-72">
-                  {steps.map((step) => {
-                    const meta = channelMeta(step.channel)
-                    const selected = step.id === selectedStep.id
-                    const needsAction = step.isManualTask
-                      ? stripHtml(step.subject ?? "").trim().length === 0
-                      : stripHtml(step.body).trim().length === 0
-                    return (
-                      <button
-                        key={step.id}
-                        type="button"
-                        onClick={() => setSelectedStepId(step.id)}
-                        aria-current={selected}
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors",
-                          selected
-                            ? "border-primary bg-primary/[0.04]"
-                            : "hover:bg-muted/40"
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-                            meta.tint
-                          )}
-                        >
-                          <meta.Icon className="size-4" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">
-                            {c.channelLabel[normalizeChannel(step.channel)]}
-                          </p>
-                          <p className="text-muted-foreground truncate text-xs">
-                            {step.delayDays === 0
-                              ? c.sendImmediately
-                              : c.waitDays(step.delayDays)}
-                          </p>
-                        </div>
-                        {step.isManualTask && (
-                          <Badge
-                            variant="secondary"
-                            className="shrink-0 gap-1 text-[10px] font-normal"
-                          >
-                            <ListTodo className="size-3" />
-                            {c.manualTaskBadge}
-                          </Badge>
-                        )}
-                        {needsAction && (
-                          <Badge
-                            variant="destructive"
-                            className="shrink-0 gap-1 text-[10px] font-normal"
-                          >
-                            <AlertTriangle className="size-3" />
-                            {c.actionNeeded}
-                          </Badge>
-                        )}
-                      </button>
-                    )
-                  })}
+                  {steps.map((step) => (
+                    <React.Fragment key={step.id}>
+                      {renderStepRow(step)}
+                      {step.branch && (
+                        <BranchTracks
+                          step={step}
+                          renderStepRow={renderStepRow}
+                          onAddStep={(track, channel) =>
+                            campaignStore.addBranchStep(
+                              campaignId,
+                              step.id,
+                              track,
+                              channel
+                            )
+                          }
+                          onRemoveBranch={() =>
+                            campaignStore.removeBranch(campaignId, step.id)
+                          }
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
                   <AddStepMenu
                     onAdd={(channel) => {
                       campaignStore.addStep(campaign.id, channel)
@@ -1438,12 +1487,25 @@ export default function CampaignDetail() {
                 {/* Detail panel — the selected step's full editor. */}
                 {(() => {
                   const step = selectedStep
-                  const i = steps.findIndex((s) => s.id === step.id)
+                  // Position within whichever list the step actually lives in
+                  // (top-level, or a branch track) — what "move up/down" and
+                  // "is first/last" need. A separate flattened index (which
+                  // walks branch tracks inline) drives the cosmetic stats
+                  // below so they still degrade sensibly for nested steps.
+                  const { list: stepList, index: i } = locateCampaignStep(
+                    steps,
+                    step.id
+                  )
+                  const isTopLevel = stepList === steps
+                  const flatIndex = flattenCampaignSteps(steps).findIndex(
+                    (s) => s.id === step.id
+                  )
                   const meta = channelMeta(step.channel)
                   const isEmail = normalizeChannel(step.channel) === "email"
                   const sent = Math.max(
                     0,
-                    campaign.enrolled - i * Math.round(campaign.enrolled * 0.12)
+                    campaign.enrolled -
+                      flatIndex * Math.round(campaign.enrolled * 0.12)
                   )
                   const opened = Math.round(sent * 0.62)
                   const replied = Math.round(opened * 0.24)
@@ -1503,7 +1565,7 @@ export default function CampaignDetail() {
                               variant="ghost"
                               size="icon"
                               aria-label={c.moveStepDown}
-                              disabled={i === steps.length - 1}
+                              disabled={i === stepList.length - 1}
                               onClick={() =>
                                 campaignStore.moveStep(campaign.id, step.id, 1)
                               }
@@ -1571,6 +1633,40 @@ export default function CampaignDetail() {
                             }
                           />
                         </div>
+
+                        {isTopLevel && (
+                          <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
+                            <GitFork className="text-muted-foreground size-4 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <Label
+                                htmlFor={`branch-${step.id}`}
+                                className="text-sm font-medium"
+                              >
+                                {c.addBranchLabel}
+                              </Label>
+                              <p className="text-muted-foreground text-xs">
+                                {c.addBranchDesc}
+                              </p>
+                            </div>
+                            <Switch
+                              id={`branch-${step.id}`}
+                              checked={Boolean(step.branch)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  campaignStore.addBranch(
+                                    campaign.id,
+                                    step.id
+                                  )
+                                } else {
+                                  campaignStore.removeBranch(
+                                    campaign.id,
+                                    step.id
+                                  )
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
 
                         {step.isManualTask ? (
                           <>
@@ -1968,6 +2064,67 @@ function SetupStep({
           {actionLabel}
         </Button>
       )}
+    </div>
+  )
+}
+
+// The one deviation-and-remerge a branching step gets: a reply track and a
+// no-reply track, stacked (the sidebar is too narrow for side-by-side),
+// both flowing back into the next step in the parent array once rendered.
+function BranchTracks({
+  step,
+  renderStepRow,
+  onAddStep,
+  onRemoveBranch,
+}: {
+  step: CampaignStep
+  renderStepRow: (step: CampaignStep) => React.ReactNode
+  onAddStep: (track: "reply" | "noReply", channel: StepChannel) => void
+  onRemoveBranch: () => void
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  if (!step.branch) return null
+  return (
+    <div className="border-primary/30 ml-3 space-y-3 border-l-2 border-dashed py-1 pl-4">
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+          <GitFork className="size-3.5" />
+          {c.addBranchLabel}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive size-6"
+          aria-label={c.removeBranchAria}
+          onClick={onRemoveBranch}
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
+          <MessageCircleReply className="size-3.5" />
+          {c.replyTrack}
+        </p>
+        {step.branch.replySteps.map((s) => renderStepRow(s))}
+        <AddStepMenu onAdd={(channel) => onAddStep("reply", channel)} />
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
+          <X className="size-3.5" />
+          {c.noReplyTrack}
+        </p>
+        {step.branch.noReplySteps.map((s) => renderStepRow(s))}
+        <AddStepMenu onAdd={(channel) => onAddStep("noReply", channel)} />
+      </div>
+
+      <p className="text-muted-foreground flex items-center gap-1 text-[11px]">
+        <CornerDownRight className="size-3" />
+        {c.remergeCaption}
+      </p>
     </div>
   )
 }
