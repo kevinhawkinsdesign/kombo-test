@@ -27,6 +27,9 @@ interface TaskFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   task?: Task
+  // Prospect to link a brand-new task to (e.g. opening this from an Inbox
+  // conversation). Ignored when editing an existing task.
+  defaultProspectId?: string
 }
 
 const TYPE_OPTIONS: { value: TaskType; label: string }[] = [
@@ -57,6 +60,7 @@ export function TaskFormDialog({
   open,
   onOpenChange,
   task,
+  defaultProspectId,
 }: TaskFormDialogProps) {
   const prospects = useProspects()
   const users = assignableUsers()
@@ -79,7 +83,7 @@ export function TaskFormDialog({
       setType(task?.type ?? "call")
       setPriority(task?.priority ?? "medium")
       setDueDate(task ? task.dueDate.slice(0, 10) : todayInputValue())
-      setProspectId(task?.prospectId ?? NONE_VALUE)
+      setProspectId(task?.prospectId ?? defaultProspectId ?? NONE_VALUE)
       setOwnerId(task?.ownerId ?? currentUser.id)
     }
   }
