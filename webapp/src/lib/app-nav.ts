@@ -40,7 +40,7 @@ export const APP_DESTINATIONS: AppDestination[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home, keywords: ["home", "quick actions", "widgets", "dashboard"] },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, keywords: ["kpis", "pipeline", "leaderboard", "metrics", "overview"] },
   { to: "/inbox", labelKey: "nav.inbox", icon: Inbox, keywords: ["messages", "replies", "conversations"] },
-  { to: "/search", labelKey: "nav.search", icon: Radar, keywords: ["prospects", "find", "leads", "people", "signals"] },
+  { to: "/signals", labelKey: "nav.search", icon: Radar, keywords: ["prospects", "find", "leads", "people", "signals"] },
   { to: "/companies", labelKey: "nav.companies", icon: Building2, keywords: ["accounts", "discover"] },
   { to: "/people", labelKey: "nav.people", icon: Users, keywords: ["prospects", "contacts", "leads", "persons"] },
   { to: "/lists", labelKey: "nav.lists", icon: FolderKanban, keywords: ["segments"] },

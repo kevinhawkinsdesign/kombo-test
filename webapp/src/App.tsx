@@ -7,7 +7,7 @@ import Signup from "@/pages/Signup"
 import Onboarding from "@/pages/Onboarding"
 import Dashboard from "@/pages/Dashboard"
 import Home from "@/pages/Home"
-import Search from "@/pages/Search"
+import Search, { Signals } from "@/pages/Search"
 import QuickSearch from "@/pages/QuickSearch"
 import ProspectProfile from "@/pages/ProspectProfile"
 import Companies from "@/pages/Companies"
@@ -75,12 +75,15 @@ function App() {
         }
       >
         {/* Home is a quick-actions launcher + the customizable module grid;
-            the sales Dashboard is its own page; /search (Signals) is the
-            AI-suggestion feed + results view; /find is the dedicated search
-            page (hero + module grid), kept distinct from Signals. */}
+            the sales Dashboard is its own page; /search is the filterable
+            search + results page (with its own search box); /signals is the
+            separate AI-suggestion feed (curated carousel rows); /find is the
+            dedicated hero search page (prompt + module grid). All three are
+            distinct pages, not one component switching on state. */}
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/signals" element={<Signals />} />
         <Route path="/find" element={<QuickSearch />} />
         <Route path="/prospects/:id" element={<ProspectProfile />} />
         <Route path="/companies" element={<Companies />} />
