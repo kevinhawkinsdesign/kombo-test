@@ -72,6 +72,7 @@ import {
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
 import { ComposeDialog } from "@/components/prospect/ComposeDialog"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { conversations } from "@/lib/mock-data"
@@ -127,6 +128,7 @@ const COPY = {
     deleteConfirm: "Delete",
     prospectDeleted: "Prospect deleted",
     contact: "Contact",
+    owner: "Owner",
     verified: "Verified",
     reveal: "Reveal",
     linkedinProfile: "LinkedIn profile",
@@ -214,6 +216,7 @@ const COPY = {
     deleteConfirm: "Eliminar",
     prospectDeleted: "Prospecto eliminado",
     contact: "Contacto",
+    owner: "Responsable",
     verified: "Verificado",
     reveal: "Revelar",
     linkedinProfile: "Perfil de LinkedIn",
@@ -484,6 +487,7 @@ export default function ProspectProfile() {
 
         <div className="space-y-6">
           <ContactCard prospect={prospect} onAddToCrm={() => setCrmOpen(true)} />
+          <OwnerCard prospect={prospect} />
           <WarmIntroCard prospect={prospect} />
           <QualificationCard prospect={prospect} />
           <EnrichmentCard prospect={prospect} onAddToCrm={() => setCrmOpen(true)} />
@@ -538,6 +542,28 @@ export default function ProspectProfile() {
         }}
       />
     </Page>
+  )
+}
+
+/* ----------------------------- Owner ----------------------------- */
+
+function OwnerCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{c.owner}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <AssigneePicker
+          value={prospect.ownerId}
+          onChange={(ownerId) =>
+            prospectStore.update(prospect.id, { ownerId })
+          }
+        />
+      </CardContent>
+    </Card>
   )
 }
 
