@@ -71,7 +71,7 @@ import {
 } from "@/lib/search-result-columns"
 import { cn } from "@/lib/utils"
 import { PerCompanyCap } from "@/components/common/PerCompanyCap"
-import { SAVE_COST } from "@/lib/enrichment"
+import { SAVE_COST, MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import {
   interpretPrompt,
   searchLeads,
@@ -331,6 +331,8 @@ const COPY = {
     capLabel: "Max contacts per company",
     capNoLimit: "No limit",
     capChip: (n: number) => `Max ${n}/company`,
+    capBatchNote: (max: number) =>
+      `Only ${max.toLocaleString()} can be added at a time.`,
     buildPopulate: "How do you want to populate it?",
     buildNext: "Next",
     buildBack: "Back",
@@ -609,6 +611,8 @@ const COPY = {
     capLabel: "Máx. contactos por empresa",
     capNoLimit: "Sin límite",
     capChip: (n: number) => `Máx. ${n}/empresa`,
+    capBatchNote: (max: number) =>
+      `Solo se pueden añadir ${max.toLocaleString()} a la vez.`,
     buildPopulate: "¿Cómo quieres llenarla?",
     buildNext: "Siguiente",
     buildBack: "Atrás",
@@ -1293,7 +1297,8 @@ export default function Search() {
   function bulkAddToList() {
     const ids = materializeSelected()
     if (ids.length === 0) return
-    setBulkIds(ids)
+    // Adding to a list happens in one batch at a time — same cap as enrichment.
+    setBulkIds(ids.slice(0, MAX_ENRICH_BATCH))
     setSelected(new Set())
     setBulkListOpen(true)
   }
@@ -1827,7 +1832,13 @@ export default function Search() {
 
           {/* Search-result actions — same set for plain search & lookalike. */}
           {selectedCount > 0 && (
-            <div className="bg-background sticky bottom-4 z-20 flex flex-wrap items-center gap-1.5 rounded-xl border p-2 shadow-lg">
+            <div className="bg-background sticky bottom-4 z-20 flex flex-col gap-1.5 rounded-xl border p-2 shadow-lg">
+              {selectedCount > MAX_ENRICH_BATCH && (
+                <p className="text-muted-foreground px-2 text-xs">
+                  {c.capBatchNote(MAX_ENRICH_BATCH)}
+                </p>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5">
               <span className="px-2 text-sm font-medium tabular-nums">
                 {c.selected(selectedCount)}
               </span>
@@ -1867,6 +1878,7 @@ export default function Search() {
                 <X className="size-4" />
                 {c.clearSel}
               </Button>
+              </div>
             </div>
           )}
             </>

@@ -7,6 +7,8 @@ import {
   Pencil,
   Check,
   Columns3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -43,10 +45,14 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { useAccounts, accountStore, useLists } from "@/lib/store"
 import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
+import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Account, AccountTier } from "@/lib/types"
 
 const ALL = "all"
 const TIERS: (AccountTier | typeof ALL)[] = [ALL, "Enterprise", "Mid-market", "SMB"]
+// Adding to a list happens in one batch at a time, same cap as enrichment —
+// keep results paged so "select page" never grabs the whole (1000+) table.
+const RESULTS_PER_PAGE = 50
 
 const COPY = {
   en: {
@@ -88,6 +94,12 @@ const COPY = {
     done: "Done",
     editingHint: "Editing — changes save automatically",
     selectAll: "Select all",
+    selectPage: "Select page",
+    deselectPage: "Deselect page",
+    selectAllCapped: (n: number) => `Select all ${n.toLocaleString()}`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
+    capNote: (max: number) => `Only ${max.toLocaleString()} contacts can be added at a time.`,
     colCompany: "Company",
     colIndustry: "Industry",
     colTier: "Tier",
@@ -134,6 +146,12 @@ const COPY = {
     done: "Listo",
     editingHint: "Editando — los cambios se guardan solos",
     selectAll: "Seleccionar todo",
+    selectPage: "Seleccionar página",
+    deselectPage: "Deseleccionar página",
+    selectAllCapped: (n: number) => `Seleccionar todas (${n.toLocaleString()})`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
+    capNote: (max: number) => `Solo se pueden añadir ${max.toLocaleString()} contactos a la vez.`,
     colCompany: "Empresa",
     colIndustry: "Sector",
     colTier: "Segmento",
@@ -193,9 +211,30 @@ export default function Companies() {
     return matchesQuery && matchesTier && matchesList
   })
 
-  const allSelected = results.length > 0 && results.every((a) => selectedIds.has(a.id))
-  const someSelected = results.some((a) => selectedIds.has(a.id))
+  // Pagination — "select page" imports a controlled batch instead of every
+  // matching result. Reset to the first page whenever the filters change.
+  const [page, setPage] = React.useState(0)
+  const resultSig = `${query}|${tier}|${listFilter}`
+  const [pageSig, setPageSig] = React.useState(resultSig)
+  if (resultSig !== pageSig) {
+    setPageSig(resultSig)
+    setPage(0)
+  }
+  const pageCount = Math.max(1, Math.ceil(results.length / RESULTS_PER_PAGE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageStart = safePage * RESULTS_PER_PAGE
+  const pageEnd = Math.min(pageStart + RESULTS_PER_PAGE, results.length)
+  const pagedResults = results.slice(pageStart, pageEnd)
+
+  const allSelected =
+    pagedResults.length > 0 && pagedResults.every((a) => selectedIds.has(a.id))
+  const someSelected = pagedResults.some((a) => selectedIds.has(a.id))
   const selectedIdsArr = [...selectedIds]
+  // Adding to a list is capped at MAX_ENRICH_BATCH even if more got selected
+  // (e.g. by paging through and selecting page-by-page past the cap).
+  const addIdsArr = selectedIdsArr.slice(0, MAX_ENRICH_BATCH)
+  const overCap = selectedIds.size > MAX_ENRICH_BATCH
+  const selectableCount = Math.min(results.length, MAX_ENRICH_BATCH)
   const selectedAccounts = accounts.filter((a) => selectedIds.has(a.id))
 
   function toggleRow(a: Account) {
@@ -206,13 +245,19 @@ export default function Companies() {
       return next
     })
   }
-  function toggleAll() {
+  // Toggles the current page only — mirrors the Search/Add-records pattern so
+  // a single click never imports more than one page at a time.
+  function togglePage() {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      if (results.every((a) => prev.has(a.id))) results.forEach((a) => next.delete(a.id))
-      else results.forEach((a) => next.add(a.id))
+      if (pagedResults.every((a) => prev.has(a.id)))
+        pagedResults.forEach((a) => next.delete(a.id))
+      else pagedResults.forEach((a) => next.add(a.id))
       return next
     })
+  }
+  function selectAllCapped() {
+    setSelectedIds(new Set(results.slice(0, MAX_ENRICH_BATCH).map((a) => a.id)))
   }
   function exportSelected() {
     downloadCsv(
@@ -348,27 +393,75 @@ export default function Companies() {
       {results.length === 0 ? (
         <EmptyState description={c.noMatch} />
       ) : (
-        <DataTable
-          columns={allColumns}
-          visible={columnPrefs.visible}
-          rows={results}
-          rowKey={(a) => a.id}
-          locale={locale}
-          editing={editing}
-          onUpdate={(a, patch) => accountStore.update(a.id, patch)}
-          actions={(a) => <RecordActionsMenu kind="company" record={a} />}
-          selection={{
-            isSelected: (a) => selectedIds.has(a.id),
-            toggle: toggleRow,
-            toggleAll,
-            allSelected,
-            someSelected,
-          }}
-        />
+        <>
+          {/* Selection controls — page at a time, plus a capped "select all". */}
+          <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2 px-1 text-xs">
+            <button
+              type="button"
+              onClick={togglePage}
+              className="text-primary font-medium hover:underline"
+            >
+              {allSelected ? c.deselectPage : c.selectPage}
+            </button>
+            {selectedIds.size < selectableCount && (
+              <button
+                type="button"
+                onClick={selectAllCapped}
+                className="text-primary font-medium hover:underline"
+              >
+                {c.selectAllCapped(selectableCount)}
+              </button>
+            )}
+            <div className="ml-auto flex items-center gap-1">
+              <span className="text-muted-foreground px-1 tabular-nums">
+                {c.pageRange(pageStart + 1, pageEnd, results.length)}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-7"
+                disabled={safePage === 0}
+                onClick={() => setPage(Math.max(0, safePage - 1))}
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-7"
+                disabled={safePage >= pageCount - 1}
+                onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                aria-label="Next page"
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+
+          <DataTable
+            columns={allColumns}
+            visible={columnPrefs.visible}
+            rows={pagedResults}
+            rowKey={(a) => a.id}
+            locale={locale}
+            editing={editing}
+            onUpdate={(a, patch) => accountStore.update(a.id, patch)}
+            actions={(a) => <RecordActionsMenu kind="company" record={a} />}
+            selection={{
+              isSelected: (a) => selectedIds.has(a.id),
+              toggle: toggleRow,
+              toggleAll: togglePage,
+              allSelected,
+              someSelected,
+            }}
+          />
+        </>
       )}
 
       <BulkActionsBar
         count={selectedIds.size}
+        capNote={overCap ? c.capNote(MAX_ENRICH_BATCH) : undefined}
         onClear={() => setSelectedIds(new Set())}
         onExport={exportSelected}
         onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
@@ -382,7 +475,7 @@ export default function Companies() {
         onOpenChange={setBulkList}
         mode="list"
         recordKind="company"
-        ids={selectedIdsArr}
+        ids={addIdsArr}
       />
 
       <ColumnManager
