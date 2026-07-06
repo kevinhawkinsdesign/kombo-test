@@ -33,6 +33,7 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  ListTodo,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -65,6 +66,7 @@ import {
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
+import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team, getRep } from "@/lib/team"
 import { useConversations, conversationStore } from "@/lib/store"
@@ -110,6 +112,7 @@ const COPY = {
     emptyHint: "Messages in this view will show up here.",
     backToInbox: "Back",
     viewProfile: "Profile",
+    createTask: "Create task",
     replyTo: (name: string) => `Reply to ${name}…`,
     via: "via",
     send: "Send",
@@ -221,6 +224,7 @@ const COPY = {
     emptyHint: "Los mensajes de esta vista aparecerán aquí.",
     backToInbox: "Volver",
     viewProfile: "Perfil",
+    createTask: "Crear tarea",
     replyTo: (name: string) => `Responder a ${name}…`,
     via: "por",
     send: "Enviar",
@@ -493,6 +497,7 @@ export default function Inbox() {
   const [showThreadMobile, setShowThreadMobile] = React.useState(false)
   const [shownTranslations, setShownTranslations] = React.useState<Set<string>>(new Set())
   const [toDelete, setToDelete] = React.useState<string | null>(null)
+  const [taskDialogOpen, setTaskDialogOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
@@ -1107,6 +1112,16 @@ export default function Inbox() {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:inline-flex"
+              onClick={() => setTaskDialogOpen(true)}
+            >
+              <ListTodo className="size-4" />
+              {c.createTask}
+            </Button>
+
             <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
               <Link to={`/prospects/${activeProspect.id}`}>
                 <ExternalLink className="size-4" />
@@ -1324,6 +1339,14 @@ export default function Inbox() {
           setToDelete(null)
         }}
       />
+
+      {effectiveActive && (
+        <TaskFormDialog
+          open={taskDialogOpen}
+          onOpenChange={setTaskDialogOpen}
+          defaultProspectId={effectiveActive.prospectId}
+        />
+      )}
     </div>
   )
 }
