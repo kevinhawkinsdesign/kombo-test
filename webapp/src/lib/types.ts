@@ -69,6 +69,9 @@ export interface SavedSearchCriteria {
 
 export type EnrichmentMode = "once" | "continuous"
 export type SendMode = "once" | "continuous"
+// How a dynamic list routes its new matches: straight into a campaign, or
+// held for the owner to review manually (each new match creates a Task).
+export type ReviewMode = "auto_campaign" | "manual_review"
 
 export interface ProspectList {
   id: string
@@ -90,6 +93,8 @@ export interface ProspectList {
   newPerWeek?: number // estimated inflow from the saved search
   campaignId?: string // campaign new prospects auto-enroll into
   sendMode?: SendMode
+  // Undefined reads as "auto_campaign" so existing dynamic lists stay valid.
+  reviewMode?: ReviewMode
   lastSyncedAt?: string
 }
 

@@ -14,6 +14,7 @@ import {
   Zap,
   Database,
   Building2,
+  ListTodo,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -60,6 +61,7 @@ const COPY = {
     autoEnriched: "Auto-enriched",
     enrichedOnce: "Enriched once",
     autoSending: "Auto-sending",
+    reviewManually: "Review manually",
     title: "Lists & playlists",
     description:
       "The home base for your prospects — and the engine that keeps them flowing.",
@@ -117,6 +119,7 @@ const COPY = {
     autoEnriched: "Enriquecida automáticamente",
     enrichedOnce: "Enriquecida una vez",
     autoSending: "Envío automático",
+    reviewManually: "Revisar manualmente",
     title: "Listas y playlists",
     description:
       "El centro de operaciones de tus prospectos — y el motor que mantiene el flujo.",
@@ -188,6 +191,12 @@ function DynamicChips({ list }: { list: ProspectList }) {
         <Badge variant="secondary" className="text-chart-1 gap-1 font-normal">
           <Zap className="size-3" />
           {c.autoSending}
+        </Badge>
+      )}
+      {list.reviewMode === "manual_review" && (
+        <Badge variant="secondary" className="gap-1 font-normal">
+          <ListTodo className="size-3" />
+          {c.reviewManually}
         </Badge>
       )}
     </div>

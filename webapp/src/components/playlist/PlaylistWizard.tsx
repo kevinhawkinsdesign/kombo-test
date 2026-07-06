@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Users,
   Database,
+  ListTodo,
 } from "lucide-react"
 
 import {
@@ -39,6 +40,7 @@ import { useCampaigns, listStore } from "@/lib/store"
 import type {
   EnrichmentMode,
   SendMode,
+  ReviewMode,
   SavedSearchCriteria,
 } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -132,6 +134,7 @@ export function PlaylistWizard({
   const [audience, setAudience] = React.useState<Audience>("dynamic")
   const [criteria, setCriteria] = React.useState<SavedSearchCriteria>(EMPTY_CRITERIA)
   const [enrichment, setEnrichment] = React.useState<EnrichmentMode>("continuous")
+  const [outreachMode, setOutreachMode] = React.useState<ReviewMode>("auto_campaign")
   const [campaignId, setCampaignId] = React.useState<string>("")
   const [sendMode, setSendMode] = React.useState<SendMode>("continuous")
 
@@ -145,6 +148,7 @@ export function PlaylistWizard({
       setAudience("dynamic")
       setCriteria(EMPTY_CRITERIA)
       setEnrichment("continuous")
+      setOutreachMode("auto_campaign")
       setCampaignId("")
       setSendMode("continuous")
     }
@@ -183,6 +187,7 @@ export function PlaylistWizard({
 
   function handleCreate() {
     const isDynamic = audience === "dynamic"
+    const manualReview = isDynamic && outreachMode === "manual_review"
     const list = listStore.create({
       name: name.trim() || "Untitled playlist",
       description: isDynamic
@@ -195,8 +200,9 @@ export function PlaylistWizard({
       criteria: isDynamic ? criteria : undefined,
       enrichment,
       newPerWeek: isDynamic ? estNewPerWeek : undefined,
-      campaignId: campaignId || undefined,
-      sendMode: campaignId ? sendMode : undefined,
+      campaignId: manualReview ? undefined : campaignId || undefined,
+      sendMode: !manualReview && campaignId ? sendMode : undefined,
+      reviewMode: isDynamic ? outreachMode : undefined,
       lastSyncedAt: new Date().toISOString(),
     })
     onOpenChange(false)
@@ -385,38 +391,73 @@ export function PlaylistWizard({
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="wizard-campaign" className="text-muted-foreground text-xs">
-                  Sequence
-                </Label>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Select value={campaignId} onValueChange={setCampaignId}>
-                    <SelectTrigger id="wizard-campaign" className="flex-1">
-                      <SelectValue placeholder="Choose a campaign…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {campaigns.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      onOpenChange(false)
-                      navigate("/sequence-builder")
-                    }}
-                  >
-                    <Workflow className="size-4" />
-                    Build new
-                  </Button>
+              {audience === "dynamic" && (
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs">
+                    When a new prospect matches
+                  </Label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <OptionCard
+                      selected={outreachMode === "auto_campaign"}
+                      onSelect={() => setOutreachMode("auto_campaign")}
+                      icon={Send}
+                      title="Enroll in a campaign"
+                      description="New matches flow straight into a sequence — the flywheel from the previous screen."
+                    />
+                    <OptionCard
+                      selected={outreachMode === "manual_review"}
+                      onSelect={() => setOutreachMode("manual_review")}
+                      icon={ListTodo}
+                      title="Review manually"
+                      description="New matches create a task for you to review — nothing sends until you say so."
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {campaignId && (
+              {(audience === "static" || outreachMode === "auto_campaign") && (
+                <div className="space-y-2">
+                  <Label htmlFor="wizard-campaign" className="text-muted-foreground text-xs">
+                    Sequence
+                  </Label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select value={campaignId} onValueChange={setCampaignId}>
+                      <SelectTrigger id="wizard-campaign" className="flex-1">
+                        <SelectValue placeholder="Choose a campaign…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {campaigns.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        onOpenChange(false)
+                        navigate("/sequence-builder")
+                      }}
+                    >
+                      <Workflow className="size-4" />
+                      Build new
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {audience === "dynamic" && outreachMode === "manual_review" && (
+                <div className="border-primary/30 bg-primary/5 text-primary flex items-center gap-2 rounded-lg border border-dashed p-3 text-sm">
+                  <ListTodo className="size-4 shrink-0" />
+                  Each new match creates a task for you to review — nothing
+                  gets enrolled or sent until you act on it.
+                </div>
+              )}
+
+              {(audience === "static" || outreachMode === "auto_campaign") &&
+                campaignId && (
                 <>
                   <Separator />
                   <div className="space-y-2">
@@ -471,17 +512,26 @@ export function PlaylistWizard({
                   }
                 />
                 <FlywheelRow
-                  icon={Send}
+                  icon={
+                    audience === "dynamic" && outreachMode === "manual_review"
+                      ? ListTodo
+                      : Send
+                  }
                   title="Outreach"
                   detail={
-                    selectedCampaign
-                      ? `${selectedCampaign.name} · ${
-                          sendMode === "continuous" ? "continuous enrollment" : "send once"
-                        }`
-                      : "No sequence attached yet"
+                    audience === "dynamic" && outreachMode === "manual_review"
+                      ? "New matches create a task for you to review"
+                      : selectedCampaign
+                        ? `${selectedCampaign.name} · ${
+                            sendMode === "continuous" ? "continuous enrollment" : "send once"
+                          }`
+                        : "No sequence attached yet"
                   }
                 />
-                {audience === "dynamic" && sendMode === "continuous" && campaignId && (
+                {audience === "dynamic" &&
+                  outreachMode === "auto_campaign" &&
+                  sendMode === "continuous" &&
+                  campaignId && (
                   <div className="border-primary/30 bg-primary/5 text-primary flex items-center gap-2 rounded-lg border border-dashed p-3 text-sm font-medium">
                     <RefreshCw className="size-4" />
                     Self-sustaining: new prospects flow in, get enriched, and
