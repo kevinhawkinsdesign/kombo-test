@@ -853,6 +853,13 @@ export default function Search() {
   const loadedSearch = incomingSearchId
     ? (savedSearches.find((s) => s.id === incomingSearchId) ?? null)
     : null
+  // Arrive from the Add modal's guided wizard: it already knows to open the
+  // Lookalike picker, or to start on a source the wizard owns fully (Google
+  // Maps is company-only, hence the entity default below).
+  const incomingOpenLookalike =
+    (location.state as { openLookalike?: boolean } | null)?.openLookalike ?? false
+  const incomingSource =
+    (location.state as { initialSource?: "google_maps" } | null)?.initialSource ?? null
 
   const [entity, setEntity] = React.useState<AiEntity>(
     loadedSearch
@@ -863,7 +870,9 @@ export default function Search() {
           ? incomingSeed.kind === "company"
             ? "companies"
             : "people"
-          : "people"
+          : incomingSource === "google_maps"
+            ? "companies"
+            : "people"
   )
   const [query, setQuery] = React.useState<AiQuery>(
     loadedSearch
@@ -888,7 +897,7 @@ export default function Search() {
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
-  const [lookalikeOpen, setLookalikeOpen] = React.useState(false)
+  const [lookalikeOpen, setLookalikeOpen] = React.useState(incomingOpenLookalike)
   const [domainListOpen, setDomainListOpen] = React.useState(false)
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
   const [saveName, setSaveName] = React.useState("")
@@ -898,7 +907,9 @@ export default function Search() {
   const [bulkIds, setBulkIds] = React.useState<string[]>([])
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
-  const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>("kombo")
+  const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>(
+    incomingSource ?? "kombo"
+  )
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
 
   // Matching prospects/companies live behind a costly API call, so the page
