@@ -20,6 +20,7 @@ import {
   TriangleAlert,
   UserSearch,
   ChevronsUpDown,
+  ListTodo,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -104,6 +105,8 @@ const COPY = {
     autoEnrolls: "Auto-enrolls new prospects",
     oneTimeSend: "One-time send",
     noSequence: "No sequence attached",
+    reviewManually: "Review manually",
+    reviewManuallyDesc: "New matches create a task instead of sending",
     newPerWeek: (count: number) => `~${count} new prospects / week`,
     lastSynced: (date: string) => `Last synced ${date}`,
     addProspectsTitle: "Add prospects",
@@ -204,6 +207,8 @@ const COPY = {
     autoEnrolls: "Inscribe automáticamente a los nuevos prospectos",
     oneTimeSend: "Envío único",
     noSequence: "Sin secuencia asignada",
+    reviewManually: "Revisar manualmente",
+    reviewManuallyDesc: "Los nuevos coincidentes crean una tarea en lugar de enviarse",
     newPerWeek: (count: number) => `~${count} nuevos prospectos / semana`,
     lastSynced: (date: string) => `Última sincronización ${date}`,
     addProspectsTitle: "Añadir prospectos",
@@ -766,7 +771,17 @@ function DynamicPlaylistPanel({ list }: { list: ProspectList }) {
             <Send className="size-3.5" />
             {c.outreach}
           </p>
-          {campaign ? (
+          {list.reviewMode === "manual_review" ? (
+            <p className="text-sm">
+              <span className="flex items-center gap-1.5 font-medium">
+                <ListTodo className="text-primary size-3.5" />
+                {c.reviewManually}
+              </span>
+              <span className="text-muted-foreground block text-xs">
+                {c.reviewManuallyDesc}
+              </span>
+            </p>
+          ) : campaign ? (
             <p className="text-sm">
               <Link
                 to={`/campaigns/${campaign.id}`}
