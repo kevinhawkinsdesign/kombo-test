@@ -867,7 +867,9 @@ export function AddRecordsDialog({
                       autoFocus
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && input.trim().length >= 2) runSearch()
+                      }}
                       placeholder={
                         entity === "people"
                           ? c.searchPeoplePlaceholder
@@ -877,7 +879,12 @@ export function AddRecordsDialog({
                       className="h-10 pl-9"
                     />
                   </div>
-                  <Button variant="volt" className="h-10" onClick={runSearch}>
+                  <Button
+                    variant="volt"
+                    className="h-10"
+                    onClick={runSearch}
+                    disabled={input.trim().length < 2}
+                  >
                     <Search className="size-4" />
                     {c.run}
                   </Button>
@@ -1135,7 +1142,7 @@ function SplashScreen({
           className="flex w-full max-w-sm items-center gap-2"
           onSubmit={(e) => {
             e.preventDefault()
-            onSubmit()
+            if (input.trim().length >= 2) onSubmit()
           }}
         >
           <div className="relative min-w-0 flex-1">
@@ -1151,7 +1158,14 @@ function SplashScreen({
               className="h-10 pl-9"
             />
           </div>
-          <Button type="submit" variant="volt" size="icon" className="h-10 shrink-0" aria-label={c.run}>
+          <Button
+            type="submit"
+            variant="volt"
+            size="icon"
+            className="h-10 shrink-0"
+            aria-label={c.run}
+            disabled={input.trim().length < 2}
+          >
             <ArrowRight className="size-4" />
           </Button>
         </form>

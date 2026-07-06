@@ -125,6 +125,7 @@ const COPY = {
     signalsDescription:
       "AI-matched prospects and companies, scored and ready to search, save, or add to a campaign.",
     inputPlaceholder: "e.g. VPs of Sales at European SaaS that just raised…",
+    inputPlaceholderCompanies: "e.g. Series B fintechs hiring for sales in Europe…",
     searchBtn: "Search",
     clearQuery: "Clear search",
     srTitle: "Search",
@@ -402,6 +403,7 @@ const COPY = {
     signalsDescription:
       "Prospectos y empresas emparejados por IA, puntuados y listos para buscar, guardar o añadir a una campaña.",
     inputPlaceholder: "p. ej. VPs de Ventas en SaaS europeo que acaban de levantar…",
+    inputPlaceholderCompanies: "p. ej. Fintechs Serie B contratando en ventas en Europa…",
     searchBtn: "Buscar",
     clearQuery: "Borrar búsqueda",
     srTitle: "Buscar",
@@ -1031,7 +1033,7 @@ export default function Search() {
     // already know their entity — pass it through to skip the guess.
     (prompt: string, forcedEntity?: AiEntity) => {
       const text = prompt.trim()
-      if (!text) return
+      if (text.length < 2) return
       setInput(text)
       setThinking(true)
       setLastPrompt(text)
@@ -1408,7 +1410,11 @@ export default function Search() {
                     runPrompt(input)
                   }
                 }}
-                placeholder={c.inputPlaceholder}
+                placeholder={
+                  entity === "companies"
+                    ? c.inputPlaceholderCompanies
+                    : c.inputPlaceholder
+                }
                 rows={2}
                 aria-label={c.srTitle}
                 className="max-h-40 min-h-12 resize-y pr-9 pl-9"
@@ -1431,7 +1437,7 @@ export default function Search() {
             <Button
               type="submit"
               variant="volt"
-              disabled={!input.trim() || thinking}
+              disabled={input.trim().length < 2 || thinking}
             >
               {thinking ? (
                 <Loader2 className="size-4 animate-spin" />
