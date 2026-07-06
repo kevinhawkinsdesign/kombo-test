@@ -238,6 +238,10 @@ export interface CampaignStep {
   delayDays: number
   subject?: string
   body: string
+  // When true, this step creates a task for the assigned rep to complete by
+  // hand (a call, a manual LinkedIn touch, etc.) instead of auto-sending.
+  // `subject` becomes the task title and `body` becomes optional notes.
+  isManualTask?: boolean
 }
 
 export interface Campaign {

@@ -27,6 +27,7 @@ import {
   ChevronDown,
   Ban,
   FileText,
+  ListTodo,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -46,6 +47,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import {
@@ -220,6 +223,12 @@ const COPY = {
     actionNeeded: "Action needed",
     subjectLine: "Subject line",
     messageBody: "Message body",
+    manualTaskBadge: "Manual",
+    markManualTask: "Mark as manual task",
+    manualTaskDesc: "Creates a task for the rep instead of sending automatically.",
+    taskTitlePlaceholder: "Task title, e.g. \"Call to follow up\"",
+    taskNotesPlaceholder: "Notes for the rep (optional)",
+    manualTaskFooter: "This step creates a task for the assigned rep — it doesn't send automatically.",
     saveSequence: "Save sequence",
     sequenceSaved: "Sequence saved",
     noSteps: "This sequence has no steps yet.",
@@ -384,6 +393,12 @@ const COPY = {
     actionNeeded: "Necesita acción",
     subjectLine: "Asunto",
     messageBody: "Cuerpo del mensaje",
+    manualTaskBadge: "Manual",
+    markManualTask: "Marcar como tarea manual",
+    manualTaskDesc: "Crea una tarea para el vendedor en lugar de enviarse automáticamente.",
+    taskTitlePlaceholder: "Título de la tarea, p. ej. «Llamar para dar seguimiento»",
+    taskNotesPlaceholder: "Notas para el vendedor (opcional)",
+    manualTaskFooter: "Este paso crea una tarea para el vendedor asignado — no se envía automáticamente.",
     saveSequence: "Guardar secuencia",
     sequenceSaved: "Secuencia guardada",
     noSteps: "Esta secuencia aún no tiene pasos.",
@@ -1350,7 +1365,9 @@ export default function CampaignDetail() {
                   {steps.map((step) => {
                     const meta = channelMeta(step.channel)
                     const selected = step.id === selectedStep.id
-                    const needsAction = stripHtml(step.body).trim().length === 0
+                    const needsAction = step.isManualTask
+                      ? stripHtml(step.subject ?? "").trim().length === 0
+                      : stripHtml(step.body).trim().length === 0
                     return (
                       <button
                         key={step.id}
@@ -1382,6 +1399,15 @@ export default function CampaignDetail() {
                               : c.waitDays(step.delayDays)}
                           </p>
                         </div>
+                        {step.isManualTask && (
+                          <Badge
+                            variant="secondary"
+                            className="shrink-0 gap-1 text-[10px] font-normal"
+                          >
+                            <ListTodo className="size-3" />
+                            {c.manualTaskBadge}
+                          </Badge>
+                        )}
                         {needsAction && (
                           <Badge
                             variant="destructive"
@@ -1522,52 +1548,108 @@ export default function CampaignDetail() {
                           </span>
                         </div>
 
-                        {isEmail && (
-                          <Input
-                            value={step.subject ?? ""}
-                            placeholder={c.subjectLine}
-                            onChange={(e) =>
+                        <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
+                          <ListTodo className="text-muted-foreground size-4 shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <Label
+                              htmlFor={`manual-task-${step.id}`}
+                              className="text-sm font-medium"
+                            >
+                              {c.markManualTask}
+                            </Label>
+                            <p className="text-muted-foreground text-xs">
+                              {c.manualTaskDesc}
+                            </p>
+                          </div>
+                          <Switch
+                            id={`manual-task-${step.id}`}
+                            checked={Boolean(step.isManualTask)}
+                            onCheckedChange={(checked) =>
                               campaignStore.updateStep(campaign.id, step.id, {
-                                subject: e.target.value,
+                                isManualTask: checked,
                               })
                             }
                           />
-                        )}
+                        </div>
 
-                        <RichTextEditor
-                          value={plainToHtml(step.body)}
-                          placeholder={c.messageBody}
-                          ariaLabel={c.messageBody}
-                          onChange={(html) =>
-                            campaignStore.updateStep(campaign.id, step.id, {
-                              body: html,
-                            })
-                          }
-                          minHeight="min-h-20"
-                        />
+                        {step.isManualTask ? (
+                          <>
+                            <Input
+                              value={step.subject ?? ""}
+                              placeholder={c.taskTitlePlaceholder}
+                              onChange={(e) =>
+                                campaignStore.updateStep(campaign.id, step.id, {
+                                  subject: e.target.value,
+                                })
+                              }
+                            />
+                            <Textarea
+                              value={step.body}
+                              placeholder={c.taskNotesPlaceholder}
+                              onChange={(e) =>
+                                campaignStore.updateStep(campaign.id, step.id, {
+                                  body: e.target.value,
+                                })
+                              }
+                              className="min-h-20"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            {isEmail && (
+                              <Input
+                                value={step.subject ?? ""}
+                                placeholder={c.subjectLine}
+                                onChange={(e) =>
+                                  campaignStore.updateStep(campaign.id, step.id, {
+                                    subject: e.target.value,
+                                  })
+                                }
+                              />
+                            )}
+
+                            <RichTextEditor
+                              value={plainToHtml(step.body)}
+                              placeholder={c.messageBody}
+                              ariaLabel={c.messageBody}
+                              onChange={(html) =>
+                                campaignStore.updateStep(campaign.id, step.id, {
+                                  body: html,
+                                })
+                              }
+                              minHeight="min-h-20"
+                            />
+                          </>
+                        )}
 
                         <Separator />
 
-                        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                          <span className="text-muted-foreground">
-                            {c.sent}{" "}
-                            <span className="text-foreground font-medium tabular-nums">
-                              {sent}
+                        {step.isManualTask ? (
+                          <p className="text-muted-foreground text-xs">
+                            {c.manualTaskFooter}
+                          </p>
+                        ) : (
+                          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+                            <span className="text-muted-foreground">
+                              {c.sent}{" "}
+                              <span className="text-foreground font-medium tabular-nums">
+                                {sent}
+                              </span>
                             </span>
-                          </span>
-                          <span className="text-muted-foreground">
-                            {c.opened}{" "}
-                            <span className="text-foreground font-medium tabular-nums">
-                              {opened}
+                            <span className="text-muted-foreground">
+                              {c.opened}{" "}
+                              <span className="text-foreground font-medium tabular-nums">
+                                {opened}
+                              </span>
                             </span>
-                          </span>
-                          <span className="text-muted-foreground">
-                            {c.replied}{" "}
-                            <span className="text-foreground font-medium tabular-nums">
-                              {replied}
+                            <span className="text-muted-foreground">
+                              {c.replied}{" "}
+                              <span className="text-foreground font-medium tabular-nums">
+                                {replied}
+                              </span>
                             </span>
-                          </span>
-                        </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   )
