@@ -5,9 +5,8 @@ import {
   Check,
   ArrowRight,
   Mail,
-  MessageSquare,
+  Phone,
   MessageCircle,
-  Camera,
   FileText,
   X,
   Search,
@@ -229,13 +228,6 @@ const CHANNEL_META: Record<StepChannel, ChannelMeta> = {
     label: { en: "Email", es: "Correo" },
     caption: { en: "Send an automated email", es: "Enviar un correo automático" },
   },
-  sms: {
-    Icon: MessageSquare,
-    tint: "bg-chart-4/15 text-chart-4",
-    group: "groupMessaging",
-    label: { en: "SMS", es: "SMS" },
-    caption: { en: "Send a text message", es: "Enviar un mensaje de texto" },
-  },
   whatsapp: {
     Icon: MessageCircle,
     tint: "bg-chart-1/15 text-chart-1",
@@ -243,12 +235,12 @@ const CHANNEL_META: Record<StepChannel, ChannelMeta> = {
     label: { en: "WhatsApp", es: "WhatsApp" },
     caption: { en: "Send a WhatsApp message", es: "Enviar un mensaje de WhatsApp" },
   },
-  instagram: {
-    Icon: Camera,
-    tint: "bg-chart-5/15 text-chart-5",
+  call: {
+    Icon: Phone,
+    tint: "bg-chart-4/15 text-chart-4",
     group: "groupMessaging",
-    label: { en: "Instagram DM", es: "DM de Instagram" },
-    caption: { en: "Direct message on Instagram", es: "Mensaje directo en Instagram" },
+    label: { en: "Phone call", es: "Llamada" },
+    caption: { en: "Creates a call task for the rep", es: "Crea una tarea de llamada para el vendedor" },
   },
   linkedin_message: {
     Icon: LinkedinIcon,
@@ -275,7 +267,7 @@ const CHANNEL_META: Record<StepChannel, ChannelMeta> = {
 
 const CHANNEL_GROUPS: { key: ChannelMeta["group"]; channels: StepChannel[] }[] = [
   { key: "groupEmail", channels: ["email"] },
-  { key: "groupMessaging", channels: ["sms", "whatsapp", "instagram"] },
+  { key: "groupMessaging", channels: ["whatsapp", "call"] },
   {
     key: "groupLinkedin",
     channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],

@@ -7,9 +7,8 @@ import {
   ArrowDown,
   Columns3,
   Mail,
-  MessageSquare,
+  Phone,
   MessageCircle,
-  Camera,
   Pause,
   Play,
   Pencil,
@@ -89,6 +88,7 @@ import {
 import { CampaignDailyChart } from "@/components/charts/Charts"
 import { DataTable } from "@/components/common/DataTable"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
@@ -137,9 +137,8 @@ const COPY = {
   en: {
     channelLabel: {
       email: "Email",
-      sms: "SMS",
       whatsapp: "WhatsApp",
-      instagram: "Instagram DM",
+      call: "Phone call",
       linkedin_message: "LinkedIn message",
       linkedin_dm: "LinkedIn DM",
       linkedin_inmail: "LinkedIn InMail",
@@ -243,6 +242,7 @@ const COPY = {
     manualTaskBadge: "Manual",
     markManualTask: "Mark as manual task",
     manualTaskDesc: "Creates a task for the rep instead of sending automatically.",
+    manualTaskAssignee: "Assigned to",
     taskTitlePlaceholder: "Task title, e.g. \"Call to follow up\"",
     taskNotesPlaceholder: "Notes for the rep (optional)",
     manualTaskFooter: "This step creates a task for the assigned rep — it doesn't send automatically.",
@@ -315,9 +315,8 @@ const COPY = {
   es: {
     channelLabel: {
       email: "Correo",
-      sms: "SMS",
       whatsapp: "WhatsApp",
-      instagram: "Mensaje de Instagram",
+      call: "Llamada",
       linkedin_message: "Mensaje de LinkedIn",
       linkedin_dm: "Mensaje directo de LinkedIn",
       linkedin_inmail: "InMail de LinkedIn",
@@ -421,6 +420,7 @@ const COPY = {
     manualTaskBadge: "Manual",
     markManualTask: "Marcar como tarea manual",
     manualTaskDesc: "Crea una tarea para el vendedor en lugar de enviarse automáticamente.",
+    manualTaskAssignee: "Asignada a",
     taskTitlePlaceholder: "Título de la tarea, p. ej. «Llamar para dar seguimiento»",
     taskNotesPlaceholder: "Notas para el vendedor (opcional)",
     manualTaskFooter: "Este paso crea una tarea para el vendedor asignado — no se envía automáticamente.",
@@ -583,14 +583,13 @@ interface ChannelMeta {
 
 const CHANNELS: Record<StepChannel, ChannelMeta> = {
   email: { tint: "bg-primary/15 text-primary", Icon: Mail },
-  sms: { tint: "bg-chart-4/15 text-chart-4", Icon: MessageSquare },
   whatsapp: {
     tint: "bg-chart-1/15 text-chart-1",
     Icon: MessageCircle,
   },
-  instagram: {
-    tint: "bg-chart-5/15 text-chart-5",
-    Icon: Camera,
+  call: {
+    tint: "bg-chart-4/15 text-chart-4",
+    Icon: Phone,
   },
   linkedin_message: {
     tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
@@ -610,6 +609,8 @@ const CHANNELS: Record<StepChannel, ChannelMeta> = {
 // "linkedin" channel, or any unknown value) still renders.
 function channelMeta(channel: string): ChannelMeta {
   if (channel in CHANNELS) return CHANNELS[channel as StepChannel]
+  if (channel === "sms") return CHANNELS.whatsapp
+  if (channel === "instagram") return CHANNELS.linkedin_message
   if (channel === "linkedin") return CHANNELS.linkedin_message
   return CHANNELS.email
 }
@@ -617,6 +618,8 @@ function channelMeta(channel: string): ChannelMeta {
 export function normalizeChannel(channel: string): StepChannel {
   if (channel in CHANNELS) return channel as StepChannel
   if (channel === "linkedin") return "linkedin_message"
+  if (channel === "sms") return "whatsapp"
+  if (channel === "instagram") return "linkedin_message"
   return "email"
 }
 
@@ -1693,6 +1696,23 @@ export default function CampaignDetail() {
                           />
                         </div>
 
+                        {step.isManualTask && (
+                          <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
+                            <span className="text-muted-foreground min-w-0 flex-1 text-sm">
+                              {c.manualTaskAssignee}
+                            </span>
+                            <AssigneePicker
+                              className="w-56"
+                              value={step.assigneeId}
+                              onChange={(assigneeId) =>
+                                campaignStore.updateStep(campaign.id, step.id, {
+                                  assigneeId,
+                                })
+                              }
+                            />
+                          </div>
+                        )}
+
                         {isTopLevel && (
                           <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
                             <GitFork className="text-muted-foreground size-4 shrink-0" />
@@ -2223,7 +2243,7 @@ function BranchTracks({
 // & Messaging, adapted to the channels we actually support).
 const CHANNEL_GROUPS: { labelKey: "groupEmail" | "groupMessaging" | "groupLinkedin"; channels: StepChannel[] }[] = [
   { labelKey: "groupEmail", channels: ["email"] },
-  { labelKey: "groupMessaging", channels: ["sms", "whatsapp", "instagram"] },
+  { labelKey: "groupMessaging", channels: ["whatsapp", "call"] },
   {
     labelKey: "groupLinkedin",
     channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],

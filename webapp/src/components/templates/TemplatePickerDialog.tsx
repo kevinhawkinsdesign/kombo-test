@@ -3,9 +3,6 @@ import {
   Mail,
   Search as SearchIcon,
   MessageCircle,
-  MessageSquare,
-  Send,
-  Camera,
   FileText,
   Check,
 } from "lucide-react"
@@ -76,12 +73,6 @@ function ChannelIcon({
       return <LinkedinIcon className={className} />
     case "whatsapp":
       return <MessageCircle className={cn(className, "text-[#25D366]")} />
-    case "sms":
-      return <MessageSquare className={className} />
-    case "messenger":
-      return <Send className={cn(className, "text-[#0084ff]")} />
-    case "instagram":
-      return <Camera className={cn(className, "text-[#e1306c]")} />
     default:
       return <Mail className={className} />
   }

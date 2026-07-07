@@ -12,13 +12,12 @@ export type ProspectStatus =
   | "customer"
   | "not_interested"
 
+// The channels Kombo actually automates. Anything else (SMS, Instagram,
+// Messenger…) is a manual task, not a channel.
 export type Channel =
   | "email"
   | "linkedin"
   | "whatsapp"
-  | "sms"
-  | "messenger"
-  | "instagram"
 
 // How a prospect entered the workspace (search, a list, a CSV import, or the
 // browser extension while prospecting on LinkedIn).
@@ -235,9 +234,8 @@ export type CampaignStatus = "active" | "paused" | "draft" | "completed"
 
 export type StepChannel =
   | "email"
-  | "sms"
   | "whatsapp"
-  | "instagram"
+  | "call" // a normal phone call the rep places
   | "linkedin_message"
   | "linkedin_dm"
   | "linkedin_inmail"
@@ -249,9 +247,13 @@ export interface CampaignStep {
   subject?: string
   body: string
   // When true, this step creates a task for the assigned rep to complete by
-  // hand (a call, a manual LinkedIn touch, etc.) instead of auto-sending.
-  // `subject` becomes the task title and `body` becomes optional notes.
+  // hand (a manual LinkedIn touch, a handwritten note, etc.) instead of
+  // auto-sending. `subject` becomes the task title and `body` becomes
+  // optional notes; status is binary (to-do vs done) on the rep's task list.
   isManualTask?: boolean
+  // The rep the manual task is assigned to. Undefined reads as the campaign
+  // owner / current user.
+  assigneeId?: string
   // One deviation off the main line: replies go down one track, non-replies
   // down the other, and both tracks reconnect into the next step in the
   // parent array — a single fork+remerge, not a nested branching tree.
@@ -401,7 +403,7 @@ export interface EmailTemplate {
   tags: string[]
 }
 
-export type TaskType = "call" | "email" | "linkedin" | "sms" | "manual" | "follow_up"
+export type TaskType = "call" | "email" | "linkedin" | "manual" | "follow_up"
 
 // Whether a task is completed inside the app (a message we can send) or
 // offline (a call to place, a manual to-do logged by hand).
