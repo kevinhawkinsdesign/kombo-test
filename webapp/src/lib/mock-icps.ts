@@ -114,6 +114,11 @@ export const icpStore = {
   },
 }
 
+// The active ICP — what scoring, recommendations, and AI writing default to.
+export function getPrimaryIcp(): Icp | undefined {
+  return state.find((i) => i.primary) ?? state[0]
+}
+
 export function useIcps(): Icp[] {
   return React.useSyncExternalStore(
     (l) => {

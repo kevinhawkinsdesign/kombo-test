@@ -28,6 +28,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -62,6 +63,13 @@ import {
 } from "@/lib/table-columns"
 import { Card } from "@/components/ui/card"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
+import { Segmented } from "@/components/common/Segmented"
+import { PromptFormDialog } from "@/components/templates/PromptFormDialog"
+import {
+  usePromptTemplates,
+  promptTemplateStore,
+  type PromptTemplate,
+} from "@/lib/prompt-templates"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { useTemplates, templateStore } from "@/lib/store"
 import { folderStore, useTemplateFolders } from "@/lib/template-folders"
@@ -149,9 +157,25 @@ const COPY = {
     deleteAria: (name: string) => `Delete ${name}`,
     sent: (count: string) => `${count} sent`,
     replySuffix: "reply",
-    pageTitle: "Message Templates",
+    pageTitle: "Campaign Templates",
     pageDescription: "Reusable outreach templates with live performance.",
     newTemplate: "New template",
+    sectionMessages: "Messages",
+    sectionPrompts: "Prompts",
+    newPrompt: "New prompt",
+    promptDeleteTitle: "Delete prompt?",
+    promptDeleteDescription: (name: string) =>
+      `"${name}" will be permanently removed.`,
+    promptDeleted: "Prompt deleted",
+    noPrompts: "No prompts yet — create one to get started.",
+    promptCardHint: "AI writes a unique message per recipient",
+    methodDesc: "How do you want to create it?",
+    methodManualTitle: "Write it myself",
+    methodManualDesc:
+      "Fixed copy with merge variables — the same message for everyone.",
+    methodPromptTitle: "AI prompt",
+    methodPromptDesc:
+      "Describe the message once — the AI writes a unique version for every recipient using your product, ICP, and USPs.",
     introTitle: "Reusable message templates",
     introDescription:
       "Save your best-performing copy and personalize it at scale.",
@@ -247,10 +271,26 @@ const COPY = {
     deleteAria: (name: string) => `Eliminar ${name}`,
     sent: (count: string) => `${count} enviados`,
     replySuffix: "respuesta",
-    pageTitle: "Plantillas de mensajes",
+    pageTitle: "Plantillas de campaña",
     pageDescription:
       "Plantillas de contacto reutilizables con rendimiento en vivo.",
     newTemplate: "Nueva plantilla",
+    sectionMessages: "Mensajes",
+    sectionPrompts: "Prompts",
+    newPrompt: "Nuevo prompt",
+    promptDeleteTitle: "¿Eliminar prompt?",
+    promptDeleteDescription: (name: string) =>
+      `"${name}" se eliminará de forma permanente.`,
+    promptDeleted: "Prompt eliminado",
+    noPrompts: "Aún no hay prompts — crea uno para empezar.",
+    promptCardHint: "La IA escribe un mensaje único por destinatario",
+    methodDesc: "¿Cómo quieres crearla?",
+    methodManualTitle: "Escribirla yo mismo",
+    methodManualDesc:
+      "Texto fijo con variables — el mismo mensaje para todos.",
+    methodPromptTitle: "Prompt de IA",
+    methodPromptDesc:
+      "Describe el mensaje una vez — la IA escribe una versión única para cada destinatario usando tu producto, ICP y propuestas de valor.",
     introTitle: "Plantillas de mensaje reutilizables",
     introDescription:
       "Guarda tus textos de mayor rendimiento y personalízalos a escala.",
@@ -464,6 +504,100 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     ),
   },
 ]
+
+// The Prompts section of Campaign Templates — saved AI prompts grouped into
+// folders, mirroring the extension's picker.
+function PromptsSection({
+  prompts,
+  c,
+  onCreate,
+  onEdit,
+  onDelete,
+}: {
+  prompts: PromptTemplate[]
+  c: Copy
+  onCreate: () => void
+  onEdit: (p: PromptTemplate) => void
+  onDelete: (p: PromptTemplate) => void
+}) {
+  const grouped = new Map<string, PromptTemplate[]>()
+  for (const p of prompts) {
+    grouped.set(p.folder, [...(grouped.get(p.folder) ?? []), p])
+  }
+
+  if (prompts.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={onCreate}
+        className="text-muted-foreground hover:border-primary/40 hover:text-foreground w-full rounded-xl border border-dashed py-12 text-center text-sm transition-colors"
+      >
+        <Plus className="mr-1 inline size-4" />
+        {c.noPrompts}
+      </button>
+    )
+  }
+
+  return (
+    <div className="space-y-8">
+      {[...grouped.entries()].map(([folder, items]) => (
+        <section key={folder} className="space-y-3">
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            {folder} <span className="tabular-nums">({items.length})</span>
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((p) => (
+              <div
+                key={p.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onEdit(p)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    onEdit(p)
+                  }
+                }}
+                className="bg-card text-card-foreground hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-ring/50 relative flex h-full cursor-pointer flex-col gap-3 rounded-xl border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-[3px]"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+                    <Sparkles className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{p.name}</p>
+                    <p className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
+                      <ChannelIcon channel={p.channel} className="size-3.5" />
+                      {c.promptCardHint}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={c.deleteAria(p.name)}
+                    className="text-muted-foreground hover:text-destructive -mt-1 -mr-1 size-8 shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDelete(p)
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+                <p className="text-muted-foreground line-clamp-3 text-sm">
+                  {p.prompt}
+                </p>
+                <p className="text-muted-foreground mt-auto text-xs">
+                  {formatDate(p.updatedAt)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
 
 function TemplateCard({
   template,
@@ -695,6 +829,23 @@ export default function Templates() {
 
   const [view, setView] = React.useState<CollectionView>("cards")
   const [columnsOpen, setColumnsOpen] = React.useState(false)
+  // Campaign Templates has two sections: fixed messages and AI prompts.
+  const [section, setSection] = React.useState<"messages" | "prompts">(
+    "messages"
+  )
+  const promptTemplates = usePromptTemplates()
+  const [methodOpen, setMethodOpen] = React.useState(false)
+  const [promptFormOpen, setPromptFormOpen] = React.useState(false)
+  const [editingPrompt, setEditingPrompt] = React.useState<PromptTemplate | null>(
+    null
+  )
+  const [deletingPrompt, setDeletingPrompt] = React.useState<PromptTemplate | null>(
+    null
+  )
+  function openPromptForm(prompt: PromptTemplate | null) {
+    setEditingPrompt(prompt)
+    setPromptFormOpen(true)
+  }
   const templateColPrefs = useColumnPrefs("templates", TEMPLATE_COL_DEFAULT_IDS)
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
@@ -800,14 +951,23 @@ export default function Templates() {
         description={c.pageDescription}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" onClick={() => openFolderDialog("create")}>
-              <FolderPlus className="size-4" />
-              {c.newFolder}
-            </Button>
-            <Button variant="volt" onClick={() => openEditor(null)}>
-              <Plus className="size-4" />
-              {c.newTemplate}
-            </Button>
+            {section === "messages" && (
+              <Button variant="outline" onClick={() => openFolderDialog("create")}>
+                <FolderPlus className="size-4" />
+                {c.newFolder}
+              </Button>
+            )}
+            {section === "messages" ? (
+              <Button variant="volt" onClick={() => setMethodOpen(true)}>
+                <Plus className="size-4" />
+                {c.newTemplate}
+              </Button>
+            ) : (
+              <Button variant="volt" onClick={() => openPromptForm(null)}>
+                <Plus className="size-4" />
+                {c.newPrompt}
+              </Button>
+            )}
           </div>
         }
       />
@@ -823,6 +983,30 @@ export default function Templates() {
 
       <TemplateRecommendations />
 
+      {/* Campaign Templates come in two flavors: fixed messages with merge
+          variables, and prompts the AI expands per recipient. */}
+      <Segmented
+        options={[
+          { v: "messages" as const, label: c.sectionMessages, icon: Mail },
+          { v: "prompts" as const, label: c.sectionPrompts, icon: Sparkles },
+        ]}
+        value={section}
+        onChange={setSection}
+        className="mb-4 w-fit"
+      />
+
+      {section === "prompts" && (
+        <PromptsSection
+          prompts={promptTemplates}
+          c={c}
+          onCreate={() => openPromptForm(null)}
+          onEdit={(pt) => openPromptForm(pt)}
+          onDelete={setDeletingPrompt}
+        />
+      )}
+
+      {section === "messages" && (
+      <>
       {/* Channel filter — templates exist per channel (email, LinkedIn,
           WhatsApp, SMS, Messenger, Instagram). */}
       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -978,6 +1162,8 @@ export default function Templates() {
           </section>
         ))}
       </div>
+      )}
+      </>
       )}
 
       {/* Create / rename folder */}
@@ -1330,6 +1516,90 @@ export default function Templates() {
         confirmLabel={c.delete}
         destructive
         onConfirm={handleDelete}
+      />
+
+      {/* New template — pick a creation method first. */}
+      <Dialog open={methodOpen} onOpenChange={setMethodOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{c.newTemplate}</DialogTitle>
+            <DialogDescription>{c.methodDesc}</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setMethodOpen(false)
+                openEditor(null)
+              }}
+              className="hover:border-primary/40 hover:bg-muted/40 flex items-start gap-3 rounded-lg border p-3 text-left transition-colors"
+            >
+              <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-lg">
+                <Pencil className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-medium">
+                  {c.methodManualTitle}
+                </span>
+                <span className="text-muted-foreground block text-xs">
+                  {c.methodManualDesc}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMethodOpen(false)
+                openPromptForm(null)
+              }}
+              className="hover:border-primary/40 hover:bg-muted/40 flex items-start gap-3 rounded-lg border p-3 text-left transition-colors"
+            >
+              <span className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+                <Sparkles className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-medium">
+                  {c.methodPromptTitle}
+                </span>
+                <span className="text-muted-foreground block text-xs">
+                  {c.methodPromptDesc}
+                </span>
+              </span>
+            </button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setMethodOpen(false)}>
+              {c.cancel}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <PromptFormDialog
+        open={promptFormOpen}
+        onOpenChange={setPromptFormOpen}
+        prompt={editingPrompt}
+      />
+
+      <ConfirmDialog
+        open={deletingPrompt !== null}
+        onOpenChange={(next) => {
+          if (!next) setDeletingPrompt(null)
+        }}
+        title={c.promptDeleteTitle}
+        description={
+          deletingPrompt
+            ? c.promptDeleteDescription(deletingPrompt.name)
+            : undefined
+        }
+        confirmLabel={c.delete}
+        destructive
+        onConfirm={() => {
+          if (!deletingPrompt) return
+          promptTemplateStore.remove(deletingPrompt.id)
+          toast.success(c.promptDeleted)
+          setDeletingPrompt(null)
+        }}
       />
 
       <ColumnManager
