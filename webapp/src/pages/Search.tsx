@@ -115,7 +115,9 @@ import {
 } from "@/components/common/FilterCatalog"
 import { downloadCsv } from "@/lib/csv"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import type { AccountTier } from "@/lib/types"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
+import type { AccountTier, Prospect } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -341,6 +343,9 @@ const COPY = {
     buildBack: "Back",
     selectPage: "Select page",
     deselectPage: "Deselect page",
+    selectAllCapped: (n: number) => `Select all ${n.toLocaleString()}`,
+    enrichCompaniesToast: (n: number) =>
+      `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
     hideInList: "Hide already in a list",
     hideInCrm: "Hide already in CRM",
     addRowToList: "Add to list",
@@ -623,6 +628,9 @@ const COPY = {
     buildBack: "Atrás",
     selectPage: "Seleccionar página",
     deselectPage: "Deseleccionar página",
+    selectAllCapped: (n: number) => `Seleccionar todos (${n.toLocaleString()})`,
+    enrichCompaniesToast: (n: number) =>
+      `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     hideInList: "Ocultar ya en una lista",
     hideInCrm: "Ocultar ya en el CRM",
     addRowToList: "Añadir a lista",
@@ -911,6 +919,10 @@ export default function Search() {
   const [buildOpen, setBuildOpen] = React.useState(false)
   const [bulkIds, setBulkIds] = React.useState<string[]>([])
   const [bulkListOpen, setBulkListOpen] = React.useState(false)
+  // Bulk enrich (people): selected results are materialized into real
+  // prospects first, then run through the standard enrich dialog.
+  const [enrichRows, setEnrichRows] = React.useState<Prospect[]>([])
+  const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
   const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>(
     incomingSource ?? "kombo"
@@ -1147,6 +1159,17 @@ export default function Search() {
     })
   }
 
+  // Multi-page "select all", capped at one enrichment batch — the same
+  // affordance (and cap) People/Companies have.
+  const selectableCount = Math.min(shownCount, MAX_ENRICH_BATCH)
+  function selectAllCapped() {
+    const ids =
+      entity === "people"
+        ? leads.map((l) => l.id)
+        : companies.map((co) => co.id)
+    setSelected(new Set(ids.slice(0, MAX_ENRICH_BATCH)))
+  }
+
   // Pick the database to search. Lookalike needs a seed, so it opens the picker;
   // Kombo / LinkedIn just flip the LinkedIn-filter set on or off.
   function selectSource(next: DataSource) {
@@ -1346,6 +1369,56 @@ export default function Search() {
     if (ids.length === 0) return
     setSelected(new Set())
     toast.success(c.crmToast(ids.length))
+  }
+  // Bulk enrich: people are materialized into real prospects and run through
+  // the standard enrich dialog; companies mirror the Companies page's stub.
+  function bulkEnrich() {
+    if (entity !== "people") {
+      toast.success(c.enrichCompaniesToast(selectedCount))
+      setSelected(new Set())
+      return
+    }
+    const ids = materializeSelected().slice(0, MAX_ENRICH_BATCH)
+    if (ids.length === 0) return
+    const rows = ids.flatMap((id) => getProspect(id) ?? [])
+    setEnrichRows(rows)
+    setSelected(new Set())
+    setBulkEnrichOpen(true)
+  }
+  // Lookalikes are seeded from the first selected row — the same convention
+  // as People/Companies (via applyLookalike, which resets the search state).
+  function bulkLookalikes() {
+    if (entity === "people") {
+      const l = leads.find((x) => selected.has(x.id))
+      if (!l) return
+      applyLookalike(
+        {
+          id: l.id,
+          kind: "person",
+          name: `${l.firstName} ${l.lastName}`,
+          sub: `${l.title} @ ${l.company}`,
+          industry: l.industry,
+          region: l.region,
+          headcount: l.headcount,
+        },
+        { ...EMPTY_QUERY }
+      )
+    } else {
+      const co = companies.find((x) => selected.has(x.id))
+      if (!co) return
+      applyLookalike(
+        {
+          id: co.id,
+          kind: "company",
+          name: co.name,
+          sub: `${co.industry} · ${co.region}`,
+          industry: co.industry,
+          region: co.region,
+          headcount: co.headcount,
+        },
+        { ...EMPTY_QUERY }
+      )
+    }
   }
 
   // Label, description and icon for each searchable database.
@@ -1735,6 +1808,16 @@ export default function Search() {
                 {allSelected ? c.deselectPage : c.selectPage}
               </Button>
 
+              {selectedCount < selectableCount && (
+                <button
+                  type="button"
+                  onClick={selectAllCapped}
+                  className="text-primary text-xs font-medium hover:underline"
+                >
+                  {c.selectAllCapped(selectableCount)}
+                </button>
+              )}
+
               {entity === "people" && (
                 <button
                   type="button"
@@ -1846,57 +1929,28 @@ export default function Search() {
             />
           )}
 
-          {/* Search-result actions — same set for plain search & lookalike. */}
-          {selectedCount > 0 && (
-            <div className="bg-background sticky bottom-4 z-20 flex flex-col gap-1.5 rounded-xl border p-2 shadow-lg">
-              {selectedCount > MAX_ENRICH_BATCH && (
-                <p className="text-muted-foreground px-2 text-xs">
-                  {c.capBatchNote(MAX_ENRICH_BATCH)}
-                </p>
-              )}
-              <div className="flex flex-wrap items-center gap-1.5">
-              <span className="px-2 text-sm font-medium tabular-nums">
-                {c.selected(selectedCount)}
-              </span>
-              {/* Max per company — an action modifier (caps the selection),
-                  not a search filter, so it lives with the actions. */}
-              {entity === "people" && (
-                <>
-                  <span className="bg-border mx-1 h-5 w-px" />
-                  <PerCompanyCap
-                    value={perCompanyCap}
-                    onChange={setMaxPerCompany}
-                    label={c.capLabel}
-                    offLabel={c.capNoLimit}
-                    ariaLabel={c.capLabel}
-                  />
-                </>
-              )}
-              <span className="bg-border mx-1 h-5 w-px" />
-              <Button variant="outline" size="sm" onClick={bulkAddToList}>
-                <ListPlus className="size-4" />
-                {c.bulkList}
-              </Button>
-              <Button variant="outline" size="sm" onClick={bulkExportSelected}>
-                <Download className="size-4" />
-                {c.bulkExport}
-              </Button>
-              <Button variant="outline" size="sm" onClick={bulkAddToCrm}>
-                <Plug className="size-4" />
-                {c.bulkCrm}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-auto"
-                onClick={() => setSelected(new Set())}
-              >
-                <X className="size-4" />
-                {c.clearSel}
-              </Button>
-              </div>
-            </div>
-          )}
+          {/* Search-result actions — the shared bulk bar People/Companies use.
+              No Add-to-campaign here on purpose (list-first flow). The
+              per-company cap is an action modifier (it trims the selection),
+              not a search filter, so it lives with the actions. */}
+          <BulkActionsBar
+            count={selectedCount}
+            capNote={
+              selectedCount > MAX_ENRICH_BATCH
+                ? c.capBatchNote(MAX_ENRICH_BATCH)
+                : undefined
+            }
+            perCompanyCap={entity === "people" ? perCompanyCap : undefined}
+            onPerCompanyCapChange={
+              entity === "people" ? setMaxPerCompany : undefined
+            }
+            onClear={() => setSelected(new Set())}
+            onExport={bulkExportSelected}
+            onEnrich={bulkEnrich}
+            onAddToList={bulkAddToList}
+            onAddToCrm={bulkAddToCrm}
+            onLookalikes={bulkLookalikes}
+          />
             </>
           )}
         </div>
@@ -2007,6 +2061,12 @@ export default function Search() {
         mode="list"
         recordKind={entity === "people" ? "person" : "company"}
         ids={bulkIds}
+      />
+
+      <EnrichListDialog
+        open={bulkEnrichOpen}
+        onOpenChange={setBulkEnrichOpen}
+        prospects={enrichRows}
       />
     </Page>
   )
