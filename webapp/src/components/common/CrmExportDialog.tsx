@@ -38,7 +38,6 @@ const STEPS = 4
 
 const COPY = {
   en: {
-    step: (n: number) => `Step ${n} of ${STEPS}`,
     titleDest: "Choose destination",
     titleMap: "Map fields",
     titleRules: "Sync rules",
@@ -72,7 +71,6 @@ const COPY = {
     pushed: (crm: string) => `Pushed to ${crm}`,
   },
   es: {
-    step: (n: number) => `Paso ${n} de ${STEPS}`,
     titleDest: "Elige el destino",
     titleMap: "Asignar campos",
     titleRules: "Reglas de sincronización",
@@ -148,6 +146,14 @@ export function CrmExportDialog({
     setMapping(defaultMapping(fields, targetFields(defaultCrm, obj)))
   }
 
+  // Reset the form whenever the dialog transitions to open — the house
+  // pattern every other dialog uses, rather than resetting on close.
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) reset()
+  }
+
   function pickCrm(name: string) {
     setCrm(name)
     setMapping(defaultMapping(fields, targetFields(name, object)))
@@ -162,7 +168,6 @@ export function CrmExportDialog({
   function confirm() {
     toast.success(c.pushed(crm))
     onOpenChange(false)
-    reset()
   }
 
   const kindWord = recordKind === "person" ? c.person : c.company
@@ -170,18 +175,38 @@ export function CrmExportDialog({
   const descs = [c.descDest, c.descMap, c.descRules, c.descReview]
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        onOpenChange(v)
-        if (!v) reset()
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <p className="text-muted-foreground text-xs font-medium">{c.step(step + 1)}</p>
           <DialogTitle>{titles[step]}</DialogTitle>
           <DialogDescription>{descs[step]}</DialogDescription>
+
+          {/* Stepper */}
+          <ol className="mt-3 flex items-center gap-1.5">
+            {titles.map((label, i) => (
+              <li key={label} className="flex flex-1 items-center gap-1.5">
+                <span
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
+                    i < step && "bg-primary text-primary-foreground",
+                    i === step && "border-primary text-primary border-2",
+                    i > step && "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {i < step ? <Check className="size-3" /> : i + 1}
+                </span>
+                <span
+                  className={cn(
+                    "hidden text-xs font-medium sm:inline",
+                    i === step ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {label}
+                </span>
+                {i < titles.length - 1 && <span className="bg-border h-px flex-1" />}
+              </li>
+            ))}
+          </ol>
         </DialogHeader>
 
         {/* Step 1 — destination */}

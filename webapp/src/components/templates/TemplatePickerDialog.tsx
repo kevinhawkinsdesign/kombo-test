@@ -28,7 +28,7 @@ import type { Channel, EmailTemplate } from "@/lib/types"
 const COPY = {
   en: {
     title: "Insert a template",
-    description: "Pick a saved message — the preview fills in this recipient.",
+    description: "Pick a template — the preview fills in this recipient.",
     search: "Search templates…",
     allChannels: "All channels",
     noResults: "No templates match your search.",
@@ -45,7 +45,7 @@ const COPY = {
   },
   es: {
     title: "Insertar una plantilla",
-    description: "Elige un mensaje guardado — la vista previa usa este destinatario.",
+    description: "Elige una plantilla — la vista previa usa este destinatario.",
     search: "Buscar plantillas…",
     allChannels: "Todos los canales",
     noResults: "Ninguna plantilla coincide con tu búsqueda.",

@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Circle,
   Zap,
+  Layers,
   AlertTriangle,
   CalendarClock,
   ChevronDown,
@@ -226,7 +227,7 @@ const COPY = {
     bounced: "Bounced",
     moveStepUp: "Move step up",
     moveStepDown: "Move step down",
-    removeStep: "Remove step",
+    removeStep: "Delete step",
     stepChannelAria: (n: number) => `Step ${n} channel`,
     wait: "Wait",
     daysBeforeSending: "days before sending",
@@ -249,7 +250,7 @@ const COPY = {
     remergeCaption: "Merges back into the next step",
     saveSequence: "Save sequence",
     sequenceSaved: "Sequence saved",
-    noSteps: "This sequence has no steps yet.",
+    noSteps: "No steps yet — add one to build the sequence.",
     addStep: "Add step",
     useTemplate: "Use a template",
     groupEmail: "Email",
@@ -275,7 +276,7 @@ const COPY = {
     justAdded: "Just added",
     removeProspectAria: (name: string) => `Remove ${name}`,
     removedFromCampaign: "Removed from campaign",
-    noProspects: "No prospects enrolled yet.",
+    noProspects: "No prospects yet — add some to get started.",
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
     editCampaign: "Edit campaign",
@@ -425,7 +426,7 @@ const COPY = {
     remergeCaption: "Se reconecta con el siguiente paso",
     saveSequence: "Guardar secuencia",
     sequenceSaved: "Secuencia guardada",
-    noSteps: "Esta secuencia aún no tiene pasos.",
+    noSteps: "Aún no hay pasos — añade uno para construir la secuencia.",
     addStep: "Añadir paso",
     useTemplate: "Usar una plantilla",
     groupEmail: "Correo",
@@ -451,7 +452,7 @@ const COPY = {
     justAdded: "Recién añadido",
     removeProspectAria: (name: string) => `Eliminar a ${name}`,
     removedFromCampaign: "Eliminado de la campaña",
-    noProspects: "Aún no hay prospectos inscritos.",
+    noProspects: "Aún no hay prospectos — añade algunos para empezar.",
     noReplies: "Aún no hay respuestas.",
     viewInInbox: "Ver en la bandeja",
     editCampaign: "Editar campaña",
@@ -531,7 +532,7 @@ const ENROLLMENT_VARIANT: Record<
   "default" | "secondary" | "outline" | "success" | "destructive"
 > = {
   replied: "success",
-  active: "default",
+  active: "success",
   completed: "secondary",
   paused: "outline",
   bounced: "destructive",
@@ -1950,7 +1951,7 @@ export default function CampaignDetail() {
               {c.activateAnyway}
             </Button>
             <Button variant="volt" onClick={enrichAndActivate}>
-              <Zap className="size-4" />
+              <Layers className="size-4" />
               {c.enrichAndActivate} · {enrichCost}
             </Button>
           </DialogFooter>
@@ -1979,7 +1980,7 @@ export default function CampaignDetail() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setScheduleOpen(false)}>
+            <Button variant="ghost" onClick={() => setScheduleOpen(false)}>
               {c.cancel}
             </Button>
             <Button
@@ -2006,7 +2007,7 @@ export default function CampaignDetail() {
             <DialogDescription>{c.endConfirmBody}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEndOpen(false)}>
+            <Button variant="ghost" onClick={() => setEndOpen(false)}>
               {c.cancel}
             </Button>
             <Button variant="destructive" onClick={endCampaign}>
@@ -2270,7 +2271,7 @@ function EditCampaignDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {c.cancel}
           </Button>
-          <Button onClick={handleSave} disabled={!name.trim()}>
+          <Button variant="volt" onClick={handleSave} disabled={!name.trim()}>
             {c.saveChanges}
           </Button>
         </DialogFooter>

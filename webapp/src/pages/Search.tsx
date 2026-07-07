@@ -32,6 +32,7 @@ import {
   Download,
   FolderPlus,
   Link2,
+  Check,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -288,7 +289,7 @@ const COPY = {
     bulkExport: "Export",
     bulkCrm: "Add to CRM",
     crmToast: (n: number) => `Sent ${n} to your CRM`,
-    noResults: "No results yet — try a prompt or adjust your filters.",
+    noResults: "No results match your search or filters.",
     addFilter: "Add filter",
     filterTypeahead: "Search filters or describe them with AI…",
     addCustom: (v: string) => `Add "${v}"`,
@@ -321,6 +322,8 @@ const COPY = {
     optionalCols: "Optional columns",
     alwaysTag: "Always",
     buildTitle: "Build a list",
+    buildStepSetup: "Setup",
+    buildStepSource: "Source",
     buildName: "List name",
     buildNamePlaceholder: "e.g. EMEA VPs of Sales",
     buildType: "What's in this list?",
@@ -568,7 +571,7 @@ const COPY = {
     bulkExport: "Exportar",
     bulkCrm: "Añadir al CRM",
     crmToast: (n: number) => `Enviados ${n} a tu CRM`,
-    noResults: "Aún no hay resultados — prueba un prompt o ajusta los filtros.",
+    noResults: "Ningún resultado coincide con tu búsqueda o filtros.",
     addFilter: "Añadir filtro",
     filterTypeahead: "Busca filtros o descríbelos con IA…",
     addCustom: (v: string) => `Añadir "${v}"`,
@@ -601,6 +604,8 @@ const COPY = {
     optionalCols: "Columnas opcionales",
     alwaysTag: "Fija",
     buildTitle: "Crear una lista",
+    buildStepSetup: "Configuración",
+    buildStepSource: "Fuente",
     buildName: "Nombre de la lista",
     buildNamePlaceholder: "p. ej. VPs de Ventas en EMEA",
     buildType: "¿Qué contiene esta lista?",
@@ -3624,6 +3629,9 @@ function BuildListDialog({
     }))
     .filter((g) => g.items.length > 0)
 
+  const buildSteps = [c.buildStepSetup, c.buildStepSource]
+  const stepIndex = step === "setup" ? 0 : 1
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -3635,6 +3643,35 @@ function BuildListDialog({
           <DialogDescription>
             {step === "setup" ? c.buildType : c.buildPopulate}
           </DialogDescription>
+
+          {/* Stepper */}
+          <ol className="mt-3 flex items-center gap-1.5">
+            {buildSteps.map((label, i) => (
+              <li key={label} className="flex flex-1 items-center gap-1.5">
+                <span
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
+                    i < stepIndex && "bg-primary text-primary-foreground",
+                    i === stepIndex && "border-primary text-primary border-2",
+                    i > stepIndex && "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {i < stepIndex ? <Check className="size-3" /> : i + 1}
+                </span>
+                <span
+                  className={cn(
+                    "hidden text-xs font-medium sm:inline",
+                    i === stepIndex ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {label}
+                </span>
+                {i < buildSteps.length - 1 && (
+                  <span className="bg-border h-px flex-1" />
+                )}
+              </li>
+            ))}
+          </ol>
         </DialogHeader>
 
         {step === "setup" ? (
@@ -3734,11 +3771,11 @@ function BuildListDialog({
 
         <DialogFooter>
           {step === "source" ? (
-            <Button variant="outline" onClick={() => setStep("setup")}>
+            <Button variant="ghost" onClick={() => setStep("setup")}>
               {c.buildBack}
             </Button>
           ) : (
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
               {c.cancel}
             </Button>
           )}

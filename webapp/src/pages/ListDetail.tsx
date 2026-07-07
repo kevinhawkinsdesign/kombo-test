@@ -14,6 +14,7 @@ import {
   Zap,
   Search,
   Database,
+  Layers,
   Pause,
   Columns3,
   ShieldCheck,
@@ -86,7 +87,7 @@ const COPY = {
     colStatus: "Status",
     removeFromList: (name: string) => `Remove ${name} from list`,
     removed: "Removed from list",
-    emptyState: "No prospects yet. Add some to get started.",
+    emptyState: "No prospects yet — add some to get started.",
     deleteTitle: "Delete list?",
     deleteDescription: (name: string) =>
       `"${name}" will be permanently removed. Prospects stay in your workspace.`,
@@ -147,7 +148,7 @@ const COPY = {
     addCompanies: "Find companies",
     findContacts: "Find contacts",
     removeCompany: (name: string) => `Remove ${name} from list`,
-    emptyStateCo: "No companies yet. Add some to get started.",
+    emptyStateCo: "No companies yet — add some to get started.",
     addCompaniesTitle: "Add companies",
     addCompaniesDescription: (name: string) =>
       `Pull companies into "${name}" from any source.`,
@@ -188,7 +189,7 @@ const COPY = {
     colStatus: "Estado",
     removeFromList: (name: string) => `Quitar a ${name} de la lista`,
     removed: "Quitado de la lista",
-    emptyState: "Aún no hay prospectos. Añade algunos para empezar.",
+    emptyState: "Aún no hay prospectos — añade algunos para empezar.",
     deleteTitle: "¿Eliminar lista?",
     deleteDescription: (name: string) =>
       `"${name}" se eliminará de forma permanente. Los prospectos permanecen en tu espacio de trabajo.`,
@@ -250,7 +251,7 @@ const COPY = {
     addCompanies: "Buscar empresas",
     findContacts: "Buscar contactos",
     removeCompany: (name: string) => `Quitar a ${name} de la lista`,
-    emptyStateCo: "Aún no hay empresas. Añade algunas para empezar.",
+    emptyStateCo: "Aún no hay empresas — añade algunas para empezar.",
     addCompaniesTitle: "Añadir empresas",
     addCompaniesDescription: (name: string) =>
       `Trae empresas a "${name}" desde cualquier fuente.`,
@@ -414,7 +415,7 @@ export default function ListDetail() {
           </div>
           {pending.length > 0 && (
             <Button variant="volt" onClick={() => setEnrichOpen(true)}>
-              <Database className="size-4" />
+              <Layers className="size-4" />
               {c.enrichContacts(pending.length)}
             </Button>
           )}

@@ -183,7 +183,7 @@ export function ProspectFormDialog({
         linkedinUrl:
           `https://linkedin.com/in/${firstName}-${lastName}`.toLowerCase(),
       })
-      toast.success("Prospect added")
+      toast.success("Prospect created")
     }
 
     onOpenChange(false)
@@ -306,7 +306,7 @@ export function ProspectFormDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saveDisabled}>
+          <Button variant="volt" onClick={handleSave} disabled={saveDisabled}>
             {isEdit ? "Save changes" : "Add prospect"}
           </Button>
         </DialogFooter>

@@ -551,12 +551,12 @@ export function PlaylistWizard({
             {step === 0 ? "Cancel" : "Back"}
           </Button>
           {step < STEPS.length - 1 ? (
-            <Button onClick={next} disabled={!canNext}>
+            <Button variant="volt" onClick={next} disabled={!canNext}>
               Continue
               <ArrowRight className="size-4" />
             </Button>
           ) : (
-            <Button onClick={handleCreate}>
+            <Button variant="volt" onClick={handleCreate}>
               <Sparkles className="size-4" />
               Create playlist
             </Button>

@@ -621,7 +621,11 @@ function ListTable({
                       {list.name}
                     </Link>
                     {list.dynamic && (
-                      <Badge className="bg-chart-1/15 text-chart-1 border-transparent font-normal">
+                      <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+                        <span className="relative flex size-1.5">
+                          <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+                          <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
+                        </span>
                         {c.live}
                       </Badge>
                     )}
