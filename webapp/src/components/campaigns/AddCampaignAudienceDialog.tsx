@@ -11,15 +11,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
+import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { useLists, listStore, campaignStore } from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import type { Campaign } from "@/lib/types"
@@ -141,21 +135,22 @@ export function AddCampaignAudienceDialog({
               <div className="space-y-2">
                 <p className="text-sm font-medium">{c.attachExisting}</p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={pickListId} onValueChange={setPickListId}>
-                    <SelectTrigger className="w-full sm:w-64">
-                      <SelectValue placeholder={c.pickList} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lists.map((l) => (
-                        <SelectItem key={l.id} value={l.id}>
-                          {l.name}
-                          {l.campaignId && l.campaignId !== campaign.id
-                            ? c.linkedElsewhere
-                            : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchCombobox
+                    value={pickListId}
+                    onChange={setPickListId}
+                    options={lists.map((l) => ({
+                      value: l.id,
+                      label: l.name,
+                      sublabel:
+                        l.campaignId && l.campaignId !== campaign.id
+                          ? c.linkedElsewhere
+                          : undefined,
+                    }))}
+                    placeholder={c.pickList}
+                    searchPlaceholder={c.pickList}
+                    emptyText={c.pickList}
+                    className="w-full sm:w-64"
+                  />
                   <Button disabled={!pickListId} onClick={attachExisting}>
                     {c.attach}
                   </Button>
