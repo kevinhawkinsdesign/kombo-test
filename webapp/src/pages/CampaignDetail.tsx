@@ -31,10 +31,20 @@ import {
   GitFork,
   CornerDownRight,
   MessageCircleReply,
+  Copy,
+  Bookmark,
+  Lightbulb,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
+import {
+  PromptPickerDialog,
+  type PromptStepSeed,
+} from "@/components/templates/PromptPickerDialog"
+import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
+import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
+import { cloneSequenceSteps } from "@/lib/sequence-templates"
 import { SAMPLE_DATA } from "@/pages/Templates"
 
 import { Page } from "@/components/layout/Page"
@@ -257,6 +267,14 @@ const COPY = {
     noSteps: "No steps yet — add one to build the sequence.",
     addStep: "Add step",
     useTemplate: "Use a template",
+    usePrompt: "Use a prompt",
+    copySequenceFrom: "Copy sequence from…",
+    saveAsTemplate: "Save as template",
+    suggestedNext: (label: string) => `Suggested next: ${label}`,
+    sequenceCopied: (n: number) =>
+      n === 1
+        ? "1 step copied into the sequence"
+        : `${n} steps copied into the sequence`,
     groupEmail: "Email",
     groupMessaging: "Messaging",
     groupLinkedin: "LinkedIn",
@@ -435,6 +453,14 @@ const COPY = {
     noSteps: "Aún no hay pasos — añade uno para construir la secuencia.",
     addStep: "Añadir paso",
     useTemplate: "Usar una plantilla",
+    usePrompt: "Usar un prompt",
+    copySequenceFrom: "Copiar secuencia de…",
+    saveAsTemplate: "Guardar como plantilla",
+    suggestedNext: (label: string) => `Sugerencia: ${label}`,
+    sequenceCopied: (n: number) =>
+      n === 1
+        ? "1 paso copiado a la secuencia"
+        : `${n} pasos copiados a la secuencia`,
     groupEmail: "Correo",
     groupMessaging: "Mensajería",
     groupLinkedin: "LinkedIn",
@@ -668,6 +694,9 @@ export default function CampaignDetail() {
   const [alertEmail, setAlertEmail] = React.useState(false)
   const [selectedStepId, setSelectedStepId] = React.useState<string | undefined>(undefined)
   const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
+  const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
+  const [copySeqOpen, setCopySeqOpen] = React.useState(false)
+  const [saveSeqOpen, setSaveSeqOpen] = React.useState(false)
   const { spend } = useCredits()
 
   // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
@@ -712,6 +741,24 @@ export default function CampaignDetail() {
       body: template.body,
     })
     setSelectedStepId(created?.id)
+  }
+
+  function insertStepFromPrompt(seed: PromptStepSeed) {
+    const created = campaignStore.addStepFromTemplate(campaignId, {
+      channel: seed.channel,
+      subject: seed.subject,
+      body: seed.body,
+    })
+    setSelectedStepId(created?.id)
+  }
+
+  // Appends a deep-cloned copy of another sequence's steps (fresh ids,
+  // branch tracks included) after the current ones.
+  function copySequenceIn(source: CampaignStep[]) {
+    const cloned = cloneSequenceSteps(source)
+    campaignStore.update(campaignId, { steps: [...steps, ...cloned] })
+    toast.success(c.sequenceCopied(flattenCampaignSteps(cloned).length))
+    setSelectedStepId(cloned[0]?.id)
   }
 
   // A single step row — reused for the top-level list and both branch
@@ -1506,6 +1553,24 @@ export default function CampaignDetail() {
         <TabsContent value="sequence" className="mt-4 space-y-4">
           {steps.length > 0 ? (
             <>
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCopySeqOpen(true)}
+                >
+                  <Copy className="size-4" />
+                  {c.copySequenceFrom}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSaveSeqOpen(true)}
+                >
+                  <Bookmark className="size-4" />
+                  {c.saveAsTemplate}
+                </Button>
+              </div>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                 {/* Step list — pick a step to edit it on the right. */}
                 <div className="flex shrink-0 flex-col gap-2 lg:w-72">
@@ -1544,6 +1609,27 @@ export default function CampaignDetail() {
                     <FileText className="size-4" />
                     {c.useTemplate}
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPromptPickerOpen(true)}
+                  >
+                    <Sparkles className="size-4" />
+                    {c.usePrompt}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      campaignStore.addStep(
+                        campaign.id,
+                        suggestNextChannel(steps)
+                      )
+                      setSelectedStepId(undefined)
+                    }}
+                    className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+                  >
+                    <Lightbulb className="size-4" />
+                    {c.suggestedNext(c.channelLabel[suggestNextChannel(steps)])}
+                  </button>
                 </div>
 
                 {/* Detail panel — the selected step's full editor. */}
@@ -1841,7 +1927,7 @@ export default function CampaignDetail() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p className="text-muted-foreground text-sm">{c.noSteps}</p>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   <AddStepMenu
                     onAdd={(channel) =>
                       campaignStore.addStep(campaign.id, channel)
@@ -1853,6 +1939,20 @@ export default function CampaignDetail() {
                   >
                     <FileText className="size-4" />
                     {c.useTemplate}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPromptPickerOpen(true)}
+                  >
+                    <Sparkles className="size-4" />
+                    {c.usePrompt}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCopySeqOpen(true)}
+                  >
+                    <Copy className="size-4" />
+                    {c.copySequenceFrom}
                   </Button>
                 </div>
               </CardContent>
@@ -2025,6 +2125,25 @@ export default function CampaignDetail() {
         onInsert={insertStepFromTemplate}
         vars={SAMPLE_DATA}
         locale={locale}
+      />
+
+      <PromptPickerDialog
+        open={promptPickerOpen}
+        onOpenChange={setPromptPickerOpen}
+        onInsert={insertStepFromPrompt}
+      />
+
+      <CopySequenceDialog
+        open={copySeqOpen}
+        onOpenChange={setCopySeqOpen}
+        currentCampaignId={campaignId}
+        onCopy={copySequenceIn}
+      />
+
+      <SaveSequenceTemplateDialog
+        open={saveSeqOpen}
+        onOpenChange={setSaveSeqOpen}
+        steps={steps}
       />
 
       <ColumnManager
@@ -2249,6 +2368,20 @@ const CHANNEL_GROUPS: { labelKey: "groupEmail" | "groupMessaging" | "groupLinked
     channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],
   },
 ]
+
+// What a rep would most naturally reach for next, given the last step —
+// the sequence builder surfaces it as a one-click suggestion.
+function suggestNextChannel(steps: CampaignStep[]): StepChannel {
+  const flat = flattenCampaignSteps(steps)
+  const last = flat[flat.length - 1]
+  if (!last) return "email"
+  const ch = normalizeChannel(last.channel)
+  if (ch === "email") return "linkedin_message"
+  if (ch === "linkedin_message" || ch === "linkedin_dm" || ch === "linkedin_inmail")
+    return "call"
+  if (ch === "call") return "whatsapp"
+  return "email"
+}
 
 function AddStepMenu({
   onAdd,
