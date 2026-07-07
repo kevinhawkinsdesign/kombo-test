@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ViewToggle, type CollectionView } from "@/components/common/ViewToggle"
+import { ConnectionsPanel } from "@/components/settings/ConnectionsPanel"
 import { integrations as seed } from "@/lib/mock-data"
 import { mcpConnections } from "@/lib/mock-network"
 import type { McpConnection } from "@/lib/mock-network"
@@ -53,6 +54,9 @@ const COPY = {
     aiConnections: "AI tool connections",
     aiConnectionsDesc:
       "MCP servers Kai can call to take action on your behalf — search your CRM, book meetings, draft and send outreach.",
+    workspaceConnections: "Workspace connections",
+    workspaceConnectionsDesc:
+      "Your professional network, outreach channels, call sources, CRM, and campaign defaults.",
     viewCards: "Cards",
     viewTable: "Table",
     exportLabel: "Export",
@@ -80,6 +84,9 @@ const COPY = {
     aiConnections: "Conexiones de herramientas de IA",
     aiConnectionsDesc:
       "Servidores MCP que Kai puede invocar para actuar en tu nombre: buscar en tu CRM, agendar reuniones y redactar y enviar outreach.",
+    workspaceConnections: "Conexiones del espacio de trabajo",
+    workspaceConnectionsDesc:
+      "Tu red profesional, canales de outreach, fuentes de llamadas, CRM y ajustes de campaña.",
     viewCards: "Tarjetas",
     viewTable: "Tabla",
     exportLabel: "Exportar",
@@ -282,6 +289,23 @@ export default function Integrations() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Workspace connections — consolidated here from Settings > Connections
+          so every connect-things surface lives on one page. */}
+      <div className="mt-10">
+        <div className="mb-1 flex items-center gap-2">
+          <Plug className="text-primary size-5" />
+          <h2 className="text-lg font-semibold tracking-tight">
+            {c.workspaceConnections}
+          </h2>
+        </div>
+        <p className="text-muted-foreground mb-4 text-sm">
+          {c.workspaceConnectionsDesc}
+        </p>
+        <div className="space-y-4">
+          <ConnectionsPanel />
+        </div>
       </div>
     </Page>
   )

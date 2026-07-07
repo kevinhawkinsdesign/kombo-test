@@ -881,7 +881,11 @@ export default function Search() {
   const incomingOpenLookalike =
     (location.state as { openLookalike?: boolean } | null)?.openLookalike ?? false
   const incomingSource =
-    (location.state as { initialSource?: "google_maps" } | null)?.initialSource ?? null
+    (
+      location.state as {
+        initialSource?: "google_maps" | "tripadvisor"
+      } | null
+    )?.initialSource ?? null
 
   const [entity, setEntity] = React.useState<AiEntity>(
     loadedSearch
@@ -892,7 +896,8 @@ export default function Search() {
           ? incomingSeed.kind === "company"
             ? "companies"
             : "people"
-          : incomingSource === "google_maps"
+          : // Google Maps and TripAdvisor are company-only sources.
+            incomingSource
             ? "companies"
             : "people"
   )

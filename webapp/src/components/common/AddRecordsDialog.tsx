@@ -745,11 +745,15 @@ export function AddRecordsDialog({
     })),
   ]
 
+  // External company databases — picking one hands off to the Search page
+  // preset to that source, where the full flow (map preview, facets) lives.
+  const externalDbs = [
+    { key: "google_maps" as const, label: c.dbGmaps, icon: <MapPin className="size-4 text-emerald-600" /> },
+    { key: "tripadvisor" as const, label: c.dbTripadvisor, icon: <Star className="size-4 text-amber-500" /> },
+  ]
   // Databases on the roadmap — shown as disabled "Soon" entries so the selector
   // reads as an extensible list, not a fixed Kombo/Sales Nav toggle.
   const comingSoonDbs = [
-    { key: "gmaps", label: c.dbGmaps, icon: <MapPin className="size-4 text-emerald-600" /> },
-    { key: "tripadvisor", label: c.dbTripadvisor, icon: <Star className="size-4 text-amber-500" /> },
     { key: "company-dbs", label: c.dbCompanyDbs, icon: <Building2 className="text-primary size-4" /> },
   ]
   const activeFilterCount =
@@ -999,6 +1003,21 @@ export function AddRecordsDialog({
                       <DropdownMenuLabel className="text-muted-foreground text-xs">
                         {c.dbMore}
                       </DropdownMenuLabel>
+                      {externalDbs.map((s) => (
+                        <DropdownMenuItem
+                          key={s.key}
+                          className="gap-2"
+                          onClick={() => {
+                            onOpenChange(false)
+                            navigate("/search", {
+                              state: { initialSource: s.key },
+                            })
+                          }}
+                        >
+                          {s.icon}
+                          <span className="flex-1">{s.label}</span>
+                        </DropdownMenuItem>
+                      ))}
                       {comingSoonDbs.map((s) => (
                         <DropdownMenuItem
                           key={s.key}
