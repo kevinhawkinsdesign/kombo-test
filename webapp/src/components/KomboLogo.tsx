@@ -1,4 +1,5 @@
 import lockupUrl from "@/assets/kombo-lockup.svg"
+import iconUrl from "@/assets/kombo-icon.png"
 
 import { cn } from "@/lib/utils"
 
@@ -14,30 +15,15 @@ export function KomboLockup({ className }: { className?: string }) {
   )
 }
 
+/** Compact brand mark — the sidebar's collapsed-state icon. */
 export function KomboMark({ className }: { className?: string }) {
   return (
-    <div
-      className={cn(
-        "flex size-8 items-center justify-center rounded-lg bg-volt text-volt-foreground",
-        className
-      )}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <path
-          d="M6 4v16M6 12l7-8M6 12l7 8"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="18" cy="6" r="2.2" fill="currentColor" />
-      </svg>
-    </div>
+    <img
+      src={iconUrl}
+      alt="Kombo"
+      className={cn("size-8 select-none", className)}
+      draggable={false}
+    />
   )
 }
 
