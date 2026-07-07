@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { MoreHorizontal, ExternalLink, FolderPlus, Send, Building2, Sparkles } from "lucide-react"
+import { MoreHorizontal, ExternalLink, FolderPlus, Send, Building2, Layers } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -39,14 +39,26 @@ const COPY = {
 
 type Dialog = "list" | "campaign" | "crm" | "enrich" | null
 
+// A page-specific action appended after the shared ones (e.g. "Remove from
+// list" on a list's members table). Destructive actions render in the
+// destructive tone, separated from the shared actions.
+export interface RecordExtraAction {
+  label: string
+  icon?: React.ReactNode
+  onClick: () => void
+  destructive?: boolean
+}
+
 export function RecordActionsMenu({
   kind,
   record,
   className,
+  extra,
 }: {
   kind: RecordKind
   record: Prospect | Account
   className?: string
+  extra?: RecordExtraAction
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -86,7 +98,7 @@ export function RecordActionsMenu({
           <DropdownMenuSeparator />
           {kind === "person" && (
             <DropdownMenuItem onClick={() => setDialog("enrich")}>
-              <Sparkles className="size-4" />
+              <Layers className="size-4" />
               {c.enrich}
             </DropdownMenuItem>
           )}
@@ -104,6 +116,18 @@ export function RecordActionsMenu({
             <Building2 className="size-4" />
             {c.addToCrm}
           </DropdownMenuItem>
+          {extra && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant={extra.destructive ? "destructive" : undefined}
+                onClick={extra.onClick}
+              >
+                {extra.icon}
+                {extra.label}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

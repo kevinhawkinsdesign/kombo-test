@@ -20,6 +20,10 @@ export interface TableSelection<T> {
   toggleAll: () => void
   allSelected: boolean
   someSelected: boolean
+  // Rows failing this predicate render no checkbox and can't be selected
+  // (e.g. campaign prospects that were auto-enrolled rather than added
+  // manually). Omitted = every row is selectable.
+  isSelectable?: (row: T) => boolean
 }
 
 /**
@@ -124,11 +128,13 @@ export function DataTable<T>({
               >
                 {selection && (
                   <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={selection.isSelected(row)}
-                      onCheckedChange={() => selection.toggle(row)}
-                      aria-label="Select row"
-                    />
+                    {(selection.isSelectable?.(row) ?? true) && (
+                      <Checkbox
+                        checked={selection.isSelected(row)}
+                        onCheckedChange={() => selection.toggle(row)}
+                        aria-label="Select row"
+                      />
+                    )}
                   </TableCell>
                 )}
                 {pinned && (

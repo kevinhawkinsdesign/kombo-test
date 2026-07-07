@@ -38,6 +38,9 @@ import {
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
+import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { downloadCsv } from "@/lib/csv"
 import {
   PEOPLE_COLUMNS,
   PEOPLE_GROUPS,
@@ -85,8 +88,9 @@ const COPY = {
     colCompany: "Company",
     colScore: "Score",
     colStatus: "Status",
-    removeFromList: (name: string) => `Remove ${name} from list`,
+    removeFromListAction: "Remove from list",
     removed: "Removed from list",
+    removedCount: (n: number) => `${n} removed from list`,
     emptyState: "No prospects yet — add some to get started.",
     deleteTitle: "Delete list?",
     deleteDescription: (name: string) =>
@@ -147,7 +151,6 @@ const COPY = {
     companiesHeading: "Companies",
     addCompanies: "Find companies",
     findContacts: "Find contacts",
-    removeCompany: (name: string) => `Remove ${name} from list`,
     emptyStateCo: "No companies yet — add some to get started.",
     addCompaniesTitle: "Add companies",
     addCompaniesDescription: (name: string) =>
@@ -187,8 +190,9 @@ const COPY = {
     colCompany: "Empresa",
     colScore: "Puntuación",
     colStatus: "Estado",
-    removeFromList: (name: string) => `Quitar a ${name} de la lista`,
+    removeFromListAction: "Quitar de la lista",
     removed: "Quitado de la lista",
+    removedCount: (n: number) => `${n} quitados de la lista`,
     emptyState: "Aún no hay prospectos — añade algunos para empezar.",
     deleteTitle: "¿Eliminar lista?",
     deleteDescription: (name: string) =>
@@ -250,7 +254,6 @@ const COPY = {
     companiesHeading: "Empresas",
     addCompanies: "Buscar empresas",
     findContacts: "Buscar contactos",
-    removeCompany: (name: string) => `Quitar a ${name} de la lista`,
     emptyStateCo: "Aún no hay empresas — añade algunas para empezar.",
     addCompaniesTitle: "Añadir empresas",
     addCompaniesDescription: (name: string) =>
@@ -284,6 +287,8 @@ export default function ListDetail() {
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
   const [playlistOpen, setPlaylistOpen] = React.useState(false)
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
 
@@ -310,6 +315,65 @@ export default function ListDetail() {
   const memberCount = isCompany ? accountMembers.length : members.length
   const pending = members.filter((p) => !isEnriched(p))
   const enrichedCount = members.length - pending.length
+
+  // Bulk selection — the same DataTable selection pattern People/Companies
+  // use. Stale ids (removed members) are filtered out at compute time.
+  const rowIds = isCompany
+    ? accountMembers.map((a) => a.id)
+    : members.map((p) => p.id)
+  const selectedMembers = members.filter((p) => selectedIds.has(p.id))
+  const selectedAccounts = accountMembers.filter((a) => selectedIds.has(a.id))
+  const selectedCount = isCompany
+    ? selectedAccounts.length
+    : selectedMembers.length
+  const allSelected =
+    rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
+  const someSelected =
+    !allSelected && rowIds.some((id) => selectedIds.has(id))
+  function toggleRow(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAllRows() {
+    setSelectedIds(allSelected ? new Set() : new Set(rowIds))
+  }
+  const listId = list.id
+  function removeSelected() {
+    if (isCompany) {
+      selectedAccounts.forEach((a) => listStore.removeAccount(listId, a.id))
+    } else {
+      selectedMembers.forEach((p) => listStore.removeProspect(listId, p.id))
+    }
+    toast.success(c.removedCount(selectedCount))
+    setSelectedIds(new Set())
+  }
+  function exportSelected() {
+    if (isCompany) {
+      downloadCsv(
+        "companies.csv",
+        ["Company", "Industry", "Domain", "Tier"],
+        selectedAccounts.map((a) => [a.name, a.industry, a.domain, a.tier])
+      )
+    } else {
+      downloadCsv(
+        "people.csv",
+        ["Name", "Title", "Company", "Email", "Location"],
+        selectedMembers.map((p) => [
+          `${p.firstName} ${p.lastName}`,
+          p.title,
+          p.company,
+          p.email,
+          p.location,
+        ])
+      )
+    }
+    toast.success(c.exported)
+    setSelectedIds(new Set())
+  }
 
   function launchCampaign() {
     toast.success(c.enrolled(memberCount))
@@ -461,19 +525,27 @@ export default function ListDetail() {
           locale={locale}
           onRowClick={(a) => navigate(`/companies/${a.id}`)}
           empty={c.emptyStateCo}
+          selection={{
+            isSelected: (a) => selectedIds.has(a.id),
+            toggle: (a) => toggleRow(a.id),
+            toggleAll: toggleAllRows,
+            allSelected,
+            someSelected,
+          }}
           actions={(a) => (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={c.removeCompany(a.name)}
-              className="text-muted-foreground hover:text-destructive size-8"
-              onClick={() => {
-                listStore.removeAccount(list.id, a.id)
-                toast.success(c.removed)
+            <RecordActionsMenu
+              kind="company"
+              record={a}
+              extra={{
+                label: c.removeFromListAction,
+                icon: <X className="size-4" />,
+                destructive: true,
+                onClick: () => {
+                  listStore.removeAccount(list.id, a.id)
+                  toast.success(c.removed)
+                },
               }}
-            >
-              <X className="size-4" />
-            </Button>
+            />
           )}
         />
       ) : (
@@ -485,22 +557,43 @@ export default function ListDetail() {
           locale={locale}
           onRowClick={(p) => navigate(`/prospects/${p.id}`)}
           empty={c.emptyState}
+          selection={{
+            isSelected: (p) => selectedIds.has(p.id),
+            toggle: (p) => toggleRow(p.id),
+            toggleAll: toggleAllRows,
+            allSelected,
+            someSelected,
+          }}
           actions={(p) => (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={c.removeFromList(`${p.firstName} ${p.lastName}`)}
-              className="text-muted-foreground hover:text-destructive size-8"
-              onClick={() => {
-                listStore.removeProspect(list.id, p.id)
-                toast.success(c.removed)
+            <RecordActionsMenu
+              kind="person"
+              record={p}
+              extra={{
+                label: c.removeFromListAction,
+                icon: <X className="size-4" />,
+                destructive: true,
+                onClick: () => {
+                  listStore.removeProspect(list.id, p.id)
+                  toast.success(c.removed)
+                },
               }}
-            >
-              <X className="size-4" />
-            </Button>
+            />
           )}
         />
       )}
+
+      <BulkActionsBar
+        count={selectedCount}
+        onClear={() => setSelectedIds(new Set())}
+        onExport={exportSelected}
+        onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
+        extra={{
+          label: c.removeFromListAction,
+          icon: <X className="size-4" />,
+          destructive: true,
+          onClick: removeSelected,
+        }}
+      />
 
       {isCompany ? (
         <ColumnManager
@@ -560,6 +653,13 @@ export default function ListDetail() {
         open={enrichOpen}
         onOpenChange={setEnrichOpen}
         prospects={members}
+      />
+
+      {/* Bulk enrich — scoped to the selected members only. */}
+      <EnrichListDialog
+        open={bulkEnrichOpen}
+        onOpenChange={setBulkEnrichOpen}
+        prospects={selectedMembers}
       />
 
       <ConfirmDialog
