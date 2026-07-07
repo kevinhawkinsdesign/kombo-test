@@ -13,6 +13,7 @@ import {
   Check,
   Bookmark,
   X,
+  Phone,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -202,18 +203,16 @@ function listCount(l: ProspectList): number {
 
 const STEP_ICON: Record<StepChannel, React.ComponentType<{ className?: string }>> = {
   email: Mail,
-  sms: MessageCircle,
   whatsapp: MessageCircle,
-  instagram: MessageCircle,
+  call: Phone,
   linkedin_message: LinkedinIcon,
   linkedin_dm: LinkedinIcon,
   linkedin_inmail: LinkedinIcon,
 }
 const STEP_LABEL: Record<StepChannel, string> = {
   email: "Email",
-  sms: "SMS",
   whatsapp: "WhatsApp",
-  instagram: "Instagram",
+  call: "Call",
   linkedin_message: "LinkedIn",
   linkedin_dm: "LinkedIn DM",
   linkedin_inmail: "LinkedIn InMail",

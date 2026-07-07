@@ -4,7 +4,6 @@ import { toast } from "sonner"
 import {
   Phone,
   Mail,
-  MessageSquare,
   ClipboardList,
   CornerUpRight,
   Pencil,
@@ -66,13 +65,12 @@ const TYPE_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> =
   call: Phone,
   email: Mail,
   linkedin: LinkedinIcon,
-  sms: MessageSquare,
   manual: ClipboardList,
   follow_up: CornerUpRight,
 }
 // In-app tasks are messages we can send from the platform; offline tasks (a
 // call to place, a manual to-do) are done by hand and logged.
-const IN_APP: Set<TaskType> = new Set(["email", "linkedin", "sms"])
+const IN_APP: Set<TaskType> = new Set(["email", "linkedin"])
 
 function sourceOf(task: Task): SourceKind {
   const a = resolveAssigner(task.assignedById)
@@ -394,7 +392,6 @@ export default function Tasks() {
             <SelectItem value="all">{c.allTypes}</SelectItem>
             <SelectItem value="email">Email</SelectItem>
             <SelectItem value="linkedin">LinkedIn</SelectItem>
-            <SelectItem value="sms">SMS</SelectItem>
             <SelectItem value="call">Call</SelectItem>
             <SelectItem value="manual">{c.srcManual}</SelectItem>
             <SelectItem value="follow_up">Follow-up</SelectItem>

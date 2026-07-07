@@ -35,7 +35,6 @@ interface TaskFormDialogProps {
 const TYPE_OPTIONS: { value: TaskType; label: string }[] = [
   { value: "email", label: "Email" },
   { value: "linkedin", label: "LinkedIn" },
-  { value: "sms", label: "SMS" },
   { value: "call", label: "Call" },
   { value: "manual", label: "Manual task" },
   { value: "follow_up", label: "Follow-up" },

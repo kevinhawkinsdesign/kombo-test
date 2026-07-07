@@ -14,9 +14,6 @@ import {
   Sparkles,
   Wand2,
   MessageCircle,
-  MessageSquare,
-  Send,
-  Camera,
   Columns3,
 } from "lucide-react"
 
@@ -193,9 +190,6 @@ const COPY = {
     email: "Email",
     linkedin: "LinkedIn",
     whatsapp: "WhatsApp",
-    sms: "SMS",
-    messenger: "Messenger",
-    instagram: "Instagram",
     allChannels: "All channels",
     folder: "Folder",
     folderPlaceholder: "Cold outreach",
@@ -308,9 +302,6 @@ const COPY = {
     email: "Correo",
     linkedin: "LinkedIn",
     whatsapp: "WhatsApp",
-    sms: "SMS",
-    messenger: "Messenger",
-    instagram: "Instagram",
     allChannels: "Todos los canales",
     folder: "Carpeta",
     folderPlaceholder: "Contacto en frío",
@@ -398,26 +389,13 @@ function ChannelIcon({
       return <LinkedinIcon className={className} />
     case "whatsapp":
       return <MessageCircle className={cn(className, "text-[#25D366]")} />
-    case "sms":
-      return <MessageSquare className={className} />
-    case "messenger":
-      return <Send className={cn(className, "text-[#0084ff]")} />
-    case "instagram":
-      return <Camera className={cn(className, "text-[#e1306c]")} />
     default:
       return <Mail className={className} />
   }
 }
 
 // Channel display order + label key for filters and the editor select.
-const CHANNELS: Channel[] = [
-  "email",
-  "linkedin",
-  "whatsapp",
-  "sms",
-  "messenger",
-  "instagram",
-]
+const CHANNELS: Channel[] = ["email", "linkedin", "whatsapp"]
 
 function channelLabel(channel: Channel, c: Copy): string {
   return c[channel]
