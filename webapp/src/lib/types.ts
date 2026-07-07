@@ -363,13 +363,17 @@ export interface Account {
 }
 
 // Outcome-based pipeline stages — a top-of-funnel view of where each
-// prospect/account stands, rather than classic deal stages.
+// prospect/account stands. Deliberately NOT classic deal stages (Lead,
+// Proposal, Negotiation…): only outcomes.
 export type DealStage =
   | "interested"
   | "meeting_booked"
+  | "needs_review"
   | "qualified"
   | "won"
+  | "not_interested"
   | "disqualified"
+  | "lost"
 
 export interface Deal {
   id: string

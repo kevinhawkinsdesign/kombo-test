@@ -143,9 +143,12 @@ const STAGE_VARIANT: Record<
 > = {
   interested: "outline",
   meeting_booked: "secondary",
+  needs_review: "secondary",
   qualified: "default",
   won: "success",
+  not_interested: "destructive",
   disqualified: "destructive",
+  lost: "destructive",
 }
 
 export default function CompanyDetail() {
