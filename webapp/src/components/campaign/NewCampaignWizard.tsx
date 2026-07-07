@@ -15,6 +15,10 @@ import {
   Send,
   CalendarClock,
   Rocket,
+  Copy,
+  PenLine,
+  Bookmark,
+  Sparkles,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -39,11 +43,24 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
+import {
+  PromptPickerDialog,
+  type PromptStepSeed,
+} from "@/components/templates/PromptPickerDialog"
 import { SAMPLE_DATA } from "@/pages/Templates"
 import { normalizeChannel } from "@/pages/CampaignDetail"
 import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
 import { useLocale, type Locale } from "@/lib/locale"
-import { useCampaigns, useLists, campaignStore } from "@/lib/store"
+import {
+  useCampaigns,
+  useLists,
+  campaignStore,
+  flattenCampaignSteps,
+} from "@/lib/store"
+import {
+  useSequenceTemplates,
+  cloneSequenceSteps,
+} from "@/lib/sequence-templates"
 import { currentUser } from "@/lib/mock-data"
 import { team } from "@/lib/team"
 import { cn } from "@/lib/utils"
@@ -104,6 +121,26 @@ const COPY = {
     startFromTemplate: "Start from a template",
     templatePicked: (name: string) => `Starting from "${name}"`,
     clearTemplate: "Remove template",
+    startHow: "How do you want to start?",
+    startScratch: "Start from scratch",
+    startScratchDesc: "Pick channels and write the messages yourself.",
+    startCopy: "Copy a campaign",
+    startCopyDesc: "Reuse another campaign's whole sequence.",
+    startTemplateOpt: "Sequence template",
+    startTemplateDesc: "Start from a saved, ready-made sequence.",
+    pickCampaign: "Choose a campaign…",
+    pickSeqTemplate: "Choose a sequence template…",
+    stepCountLabel: (n: number) => `${n} ${n === 1 ? "step" : "steps"}`,
+    sequencePreview: "Sequence preview",
+    copySuffix: "(copy)",
+    firstMessageLabel: "First message",
+    firstMessageDesc:
+      "Write it yourself, reuse a template, or let the AI write it from a prompt.",
+    sourceManual: "Write it myself",
+    sourceTemplate: "Use a template",
+    sourcePrompt: "Use a prompt",
+    promptPicked: (name: string) => `AI prompt: ${name}`,
+    clearPrompt: "Remove prompt",
     yourSequence: "Your sequence so far",
     stepAdded: (n: number) => `Step ${n}`,
     noStepsYet: "No steps yet — add one below, or add them later from the Sequence tab.",
@@ -164,6 +201,26 @@ const COPY = {
     startFromTemplate: "Empezar con una plantilla",
     templatePicked: (name: string) => `Empezando con «${name}»`,
     clearTemplate: "Quitar plantilla",
+    startHow: "¿Cómo quieres empezar?",
+    startScratch: "Empezar de cero",
+    startScratchDesc: "Elige canales y escribe los mensajes tú mismo.",
+    startCopy: "Copiar una campaña",
+    startCopyDesc: "Reutiliza la secuencia completa de otra campaña.",
+    startTemplateOpt: "Plantilla de secuencia",
+    startTemplateDesc: "Empieza desde una secuencia guardada y lista.",
+    pickCampaign: "Elige una campaña…",
+    pickSeqTemplate: "Elige una plantilla de secuencia…",
+    stepCountLabel: (n: number) => `${n} ${n === 1 ? "paso" : "pasos"}`,
+    sequencePreview: "Vista previa de la secuencia",
+    copySuffix: "(copia)",
+    firstMessageLabel: "Primer mensaje",
+    firstMessageDesc:
+      "Escríbelo tú, reutiliza una plantilla o deja que la IA lo redacte desde un prompt.",
+    sourceManual: "Escribirlo yo",
+    sourceTemplate: "Usar una plantilla",
+    sourcePrompt: "Usar un prompt",
+    promptPicked: (name: string) => `Prompt de IA: ${name}`,
+    clearPrompt: "Quitar prompt",
     yourSequence: "Tu secuencia hasta ahora",
     stepAdded: (n: number) => `Paso ${n}`,
     noStepsYet: "Aún no hay pasos — añade uno abajo, o hazlo después desde la pestaña Secuencia.",
@@ -309,6 +366,7 @@ function formatWhen(iso: string): string {
 
 type Audience = "attach" | "manual" | "later"
 type Timing = "now" | "schedule"
+type StartMode = "scratch" | "copy" | "template"
 
 function OptionCard({
   selected,
@@ -366,15 +424,22 @@ function NewCampaignWizard({
   const navigate = useNavigate()
   const campaigns = useCampaigns()
   const lists = useLists()
+  const sequenceTemplates = useSequenceTemplates()
 
   const [step, setStep] = React.useState(0)
   const [campaignId, setCampaignId] = React.useState<string | null>(null)
 
   // Step 0 — Sequence
+  const [startMode, setStartMode] = React.useState<StartMode>("scratch")
+  const [copySourceId, setCopySourceId] = React.useState("")
+  const [seqTemplateId, setSeqTemplateId] = React.useState("")
   const [name, setName] = React.useState("")
+  const [nameTouched, setNameTouched] = React.useState(false)
   const [goal, setGoal] = React.useState("")
   const [template, setTemplate] = React.useState<EmailTemplate | null>(null)
   const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
+  const [promptSeed, setPromptSeed] = React.useState<PromptStepSeed | null>(null)
+  const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
   const [plannedSteps, setPlannedSteps] = React.useState<StepChannel[]>([])
 
   // Step 1 — Lead list
@@ -396,9 +461,14 @@ function NewCampaignWizard({
     if (open) {
       setStep(0)
       setCampaignId(null)
+      setStartMode("scratch")
+      setCopySourceId("")
+      setSeqTemplateId("")
       setName("")
+      setNameTouched(false)
       setGoal("")
       setTemplate(null)
+      setPromptSeed(null)
       setPlannedSteps([])
       setAudience("later")
       setListId("")
@@ -415,9 +485,41 @@ function NewCampaignWizard({
     : undefined
   const selectedList = lists.find((l) => l.id === listId)
 
+  // Copy/template sources. The wizard's own draft campaign is excluded from
+  // the copy list — it's the one being built.
+  const copySources = campaigns.filter((cm) => cm.id !== campaignId)
+  const copySource = copySources.find((cm) => cm.id === copySourceId)
+  const seqTemplate = sequenceTemplates.find((t) => t.id === seqTemplateId)
+  const previewSteps =
+    startMode === "copy" && copySource
+      ? flattenCampaignSteps(copySource.steps)
+      : startMode === "template" && seqTemplate
+        ? flattenCampaignSteps(seqTemplate.steps)
+        : []
+
+  // Which way the first message gets written (scratch mode) — derived, so a
+  // cancelled picker leaves the previous choice untouched.
+  const firstMsgSource = template ? "template" : promptSeed ? "prompt" : "manual"
+
   const trimmedName = name.trim()
-  const canLeaveSequence = trimmedName.length > 0
+  const canLeaveSequence =
+    trimmedName.length > 0 &&
+    (startMode === "copy"
+      ? Boolean(copySource)
+      : startMode === "template"
+        ? Boolean(seqTemplate)
+        : true)
   const canLeaveAudience = audience !== "attach" || Boolean(listId)
+
+  // Prefill name (and an empty goal) from the picked source, unless the user
+  // already typed their own.
+  function seedFromSource(sourceName: string, sourceGoal?: string, suffix = "") {
+    if (!nameTouched || name.trim() === "") {
+      setName(suffix ? `${sourceName} ${suffix}` : sourceName)
+      setNameTouched(false)
+    }
+    if (goal.trim() === "" && sourceGoal) setGoal(sourceGoal)
+  }
 
   function toggleChannel(channel: StepChannel) {
     setPlannedSteps((prev) =>
@@ -433,15 +535,27 @@ function NewCampaignWizard({
       campaignStore.create({ name: trimmedName, status: "draft", locale }).id
     if (!campaignId) setCampaignId(id)
     campaignStore.update(id, { name: trimmedName, goal: goal.trim() || undefined })
-    campaignStore.update(id, { steps: [] })
-    if (template) {
-      campaignStore.addStepFromTemplate(id, {
-        channel: normalizeChannel(template.channel),
-        subject: template.subject,
-        body: template.body,
-      })
+    if (startMode === "copy" && copySource) {
+      campaignStore.update(id, { steps: cloneSequenceSteps(copySource.steps) })
+    } else if (startMode === "template" && seqTemplate) {
+      campaignStore.update(id, { steps: cloneSequenceSteps(seqTemplate.steps) })
+    } else {
+      campaignStore.update(id, { steps: [] })
+      if (template) {
+        campaignStore.addStepFromTemplate(id, {
+          channel: normalizeChannel(template.channel),
+          subject: template.subject,
+          body: template.body,
+        })
+      } else if (promptSeed) {
+        campaignStore.addStepFromTemplate(id, {
+          channel: promptSeed.channel,
+          subject: promptSeed.subject,
+          body: promptSeed.body,
+        })
+      }
+      plannedSteps.forEach((channel) => campaignStore.addStep(id, channel))
     }
-    plannedSteps.forEach((channel) => campaignStore.addStep(id, channel))
     return id
   }
 
@@ -502,7 +616,7 @@ function NewCampaignWizard({
           simultaneously-open Radix Dialog roots otherwise dismiss each
           other on outside interaction. */}
       <Dialog
-        open={open && !templatePickerOpen && !addProspectsOpen}
+        open={open && !templatePickerOpen && !addProspectsOpen && !promptPickerOpen}
         onOpenChange={onOpenChange}
       >
         <DialogContent className="max-h-[90svh] gap-0 overflow-hidden p-0 sm:max-w-2xl">
@@ -547,12 +661,74 @@ function NewCampaignWizard({
             {step === 0 && (
               <div className="space-y-5">
                 <div className="space-y-2">
+                  <Label>{c.startHow}</Label>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {(
+                      [
+                        {
+                          key: "scratch",
+                          Icon: PenLine,
+                          title: c.startScratch,
+                          caption: c.startScratchDesc,
+                        },
+                        {
+                          key: "copy",
+                          Icon: Copy,
+                          title: c.startCopy,
+                          caption: c.startCopyDesc,
+                        },
+                        {
+                          key: "template",
+                          Icon: Bookmark,
+                          title: c.startTemplateOpt,
+                          caption: c.startTemplateDesc,
+                        },
+                      ] as const
+                    ).map((mode) => {
+                      const selected = startMode === mode.key
+                      return (
+                        <button
+                          key={mode.key}
+                          type="button"
+                          onClick={() => setStartMode(mode.key)}
+                          aria-pressed={selected}
+                          className={cn(
+                            "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors",
+                            selected
+                              ? "border-primary ring-primary/30 bg-primary/5 ring-1"
+                              : "hover:border-primary/40 hover:bg-muted/40"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "flex size-7 items-center justify-center rounded-md",
+                              selected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            <mode.Icon className="size-3.5" />
+                          </span>
+                          <span className="text-sm font-medium">{mode.title}</span>
+                          <span className="text-muted-foreground text-xs">
+                            {mode.caption}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="campaign-name">{c.nameLabel}</Label>
                   <Input
                     id="campaign-name"
                     autoFocus
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      setNameTouched(true)
+                    }}
                     placeholder={c.namePlaceholder}
                   />
                 </div>
@@ -569,115 +745,263 @@ function NewCampaignWizard({
 
                 <Separator />
 
-                <div className="space-y-1">
-                  <Label>{c.sequenceLabel}</Label>
-                  <p className="text-muted-foreground text-sm">{c.sequenceDesc}</p>
-                </div>
-
-                {template ? (
-                  <div className="border-primary/30 bg-primary/[0.03] flex items-center gap-2 rounded-lg border p-2.5 text-sm">
-                    <FileText className="text-primary size-4 shrink-0" />
-                    <span className="min-w-0 flex-1 truncate">
-                      {c.templatePicked(template.name)}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-6"
-                      aria-label={c.clearTemplate}
-                      onClick={() => setTemplate(null)}
+                {startMode === "copy" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="copy-source-campaign">{c.startCopy}</Label>
+                    <Select
+                      value={copySourceId}
+                      onValueChange={(v) => {
+                        setCopySourceId(v)
+                        const src = copySources.find((cm) => cm.id === v)
+                        if (src) seedFromSource(src.name, src.goal, c.copySuffix)
+                      }}
                     >
-                      <X className="size-3.5" />
-                    </Button>
+                      <SelectTrigger id="copy-source-campaign" className="w-full">
+                        <SelectValue placeholder={c.pickCampaign} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {copySources.map((cm) => (
+                          <SelectItem key={cm.id} value={cm.id}>
+                            {cm.name} ·{" "}
+                            {c.stepCountLabel(flattenCampaignSteps(cm.steps).length)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setTemplatePickerOpen(true)}
-                  >
-                    <FileText className="size-4" />
-                    {c.startFromTemplate}
-                  </Button>
                 )}
 
-                {CHANNEL_GROUPS.map((group) => (
-                  <div key={group.key} className="space-y-2">
-                    <p className="text-muted-foreground text-xs font-medium">
-                      {c[group.key]}
-                    </p>
-                    <div className="grid gap-2 sm:grid-cols-3">
-                      {group.channels.map((channel) => {
-                        const meta = CHANNEL_META[channel]
-                        const selected = plannedSteps.includes(channel)
-                        return (
-                          <button
-                            key={channel}
-                            type="button"
-                            onClick={() => toggleChannel(channel)}
-                            aria-pressed={selected}
-                            className={cn(
-                              "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors",
-                              selected
-                                ? "border-primary ring-primary/30 bg-primary/5 ring-1"
-                                : "hover:border-primary/40 hover:bg-muted/40"
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "flex size-7 items-center justify-center rounded-md",
-                                meta.tint
-                              )}
-                            >
-                              <meta.Icon className="size-3.5" />
-                            </span>
-                            <span className="text-sm font-medium">
-                              {meta.label[locale]}
-                            </span>
-                            <span className="text-muted-foreground text-xs">
-                              {meta.caption[locale]}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
+                {startMode === "template" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="copy-source-template">
+                      {c.startTemplateOpt}
+                    </Label>
+                    <Select
+                      value={seqTemplateId}
+                      onValueChange={(v) => {
+                        setSeqTemplateId(v)
+                        const tpl = sequenceTemplates.find((t) => t.id === v)
+                        if (tpl) seedFromSource(tpl.name)
+                      }}
+                    >
+                      <SelectTrigger id="copy-source-template" className="w-full">
+                        <SelectValue placeholder={c.pickSeqTemplate} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sequenceTemplates.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name} ·{" "}
+                            {c.stepCountLabel(flattenCampaignSteps(t.steps).length)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                ))}
+                )}
 
-                {plannedSteps.length > 0 && (
+                {previewSteps.length > 0 && (
                   <div className="bg-muted/40 space-y-2 rounded-lg border p-3">
-                    <p className="text-xs font-medium">{c.yourSequence}</p>
+                    <p className="text-xs font-medium">{c.sequencePreview}</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {plannedSteps.map((channel, i) => {
-                        const meta = CHANNEL_META[channel]
+                      {previewSteps.map((s, i) => {
+                        const meta = CHANNEL_META[normalizeChannel(s.channel)]
                         return (
                           <Badge
-                            key={`${channel}-${i}`}
+                            key={s.id}
                             variant="secondary"
                             className="gap-1.5 font-normal"
                           >
                             <meta.Icon className="size-3" />
-                            {c.stepAdded(i + 1)}: {meta.label[locale]}
-                            <button
-                              type="button"
-                              aria-label={c.clearTemplate}
-                              onClick={() =>
-                                setPlannedSteps((prev) => prev.filter((_, idx) => idx !== i))
-                              }
-                              className="hover:text-foreground ml-0.5"
-                            >
-                              <X className="size-3" />
-                            </button>
+                            {i + 1}. {meta.label[locale]}
                           </Badge>
                         )
                       })}
                     </div>
                   </div>
                 )}
-                {plannedSteps.length === 0 && !template && (
-                  <p className="text-muted-foreground text-xs">{c.noStepsYet}</p>
+
+                {startMode === "scratch" && (
+                  <>
+                    <div className="space-y-1">
+                      <Label>{c.firstMessageLabel}</Label>
+                      <p className="text-muted-foreground text-sm">
+                        {c.firstMessageDesc}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTemplate(null)
+                          setPromptSeed(null)
+                        }}
+                        aria-pressed={firstMsgSource === "manual"}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          firstMsgSource === "manual"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <PenLine className="size-3.5" />
+                        {c.sourceManual}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTemplatePickerOpen(true)}
+                        aria-pressed={firstMsgSource === "template"}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          firstMsgSource === "template"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <FileText className="size-3.5" />
+                        {c.sourceTemplate}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPromptPickerOpen(true)}
+                        aria-pressed={firstMsgSource === "prompt"}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          firstMsgSource === "prompt"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <Sparkles className="size-3.5" />
+                        {c.sourcePrompt}
+                      </button>
+                    </div>
+
+                    {template && (
+                      <div className="border-primary/30 bg-primary/[0.03] flex items-center gap-2 rounded-lg border p-2.5 text-sm">
+                        <FileText className="text-primary size-4 shrink-0" />
+                        <span className="min-w-0 flex-1 truncate">
+                          {c.templatePicked(template.name)}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-6"
+                          aria-label={c.clearTemplate}
+                          onClick={() => setTemplate(null)}
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                      </div>
+                    )}
+                    {promptSeed && (
+                      <div className="border-primary/30 bg-primary/[0.03] flex items-center gap-2 rounded-lg border p-2.5 text-sm">
+                        <Sparkles className="text-primary size-4 shrink-0" />
+                        <span className="min-w-0 flex-1 truncate">
+                          {c.promptPicked(promptSeed.promptName)}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-6"
+                          aria-label={c.clearPrompt}
+                          onClick={() => setPromptSeed(null)}
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <Label>{c.sequenceLabel}</Label>
+                      <p className="text-muted-foreground text-sm">
+                        {c.sequenceDesc}
+                      </p>
+                    </div>
+
+                    {CHANNEL_GROUPS.map((group) => (
+                      <div key={group.key} className="space-y-2">
+                        <p className="text-muted-foreground text-xs font-medium">
+                          {c[group.key]}
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          {group.channels.map((channel) => {
+                            const meta = CHANNEL_META[channel]
+                            const selected = plannedSteps.includes(channel)
+                            return (
+                              <button
+                                key={channel}
+                                type="button"
+                                onClick={() => toggleChannel(channel)}
+                                aria-pressed={selected}
+                                className={cn(
+                                  "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors",
+                                  selected
+                                    ? "border-primary ring-primary/30 bg-primary/5 ring-1"
+                                    : "hover:border-primary/40 hover:bg-muted/40"
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "flex size-7 items-center justify-center rounded-md",
+                                    meta.tint
+                                  )}
+                                >
+                                  <meta.Icon className="size-3.5" />
+                                </span>
+                                <span className="text-sm font-medium">
+                                  {meta.label[locale]}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                  {meta.caption[locale]}
+                                </span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    {plannedSteps.length > 0 && (
+                      <div className="bg-muted/40 space-y-2 rounded-lg border p-3">
+                        <p className="text-xs font-medium">{c.yourSequence}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {plannedSteps.map((channel, i) => {
+                            const meta = CHANNEL_META[channel]
+                            return (
+                              <Badge
+                                key={`${channel}-${i}`}
+                                variant="secondary"
+                                className="gap-1.5 font-normal"
+                              >
+                                <meta.Icon className="size-3" />
+                                {c.stepAdded(i + 1)}: {meta.label[locale]}
+                                <button
+                                  type="button"
+                                  aria-label={c.clearTemplate}
+                                  onClick={() =>
+                                    setPlannedSteps((prev) =>
+                                      prev.filter((_, idx) => idx !== i)
+                                    )
+                                  }
+                                  className="hover:text-foreground ml-0.5"
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </Badge>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    {plannedSteps.length === 0 && !template && !promptSeed && (
+                      <p className="text-muted-foreground text-xs">
+                        {c.noStepsYet}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -929,9 +1253,21 @@ function NewCampaignWizard({
       <TemplatePickerDialog
         open={templatePickerOpen}
         onOpenChange={setTemplatePickerOpen}
-        onInsert={setTemplate}
+        onInsert={(t) => {
+          setTemplate(t)
+          setPromptSeed(null)
+        }}
         vars={SAMPLE_DATA}
         locale={locale}
+      />
+
+      <PromptPickerDialog
+        open={promptPickerOpen}
+        onOpenChange={setPromptPickerOpen}
+        onInsert={(seed) => {
+          setPromptSeed(seed)
+          setTemplate(null)
+        }}
       />
 
       {liveCampaign && (
