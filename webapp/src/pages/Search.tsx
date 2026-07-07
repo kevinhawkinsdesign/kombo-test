@@ -116,6 +116,7 @@ import {
 import { downloadCsv } from "@/lib/csv"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import type { AccountTier, Prospect } from "@/lib/types"
 
@@ -346,6 +347,10 @@ const COPY = {
     selectAllCapped: (n: number) => `Select all ${n.toLocaleString()}`,
     enrichCompaniesToast: (n: number) =>
       `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
+    buildAssign: "Assign to",
+    buildAssignHint:
+      "New prospects entering this list are assigned to this teammate.",
+    buildUnassigned: "Unassigned",
     hideInList: "Hide already in a list",
     hideInCrm: "Hide already in CRM",
     addRowToList: "Add to list",
@@ -631,6 +636,10 @@ const COPY = {
     selectAllCapped: (n: number) => `Seleccionar todos (${n.toLocaleString()})`,
     enrichCompaniesToast: (n: number) =>
       `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
+    buildAssign: "Asignar a",
+    buildAssignHint:
+      "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
+    buildUnassigned: "Sin asignar",
     hideInList: "Ocultar ya en una lista",
     hideInCrm: "Ocultar ya en el CRM",
     addRowToList: "Añadir a lista",
@@ -1250,7 +1259,8 @@ export default function Search() {
     name: string,
     type: AiEntity,
     src: BuildSource,
-    perCompanyCap: number | null
+    perCompanyCap: number | null,
+    assigneeId: string | undefined
   ) {
     setBuildOpen(false)
     if (src === "lookalike") {
@@ -1278,6 +1288,7 @@ export default function Search() {
       description: "",
       color: LIST_COLORS[trimmed.length % LIST_COLORS.length],
       kind: type === "people" ? "people" : "company",
+      assigneeId,
     })
     toast.success(c.buildCreated(list.name))
     if (src === "hubspot" || src === "hubspot-list") {
@@ -3616,13 +3627,17 @@ function BuildListDialog({
     name: string,
     type: AiEntity,
     source: BuildSource,
-    perCompanyCap: number | null
+    perCompanyCap: number | null,
+    assigneeId: string | undefined
   ) => void
 }) {
   const [step, setStep] = React.useState<"setup" | "source">("setup")
   const [name, setName] = React.useState("")
   const [type, setType] = React.useState<AiEntity>("people")
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
+  const [assigneeId, setAssigneeId] = React.useState<string | undefined>(
+    undefined
+  )
   const [wasOpen, setWasOpen] = React.useState(false)
 
   // Reset every time the dialog opens.
@@ -3632,6 +3647,7 @@ function BuildListDialog({
     setName("")
     setType("people")
     setPerCompanyCap(null)
+    setAssigneeId(undefined)
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -3791,6 +3807,20 @@ function BuildListDialog({
                 />
               </div>
             )}
+            {type === "people" && (
+              <div className="space-y-2">
+                <Label htmlFor="build-list-assignee">{c.buildAssign}</Label>
+                <AssigneePicker
+                  id="build-list-assignee"
+                  value={assigneeId}
+                  onChange={setAssigneeId}
+                  unassignedLabel={c.buildUnassigned}
+                />
+                <p className="text-muted-foreground text-xs">
+                  {c.buildAssignHint}
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="max-h-[55vh] space-y-3 overflow-y-auto py-1">
@@ -3811,7 +3841,8 @@ function BuildListDialog({
                             name,
                             type,
                             s.key,
-                            type === "people" ? perCompanyCap : null
+                            type === "people" ? perCompanyCap : null,
+                            type === "people" ? assigneeId : undefined
                           )
                         }
                         className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors"

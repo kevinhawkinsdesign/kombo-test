@@ -36,6 +36,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Term } from "@/components/common/InfoHint"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
+import { useLocale } from "@/lib/locale"
 import { useCampaigns, listStore } from "@/lib/store"
 import type {
   EnrichmentMode,
@@ -48,6 +50,23 @@ import { cn } from "@/lib/utils"
 type Audience = "dynamic" | "static"
 
 const STEPS = ["Prospects", "Enrich", "Outreach", "Review"] as const
+
+// Localized copy for the assignment field (the rest of this wizard predates
+// the per-file COPY convention).
+const ASSIGN_COPY = {
+  en: {
+    assignTo: "Assign to",
+    assignToHint:
+      "Prospects entering this playlist are assigned to this teammate.",
+    unassigned: "Unassigned",
+  },
+  es: {
+    assignTo: "Asignar a",
+    assignToHint:
+      "Los prospectos que entren en esta playlist se asignan a este compañero.",
+    unassigned: "Sin asignar",
+  },
+} as const
 
 const FACETS: { key: keyof Omit<SavedSearchCriteria, "keywords">; label: string; options: string[] }[] = [
   { key: "titles", label: "Job titles", options: ["VP Sales", "CRO", "Head of Sales", "RevOps Lead", "Sales Director", "Account Executive"] },
@@ -129,6 +148,8 @@ export function PlaylistWizard({
   const navigate = useNavigate()
   const campaigns = useCampaigns()
 
+  const { locale } = useLocale()
+  const ac = ASSIGN_COPY[locale]
   const [step, setStep] = React.useState(0)
   const [name, setName] = React.useState("")
   const [audience, setAudience] = React.useState<Audience>("dynamic")
@@ -137,6 +158,9 @@ export function PlaylistWizard({
   const [outreachMode, setOutreachMode] = React.useState<ReviewMode>("auto_campaign")
   const [campaignId, setCampaignId] = React.useState<string>("")
   const [sendMode, setSendMode] = React.useState<SendMode>("continuous")
+  const [assigneeId, setAssigneeId] = React.useState<string | undefined>(
+    undefined
+  )
 
   // Reset whenever the dialog opens (render-time, per React guidance).
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -151,6 +175,7 @@ export function PlaylistWizard({
       setOutreachMode("auto_campaign")
       setCampaignId("")
       setSendMode("continuous")
+      setAssigneeId(undefined)
     }
   }
 
@@ -204,6 +229,7 @@ export function PlaylistWizard({
       sendMode: !manualReview && campaignId ? sendMode : undefined,
       reviewMode: isDynamic ? outreachMode : undefined,
       lastSyncedAt: new Date().toISOString(),
+      assigneeId,
     })
     onOpenChange(false)
     toast.success(
@@ -271,6 +297,19 @@ export function PlaylistWizard({
                   placeholder="Q3 Enterprise ICP"
                   autoFocus
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="playlist-assignee">{ac.assignTo}</Label>
+                <AssigneePicker
+                  id="playlist-assignee"
+                  value={assigneeId}
+                  onChange={setAssigneeId}
+                  unassignedLabel={ac.unassigned}
+                />
+                <p className="text-muted-foreground text-xs">
+                  {ac.assignToHint}
+                </p>
               </div>
 
               <div className="space-y-2">

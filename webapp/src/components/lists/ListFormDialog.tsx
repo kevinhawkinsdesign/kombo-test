@@ -14,9 +14,28 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
+import { useLocale } from "@/lib/locale"
 import { listStore } from "@/lib/store"
 import type { ProspectList } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+// Localized copy for the assignment field (the rest of this dialog predates
+// the per-file COPY convention).
+const ASSIGN_COPY = {
+  en: {
+    assignTo: "Assign to",
+    assignToHint:
+      "New prospects entering this list are assigned to this teammate.",
+    unassigned: "Unassigned",
+  },
+  es: {
+    assignTo: "Asignar a",
+    assignToHint:
+      "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
+    unassigned: "Sin asignar",
+  },
+} as const
 
 interface ListFormDialogProps {
   open: boolean
@@ -39,10 +58,15 @@ export function ListFormDialog({
   list,
 }: ListFormDialogProps) {
   const navigate = useNavigate()
+  const { locale } = useLocale()
+  const ac = ASSIGN_COPY[locale]
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [color, setColor] = React.useState<string>(PRESET_COLORS[0])
   const [kind, setKind] = React.useState<"people" | "company">("people")
+  const [assigneeId, setAssigneeId] = React.useState<string | undefined>(
+    undefined
+  )
 
   // Reset fields whenever the dialog transitions to open, seeding from `list`
   // for edit mode. Adjusting state during render (the React-recommended
@@ -55,6 +79,7 @@ export function ListFormDialog({
       setDescription(list?.description ?? "")
       setColor(list?.color ?? PRESET_COLORS[0])
       setKind(list?.kind ?? "people")
+      setAssigneeId(list?.assigneeId)
     }
   }
 
@@ -69,6 +94,7 @@ export function ListFormDialog({
         name: trimmedName,
         description: description.trim(),
         color,
+        assigneeId,
       })
       toast.success("List updated")
     } else {
@@ -77,6 +103,7 @@ export function ListFormDialog({
         description: description.trim(),
         color,
         kind,
+        assigneeId,
       })
       toast.success("List created")
       onOpenChange(false)
@@ -151,6 +178,19 @@ export function ListFormDialog({
               placeholder="What this list is for…"
             />
           </div>
+
+          {kind === "people" && (
+            <div className="space-y-2">
+              <Label htmlFor="list-assignee">{ac.assignTo}</Label>
+              <AssigneePicker
+                id="list-assignee"
+                value={assigneeId}
+                onChange={setAssigneeId}
+                unassignedLabel={ac.unassigned}
+              />
+              <p className="text-muted-foreground text-xs">{ac.assignToHint}</p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Color</Label>

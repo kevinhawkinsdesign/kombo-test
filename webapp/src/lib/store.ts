@@ -232,7 +232,19 @@ export const listStore = {
       accountIds: data.accountIds ?? [],
       source: data.source ?? "search",
     }
-    setState({ lists: [list, ...state.lists] })
+    setState({
+      lists: [list, ...state.lists],
+      // Same stamping as addProspects for lists born with members.
+      ...(list.assigneeId && list.prospectIds.length > 0
+        ? {
+            prospects: state.prospects.map((p) =>
+              list.prospectIds.includes(p.id) && !p.ownerId
+                ? { ...p, ownerId: list.assigneeId }
+                : p
+            ),
+          }
+        : {}),
+    })
     return list
   },
   update(id: string, patch: Partial<ProspectList>): void {
@@ -244,12 +256,24 @@ export const listStore = {
     setState({ lists: state.lists.filter((l) => l.id !== id) })
   },
   addProspects(id: string, ids: string[]): void {
+    // A list's default owner is stamped onto incoming prospects that don't
+    // already have one — it never overwrites an existing owner.
+    const assigneeId = state.lists.find((l) => l.id === id)?.assigneeId
     setState({
       lists: state.lists.map((l) =>
         l.id === id
           ? { ...l, prospectIds: Array.from(new Set([...l.prospectIds, ...ids])) }
           : l
       ),
+      ...(assigneeId
+        ? {
+            prospects: state.prospects.map((p) =>
+              ids.includes(p.id) && !p.ownerId
+                ? { ...p, ownerId: assigneeId }
+                : p
+            ),
+          }
+        : {}),
     })
   },
   removeProspect(id: string, prospectId: string): void {
