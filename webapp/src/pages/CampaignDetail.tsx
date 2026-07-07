@@ -109,7 +109,7 @@ import {
   type ColGroup,
 } from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
-import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
+import { AddCampaignAudienceDialog } from "@/components/campaigns/AddCampaignAudienceDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team } from "@/lib/team"
 import {
@@ -852,10 +852,11 @@ export default function CampaignDetail() {
   // source (an attached list or manually-enrolled prospects).
   const hasSequence = steps.length > 0
   const hasFeed = hasProspects || Boolean(attachedList)
+  const hasPerformanceData =
+    campaign.status === "active" || campaign.status === "completed"
   const setupComplete = hasSequence && hasFeed
 
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
-  const allEnrolledIds = new Set<string>([...enrollmentIds, ...enrolledIds])
 
   // Prospects-tab table rows: a normalized view over mock enrollments and
   // manually-added prospects so they share the customizable DataTable.
@@ -1246,7 +1247,7 @@ export default function CampaignDetail() {
               <CardTitle className="text-base">{c.summary}</CardTitle>
             </CardHeader>
             <CardContent>
-              {campaign.status === "active" ? (
+              {hasPerformanceData ? (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <div>
                     <p className="text-lg font-semibold tabular-nums">
@@ -1338,7 +1339,11 @@ export default function CampaignDetail() {
               <CardDescription>{c.dailyPerformanceDesc}</CardDescription>
             </CardHeader>
             <CardContent>
-              {daily.length > 0 ? (
+              {!hasPerformanceData ? (
+                <p className="text-muted-foreground text-sm">
+                  {c.statsInactiveNote}
+                </p>
+              ) : daily.length > 0 ? (
                 <div className="h-72">
                   <CampaignDailyChart
                     labels={daily.map((d) => shortDay(d.date))}
@@ -2133,11 +2138,10 @@ export default function CampaignDetail() {
         currentStatus={campaign.status}
       />
 
-      <AddCampaignProspectsDialog
+      <AddCampaignAudienceDialog
         open={addOpen}
         onOpenChange={setAddOpen}
         campaign={campaign}
-        enrolledIds={allEnrolledIds}
       />
 
       <TemplatePickerDialog
