@@ -1,10 +1,12 @@
+import type * as React from "react"
 import {
   Download,
-  Sparkles,
+  Layers,
   FolderPlus,
   Send,
   ScanSearch,
   UserSearch,
+  Plug,
   X,
 } from "lucide-react"
 
@@ -19,6 +21,7 @@ const COPY = {
     enrich: "Enrich",
     addToList: "Add to list",
     addToCampaign: "Add to campaign",
+    addToCrm: "Add to CRM",
     lookalikes: "Find lookalikes",
     findContacts: "Find contacts",
     clear: "Clear",
@@ -31,6 +34,7 @@ const COPY = {
     enrich: "Enriquecer",
     addToList: "Añadir a lista",
     addToCampaign: "Añadir a campaña",
+    addToCrm: "Añadir al CRM",
     lookalikes: "Buscar similares",
     findContacts: "Buscar contactos",
     clear: "Limpiar",
@@ -39,9 +43,20 @@ const COPY = {
   },
 } as const
 
+// A page-specific action (e.g. "Remove from list") appended after the shared
+// ones. Icon is optional; destructive renders it in the destructive tone.
+export interface BulkExtraAction {
+  label: string
+  icon?: React.ReactNode
+  onClick: () => void
+  destructive?: boolean
+}
+
 /**
  * Floating action bar for multi-selected rows. Appears once a selection
- * exists. `onAddToCampaign` is optional — companies don't enroll in campaigns.
+ * exists. Every action except Export/Enrich/Clear is optional so each surface
+ * shows only what applies there (e.g. companies don't enroll in campaigns;
+ * search results don't re-add to a list they aren't in yet).
  */
 export function BulkActionsBar({
   count,
@@ -53,8 +68,10 @@ export function BulkActionsBar({
   onEnrich,
   onAddToList,
   onAddToCampaign,
+  onAddToCrm,
   onLookalikes,
   onFindContacts,
+  extra,
 }: {
   count: number
   // Shown above the buttons when the selection exceeds the add-to-list cap.
@@ -65,11 +82,13 @@ export function BulkActionsBar({
   onClear: () => void
   onExport: () => void
   onEnrich: () => void
-  onAddToList: () => void
+  onAddToList?: () => void
   onAddToCampaign?: () => void
-  onLookalikes: () => void
+  onAddToCrm?: () => void
+  onLookalikes?: () => void
   // Companies only: find people at the selected accounts.
   onFindContacts?: () => void
+  extra?: BulkExtraAction
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -102,17 +121,25 @@ export function BulkActionsBar({
         {c.export}
       </Button>
       <Button variant="outline" size="sm" onClick={onEnrich}>
-        <Sparkles className="size-4" />
+        <Layers className="size-4" />
         {c.enrich}
       </Button>
-      <Button variant="outline" size="sm" onClick={onAddToList}>
-        <FolderPlus className="size-4" />
-        {c.addToList}
-      </Button>
+      {onAddToList && (
+        <Button variant="outline" size="sm" onClick={onAddToList}>
+          <FolderPlus className="size-4" />
+          {c.addToList}
+        </Button>
+      )}
       {onAddToCampaign && (
         <Button variant="outline" size="sm" onClick={onAddToCampaign}>
           <Send className="size-4" />
           {c.addToCampaign}
+        </Button>
+      )}
+      {onAddToCrm && (
+        <Button variant="outline" size="sm" onClick={onAddToCrm}>
+          <Plug className="size-4" />
+          {c.addToCrm}
         </Button>
       )}
       {onFindContacts && (
@@ -121,10 +148,23 @@ export function BulkActionsBar({
           {c.findContacts}
         </Button>
       )}
-      <Button variant="outline" size="sm" onClick={onLookalikes}>
-        <ScanSearch className="size-4" />
-        {c.lookalikes}
-      </Button>
+      {onLookalikes && (
+        <Button variant="outline" size="sm" onClick={onLookalikes}>
+          <ScanSearch className="size-4" />
+          {c.lookalikes}
+        </Button>
+      )}
+      {extra && (
+        <Button
+          variant="outline"
+          size="sm"
+          className={extra.destructive ? "text-destructive" : undefined}
+          onClick={extra.onClick}
+        >
+          {extra.icon}
+          {extra.label}
+        </Button>
+      )}
       <Button variant="ghost" size="sm" className="ml-auto" onClick={onClear}>
         <X className="size-4" />
         {c.clear}
