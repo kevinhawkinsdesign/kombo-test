@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Plus,
@@ -15,6 +15,7 @@ import {
   Database,
   Building2,
   ListTodo,
+  Columns3,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -29,14 +30,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useColumnPrefs,
+  type ColumnDef,
+  type ColGroup,
+} from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
@@ -109,6 +109,7 @@ const COPY = {
     colSource: "Source",
     colMembers: "Members",
     colCreated: "Created",
+    columns: "Columns",
   },
   es: {
     sourceLinkedin: "LinkedIn",
@@ -167,6 +168,7 @@ const COPY = {
     colSource: "Origen",
     colMembers: "Miembros",
     colCreated: "Creada",
+    columns: "Columnas",
   },
 } as const
 
@@ -231,6 +233,9 @@ export default function Lists() {
   const [view, setView] = React.useState<CollectionView>("cards")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("default")
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const listColPrefs = useColumnPrefs("lists", LIST_COL_DEFAULT_IDS)
+  const navigate = useNavigate()
 
   function openCreate() {
     setEditingList(undefined)
@@ -241,11 +246,6 @@ export default function Lists() {
     setEditingList(list)
     setFormOpen(true)
   }
-
-  const memberCountOf = (list: ProspectList) =>
-    list.kind === "company"
-      ? list.accountIds?.length ?? 0
-      : list.prospectIds.length
 
   const sortedLists = React.useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -262,7 +262,7 @@ export default function Lists() {
         case "name":
           return a.name.localeCompare(b.name)
         case "members":
-          return memberCountOf(b) - memberCountOf(a)
+          return memberCountOfList(b) - memberCountOfList(a)
         case "recent":
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -283,7 +283,7 @@ export default function Lists() {
         l.name,
         l.kind === "company" ? c.companyList : c.peopleList,
         l.source,
-        memberCountOf(l),
+        memberCountOfList(l),
         formatDate(l.createdAt),
       ])
     )
@@ -342,19 +342,54 @@ export default function Lists() {
         tableLabel={c.viewTable}
         onExport={exportCsv}
         exportLabel={c.exportLabel}
-      />
+      >
+        {view === "table" && (
+          <Button variant="outline" onClick={() => setColumnsOpen(true)}>
+            <Columns3 className="size-4" />
+            <span className="hidden sm:inline">{c.columns}</span>
+          </Button>
+        )}
+      </CollectionToolbar>
 
       {sortedLists.length === 0 ? (
         <Card className="text-muted-foreground p-8 text-center text-sm">
           {c.noResults}
         </Card>
       ) : view === "table" ? (
-        <ListTable
+        <DataTable
+          columns={LIST_COLUMNS}
+          visible={listColPrefs.visible}
           rows={sortedLists}
-          c={c}
-          memberCountOf={memberCountOf}
-          onEdit={openEdit}
-          onDelete={setDeletingList}
+          rowKey={(l) => l.id}
+          locale={locale}
+          onRowClick={(l) => navigate(`/lists/${l.id}`)}
+          actions={(list) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.listActions}
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => openEdit(list)}>
+                  <Pencil className="size-4" />
+                  {c.edit}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => setDeletingList(list)}
+                >
+                  <Trash2 className="size-4" />
+                  {c.delete}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         />
       ) : (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -518,6 +553,15 @@ export default function Lists() {
       )}
 
 
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={LIST_COLUMNS}
+        groups={LIST_COL_GROUPS}
+        prefs={listColPrefs}
+        locale={locale}
+      />
+
       <ListFormDialog
         open={formOpen}
         onOpenChange={setFormOpen}
@@ -552,136 +596,115 @@ export default function Lists() {
   )
 }
 
-type Copy = (typeof COPY)[keyof typeof COPY]
+// Table-view columns — the same shared registry shape + ColumnManager +
+// DataTable that every prospect/company table uses (page-local defs, like
+// CampaignDetail's prospect table).
+const memberCountOfList = (l: ProspectList) =>
+  l.kind === "company" ? (l.accountIds?.length ?? 0) : l.prospectIds.length
 
-function ListTable({
-  rows,
-  c,
-  memberCountOf,
-  onEdit,
-  onDelete,
-}: {
-  rows: ProspectList[]
-  c: Copy
-  memberCountOf: (list: ProspectList) => number
-  onEdit: (list: ProspectList) => void
-  onDelete: (list: ProspectList) => void
-}) {
-  const sourceLabels: Record<string, string> = {
-    linkedin: c.sourceLinkedin,
-    salesnav: c.sourceSalesnav,
-    csv: c.sourceCsv,
-    search: c.sourceSearch,
-  }
-  return (
-    <Card className="p-0">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{c.colName}</TableHead>
-            <TableHead>{c.colType}</TableHead>
-            <TableHead>{c.colSource}</TableHead>
-            <TableHead className="text-right">{c.colMembers}</TableHead>
-            <TableHead className="text-right">{c.colCreated}</TableHead>
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((list) => {
-            const isCompany = list.kind === "company"
-            return (
-              <TableRow key={list.id}>
-                <TableCell>
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="flex size-7 shrink-0 items-center justify-center rounded-md"
-                      style={{ backgroundColor: `${list.color}1a` }}
-                    >
-                      {list.dynamic ? (
-                        <Sparkles
-                          className="size-3.5"
-                          style={{ color: list.color }}
-                        />
-                      ) : isCompany ? (
-                        <Building2
-                          className="size-3.5"
-                          style={{ color: list.color }}
-                        />
-                      ) : (
-                        <FolderKanban
-                          className="size-3.5"
-                          style={{ color: list.color }}
-                        />
-                      )}
-                    </span>
-                    <Link
-                      to={`/lists/${list.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {list.name}
-                    </Link>
-                    {list.dynamic && (
-                      <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
-                        <span className="relative flex size-1.5">
-                          <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
-                          <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
-                        </span>
-                        {c.live}
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="gap-1 font-normal">
-                    {isCompany ? (
-                      <Building2 className="size-3" />
-                    ) : (
-                      <Users className="size-3" />
-                    )}
-                    {isCompany ? c.companyList : c.peopleList}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {sourceLabels[list.source]}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {memberCountOf(list)}
-                </TableCell>
-                <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
-                  {formatDate(list.createdAt)}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        aria-label={c.listActions}
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={() => onEdit(list)}>
-                        <Pencil className="size-4" />
-                        {c.edit}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onSelect={() => onDelete(list)}
-                      >
-                        <Trash2 className="size-4" />
-                        {c.delete}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </Card>
-  )
-}
+const LIST_COL_GROUPS: ColGroup[] = [
+  { id: "list", label: { en: "List", es: "Lista" } },
+]
+const LIST_COL_DEFAULT_IDS = ["type", "source", "members", "created"]
+
+const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
+  {
+    id: "name",
+    label: { en: COPY.en.colName, es: COPY.es.colName },
+    group: "list",
+    pinned: true,
+    minWidth: "220px",
+    render: (l, locale) => {
+      const cc = COPY[locale]
+      const isCompany = l.kind === "company"
+      return (
+        <div className="flex items-center gap-2.5">
+          <span
+            className="flex size-7 shrink-0 items-center justify-center rounded-md"
+            style={{ backgroundColor: `${l.color}1a` }}
+          >
+            {l.dynamic ? (
+              <Sparkles className="size-3.5" style={{ color: l.color }} />
+            ) : isCompany ? (
+              <Building2 className="size-3.5" style={{ color: l.color }} />
+            ) : (
+              <FolderKanban className="size-3.5" style={{ color: l.color }} />
+            )}
+          </span>
+          <Link to={`/lists/${l.id}`} className="font-medium hover:underline">
+            {l.name}
+          </Link>
+          {l.dynamic && (
+            <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+              <span className="relative flex size-1.5">
+                <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+                <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
+              </span>
+              {cc.live}
+            </Badge>
+          )}
+        </div>
+      )
+    },
+  },
+  {
+    id: "type",
+    label: { en: COPY.en.colType, es: COPY.es.colType },
+    group: "list",
+    default: true,
+    render: (l, locale) => {
+      const cc = COPY[locale]
+      const isCompany = l.kind === "company"
+      return (
+        <Badge variant="outline" className="gap-1 font-normal">
+          {isCompany ? (
+            <Building2 className="size-3" />
+          ) : (
+            <Users className="size-3" />
+          )}
+          {isCompany ? cc.companyList : cc.peopleList}
+        </Badge>
+      )
+    },
+  },
+  {
+    id: "source",
+    label: { en: COPY.en.colSource, es: COPY.es.colSource },
+    group: "list",
+    default: true,
+    render: (l, locale) => {
+      const cc = COPY[locale]
+      const sourceLabels: Record<string, string> = {
+        linkedin: cc.sourceLinkedin,
+        salesnav: cc.sourceSalesnav,
+        csv: cc.sourceCsv,
+        search: cc.sourceSearch,
+      }
+      return (
+        <span className="text-muted-foreground text-sm">
+          {sourceLabels[l.source]}
+        </span>
+      )
+    },
+  },
+  {
+    id: "members",
+    label: { en: COPY.en.colMembers, es: COPY.es.colMembers },
+    group: "list",
+    default: true,
+    align: "right",
+    render: (l) => <span className="tabular-nums">{memberCountOfList(l)}</span>,
+  },
+  {
+    id: "created",
+    label: { en: COPY.en.colCreated, es: COPY.es.colCreated },
+    group: "list",
+    default: true,
+    align: "right",
+    render: (l) => (
+      <span className="text-muted-foreground text-xs whitespace-nowrap">
+        {formatDate(l.createdAt)}
+      </span>
+    ),
+  },
+]
