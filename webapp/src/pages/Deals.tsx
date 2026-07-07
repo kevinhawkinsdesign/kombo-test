@@ -79,9 +79,12 @@ const COPY = {
     stages: {
       interested: "Interested",
       meeting_booked: "Meeting booked",
+      needs_review: "Needs review",
       qualified: "Qualified",
       won: "Won",
+      not_interested: "Not interested",
       disqualified: "Disqualified",
+      lost: "Lost",
     } as Record<Deal["stage"], string>,
     search: "Search deals…",
     viewBoard: "Board",
@@ -130,9 +133,12 @@ const COPY = {
     stages: {
       interested: "Interesado",
       meeting_booked: "Reunión agendada",
+      needs_review: "Por revisar",
       qualified: "Cualificado",
       won: "Ganado",
+      not_interested: "No interesado",
       disqualified: "Descalificado",
+      lost: "Perdido",
     } as Record<Deal["stage"], string>,
     search: "Buscar negocios…",
     viewBoard: "Tablero",
@@ -322,9 +328,14 @@ export default function Deals() {
     toast.success(c.exported)
   }
 
-  const openDeals = scoped.filter(
-    (d) => d.stage !== "won" && d.stage !== "disqualified"
-  )
+  // Open pipeline = anything not in a terminal outcome.
+  const CLOSED_STAGES: Deal["stage"][] = [
+    "won",
+    "not_interested",
+    "disqualified",
+    "lost",
+  ]
+  const openDeals = scoped.filter((d) => !CLOSED_STAGES.includes(d.stage))
   const openPipeline = openDeals.reduce((sum, d) => sum + d.value, 0)
   const weightedForecast = openDeals.reduce(
     (sum, d) => sum + (d.value * d.probability) / 100,
@@ -495,9 +506,12 @@ const STAGE_VARIANT: Record<
 > = {
   interested: "outline",
   meeting_booked: "secondary",
+  needs_review: "secondary",
   qualified: "default",
   won: "success",
+  not_interested: "destructive",
   disqualified: "destructive",
+  lost: "destructive",
 }
 
 function DealTable({
