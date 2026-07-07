@@ -994,6 +994,7 @@ export const coachRecordings: CoachRecording[] = [
       "Multi-threaded into procurement",
     ],
     nextSteps: ["Send security docs", "Schedule technical deep-dive"],
+    videoSource: "meet",
   },
   {
     id: "r_2",
@@ -1007,6 +1008,7 @@ export const coachRecordings: CoachRecording[] = [
     sentiment: "neutral",
     highlights: ["Good product walkthrough", "Talk ratio a bit high"],
     nextSteps: ["Send ROI breakdown", "Confirm Tuesday follow-up"],
+    videoSource: "teams",
   },
   {
     id: "r_3",
@@ -1020,6 +1022,7 @@ export const coachRecordings: CoachRecording[] = [
     sentiment: "negative",
     highlights: ["Skeptical on ROI", "Missed budget qualification"],
     nextSteps: ["Build ROI case study", "Re-engage in 30 days"],
+    videoSource: "linkedin",
   },
 ]
 

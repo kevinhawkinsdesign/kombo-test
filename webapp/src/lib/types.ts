@@ -305,6 +305,10 @@ export interface CoachRecording {
   sentiment: "positive" | "neutral" | "negative"
   highlights: string[]
   nextSteps: string[]
+  // Where the call happened. LinkedIn calls can't embed their recording — the
+  // player links out to the original instead; every other source plays the
+  // full video inline.
+  videoSource?: "meet" | "teams" | "linkedin" | "phone"
 }
 
 export interface Integration {
