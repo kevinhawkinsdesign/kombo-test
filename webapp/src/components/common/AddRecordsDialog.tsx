@@ -573,6 +573,23 @@ export function AddRecordsDialog({
     onOpenChange(false)
     navigate("/search", { state: { initialSource: "google_maps" } })
   }
+  // Shared by every ImportPane instance (the splash frame's and the results
+  // screen's) so both stay in sync with a single implementation.
+  function handleImportFile() {
+    toast.success(c.importingFile)
+    onOpenChange(false)
+  }
+  function handleImportConnect() {
+    leave("/integrations")
+  }
+  function handleImportSync() {
+    toast.success(c.syncing)
+    onOpenChange(false)
+  }
+  function handleImportLink(label: string) {
+    toast.success(c.importingLink(label))
+    onOpenChange(false)
+  }
   // A blank CSV matching the columns the file-upload importer expects, with
   // one example row so it's clear what goes in each column.
   function downloadImportTemplate() {
@@ -802,32 +819,52 @@ export function AddRecordsDialog({
         {screen !== "results" && <DialogTitle className="sr-only">{title}</DialogTitle>}
         {screen === "splash" ? (
           <>
-            <div className="flex items-center justify-center border-b px-6 py-3">
+            {/* Shared frame for both Search and Import — switching modes here
+                never leaves this lightweight splash chrome for the busy
+                results-screen header (that only happens once a search is
+                actually submitted). */}
+            <div className="flex flex-wrap items-center justify-center gap-3 border-b px-6 py-3">
+              {allowEntityToggle && (
+                <Segmented
+                  options={[
+                    { v: "people" as AiEntity, label: c.contact, icon: Users },
+                    { v: "companies" as AiEntity, label: c.company, icon: Building2 },
+                  ]}
+                  value={entity}
+                  onChange={switchEntity}
+                />
+              )}
               <Segmented
                 options={[
                   { v: "search" as Mode, label: c.search, icon: Search },
                   { v: "import" as Mode, label: c.import, icon: Upload },
                 ]}
                 value={mode}
-                onChange={(next) => {
-                  setMode(next)
-                  // "Search" stays on the splash; "Import" jumps straight to
-                  // today's import screen (same one the results view offers).
-                  if (next === "import") setScreen("results")
-                }}
+                onChange={setMode}
               />
             </div>
-            <SplashScreen
-              entity={entity}
-              onEntityChange={switchEntity}
-              showEntityToggle={allowEntityToggle}
-              input={input}
-              onInputChange={setInput}
-              onSubmit={runSplashSearch}
-              onSearchWithFilters={runSplashWithFilters}
-              onGuideMe={() => setScreen("wizard")}
-              c={c}
-            />
+            {mode === "search" ? (
+              <SplashScreen
+                entity={entity}
+                input={input}
+                onInputChange={setInput}
+                onSubmit={runSplashSearch}
+                onSearchWithFilters={runSplashWithFilters}
+                onGuideMe={() => setScreen("wizard")}
+                c={c}
+              />
+            ) : (
+              <ImportPane
+                entity={entity}
+                c={c}
+                initialActiveLink={pendingActiveLink}
+                onFile={handleImportFile}
+                onConnect={handleImportConnect}
+                onSync={handleImportSync}
+                onLinkImport={handleImportLink}
+                onDownloadTemplate={downloadImportTemplate}
+              />
+            )}
           </>
         ) : screen === "wizard" ? (
           <GuidedWizard
@@ -1179,19 +1216,10 @@ export function AddRecordsDialog({
             entity={entity}
             c={c}
             initialActiveLink={pendingActiveLink}
-            onFile={() => {
-              toast.success(c.importingFile)
-              onOpenChange(false)
-            }}
-            onConnect={() => leave("/integrations")}
-            onSync={() => {
-              toast.success(c.syncing)
-              onOpenChange(false)
-            }}
-            onLinkImport={(label) => {
-              toast.success(c.importingLink(label))
-              onOpenChange(false)
-            }}
+            onFile={handleImportFile}
+            onConnect={handleImportConnect}
+            onSync={handleImportSync}
+            onLinkImport={handleImportLink}
             onDownloadTemplate={downloadImportTemplate}
           />
         )}
@@ -1253,8 +1281,6 @@ function StepPreview() {
 // guided, step-by-step wizard (right — its actual questions arrive later).
 function SplashScreen({
   entity,
-  onEntityChange,
-  showEntityToggle,
   input,
   onInputChange,
   onSubmit,
@@ -1263,8 +1289,6 @@ function SplashScreen({
   c,
 }: {
   entity: AiEntity
-  onEntityChange: (e: AiEntity) => void
-  showEntityToggle: boolean
   input: string
   onInputChange: (v: string) => void
   onSubmit: () => void
@@ -1282,16 +1306,6 @@ function SplashScreen({
           <h2 className="text-lg font-semibold">{c.splashSearchTitle}</h2>
           <p className="text-muted-foreground mt-1 max-w-xs text-sm">{c.splashSearchDesc}</p>
         </div>
-        {showEntityToggle && (
-        <Segmented
-          options={[
-            { v: "people" as AiEntity, label: c.contact, icon: Users },
-            { v: "companies" as AiEntity, label: c.company, icon: Building2 },
-          ]}
-          value={entity}
-          onChange={onEntityChange}
-        />
-        )}
         <form
           className="flex w-full max-w-sm items-center gap-2"
           onSubmit={(e) => {
