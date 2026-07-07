@@ -48,8 +48,12 @@ import {
   COMPANY_COLUMNS,
   COMPANY_GROUPS,
   COMPANY_DEFAULT_IDS,
+  AI_COLUMN_GROUP,
+  aiColumnsToDefs,
   useColumnPrefs,
 } from "@/lib/table-columns"
+import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
+import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
@@ -57,11 +61,11 @@ import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
 import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
-import { useLists, listStore } from "@/lib/store"
+import { useLists, listStore, prospectStore, accountStore } from "@/lib/store"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { ProspectList } from "@/lib/types"
+import type { Account, Prospect, ProspectList } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -84,6 +88,9 @@ const COPY = {
     prospectsHeading: "Prospects",
     addProspects: "Find prospects",
     columns: "Columns",
+    editTable: "Edit",
+    editDone: "Done",
+    editingHint: "Editing — changes save automatically",
     colProspect: "Prospect",
     colCompany: "Company",
     colScore: "Score",
@@ -186,6 +193,9 @@ const COPY = {
     prospectsHeading: "Prospectos",
     addProspects: "Buscar prospectos",
     columns: "Columnas",
+    editTable: "Editar",
+    editDone: "Hecho",
+    editingHint: "Editando — los cambios se guardan solos",
     colProspect: "Prospecto",
     colCompany: "Empresa",
     colScore: "Puntuación",
@@ -291,6 +301,20 @@ export default function ListDetail() {
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
+  // Inline editing + AI/custom columns — the same machinery People/Companies
+  // use; the list is the user's own copy of the data.
+  const [tableEditing, setTableEditing] = React.useState(false)
+  const [aiColOpen, setAiColOpen] = React.useState(false)
+  const peopleAiCols = useAiColumns("people")
+  const companyAiCols = useAiColumns("company")
+  const allPeopleColumns = React.useMemo(
+    () => [...PEOPLE_COLUMNS, ...aiColumnsToDefs<Prospect>(peopleAiCols)],
+    [peopleAiCols]
+  )
+  const allCompanyColumns = React.useMemo(
+    () => [...COMPANY_COLUMNS, ...aiColumnsToDefs<Account>(companyAiCols)],
+    [companyAiCols]
+  )
 
   if (!list) {
     return (
@@ -499,6 +523,16 @@ export default function ListDetail() {
             <Columns3 className="size-4" />
             <span className="hidden sm:inline">{c.columns}</span>
           </Button>
+          <Button
+            variant={tableEditing ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setTableEditing((v) => !v)}
+          >
+            <Pencil className="size-4" />
+            <span className="hidden sm:inline">
+              {tableEditing ? c.editDone : c.editTable}
+            </span>
+          </Button>
           {isCompany && accountMembers.length > 0 && (
             <Button
               variant="outline"
@@ -516,13 +550,22 @@ export default function ListDetail() {
         </div>
       </div>
 
+      {tableEditing && (
+        <p className="text-primary mb-3 flex items-center gap-1 text-xs">
+          <Pencil className="size-3" />
+          {c.editingHint}
+        </p>
+      )}
+
       {isCompany ? (
         <DataTable
-          columns={COMPANY_COLUMNS}
+          columns={allCompanyColumns}
           visible={accountColumnPrefs.visible}
           rows={accountMembers}
           rowKey={(a) => a.id}
           locale={locale}
+          editing={tableEditing}
+          onUpdate={(a, patch) => accountStore.update(a.id, patch)}
           onRowClick={(a) => navigate(`/companies/${a.id}`)}
           empty={c.emptyStateCo}
           selection={{
@@ -550,11 +593,13 @@ export default function ListDetail() {
         />
       ) : (
         <DataTable
-          columns={PEOPLE_COLUMNS}
+          columns={allPeopleColumns}
           visible={columnPrefs.visible}
           rows={members}
           rowKey={(p) => p.id}
           locale={locale}
+          editing={tableEditing}
+          onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
           onRowClick={(p) => navigate(`/prospects/${p.id}`)}
           empty={c.emptyState}
           selection={{
@@ -599,21 +644,46 @@ export default function ListDetail() {
         <ColumnManager
           open={columnsOpen}
           onOpenChange={setColumnsOpen}
-          columns={COMPANY_COLUMNS}
-          groups={COMPANY_GROUPS}
+          columns={allCompanyColumns}
+          groups={
+            companyAiCols.length
+              ? [...COMPANY_GROUPS, AI_COLUMN_GROUP]
+              : COMPANY_GROUPS
+          }
           prefs={accountColumnPrefs}
           locale={locale}
+          onAddAiColumn={() => setAiColOpen(true)}
+          aiColumnIds={new Set(companyAiCols.map((x) => x.id))}
+          onDeleteColumn={(id) => aiColumnStore.remove(id)}
         />
       ) : (
         <ColumnManager
           open={columnsOpen}
           onOpenChange={setColumnsOpen}
-          columns={PEOPLE_COLUMNS}
-          groups={PEOPLE_GROUPS}
+          columns={allPeopleColumns}
+          groups={
+            peopleAiCols.length
+              ? [...PEOPLE_GROUPS, AI_COLUMN_GROUP]
+              : PEOPLE_GROUPS
+          }
           prefs={columnPrefs}
           locale={locale}
+          onAddAiColumn={() => setAiColOpen(true)}
+          aiColumnIds={new Set(peopleAiCols.map((x) => x.id))}
+          onDeleteColumn={(id) => aiColumnStore.remove(id)}
         />
       )}
+
+      <AddAiColumnDialog
+        open={aiColOpen}
+        onOpenChange={setAiColOpen}
+        entity={isCompany ? "company" : "people"}
+        onCreated={(id) => {
+          const prefs = isCompany ? accountColumnPrefs : columnPrefs
+          if (!prefs.visible.includes(id))
+            prefs.setVisible([...prefs.visible, id])
+        }}
+      />
 
       <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
 
