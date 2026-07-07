@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Send,
   Camera,
+  Columns3,
 } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -52,14 +53,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  useColumnPrefs,
+  type ColumnDef,
+  type ColGroup,
+} from "@/lib/table-columns"
 import { Card } from "@/components/ui/card"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
@@ -240,6 +240,7 @@ const COPY = {
     colSent: "Sent",
     colReply: "Reply rate",
     colUpdated: "Updated",
+    columns: "Columns",
   },
   es: {
     topPerformer: "Mejor rendimiento",
@@ -339,6 +340,7 @@ const COPY = {
     colSent: "Enviados",
     colReply: "Tasa de respuesta",
     colUpdated: "Actualizada",
+    columns: "Columnas",
   },
 } as const
 
@@ -381,85 +383,87 @@ function channelLabel(channel: Channel, c: Copy): string {
   return c[channel]
 }
 
-function TemplateTable({
-  rows,
-  c,
-  onOpen,
-  onDelete,
-}: {
-  rows: EmailTemplate[]
-  c: Copy
-  onOpen: (template: EmailTemplate) => void
-  onDelete: (template: EmailTemplate) => void
-}) {
-  return (
-    <Card className="p-0">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{c.colName}</TableHead>
-            <TableHead>{c.colFolder}</TableHead>
-            <TableHead>{c.colSubject}</TableHead>
-            <TableHead className="text-right">{c.colSent}</TableHead>
-            <TableHead className="text-right">{c.colReply}</TableHead>
-            <TableHead className="text-right">{c.colUpdated}</TableHead>
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((t) => {
-            const preview =
-              t.channel === "email" ? t.subject : stripHtml(t.body)
-            return (
-              <TableRow
-                key={t.id}
-                className="cursor-pointer"
-                onClick={() => onOpen(t)}
-              >
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md">
-                      <ChannelIcon channel={t.channel} className="size-3.5" />
-                    </span>
-                    <span className="font-medium">{t.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="font-normal">
-                    {t.folder}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground max-w-[260px] truncate text-sm">
-                  {preview}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {t.sent.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-chart-1 text-right font-medium tabular-nums">
-                  {t.replyRate}%
-                </TableCell>
-                <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
-                  {formatDate(t.updatedAt)}
-                </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={c.deleteAria(t.name)}
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    onClick={() => onDelete(t)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </Card>
-  )
-}
+// Table-view columns — the same shared registry shape + ColumnManager +
+// DataTable every prospect/company table uses (page-local defs, like
+// CampaignDetail's prospect table).
+const TEMPLATE_COL_GROUPS: ColGroup[] = [
+  { id: "template", label: { en: "Template", es: "Plantilla" } },
+]
+const TEMPLATE_COL_DEFAULT_IDS = ["folder", "subject", "sent", "reply", "updated"]
+
+const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
+  {
+    id: "name",
+    label: { en: COPY.en.colName, es: COPY.es.colName },
+    group: "template",
+    pinned: true,
+    minWidth: "200px",
+    render: (t) => (
+      <div className="flex items-center gap-2">
+        <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md">
+          <ChannelIcon channel={t.channel} className="size-3.5" />
+        </span>
+        <span className="font-medium">{t.name}</span>
+      </div>
+    ),
+  },
+  {
+    id: "folder",
+    label: { en: COPY.en.colFolder, es: COPY.es.colFolder },
+    group: "template",
+    default: true,
+    render: (t) => (
+      <Badge variant="secondary" className="font-normal">
+        {t.folder}
+      </Badge>
+    ),
+  },
+  {
+    id: "subject",
+    label: { en: COPY.en.colSubject, es: COPY.es.colSubject },
+    group: "template",
+    default: true,
+    render: (t) => (
+      <span className="text-muted-foreground block max-w-[260px] truncate text-sm">
+        {t.channel === "email" ? t.subject : stripHtml(t.body)}
+      </span>
+    ),
+  },
+  {
+    id: "sent",
+    label: { en: COPY.en.colSent, es: COPY.es.colSent },
+    group: "template",
+    default: true,
+    align: "right",
+    render: (t) => (
+      <span className="tabular-nums">{t.sent.toLocaleString()}</span>
+    ),
+  },
+  {
+    id: "reply",
+    label: { en: COPY.en.colReply, es: COPY.es.colReply },
+    group: "template",
+    default: true,
+    align: "right",
+    render: (t) => (
+      <span className="text-chart-1 font-medium tabular-nums">
+        {t.replyRate}%
+      </span>
+    ),
+  },
+  {
+    id: "updated",
+    label: { en: COPY.en.colUpdated, es: COPY.es.colUpdated },
+    group: "template",
+    default: true,
+    align: "right",
+    render: (t) => (
+      <span className="text-muted-foreground text-xs whitespace-nowrap">
+        {formatDate(t.updatedAt)}
+      </span>
+    ),
+  },
+]
 
 function TemplateCard({
   template,
@@ -690,6 +694,8 @@ export default function Templates() {
   }
 
   const [view, setView] = React.useState<CollectionView>("cards")
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const templateColPrefs = useColumnPrefs("templates", TEMPLATE_COL_DEFAULT_IDS)
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
@@ -870,7 +876,14 @@ export default function Templates() {
         tableLabel={c.viewTable}
         onExport={exportCsv}
         exportLabel={c.exportLabel}
-      />
+      >
+        {view === "table" && (
+          <Button variant="outline" onClick={() => setColumnsOpen(true)}>
+            <Columns3 className="size-4" />
+            <span className="hidden sm:inline">{c.columns}</span>
+          </Button>
+        )}
+      </CollectionToolbar>
 
       {view === "table" ? (
         flat.length === 0 ? (
@@ -878,11 +891,24 @@ export default function Templates() {
             {c.noResults}
           </Card>
         ) : (
-          <TemplateTable
+          <DataTable
+            columns={TEMPLATE_COLUMNS}
+            visible={templateColPrefs.visible}
             rows={flat}
-            c={c}
-            onOpen={openEditor}
-            onDelete={setConfirmTarget}
+            rowKey={(t) => t.id}
+            locale={locale}
+            onRowClick={(t) => openEditor(t)}
+            actions={(t) => (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={c.deleteAria(t.name)}
+                className="text-muted-foreground hover:text-destructive size-8"
+                onClick={() => setConfirmTarget(t)}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
           />
         )
       ) : grouped.length === 0 ? (
@@ -1304,6 +1330,15 @@ export default function Templates() {
         confirmLabel={c.delete}
         destructive
         onConfirm={handleDelete}
+      />
+
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={TEMPLATE_COLUMNS}
+        groups={TEMPLATE_COL_GROUPS}
+        prefs={templateColPrefs}
+        locale={locale}
       />
     </Page>
   )
