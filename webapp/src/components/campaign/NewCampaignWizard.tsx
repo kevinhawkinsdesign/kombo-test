@@ -49,7 +49,7 @@ import {
 } from "@/components/templates/PromptPickerDialog"
 import { SAMPLE_DATA } from "@/pages/Templates"
 import { normalizeChannel } from "@/pages/CampaignDetail"
-import { AddCampaignProspectsDialog } from "@/components/campaigns/AddCampaignProspectsDialog"
+import { AddCampaignAudienceDialog } from "@/components/campaigns/AddCampaignAudienceDialog"
 import { useLocale, type Locale } from "@/lib/locale"
 import {
   useCampaigns,
@@ -603,11 +603,16 @@ function NewCampaignWizard({
     navigate(`/campaigns/${campaignId}`)
   }
 
+  // The wizard's "manual" path now also ends in an attached list (built via
+  // the full search/import flow), same underlying state as "attach" — just a
+  // different way of getting there.
+  const manualList = lists.find((l) => l.id === liveCampaign?.listId)
+
   const audienceLabel =
     audience === "attach" && selectedList
       ? `${selectedList.name} · ${c.prospectsCount(selectedList.prospectIds.length)}`
-      : audience === "manual"
-        ? c.enrolledCount(liveCampaign?.enrolledIds?.length ?? 0)
+      : audience === "manual" && manualList
+        ? `${manualList.name} · ${c.prospectsCount(manualList.prospectIds.length)}`
         : null
 
   return (
@@ -1056,13 +1061,11 @@ function NewCampaignWizard({
                         }}
                       >
                         <Users className="size-4" />
-                        {(liveCampaign?.enrolledIds?.length ?? 0) > 0
-                          ? c.changeProspects
-                          : c.chooseProspects}
+                        {manualList ? c.changeProspects : c.chooseProspects}
                       </Button>
-                      {(liveCampaign?.enrolledIds?.length ?? 0) > 0 && (
+                      {manualList && (
                         <span className="text-muted-foreground text-sm">
-                          {c.enrolledCount(liveCampaign?.enrolledIds?.length ?? 0)}
+                          {c.prospectsCount(manualList.prospectIds.length)}
                         </span>
                       )}
                     </div>
@@ -1271,11 +1274,10 @@ function NewCampaignWizard({
       />
 
       {liveCampaign && (
-        <AddCampaignProspectsDialog
+        <AddCampaignAudienceDialog
           open={addProspectsOpen}
           onOpenChange={setAddProspectsOpen}
           campaign={liveCampaign}
-          enrolledIds={new Set(liveCampaign.enrolledIds ?? [])}
         />
       )}
     </>
