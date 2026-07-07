@@ -74,8 +74,10 @@ import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
+import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
-import { team, getRep } from "@/lib/team"
+import { getRep } from "@/lib/team"
 import { useConversations, conversationStore, useTasks } from "@/lib/store"
 import { draftReply } from "@/lib/mock-ai-reply"
 import {
@@ -145,7 +147,6 @@ const COPY = {
     assign: "Assign",
     assignedTo: (name: string) => `Assigned to ${name}`,
     unassign: "Unassign",
-    me: "Me",
     archive: "Archive",
     unarchive: "Move to inbox",
     delete: "Delete",
@@ -260,7 +261,6 @@ const COPY = {
     assign: "Asignar",
     assignedTo: (name: string) => `Asignado a ${name}`,
     unassign: "Quitar asignación",
-    me: "Yo",
     archive: "Archivar",
     unarchive: "Mover a la bandeja",
     delete: "Eliminar",
@@ -1259,44 +1259,20 @@ export default function Inbox() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={c.assign} title={c.assign}>
-                  <UserPlus className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>{c.assign}</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => { conversationStore.assign(effectiveActive.id, currentUser.id); toast.success(c.assignedToast(c.me)) }}>
-                  <Avatar className="size-5">
-                    <AvatarFallback style={{ backgroundColor: currentUser.avatarColor, color: "white" }} className="text-[9px]">
-                      {initials(currentUser.name.split(" ")[0], currentUser.name.split(" ")[1])}
-                    </AvatarFallback>
-                  </Avatar>
-                  {c.me}
-                  {effectiveActive.assigneeId === currentUser.id && <Check className="ml-auto size-4" />}
-                </DropdownMenuItem>
-                {team.map((m) => (
-                  <DropdownMenuItem key={m.id} onClick={() => { conversationStore.assign(effectiveActive.id, m.id); toast.success(c.assignedToast(m.name.split(" ")[0])) }}>
-                    <Avatar className="size-5">
-                      <AvatarFallback style={{ backgroundColor: m.avatarColor, color: "white" }} className="text-[9px]">
-                        {initials(m.name.split(" ")[0], m.name.split(" ")[1])}
-                      </AvatarFallback>
-                    </Avatar>
-                    {m.name}
-                    {effectiveActive.assigneeId === m.id && <Check className="ml-auto size-4" />}
-                  </DropdownMenuItem>
-                ))}
-                {effectiveActive.assigneeId && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => conversationStore.assign(effectiveActive.id, undefined)}>
-                      {c.unassign}
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AssigneePicker
+              variant="icon"
+              value={effectiveActive.assigneeId}
+              onChange={(id) => {
+                conversationStore.assign(effectiveActive.id, id)
+                if (id) {
+                  toast.success(
+                    c.assignedToast(resolveUser(id).name.split(" ")[0])
+                  )
+                }
+              }}
+              triggerAriaLabel={c.assign}
+              unassignLabel={c.unassign}
+            />
 
             <Button
               variant="outline"
