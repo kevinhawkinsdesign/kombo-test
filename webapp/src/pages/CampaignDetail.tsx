@@ -88,6 +88,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
 import { DataTable } from "@/components/common/DataTable"
+import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
+import { downloadCsv } from "@/lib/csv"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import {
   useColumnPrefs,
@@ -274,8 +278,10 @@ const COPY = {
     stepOf: (current: number, total: number) =>
       `Step ${current} of ${total}`,
     justAdded: "Just added",
-    removeProspectAria: (name: string) => `Remove ${name}`,
+    removeFromCampaignAction: "Remove from campaign",
     removedFromCampaign: "Removed from campaign",
+    removedFromCampaignCount: (n: number) => `${n} removed from campaign`,
+    exportedCsv: "Exported to CSV",
     noProspects: "No prospects yet — add some to get started.",
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
@@ -450,8 +456,10 @@ const COPY = {
     stepOf: (current: number, total: number) =>
       `Paso ${current} de ${total}`,
     justAdded: "Recién añadido",
-    removeProspectAria: (name: string) => `Eliminar a ${name}`,
+    removeFromCampaignAction: "Quitar de la campaña",
     removedFromCampaign: "Eliminado de la campaña",
+    removedFromCampaignCount: (n: number) => `${n} eliminados de la campaña`,
+    exportedCsv: "Exportado a CSV",
     noProspects: "Aún no hay prospectos — añade algunos para empezar.",
     noReplies: "Aún no hay respuestas.",
     viewInInbox: "Ver en la bandeja",
@@ -666,6 +674,12 @@ export default function CampaignDetail() {
     "campaign-prospects",
     PROSPECT_COL_DEFAULT_IDS
   )
+  // Bulk selection on the Prospects tab. Only manually-added rows are
+  // selectable — enrollment rows are driven by the attached list/sequence.
+  const [selectedRowIds, setSelectedRowIds] = React.useState<Set<string>>(
+    new Set()
+  )
+  const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
 
   if (!campaign) {
     return (
@@ -820,6 +834,50 @@ export default function CampaignDetail() {
       manual: true,
     })),
   ]
+
+  // Bulk selection spans the manually-added rows only; stale ids (already
+  // removed) drop out at compute time.
+  const selectableRows = prospectRows.filter((r) => r.manual)
+  const selectedRows = selectableRows.filter((r) => selectedRowIds.has(r.id))
+  const allRowsSelected =
+    selectableRows.length > 0 &&
+    selectableRows.every((r) => selectedRowIds.has(r.id))
+  const someRowsSelected =
+    !allRowsSelected && selectableRows.some((r) => selectedRowIds.has(r.id))
+  function toggleProspectRow(id: string) {
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAllProspectRows() {
+    setSelectedRowIds(
+      allRowsSelected ? new Set() : new Set(selectableRows.map((r) => r.id))
+    )
+  }
+  function removeSelectedProspects() {
+    selectedRows.forEach((r) => campaignStore.removeProspect(campaignId, r.id))
+    toast.success(c.removedFromCampaignCount(selectedRows.length))
+    setSelectedRowIds(new Set())
+  }
+  function exportSelectedProspects() {
+    downloadCsv(
+      "campaign-prospects.csv",
+      ["Name", "Title", "Company", "Step", "Status"],
+      selectedRows.map((r) => [
+        r.prospect ? `${r.prospect.firstName} ${r.prospect.lastName}` : r.id,
+        r.prospect?.title ?? "",
+        r.prospect?.company ?? "",
+        String(r.currentStep),
+        r.status,
+      ])
+    )
+    toast.success(c.exportedCsv)
+    setSelectedRowIds(new Set())
+  }
+  const selectedProspects = selectedRows.flatMap((r) => r.prospect ?? [])
   const prospectColumns: ColumnDef<CampaignProspectRow>[] = [
     {
       id: "prospect",
@@ -1802,26 +1860,57 @@ export default function CampaignDetail() {
                 rows={prospectRows}
                 rowKey={(r) => r.id}
                 locale={locale}
+                selection={{
+                  isSelected: (r) => selectedRowIds.has(r.id),
+                  toggle: (r) => toggleProspectRow(r.id),
+                  toggleAll: toggleAllProspectRows,
+                  allSelected: allRowsSelected,
+                  someSelected: someRowsSelected,
+                  isSelectable: (r) => r.manual,
+                }}
                 actions={(row) =>
-                  row.manual ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={c.removeProspectAria(
-                        row.prospect
-                          ? `${row.prospect.firstName} ${row.prospect.lastName}`
-                          : c.unknownProspect
-                      )}
-                      className="text-muted-foreground hover:text-destructive size-8"
-                      onClick={() => {
-                        campaignStore.removeProspect(campaign.id, row.id)
-                        toast.success(c.removedFromCampaign)
-                      }}
-                    >
-                      <X className="size-4" />
-                    </Button>
+                  row.prospect ? (
+                    <RecordActionsMenu
+                      kind="person"
+                      record={row.prospect}
+                      extra={
+                        row.manual
+                          ? {
+                              label: c.removeFromCampaignAction,
+                              icon: <X className="size-4" />,
+                              destructive: true,
+                              onClick: () => {
+                                campaignStore.removeProspect(
+                                  campaign.id,
+                                  row.id
+                                )
+                                toast.success(c.removedFromCampaign)
+                              },
+                            }
+                          : undefined
+                      }
+                    />
                   ) : null
                 }
+              />
+
+              <BulkActionsBar
+                count={selectedRows.length}
+                onClear={() => setSelectedRowIds(new Set())}
+                onExport={exportSelectedProspects}
+                onEnrich={() => setBulkEnrichOpen(true)}
+                extra={{
+                  label: c.removeFromCampaignAction,
+                  icon: <X className="size-4" />,
+                  destructive: true,
+                  onClick: removeSelectedProspects,
+                }}
+              />
+
+              <EnrichListDialog
+                open={bulkEnrichOpen}
+                onOpenChange={setBulkEnrichOpen}
+                prospects={selectedProspects}
               />
             </>
           ) : (

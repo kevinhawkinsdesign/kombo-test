@@ -54,9 +54,9 @@ export interface BulkExtraAction {
 
 /**
  * Floating action bar for multi-selected rows. Appears once a selection
- * exists. Every action except Export/Enrich/Clear is optional so each surface
- * shows only what applies there (e.g. companies don't enroll in campaigns;
- * search results don't re-add to a list they aren't in yet).
+ * exists. Every action except Export/Clear is optional so each surface shows
+ * only what applies there (e.g. companies don't enroll in campaigns; a list's
+ * own members don't re-add to it).
  */
 export function BulkActionsBar({
   count,
@@ -81,7 +81,7 @@ export function BulkActionsBar({
   onPerCompanyCapChange?: (v: number | null) => void
   onClear: () => void
   onExport: () => void
-  onEnrich: () => void
+  onEnrich?: () => void
   onAddToList?: () => void
   onAddToCampaign?: () => void
   onAddToCrm?: () => void
@@ -120,10 +120,12 @@ export function BulkActionsBar({
         <Download className="size-4" />
         {c.export}
       </Button>
-      <Button variant="outline" size="sm" onClick={onEnrich}>
-        <Layers className="size-4" />
-        {c.enrich}
-      </Button>
+      {onEnrich && (
+        <Button variant="outline" size="sm" onClick={onEnrich}>
+          <Layers className="size-4" />
+          {c.enrich}
+        </Button>
+      )}
       {onAddToList && (
         <Button variant="outline" size="sm" onClick={onAddToList}>
           <FolderPlus className="size-4" />
