@@ -92,7 +92,7 @@ export function normalizeDomain(raw: string): string {
 /** Parse a pasted block of URLs/domains (newline, comma, or space separated). */
 export function parseDomainList(raw: string): string[] {
   const domains = raw
-    .split(/[\n,]+/)
+    .split(/[\s,]+/)
     .map((s) => normalizeDomain(s))
     .filter(Boolean)
   return [...new Set(domains)]
