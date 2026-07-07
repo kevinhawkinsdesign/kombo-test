@@ -24,7 +24,7 @@ const COPY = {
     estimateCompanies: "Free to save · 0 credits",
     note: "Credits are only spent when you save — enrichment is charged separately.",
     cancel: "Cancel",
-    confirmPeople: (credits: number) => `Add & spend ≈ ${credits.toLocaleString()} credits`,
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} credits`,
     confirmCompanies: (n: number) => `Add ${n.toLocaleString()}`,
   },
   es: {
@@ -36,7 +36,7 @@ const COPY = {
     estimateCompanies: "Guardar es gratis · 0 créditos",
     note: "Los créditos solo se gastan al guardar — el enriquecimiento se cobra aparte.",
     cancel: "Cancelar",
-    confirmPeople: (credits: number) => `Añadir y gastar ≈ ${credits.toLocaleString()} créditos`,
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
     confirmCompanies: (n: number) => `Añadir ${n.toLocaleString()}`,
   },
 } as const

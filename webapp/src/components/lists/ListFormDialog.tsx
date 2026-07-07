@@ -184,7 +184,7 @@ export function ListFormDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!canSave}>
+          <Button variant="volt" onClick={handleSave} disabled={!canSave}>
             Save
           </Button>
         </DialogFooter>

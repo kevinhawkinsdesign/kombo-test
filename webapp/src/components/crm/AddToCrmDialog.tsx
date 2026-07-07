@@ -220,11 +220,35 @@ export function AddToCrmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <div className="text-muted-foreground text-xs font-medium">
-            Step {step + 1} of {STEP_COUNT}
-          </div>
           <DialogTitle>{STEP_TITLES[step]}</DialogTitle>
           <DialogDescription>{STEP_DESCRIPTIONS[step]}</DialogDescription>
+
+          {/* Stepper */}
+          <ol className="mt-3 flex items-center gap-1.5">
+            {Array.from({ length: STEP_COUNT }, (_, i) => (
+              <li key={i} className="flex flex-1 items-center gap-1.5">
+                <span
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
+                    i < step && "bg-primary text-primary-foreground",
+                    i === step && "border-primary text-primary border-2",
+                    i > step && "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {i < step ? <Check className="size-3" /> : i + 1}
+                </span>
+                <span
+                  className={cn(
+                    "hidden text-xs font-medium sm:inline",
+                    i === step ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {STEP_TITLES[i]}
+                </span>
+                {i < STEP_COUNT - 1 && <span className="bg-border h-px flex-1" />}
+              </li>
+            ))}
+          </ol>
         </DialogHeader>
 
         {step === 0 && (
@@ -387,11 +411,11 @@ export function AddToCrmDialog({
 
         <DialogFooter>
           {showBack && (
-            <Button variant="outline" onClick={goBack}>
+            <Button variant="ghost" onClick={goBack}>
               Back
             </Button>
           )}
-          <Button onClick={handlePrimary} disabled={primaryDisabled}>
+          <Button variant="volt" onClick={handlePrimary} disabled={primaryDisabled}>
             {primaryLabel}
           </Button>
         </DialogFooter>

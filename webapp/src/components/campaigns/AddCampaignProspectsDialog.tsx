@@ -59,7 +59,7 @@ type Mode = "db" | "ai" | "lookalike"
 const COPY = {
   en: {
     title: "Add prospects",
-    desc: (name: string) => `Find and enroll prospects into "${name}".`,
+    desc: (name: string) => `Find and add prospects to "${name}".`,
     modeDb: "Your database",
     modeAi: "AI search",
     modeLookalike: "Lookalikes",
@@ -74,10 +74,10 @@ const COPY = {
     allRegions: "All regions",
     noDb: "No prospects match — try AI search to source new leads.",
     noAi: "Run a prompt to generate a custom list of leads.",
-    aiNote: "AI-sourced leads are added to your workspace when enrolled.",
+    aiNote: "AI-sourced leads join your workspace once you add them here.",
     cancel: "Cancel",
-    add: (n: number) => (n > 0 ? `Enroll ${n}` : "Enroll"),
-    enrolled: (n: number) => `${n} ${n === 1 ? "prospect" : "prospects"} enrolled`,
+    add: (n: number) => (n > 0 ? `Add ${n}` : "Add"),
+    enrolled: (n: number) => `Added ${n} ${n === 1 ? "prospect" : "prospects"}`,
     selected: (n: number) => `${n} selected`,
     clear: "Clear",
     blacklistedSkipped: (n: number) =>
@@ -85,7 +85,7 @@ const COPY = {
   },
   es: {
     title: "Añadir prospectos",
-    desc: (name: string) => `Encuentra e inscribe prospectos en "${name}".`,
+    desc: (name: string) => `Encuentra y añade prospectos a "${name}".`,
     modeDb: "Tu base de datos",
     modeAi: "Búsqueda con IA",
     modeLookalike: "Similares",
@@ -100,10 +100,10 @@ const COPY = {
     allRegions: "Todas las regiones",
     noDb: "Ningún prospecto coincide — prueba la búsqueda con IA para conseguir nuevos leads.",
     noAi: "Lanza un prompt para generar una lista de leads a medida.",
-    aiNote: "Los leads encontrados por IA se añaden a tu espacio al inscribirlos.",
+    aiNote: "Los leads encontrados por IA se unen a tu espacio al añadirlos aquí.",
     cancel: "Cancelar",
-    add: (n: number) => (n > 0 ? `Inscribir ${n}` : "Inscribir"),
-    enrolled: (n: number) => `${n} ${n === 1 ? "prospecto inscrito" : "prospectos inscritos"}`,
+    add: (n: number) => (n > 0 ? `Añadir ${n}` : "Añadir"),
+    enrolled: (n: number) => `${n} ${n === 1 ? "prospecto añadido" : "prospectos añadidos"}`,
     selected: (n: number) => `${n} seleccionados`,
     clear: "Limpiar",
     blacklistedSkipped: (n: number) =>

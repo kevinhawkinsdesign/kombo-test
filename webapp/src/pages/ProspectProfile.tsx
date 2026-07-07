@@ -137,12 +137,11 @@ const COPY = {
     revealEmailTitle: "Reveal email?",
     revealPhoneTitle: "Reveal phone?",
     revealDesc: (cost: number, firstName: string, what: string) =>
-      `This will use ${cost} credit${cost > 1 ? "s" : ""} to reveal ${firstName}'s ${what}.`,
+      `${cost} credit${cost > 1 ? "s" : ""} to reveal ${firstName}'s ${what}.`,
     phoneNumber: "phone number",
     emailAddress: "email address",
     cancel: "Cancel",
-    useCredits: (cost: number) =>
-      `Use ${cost} credit${cost > 1 ? "s" : ""}`,
+    useCredits: (cost: number) => `${cost} credit${cost > 1 ? "s" : ""}`,
     emailRevealed: "Email revealed",
     phoneRevealed: "Phone revealed",
     enrichment: "Enrichment",
@@ -225,12 +224,11 @@ const COPY = {
     revealEmailTitle: "¿Revelar correo?",
     revealPhoneTitle: "¿Revelar teléfono?",
     revealDesc: (cost: number, firstName: string, what: string) =>
-      `Esto usará ${cost} crédito${cost > 1 ? "s" : ""} para revelar ${what} de ${firstName}.`,
+      `${cost} crédito${cost > 1 ? "s" : ""} para revelar ${what} de ${firstName}.`,
     phoneNumber: "el número de teléfono",
     emailAddress: "el correo electrónico",
     cancel: "Cancelar",
-    useCredits: (cost: number) =>
-      `Usar ${cost} crédito${cost > 1 ? "s" : ""}`,
+    useCredits: (cost: number) => `${cost} crédito${cost > 1 ? "s" : ""}`,
     emailRevealed: "Correo revelado",
     phoneRevealed: "Teléfono revelado",
     enrichment: "Enriquecimiento",

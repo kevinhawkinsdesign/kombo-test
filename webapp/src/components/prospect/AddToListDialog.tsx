@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -67,24 +68,16 @@ export function AddToListDialog({
         </div>
 
         {creating ? (
-          <div className="flex items-center gap-2">
-            <Input
-              autoFocus
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="New list name"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && newName.trim())
-                  handleAdd(newName.trim())
-              }}
-            />
-            <Button
-              disabled={!newName.trim()}
-              onClick={() => handleAdd(newName.trim())}
-            >
-              Create
-            </Button>
-          </div>
+          <Input
+            autoFocus
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="New list name"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && newName.trim())
+                handleAdd(newName.trim())
+            }}
+          />
         ) : (
           <Button
             variant="outline"
@@ -95,6 +88,21 @@ export function AddToListDialog({
             Create new list
           </Button>
         )}
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          {creating && (
+            <Button
+              variant="volt"
+              disabled={!newName.trim()}
+              onClick={() => handleAdd(newName.trim())}
+            >
+              Create
+            </Button>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
