@@ -234,6 +234,8 @@ const COPY = {
     attach: "Attach",
     noListsToAttach: "No lists available to attach yet.",
     summary: "Summary",
+    statsInactiveNote:
+      "Performance stats appear once this campaign is active.",
     sent: "Sent",
     opened: "Opened",
     replied: "Replied",
@@ -420,6 +422,8 @@ const COPY = {
     attach: "Vincular",
     noListsToAttach: "Aún no hay listas disponibles para vincular.",
     summary: "Resumen",
+    statsInactiveNote:
+      "Las estadísticas de rendimiento aparecen cuando la campaña está activa.",
     sent: "Enviados",
     opened: "Aperturas",
     replied: "Respuestas",
@@ -655,17 +659,6 @@ const POSITIVE_REPLIES = [
   "Thanks for reaching out. We've felt this pain. Let's set up 20 minutes.",
   "Good note. We're scaling the team right now so this is relevant. What does onboarding look like?",
 ]
-
-function Kpi({ label, value }: { label: string; value: string | number }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="text-2xl tabular-nums">{value}</CardTitle>
-      </CardHeader>
-    </Card>
-  )
-}
 
 function shortDay(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -1221,7 +1214,7 @@ export default function CampaignDetail() {
           </Button>
           {/* End is the destructive, irreversible opposite of Activate — only
               offered once the campaign has been started (active or inactive). */}
-          {(campaign.status === "active" || campaign.status === "paused") && (
+          {campaign.status === "active" && (
             <Button
               variant="outline"
               className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
@@ -1234,13 +1227,6 @@ export default function CampaignDetail() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Kpi label={c.enrolled} value={campaign.enrolled} />
-        <Kpi label={c.openRate} value={`${openRate}%`} />
-        <Kpi label={c.replyRate} value={`${replyRate}%`} />
-        <Kpi label={c.meetings} value={campaign.meetings} />
-      </div>
-
       <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList>
           <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
@@ -1251,6 +1237,74 @@ export default function CampaignDetail() {
 
         {/* Overview */}
         <TabsContent value="overview" className="mt-4 space-y-4">
+          {/* Merged at-a-glance stats — enrollment/funnel KPIs and the daily
+              sent/opened/replied/bounced totals used to live in two separate
+              places (a strip above the tabs, and a "Summary" card down here);
+              now it's one section. */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.summary}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {campaign.status === "active" ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {campaign.enrolled}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.enrolled}</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {totals.sent}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.sent}</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {totals.opened}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.opened}</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {openRate}%
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.openRate}</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {totals.replied}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.replied}</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {replyRate}%
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.replyRate}</p>
+                  </div>
+                  <div>
+                    <p className="text-destructive text-lg font-semibold tabular-nums">
+                      {totals.bounced}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.bounced}</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold tabular-nums">
+                      {campaign.meetings}
+                    </p>
+                    <p className="text-muted-foreground text-xs">{c.meetings}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  {c.statsInactiveNote}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           {!setupComplete && (
             <Card className="border-primary/30 bg-primary/[0.03]">
               <CardHeader>
@@ -1514,39 +1568,6 @@ export default function CampaignDetail() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.summary}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 gap-2">
-                <div>
-                  <p className="text-lg font-semibold tabular-nums">
-                    {totals.sent}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{c.sent}</p>
-                </div>
-                <div>
-                  <p className="text-lg font-semibold tabular-nums">
-                    {totals.opened}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{c.opened}</p>
-                </div>
-                <div>
-                  <p className="text-lg font-semibold tabular-nums">
-                    {totals.replied}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{c.replied}</p>
-                </div>
-                <div>
-                  <p className="text-destructive text-lg font-semibold tabular-nums">
-                    {totals.bounced}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{c.bounced}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Sequence */}
