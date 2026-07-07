@@ -20,9 +20,26 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
+import { useLocale } from "@/lib/locale"
 import { CRM_PROVIDERS } from "@/lib/mock-depth"
 import type { CrmProvider } from "@/lib/types"
 import { cn } from "@/lib/utils"
+
+// Localized copy for the assignment field (the rest of this dialog predates
+// the per-file COPY convention).
+const ASSIGN_COPY = {
+  en: {
+    assignTo: "Assign to",
+    assignToHint: "Owner of the new record in your CRM.",
+    crmDefaultOwner: "CRM default owner",
+  },
+  es: {
+    assignTo: "Asignar a",
+    assignToHint: "Propietario del nuevo registro en tu CRM.",
+    crmDefaultOwner: "Propietario por defecto del CRM",
+  },
+} as const
 
 interface AddToCrmDialogProps {
   open: boolean
@@ -127,12 +144,17 @@ export function AddToCrmDialog({
   recordName,
   fields,
 }: AddToCrmDialogProps) {
+  const { locale } = useLocale()
+  const ac = ASSIGN_COPY[locale]
   const [step, setStep] = React.useState(0)
   const [providerId, setProviderId] = React.useState(firstConnectedProviderId)
   const [mapping, setMapping] = React.useState<Record<string, string>>(() =>
     buildDefaultMapping(fields)
   )
   const [dupChoice, setDupChoice] = React.useState<DupChoice>(DEFAULT_DUP)
+  const [assigneeId, setAssigneeId] = React.useState<string | undefined>(
+    undefined
+  )
 
   // Reset the wizard whenever it transitions to open. Adjusting state during
   // render (the React-recommended pattern) avoids a cascading-render effect.
@@ -144,6 +166,7 @@ export function AddToCrmDialog({
       setProviderId(firstConnectedProviderId)
       setMapping(buildDefaultMapping(fields))
       setDupChoice(DEFAULT_DUP)
+      setAssigneeId(undefined)
     }
   }
 
@@ -252,6 +275,7 @@ export function AddToCrmDialog({
         </DialogHeader>
 
         {step === 0 && (
+          <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             {CRM_PROVIDERS.map((candidate) => {
               const isSelected = candidate.id === providerId
@@ -308,6 +332,17 @@ export function AddToCrmDialog({
                 </button>
               )
             })}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{ac.assignTo}</p>
+            <AssigneePicker
+              value={assigneeId}
+              onChange={setAssigneeId}
+              unassignedLabel={ac.crmDefaultOwner}
+            />
+            <p className="text-muted-foreground text-xs">{ac.assignToHint}</p>
+          </div>
           </div>
         )}
 

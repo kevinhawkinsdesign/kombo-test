@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { useLocale } from "@/lib/locale"
+import { prospectStore } from "@/lib/store"
 import { integrations } from "@/lib/mock-data"
 import {
   OBJECTS_FOR,
@@ -48,6 +50,9 @@ const COPY = {
     descReview: "Double-check before pushing to your CRM.",
     crm: "CRM",
     object: "Create as",
+    assignTo: "Assign to",
+    assignToHint: "Owner of the new record in your CRM.",
+    crmDefaultOwner: "CRM default owner",
     notConnected: "Not connected",
     creatingIn: (object: string, crm: string, kind: string) => (
       <>
@@ -81,6 +86,9 @@ const COPY = {
     descReview: "Revisa antes de enviar a tu CRM.",
     crm: "CRM",
     object: "Crear como",
+    assignTo: "Asignar a",
+    assignToHint: "Propietario del nuevo registro en tu CRM.",
+    crmDefaultOwner: "Propietario por defecto del CRM",
     notConnected: "No conectado",
     creatingIn: (object: string, crm: string, kind: string) => (
       <>
@@ -135,6 +143,9 @@ export function CrmExportDialog({
   const [overwrite, setOverwrite] = React.useState(false)
   const [dedupe, setDedupe] = React.useState(true)
   const [logActivity, setLogActivity] = React.useState(true)
+  const [assigneeId, setAssigneeId] = React.useState<string | undefined>(
+    undefined
+  )
 
   const crmTargets = targetFields(crm, object)
 
@@ -144,6 +155,7 @@ export function CrmExportDialog({
     const obj = OBJECTS_FOR[recordKind][0]
     setObject(obj)
     setMapping(defaultMapping(fields, targetFields(defaultCrm, obj)))
+    setAssigneeId(undefined)
   }
 
   // Reset the form whenever the dialog transitions to open — the house
@@ -166,6 +178,15 @@ export function CrmExportDialog({
   const mappedCount = Object.values(mapping).filter((v) => v !== SKIP).length
 
   function confirm() {
+    // Mirror the CRM assignment onto the Kombo record when it has no owner
+    // yet — the same never-overwrite rule lists use.
+    if (
+      assigneeId &&
+      recordKind === "person" &&
+      !(record as Prospect).ownerId
+    ) {
+      prospectStore.update(record.id, { ownerId: assigneeId })
+    }
     toast.success(c.pushed(crm))
     onOpenChange(false)
   }
@@ -256,6 +277,16 @@ export function CrmExportDialog({
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{c.assignTo}</p>
+              <AssigneePicker
+                value={assigneeId}
+                onChange={setAssigneeId}
+                unassignedLabel={c.crmDefaultOwner}
+              />
+              <p className="text-muted-foreground text-xs">{c.assignToHint}</p>
             </div>
           </div>
         )}
