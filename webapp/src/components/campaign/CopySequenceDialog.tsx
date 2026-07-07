@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Copy, Mail, MessageCircle, Phone } from "lucide-react"
+import { Copy, Mail, MessageCircle, Phone, Search } from "lucide-react"
 
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { useCampaigns, flattenCampaignSteps } from "@/lib/store"
 import { useSequenceTemplates } from "@/lib/sequence-templates"
@@ -30,6 +31,8 @@ const COPY = {
     emptyTemplates:
       "No sequence templates yet — save one from any campaign's Sequence tab.",
     stepCount: (n: number) => `${n} ${n === 1 ? "step" : "steps"}`,
+    search: "Search…",
+    noMatch: "Nothing matches your search.",
     cancel: "Cancel",
     copyCta: (n: number) => `Copy ${n} ${n === 1 ? "step" : "steps"}`,
     copyCtaEmpty: "Copy steps",
@@ -44,6 +47,8 @@ const COPY = {
     emptyTemplates:
       "Aún no hay plantillas de secuencia — guarda una desde la pestaña Secuencia de cualquier campaña.",
     stepCount: (n: number) => `${n} ${n === 1 ? "paso" : "pasos"}`,
+    search: "Buscar…",
+    noMatch: "Nada coincide con tu búsqueda.",
     cancel: "Cancelar",
     copyCta: (n: number) => `Copiar ${n} ${n === 1 ? "paso" : "pasos"}`,
     copyCtaEmpty: "Copiar pasos",
@@ -103,6 +108,7 @@ export function CopySequenceDialog({
 
   const [source, setSource] = React.useState<Source>("campaign")
   const [selectedId, setSelectedId] = React.useState<string | null>(null)
+  const [query, setQuery] = React.useState("")
 
   // Reset on open (house pattern — render-time check, never an effect).
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -111,16 +117,21 @@ export function CopySequenceDialog({
     if (open) {
       setSource("campaign")
       setSelectedId(null)
+      setQuery("")
     }
   }
 
   const sourceCampaigns = campaigns.filter(
     (cm) => cm.id !== currentCampaignId && cm.steps.length > 0
   )
-  const rows =
+  const allRows =
     source === "campaign"
       ? sourceCampaigns.map((cm) => ({ id: cm.id, name: cm.name, steps: cm.steps }))
       : templates.map((t) => ({ id: t.id, name: t.name, steps: t.steps }))
+  // Client-side filter — same trade-off as every other search-to-filter list
+  // in this app; a real backend would search/paginate server-side instead.
+  const q = query.trim().toLowerCase()
+  const rows = q ? allRows.filter((r) => r.name.toLowerCase().includes(q)) : allRows
 
   const selected = rows.find((r) => r.id === selectedId) ?? null
   const selectedCount = selected ? flattenCampaignSteps(selected.steps).length : 0
@@ -166,10 +177,26 @@ export function CopySequenceDialog({
           ))}
         </div>
 
+        {allRows.length > 0 && (
+          <div className="relative">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={c.search}
+              className="h-8 pl-7 text-sm"
+            />
+          </div>
+        )}
+
         <div className="max-h-72 space-y-1 overflow-y-auto">
-          {rows.length === 0 ? (
+          {allRows.length === 0 ? (
             <p className="text-muted-foreground py-6 text-center text-sm">
               {source === "campaign" ? c.emptyCampaigns : c.emptyTemplates}
+            </p>
+          ) : rows.length === 0 ? (
+            <p className="text-muted-foreground py-6 text-center text-sm">
+              {c.noMatch}
             </p>
           ) : (
             rows.map((row) => {

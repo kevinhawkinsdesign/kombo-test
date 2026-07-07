@@ -43,6 +43,7 @@ import {
   type PromptStepSeed,
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
+import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
 import { SAMPLE_DATA } from "@/pages/Templates"
@@ -1489,21 +1490,22 @@ export default function CampaignDetail() {
                 </div>
               ) : lists.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={attachListId} onValueChange={setAttachListId}>
-                    <SelectTrigger className="w-[240px]">
-                      <SelectValue placeholder={c.chooseList} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lists.map((l) => (
-                        <SelectItem key={l.id} value={l.id}>
-                          {l.name}
-                          {l.campaignId && l.campaignId !== campaign.id
-                            ? c.linkedElsewhere
-                            : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchCombobox
+                    value={attachListId}
+                    onChange={setAttachListId}
+                    options={lists.map((l) => ({
+                      value: l.id,
+                      label: l.name,
+                      sublabel:
+                        l.campaignId && l.campaignId !== campaign.id
+                          ? c.linkedElsewhere
+                          : undefined,
+                    }))}
+                    placeholder={c.chooseList}
+                    searchPlaceholder={c.chooseList}
+                    emptyText={c.noListsToAttach}
+                    className="w-[240px]"
+                  />
                   <Button
                     disabled={!attachListId}
                     onClick={() => {
