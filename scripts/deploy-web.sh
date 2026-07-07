@@ -15,6 +15,11 @@ mkdir -p ../app/assets
 cp -r dist/assets/. ../app/assets/
 cp dist/index.html ../app/index.html
 
+# Copy any other public/ passthrough files Vite emitted at the dist root
+# (favicon, static SVG sprites, etc.) alongside index.html — everything
+# except assets/ and index.html itself, already handled above.
+find dist -maxdepth 1 -type f ! -name index.html -exec cp {} ../app/ \;
+
 # Record the current JS bundle hash so the app can auto-refresh when a newer
 # deploy is available (see the version check in index.html).
 BUNDLE_HASH="$(grep -oE 'index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1 | sed -E 's/index-(.*)\.js/\1/')"
