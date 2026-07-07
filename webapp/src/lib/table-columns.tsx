@@ -31,7 +31,7 @@ import { formatMoney as money, initials, prospectSource } from "@/lib/format"
 import { getRep } from "@/lib/team"
 import type { Locale } from "@/lib/locale"
 import type { Account, AccountTier, Prospect } from "@/lib/types"
-import type { AiColumnDef } from "@/lib/ai-columns"
+import { aiColumnStore, type AiColumnDef } from "@/lib/ai-columns"
 
 export type Loc = Record<Locale, string>
 function L(en: string, es: string): Loc {
@@ -641,6 +641,14 @@ const AI_TEXT_POOL = [
 export function aiColumnToDef<T extends { id: string }>(
   col: AiColumnDef
 ): ColumnDef<T> {
+  // The value shown for a row: a hand edit always wins; otherwise custom
+  // columns start empty and AI columns derive a mock value.
+  const textValue = (rowId: string): string => {
+    const edited = col.values?.[rowId]
+    if (edited !== undefined) return edited
+    if (col.kind === "custom") return ""
+    return pickFrom(rowId, col.id, AI_TEXT_POOL)
+  }
   return {
     id: col.id,
     label: L(col.label, col.label),
@@ -649,8 +657,22 @@ export function aiColumnToDef<T extends { id: string }>(
     render: (row, locale) => {
       if (col.output === "score") return scoreChip(numFrom(row.id, col.id, 30, 99))
       if (col.output === "yesno") return yesNo(hash(row.id + col.id) % 5 < 3, locale)
-      return mut(pickFrom(row.id, col.id, AI_TEXT_POOL))
+      const v = textValue(row.id)
+      return v ? mut(v) : <span className="text-muted-foreground/50">—</span>
     },
+    // Text columns are hand-editable in edit mode — the value is the user's
+    // personal copy, stored on the column (not the record).
+    ...(col.output === "text"
+      ? {
+          edit: (row: T) => (
+            <Input
+              value={textValue(row.id)}
+              onChange={(e) => aiColumnStore.setValue(col.id, row.id, e.target.value)}
+              className="h-8"
+            />
+          ),
+        }
+      : {}),
   }
 }
 

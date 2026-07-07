@@ -7,6 +7,9 @@ import * as React from "react"
 
 export type AiColumnOutput = "text" | "score" | "yesno"
 export type AiColumnEntity = "people" | "company"
+// "ai" columns generate a value per row from the prompt; "custom" columns
+// start empty and the user fills values by hand (their personal copy).
+export type AiColumnKind = "ai" | "custom"
 
 export interface AiColumnDef {
   id: string
@@ -14,6 +17,11 @@ export interface AiColumnDef {
   label: string
   prompt: string
   output: AiColumnOutput
+  // Undefined reads as "ai" so persisted columns stay valid.
+  kind?: AiColumnKind
+  // Per-row values — the whole column for "custom" kinds, and hand edits
+  // that override the generated value for "ai" kinds.
+  values?: Record<string, string>
 }
 
 const KEY = "kombo_ai_columns_v1"
@@ -58,6 +66,21 @@ export const aiColumnStore = {
   },
   remove(id: string): void {
     columns = columns.filter((c) => c.id !== id)
+    emit()
+  },
+  // Rename or retune an existing column.
+  update(
+    id: string,
+    patch: Partial<Pick<AiColumnDef, "label" | "prompt" | "output">>
+  ): void {
+    columns = columns.map((c) => (c.id === id ? { ...c, ...patch } : c))
+    emit()
+  },
+  // Write one row's value (custom columns, or a hand edit over an AI value).
+  setValue(id: string, rowId: string, value: string): void {
+    columns = columns.map((c) =>
+      c.id === id ? { ...c, values: { ...c.values, [rowId]: value } } : c
+    )
     emit()
   },
 }
