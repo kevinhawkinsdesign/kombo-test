@@ -18,7 +18,6 @@ import {
   CircleDashed,
   ScanSearch,
   ArrowDownUp,
-  MoreHorizontal,
   Upload,
   SlidersHorizontal,
   Database,
@@ -136,15 +135,15 @@ const COPY = {
     idleTitle: "Write a prompt to search",
     idleDesc:
       "Describe who you're looking for above, or open filters to build a query by hand — matching prospects and companies runs a live search.",
-    companyListBtn: "Company list",
-    companyListDialogTitle: "Search a list of company URLs",
-    companyListDialogDesc:
-      "Paste company websites or domains — one per line, or comma-separated. We'll find prospects at these companies; refine further with location and other filters.",
-    companyListPlaceholder: "acme.com\nhttps://example.com\nwww.another-co.io",
-    companyListApply: "Search",
-    companyListDetected: (n: number) =>
-      `${n} ${n === 1 ? "company" : "companies"} detected`,
-    companyListEmpty: "Paste at least one company URL or domain.",
+    urlsTab: "URLs",
+    urlsIdleBtn: "Search by URLs",
+    urlsPlaceholder: "acme.com, example.com — paste or type company URLs/domains",
+    urlsAddMore: "Add another…",
+    urlsClearAll: "Clear all",
+    urlsRemove: (d: string) => `Remove ${d}`,
+    urlsHint:
+      "Separate with commas or spaces. We'll find prospects at these companies — refine with the usual filters.",
+    urlsFieldAria: "Company URLs or domains",
     domainListScoped: (n: number) =>
       `Scoped to ${n} ${n === 1 ? "company" : "companies"} from your list`,
     domainListPrompt: (n: number) =>
@@ -298,7 +297,6 @@ const COPY = {
     addCustom: (v: string) => `Add "${v}"`,
     askAiFilter: (v: string) => `Ask AI: "${v}"`,
     viewAllFilters: "View all filters",
-    more: "More actions",
     backToFilterSearch: "Back to search",
     filtersTitle: "Filters",
     filtersDesc: (n: number) =>
@@ -425,15 +423,15 @@ const COPY = {
     idleTitle: "Escribe un prompt para buscar",
     idleDesc:
       "Describe a quién buscas arriba, o abre los filtros para crear una consulta a mano — buscar prospectos y empresas ejecuta una búsqueda en vivo.",
-    companyListBtn: "Lista de empresas",
-    companyListDialogTitle: "Buscar una lista de URLs de empresas",
-    companyListDialogDesc:
-      "Pega sitios web o dominios de empresas — uno por línea, o separados por comas. Encontraremos prospectos en estas empresas; refina con ubicación y otros filtros.",
-    companyListPlaceholder: "acme.com\nhttps://ejemplo.com\nwww.otra-empresa.io",
-    companyListApply: "Buscar",
-    companyListDetected: (n: number) =>
-      `${n} ${n === 1 ? "empresa detectada" : "empresas detectadas"}`,
-    companyListEmpty: "Pega al menos una URL o dominio de empresa.",
+    urlsTab: "URLs",
+    urlsIdleBtn: "Buscar por URLs",
+    urlsPlaceholder: "acme.com, ejemplo.com — pega o escribe URLs/dominios de empresas",
+    urlsAddMore: "Añade otra…",
+    urlsClearAll: "Borrar todo",
+    urlsRemove: (d: string) => `Quitar ${d}`,
+    urlsHint:
+      "Separa con comas o espacios. Encontraremos prospectos en esas empresas — refina con los filtros de siempre.",
+    urlsFieldAria: "URLs o dominios de empresas",
     domainListScoped: (n: number) =>
       `Limitado a ${n} ${n === 1 ? "empresa" : "empresas"} de tu lista`,
     domainListPrompt: (n: number) =>
@@ -587,7 +585,6 @@ const COPY = {
     addCustom: (v: string) => `Añadir "${v}"`,
     askAiFilter: (v: string) => `Pregunta a la IA: "${v}"`,
     viewAllFilters: "Ver todos los filtros",
-    more: "Más acciones",
     backToFilterSearch: "Volver a la búsqueda",
     filtersTitle: "Filtros",
     filtersDesc: (n: number) =>
@@ -925,7 +922,11 @@ export default function Search() {
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [lookalikeOpen, setLookalikeOpen] = React.useState(incomingOpenLookalike)
-  const [domainListOpen, setDomainListOpen] = React.useState(false)
+  // URLs mode: the third entity tab. The prompt box becomes a pill field of
+  // company URLs/domains; searching scopes results to those companies.
+  const [urlsMode, setUrlsMode] = React.useState(false)
+  const [urlPills, setUrlPills] = React.useState<string[]>([])
+  const [urlInput, setUrlInput] = React.useState("")
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
   const [saveName, setSaveName] = React.useState("")
   const [filtersOpen, setFiltersOpen] = React.useState(false)
@@ -1217,11 +1218,53 @@ export default function Search() {
     setEntity("people")
     setQuery((q) => ({ ...q, companyDomains: domains }))
     setSelected(new Set())
-    setDomainListOpen(false)
     const prompt = c.domainListPrompt(domains.length)
     setLastPrompt(prompt)
     setInput(prompt)
   }
+
+  // Enter URLs mode (the third entity tab), seeding pills from an already-
+  // applied domain scope so "edit" flows land with the list in place.
+  function enterUrlsMode() {
+    setUrlsMode(true)
+    setSeed(null)
+    setSelected(new Set())
+    if (urlPills.length === 0 && query.companyDomains.length > 0) {
+      setUrlPills(query.companyDomains)
+    }
+  }
+
+  // Turn separators (comma / space / newline — typed or pasted) into pills.
+  function handleUrlInputChange(v: string) {
+    if (!/[\s,]/.test(v)) {
+      setUrlInput(v)
+      return
+    }
+    const endsWithSep = /[\s,]$/.test(v)
+    const parts = v.split(/[\s,]+/).filter(Boolean)
+    const remainder = endsWithSep ? "" : (parts.pop() ?? "")
+    const found = parseDomainList(parts.join(","))
+    if (found.length > 0) {
+      setUrlPills((prev) => [...new Set([...prev, ...found])])
+    }
+    setUrlInput(remainder)
+  }
+
+  function removeUrlPill(domain: string) {
+    setUrlPills((prev) => prev.filter((d) => d !== domain))
+  }
+
+  // Search with the pills plus whatever is still in the input.
+  function runUrlSearch() {
+    const domains = [...new Set([...urlPills, ...parseDomainList(urlInput)])]
+    if (domains.length === 0) return
+    setUrlPills(domains)
+    setUrlInput("")
+    applyDomainList(domains)
+  }
+
+  const urlSearchReady =
+    urlPills.length > 0 || parseDomainList(urlInput).length > 0
 
   function saveSearch(name: string) {
     savedSearchStore.create({
@@ -1475,11 +1518,12 @@ export default function Search() {
       <>
       <PageHeading title={c.title} description={c.description} />
       <div className="space-y-3">
-        {/* Prospect Search tabs — People vs Companies (always shown). */}
+        {/* Prospect Search tabs — People, Companies, or a pasted URL list. */}
         <div className="bg-muted inline-flex rounded-md p-0.5">
           <EntityTab
-            active={entity === "people"}
+            active={!urlsMode && entity === "people"}
             onClick={() => {
+              setUrlsMode(false)
               setEntity("people")
               setSeed(null)
               setSelected(new Set())
@@ -1488,14 +1532,21 @@ export default function Search() {
             label={c.people}
           />
           <EntityTab
-            active={entity === "companies"}
+            active={!urlsMode && entity === "companies"}
             onClick={() => {
+              setUrlsMode(false)
               setEntity("companies")
               setSeed(null)
               setSelected(new Set())
             }}
             icon={Building2}
             label={c.companies}
+          />
+          <EntityTab
+            active={urlsMode}
+            onClick={enterUrlsMode}
+            icon={Link2}
+            label={c.urlsTab}
           />
         </div>
 
@@ -1505,9 +1556,75 @@ export default function Search() {
             className="flex items-end gap-2"
             onSubmit={(e) => {
               e.preventDefault()
-              runPrompt(input)
+              if (urlsMode) runUrlSearch()
+              else runPrompt(input)
             }}
           >
+            {urlsMode ? (
+              <div className="flex-1 space-y-1">
+                <div
+                  className="border-input focus-within:ring-ring/50 flex min-h-12 flex-wrap items-center gap-1.5 rounded-md border bg-transparent p-2 focus-within:ring-2"
+                  role="group"
+                  aria-label={c.urlsFieldAria}
+                >
+                  <Link2 className="text-muted-foreground ml-1 size-4 shrink-0" />
+                  {urlPills.map((d) => (
+                    <span
+                      key={d}
+                      className="bg-muted inline-flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2.5 text-xs font-medium"
+                    >
+                      {d}
+                      <button
+                        type="button"
+                        aria-label={c.urlsRemove(d)}
+                        onClick={() => removeUrlPill(d)}
+                        className="text-muted-foreground hover:bg-background hover:text-foreground flex size-4 items-center justify-center rounded-full transition-colors"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    id="search-urls-input"
+                    autoFocus
+                    value={urlInput}
+                    onChange={(e) => handleUrlInputChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        runUrlSearch()
+                      }
+                      if (
+                        e.key === "Backspace" &&
+                        urlInput === "" &&
+                        urlPills.length > 0
+                      ) {
+                        removeUrlPill(urlPills[urlPills.length - 1])
+                      }
+                    }}
+                    placeholder={
+                      urlPills.length === 0 ? c.urlsPlaceholder : c.urlsAddMore
+                    }
+                    aria-label={c.urlsFieldAria}
+                    className="placeholder:text-muted-foreground min-w-32 flex-1 bg-transparent text-sm outline-none"
+                  />
+                  {(urlPills.length > 0 || urlInput.length > 0) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUrlPills([])
+                        setUrlInput("")
+                        document.getElementById("search-urls-input")?.focus()
+                      }}
+                      className="text-muted-foreground hover:text-foreground ml-auto shrink-0 text-xs font-medium"
+                    >
+                      {c.urlsClearAll}
+                    </button>
+                  )}
+                </div>
+                <p className="text-muted-foreground px-1 text-xs">{c.urlsHint}</p>
+              </div>
+            ) : (
             <div className="relative flex-1">
               <SearchIcon className="text-muted-foreground pointer-events-none absolute top-3 left-3 size-4" />
               <Textarea
@@ -1544,10 +1661,15 @@ export default function Search() {
                 </button>
               )}
             </div>
+            )}
             <Button
               type="submit"
               variant="volt"
-              disabled={input.trim().length < 2 || thinking}
+              disabled={
+                urlsMode
+                  ? !urlSearchReady || thinking
+                  : input.trim().length < 2 || thinking
+              }
             >
               {thinking ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -1566,7 +1688,7 @@ export default function Search() {
             c={c}
             savedSearches={savedSearches}
             onOpenFilters={() => setFiltersRequested(true)}
-            onOpenCompanyList={() => setDomainListOpen(true)}
+            onUrlsMode={enterUrlsMode}
             onLoadSearch={loadSearch}
             onRemoveSearch={(id) => {
               savedSearchStore.remove(id)
@@ -1665,65 +1787,28 @@ export default function Search() {
                 <span className="hidden sm:inline">{c.columnsBtn}</span>
               </Button>
 
-              {/* Secondary actions: inline when there's room, collapsed into an
-                  overflow menu only when the toolbar runs out of space. */}
+              {/* Secondary actions stay visible at every width — icon-only on
+                  the narrowest screens, never collapsed behind an overflow
+                  menu. */}
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden lg:inline-flex"
                 onClick={() => setLookalikeOpen(true)}
+                aria-label={c.lookalike}
               >
                 <ScanSearch className="size-4" />
-                {c.lookalike}
+                <span className="hidden sm:inline">{c.lookalike}</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden lg:inline-flex"
-                onClick={() => setDomainListOpen(true)}
-              >
-                <Link2 className="size-4" />
-                {c.companyListBtn}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden lg:inline-flex"
                 onClick={openSaveDialog}
                 disabled={shownCount === 0}
+                aria-label={c.saveThis}
               >
                 <Bookmark className="size-4" />
-                {c.saveThis}
+                <span className="hidden sm:inline">{c.saveThis}</span>
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label={c.more}
-                    className="lg:hidden"
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuItem onClick={() => setLookalikeOpen(true)}>
-                    <ScanSearch className="size-4" />
-                    {c.lookalike}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setDomainListOpen(true)}>
-                    <Link2 className="size-4" />
-                    {c.companyListBtn}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={openSaveDialog}
-                    disabled={shownCount === 0}
-                  >
-                    <Bookmark className="size-4" />
-                    {c.saveThis}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
           </Card>
@@ -1757,16 +1842,18 @@ export default function Search() {
               </span>
               <button
                 type="button"
-                onClick={() => setDomainListOpen(true)}
+                onClick={enterUrlsMode}
                 className="text-primary text-xs font-medium hover:underline"
               >
                 {c.editList}
               </button>
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
                   setQuery((q) => ({ ...q, companyDomains: [] }))
-                }
+                  setUrlPills([])
+                  setUrlInput("")
+                }}
                 className="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-xs"
               >
                 <X className="size-3" />
@@ -1982,14 +2069,6 @@ export default function Search() {
         c={c}
         defaultEntity={entity}
         onConfirm={applyLookalike}
-      />
-
-      <CompanyListDialog
-        open={domainListOpen}
-        onOpenChange={setDomainListOpen}
-        c={c}
-        initialDomains={query.companyDomains}
-        onApply={applyDomainList}
       />
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
@@ -2289,70 +2368,6 @@ function LookalikeDialog({
 
 // Paste a list of company URLs/domains — resolves to prospects at those
 // companies (people search) or the matching companies themselves.
-function CompanyListDialog({
-  open,
-  onOpenChange,
-  c,
-  initialDomains,
-  onApply,
-}: {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-  c: Copy
-  initialDomains: string[]
-  onApply: (domains: string[]) => void
-}) {
-  const [text, setText] = React.useState("")
-  const [wasOpen, setWasOpen] = React.useState(false)
-
-  if (open && !wasOpen) {
-    setWasOpen(true)
-    setText(initialDomains.join("\n"))
-  }
-  if (!open && wasOpen) setWasOpen(false)
-
-  const domains = React.useMemo(() => parseDomainList(text), [text])
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Link2 className="text-primary size-5" />
-            {c.companyListDialogTitle}
-          </DialogTitle>
-          <DialogDescription>{c.companyListDialogDesc}</DialogDescription>
-        </DialogHeader>
-        <Textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={c.companyListPlaceholder}
-          rows={8}
-          className="font-mono text-xs"
-        />
-        <p className="text-muted-foreground text-xs">
-          {domains.length > 0
-            ? c.companyListDetected(domains.length)
-            : c.companyListEmpty}
-        </p>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {c.cancel}
-          </Button>
-          <Button
-            variant="volt"
-            disabled={domains.length === 0}
-            onClick={() => onApply(domains)}
-          >
-            <SearchIcon className="size-4" />
-            {c.companyListApply}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 function SeedGroup({
   label,
   seeds,
@@ -3119,14 +3134,14 @@ function SearchIdleState({
   c,
   savedSearches,
   onOpenFilters,
-  onOpenCompanyList,
+  onUrlsMode,
   onLoadSearch,
   onRemoveSearch,
 }: {
   c: Copy
   savedSearches: SavedAiSearch[]
   onOpenFilters: () => void
-  onOpenCompanyList: () => void
+  onUrlsMode: () => void
   onLoadSearch: (id: string) => void
   onRemoveSearch: (id: string) => void
 }) {
@@ -3142,9 +3157,9 @@ function SearchIdleState({
           <SlidersHorizontal className="size-4" />
           {c.searchWithFilters}
         </Button>
-        <Button variant="outline" size="sm" onClick={onOpenCompanyList}>
+        <Button variant="outline" size="sm" onClick={onUrlsMode}>
           <Link2 className="size-4" />
-          {c.companyListBtn}
+          {c.urlsIdleBtn}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
