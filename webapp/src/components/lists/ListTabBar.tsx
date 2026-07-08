@@ -76,16 +76,16 @@ export function ListTabBar({ currentId }: { currentId: string }) {
     : closedLists
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-1">
+    <div className="mb-4 flex items-end gap-0.5 overflow-x-auto border-b">
       {tabs.map((t) => {
         const active = t.id === currentId
         return (
           <div
             key={t.id}
             className={cn(
-              "group flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm transition-colors",
+              "group relative -mb-px flex shrink-0 items-center gap-1.5 rounded-t-lg border px-3 py-2 text-sm transition-colors",
               active
-                ? "border-primary/30 bg-primary/5 text-foreground font-medium"
+                ? "border-border border-b-background bg-background text-foreground font-medium"
                 : "border-transparent text-muted-foreground hover:bg-muted/60"
             )}
           >
@@ -119,7 +119,7 @@ export function ListTabBar({ currentId }: { currentId: string }) {
           <button
             type="button"
             aria-label={c.addTab}
-            className="text-muted-foreground hover:bg-muted/60 hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
+            className="text-muted-foreground hover:bg-muted/60 hover:text-foreground mb-1 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
           >
             <Plus className="size-4" />
           </button>
