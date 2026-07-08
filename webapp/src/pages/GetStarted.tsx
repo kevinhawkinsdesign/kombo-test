@@ -421,11 +421,19 @@ export default function GetStarted() {
                 <React.Fragment key={task.id}>
                   {i > 0 && <Separator />}
                   <div className="flex items-center gap-4 py-3">
-                    {done ? (
-                      <CheckCircle2 className="text-chart-1 size-5 shrink-0" />
-                    ) : (
-                      <Circle className="text-muted-foreground size-5 shrink-0" />
-                    )}
+                    <button
+                      type="button"
+                      aria-label={c.markDone}
+                      aria-pressed={done}
+                      onClick={() => setup.toggle(task.id)}
+                      className="shrink-0 rounded-full"
+                    >
+                      {done ? (
+                        <CheckCircle2 className="text-chart-1 size-5" />
+                      ) : (
+                        <Circle className="text-muted-foreground hover:text-foreground size-5 transition-colors" />
+                      )}
+                    </button>
                     <Icon className="text-muted-foreground size-5 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p

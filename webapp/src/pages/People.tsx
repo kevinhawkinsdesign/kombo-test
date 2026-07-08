@@ -77,7 +77,7 @@ const COPY = {
   en: {
     title: "Prospects",
     description:
-      "Everyone you've found — across searches, imports, lists & campaigns. Select to enrich, export, or add to a list or campaign.",
+      "Everyone you've found — across searches, imports & lists. Select to enrich, export, or add to a list.",
     exportedToast: (n: number) => `Exported ${n} to CSV`,
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "prospect" : "prospects"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
@@ -90,7 +90,7 @@ const COPY = {
     introPoints: [
       "Sort and filter by score, status & seniority",
       "Switch between table and card views",
-      "Add a prospect to a list or campaign",
+      "Add a prospect to a list",
       "Export the filtered set to CSV",
     ],
     searchPlaceholder: "Search by name, title, company, or email…",
@@ -119,7 +119,7 @@ const COPY = {
   es: {
     title: "Prospectos",
     description:
-      "Todos los prospectos que has encontrado — de búsquedas, importaciones, listas y campañas. Selecciona para enriquecer, exportar o añadir a una lista o campaña.",
+      "Todos los prospectos que has encontrado — de búsquedas, importaciones y listas. Selecciona para enriquecer, exportar o añadir a una lista.",
     exportedToast: (n: number) => `Exportadas ${n} a CSV`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "prospecto" : "prospectos"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionados…`,
@@ -132,7 +132,7 @@ const COPY = {
     introPoints: [
       "Ordena y filtra por puntuación, estado y seniority",
       "Cambia entre vista de tabla y tarjetas",
-      "Añade un prospecto a una lista o campaña",
+      "Añade un prospecto a una lista",
       "Exporta el conjunto filtrado a CSV",
     ],
     searchPlaceholder: "Busca por nombre, cargo, empresa o correo…",
