@@ -36,6 +36,27 @@ export function relativeTime(iso: string): string {
   })
 }
 
+// Same shape as relativeTime, but for timestamps that haven't happened yet
+// (a task due later, a queued reply, an upcoming sequence step).
+export function futureRelativeTime(iso: string): string {
+  const then = new Date(iso).getTime()
+  const now = Date.now()
+  const diff = Math.max(0, then - now)
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return "any moment now"
+  if (mins < 60) return `in ${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `in ${hours}h`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `in ${days}d`
+  const weeks = Math.floor(days / 7)
+  if (weeks < 5) return `in ${weeks}w`
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  })
+}
+
 export type DueBucket = "overdue" | "today" | "upcoming"
 
 /** Bucket a due date relative to today, for cadence-style task grouping. */

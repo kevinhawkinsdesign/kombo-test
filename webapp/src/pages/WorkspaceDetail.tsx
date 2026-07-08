@@ -14,6 +14,7 @@ import {
   Bookmark,
   X,
   Phone,
+  ListTodo,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -208,6 +209,7 @@ const STEP_ICON: Record<StepChannel, React.ComponentType<{ className?: string }>
   linkedin_message: LinkedinIcon,
   linkedin_dm: LinkedinIcon,
   linkedin_inmail: LinkedinIcon,
+  manual: ListTodo,
 }
 const STEP_LABEL: Record<StepChannel, string> = {
   email: "Email",
@@ -216,6 +218,7 @@ const STEP_LABEL: Record<StepChannel, string> = {
   linkedin_message: "LinkedIn",
   linkedin_dm: "LinkedIn DM",
   linkedin_inmail: "LinkedIn InMail",
+  manual: "Manual task",
 }
 
 export default function WorkspaceDetail() {

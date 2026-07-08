@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import { toast } from "sonner"
+import kaiUrl from "@/assets/kai-pleased.png"
 import {
   Sparkles,
   Search as SearchIcon,
@@ -1879,11 +1880,7 @@ export default function Search() {
         {/* Matching runs a real (costly) query, so nothing renders — no
             filter sidebar, no results — until a search actually starts. */}
         {!searchStarted && (
-          <SearchIdleState
-            c={c}
-            onOpenFilters={() => setFiltersRequested(true)}
-            onUrlsMode={enterUrlsMode}
-          />
+          <SearchIdleState c={c} />
         )}
 
         {searchStarted && (
@@ -3413,32 +3410,12 @@ function SavedSearchesControl({
 // query, so the page holds off rendering the filter sidebar or any results.
 // Saved searches are a separate entry point: reopen one directly, no need to
 // run anything first.
-function SearchIdleState({
-  c,
-  onOpenFilters,
-  onUrlsMode,
-}: {
-  c: Copy
-  onOpenFilters: () => void
-  onUrlsMode: () => void
-}) {
+function SearchIdleState({ c }: { c: Copy }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-20 text-center">
-      <span className="bg-muted flex size-12 items-center justify-center rounded-full">
-        <SearchIcon className="text-muted-foreground size-5" />
-      </span>
+      <img src={kaiUrl} alt="" className="size-16" />
       <p className="text-lg font-semibold">{c.idleTitle}</p>
       <p className="text-muted-foreground max-w-md text-sm">{c.idleDesc}</p>
-      <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
-        <Button variant="outline" size="sm" onClick={onOpenFilters}>
-          <SlidersHorizontal className="size-4" />
-          {c.searchWithFilters}
-        </Button>
-        <Button variant="outline" size="sm" onClick={onUrlsMode}>
-          <Link2 className="size-4" />
-          {c.urlsIdleBtn}
-        </Button>
-      </div>
     </div>
   )
 }

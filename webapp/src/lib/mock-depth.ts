@@ -37,7 +37,7 @@ export const campaignEnrollments: Record<string, CampaignEnrollment[]> = {
     { prospectId: "p_1", currentStep: 3, status: "replied", lastTouch: "2026-06-16T14:20:00Z" },
     { prospectId: "p_3", currentStep: 2, status: "active", lastTouch: "2026-06-15T10:00:00Z" },
     { prospectId: "p_6", currentStep: 3, status: "active", lastTouch: "2026-06-16T09:00:00Z" },
-    { prospectId: "p_9", currentStep: 1, status: "active", lastTouch: "2026-06-17T08:00:00Z" },
+    { prospectId: "p_9", currentStep: 1, status: "active", lastTouch: "2026-07-07T08:00:00Z" },
     { prospectId: "p_12", currentStep: 3, status: "completed", lastTouch: "2026-06-14T12:00:00Z" },
     { prospectId: "p_4", currentStep: 2, status: "bounced", lastTouch: "2026-06-13T16:00:00Z" },
   ],

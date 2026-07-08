@@ -441,6 +441,19 @@ export const tasks: Task[] = [
     done: false,
     priority: "low",
   },
+  // Assigned straight to the current user (not a rep) — seeds the Inbox's
+  // "My Tasks" folder and the conversation timeline's future-item preview.
+  {
+    id: "task_7",
+    title: "Prep talking points for Priya Nair's demo",
+    type: "follow_up",
+    prospectId: "p_5",
+    ownerId: "u_1",
+    assignedById: "kai",
+    dueDate: "2026-07-15T14:00:00Z",
+    done: false,
+    priority: "high",
+  },
 ]
 
 export const notifications: NotificationItem[] = [

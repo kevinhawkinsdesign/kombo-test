@@ -78,7 +78,8 @@ import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { getRep } from "@/lib/team"
-import { useConversations, conversationStore, useTasks } from "@/lib/store"
+import { useConversations, conversationStore, useTasks, useCampaigns } from "@/lib/store"
+import { campaignEnrollments } from "@/lib/mock-depth"
 import { draftReply } from "@/lib/mock-ai-reply"
 import {
   translate,
@@ -86,7 +87,7 @@ import {
   LANG_FLAG,
   LANG_LABEL,
 } from "@/lib/mock-translate"
-import { relativeTime, initials } from "@/lib/format"
+import { relativeTime, futureRelativeTime, initials } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
 import type {
@@ -98,6 +99,7 @@ import type {
   ConvStatus,
   Prospect,
   SequenceChannelType,
+  StepChannel,
   Task,
   TaskEventState,
 } from "@/lib/types"
@@ -110,8 +112,10 @@ const COPY = {
     drafts: "AI Drafts",
     unread: "Unread",
     needs_reply: "Need to Reply",
+    myTasks: "My Tasks",
     scheduled: "Scheduled",
     sent: "Sent",
+    archivedFolder: "Archived",
     tags: "Outcomes",
     search: "Search prospects, companies…",
     filters: "Filters",
@@ -224,8 +228,10 @@ const COPY = {
     drafts: "Borradores IA",
     unread: "Sin leer",
     needs_reply: "Por responder",
+    myTasks: "Mis tareas",
     scheduled: "Programados",
     sent: "Enviados",
+    archivedFolder: "Archivados",
     tags: "Resultados",
     search: "Buscar prospectos, empresas…",
     filters: "Filtros",
@@ -336,15 +342,35 @@ const COPY = {
 
 type Copy = (typeof COPY)[Locale]
 
-type Folder = "inbox" | "drafts" | "unread" | "needs_reply" | "scheduled" | "sent"
+type Folder =
+  | "inbox"
+  | "drafts"
+  | "unread"
+  | "needs_reply"
+  | "my_tasks"
+  | "scheduled"
+  | "sent"
+  | "archived"
 
-const FOLDERS: { id: Folder; key: Folder; icon: typeof InboxIcon }[] = [
+type FolderLabelKey =
+  | "inbox"
+  | "drafts"
+  | "unread"
+  | "needs_reply"
+  | "myTasks"
+  | "scheduled"
+  | "sent"
+  | "archivedFolder"
+
+const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "inbox", key: "inbox", icon: InboxIcon },
   { id: "drafts", key: "drafts", icon: Wand2 },
   { id: "unread", key: "unread", icon: MailOpen },
   { id: "needs_reply", key: "needs_reply", icon: Reply },
+  { id: "my_tasks", key: "myTasks", icon: ListTodo },
   { id: "scheduled", key: "scheduled", icon: CalendarClock },
   { id: "sent", key: "sent", icon: Send },
+  { id: "archived", key: "archivedFolder", icon: Archive },
 ]
 
 // Outcomes are a fixed list (not user-customizable tags) encoding the funnel:
@@ -426,6 +452,8 @@ const EVENT_META: Record<
   tag: { en: "Auto-tagged as", es: "Etiquetado como", icon: Tag },
   step: { en: "Sequence step sent", es: "Paso de secuencia enviado", icon: Send },
   task: { en: "Task update", es: "Actualización de tarea", icon: ListTodo },
+  scheduled_reply: { en: "Reply scheduled", es: "Respuesta programada", icon: CalendarClock },
+  next_step: { en: "Next", es: "Siguiente", icon: Clock },
 }
 
 // Campaign sequence steps — same channel vocabulary as the sequence builder
@@ -441,6 +469,18 @@ const STEP_META: Record<
   call: { en: "Call logged", es: "Llamada registrada", icon: Phone },
   ai_call: { en: "AI call placed", es: "Llamada de IA realizada", icon: Bot },
   wait: { en: "Sequence step", es: "Paso de secuencia", icon: Clock },
+}
+
+// Labels the future "next sequence step" preview by the campaign step's own
+// channel vocabulary (the Campaign model, not the sequence-builder prototype's).
+const NEXT_STEP_CHANNEL_LABEL: Record<StepChannel, { en: string; es: string }> = {
+  email: { en: "Email", es: "Correo" },
+  whatsapp: { en: "WhatsApp", es: "WhatsApp" },
+  call: { en: "Phone call", es: "Llamada" },
+  linkedin_message: { en: "LinkedIn message", es: "Mensaje de LinkedIn" },
+  linkedin_dm: { en: "LinkedIn DM", es: "Mensaje directo de LinkedIn" },
+  linkedin_inmail: { en: "LinkedIn InMail", es: "InMail de LinkedIn" },
+  manual: { en: "Manual task", es: "Tarea manual" },
 }
 
 const TASK_STATE_META: Record<
@@ -477,6 +517,9 @@ function isSnoozed(conv: Conversation): boolean {
 }
 function isScheduled(conv: Conversation): boolean {
   return Boolean(conv.scheduledAt && new Date(conv.scheduledAt).getTime() > Date.now())
+}
+function isFutureTimestamp(iso: string): boolean {
+  return new Date(iso).getTime() > Date.now()
 }
 function awaitingReply(conv: Conversation): boolean {
   return lastMessage(conv)?.direction === "inbound"
@@ -563,6 +606,7 @@ export default function Inbox() {
   const c = COPY[locale]
   const conversations = useConversations()
   const tasks = useTasks()
+  const campaigns = useCampaigns()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
   const [activeId, setActiveId] = React.useState<string | undefined>()
@@ -577,8 +621,21 @@ export default function Inbox() {
   // Focus mode: collapse the folder rail + conversation list to give the open
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
+  const [outcomesOpen, setOutcomesOpen] = React.useState(true)
 
   const visible = conversations.filter((conv) => !conv.archived)
+
+  // Prospects with an open task assigned to the current user — backs the
+  // "My Tasks" folder below.
+  const myOpenTaskProspectIds = React.useMemo(() => {
+    const set = new Set<string>()
+    tasks.forEach((t) => {
+      if (t.ownerId === currentUser.id && !t.done && !t.ignored && t.prospectId) {
+        set.add(t.prospectId)
+      }
+    })
+    return set
+  }, [tasks])
 
   const folderCount = React.useCallback(
     (id: Folder): number => {
@@ -591,13 +648,17 @@ export default function Inbox() {
           return visible.filter((x) => x.unread > 0).length
         case "needs_reply":
           return visible.filter(needsReply).length
+        case "my_tasks":
+          return visible.filter((x) => myOpenTaskProspectIds.has(x.prospectId)).length
         case "scheduled":
           return visible.filter(isScheduled).length
         case "sent":
           return visible.filter((x) => lastMessage(x)?.direction === "outbound").length
+        case "archived":
+          return conversations.filter((x) => x.archived).length
       }
     },
-    [visible]
+    [visible, conversations, myOpenTaskProspectIds]
   )
 
   const tagCounts = React.useMemo(() => {
@@ -630,7 +691,13 @@ export default function Inbox() {
   )
 
   const list = React.useMemo(() => {
-    const inView = visible.filter((conv) => {
+    // The Archived folder is the one view that reaches past `visible` (which
+    // excludes archived threads everywhere else) to show exactly what's archived.
+    const source =
+      view.kind === "folder" && view.id === "archived"
+        ? conversations.filter((x) => x.archived)
+        : visible
+    const inView = source.filter((conv) => {
       if (view.kind === "tag") return conv.status === view.id
       switch (view.id) {
         case "inbox":
@@ -641,10 +708,14 @@ export default function Inbox() {
           return conv.unread > 0
         case "needs_reply":
           return needsReply(conv)
+        case "my_tasks":
+          return myOpenTaskProspectIds.has(conv.prospectId)
         case "scheduled":
           return isScheduled(conv)
         case "sent":
           return lastMessage(conv)?.direction === "outbound"
+        case "archived":
+          return true
       }
     })
     const filtered = inView.filter((conv) => {
@@ -655,7 +726,15 @@ export default function Inbox() {
     return filtered.sort(
       (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     )
-  }, [visible, view, channelFilter, unreadOnly, matchesSearch])
+  }, [
+    visible,
+    conversations,
+    view,
+    channelFilter,
+    unreadOnly,
+    matchesSearch,
+    myOpenTaskProspectIds,
+  ])
 
   const active = conversations.find((conv) => conv.id === activeId)
   const activeInList = active && list.some((x) => x.id === active.id)
@@ -705,6 +784,11 @@ export default function Inbox() {
     toast.success(c.archived)
     setSelectedIds(new Set())
   }
+  function bulkUnarchive() {
+    selectedIds.forEach((id) => conversationStore.unarchive(id))
+    setSelectedIds(new Set())
+  }
+  const viewingArchived = view.kind === "folder" && view.id === "archived"
 
   function openConversation(id: string) {
     setActiveId(id)
@@ -744,6 +828,40 @@ export default function Inbox() {
         timestamp: t.dueDate,
         taskState: taskEventState(t),
       }))
+
+    // Anything that hasn't happened yet — a queued reply, or this prospect's
+    // next not-yet-fired sequence step — reads as a future row in the same
+    // timeline instead of living only in a header banner or another page.
+    const futureEvents: ConvEvent[] = []
+    if (isScheduled(effectiveActive) && effectiveActive.scheduledAt) {
+      futureEvents.push({
+        id: `scheduled_${effectiveActive.id}`,
+        kind: "scheduled_reply",
+        label: "",
+        timestamp: effectiveActive.scheduledAt,
+      })
+    }
+    for (const campaign of campaigns) {
+      const enrollment = (campaignEnrollments[campaign.id] ?? []).find(
+        (e) => e.prospectId === effectiveActive.prospectId && e.status === "active"
+      )
+      if (!enrollment) continue
+      const nextStep = campaign.steps[enrollment.currentStep]
+      if (!nextStep) break
+      const dueAt = new Date(enrollment.lastTouch)
+      dueAt.setDate(dueAt.getDate() + nextStep.delayDays)
+      if (isFutureTimestamp(dueAt.toISOString())) {
+        const chLabel = NEXT_STEP_CHANNEL_LABEL[nextStep.channel]
+        futureEvents.push({
+          id: `nextstep_${campaign.id}_${nextStep.id}`,
+          kind: "next_step",
+          label: locale === "es" ? chLabel.es : chLabel.en,
+          timestamp: dueAt.toISOString(),
+        })
+      }
+      break // one active enrollment is enough for a preview
+    }
+
     const items: (
       | { type: "msg"; at: number; msg: Conversation["messages"][number] }
       | { type: "event"; at: number; ev: ConvEvent }
@@ -753,14 +871,14 @@ export default function Inbox() {
         at: new Date(msg.timestamp).getTime(),
         msg,
       })),
-      ...[...(effectiveActive.events ?? []), ...taskEvents].map((ev) => ({
+      ...[...(effectiveActive.events ?? []), ...taskEvents, ...futureEvents].map((ev) => ({
         type: "event" as const,
         at: new Date(ev.timestamp).getTime(),
         ev,
       })),
     ]
     return items.sort((a, b) => a.at - b.at)
-  }, [effectiveActive, tasks])
+  }, [effectiveActive, tasks, campaigns, locale])
 
   return (
     <div className="flex h-[calc(100svh-4rem)]">
@@ -808,38 +926,51 @@ export default function Inbox() {
         </nav>
 
         <div className="px-3 pb-4">
-          <p className="text-muted-foreground px-2.5 pt-2 pb-1.5 text-[11px] font-semibold tracking-wide uppercase">
+          <button
+            type="button"
+            onClick={() => setOutcomesOpen((v) => !v)}
+            aria-expanded={outcomesOpen}
+            className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between gap-1 rounded-md px-2.5 pt-2 pb-1.5 text-left text-[11px] font-semibold tracking-wide uppercase transition-colors"
+          >
             {c.tags}
-          </p>
-          <div className="space-y-0.5">
-            {STATUS_ORDER.map((s) => {
-              const m = STATUS_META[s]
-              const activeTag = view.kind === "tag" && view.id === s
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setView({ kind: "tag", id: s })}
-                  className={cn(
-                    "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-                    activeTag
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                  )}
-                >
-                  <span className={cn("size-2 shrink-0 rounded-full", m.dot)} />
-                  <span className="flex-1 truncate text-left">
-                    {locale === "es" ? m.es : m.en}
-                  </span>
-                  {tagCounts[s] > 0 && (
-                    <span className="text-muted-foreground text-[11px] tabular-nums">
-                      {tagCounts[s]}
+            <ChevronDown
+              className={cn(
+                "size-3.5 shrink-0 transition-transform",
+                !outcomesOpen && "-rotate-90"
+              )}
+            />
+          </button>
+          {outcomesOpen && (
+            <div className="space-y-0.5">
+              {STATUS_ORDER.map((s) => {
+                const m = STATUS_META[s]
+                const activeTag = view.kind === "tag" && view.id === s
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setView({ kind: "tag", id: s })}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                      activeTag
+                        ? "bg-muted font-medium text-foreground"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    )}
+                  >
+                    <span className={cn("size-2 shrink-0 rounded-full", m.dot)} />
+                    <span className="flex-1 truncate text-left">
+                      {locale === "es" ? m.es : m.en}
                     </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+                    {tagCounts[s] > 0 && (
+                      <span className="text-muted-foreground text-[11px] tabular-nums">
+                        {tagCounts[s]}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </aside>
 
@@ -1117,9 +1248,17 @@ export default function Inbox() {
               <Mail className="size-4" />
               {c.markUnread}
             </Button>
-            <Button variant="outline" size="sm" onClick={bulkArchive}>
-              <Archive className="size-4" />
-              {c.archive}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={viewingArchived ? bulkUnarchive : bulkArchive}
+            >
+              {viewingArchived ? (
+                <ArchiveRestore className="size-4" />
+              ) : (
+                <Archive className="size-4" />
+              )}
+              {viewingArchived ? c.unarchive : c.archive}
             </Button>
             <Button
               variant="ghost"
@@ -1349,19 +1488,31 @@ export default function Inbox() {
                 const label =
                   ev.kind === "tag"
                     ? c.autoTaggedAs
-                    : ev.kind === "task"
+                    : ev.kind === "task" || ev.kind === "next_step"
                       ? locale === "es"
                         ? `${meta.es}: ${ev.label}`
                         : `${meta.en}: ${ev.label}`
                       : locale === "es"
                         ? meta.es
                         : meta.en
+                // A row is "future" the instant its own timestamp hasn't
+                // happened yet — an open task due later, a queued reply, or
+                // an upcoming sequence step all read the same way here.
+                const isFuture = isFutureTimestamp(ev.timestamp)
                 return (
                   <div
                     key={ev.id}
-                    className="text-muted-foreground flex items-center gap-2 text-xs"
+                    className={cn(
+                      "flex items-center gap-2 text-xs",
+                      isFuture ? "text-muted-foreground/70 italic" : "text-muted-foreground"
+                    )}
                   >
-                    <span className="bg-muted flex size-5 shrink-0 items-center justify-center rounded-full">
+                    <span
+                      className={cn(
+                        "flex size-5 shrink-0 items-center justify-center rounded-full",
+                        isFuture ? "border border-dashed bg-transparent" : "bg-muted"
+                      )}
+                    >
                       <Icon className="size-3" />
                     </span>
                     <span>
@@ -1373,7 +1524,9 @@ export default function Inbox() {
                       )}
                       {ev.detail && <span className="text-foreground/70"> {ev.detail}</span>}
                     </span>
-                    <span className="ml-auto shrink-0">{relativeTime(ev.timestamp)}</span>
+                    <span className="ml-auto shrink-0">
+                      {isFuture ? futureRelativeTime(ev.timestamp) : relativeTime(ev.timestamp)}
+                    </span>
                   </div>
                 )
               }

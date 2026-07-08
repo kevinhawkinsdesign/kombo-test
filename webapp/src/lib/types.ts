@@ -198,6 +198,8 @@ export type ConvEventKind =
   | "tag"
   | "step"
   | "task"
+  | "scheduled_reply" // a queued reply not yet sent — synthesized, not stored
+  | "next_step" // the prospect's next not-yet-fired sequence step — synthesized, not stored
 
 export type TaskEventState = "todo" | "reminder" | "done"
 
@@ -239,6 +241,7 @@ export type StepChannel =
   | "linkedin_message"
   | "linkedin_dm"
   | "linkedin_inmail"
+  | "manual" // channel-less offline activity (a visit, a handwritten note, etc.)
 
 export interface CampaignStep {
   id: string

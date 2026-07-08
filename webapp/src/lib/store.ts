@@ -499,8 +499,32 @@ export const campaignStore = {
           delayDays: c.steps.length === 0 ? 0 : 3,
           subject: "",
           body: "",
+          // The "manual" channel is inherently a hand-done task — no
+          // automated send exists for it, so it's always a manual task.
+          ...(channel === "manual" ? { isManualTask: true } : {}),
         }
         return { ...c, steps: [...c.steps, step] }
+      }),
+    })
+  },
+  // Same as addStep, but splices the new step at a specific position in the
+  // top-level sequence instead of always appending — the diagram view's
+  // between-step "+" controls insert here rather than only at the end.
+  insertStep(campaignId: string, at: number, channel: StepChannel): void {
+    setState({
+      campaigns: state.campaigns.map((c) => {
+        if (c.id !== campaignId) return c
+        const step: CampaignStep = {
+          id: uid("s"),
+          channel,
+          delayDays: at === 0 ? 0 : 3,
+          subject: "",
+          body: "",
+          ...(channel === "manual" ? { isManualTask: true } : {}),
+        }
+        const steps = [...c.steps]
+        steps.splice(at, 0, step)
+        return { ...c, steps }
       }),
     })
   },
@@ -643,6 +667,7 @@ export const campaignStore = {
                     delayDays: 3,
                     subject: "",
                     body: "",
+                    ...(channel === "manual" ? { isManualTask: true } : {}),
                   }
                   const key = track === "reply" ? "replySteps" : "noReplySteps"
                   return {
