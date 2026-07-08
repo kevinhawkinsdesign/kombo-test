@@ -34,6 +34,8 @@ import {
   Copy,
   Bookmark,
   Lightbulb,
+  UserSearch,
+  Building2,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -117,6 +119,7 @@ import {
 } from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignAudienceDialog } from "@/components/campaigns/AddCampaignAudienceDialog"
+import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { CampaignTabBar } from "@/components/campaigns/CampaignTabBar"
 import { campaignTabsStore } from "@/lib/campaign-tabs"
 import { getProspect, currentUser } from "@/lib/mock-data"
@@ -124,6 +127,7 @@ import { team } from "@/lib/team"
 import {
   useCampaigns,
   useLists,
+  useAccounts,
   campaignStore,
   listStore,
   findCampaignStep,
@@ -206,7 +210,7 @@ const COPY = {
     senderSaved: "Sending settings updated",
     alreadyMessagedSkipped: "Already-messaged recipients are skipped",
     edit: "Edit",
-    addProspects: "Add prospects",
+    addProspects: "Add prospects or companies",
     columns: "Columns",
     paused: (name: string) => `${name} paused`,
     activated: (name: string) => `${name} activated`,
@@ -217,7 +221,6 @@ const COPY = {
     scheduleDesc: "Choose when this campaign should begin sending.",
     scheduleWhen: "Start sending at",
     scheduleConfirm: "Schedule start",
-    scheduledBadge: "Scheduled",
     startsAt: (d: string) => `Starts ${d}`,
     startNow: "Start now",
     cancelSchedule: "Cancel schedule",
@@ -234,10 +237,12 @@ const COPY = {
     dailyPerformance: "Daily performance",
     dailyPerformanceDesc: "Sent, opened and replied per day.",
     noDailyData: "No daily data yet for this campaign.",
-    audience: "Prospects",
+    audience: "Audience",
     audienceDesc:
-      "Link a single prospect list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
+      "Link a single prospect or company list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
     prospectsCount: (count: number) => `${count} prospects`,
+    companiesCount: (count: number) => `${count} companies`,
+    findContacts: "Find contacts",
     dynamicSuffix: " · dynamic",
     detached: (name: string) => `Unlinked ${name}`,
     detach: "Unlink",
@@ -320,7 +325,7 @@ const COPY = {
     removedFromCampaign: "Removed from campaign",
     removedFromCampaignCount: (n: number) => `${n} removed from campaign`,
     exportedCsv: "Exported to CSV",
-    noProspects: "No prospects yet — add some to get started.",
+    noProspects: "No prospects or companies yet — add some to get started.",
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
     editCampaign: "Edit campaign",
@@ -403,7 +408,7 @@ const COPY = {
     senderSaved: "Ajustes de envío actualizados",
     alreadyMessagedSkipped: "Se omiten los destinatarios ya contactados",
     edit: "Editar",
-    addProspects: "Añadir prospectos",
+    addProspects: "Añadir prospectos o empresas",
     columns: "Columnas",
     paused: (name: string) => `${name} en pausa`,
     activated: (name: string) => `${name} activada`,
@@ -414,7 +419,6 @@ const COPY = {
     scheduleDesc: "Elige cuándo debe empezar a enviar esta campaña.",
     scheduleWhen: "Empezar a enviar el",
     scheduleConfirm: "Programar inicio",
-    scheduledBadge: "Programada",
     startsAt: (d: string) => `Empieza el ${d}`,
     startNow: "Iniciar ahora",
     cancelSchedule: "Cancelar programación",
@@ -431,10 +435,12 @@ const COPY = {
     dailyPerformance: "Rendimiento diario",
     dailyPerformanceDesc: "Enviados, abiertos y respondidos por día.",
     noDailyData: "Aún no hay datos diarios para esta campaña.",
-    audience: "Prospectos",
+    audience: "Audiencia",
     audienceDesc:
-      "Vincula una única lista de prospectos para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
+      "Vincula una única lista de prospectos o empresas para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
     prospectsCount: (count: number) => `${count} prospectos`,
+    companiesCount: (count: number) => `${count} empresas`,
+    findContacts: "Buscar contactos",
     dynamicSuffix: " · dinámica",
     detached: (name: string) => `${name} desvinculada`,
     detach: "Desvincular",
@@ -517,7 +523,8 @@ const COPY = {
     removedFromCampaign: "Eliminado de la campaña",
     removedFromCampaignCount: (n: number) => `${n} eliminados de la campaña`,
     exportedCsv: "Exportado a CSV",
-    noProspects: "Aún no hay prospectos — añade algunos para empezar.",
+    noProspects:
+      "Aún no hay prospectos ni empresas — añade algunos para empezar.",
     noReplies: "Aún no hay respuestas.",
     viewInInbox: "Ver en la bandeja",
     editCampaign: "Editar campaña",
@@ -548,16 +555,6 @@ const COPY = {
     alertSent: "Alerta enviada",
   },
 } as const
-
-const STATUS_VARIANT: Record<
-  CampaignStatus,
-  "default" | "secondary" | "outline" | "success"
-> = {
-  active: "success",
-  paused: "secondary",
-  draft: "outline",
-  completed: "default",
-}
 
 // 8:00 AM local time, `daysAhead` days from today.
 function morningISO(daysAhead: number): string {
@@ -704,10 +701,12 @@ export default function CampaignDetail() {
   const { id } = useParams()
   const campaigns = useCampaigns()
   const lists = useLists()
+  const accounts = useAccounts()
   const campaign = campaigns.find((item) => item.id === id)
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [attachListId, setAttachListId] = React.useState("")
   const [tab, setTab] = React.useState("overview")
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
@@ -875,6 +874,12 @@ export default function CampaignDetail() {
   const attachedList = campaign.listId
     ? lists.find((l) => l.id === campaign.listId)
     : undefined
+  const attachedCompanyNames =
+    attachedList?.kind === "company"
+      ? accounts
+          .filter((a) => (attachedList.accountIds ?? []).includes(a.id))
+          .map((a) => a.name)
+      : []
 
   // Manually-enrolled prospects, de-duped against the mock enrollments so a
   // prospect already shown in the enrollment table isn't listed twice.
@@ -1145,8 +1150,6 @@ export default function CampaignDetail() {
 
   return (
     <Page>
-      <CampaignTabBar currentId={campaign.id} />
-
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/campaigns">
           <ArrowLeft className="size-4" />
@@ -1154,23 +1157,10 @@ export default function CampaignDetail() {
         </Link>
       </Button>
 
+      <CampaignTabBar currentId={campaign.id} />
+
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {campaign.name}
-            </h1>
-            {scheduled ? (
-              <Badge variant="secondary" className="gap-1">
-                <CalendarClock className="size-3" />
-                {c.scheduledBadge}
-              </Badge>
-            ) : (
-              <Badge variant={STATUS_VARIANT[campaign.status]}>
-                {c.statusLabel[campaign.status]}
-              </Badge>
-            )}
-          </div>
           {scheduled && campaign.scheduledAt && (
             <p className="text-primary flex items-center gap-1.5 text-sm font-medium">
               <CalendarClock className="size-3.5" />
@@ -1535,7 +1525,9 @@ export default function CampaignDetail() {
                         {attachedList.name}
                       </Link>
                       <p className="text-muted-foreground text-xs">
-                        {c.prospectsCount(attachedList.prospectIds.length)}
+                        {attachedList.kind === "company"
+                          ? c.companiesCount((attachedList.accountIds ?? []).length)
+                          : c.prospectsCount(attachedList.prospectIds.length)}
                         {attachedList.dynamic ? c.dynamicSuffix : ""}
                       </p>
                     </div>
@@ -2074,6 +2066,34 @@ export default function CampaignDetail() {
 
         {/* Prospects */}
         <TabsContent value="prospects" className="mt-4 space-y-3">
+          {attachedList?.kind === "company" && (
+            <Card>
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+                <div className="flex items-center gap-3">
+                  <Building2 className="text-muted-foreground size-5 shrink-0" />
+                  <div>
+                    <Link
+                      to={`/lists/${attachedList.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {attachedList.name}
+                    </Link>
+                    <p className="text-muted-foreground text-xs">
+                      {c.companiesCount((attachedList.accountIds ?? []).length)}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFindContactsOpen(true)}
+                >
+                  <UserSearch className="size-4" />
+                  {c.findContacts}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           {hasProspects ? (
             <>
               <div className="flex justify-end">
@@ -2229,6 +2249,15 @@ export default function CampaignDetail() {
         onOpenChange={setAddOpen}
         campaign={campaign}
       />
+
+      {attachedList?.kind === "company" && (
+        <AddRecordsDialog
+          open={findContactsOpen}
+          onOpenChange={setFindContactsOpen}
+          kind="contact"
+          scopeCompanies={attachedCompanyNames}
+        />
+      )}
 
       <TemplatePickerDialog
         open={templatePickerOpen}

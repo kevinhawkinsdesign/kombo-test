@@ -1,7 +1,8 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Plus, Search, X } from "lucide-react"
+import { CalendarClock, Plus, Search, X } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -10,10 +11,11 @@ import {
 } from "@/components/ui/popover"
 import { useLocale } from "@/lib/locale"
 import { useCampaigns } from "@/lib/store"
+import { isCampaignScheduled } from "@/lib/format"
 import { campaignTabsStore, useOpenCampaignIds } from "@/lib/campaign-tabs"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
 import { cn } from "@/lib/utils"
-import type { Campaign } from "@/lib/types"
+import type { Campaign, CampaignStatus } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -22,6 +24,13 @@ const COPY = {
     searchToOpen: "Search campaigns to open…",
     noOtherCampaigns: "No other campaigns to open.",
     createNewCampaign: "Create new campaign",
+    statusLabel: {
+      active: "Active",
+      paused: "Inactive",
+      draft: "Draft",
+      completed: "Ended",
+    } as Record<CampaignStatus, string>,
+    scheduledBadge: "Scheduled",
   },
   es: {
     closeTab: (name: string) => `Cerrar ${name}`,
@@ -29,8 +38,27 @@ const COPY = {
     searchToOpen: "Buscar campañas para abrir…",
     noOtherCampaigns: "No hay más campañas para abrir.",
     createNewCampaign: "Crear nueva campaña",
+    statusLabel: {
+      active: "Activa",
+      paused: "Inactiva",
+      draft: "Borrador",
+      completed: "Finalizada",
+    } as Record<CampaignStatus, string>,
+    scheduledBadge: "Programada",
   },
 } as const
+
+// The active tab doubles as the page header (see CampaignDetail, which
+// renders no separate <h1>), so it — and only it — carries the status badge.
+const STATUS_VARIANT: Record<
+  CampaignStatus,
+  "default" | "secondary" | "outline" | "success"
+> = {
+  active: "success",
+  paused: "secondary",
+  draft: "outline",
+  completed: "default",
+}
 
 // Chrome/Lemlist-style tab strip for campaigns the user has open at once —
 // mirrors ListTabBar's shape and store pattern (lib/campaign-tabs.ts).
@@ -79,15 +107,26 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
           <div
             key={t.id}
             className={cn(
-              "group relative -mb-px flex shrink-0 items-center gap-1.5 rounded-t-lg border px-3 py-2 text-sm transition-colors",
+              "group relative -mb-px flex shrink-0 items-center gap-2 rounded-t-lg border transition-colors",
               active
-                ? "border-border border-b-background bg-background text-foreground font-medium"
-                : "border-transparent text-muted-foreground hover:bg-muted/60"
+                ? "border-border border-b-background bg-background text-foreground px-4 py-2.5 text-base font-semibold"
+                : "border-transparent px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
             )}
           >
-            <Link to={`/campaigns/${t.id}`} className="max-w-48 min-w-0 truncate">
+            <Link to={`/campaigns/${t.id}`} className="max-w-64 min-w-0 truncate">
               {t.name}
             </Link>
+            {active &&
+              (isCampaignScheduled(t) ? (
+                <Badge variant="secondary" className="shrink-0 gap-1">
+                  <CalendarClock className="size-3" />
+                  {c.scheduledBadge}
+                </Badge>
+              ) : (
+                <Badge variant={STATUS_VARIANT[t.status]} className="shrink-0">
+                  {c.statusLabel[t.status]}
+                </Badge>
+              ))}
             <button
               type="button"
               aria-label={c.closeTab(t.name)}

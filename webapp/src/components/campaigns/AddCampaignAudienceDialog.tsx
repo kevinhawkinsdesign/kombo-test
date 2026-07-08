@@ -1,6 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Search, Link2 } from "lucide-react"
+import { Search, Link2, Users, Building2 } from "lucide-react"
 
 import {
   Dialog,
@@ -14,14 +14,17 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
+import { Segmented } from "@/components/common/Segmented"
 import { useLists, listStore, campaignStore } from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import type { Campaign } from "@/lib/types"
 
+type Entity = "people" | "company"
+
 const COPY = {
   en: {
-    title: "Add prospects",
-    desc: (name: string) => `Add prospects to "${name}".`,
+    title: "Add prospects or companies",
+    desc: (name: string) => `Add prospects or companies to "${name}".`,
     attachExisting: "Link an existing list",
     pickList: "Choose a list to link…",
     attach: "Link",
@@ -30,12 +33,15 @@ const COPY = {
     searchNewDesc:
       "Run a search or import — the results become a new list linked to this campaign.",
     linkedElsewhere: " (linked elsewhere)",
+    companyList: " (companies)",
     attached: (name: string) => `Linked ${name}`,
     cancel: "Cancel",
+    contact: "Prospects",
+    company: "Companies",
   },
   es: {
-    title: "Añadir prospectos",
-    desc: (name: string) => `Añade prospectos a "${name}".`,
+    title: "Añadir prospectos o empresas",
+    desc: (name: string) => `Añade prospectos o empresas a "${name}".`,
     attachExisting: "Vincular una lista existente",
     pickList: "Elige una lista para vincular…",
     attach: "Vincular",
@@ -44,8 +50,11 @@ const COPY = {
     searchNewDesc:
       "Lanza una búsqueda o importación — los resultados se convierten en una lista nueva vinculada a esta campaña.",
     linkedElsewhere: " (vinculada en otro lugar)",
+    companyList: " (empresas)",
     attached: (name: string) => `${name} vinculada`,
     cancel: "Cancelar",
+    contact: "Prospectos",
+    company: "Empresas",
   },
 } as const
 
@@ -72,6 +81,7 @@ export function AddCampaignAudienceDialog({
   const [searchOpen, setSearchOpen] = React.useState(false)
   const [targetListId, setTargetListId] = React.useState<string | null>(null)
   const [pickListId, setPickListId] = React.useState("")
+  const [entity, setEntity] = React.useState<Entity>("people")
 
   const attachedList = lists.find((l) => l.id === campaign.listId)
 
@@ -82,6 +92,7 @@ export function AddCampaignAudienceDialog({
     setWasOpen(open)
     if (open) {
       setPickListId("")
+      setEntity(attachedList?.kind === "company" ? "company" : "people")
       if (attachedList) {
         setTargetListId(attachedList.id)
         setChooserOpen(false)
@@ -107,7 +118,7 @@ export function AddCampaignAudienceDialog({
       name: campaign.name,
       description: "",
       color: "#6366f1",
-      kind: "people",
+      kind: entity,
     })
     campaignStore.attachList(campaign.id, list.id)
     setTargetListId(list.id)
@@ -144,7 +155,9 @@ export function AddCampaignAudienceDialog({
                       sublabel:
                         l.campaignId && l.campaignId !== campaign.id
                           ? c.linkedElsewhere
-                          : undefined,
+                          : l.kind === "company"
+                            ? c.companyList
+                            : undefined,
                     }))}
                     placeholder={c.pickList}
                     searchPlaceholder={c.pickList}
@@ -167,11 +180,21 @@ export function AddCampaignAudienceDialog({
             </>
           )}
 
-          <Button variant="outline" onClick={searchNewList}>
-            <Search className="size-4" />
-            {c.searchNew}
-          </Button>
-          <p className="text-muted-foreground text-xs">{c.searchNewDesc}</p>
+          <div className="space-y-2">
+            <Segmented
+              options={[
+                { v: "people" as Entity, label: c.contact, icon: Users },
+                { v: "company" as Entity, label: c.company, icon: Building2 },
+              ]}
+              value={entity}
+              onChange={setEntity}
+            />
+            <Button variant="outline" onClick={searchNewList}>
+              <Search className="size-4" />
+              {c.searchNew}
+            </Button>
+            <p className="text-muted-foreground text-xs">{c.searchNewDesc}</p>
+          </div>
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => onOpenChange(false)}>
@@ -187,7 +210,7 @@ export function AddCampaignAudienceDialog({
           setSearchOpen(v)
           if (!v) onOpenChange(false)
         }}
-        kind="contact"
+        kind={entity === "company" ? "company" : "contact"}
         listId={targetListId ?? undefined}
       />
     </>
