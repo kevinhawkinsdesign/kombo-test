@@ -41,6 +41,9 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkCrmSyncDialog } from "@/components/common/BulkCrmSyncDialog"
+import { ExportDialog } from "@/components/common/ExportDialog"
 import { downloadCsv } from "@/lib/csv"
 import {
   PEOPLE_COLUMNS,
@@ -86,6 +89,7 @@ const COPY = {
     deleteList: "Delete list",
     export: "Export",
     exported: "Exported to CSV",
+    exportedAndSent: (email: string) => `Exported to CSV and sent to ${email}`,
     buildPlaylist: "Build a playlist",
     linkToCampaign: "Link to campaign",
     prospectsHeading: "Prospects",
@@ -184,6 +188,7 @@ const COPY = {
     deleteList: "Eliminar lista",
     export: "Exportar",
     exported: "Exportado a CSV",
+    exportedAndSent: (email: string) => `Exportado a CSV y enviado a ${email}`,
     buildPlaylist: "Crear playlist",
     linkToCampaign: "Vincular a campaña",
     prospectsHeading: "Prospectos",
@@ -289,6 +294,10 @@ export default function ListDetail() {
   const [playlistOpen, setPlaylistOpen] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+  const [bulkAddOpen, setBulkAddOpen] = React.useState(false)
+  const [bulkMoveOpen, setBulkMoveOpen] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
+  const [exportOpen, setExportOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
   // Inline editing + AI/custom columns — the same machinery People/Companies
@@ -371,7 +380,7 @@ export default function ListDetail() {
     toast.success(c.removedCount(selectedCount))
     setSelectedIds(new Set())
   }
-  function exportSelected() {
+  function exportSelected(opts: { sendTo?: string } = {}) {
     if (isCompany) {
       downloadCsv(
         "companies.csv",
@@ -391,7 +400,7 @@ export default function ListDetail() {
         ])
       )
     }
-    toast.success(c.exported)
+    toast.success(opts.sendTo ? c.exportedAndSent(opts.sendTo) : c.exported)
     setSelectedIds(new Set())
   }
 
@@ -616,14 +625,54 @@ export default function ListDetail() {
       <BulkActionsBar
         count={selectedCount}
         onClear={() => setSelectedIds(new Set())}
-        onExport={exportSelected}
+        onExport={() => setExportOpen(true)}
         onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
+        onAddToList={() => setBulkAddOpen(true)}
+        onMoveToList={() => setBulkMoveOpen(true)}
+        onAddToCrm={() => setBulkCrmOpen(true)}
         extra={{
           label: c.removeFromListAction,
           icon: <X className="size-4" />,
           destructive: true,
           onClick: removeSelected,
         }}
+      />
+
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        count={selectedCount}
+        onConfirm={exportSelected}
+      />
+
+      <BulkAddDialog
+        open={bulkAddOpen}
+        onOpenChange={setBulkAddOpen}
+        mode="list"
+        recordKind={isCompany ? "company" : "person"}
+        ids={isCompany ? selectedAccounts.map((a) => a.id) : selectedMembers.map((p) => p.id)}
+        excludeListId={listId}
+        skipCostConfirm
+        onDone={() => setSelectedIds(new Set())}
+      />
+
+      <BulkAddDialog
+        open={bulkMoveOpen}
+        onOpenChange={setBulkMoveOpen}
+        mode="list"
+        recordKind={isCompany ? "company" : "person"}
+        ids={isCompany ? selectedAccounts.map((a) => a.id) : selectedMembers.map((p) => p.id)}
+        excludeListId={listId}
+        moveFromListId={listId}
+        skipCostConfirm
+        onDone={() => setSelectedIds(new Set())}
+      />
+
+      <BulkCrmSyncDialog
+        open={bulkCrmOpen}
+        onOpenChange={setBulkCrmOpen}
+        count={selectedCount}
+        onDone={() => setSelectedIds(new Set())}
       />
 
       {isCompany ? (

@@ -3,6 +3,7 @@ import {
   Download,
   Layers,
   FolderPlus,
+  FolderInput,
   Send,
   ScanSearch,
   UserSearch,
@@ -20,6 +21,7 @@ const COPY = {
     export: "Export",
     enrich: "Enrich",
     addToList: "Add to list",
+    moveToList: "Move to list",
     addToCampaign: "Add to campaign",
     addToCrm: "Add to CRM",
     lookalikes: "Find lookalikes",
@@ -33,6 +35,7 @@ const COPY = {
     export: "Exportar",
     enrich: "Enriquecer",
     addToList: "Añadir a lista",
+    moveToList: "Mover a lista",
     addToCampaign: "Añadir a campaña",
     addToCrm: "Añadir al CRM",
     lookalikes: "Buscar similares",
@@ -67,6 +70,7 @@ export function BulkActionsBar({
   onExport,
   onEnrich,
   onAddToList,
+  onMoveToList,
   onAddToCampaign,
   onAddToCrm,
   onLookalikes,
@@ -83,6 +87,8 @@ export function BulkActionsBar({
   onExport: () => void
   onEnrich?: () => void
   onAddToList?: () => void
+  // Moves the selection into another list, removing it from the current one.
+  onMoveToList?: () => void
   onAddToCampaign?: () => void
   onAddToCrm?: () => void
   onLookalikes?: () => void
@@ -130,6 +136,12 @@ export function BulkActionsBar({
         <Button variant="outline" size="sm" onClick={onAddToList}>
           <FolderPlus className="size-4" />
           {c.addToList}
+        </Button>
+      )}
+      {onMoveToList && (
+        <Button variant="outline" size="sm" onClick={onMoveToList}>
+          <FolderInput className="size-4" />
+          {c.moveToList}
         </Button>
       )}
       {onAddToCampaign && (

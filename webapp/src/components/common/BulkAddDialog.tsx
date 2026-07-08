@@ -19,8 +19,10 @@ import type { RecordKind } from "@/lib/crm-mapping"
 const COPY = {
   en: {
     listTitle: (n: number) => `Add ${n} to a list`,
+    moveTitle: (n: number) => `Move ${n} to a list`,
     campaignTitle: (n: number) => `Add ${n} to a campaign`,
     listDesc: "Pick a list, or create a new one for the selection.",
+    moveDesc: "Pick a list to move the selection into — it's removed from this list.",
     campaignDesc: "Pick a campaign — selected prospects join its list.",
     searchLists: "Search lists…",
     searchCampaigns: "Search campaigns…",
@@ -28,16 +30,20 @@ const COPY = {
     members: (n: number) => `${n} ${n === 1 ? "member" : "members"}`,
     enrolled: (n: number) => `${n} enrolled`,
     addedToList: (n: number, l: string) => `Added ${n} to ${l}`,
+    movedToList: (n: number, l: string) => `Moved ${n} to ${l}`,
     enrolledIn: (n: number, l: string) => `Added ${n} to ${l}`,
     noLists: "No lists yet — type a name to create one.",
     noCampaigns: "No campaigns yet — type a name to create one.",
     addToListAction: "Add to list",
+    moveToListAction: "Move to list",
     addToCampaignAction: "Add to campaign",
   },
   es: {
     listTitle: (n: number) => `Añadir ${n} a una lista`,
+    moveTitle: (n: number) => `Mover ${n} a una lista`,
     campaignTitle: (n: number) => `Añadir ${n} a una campaña`,
     listDesc: "Elige una lista o crea una nueva para la selección.",
+    moveDesc: "Elige una lista a la que mover la selección — se quitará de esta lista.",
     campaignDesc: "Elige una campaña — los prospectos entran en su lista.",
     searchLists: "Buscar listas…",
     searchCampaigns: "Buscar campañas…",
@@ -45,10 +51,12 @@ const COPY = {
     members: (n: number) => `${n} ${n === 1 ? "miembro" : "miembros"}`,
     enrolled: (n: number) => `${n} inscritos`,
     addedToList: (n: number, l: string) => `Añadidos ${n} a ${l}`,
+    movedToList: (n: number, l: string) => `Movidos ${n} a ${l}`,
     enrolledIn: (n: number, l: string) => `Añadidos ${n} a ${l}`,
     noLists: "Aún no hay listas — escribe un nombre para crear una.",
     noCampaigns: "Aún no hay campañas — escribe un nombre para crear una.",
     addToListAction: "Añadir a lista",
+    moveToListAction: "Mover a lista",
     addToCampaignAction: "Añadir a campaña",
   },
 } as const
@@ -73,6 +81,9 @@ export function BulkAddDialog({
   recordKind,
   ids,
   onDone,
+  excludeListId,
+  moveFromListId,
+  skipCostConfirm,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -80,6 +91,15 @@ export function BulkAddDialog({
   recordKind: RecordKind
   ids: string[]
   onDone?: () => void
+  // Hide this list from the candidate list (the list the selection is
+  // already in, so it can't be "added"/"moved" into itself).
+  excludeListId?: string
+  // When set, the selection is removed from this list once the destination
+  // commit succeeds — turns the dialog from "add" (copy) into "move" (cut).
+  moveFromListId?: string
+  // Skip the credit-cost confirmation: the records are already saved in the
+  // workspace (e.g. existing members of another list), not new finds.
+  skipCostConfirm?: boolean
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -88,15 +108,18 @@ export function BulkAddDialog({
   const campaigns = useCampaigns()
   const [query, setQuery] = React.useState("")
   // A chosen target awaiting the credit-cost confirmation — the actual commit
-  // only runs once the user confirms (see commit()).
+  // only runs once the user confirms (see commit()), unless skipCostConfirm.
   const [pending, setPending] = React.useState<Pending | null>(null)
   const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const isMove = Boolean(moveFromListId)
 
   const q = query.trim().toLowerCase()
   const n = ids.length
 
-  const scopedLists = lists.filter((l) =>
-    recordKind === "company" ? l.kind === "company" : l.kind !== "company"
+  const scopedLists = lists.filter(
+    (l) =>
+      (recordKind === "company" ? l.kind === "company" : l.kind !== "company") &&
+      l.id !== excludeListId
   )
   const listResults = scopedLists.filter(
     (l) => !q || `${l.name} ${l.description}`.toLowerCase().includes(q)
@@ -117,44 +140,72 @@ export function BulkAddDialog({
     onDone?.()
   }
 
-  // Choosing a target no longer commits directly — it stages the action and
-  // opens the credit-cost confirmation, so the estimate is the last step.
+  // Once the destination commit succeeds, pull the selection out of the
+  // source list — turns a copy into a move. No-op when not moving.
+  function removeFromSource() {
+    if (!moveFromListId) return
+    if (recordKind === "company") {
+      ids.forEach((id) => listStore.removeAccount(moveFromListId, id))
+    } else {
+      ids.forEach((id) => listStore.removeProspect(moveFromListId, id))
+    }
+  }
+
+  // Choosing a target normally stages the action and opens the credit-cost
+  // confirmation so the estimate is the last step — but records already
+  // saved in the workspace (skipCostConfirm) commit immediately instead.
   function addToList(listId: string, name: string) {
-    setPending({ type: "list", id: listId, name })
+    const p: Pending = { type: "list", id: listId, name }
+    if (skipCostConfirm) {
+      runCommit(p)
+      return
+    }
+    setPending(p)
     setConfirmOpen(true)
   }
 
   function addToCampaign(campaignId: string, name: string) {
-    setPending({ type: "campaign", id: campaignId, name })
+    const p: Pending = { type: "campaign", id: campaignId, name }
+    if (skipCostConfirm) {
+      runCommit(p)
+      return
+    }
+    setPending(p)
     setConfirmOpen(true)
   }
 
   function createAndAdd() {
     const name = query.trim()
     if (!name) return
-    setPending({ type: "create", name })
+    const p: Pending = { type: "create", name }
+    if (skipCostConfirm) {
+      runCommit(p)
+      return
+    }
+    setPending(p)
     setConfirmOpen(true)
   }
 
-  // Runs only after the user confirms the estimate: create-if-needed, add,
-  // toast, navigate, and close.
-  function commit() {
-    if (!pending) return
-    if (pending.type === "list") {
-      if (recordKind === "company") listStore.addAccounts(pending.id, ids)
-      else listStore.addProspects(pending.id, ids)
-      toast.success(c.addedToList(n, pending.name))
+  // The actual commit: create-if-needed, add, remove from source if moving,
+  // toast, navigate, and close. Runs immediately (skipCostConfirm) or once
+  // the user confirms the credit-cost estimate (see commit()).
+  function runCommit(p: Pending) {
+    if (p.type === "list") {
+      if (recordKind === "company") listStore.addAccounts(p.id, ids)
+      else listStore.addProspects(p.id, ids)
+      removeFromSource()
+      toast.success(isMove ? c.movedToList(n, p.name) : c.addedToList(n, p.name))
       close()
       return
     }
-    if (pending.type === "campaign") {
-      campaignStore.addProspects(pending.id, ids)
-      toast.success(c.enrolledIn(n, pending.name))
+    if (p.type === "campaign") {
+      campaignStore.addProspects(p.id, ids)
+      toast.success(c.enrolledIn(n, p.name))
       close()
       return
     }
-    // pending.type === "create"
-    const name = pending.name
+    // p.type === "create"
+    const name = p.name
     if (mode === "list") {
       const list = listStore.create({
         name,
@@ -164,7 +215,8 @@ export function BulkAddDialog({
       })
       if (recordKind === "company") listStore.addAccounts(list.id, ids)
       else listStore.addProspects(list.id, ids)
-      toast.success(c.addedToList(n, name))
+      removeFromSource()
+      toast.success(isMove ? c.movedToList(n, name) : c.addedToList(n, name))
       close()
       // Open the brand-new list so the user sees what they just made.
       navigate(`/lists/${list.id}`)
@@ -177,8 +229,14 @@ export function BulkAddDialog({
     }
   }
 
-  const title = mode === "list" ? c.listTitle(n) : c.campaignTitle(n)
-  const desc = mode === "list" ? c.listDesc : c.campaignDesc
+  function commit() {
+    if (!pending) return
+    runCommit(pending)
+  }
+
+  const title =
+    mode === "list" ? (isMove ? c.moveTitle(n) : c.listTitle(n)) : c.campaignTitle(n)
+  const desc = mode === "list" ? (isMove ? c.moveDesc : c.listDesc) : c.campaignDesc
   const placeholder = mode === "list" ? c.searchLists : c.searchCampaigns
 
   return (
@@ -296,7 +354,13 @@ export function BulkAddDialog({
       count={n}
       entity={recordKind === "company" ? "companies" : "people"}
       targetName={pending?.name}
-      actionLabel={mode === "list" ? c.addToListAction : c.addToCampaignAction}
+      actionLabel={
+        mode === "list"
+          ? isMove
+            ? c.moveToListAction
+            : c.addToListAction
+          : c.addToCampaignAction
+      }
       onConfirm={commit}
     />
     </>
