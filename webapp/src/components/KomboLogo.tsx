@@ -1,10 +1,10 @@
-import lockupUrl from "@/assets/kombo-lockup.svg"
+import lockupUrl from "@/assets/kombo-lockup-notag.png"
 import iconUrl from "@/assets/kombo-icon.png"
 import brandBlackUrl from "@/assets/kombo-brand-black.png"
 
 import { cn } from "@/lib/utils"
 
-/** Full brand lockup (icon + wordmark). Built for dark backgrounds. */
+/** Full brand lockup (icon + wordmark, no "Ai" tagline). Built for dark backgrounds. */
 export function KomboLockup({ className }: { className?: string }) {
   return (
     <img
