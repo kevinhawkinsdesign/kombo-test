@@ -33,7 +33,7 @@ import {
   Radar,
   Home,
   Search,
-  LayoutGrid,
+  Folder,
   Compass,
 } from "lucide-react"
 
@@ -88,7 +88,7 @@ const unread = conversations.reduce((sum, c) => sum + c.unread, 0)
 const primary: NavItem[] = [
   { to: "/", labelKey: "nav.searchHome", icon: Home },
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, isNew: true },
-  { to: "/workspaces", labelKey: "nav.workspaces", icon: LayoutGrid, isNew: true },
+  { to: "/workspaces", labelKey: "nav.workspaces", icon: Folder, isNew: true },
   { to: "/signals", labelKey: "nav.search", icon: Radar, isNew: true },
   {
     to: "/inbox",
@@ -499,7 +499,7 @@ function SidebarContent({
 
         {/* Search: a special secondary button, first item under the logo —
             distinct from the plain nav rows below it. */}
-        <div className={cn(collapsed ? "px-2 pt-2" : "px-3 pt-2")}>
+        <div className={cn(collapsed ? "flex justify-center px-2 pt-2" : "px-3 pt-2")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>{searchButton}</TooltipTrigger>

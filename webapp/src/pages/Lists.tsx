@@ -230,7 +230,7 @@ export default function Lists() {
   const [deletingList, setDeletingList] = React.useState<
     ProspectList | undefined
   >(undefined)
-  const [view, setView] = React.useState<CollectionView>("cards")
+  const [view, setView] = React.useState<CollectionView>("table")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("default")
   const [columnsOpen, setColumnsOpen] = React.useState(false)
