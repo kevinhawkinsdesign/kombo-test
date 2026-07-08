@@ -893,7 +893,7 @@ export function AddRecordsDialog({
           />
         ) : (
         <>
-        <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
+        <header className="relative flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
           {cameFromSplash && (
             <button
               type="button"
@@ -908,25 +908,27 @@ export function AddRecordsDialog({
             </button>
           )}
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
-          {allowEntityToggle && (
-          <Segmented
-            options={[
-              { v: "people" as AiEntity, label: c.contact, icon: Users },
-              { v: "companies" as AiEntity, label: c.company, icon: Building2 },
-            ]}
-            value={entity}
-            onChange={switchEntity}
-          />
-          )}
-          <Segmented
-            className="ml-auto"
-            options={[
-              { v: "search" as Mode, label: c.search, icon: Search },
-              { v: "import" as Mode, label: c.import, icon: Upload },
-            ]}
-            value={mode}
-            onChange={setMode}
-          />
+          {/* Centered to match the splash screen's shared Search/Import chrome. */}
+          <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-3">
+            {allowEntityToggle && (
+              <Segmented
+                options={[
+                  { v: "people" as AiEntity, label: c.contact, icon: Users },
+                  { v: "companies" as AiEntity, label: c.company, icon: Building2 },
+                ]}
+                value={entity}
+                onChange={switchEntity}
+              />
+            )}
+            <Segmented
+              options={[
+                { v: "search" as Mode, label: c.search, icon: Search },
+                { v: "import" as Mode, label: c.import, icon: Upload },
+              ]}
+              value={mode}
+              onChange={setMode}
+            />
+          </div>
         </header>
 
         {scoped && (
