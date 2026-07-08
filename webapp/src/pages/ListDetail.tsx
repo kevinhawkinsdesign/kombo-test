@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import {
   ArrowLeft,
   Send,
+  Link2,
   Download,
   Pencil,
   Trash2,
@@ -55,6 +56,7 @@ import {
 import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
 import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
+import { LinkListToCampaignDialog } from "@/components/lists/LinkListToCampaignDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
@@ -62,6 +64,8 @@ import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
 import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
 import { useLists, listStore, prospectStore, accountStore } from "@/lib/store"
+import { listTabsStore } from "@/lib/list-tabs"
+import { ListTabBar } from "@/components/lists/ListTabBar"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -83,8 +87,7 @@ const COPY = {
     export: "Export",
     exported: "Exported to CSV",
     buildPlaylist: "Build a playlist",
-    startCampaign: "Start campaign",
-    enrolled: (count: number) => `${count} enrolled`,
+    linkToCampaign: "Link to campaign",
     prospectsHeading: "Prospects",
     addProspects: "Find prospects",
     columns: "Columns",
@@ -147,12 +150,6 @@ const COPY = {
       "Enrich before launching a campaign for better deliverability and reply rates.",
     enriched: (done: number, total: number) => `${done}/${total} enriched`,
     enrichContacts: (count: number) => `Enrich ${count}`,
-    // Warn before campaign
-    warnTitle: "Some contacts aren't enriched",
-    warnDescription: (count: number) =>
-      `${count} ${count === 1 ? "contact" : "contacts"} in this list ${count === 1 ? "hasn't" : "haven't"} been enriched. Campaigns reach more prospects and bounce less when contacts have verified data. Enrich now, or start anyway?`,
-    enrichFirst: "Enrich first",
-    startAnyway: "Start anyway",
     // Company lists
     companies: "companies",
     companiesHeading: "Companies",
@@ -188,8 +185,7 @@ const COPY = {
     export: "Exportar",
     exported: "Exportado a CSV",
     buildPlaylist: "Crear playlist",
-    startCampaign: "Iniciar campaña",
-    enrolled: (count: number) => `${count} inscritos`,
+    linkToCampaign: "Vincular a campaña",
     prospectsHeading: "Prospectos",
     addProspects: "Buscar prospectos",
     columns: "Columnas",
@@ -253,12 +249,6 @@ const COPY = {
       "Enriquece antes de lanzar una campaña para mejorar la entregabilidad y las respuestas.",
     enriched: (done: number, total: number) => `${done}/${total} enriquecidos`,
     enrichContacts: (count: number) => `Enriquecer ${count}`,
-    // Warn before campaign
-    warnTitle: "Algunos contactos no están enriquecidos",
-    warnDescription: (count: number) =>
-      `${count} ${count === 1 ? "contacto" : "contactos"} de esta lista no ${count === 1 ? "ha sido enriquecido" : "han sido enriquecidos"}. Las campañas llegan a más prospectos y rebotan menos cuando los contactos tienen datos verificados. ¿Enriquecer ahora o iniciar de todos modos?`,
-    enrichFirst: "Enriquecer primero",
-    startAnyway: "Iniciar de todos modos",
     // Company lists
     companies: "empresas",
     companiesHeading: "Empresas",
@@ -295,7 +285,7 @@ export default function ListDetail() {
   const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [enrichOpen, setEnrichOpen] = React.useState(false)
-  const [campaignWarnOpen, setCampaignWarnOpen] = React.useState(false)
+  const [linkCampaignOpen, setLinkCampaignOpen] = React.useState(false)
   const [playlistOpen, setPlaylistOpen] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
@@ -315,6 +305,12 @@ export default function ListDetail() {
     () => [...COMPANY_COLUMNS, ...aiColumnsToDefs<Account>(companyAiCols)],
     [companyAiCols]
   )
+
+  // Visiting a list registers it as an open tab — same mental model as a
+  // browser tab appearing the moment you navigate somewhere.
+  React.useEffect(() => {
+    if (id) listTabsStore.open(id)
+  }, [id])
 
   if (!list) {
     return (
@@ -399,20 +395,10 @@ export default function ListDetail() {
     setSelectedIds(new Set())
   }
 
-  function launchCampaign() {
-    toast.success(c.enrolled(memberCount))
-  }
-
-  function handleStartCampaign() {
-    if (!isCompany && pending.length > 0) {
-      setCampaignWarnOpen(true)
-      return
-    }
-    launchCampaign()
-  }
-
   return (
     <Page>
+      <ListTabBar currentId={list.id} />
+
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/lists">
           <ArrowLeft className="size-4" />
@@ -462,9 +448,9 @@ export default function ListDetail() {
               {c.buildPlaylist}
             </Button>
           )}
-          <Button variant="volt" onClick={handleStartCampaign}>
-            <Send className="size-4" />
-            {c.startCampaign}
+          <Button variant="volt" onClick={() => setLinkCampaignOpen(true)}>
+            <Link2 className="size-4" />
+            {c.linkToCampaign}
           </Button>
         </div>
       </div>
@@ -732,18 +718,10 @@ export default function ListDetail() {
         prospects={selectedMembers}
       />
 
-      <ConfirmDialog
-        open={campaignWarnOpen}
-        onOpenChange={setCampaignWarnOpen}
-        title={c.warnTitle}
-        description={c.warnDescription(pending.length)}
-        confirmLabel={c.startAnyway}
-        cancelLabel={c.enrichFirst}
-        onCancel={() => setEnrichOpen(true)}
-        onConfirm={() => {
-          setCampaignWarnOpen(false)
-          launchCampaign()
-        }}
+      <LinkListToCampaignDialog
+        open={linkCampaignOpen}
+        onOpenChange={setLinkCampaignOpen}
+        list={list}
       />
     </Page>
   )

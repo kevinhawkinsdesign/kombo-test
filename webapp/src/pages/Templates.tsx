@@ -805,7 +805,7 @@ export default function Templates() {
     toast.success(c.templateDeleted)
   }
 
-  const [view, setView] = React.useState<CollectionView>("cards")
+  const [view, setView] = React.useState<CollectionView>("table")
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   // Campaign Templates has two sections: fixed messages and AI prompts.
   const [section, setSection] = React.useState<"messages" | "prompts">(

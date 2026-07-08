@@ -22,15 +22,15 @@ const COPY = {
   en: {
     title: "Add prospects",
     desc: (name: string) => `Add prospects to "${name}".`,
-    attachExisting: "Attach an existing list",
-    pickList: "Choose a list to attach…",
-    attach: "Attach",
+    attachExisting: "Link an existing list",
+    pickList: "Choose a list to link…",
+    attach: "Link",
     or: "or",
     searchNew: "Search to build a new list",
     searchNewDesc:
       "Run a search or import — the results become a new list linked to this campaign.",
     linkedElsewhere: " (linked elsewhere)",
-    attached: (name: string) => `Attached ${name}`,
+    attached: (name: string) => `Linked ${name}`,
     cancel: "Cancel",
   },
   es: {

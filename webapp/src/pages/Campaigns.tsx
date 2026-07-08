@@ -509,7 +509,7 @@ export default function Campaigns() {
   const [pendingDelete, setPendingDelete] = React.useState<Campaign | null>(
     null
   )
-  const [view, setView] = React.useState<CollectionView>("cards")
+  const [view, setView] = React.useState<CollectionView>("table")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
 
