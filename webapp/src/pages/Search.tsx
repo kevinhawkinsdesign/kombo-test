@@ -57,6 +57,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { DataTable, type TableSelection } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
@@ -81,6 +86,7 @@ import {
   LOOKALIKE_SEEDS,
   estimatedTotal,
   queryTitle,
+  isQueryEmpty,
   savedSearchStore,
   useSavedSearches,
   type SavedAiSearch,
@@ -96,6 +102,7 @@ import {
   type AiLead,
   type AiCompany,
   type LookalikeSeed,
+  type DataSource,
 } from "@/lib/mock-ai-search"
 import {
   listStore,
@@ -106,6 +113,8 @@ import {
 } from "@/lib/store"
 import { getProspect } from "@/lib/mock-data"
 import { facetsForDb, facetSection, type FacetDef, type FacetDb } from "@/lib/search-facets"
+import { searchTabsStore, useSearchTabs, type SearchTab } from "@/lib/search-tabs"
+import { SearchTabBar } from "@/components/search/SearchTabBar"
 import { SEARCH_FILTER_GROUPS } from "@/lib/search-filter-groups"
 import { baseValue, excludeValue, isExcluded } from "@/lib/filter-polarity"
 import {
@@ -183,9 +192,12 @@ const COPY = {
       "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
     saveNameLabel: "Search name",
     noSaved: "No saved searches yet.",
+    noSavedMatch: "No saved searches match your search.",
+    searchSaved: "Search saved searches…",
     savedToast: "Search saved with its prompt history",
     loadedToast: "Saved search loaded",
     removedSaved: "Saved search removed",
+    removeSaved: (name: string) => `Remove ${name}`,
     people: "Prospects",
     companies: "Companies",
     resultsFor: "Results",
@@ -261,6 +273,7 @@ const COPY = {
     seedCompanies: "Companies",
     findSimilar: "Find similar",
     similarTo: "Similar to",
+    newSearchTab: "New search",
     clearLookalike: "Clear lookalike",
     mapAreaHint: "Approximate search area — results are matched around this location.",
     previewLocation: "Location",
@@ -471,9 +484,12 @@ const COPY = {
       "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
     saveNameLabel: "Nombre de la búsqueda",
     noSaved: "Aún no hay búsquedas guardadas.",
+    noSavedMatch: "Ninguna búsqueda guardada coincide.",
+    searchSaved: "Buscar búsquedas guardadas…",
     savedToast: "Búsqueda guardada con su historial de prompts",
     loadedToast: "Búsqueda guardada cargada",
     removedSaved: "Búsqueda guardada eliminada",
+    removeSaved: (name: string) => `Eliminar ${name}`,
     people: "Prospectos",
     companies: "Empresas",
     resultsFor: "Resultados",
@@ -549,6 +565,7 @@ const COPY = {
     seedCompanies: "Empresas",
     findSimilar: "Buscar similares",
     similarTo: "Similar a",
+    newSearchTab: "Nueva búsqueda",
     clearLookalike: "Quitar similares",
     mapAreaHint: "Área de búsqueda aproximada — los resultados se buscan alrededor de esta ubicación.",
     previewLocation: "Ubicación",
@@ -700,13 +717,6 @@ const COPY = {
 
 type Copy = (typeof COPY)[keyof typeof COPY]
 
-// Which database the search runs against. Replaces the old LinkedIn on/off toggle.
-type DataSource =
-  | "kombo"
-  | "lookalike"
-  | "linkedin"
-  | "google_maps"
-  | "tripadvisor"
 // Selectable databases per entity — Google Maps + TripAdvisor are company-only.
 const PEOPLE_SOURCES: DataSource[] = ["kombo", "lookalike", "linkedin"]
 const COMPANY_SOURCES: DataSource[] = [
@@ -848,9 +858,7 @@ export default function Search() {
   const headerPrompt = params.get("q")
   // "Search with filters" (from /find, or the idle state's own button below)
   // skips the AI prompt and jumps straight to the filterable results view.
-  const [filtersRequested, setFiltersRequested] = React.useState(
-    () => params.get("filters") === "1"
-  )
+  const filtersRequestedFromUrl = params.get("filters") === "1"
   // Lookalike is just a search: arrive here with a seed (from People/Companies
   // "Find lookalikes") and the page opens in lookalike mode, results and all.
   const incomingSeed =
@@ -884,6 +892,22 @@ export default function Search() {
       } | null
     )?.initialSource ?? null
 
+  // Multi-tab search sessions: any hand-off above (a saved search, a
+  // prefilled query, a lookalike seed, the Add-modal wizard, a header prompt,
+  // or "Search with filters") opens a brand-new tab rather than mutating
+  // whichever tab happens to be active; a bare visit with no signal resumes
+  // the tab that was already active.
+  const hasIncoming = Boolean(
+    loadedSearch ||
+      incomingQuery ||
+      incomingSeed ||
+      incomingOpenLookalike ||
+      incomingSource ||
+      headerPrompt ||
+      filtersRequestedFromUrl
+  )
+  const activeTab = hasIncoming ? null : searchTabsStore.peekActive()
+
   const [entity, setEntity] = React.useState<AiEntity>(
     loadedSearch
       ? loadedSearch.entity
@@ -893,39 +917,51 @@ export default function Search() {
           ? incomingSeed.kind === "company"
             ? "companies"
             : "people"
-          : // Google Maps and TripAdvisor are company-only sources.
-            incomingSource
-            ? "companies"
-            : "people"
+          : incomingSource
+            ? // Google Maps and TripAdvisor are company-only sources.
+              "companies"
+            : activeTab
+              ? activeTab.entity
+              : "people"
   )
   const [query, setQuery] = React.useState<AiQuery>(
     loadedSearch
       ? loadedSearch.query
       : incomingQuery
         ? incomingQuery.query
-        : { ...EMPTY_QUERY }
+        : activeTab
+          ? activeTab.query
+          : { ...EMPTY_QUERY }
   )
   const [lastPrompt, setLastPrompt] = React.useState(
     loadedSearch
       ? loadedSearch.prompt
       : incomingQuery
         ? incomingQuery.label
-        : similarPrompt
+        : activeTab
+          ? activeTab.lastPrompt
+          : similarPrompt
   )
   const [input, setInput] = React.useState(
     loadedSearch
       ? loadedSearch.prompt
       : incomingQuery
         ? incomingQuery.label
-        : similarPrompt || headerPrompt || ""
+        : activeTab
+          ? activeTab.input
+          : similarPrompt || headerPrompt || ""
   )
   const [thinking, setThinking] = React.useState(Boolean(headerPrompt))
-  const [selected, setSelected] = React.useState<Set<string>>(new Set())
+  const [selected, setSelected] = React.useState<Set<string>>(
+    () => new Set(activeTab ? activeTab.selectedIds : [])
+  )
   const [lookalikeOpen, setLookalikeOpen] = React.useState(incomingOpenLookalike)
   // URLs mode: the third entity tab. The prompt box becomes a pill field of
   // company URLs/domains; searching scopes results to those companies.
-  const [urlsMode, setUrlsMode] = React.useState(false)
-  const [urlPills, setUrlPills] = React.useState<string[]>([])
+  const [urlsMode, setUrlsMode] = React.useState(activeTab ? activeTab.urlsMode : false)
+  const [urlPills, setUrlPills] = React.useState<string[]>(
+    activeTab ? activeTab.urlPills : []
+  )
   const [urlInput, setUrlInput] = React.useState("")
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
   const [saveName, setSaveName] = React.useState("")
@@ -938,11 +974,18 @@ export default function Search() {
   // prospects first, then run through the standard enrich dialog.
   const [enrichRows, setEnrichRows] = React.useState<Prospect[]>([])
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
-  const [seed, setSeed] = React.useState<LookalikeSeed | null>(incomingSeed)
-  const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>(
-    incomingSource ?? "kombo"
+  const [seed, setSeed] = React.useState<LookalikeSeed | null>(
+    incomingSeed ?? (activeTab ? activeTab.seed : null)
   )
-  const [sortKey, setSortKey] = React.useState<SortKey>("fit")
+  const [db, setDb] = React.useState<Exclude<DataSource, "lookalike">>(
+    incomingSource ?? (activeTab ? activeTab.db : "kombo")
+  )
+  const [sortKey, setSortKey] = React.useState<SortKey>(
+    activeTab ? activeTab.sortKey : "fit"
+  )
+  const [filtersRequested, setFiltersRequested] = React.useState(
+    activeTab ? activeTab.filtersRequested : filtersRequestedFromUrl
+  )
 
   // Matching prospects/companies live behind a costly API call, so the page
   // stays idle — no query, no results — until the user defines a search: a
@@ -977,9 +1020,13 @@ export default function Search() {
 
   // "Hide prospects already in a list": key existing list members by identity so
   // people you've already saved don't clutter the results.
-  const [hideInList, setHideInList] = React.useState(false)
+  const [hideInList, setHideInList] = React.useState(
+    activeTab ? activeTab.hideInList : false
+  )
   // "Hide already in CRM": applies to both people and company results.
-  const [hideInCrm, setHideInCrm] = React.useState(false)
+  const [hideInCrm, setHideInCrm] = React.useState(
+    activeTab ? activeTab.hideInCrm : false
+  )
   const lists = useLists()
   const inListKeys = React.useMemo(() => {
     const set = new Set<string>()
@@ -1104,6 +1151,133 @@ export default function Search() {
       runPrompt(headerPrompt)
     }
   }, [headerPrompt, runPrompt])
+
+  // Register this page load as a tab, exactly once: a hand-off from
+  // elsewhere (a saved search, a prefilled query, a lookalike seed, a header
+  // prompt…) opens a brand-new tab rather than mutating whatever was active;
+  // a bare visit resumes the tab that was already active without re-opening
+  // it. First-ever visit with nothing persisted yet opens one blank tab.
+  const registeredSearchTab = React.useRef(false)
+  React.useEffect(() => {
+    if (registeredSearchTab.current) return
+    registeredSearchTab.current = true
+    if (hasIncoming) {
+      searchTabsStore.open({
+        entity,
+        query,
+        lastPrompt,
+        input,
+        seed,
+        db,
+        urlsMode,
+        urlPills,
+        selectedIds: [...selected],
+        sortKey,
+        filtersRequested,
+        hideInList,
+        hideInCrm,
+      })
+    } else if (searchTabsStore.peekTabs().length === 0) {
+      searchTabsStore.open()
+    }
+    // Intentionally run once at mount only — this captures the initial
+    // resolved values, it doesn't need to react to their later changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const { tabs: searchTabs, activeId: activeSearchTabId } = useSearchTabs()
+
+  // Keep the active tab's snapshot current continuously (not just on an
+  // explicit switch), so navigating away to a different page entirely and
+  // back still resumes exactly where the user left off.
+  React.useEffect(() => {
+    if (!activeSearchTabId) return
+    searchTabsStore.update(activeSearchTabId, {
+      entity,
+      query,
+      lastPrompt,
+      input,
+      seed,
+      db,
+      urlsMode,
+      urlPills,
+      selectedIds: [...selected],
+      sortKey,
+      filtersRequested,
+      hideInList,
+      hideInCrm,
+    })
+  }, [
+    activeSearchTabId,
+    entity,
+    query,
+    lastPrompt,
+    input,
+    seed,
+    db,
+    urlsMode,
+    urlPills,
+    selected,
+    sortKey,
+    filtersRequested,
+    hideInList,
+    hideInCrm,
+  ])
+
+  function hydrateSearchTab(t: SearchTab) {
+    setEntity(t.entity)
+    setQuery(t.query)
+    setLastPrompt(t.lastPrompt)
+    setInput(t.input)
+    setSeed(t.seed)
+    setDb(t.db)
+    setUrlsMode(t.urlsMode)
+    setUrlPills(t.urlPills)
+    setSelected(new Set(t.selectedIds))
+    setSortKey(t.sortKey)
+    setFiltersRequested(t.filtersRequested)
+    setHideInList(t.hideInList)
+    setHideInCrm(t.hideInCrm)
+    // Transient UI-only state always resets on a tab switch.
+    setThinking(false)
+    setLookalikeOpen(false)
+    setSaveDialogOpen(false)
+    setFiltersOpen(false)
+    setColumnsOpen(false)
+    setBuildOpen(false)
+    setBulkIds([])
+    setBulkListOpen(false)
+    setEnrichRows([])
+    setBulkEnrichOpen(false)
+  }
+
+  function switchSearchTab(id: string) {
+    if (id === activeSearchTabId) return
+    const next = searchTabs.find((t) => t.id === id)
+    if (!next) return
+    hydrateSearchTab(next)
+    searchTabsStore.setActive(id)
+  }
+
+  function newSearchTab() {
+    hydrateSearchTab(searchTabsStore.open())
+  }
+
+  function closeSearchTab(id: string) {
+    const wasActive = id === activeSearchTabId
+    const nextId = searchTabsStore.close(id)
+    if (wasActive && nextId) {
+      const next = searchTabsStore.peekTabs().find((t) => t.id === nextId)
+      if (next) hydrateSearchTab(next)
+    }
+  }
+
+  function searchTabLabel(t: SearchTab): string {
+    if (t.lastPrompt.trim()) return t.lastPrompt
+    if (t.seed) return `${c.similarTo} ${t.seed.name}`
+    if (!isQueryEmpty(t.query)) return queryTitle(t.query, t.entity)
+    return c.newSearchTab
+  }
 
   function removeFilter(group: keyof AiQuery, value: string) {
     setQuery((prev) => ({
@@ -1516,7 +1690,28 @@ export default function Search() {
   return (
     <Page>
       <>
-      <PageHeading title={c.title} description={c.description} />
+      <PageHeading
+        title={c.title}
+        description={c.description}
+        action={
+          <SavedSearchesControl
+            c={c}
+            savedSearches={savedSearches}
+            onLoadSearch={loadSearch}
+            onRemoveSearch={(id) => {
+              savedSearchStore.remove(id)
+              toast.success(c.removedSaved)
+            }}
+          />
+        }
+      />
+      <SearchTabBar
+        tabs={searchTabs.map((t) => ({ id: t.id, label: searchTabLabel(t) }))}
+        activeId={activeSearchTabId}
+        onSwitchTab={switchSearchTab}
+        onCloseTab={closeSearchTab}
+        onNewTab={newSearchTab}
+      />
       <div className="space-y-3">
         {/* Prospect Search tabs — People, Companies, or a pasted URL list. */}
         <div className="bg-muted inline-flex rounded-md p-0.5">
@@ -1686,14 +1881,8 @@ export default function Search() {
         {!searchStarted && (
           <SearchIdleState
             c={c}
-            savedSearches={savedSearches}
             onOpenFilters={() => setFiltersRequested(true)}
             onUrlsMode={enterUrlsMode}
-            onLoadSearch={loadSearch}
-            onRemoveSearch={(id) => {
-              savedSearchStore.remove(id)
-              toast.success(c.removedSaved)
-            }}
           />
         )}
 
@@ -3126,24 +3315,112 @@ function CompanyPosterCard({
   )
 }
 
+// Lives in the page header (always reachable, not just before a search
+// starts) — a Popover + filter Input + scrollable rows, the same "too many
+// to list plainly" shape as ListSwitcher and the Lists "+" picker, since an
+// enterprise account can accumulate hundreds of saved searches.
+function SavedSearchesControl({
+  c,
+  savedSearches,
+  onLoadSearch,
+  onRemoveSearch,
+}: {
+  c: Copy
+  savedSearches: SavedAiSearch[]
+  onLoadSearch: (id: string) => void
+  onRemoveSearch: (id: string) => void
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [q, setQ] = React.useState("")
+
+  const query = q.trim().toLowerCase()
+  const filtered = query
+    ? savedSearches.filter((s) => s.name.toLowerCase().includes(query))
+    : savedSearches
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) setQ("")
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Bookmark className="size-4" />
+          {c.saved}
+          <ChevronDown className="text-muted-foreground size-3.5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-0">
+        <div className="border-b p-2">
+          <div className="relative">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Input
+              autoFocus
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={c.searchSaved}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+        </div>
+        <div className="max-h-80 overflow-y-auto p-1">
+          {filtered.length === 0 ? (
+            <p className="text-muted-foreground px-2 py-6 text-center text-sm">
+              {savedSearches.length === 0 ? c.noSaved : c.noSavedMatch}
+            </p>
+          ) : (
+            filtered.map((s) => (
+              <div
+                key={s.id}
+                className="hover:bg-muted/60 group flex items-center gap-2 rounded-sm px-2 py-1.5"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLoadSearch(s.id)
+                    setOpen(false)
+                    setQ("")
+                  }}
+                  className="min-w-0 flex-1 text-left"
+                >
+                  <p className="truncate text-sm font-medium">{s.name}</p>
+                  <p className="text-muted-foreground truncate text-xs">
+                    {s.entity === "people" ? c.people : c.companies} ·{" "}
+                    {s.resultCount}
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  aria-label={c.removeSaved(s.name)}
+                  onClick={() => onRemoveSearch(s.id)}
+                  className="text-muted-foreground hover:text-destructive shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 // Shown until the user defines a search — matching runs a real (costly)
 // query, so the page holds off rendering the filter sidebar or any results.
 // Saved searches are a separate entry point: reopen one directly, no need to
 // run anything first.
 function SearchIdleState({
   c,
-  savedSearches,
   onOpenFilters,
   onUrlsMode,
-  onLoadSearch,
-  onRemoveSearch,
 }: {
   c: Copy
-  savedSearches: SavedAiSearch[]
   onOpenFilters: () => void
   onUrlsMode: () => void
-  onLoadSearch: (id: string) => void
-  onRemoveSearch: (id: string) => void
 }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-20 text-center">
@@ -3161,52 +3438,6 @@ function SearchIdleState({
           <Link2 className="size-4" />
           {c.urlsIdleBtn}
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Bookmark className="size-4" />
-              {c.saved}
-              <ChevronDown className="text-muted-foreground size-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-72">
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
-              {c.saved}
-            </DropdownMenuLabel>
-            {savedSearches.length === 0 ? (
-              <p className="text-muted-foreground px-2 py-1.5 text-xs">
-                {c.noSaved}
-              </p>
-            ) : (
-              savedSearches.map((s) => (
-                <div
-                  key={s.id}
-                  className="hover:bg-muted/60 flex items-center gap-2 rounded-sm px-2 py-1.5"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onLoadSearch(s.id)}
-                    className="min-w-0 flex-1 text-left"
-                  >
-                    <p className="truncate text-sm font-medium">{s.name}</p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {s.entity === "people" ? c.people : c.companies} ·{" "}
-                      {s.resultCount}
-                    </p>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Remove"
-                    onClick={() => onRemoveSearch(s.id)}
-                    className="text-muted-foreground hover:text-destructive shrink-0"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
-              ))
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   )

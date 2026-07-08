@@ -11,6 +11,14 @@ import { matchAny, matchValue, splitSelection } from "@/lib/filter-polarity"
 
 export type AiEntity = "people" | "companies"
 
+// Which database a search runs against. Replaces the old LinkedIn on/off toggle.
+export type DataSource =
+  | "kombo"
+  | "lookalike"
+  | "linkedin"
+  | "google_maps"
+  | "tripadvisor"
+
 export interface AiQuery {
   titles: string[]
   seniority: string[]

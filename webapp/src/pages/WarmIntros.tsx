@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
 import { EmptyState } from "@/components/common/EmptyState"
+import kaiUrl from "@/assets/kai-pleased.png"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import {
   introPaths,
@@ -158,7 +159,10 @@ export function WarmIntrosPanel() {
       </div>
 
       {prospects.length === 0 ? (
-        <EmptyState description={c.emptyState} />
+        <EmptyState
+          icon={<img src={kaiUrl} alt="" className="size-16" />}
+          description={c.emptyState}
+        />
       ) : (
         <div className="space-y-4">
           {prospects.map((p) => (

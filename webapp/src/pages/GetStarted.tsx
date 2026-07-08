@@ -26,8 +26,9 @@ import {
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
-import { Page, PageHeading } from "@/components/layout/Page"
+import { Page } from "@/components/layout/Page"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import kaiUrl from "@/assets/kai-pleased.png"
 import {
   Card,
   CardContent,
@@ -365,7 +366,13 @@ export default function GetStarted() {
 
   return (
     <Page className="max-w-3xl">
-      <PageHeading title={c.title} description={c.description} />
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <img src={kaiUrl} alt="" className="size-14 shrink-0" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <h1 className="text-xl font-semibold tracking-tight">{c.title}</h1>
+          <p className="text-muted-foreground text-sm">{c.description}</p>
+        </div>
+      </div>
 
       <div className="space-y-4">
         {/* Guided onboarding entry point */}
