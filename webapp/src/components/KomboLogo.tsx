@@ -1,5 +1,6 @@
 import lockupUrl from "@/assets/kombo-lockup.svg"
 import iconUrl from "@/assets/kombo-icon.png"
+import brandBlackUrl from "@/assets/kombo-brand-black.png"
 
 import { cn } from "@/lib/utils"
 
@@ -36,5 +37,17 @@ export function KomboLogo({ className }: { className?: string }) {
         <span className="text-primary"> 2.0</span>
       </span>
     </div>
+  )
+}
+
+/** Full icon+wordmark brand lockup, black — for light backgrounds. */
+export function KomboBrandLogo({ className }: { className?: string }) {
+  return (
+    <img
+      src={brandBlackUrl}
+      alt="Kombo AI"
+      className={cn("h-7 w-auto select-none", className)}
+      draggable={false}
+    />
   )
 }

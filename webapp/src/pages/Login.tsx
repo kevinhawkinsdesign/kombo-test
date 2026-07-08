@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { Loader2 } from "lucide-react"
 
 import { AuthLayout } from "@/components/layout/AuthLayout"
-import { KomboLogo } from "@/components/KomboLogo"
+import { KomboBrandLogo } from "@/components/KomboLogo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,7 +26,7 @@ export default function Login() {
   return (
     <AuthLayout>
       <div className="mb-8 lg:hidden">
-        <KomboLogo />
+        <KomboBrandLogo />
       </div>
       <div className="mb-6 space-y-1.5">
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
