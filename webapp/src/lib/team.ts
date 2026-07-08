@@ -2,6 +2,8 @@
 // All values are mock/static. The "view" abstraction lets a sales leader
 // see the whole team or impersonate a single rep.
 
+import { currentUser } from "@/lib/mock-data"
+
 export interface FunnelCounts {
   prospects: number
   contacted: number
@@ -236,6 +238,12 @@ export function getViewData(repId: string | null): ViewData {
 
 export function getRep(repId: string): TeamMember | undefined {
   return team.find((m) => m.id === repId)
+}
+
+export function assigneeName(id: string | undefined): string | undefined {
+  if (!id) return undefined
+  if (id === currentUser.id) return currentUser.name
+  return getRep(id)?.name
 }
 
 // --- Agency: multiple teams / client engagements ---

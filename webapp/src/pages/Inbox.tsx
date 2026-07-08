@@ -82,14 +82,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
+import { ChannelIcon } from "@/components/common/ChannelIcon"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
-import { getRep } from "@/lib/team"
+import { getRep, assigneeName } from "@/lib/team"
 import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
+import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
 import { campaignEnrollments } from "@/lib/mock-depth"
 import {
   draftReply,
@@ -390,73 +392,6 @@ const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "archived", key: "archivedFolder", icon: Archive },
 ]
 
-// Outcomes are a fixed list (not user-customizable tags) encoding the funnel:
-// working it → won → needs attention → lost.
-const STATUS_META: Record<
-  ConvStatus,
-  { en: string; es: string; dot: string; badge: string }
-> = {
-  interested: {
-    en: "Interested",
-    es: "Interesado",
-    dot: "bg-sky-500",
-    badge: "bg-sky-500/12 text-sky-700 dark:text-sky-300",
-  },
-  not_interested: {
-    en: "Not interested",
-    es: "No interesado",
-    dot: "bg-rose-500",
-    badge: "bg-rose-500/12 text-rose-700 dark:text-rose-300",
-  },
-  qualified: {
-    en: "Qualified",
-    es: "Calificado",
-    dot: "bg-indigo-500",
-    badge: "bg-indigo-500/12 text-indigo-700 dark:text-indigo-300",
-  },
-  disqualified: {
-    en: "Disqualified",
-    es: "Descalificado",
-    dot: "bg-red-600",
-    badge: "bg-red-600/12 text-red-700 dark:text-red-300",
-  },
-  meeting_booked: {
-    en: "Meeting booked",
-    es: "Reunión",
-    dot: "bg-emerald-500",
-    badge: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
-  },
-  need_review: {
-    en: "Need review",
-    es: "Revisar",
-    dot: "bg-amber-500",
-    badge: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
-  },
-  won: {
-    en: "Won",
-    es: "Ganado",
-    dot: "bg-green-600",
-    badge: "bg-green-600/12 text-green-700 dark:text-green-300",
-  },
-  lost: {
-    en: "Lost",
-    es: "Perdido",
-    dot: "bg-slate-500",
-    badge: "bg-slate-500/12 text-slate-700 dark:text-slate-300",
-  },
-}
-
-const STATUS_ORDER: ConvStatus[] = [
-  "interested",
-  "not_interested",
-  "qualified",
-  "disqualified",
-  "meeting_booked",
-  "need_review",
-  "won",
-  "lost",
-]
-
 const EVENT_META: Record<
   ConvEventKind,
   { en: string; es: string; icon: typeof InboxIcon }
@@ -528,13 +463,6 @@ function taskEventState(t: Task): TaskEventState {
 
 type View = { kind: "folder"; id: Folder } | { kind: "tag"; id: ConvStatus }
 
-const ChannelIcon = ({ channel, className }: { channel: Channel; className?: string }) =>
-  channel === "email" ? (
-    <Mail className={className ?? "size-3.5"} />
-  ) : (
-    <LinkedinIcon className={className ?? "size-3.5"} />
-  )
-
 function lastMessage(conv: Conversation) {
   return conv.messages[conv.messages.length - 1]
 }
@@ -563,11 +491,6 @@ function defaultLang(p: Prospect | undefined): ChatLang {
   return ES_LOCATIONS.some((x) => loc.includes(x)) ? "es" : "en"
 }
 
-function assigneeName(id: string | undefined): string | undefined {
-  if (!id) return undefined
-  if (id === currentUser.id) return currentUser.name
-  return getRep(id)?.name
-}
 function avatarColorFor(id: string): string {
   if (id === currentUser.id) return currentUser.avatarColor
   return getRep(id)?.avatarColor ?? "#7c3aed"
