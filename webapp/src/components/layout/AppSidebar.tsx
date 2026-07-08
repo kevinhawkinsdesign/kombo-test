@@ -62,6 +62,7 @@ import { conversations } from "@/lib/mock-data"
 import { useLocale } from "@/lib/locale"
 import { useSetup } from "@/lib/setup"
 import { useReleaseMode, isV2OnlyPath } from "@/lib/release-mode"
+import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
 
 interface NavItem {
   to: string
@@ -654,28 +655,8 @@ function SidebarContent({
   )
 }
 
-const COLLAPSE_KEY = "kombo-sidebar-collapsed"
-
 export function AppSidebar() {
-  const [collapsed, setCollapsed] = React.useState(() => {
-    try {
-      return localStorage.getItem(COLLAPSE_KEY) === "1"
-    } catch {
-      return false
-    }
-  })
-
-  const toggle = React.useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev
-      try {
-        localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0")
-      } catch {
-        /* ignore */
-      }
-      return next
-    })
-  }, [])
+  const { collapsed, toggle } = useSidebarCollapsed()
 
   return (
     <aside

@@ -32,6 +32,8 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
   ListTodo,
   Reply,
   Phone,
@@ -40,6 +42,8 @@ import {
   Circle,
   AlarmClock,
   CheckCircle2,
+  ClipboardList,
+  CornerUpRight,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -59,6 +63,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -77,18 +89,25 @@ import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { getRep } from "@/lib/team"
-import { useConversations, conversationStore, useTasks, useCampaigns } from "@/lib/store"
+import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
 import { campaignEnrollments } from "@/lib/mock-depth"
-import { draftReply } from "@/lib/mock-ai-reply"
+import {
+  draftReply,
+  type ReplyTone,
+  type ReplyLength,
+  type DraftReplyOptions,
+} from "@/lib/mock-ai-reply"
 import {
   translate,
   detectLang,
   LANG_FLAG,
   LANG_LABEL,
 } from "@/lib/mock-translate"
-import { relativeTime, futureRelativeTime, initials } from "@/lib/format"
+import { relativeTime, futureRelativeTime, formatDueAt, initials } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
+import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
+import { ProspectSummaryPanel } from "@/components/common/ProspectSummaryPanel"
 import type {
   Channel,
   ChatLang,
@@ -101,6 +120,7 @@ import type {
   StepChannel,
   Task,
   TaskEventState,
+  TaskType,
 } from "@/lib/types"
 
 type Locale = "en" | "es"
@@ -183,6 +203,13 @@ const COPY = {
     longer: "Make longer",
     refined: (label: string) => `Rewrote — ${label.toLowerCase()}`,
     personalize: "+ Variables",
+    regenTitle: "Regenerate with…",
+    regenLengthNormal: "Normal",
+    regenLanguage: "Language",
+    regenInstructions: "Additional instructions (optional)",
+    regenInstructionsPlaceholder: "e.g. mention our upcoming webinar…",
+    regenCancel: "Cancel",
+    regenerated: "Draft regenerated",
     vars: {
       first_name: "First name",
       last_name: "Last name",
@@ -193,6 +220,8 @@ const COPY = {
     sendVia: (ch: string) => `Send via ${ch}`,
     collapseList: "Collapse list",
     expandList: "Show list",
+    showProfile: "Show profile panel",
+    hideProfile: "Hide profile panel",
     draftReady: "Kai drafted a reply — review and send.",
     scheduledFor: (d: string) => `Reply scheduled for ${d}`,
     cancelSchedule: "Cancel",
@@ -288,6 +317,13 @@ const COPY = {
     longer: "Más largo",
     refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
     personalize: "+ Variables",
+    regenTitle: "Regenerar con…",
+    regenLengthNormal: "Normal",
+    regenLanguage: "Idioma",
+    regenInstructions: "Instrucciones adicionales (opcional)",
+    regenInstructionsPlaceholder: "p. ej. menciona nuestro próximo webinar…",
+    regenCancel: "Cancelar",
+    regenerated: "Borrador regenerado",
     vars: {
       first_name: "Nombre",
       last_name: "Apellido",
@@ -298,6 +334,8 @@ const COPY = {
     sendVia: (ch: string) => `Enviar por ${ch}`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
+    showProfile: "Mostrar panel de perfil",
+    hideProfile: "Ocultar panel de perfil",
     draftReady: "Kai redactó una respuesta — revísala y envía.",
     scheduledFor: (d: string) => `Respuesta programada para ${d}`,
     cancelSchedule: "Cancelar",
@@ -471,6 +509,15 @@ const TASK_STATE_META: Record<
   done: { en: "Task completed", es: "Tarea completada", icon: CheckCircle2 },
 }
 
+// Mirrors Tasks.tsx's TYPE_ICON so a task reads the same way in both places.
+const TASK_TYPE_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> = {
+  call: Phone,
+  email: Mail,
+  linkedin: LinkedinIcon,
+  manual: ClipboardList,
+  follow_up: CornerUpRight,
+}
+
 // Derive a coarse display state for a task in the conversation timeline —
 // Task itself only tracks done/not-done, so "reminder" is anything due soon.
 function taskEventState(t: Task): TaskEventState {
@@ -598,20 +645,35 @@ export default function Inbox() {
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
   const [outcomesOpen, setOutcomesOpen] = React.useState(true)
+  // Prospect/company summary panel: defaults open (unlike focus mode) since
+  // a context panel's job is to be glanceable while triaging, not to hide
+  // chrome for reading one thread.
+  const [profileOpen, setProfileOpen] = React.useState(true)
 
   const visible = conversations.filter((conv) => !conv.archived)
 
-  // Prospects with an open task assigned to the current user — backs the
-  // "My Tasks" folder below.
-  const myOpenTaskProspectIds = React.useMemo(() => {
-    const set = new Set<string>()
-    tasks.forEach((t) => {
-      if (t.ownerId === currentUser.id && !t.done && !t.ignored && t.prospectId) {
-        set.add(t.prospectId)
-      }
+  // Open tasks assigned to the current user — backs the "My Tasks" folder,
+  // which renders these directly as task rows rather than filtering
+  // conversations.
+  const myTaskRows = React.useMemo(
+    () =>
+      tasks
+        .filter((t) => t.ownerId === currentUser.id && !t.done && !t.ignored)
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()),
+    [tasks]
+  )
+  const filteredTaskRows = React.useMemo(() => {
+    if (!query.trim()) return myTaskRows
+    const q = query.trim().toLowerCase()
+    return myTaskRows.filter((t) => {
+      const p = t.prospectId ? getProspect(t.prospectId) : undefined
+      const hay = [t.title, p?.firstName, p?.lastName, p?.company]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+      return hay.includes(q)
     })
-    return set
-  }, [tasks])
+  }, [myTaskRows, query])
 
   const folderCount = React.useCallback(
     (id: Folder): number => {
@@ -625,7 +687,7 @@ export default function Inbox() {
         case "needs_reply":
           return visible.filter(needsReply).length
         case "my_tasks":
-          return visible.filter((x) => myOpenTaskProspectIds.has(x.prospectId)).length
+          return myTaskRows.length
         case "scheduled":
           return visible.filter(isScheduled).length
         case "sent":
@@ -634,7 +696,7 @@ export default function Inbox() {
           return conversations.filter((x) => x.archived).length
       }
     },
-    [visible, conversations, myOpenTaskProspectIds]
+    [visible, conversations, myTaskRows]
   )
 
   const tagCounts = React.useMemo(() => {
@@ -685,7 +747,9 @@ export default function Inbox() {
         case "needs_reply":
           return needsReply(conv)
         case "my_tasks":
-          return myOpenTaskProspectIds.has(conv.prospectId)
+          // This folder renders task rows directly (see the list-column
+          // render below) rather than filtering conversations.
+          return false
         case "scheduled":
           return isScheduled(conv)
         case "sent":
@@ -702,18 +766,18 @@ export default function Inbox() {
     return filtered.sort(
       (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     )
-  }, [
-    visible,
-    conversations,
-    view,
-    channelFilter,
-    unreadOnly,
-    matchesSearch,
-    myOpenTaskProspectIds,
-  ])
+  }, [visible, conversations, view, channelFilter, unreadOnly, matchesSearch])
 
+  const isMyTasksView = view.kind === "folder" && view.id === "my_tasks"
   const active = conversations.find((conv) => conv.id === activeId)
-  const activeInList = active && list.some((x) => x.id === active.id)
+  // "My Tasks" doesn't read `list` for rendering (it renders task rows
+  // instead), so a task's linked conversation is "in view" if it matches one
+  // of the current task rows rather than the (intentionally empty) `list`.
+  const activeInList =
+    active &&
+    (isMyTasksView
+      ? myTaskRows.some((t) => t.prospectId === active.prospectId)
+      : list.some((x) => x.id === active.id))
   // No conversation is open until the user explicitly picks one — opening a
   // thread marks it read, so we never auto-select on load or list changes.
   const effectiveActive = activeInList ? active : undefined
@@ -721,11 +785,73 @@ export default function Inbox() {
   const recipientLang: ChatLang =
     effectiveActive?.recipientLang ?? defaultLang(activeProspect)
 
+  // Auto-collapse the app nav sidebar while a thread is open, and restore
+  // whatever state it was in before when the thread closes or this page
+  // unmounts. This reaches into a sibling component's state (AppSidebar),
+  // so it's an effect rather than a derived render value.
+  const threadOpen = Boolean(effectiveActive)
+  const { collapsed, setCollapsed } = useSidebarCollapsed()
+
+  const collapsedRef = React.useRef(collapsed)
+  React.useEffect(() => {
+    collapsedRef.current = collapsed
+  }, [collapsed])
+  // Read inside the collapsed-watcher effect below so that effect only
+  // depends on `collapsed` itself — keying it on `threadOpen` too would
+  // re-run it in the same commit as the thread-open effect, while
+  // `collapsed` still held its pre-update value, and misfire as a "manual
+  // override" before the requested update had even landed.
+  const threadOpenRef = React.useRef(threadOpen)
+  React.useEffect(() => {
+    threadOpenRef.current = threadOpen
+  }, [threadOpen])
+
+  // What to restore to when the thread closes/unmounts. null = nothing
+  // pending (no thread open, or the user manually overrode — see below).
+  const restoreToRef = React.useRef<boolean | null>(null)
+  // Distinguishes our own setCollapsed calls from the user's manual toggle.
+  const lastCommandedRef = React.useRef<boolean | null>(null)
+
+  React.useEffect(() => {
+    if (threadOpen) {
+      if (restoreToRef.current === null) {
+        restoreToRef.current = collapsedRef.current
+        if (!collapsedRef.current) {
+          lastCommandedRef.current = true
+          setCollapsed(true)
+        }
+      }
+      return
+    }
+    if (restoreToRef.current !== null) {
+      lastCommandedRef.current = restoreToRef.current
+      setCollapsed(restoreToRef.current)
+      restoreToRef.current = null
+    }
+  }, [threadOpen, setCollapsed])
+
+  // A collapsed-state change we didn't just command ourselves, while a
+  // thread is open, means the user manually toggled it — let it stick.
+  React.useEffect(() => {
+    if (lastCommandedRef.current === collapsed) {
+      lastCommandedRef.current = null
+      return
+    }
+    if (threadOpenRef.current) restoreToRef.current = null
+  }, [collapsed])
+
+  // Restore on unmount (navigating away from Inbox with a thread still open).
+  React.useEffect(() => {
+    return () => {
+      if (restoreToRef.current !== null) setCollapsed(restoreToRef.current)
+    }
+  }, [setCollapsed])
+
   const viewTitle =
     view.kind === "tag"
       ? STATUS_META[view.id][locale === "es" ? "es" : "en"]
       : c[FOLDERS.find((f) => f.id === view.id)!.key]
-  const viewCount = list.length
+  const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive = channelFilter !== "all" || unreadOnly
 
   // Selection doesn't carry over when the user switches folders/outcomes.
@@ -770,6 +896,12 @@ export default function Inbox() {
     setActiveId(id)
     setShowThreadMobile(true)
     conversationStore.markRead(id)
+  }
+  // Selecting a task in "My Tasks" opens its linked conversation, same as
+  // clicking a conversation row anywhere else — no separate task-detail view.
+  function openTaskConversation(task: Task) {
+    const conv = conversations.find((c) => c.prospectId === task.prospectId)
+    if (conv) openConversation(conv.id)
   }
   function toggleTranslation(id: string) {
     setShownTranslations((prev) => {
@@ -1064,7 +1196,65 @@ export default function Inbox() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {list.length === 0 ? (
+          {isMyTasksView ? (
+            filteredTaskRows.length === 0 ? (
+              <div className="text-muted-foreground flex flex-col items-center gap-2 p-10 text-center">
+                <ListTodo className="size-6 opacity-50" />
+                <p className="text-sm">{c.emptyHint}</p>
+              </div>
+            ) : (
+              filteredTaskRows.map((task) => {
+                const p = task.prospectId ? getProspect(task.prospectId) : undefined
+                const Icon = TASK_TYPE_ICON[task.type]
+                const isActive = Boolean(
+                  effectiveActive && task.prospectId === effectiveActive.prospectId
+                )
+                return (
+                  <div
+                    key={task.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openTaskConversation(task)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") openTaskConversation(task)
+                    }}
+                    className={cn(
+                      "relative flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors",
+                      isActive ? "bg-muted/60" : "hover:bg-muted/40"
+                    )}
+                  >
+                    {isActive && (
+                      <span className="bg-primary absolute inset-y-0 left-0 w-0.5" />
+                    )}
+                    <div
+                      className="flex shrink-0 items-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={task.done}
+                        onCheckedChange={() => taskStore.toggle(task.id)}
+                        aria-label="Mark task done"
+                      />
+                    </div>
+                    <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
+                      <Icon className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{task.title}</p>
+                      {p && (
+                        <p className="text-muted-foreground truncate text-xs">
+                          {p.firstName} {p.lastName} · {p.company}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-muted-foreground shrink-0 text-xs">
+                      {formatDueAt(task.dueDate)}
+                    </span>
+                  </div>
+                )
+              })
+            )
+          ) : list.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center gap-2 p-10 text-center">
               <InboxIcon className="size-6 opacity-50" />
               <p className="text-sm">{c.emptyHint}</p>
@@ -1281,6 +1471,22 @@ export default function Inbox() {
                 <PanelLeftOpen className="size-4" />
               ) : (
                 <PanelLeftClose className="size-4" />
+              )}
+            </Button>
+
+            {/* Prospect/company summary panel toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden lg:inline-flex"
+              onClick={() => setProfileOpen((v) => !v)}
+              aria-label={profileOpen ? c.hideProfile : c.showProfile}
+              title={profileOpen ? c.hideProfile : c.showProfile}
+            >
+              {profileOpen ? (
+                <PanelRightClose className="size-4" />
+              ) : (
+                <PanelRightOpen className="size-4" />
               )}
             </Button>
 
@@ -1593,6 +1799,18 @@ export default function Inbox() {
         </div>
       )}
 
+      {/* Prospect/company summary panel — every folder, not just Tasks */}
+      {effectiveActive && activeProspect && (
+        <div
+          className={cn(
+            "hidden w-72 shrink-0 flex-col overflow-y-auto border-l",
+            profileOpen ? "lg:flex" : "lg:hidden"
+          )}
+        >
+          <ProspectSummaryPanel prospect={activeProspect} locale={locale} />
+        </div>
+      )}
+
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(v) => !v && setToDelete(null)}
@@ -1638,7 +1856,25 @@ function Composer({
   const [templateOpen, setTemplateOpen] = React.useState(false)
   const [customOpen, setCustomOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
+  const [regenOpen, setRegenOpen] = React.useState(false)
+  const [regenTone, setRegenTone] = React.useState<ReplyTone>("professional")
+  const [regenLength, setRegenLength] = React.useState<ReplyLength>("normal")
+  const [regenLang, setRegenLang] = React.useState<ChatLang>(recipientLang)
+  const [regenInstructions, setRegenInstructions] = React.useState("")
   const taRef = React.useRef<RichTextEditorHandle>(null)
+
+  // wasOpen reset pattern — seed every field back to its default each time
+  // the Regenerate dialog opens, so a prior selection never lingers.
+  const [regenWasOpen, setRegenWasOpen] = React.useState(regenOpen)
+  if (regenOpen !== regenWasOpen) {
+    setRegenWasOpen(regenOpen)
+    if (regenOpen) {
+      setRegenTone("professional")
+      setRegenLength("normal")
+      setRegenLang(recipientLang)
+      setRegenInstructions("")
+    }
+  }
 
   const CHANNEL_NAMES: Record<string, string> = {
     email: c.email,
@@ -1670,11 +1906,32 @@ function Composer({
   // Same variables as a tag→value map, for the template picker's live preview.
   const varsMap = Object.fromEntries(vars.map((v) => [v.tag, v.value]))
 
-  function generate() {
+  function runGenerate(options?: DraftReplyOptions) {
     const next = seed + 1
     setSeed(next)
-    setReply(plainToHtml(draftReply(prospect, conv, next)))
+    setReply(plainToHtml(draftReply(prospect, conv, next, options)))
     setAiUsed(true)
+  }
+
+  function generate() {
+    runGenerate()
+  }
+
+  // Regenerate (composer already has text) opens a dialog for tone/length/
+  // language/instructions first, instead of re-rolling with no input.
+  function openRegenerate() {
+    setRegenOpen(true)
+  }
+
+  function confirmRegenerate() {
+    runGenerate({
+      tone: regenTone,
+      length: regenLength,
+      lang: regenLang,
+      instructions: regenInstructions.trim() || undefined,
+    })
+    setRegenOpen(false)
+    toast.success(c.regenerated)
   }
 
   // Tone rewrite — restyle the draft (stand-in: a fresh AI variant).
@@ -1745,6 +2002,22 @@ function Composer({
   }
 
   const showTranslate = hasText && detectLang(replyText) !== recipientLang
+
+  // Regenerate-dialog option arrays — locale-dependent labels, so declared
+  // inside the component rather than hoisted to module scope. Reuse the
+  // existing Tone/Length copy keys rather than a second taxonomy.
+  const TONE_OPTIONS: { value: ReplyTone; label: string }[] = [
+    { value: "formal", label: c.toneFormal },
+    { value: "friendly", label: c.toneFriendly },
+    { value: "professional", label: c.toneProfessional },
+    { value: "concise", label: c.toneConcise },
+  ]
+  const LENGTH_OPTIONS: { value: ReplyLength; label: string }[] = [
+    { value: "shorter", label: c.shorter },
+    { value: "normal", label: c.regenLengthNormal },
+    { value: "longer", label: c.longer },
+  ]
+  const LANG_OPTIONS = Object.keys(LANG_LABEL) as ChatLang[]
 
   const toolbarEnd = (
     <>
@@ -1828,7 +2101,11 @@ function Composer({
       />
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <Button variant="outline" size="sm" onClick={generate}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={hasText ? openRegenerate : generate}
+        >
           <Wand2 className="size-4" />
           {hasText ? c.regenerate : c.generate}
         </Button>
@@ -1967,6 +2244,81 @@ function Composer({
             <Button variant="volt" disabled={!customValue} onClick={confirmCustomSchedule}>
               <CalendarClock className="size-4" />
               {c.scheduleConfirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Regenerate options */}
+      <Dialog open={regenOpen} onOpenChange={setRegenOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{c.regenTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="regen-tone">{c.tone}</Label>
+              <Select value={regenTone} onValueChange={(v) => setRegenTone(v as ReplyTone)}>
+                <SelectTrigger id="regen-tone" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TONE_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="regen-length">{c.length}</Label>
+              <Select value={regenLength} onValueChange={(v) => setRegenLength(v as ReplyLength)}>
+                <SelectTrigger id="regen-length" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LENGTH_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="regen-lang">{c.regenLanguage}</Label>
+              <Select value={regenLang} onValueChange={(v) => setRegenLang(v as ChatLang)}>
+                <SelectTrigger id="regen-lang" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANG_OPTIONS.map((lang) => (
+                    <SelectItem key={lang} value={lang}>
+                      {LANG_FLAG[lang]} {LANG_LABEL[lang]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="regen-instructions">{c.regenInstructions}</Label>
+              <Textarea
+                id="regen-instructions"
+                value={regenInstructions}
+                onChange={(e) => setRegenInstructions(e.target.value)}
+                placeholder={c.regenInstructionsPlaceholder}
+                className="min-h-20"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRegenOpen(false)}>
+              {c.regenCancel}
+            </Button>
+            <Button variant="volt" onClick={confirmRegenerate}>
+              <Wand2 className="size-4" />
+              {c.regenerate}
             </Button>
           </DialogFooter>
         </DialogContent>
