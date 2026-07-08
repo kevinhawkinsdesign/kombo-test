@@ -925,7 +925,6 @@ export const conversationStore = {
       messages: [...c.messages, message],
       lastMessageAt: message.timestamp,
       unread: 0,
-      snoozedUntil: null,
       scheduledAt: null,
       aiDraft: undefined,
       archived: false,
@@ -957,12 +956,6 @@ export const conversationStore = {
   },
   markUnread(id: string): void {
     patchConversation(id, (c) => ({ ...c, unread: Math.max(1, c.unread) }))
-  },
-  snooze(id: string, untilISO: string): void {
-    patchConversation(id, (c) => ({ ...c, snoozedUntil: untilISO }))
-  },
-  unsnooze(id: string): void {
-    patchConversation(id, (c) => ({ ...c, snoozedUntil: null }))
   },
   assign(id: string, assigneeId: string | undefined): void {
     patchConversation(id, (c) => ({ ...c, assigneeId }))
