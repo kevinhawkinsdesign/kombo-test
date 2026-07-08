@@ -24,9 +24,21 @@ export const RichTextEditor = React.forwardRef<
     minHeight?: string
     onFocus?: () => void
     ariaLabel?: string
+    // Extra controls right-aligned in the toolbar row (e.g. an AI-draft badge,
+    // template/variable pickers) — optional, purely additive per call site.
+    toolbarEnd?: React.ReactNode
   }
 >(function RichTextEditor(
-  { value, onChange, placeholder, className, minHeight = "min-h-48", onFocus, ariaLabel },
+  {
+    value,
+    onChange,
+    placeholder,
+    className,
+    minHeight = "min-h-48",
+    onFocus,
+    ariaLabel,
+    toolbarEnd,
+  },
   ref
 ) {
   const editorRef = React.useRef<HTMLDivElement>(null)
@@ -141,6 +153,9 @@ export const RichTextEditor = React.forwardRef<
             </button>
           )
         })}
+        {toolbarEnd && (
+          <div className="ml-auto flex items-center gap-1.5 pr-1">{toolbarEnd}</div>
+        )}
       </div>
       <div className="relative">
         <div
