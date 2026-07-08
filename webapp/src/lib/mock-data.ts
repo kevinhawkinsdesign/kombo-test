@@ -810,7 +810,7 @@ export const conversations: Conversation[] = [
     unread: 0,
     lastMessageAt: "2026-06-22T08:00:00Z",
     status: "interested",
-    scheduledAt: "2026-06-24T08:00:00Z",
+    scheduledAt: "2026-07-09T08:00:00Z",
     aiDraft:
       "Hi Lucas — circling back as promised. I put together a short overview tailored to Nuclio; want me to send it over or jump on a quick call Thursday?",
     messages: [
@@ -824,7 +824,7 @@ export const conversations: Conversation[] = [
       },
     ],
   },
-  // — Email, not interested, polite close (2d ago) —
+  // — Email, not interested, polite close (2d ago) — wrapped up and archived —
   {
     id: "c_8",
     prospectId: "p_8",
@@ -833,6 +833,7 @@ export const conversations: Conversation[] = [
     unread: 0,
     lastMessageAt: "2026-06-21T16:45:00Z",
     status: "not_interested",
+    archived: true,
     aiDraft:
       "Appreciate you being straight with me, James — I won't keep your inbox busy. If priorities shift, I'm one reply away. Wishing you and the team a strong quarter.",
     messages: [

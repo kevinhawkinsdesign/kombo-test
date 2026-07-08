@@ -198,6 +198,8 @@ export type ConvEventKind =
   | "tag"
   | "step"
   | "task"
+  | "scheduled_reply" // a queued reply not yet sent — synthesized, not stored
+  | "next_step" // the prospect's next not-yet-fired sequence step — synthesized, not stored
 
 export type TaskEventState = "todo" | "reminder" | "done"
 
