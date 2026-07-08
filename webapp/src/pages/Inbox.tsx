@@ -1447,22 +1447,13 @@ export default function Inbox() {
             >
               <ArrowLeft className="size-4" />
             </Button>
-            <ProspectAvatar prospect={activeProspect} className="size-9" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
-                {activeProspect.firstName} {activeProspect.lastName}
-              </p>
-              <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-                <ChannelIcon channel={effectiveActive.channel} className="size-3" />
-                {activeProspect.title} · {activeProspect.company}
-              </p>
-            </div>
 
-            {/* Focus mode: collapse the list/rail to read the thread full-width */}
+            {/* Focus mode: collapse the list/rail to read the thread full-width.
+                Placed at the far left edge, next to the panel it collapses. */}
             <Button
               variant="ghost"
               size="icon"
-              className="hidden md:inline-flex"
+              className="-ml-2 hidden md:inline-flex"
               onClick={() => setFocused((v) => !v)}
               aria-label={focused ? c.expandList : c.collapseList}
               title={focused ? c.expandList : c.collapseList}
@@ -1474,21 +1465,16 @@ export default function Inbox() {
               )}
             </Button>
 
-            {/* Prospect/company summary panel toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden lg:inline-flex"
-              onClick={() => setProfileOpen((v) => !v)}
-              aria-label={profileOpen ? c.hideProfile : c.showProfile}
-              title={profileOpen ? c.hideProfile : c.showProfile}
-            >
-              {profileOpen ? (
-                <PanelRightClose className="size-4" />
-              ) : (
-                <PanelRightOpen className="size-4" />
-              )}
-            </Button>
+            <ProspectAvatar prospect={activeProspect} className="size-9" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">
+                {activeProspect.firstName} {activeProspect.lastName}
+              </p>
+              <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+                <ChannelIcon channel={effectiveActive.channel} className="size-3" />
+                {activeProspect.title} · {activeProspect.company}
+              </p>
+            </div>
 
             {/* Status tag selector */}
             <DropdownMenu>
@@ -1609,6 +1595,23 @@ export default function Inbox() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Prospect/company summary panel toggle. Placed at the far
+                right edge, next to the panel it collapses. */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden lg:inline-flex"
+              onClick={() => setProfileOpen((v) => !v)}
+              aria-label={profileOpen ? c.hideProfile : c.showProfile}
+              title={profileOpen ? c.hideProfile : c.showProfile}
+            >
+              {profileOpen ? (
+                <PanelRightClose className="size-4" />
+              ) : (
+                <PanelRightOpen className="size-4" />
+              )}
+            </Button>
           </div>
 
           {/* Status bar */}
