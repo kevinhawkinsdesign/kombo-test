@@ -6,6 +6,7 @@ import { ProspectSearch } from "@/components/layout/ProspectSearch"
 import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
 import { NewCampaignProvider } from "@/components/campaign/NewCampaignWizard"
+import { SidebarCollapseProvider } from "@/lib/sidebar-collapse"
 import { useReleaseMode, isV2OnlyPath, V1_HOME, V2_HOME } from "@/lib/release-mode"
 
 export function AppLayout() {
@@ -17,6 +18,7 @@ export function AppLayout() {
   const blockedInV2 = !isV1 && pathname === V1_HOME
 
   return (
+    <SidebarCollapseProvider>
     <NewCampaignProvider>
     <div className="bg-muted/60 dark:bg-background flex min-h-svh">
       <a
@@ -44,5 +46,6 @@ export function AppLayout() {
       <ProspectSearch />
     </div>
     </NewCampaignProvider>
+    </SidebarCollapseProvider>
   )
 }
