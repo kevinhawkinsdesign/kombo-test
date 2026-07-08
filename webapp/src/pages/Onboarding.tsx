@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 
 import { KomboBrandLogo } from "@/components/KomboLogo"
+import kaiUrl from "@/assets/kai-pleased.png"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -315,7 +316,13 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="bg-muted/30 flex min-h-svh flex-col items-center p-6">
+    <div className="bg-muted/30 relative flex min-h-svh flex-col items-center overflow-hidden p-6">
+      <img
+        src={kaiUrl}
+        alt=""
+        className="pointer-events-none fixed right-6 bottom-6 hidden size-28 select-none sm:block"
+        draggable={false}
+      />
       <div className="w-full max-w-2xl">
         {/* Header: logo + progress */}
         <div className="flex items-center justify-between py-8">
@@ -542,7 +549,13 @@ export default function Onboarding() {
 
 function CompletionScreen({ name }: { name: string }) {
   return (
-    <div className="bg-muted/30 flex min-h-svh flex-col items-center justify-center gap-6 p-6 text-center">
+    <div className="bg-muted/30 relative flex min-h-svh flex-col items-center justify-center gap-6 p-6 text-center">
+      <img
+        src={kaiUrl}
+        alt=""
+        className="pointer-events-none fixed right-6 bottom-6 hidden size-28 select-none sm:block"
+        draggable={false}
+      />
       <div className="relative flex size-24 items-center justify-center">
         <div className="border-muted border-t-primary size-24 animate-spin rounded-full border-4" />
         <Rocket className="text-primary absolute size-8" />
