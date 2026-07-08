@@ -239,6 +239,7 @@ export type StepChannel =
   | "linkedin_message"
   | "linkedin_dm"
   | "linkedin_inmail"
+  | "manual" // channel-less offline activity (a visit, a handwritten note, etc.)
 
 export interface CampaignStep {
   id: string

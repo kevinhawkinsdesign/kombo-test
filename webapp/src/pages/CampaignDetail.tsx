@@ -57,6 +57,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
@@ -111,6 +117,8 @@ import {
 } from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignAudienceDialog } from "@/components/campaigns/AddCampaignAudienceDialog"
+import { CampaignTabBar } from "@/components/campaigns/CampaignTabBar"
+import { campaignTabsStore } from "@/lib/campaign-tabs"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team } from "@/lib/team"
 import {
@@ -153,6 +161,7 @@ const COPY = {
       linkedin_message: "LinkedIn message",
       linkedin_dm: "LinkedIn DM",
       linkedin_inmail: "LinkedIn InMail",
+      manual: "Manual task",
     } as Record<StepChannel, string>,
     statusLabel: {
       active: "Active",
@@ -174,6 +183,12 @@ const COPY = {
       `Created ${date} · ${steps} steps`,
     pause: "Make inactive",
     activate: "Activate",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Add a sequence and prospects before activating."
+      if (missingSequence) return "Add a sequence before activating."
+      return "Add prospects before activating."
+    },
     endCampaign: "End campaign",
     endConfirmTitle: "End this campaign?",
     endConfirmBody:
@@ -244,6 +259,7 @@ const COPY = {
     moveStepUp: "Move step up",
     moveStepDown: "Move step down",
     removeStep: "Delete step",
+    insertStepAria: "Insert step here",
     stepChannelAria: (n: number) => `Step ${n} channel`,
     wait: "Wait",
     daysBeforeSending: "days before sending",
@@ -281,6 +297,7 @@ const COPY = {
     groupEmail: "Email",
     groupMessaging: "Messaging",
     groupLinkedin: "LinkedIn",
+    groupOther: "Other",
     setupTitle: "Finish setting up this campaign",
     setupDesc: "A campaign needs a sequence and prospects before it can run.",
     setupSequenceLabel: "Build your sequence",
@@ -341,6 +358,7 @@ const COPY = {
       linkedin_message: "Mensaje de LinkedIn",
       linkedin_dm: "Mensaje directo de LinkedIn",
       linkedin_inmail: "InMail de LinkedIn",
+      manual: "Tarea manual",
     } as Record<StepChannel, string>,
     statusLabel: {
       active: "Activa",
@@ -362,6 +380,12 @@ const COPY = {
       `Creada el ${date} · ${steps} pasos`,
     pause: "Desactivar",
     activate: "Activar",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Agrega una secuencia y prospectos antes de activar."
+      if (missingSequence) return "Agrega una secuencia antes de activar."
+      return "Agrega prospectos antes de activar."
+    },
     endCampaign: "Finalizar campaña",
     endConfirmTitle: "¿Finalizar esta campaña?",
     endConfirmBody:
@@ -432,6 +456,7 @@ const COPY = {
     moveStepUp: "Subir paso",
     moveStepDown: "Bajar paso",
     removeStep: "Eliminar paso",
+    insertStepAria: "Insertar paso aquí",
     stepChannelAria: (n: number) => `Canal del paso ${n}`,
     wait: "Espera",
     daysBeforeSending: "días antes de enviar",
@@ -469,6 +494,7 @@ const COPY = {
     groupEmail: "Correo",
     groupMessaging: "Mensajería",
     groupLinkedin: "LinkedIn",
+    groupOther: "Otro",
     setupTitle: "Termina de configurar esta campaña",
     setupDesc: "Una campaña necesita una secuencia y prospectos antes de ejecutarse.",
     setupSequenceLabel: "Crea tu secuencia",
@@ -634,6 +660,10 @@ const CHANNELS: Record<StepChannel, ChannelMeta> = {
     tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
     Icon: LinkedinIcon,
   },
+  manual: {
+    tint: "bg-muted text-muted-foreground",
+    Icon: ListTodo,
+  },
 }
 
 // Tolerant lookup so previously-persisted localStorage data (e.g. the legacy
@@ -706,6 +736,12 @@ export default function CampaignDetail() {
     new Set()
   )
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+
+  // Visiting a campaign registers it as an open tab — same mental model as
+  // the Lists tab bar (lib/list-tabs.ts).
+  React.useEffect(() => {
+    if (id) campaignTabsStore.open(id)
+  }, [id])
 
   if (!campaign) {
     return (
@@ -1109,6 +1145,8 @@ export default function CampaignDetail() {
 
   return (
     <Page>
+      <CampaignTabBar currentId={campaign.id} />
+
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/campaigns">
           <ArrowLeft className="size-4" />
@@ -1167,7 +1205,7 @@ export default function CampaignDetail() {
                 {c.cancelSchedule}
               </Button>
             </>
-          ) : (
+          ) : setupComplete ? (
             <div className="flex items-center">
               <Button
                 variant="volt"
@@ -1205,6 +1243,32 @@ export default function CampaignDetail() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+          ) : (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-flex">
+                    <div className="flex items-center">
+                      <Button variant="volt" className="rounded-r-none" disabled>
+                        <Play className="size-4" />
+                        {c.activate}
+                      </Button>
+                      <Button
+                        variant="volt"
+                        className="rounded-l-none border-l border-white/25 px-2"
+                        aria-label={c.scheduleStart}
+                        disabled
+                      >
+                        <ChevronDown className="size-4" />
+                      </Button>
+                    </div>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {c.activateDisabledReason(!hasSequence, !hasFeed)}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="size-4" />
@@ -1600,30 +1664,48 @@ export default function CampaignDetail() {
                 </Button>
               </div>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                {/* Step list — pick a step to edit it on the right. */}
-                <div className="flex shrink-0 flex-col gap-2 lg:w-72">
-                  {steps.map((step) => (
+                {/* Step diagram — a connected flow, not stacked cards. Pick a
+                    step to edit it on the right; "+" on a connector inserts
+                    a new step right there instead of only at the end. */}
+                <div className="flex shrink-0 flex-col lg:w-72">
+                  {steps.map((step, index) => (
                     <React.Fragment key={step.id}>
                       {renderStepRow(step)}
                       {step.branch && (
-                        <BranchTracks
-                          step={step}
-                          renderStepRow={renderStepRow}
-                          onAddStep={(track, channel) =>
-                            campaignStore.addBranchStep(
-                              campaignId,
-                              step.id,
-                              track,
+                        <>
+                          <PlainConnector />
+                          <BranchTracks
+                            step={step}
+                            renderStepRow={renderStepRow}
+                            onAddStep={(track, channel) =>
+                              campaignStore.addBranchStep(
+                                campaignId,
+                                step.id,
+                                track,
+                                channel
+                              )
+                            }
+                            onRemoveBranch={() =>
+                              campaignStore.removeBranch(campaignId, step.id)
+                            }
+                          />
+                        </>
+                      )}
+                      {index < steps.length - 1 && (
+                        <StepConnector
+                          onInsert={(channel) => {
+                            campaignStore.insertStep(
+                              campaign.id,
+                              index + 1,
                               channel
                             )
-                          }
-                          onRemoveBranch={() =>
-                            campaignStore.removeBranch(campaignId, step.id)
-                          }
+                            setSelectedStepId(undefined)
+                          }}
                         />
                       )}
                     </React.Fragment>
                   ))}
+                  <div className="mt-2 flex flex-col gap-2">
                   <AddStepMenu
                     onAdd={(channel) => {
                       campaignStore.addStep(campaign.id, channel)
@@ -1658,6 +1740,7 @@ export default function CampaignDetail() {
                     <Lightbulb className="size-4" />
                     {c.suggestedNext(c.channelLabel[suggestNextChannel(steps)])}
                   </button>
+                  </div>
                 </div>
 
                 {/* Detail panel — the selected step's full editor. */}
@@ -1802,6 +1885,7 @@ export default function CampaignDetail() {
                           <Switch
                             id={`manual-task-${step.id}`}
                             checked={Boolean(step.isManualTask)}
+                            disabled={step.channel === "manual"}
                             onCheckedChange={(checked) =>
                               campaignStore.updateStep(campaign.id, step.id, {
                                 isManualTask: checked,
@@ -2387,13 +2471,19 @@ function BranchTracks({
 
 // Grouped like Lemlist's step picker (Suggestions / LinkedIn actions / Phone
 // & Messaging, adapted to the channels we actually support).
-const CHANNEL_GROUPS: { labelKey: "groupEmail" | "groupMessaging" | "groupLinkedin"; channels: StepChannel[] }[] = [
+const CHANNEL_GROUPS: {
+  labelKey: "groupEmail" | "groupMessaging" | "groupLinkedin" | "groupOther"
+  channels: StepChannel[]
+}[] = [
   { labelKey: "groupEmail", channels: ["email"] },
   { labelKey: "groupMessaging", channels: ["whatsapp", "call"] },
   {
     labelKey: "groupLinkedin",
     channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],
   },
+  // Channel-less offline activities (calls, visits, handwritten notes) —
+  // free-form title + notes, same shape as a Tasks-page task.
+  { labelKey: "groupOther", channels: ["manual"] },
 ]
 
 // What a rep would most naturally reach for next, given the last step —
@@ -2412,18 +2502,22 @@ function suggestNextChannel(steps: CampaignStep[]): StepChannel {
 
 function AddStepMenu({
   onAdd,
+  children,
 }: {
   onAdd: (channel: StepChannel) => void
+  children?: React.ReactNode
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          <Plus className="size-4" />
-          {c.addStep}
-        </Button>
+        {children ?? (
+          <Button variant="outline">
+            <Plus className="size-4" />
+            {c.addStep}
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {CHANNEL_GROUPS.map((group, gi) => (
@@ -2455,6 +2549,45 @@ function AddStepMenu({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+// A dashed "+" sitting on the connecting line between two steps — the
+// diagram view's way of inserting a step mid-sequence instead of only at
+// the end.
+function StepConnector({
+  onInsert,
+}: {
+  onInsert: (channel: StepChannel) => void
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  return (
+    <div className="relative flex justify-center py-1">
+      <div
+        className="bg-border absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2"
+        aria-hidden="true"
+      />
+      <AddStepMenu onAdd={onInsert}>
+        <button
+          type="button"
+          aria-label={c.insertStepAria}
+          className="text-muted-foreground hover:text-primary hover:border-primary/50 bg-background relative z-10 flex size-6 items-center justify-center rounded-full border border-dashed transition-colors"
+        >
+          <Plus className="size-3.5" />
+        </button>
+      </AddStepMenu>
+    </div>
+  )
+}
+
+// A plain connecting line, no insert control — used before a branch fork
+// where inserting a new top-level step doesn't apply.
+function PlainConnector() {
+  return (
+    <div className="flex justify-center py-1">
+      <div className="bg-border h-4 w-px" aria-hidden="true" />
+    </div>
   )
 }
 
