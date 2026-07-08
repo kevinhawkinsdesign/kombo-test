@@ -57,6 +57,7 @@ const en: Dict = {
   "help.shortcuts": "Keyboard shortcuts",
   "help.shortcutsSub": "Tips to move faster",
   "help.shortcutsTitle": "Keyboard shortcuts",
+  "help.getStartedSub": "Revisit onboarding & setup",
   "shortcut.search": "Open search",
   "shortcut.close": "Close dialogs & menus",
   "search.navLabel": "Search",
@@ -87,8 +88,6 @@ const en: Dict = {
   "banner.viewingTeam": "You are viewing the team",
   "kai.suggests": "Kai suggests",
   "release.label": "Release",
-  "release.tooltip":
-    "V1 shows only what's in today's Chrome extension. V2 reveals the full web-app vision.",
   "update.available": "A new version of Kombo is available.",
   "update.refresh": "Refresh",
   "update.dismiss": "Dismiss",
@@ -147,6 +146,7 @@ const es: Dict = {
   "help.shortcuts": "Atajos de teclado",
   "help.shortcutsSub": "Trucos para ir más rápido",
   "help.shortcutsTitle": "Atajos de teclado",
+  "help.getStartedSub": "Revisa la incorporación y configuración",
   "shortcut.search": "Abrir búsqueda",
   "shortcut.close": "Cerrar diálogos y menús",
   "search.navLabel": "Buscar",
@@ -177,8 +177,6 @@ const es: Dict = {
   "banner.viewingTeam": "Estás viendo el equipo",
   "kai.suggests": "Kai sugiere",
   "release.label": "Versión",
-  "release.tooltip":
-    "V1 muestra solo lo que existe en la extensión de Chrome actual. V2 revela la visión completa de la app web.",
   "update.available": "Hay una nueva versión de Kombo disponible.",
   "update.refresh": "Actualizar",
   "update.dismiss": "Descartar",
