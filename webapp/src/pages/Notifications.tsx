@@ -59,7 +59,7 @@ export default function Notifications() {
         }
       />
 
-      <Card className="divide-border divide-y p-0">
+      <Card className="divide-border gap-0 divide-y p-0">
         {items.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-14 text-center">
             <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
