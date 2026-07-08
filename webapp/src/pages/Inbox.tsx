@@ -24,7 +24,6 @@ import {
   SlidersHorizontal,
   ThumbsUp,
   Eye,
-  EyeOff,
   Braces,
   MousePointerClick,
   UserCheck,
@@ -141,13 +140,6 @@ const COPY = {
     selectConversationHint: "Choose a thread to read and reply.",
     markRead: "Mark as read",
     markUnread: "Mark as unread",
-    snooze: "Snooze",
-    laterToday: "Later today",
-    tomorrow: "Tomorrow",
-    nextWeek: "Next week",
-    unsnooze: "Un-snooze",
-    snoozed: "Snoozed",
-    snoozedUntil: (d: string) => `Snoozed until ${d}`,
     assign: "Assign",
     assignedTo: (name: string) => `Assigned to ${name}`,
     unassign: "Unassign",
@@ -160,7 +152,6 @@ const COPY = {
     deleted: "Conversation deleted",
     archived: "Conversation archived",
     assignedToast: (name: string) => `Assigned to ${name}`,
-    snoozedToast: "Conversation snoozed",
     templates: "Templates",
     noTemplates: "No templates yet",
     translate: "Translate",
@@ -191,9 +182,7 @@ const COPY = {
     shorter: "Make shorter",
     longer: "Make longer",
     refined: (label: string) => `Rewrote — ${label.toLowerCase()}`,
-    personalize: "Personalize",
-    preview: "Preview",
-    editMessage: "Edit",
+    personalize: "+ Variables",
     vars: {
       first_name: "First name",
       last_name: "Last name",
@@ -257,13 +246,6 @@ const COPY = {
     selectConversationHint: "Elige un hilo para leer y responder.",
     markRead: "Marcar como leído",
     markUnread: "Marcar como no leído",
-    snooze: "Posponer",
-    laterToday: "Más tarde hoy",
-    tomorrow: "Mañana",
-    nextWeek: "La próxima semana",
-    unsnooze: "Reactivar",
-    snoozed: "Pospuesto",
-    snoozedUntil: (d: string) => `Pospuesto hasta ${d}`,
     assign: "Asignar",
     assignedTo: (name: string) => `Asignado a ${name}`,
     unassign: "Quitar asignación",
@@ -276,7 +258,6 @@ const COPY = {
     deleted: "Conversación eliminada",
     archived: "Conversación archivada",
     assignedToast: (name: string) => `Asignado a ${name}`,
-    snoozedToast: "Conversación pospuesta",
     templates: "Plantillas",
     noTemplates: "Aún no hay plantillas",
     translate: "Traducir",
@@ -306,9 +287,7 @@ const COPY = {
     shorter: "Más corto",
     longer: "Más largo",
     refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
-    personalize: "Personalizar",
-    preview: "Vista previa",
-    editMessage: "Editar",
+    personalize: "+ Variables",
     vars: {
       first_name: "Nombre",
       last_name: "Apellido",
@@ -512,9 +491,6 @@ const ChannelIcon = ({ channel, className }: { channel: Channel; className?: str
 function lastMessage(conv: Conversation) {
   return conv.messages[conv.messages.length - 1]
 }
-function isSnoozed(conv: Conversation): boolean {
-  return Boolean(conv.snoozedUntil && new Date(conv.snoozedUntil).getTime() > Date.now())
-}
 function isScheduled(conv: Conversation): boolean {
   return Boolean(conv.scheduledAt && new Date(conv.scheduledAt).getTime() > Date.now())
 }
@@ -641,7 +617,7 @@ export default function Inbox() {
     (id: Folder): number => {
       switch (id) {
         case "inbox":
-          return visible.filter((x) => !isSnoozed(x) && !isScheduled(x)).length
+          return visible.filter((x) => !isScheduled(x)).length
         case "drafts":
           return visible.filter(hasReadyDraft).length
         case "unread":
@@ -701,7 +677,7 @@ export default function Inbox() {
       if (view.kind === "tag") return conv.status === view.id
       switch (view.id) {
         case "inbox":
-          return !isSnoozed(conv) && !isScheduled(conv)
+          return !isScheduled(conv)
         case "drafts":
           return hasReadyDraft(conv)
         case "unread":
@@ -803,12 +779,6 @@ export default function Inbox() {
       return next
     })
   }
-  function snoozeBy(hours: number) {
-    if (!effectiveActive) return
-    conversationStore.snooze(effectiveActive.id, snoozeUntilISO(hours))
-    toast.success(c.snoozedToast)
-  }
-
   // First unread inbound message → marks the "New" divider.
   const firstUnreadId = effectiveActive
     ? effectiveActive.messages.find((m) => m.direction === "inbound" && !m.read)?.id
@@ -1277,7 +1247,7 @@ export default function Inbox() {
       {effectiveActive && activeProspect ? (
         <div className={cn("min-w-0 flex-1 flex-col", showThreadMobile ? "flex" : "hidden md:flex")}>
           {/* Header */}
-          <div className="flex h-14 items-center gap-2 border-b px-4">
+          <div className="flex min-h-14 flex-wrap items-center gap-2 border-b px-4 py-2">
             <Button
               variant="ghost"
               size="icon"
@@ -1377,27 +1347,6 @@ export default function Inbox() {
               {effectiveActive.unread > 0 ? <MailOpen className="size-4" /> : <Mail className="size-4" />}
             </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={c.snooze} title={c.snooze}>
-                  <Clock className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => snoozeBy(3)}>{c.laterToday}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => snoozeBy(24)}>{c.tomorrow}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => snoozeBy(24 * 7)}>{c.nextWeek}</DropdownMenuItem>
-                {isSnoozed(effectiveActive) && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => conversationStore.unsnooze(effectiveActive.id)}>
-                      {c.unsnooze}
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
             <AssigneePicker
               variant="icon"
               value={effectiveActive.assigneeId}
@@ -1457,20 +1406,12 @@ export default function Inbox() {
           </div>
 
           {/* Status bar */}
-          {(isSnoozed(effectiveActive) || effectiveActive.assigneeId) && (
+          {effectiveActive.assigneeId && (
             <div className="text-muted-foreground bg-muted/30 flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-5 py-1.5 text-xs">
-              {effectiveActive.assigneeId && (
-                <span className="inline-flex items-center gap-1">
-                  <UserPlus className="size-3" />
-                  {c.assignedTo(assigneeName(effectiveActive.assigneeId) ?? "")}
-                </span>
-              )}
-              {isSnoozed(effectiveActive) && effectiveActive.snoozedUntil && (
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="size-3" />
-                  {c.snoozedUntil(relativeTime(effectiveActive.snoozedUntil))}
-                </span>
-              )}
+              <span className="inline-flex items-center gap-1">
+                <UserPlus className="size-3" />
+                {c.assignedTo(assigneeName(effectiveActive.assigneeId) ?? "")}
+              </span>
             </div>
           )}
 
@@ -1694,7 +1635,6 @@ function Composer({
   const [reply, setReply] = React.useState(conv.aiDraft ?? "")
   const [aiUsed, setAiUsed] = React.useState(Boolean(conv.aiDraft))
   const [seed, setSeed] = React.useState(0)
-  const [preview, setPreview] = React.useState(false)
   const [templateOpen, setTemplateOpen] = React.useState(false)
   const [customOpen, setCustomOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
@@ -1769,7 +1709,6 @@ function Composer({
   // Personalize / Preview pipeline renders them against this recipient.
   function applyTemplate(body: string) {
     setReply((cur) => (stripHtml(cur) ? `${cur}<br><br>${body}` : body))
-    setPreview(false)
   }
 
   function send() {
@@ -1779,7 +1718,6 @@ function Composer({
     conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed)
     setReply("")
     setAiUsed(false)
-    setPreview(false)
     toast.success(c.replySent(prospect.firstName))
   }
 
@@ -1791,7 +1729,6 @@ function Composer({
     conversationStore.schedule(conv.id, iso, out)
     setReply("")
     setAiUsed(false)
-    setPreview(false)
     setCustomOpen(false)
     toast.success(c.scheduledToast(formatWhen(iso)))
   }
@@ -1808,6 +1745,49 @@ function Composer({
   }
 
   const showTranslate = hasText && detectLang(replyText) !== recipientLang
+
+  const toolbarEnd = (
+    <>
+      {showDraftChip && (
+        <span
+          className="text-primary inline-flex items-center gap-1 text-[11px] font-medium"
+          title={c.draftReady}
+        >
+          <Sparkles className="size-3" />
+          {c.kaiDraft}
+        </span>
+      )}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-muted-foreground"
+        onClick={() => setTemplateOpen(true)}
+      >
+        <FileText className="size-4" />
+        {c.templates}
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground">
+            <Braces className="size-4" />
+            {c.personalize}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>{c.personalize}</DropdownMenuLabel>
+          {vars.map((v) => (
+            <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
+              <Braces className="text-primary size-3.5" />
+              <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
+              <span className="text-muted-foreground font-mono text-[11px]">
+                {`{{${v.tag}}}`}
+              </span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  )
 
   return (
     <div className="space-y-2 border-t p-4">
@@ -1833,39 +1813,19 @@ function Composer({
         </span>
       </div>
 
-      {showDraftChip && (
-        <div className="text-primary flex items-center gap-1.5 text-[11px] font-medium">
-          <Sparkles className="size-3" />
-          {c.kaiDraft}
-          <span className="text-muted-foreground font-normal">— {c.draftReady}</span>
-        </div>
-      )}
-
-      {preview ? (
-        stripHtml(renderedReply) ? (
-          <MessageBody
-            html={renderedReply}
-            className="min-h-24 rounded-md border p-3 text-sm"
-          />
-        ) : (
-          <div className="text-muted-foreground min-h-24 rounded-md border p-3 text-sm">
-            {c.replyTo(prospect.firstName)}
-          </div>
-        )
-      ) : (
-        <RichTextEditor
-          ref={taRef}
-          value={reply}
-          onChange={(html) => {
-            setReply(html)
-            if (stripHtml(html) === "") setAiUsed(false)
-          }}
-          placeholder={c.replyTo(prospect.firstName)}
-          ariaLabel={c.replyTo(prospect.firstName)}
-          minHeight="min-h-24"
-          className={cn(showDraftChip && "border-primary/30 bg-primary/[0.03]")}
-        />
-      )}
+      <RichTextEditor
+        ref={taRef}
+        value={reply}
+        onChange={(html) => {
+          setReply(html)
+          if (stripHtml(html) === "") setAiUsed(false)
+        }}
+        placeholder={c.replyTo(prospect.firstName)}
+        ariaLabel={c.replyTo(prospect.firstName)}
+        minHeight="min-h-24"
+        className={cn(showDraftChip && "border-primary/30 bg-primary/[0.03]")}
+        toolbarEnd={toolbarEnd}
+      />
 
       <div className="flex flex-wrap items-center gap-1.5">
         <Button variant="outline" size="sm" onClick={generate}>
@@ -1921,55 +1881,6 @@ function Composer({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground"
-          onClick={() => setTemplateOpen(true)}
-        >
-          <FileText className="size-4" />
-          {c.templates}
-        </Button>
-
-        {/* Personalize — insert merge variables */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              disabled={preview}
-            >
-              <Braces className="size-4" />
-              {c.personalize}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel>{c.personalize}</DropdownMenuLabel>
-            {vars.map((v) => (
-              <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
-                <Braces className="text-primary size-3.5" />
-                <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
-                <span className="text-muted-foreground font-mono text-[11px]">
-                  {`{{${v.tag}}}`}
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Preview with variables filled in */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground"
-          disabled={!hasText}
-          onClick={() => setPreview((v) => !v)}
-        >
-          {preview ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-          {preview ? c.editMessage : c.preview}
-        </Button>
 
         {showTranslate && (
           <Button

@@ -223,7 +223,6 @@ export interface Conversation {
   unread: number
   lastMessageAt: string
   assigneeId?: string // team member the thread is assigned to
-  snoozedUntil?: string | null // ISO date; thread is snoozed until then
   archived?: boolean
   recipientLang?: ChatLang // the prospect's preferred language
   status?: ConvStatus // auto-tagged intent

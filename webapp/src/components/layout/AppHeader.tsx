@@ -13,6 +13,7 @@ import {
   MessageCircle,
   BookOpen,
   Keyboard,
+  Rocket,
 } from "lucide-react"
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -135,6 +136,15 @@ export function AppHeader() {
               <span className="flex flex-col">
                 <span className="text-sm font-medium">{t("help.shortcuts")}</span>
                 <span className="text-muted-foreground text-xs">{t("help.shortcutsSub")}</span>
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-3 py-2" onClick={() => navigate("/get-started")}>
+              <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
+                <Rocket className="size-4" />
+              </span>
+              <span className="flex flex-col">
+                <span className="text-sm font-medium">{t("nav.getStarted")}</span>
+                <span className="text-muted-foreground text-xs">{t("help.getStartedSub")}</span>
               </span>
             </DropdownMenuItem>
           </DropdownMenuContent>

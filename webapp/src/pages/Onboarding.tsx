@@ -17,7 +17,7 @@ import {
   Sparkles,
 } from "lucide-react"
 
-import { KomboLogo } from "@/components/KomboLogo"
+import { KomboBrandLogo } from "@/components/KomboLogo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -319,7 +319,7 @@ export default function Onboarding() {
       <div className="w-full max-w-2xl">
         {/* Header: logo + progress */}
         <div className="flex items-center justify-between py-8">
-          <KomboLogo />
+          <KomboBrandLogo />
           <span className="text-muted-foreground text-sm tabular-nums">
             {stepIndex + 1} / {STEP_ORDER.length}
           </span>
@@ -335,34 +335,32 @@ export default function Onboarding() {
 
         {/* Step */}
         <div className="space-y-6">
-          <div className="space-y-4">
+          <div className="flex items-start gap-3">
             <span
               className={cn(
-                "flex size-12 items-center justify-center rounded-2xl",
+                "flex size-12 shrink-0 items-center justify-center rounded-2xl",
                 meta.tint
               )}
             >
               <Icon className="size-6" />
             </span>
-            <div className="flex items-start gap-3">
-              <button
-                type="button"
-                onClick={back}
-                aria-label="Back"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted mt-1.5 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
-              >
-                <ArrowLeft className="size-5" />
-              </button>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">
-                  {meta.title}
-                </h1>
-                <p className="text-muted-foreground">{meta.description}</p>
-              </div>
+            <button
+              type="button"
+              onClick={back}
+              aria-label="Back"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted mt-3 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
+            >
+              <ArrowLeft className="size-5" />
+            </button>
+            <div className="space-y-2 pt-2">
+              <h1 className="text-3xl font-bold tracking-tight">
+                {meta.title}
+              </h1>
+              <p className="text-muted-foreground">{meta.description}</p>
             </div>
           </div>
 
-          <div className="pl-11">
+          <div className="pl-26">
             {step === "identity" && (
               <div className="space-y-4">
                 <div className="space-y-1.5">

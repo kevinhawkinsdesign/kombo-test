@@ -232,7 +232,7 @@ export function PromptFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">

@@ -97,7 +97,7 @@ export function DataTable<T>({
               )}
               {pinned && (
                 <TableHead
-                  className="bg-muted/40 sticky left-0 z-10 pl-4"
+                  className="bg-muted sticky left-0 z-10 pl-4"
                   style={pinned.minWidth ? { minWidth: pinned.minWidth } : undefined}
                 >
                   {pinned.label[locale]}
@@ -112,7 +112,9 @@ export function DataTable<T>({
                   {col.label[locale]}
                 </TableHead>
               ))}
-              {actions && <TableHead className="w-12 pr-4" />}
+              {actions && (
+                <TableHead className="bg-muted sticky right-0 z-10 w-12 pr-4" />
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,7 +154,7 @@ export function DataTable<T>({
                 ))}
                 {actions && (
                   <TableCell
-                    className="pr-4 text-right"
+                    className="bg-background sticky right-0 z-10 pr-4 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {actions(row)}
