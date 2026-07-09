@@ -45,6 +45,8 @@ import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
+import { useSequenceDraft } from "@/lib/sequence-draft"
+import { registerUnsavedChangesBlocker } from "@/lib/unsaved-changes"
 import { SAMPLE_DATA } from "@/pages/Templates"
 
 import { Page } from "@/components/layout/Page"
@@ -294,8 +296,9 @@ const COPY = {
     removeCondition: "Remove condition",
     parallelStepNote: "Sends at the same time as the step next to it.",
     addParallelStepTitle: "Add a parallel step",
-    saveSequence: "Save sequence",
-    sequenceSaved: "Sequence saved",
+    applyChanges: "Apply changes",
+    sequenceApplied: "Sequence updated",
+    discardChanges: "Discard changes",
     noSteps: "No steps yet — add one to build the sequence.",
     addStep: "Add step",
     copySequenceFrom: "Copy sequence from…",
@@ -504,8 +507,9 @@ const COPY = {
     removeCondition: "Quitar condición",
     parallelStepNote: "Se envía al mismo tiempo que el paso junto a él.",
     addParallelStepTitle: "Añadir un paso paralelo",
-    saveSequence: "Guardar secuencia",
-    sequenceSaved: "Secuencia guardada",
+    applyChanges: "Aplicar cambios",
+    sequenceApplied: "Secuencia actualizada",
+    discardChanges: "Descartar cambios",
     noSteps: "Aún no hay pasos — añade uno para construir la secuencia.",
     addStep: "Añadir paso",
     copySequenceFrom: "Copiar secuencia de…",
@@ -716,6 +720,16 @@ export default function CampaignDetail() {
   )
   const [prospectPage, setProspectPage] = React.useState(0)
 
+  // Every edit in the Sequence tab is a local draft until Apply Changes —
+  // nothing here writes to the real campaign. Everywhere else on this page
+  // (header step count, guided setup, Prospects tab) keeps reading the
+  // real, applied `campaign.steps` instead.
+  const draft = useSequenceDraft(campaign?.id ?? "", campaign?.steps ?? [])
+  React.useEffect(() => {
+    registerUnsavedChangesBlocker({ isDirty: () => draft.dirty })
+    return () => registerUnsavedChangesBlocker(null)
+  }, [draft.dirty])
+
   // Visiting a campaign registers it as an open tab — same mental model as
   // the Lists tab bar (lib/list-tabs.ts).
   React.useEffect(() => {
@@ -734,11 +748,15 @@ export default function CampaignDetail() {
   }
 
   const campaignId = campaign.id
+  // The real, applied campaign — used everywhere on this page EXCEPT the
+  // Sequence tab, which reads/writes `draft.steps` instead (see the
+  // useSequenceDraft call above the not-found guard).
   const steps = campaign.steps
   // undefined when the panel is dismissed (or nothing's been picked yet) —
-  // searches branch tracks too, since a selected step can live there.
+  // searches tracks and parallel siblings too, since a selected step can
+  // live in either.
   const selectedStep = selectedStepId
-    ? findCampaignStep(steps, selectedStepId)
+    ? findCampaignStep(draft.steps, selectedStepId)
     : undefined
   // The step-type modal's template/prompt/suggested-next shortcuts only
   // make sense when the ghost that opened it appends to the very end of
@@ -747,13 +765,13 @@ export default function CampaignDetail() {
   const isTrailingAdd =
     pendingGhost != null &&
     (!pendingGhost.afterStepId ||
-      pendingGhost.afterStepId === steps[steps.length - 1]?.id)
+      pendingGhost.afterStepId === draft.steps[draft.steps.length - 1]?.id)
   // Conditions fork the sequence one level deep, so only offered when the
   // ghost inserts at the top level (not inside an existing track) and the
   // step it would anchor to isn't already forked or parallel-able.
   const conditionAnchorStep =
     pendingGhost && !pendingGhost.trackId && pendingGhost.afterStepId
-      ? findCampaignStep(steps, pendingGhost.afterStepId)
+      ? findCampaignStep(draft.steps, pendingGhost.afterStepId)
       : undefined
   const allowCondition = Boolean(
     conditionAnchorStep &&
@@ -764,29 +782,29 @@ export default function CampaignDetail() {
 
   function insertStepFromTemplate(template: EmailTemplate) {
     const channel = normalizeChannel(template.channel)
-    const created = campaignStore.addStepFromTemplate(campaignId, {
+    const created = draft.addStepFromTemplate({
       channel,
       subject: channel === "email" ? template.subject : undefined,
       body: template.body,
     })
-    setSelectedStepId(created?.id)
+    setSelectedStepId(created.id)
   }
 
   function insertStepFromPrompt(seed: PromptStepSeed) {
-    const created = campaignStore.addStepFromTemplate(campaignId, {
+    const created = draft.addStepFromTemplate({
       channel: seed.channel,
       subject: seed.subject,
       body: seed.body,
     })
-    setSelectedStepId(created?.id)
+    setSelectedStepId(created.id)
   }
 
   // Routes a channel picked in the step-type modal to whichever action
   // triggered it — a parallel add, a fork track, a top-level insert, or a
-  // brand-new append.
+  // brand-new append. All draft-only until Apply Changes.
   function handleStepTypeSelect(channel: StepChannel) {
     if (pendingParallelStep) {
-      campaignStore.addParallelStep(campaignId, pendingParallelStep.id, channel)
+      draft.addParallelStep(pendingParallelStep.id, channel)
       setPendingParallelStep(null)
       setSelectedStepId(undefined)
       return
@@ -794,12 +812,12 @@ export default function CampaignDetail() {
     const ghost = pendingGhost
     if (!ghost) return
     if (ghost.trackId && ghost.forkStepId) {
-      campaignStore.addForkStep(campaignId, ghost.forkStepId, ghost.trackId, channel)
+      draft.addForkStep(ghost.forkStepId, ghost.trackId, channel)
     } else if (ghost.afterStepId) {
-      const idx = steps.findIndex((s) => s.id === ghost.afterStepId)
-      campaignStore.insertStep(campaignId, idx + 1, channel)
+      const idx = draft.steps.findIndex((s) => s.id === ghost.afterStepId)
+      draft.insertStep(idx + 1, channel)
     } else {
-      campaignStore.addStep(campaignId, channel)
+      draft.addStep(channel)
     }
     setSelectedStepId(undefined)
     setPendingGhost(null)
@@ -809,15 +827,15 @@ export default function CampaignDetail() {
   // preceding the ghost that opened it (see allowCondition above).
   function handleConditionSelect(condition: ConditionKind) {
     if (!pendingGhost?.afterStepId) return
-    campaignStore.addCondition(campaignId, pendingGhost.afterStepId, condition)
+    draft.addCondition(pendingGhost.afterStepId, condition)
     setPendingGhost(null)
   }
 
   // Appends a deep-cloned copy of another sequence's steps (fresh ids,
-  // branch tracks included) after the current ones.
+  // fork tracks and parallel siblings included) after the current ones.
   function copySequenceIn(source: CampaignStep[]) {
     const cloned = cloneSequenceSteps(source)
-    campaignStore.update(campaignId, { steps: [...steps, ...cloned] })
+    draft.replaceSteps([...draft.steps, ...cloned])
     toast.success(c.sequenceCopied(flattenCampaignSteps(cloned).length))
     setSelectedStepId(cloned[0]?.id)
   }
@@ -1638,7 +1656,7 @@ export default function CampaignDetail() {
 
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
-          {steps.length > 0 ? (
+          {draft.steps.length > 0 ? (
             <>
               <div className="flex flex-wrap justify-end gap-2">
                 <Button
@@ -1661,7 +1679,7 @@ export default function CampaignDetail() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                 <div className="min-w-0 flex-1 space-y-3">
                   <SequenceCanvas
-                    steps={steps}
+                    steps={draft.steps}
                     mode="interactive"
                     selectedStepId={selectedStepId}
                     onSelectStep={setSelectedStepId}
@@ -1690,13 +1708,13 @@ export default function CampaignDetail() {
                   // parallel siblings inline) drives the cosmetic stats
                   // below so they still degrade sensibly for nested steps.
                   const { list: stepList, index: i } = locateCampaignStep(
-                    steps,
+                    draft.steps,
                     step.id
                   )
-                  const isParallelStep = steps.some((s) =>
+                  const isParallelStep = draft.steps.some((s) =>
                     s.parallelSteps?.some((p) => p.id === step.id)
                   )
-                  const flatIndex = flattenCampaignSteps(steps).findIndex(
+                  const flatIndex = flattenCampaignSteps(draft.steps).findIndex(
                     (s) => s.id === step.id
                   )
                   const meta = channelMeta(step.channel)
@@ -1724,7 +1742,7 @@ export default function CampaignDetail() {
                           <Select
                             value={normalizeChannel(step.channel)}
                             onValueChange={(v) =>
-                              campaignStore.updateStep(campaign.id, step.id, {
+                              draft.updateStep(step.id, {
                                 channel: v as StepChannel,
                                 isManualTask: v === "manual",
                               })
@@ -1756,9 +1774,7 @@ export default function CampaignDetail() {
                               size="icon"
                               aria-label={c.moveStepUp}
                               disabled={i === 0}
-                              onClick={() =>
-                                campaignStore.moveStep(campaign.id, step.id, -1)
-                              }
+                              onClick={() => draft.moveStep(step.id, -1)}
                             >
                               <ArrowUp className="size-4" />
                             </Button>
@@ -1767,9 +1783,7 @@ export default function CampaignDetail() {
                               size="icon"
                               aria-label={c.moveStepDown}
                               disabled={i === stepList.length - 1}
-                              onClick={() =>
-                                campaignStore.moveStep(campaign.id, step.id, 1)
-                              }
+                              onClick={() => draft.moveStep(step.id, 1)}
                             >
                               <ArrowDown className="size-4" />
                             </Button>
@@ -1779,7 +1793,7 @@ export default function CampaignDetail() {
                               aria-label={c.removeStep}
                               className="text-muted-foreground hover:text-destructive"
                               onClick={() => {
-                                campaignStore.removeStep(campaign.id, step.id)
+                                draft.removeStep(step.id)
                                 setSelectedStepId(undefined)
                               }}
                             >
@@ -1804,8 +1818,8 @@ export default function CampaignDetail() {
                         ) : (
                           <TimeDelayField
                             key={step.id}
-                            campaignId={campaign.id}
                             step={step}
+                            onChange={(patch) => draft.updateStep(step.id, patch)}
                           />
                         )}
 
@@ -1818,7 +1832,7 @@ export default function CampaignDetail() {
                               className="w-56"
                               value={step.assigneeId}
                               onChange={(assigneeId) =>
-                                campaignStore.updateStep(campaign.id, step.id, {
+                                draft.updateStep(step.id, {
                                   assigneeId,
                                 })
                               }
@@ -1835,7 +1849,7 @@ export default function CampaignDetail() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => campaignStore.removeFork(campaign.id, step.id)}
+                              onClick={() => draft.removeFork(step.id)}
                             >
                               {c.removeCondition}
                             </Button>
@@ -1848,7 +1862,7 @@ export default function CampaignDetail() {
                               value={step.subject ?? ""}
                               placeholder={c.taskTitlePlaceholder}
                               onChange={(e) =>
-                                campaignStore.updateStep(campaign.id, step.id, {
+                                draft.updateStep(step.id, {
                                   subject: e.target.value,
                                 })
                               }
@@ -1857,7 +1871,7 @@ export default function CampaignDetail() {
                               value={step.body}
                               placeholder={c.taskNotesPlaceholder}
                               onChange={(e) =>
-                                campaignStore.updateStep(campaign.id, step.id, {
+                                draft.updateStep(step.id, {
                                   body: e.target.value,
                                 })
                               }
@@ -1871,7 +1885,7 @@ export default function CampaignDetail() {
                               <Select
                                 value={step.aiVoice ?? AI_VOICES[0]}
                                 onValueChange={(aiVoice) =>
-                                  campaignStore.updateStep(campaign.id, step.id, {
+                                  draft.updateStep(step.id, {
                                     aiVoice,
                                   })
                                 }
@@ -1892,7 +1906,7 @@ export default function CampaignDetail() {
                               value={step.body}
                               placeholder={c.aiScriptPlaceholder}
                               onChange={(e) =>
-                                campaignStore.updateStep(campaign.id, step.id, {
+                                draft.updateStep(step.id, {
                                   body: e.target.value,
                                 })
                               }
@@ -1910,7 +1924,7 @@ export default function CampaignDetail() {
                                 value={step.subject ?? ""}
                                 placeholder={c.subjectLine}
                                 onChange={(e) =>
-                                  campaignStore.updateStep(campaign.id, step.id, {
+                                  draft.updateStep(step.id, {
                                     subject: e.target.value,
                                   })
                                 }
@@ -1922,7 +1936,7 @@ export default function CampaignDetail() {
                               placeholder={c.messageBody}
                               ariaLabel={c.messageBody}
                               onChange={(html) =>
-                                campaignStore.updateStep(campaign.id, step.id, {
+                                draft.updateStep(step.id, {
                                   body: html,
                                 })
                               }
@@ -1969,9 +1983,20 @@ export default function CampaignDetail() {
                 })()}
               </div>
 
-              <div className="flex justify-end">
-                <Button onClick={() => toast.success(c.sequenceSaved)}>
-                  {c.saveSequence}
+              <div className="flex justify-end gap-2">
+                {draft.dirty && (
+                  <Button variant="ghost" onClick={draft.discard}>
+                    {c.discardChanges}
+                  </Button>
+                )}
+                <Button
+                  disabled={!draft.dirty}
+                  onClick={() => {
+                    draft.apply()
+                    toast.success(c.sequenceApplied)
+                  }}
+                >
+                  {c.applyChanges}
                 </Button>
               </div>
             </>
@@ -2310,11 +2335,11 @@ export default function CampaignDetail() {
         }
         onUsePrompt={isTrailingAdd ? () => setPromptPickerOpen(true) : undefined}
         suggestedNext={
-          isTrailingAdd && steps.length > 0
+          isTrailingAdd && draft.steps.length > 0
             ? {
-                channel: suggestNextChannel(steps),
+                channel: suggestNextChannel(draft.steps),
                 onSelect: () => {
-                  campaignStore.addStep(campaign.id, suggestNextChannel(steps))
+                  draft.addStep(suggestNextChannel(draft.steps))
                   setSelectedStepId(undefined)
                 },
               }
@@ -2346,7 +2371,7 @@ export default function CampaignDetail() {
       <SaveSequenceTemplateDialog
         open={saveSeqOpen}
         onOpenChange={setSaveSeqOpen}
-        steps={steps}
+        steps={draft.steps}
       />
 
       <ColumnManager
@@ -2458,20 +2483,18 @@ export default function CampaignDetail() {
 // a plain controlled number input snaps back to "0" mid-edit and fights
 // the user trying to clear or retype it.
 function TimeDelayField({
-  campaignId,
   step,
+  onChange,
 }: {
-  campaignId: string
   step: CampaignStep
+  onChange: (patch: Partial<CampaignStep>) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const [text, setText] = React.useState(String(step.delayDays || ""))
 
   function commit(raw: string) {
-    campaignStore.updateStep(campaignId, step.id, {
-      delayDays: Math.max(1, Math.round(Number(raw)) || 1),
-    })
+    onChange({ delayDays: Math.max(1, Math.round(Number(raw)) || 1) })
   }
 
   return (
@@ -2486,11 +2509,11 @@ function TimeDelayField({
         onChange={(v) => {
           if (v === "immediate") {
             setText("")
-            campaignStore.updateStep(campaignId, step.id, { delayDays: 0 })
+            onChange({ delayDays: 0 })
           } else {
             const n = step.delayDays > 0 ? step.delayDays : 1
             setText(String(n))
-            campaignStore.updateStep(campaignId, step.id, { delayDays: n })
+            onChange({ delayDays: n })
           }
         }}
       />
@@ -2517,7 +2540,7 @@ function TimeDelayField({
             aria-label={c.clearDelay}
             onClick={() => {
               setText("")
-              campaignStore.updateStep(campaignId, step.id, { delayDays: 0 })
+              onChange({ delayDays: 0 })
             }}
           >
             <X className="size-4" />
