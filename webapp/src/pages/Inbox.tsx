@@ -37,7 +37,6 @@ import {
   ListTodo,
   Reply,
   Phone,
-  Bot,
   MessageCircle,
   Circle,
   AlarmClock,
@@ -419,7 +418,7 @@ const STEP_META: Record<
   linkedin: { en: "LinkedIn message sent", es: "Mensaje de LinkedIn enviado", icon: LinkedinIcon },
   whatsapp: { en: "WhatsApp message sent", es: "Mensaje de WhatsApp enviado", icon: MessageCircle },
   call: { en: "Call logged", es: "Llamada registrada", icon: Phone },
-  ai_call: { en: "AI call placed", es: "Llamada de IA realizada", icon: Bot },
+  ai_call: { en: "AI call placed", es: "Llamada de IA realizada", icon: Sparkles },
   wait: { en: "Sequence step", es: "Paso de secuencia", icon: Clock },
 }
 
@@ -429,6 +428,7 @@ const NEXT_STEP_CHANNEL_LABEL: Record<StepChannel, { en: string; es: string }> =
   email: { en: "Email", es: "Correo" },
   whatsapp: { en: "WhatsApp", es: "WhatsApp" },
   call: { en: "Phone call", es: "Llamada" },
+  ai_call: { en: "AI Voice Call — ElevenLabs", es: "Llamada de voz IA — ElevenLabs" },
   linkedin_message: { en: "LinkedIn message", es: "Mensaje de LinkedIn" },
   linkedin_dm: { en: "LinkedIn DM", es: "Mensaje directo de LinkedIn" },
   linkedin_inmail: { en: "LinkedIn InMail", es: "InMail de LinkedIn" },

@@ -42,6 +42,10 @@ import {
   type BlacklistedCompany,
 } from "./mock-settings"
 
+// Mock ElevenLabs voice roster for ai_call steps — no real ElevenLabs
+// account is wired up in this prototype.
+export const AI_VOICES = ["Rachel", "Adam", "Bella", "Antoni"]
+
 // Deterministic mock direct-dial derived from a contact id, so the same
 // contact always "reveals" the same number across renders.
 function mockPhone(seed: string): string {
@@ -502,6 +506,7 @@ export const campaignStore = {
           // The "manual" channel is inherently a hand-done task — no
           // automated send exists for it, so it's always a manual task.
           ...(channel === "manual" ? { isManualTask: true } : {}),
+          ...(channel === "ai_call" ? { aiVoice: AI_VOICES[0] } : {}),
         }
         return { ...c, steps: [...c.steps, step] }
       }),
@@ -521,6 +526,7 @@ export const campaignStore = {
           subject: "",
           body: "",
           ...(channel === "manual" ? { isManualTask: true } : {}),
+          ...(channel === "ai_call" ? { aiVoice: AI_VOICES[0] } : {}),
         }
         const steps = [...c.steps]
         steps.splice(at, 0, step)

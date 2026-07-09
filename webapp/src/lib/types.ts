@@ -237,6 +237,7 @@ export type StepChannel =
   | "email"
   | "whatsapp"
   | "call" // a normal phone call the rep places
+  | "ai_call" // an agentic AI voice call placed via ElevenLabs
   | "linkedin_message"
   | "linkedin_dm"
   | "linkedin_inmail"
@@ -253,6 +254,9 @@ export interface CampaignStep {
   // auto-sending. `subject` becomes the task title and `body` becomes
   // optional notes; status is binary (to-do vs done) on the rep's task list.
   isManualTask?: boolean
+  // The ElevenLabs voice used for an `ai_call` step; `body` doubles as the
+  // call script/instructions given to the agent.
+  aiVoice?: string
   // The rep the manual task is assigned to. Undefined reads as the campaign
   // owner / current user.
   assigneeId?: string
