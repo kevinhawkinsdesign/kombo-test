@@ -434,8 +434,10 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
   mockText("parent", L("Parent company", "Empresa matriz"), "meta", "par", PARENTS),
 ]
 
+// All non-pinned columns visible by default — the app shows off the full
+// data catalog out of the box; users trim it down via the column picker.
 export const COMPANY_DEFAULT_IDS = COMPANY_COLUMNS.filter(
-  (c) => c.default && !c.pinned
+  (c) => !c.pinned
 ).map((c) => c.id)
 
 /* --------------------------------- people -------------------------------- */
@@ -610,7 +612,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
 ]
 
 export const PEOPLE_DEFAULT_IDS = PEOPLE_COLUMNS.filter(
-  (c) => c.default && !c.pinned
+  (c) => !c.pinned
 ).map((c) => c.id)
 
 /* ------------------------------ AI columns ------------------------------- */

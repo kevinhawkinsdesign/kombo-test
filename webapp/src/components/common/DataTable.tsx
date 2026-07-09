@@ -67,6 +67,15 @@ export function DataTable<T>({
     .map((id) => byId.get(id))
     .filter((c): c is ColumnDef<T> => Boolean(c))
 
+  // Sticky-left columns, in order: select checkbox, the pinned identity
+  // column, then row actions — kept as a fixed-width group so later columns
+  // can scroll horizontally underneath them without misaligning.
+  const CHECKBOX_W = 40
+  const PINNED_W = 220
+  const ACTIONS_W = 48
+  const pinnedLeft = selection ? CHECKBOX_W : 0
+  const actionsLeft = pinnedLeft + (pinned ? PINNED_W : 0)
+
   function cell(col: ColumnDef<T>, row: T) {
     if (editing && col.edit && onUpdate) {
       return col.edit(row, (patch) => onUpdate(row, patch), locale)
@@ -81,7 +90,10 @@ export function DataTable<T>({
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
               {selection && (
-                <TableHead className="w-10 pl-4">
+                <TableHead
+                  className="bg-muted sticky left-0 z-20 w-10 pl-4"
+                  style={{ width: CHECKBOX_W }}
+                >
                   <Checkbox
                     checked={
                       selection.allSelected
@@ -97,11 +109,17 @@ export function DataTable<T>({
               )}
               {pinned && (
                 <TableHead
-                  className="bg-muted sticky left-0 z-10 pl-4"
-                  style={pinned.minWidth ? { minWidth: pinned.minWidth } : undefined}
+                  className="bg-muted sticky z-20 pl-4"
+                  style={{ left: pinnedLeft, width: PINNED_W, minWidth: PINNED_W }}
                 >
                   {pinned.label[locale]}
                 </TableHead>
+              )}
+              {actions && (
+                <TableHead
+                  className="bg-muted sticky z-20 w-12 pr-4"
+                  style={{ left: actionsLeft, width: ACTIONS_W }}
+                />
               )}
               {shown.map((col) => (
                 <TableHead
@@ -112,9 +130,6 @@ export function DataTable<T>({
                   {col.label[locale]}
                 </TableHead>
               ))}
-              {actions && (
-                <TableHead className="bg-muted sticky right-0 z-10 w-12 pr-4" />
-              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -129,7 +144,14 @@ export function DataTable<T>({
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
                 {selection && (
-                  <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                  <TableCell
+                    className={cn(
+                      "sticky z-10 pl-4",
+                      selection.isSelected(row) ? "bg-primary/[0.04]" : "bg-background"
+                    )}
+                    style={{ left: 0, width: CHECKBOX_W }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {(selection.isSelectable?.(row) ?? true) && (
                       <Checkbox
                         checked={selection.isSelected(row)}
@@ -140,8 +162,26 @@ export function DataTable<T>({
                   </TableCell>
                 )}
                 {pinned && (
-                  <TableCell className="bg-background sticky left-0 z-10 pl-4">
+                  <TableCell
+                    className={cn(
+                      "sticky z-10 pl-4",
+                      selection?.isSelected(row) ? "bg-primary/[0.04]" : "bg-background"
+                    )}
+                    style={{ left: pinnedLeft, width: PINNED_W, minWidth: PINNED_W }}
+                  >
                     {cell(pinned, row)}
+                  </TableCell>
+                )}
+                {actions && (
+                  <TableCell
+                    className={cn(
+                      "sticky z-10 pr-4 text-right",
+                      selection?.isSelected(row) ? "bg-primary/[0.04]" : "bg-background"
+                    )}
+                    style={{ left: actionsLeft, width: ACTIONS_W }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {actions(row)}
                   </TableCell>
                 )}
                 {shown.map((col) => (
@@ -152,14 +192,6 @@ export function DataTable<T>({
                     {cell(col, row)}
                   </TableCell>
                 ))}
-                {actions && (
-                  <TableCell
-                    className="bg-background sticky right-0 z-10 pr-4 text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {actions(row)}
-                  </TableCell>
-                )}
               </TableRow>
             ))}
             {rows.length === 0 && empty && (

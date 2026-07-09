@@ -23,7 +23,20 @@ export const LEAD_RESULT_GROUPS: ColGroup[] = [
   { id: "company", label: { en: "Company", es: "Empresa" } },
   { id: "engagement", label: { en: "Engagement", es: "Interacción" } },
 ]
-export const LEAD_RESULT_DEFAULT_IDS = ["fit", "company", "region", "email", "phone", "crm", "signals"]
+export const LEAD_RESULT_DEFAULT_IDS = [
+  "fit",
+  "company",
+  "seniority",
+  "department",
+  "region",
+  "industry",
+  "headcount",
+  "revenue",
+  "email",
+  "phone",
+  "crm",
+  "signals",
+]
 
 export const COMPANY_RESULT_GROUPS: ColGroup[] = [
   { id: "company", label: { en: "Company", es: "Empresa" } },
@@ -35,6 +48,7 @@ export const COMPANY_RESULT_DEFAULT_IDS = [
   "industry",
   "headcount",
   "region",
+  "revenue",
   "roles",
   "crm",
   "signals",
