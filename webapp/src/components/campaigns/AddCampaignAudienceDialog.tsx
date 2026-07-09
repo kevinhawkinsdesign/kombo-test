@@ -1,6 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Search, Link2, Users, Building2 } from "lucide-react"
+import { Search, Link2 } from "lucide-react"
 
 import {
   Dialog,
@@ -14,17 +14,14 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
-import { Segmented } from "@/components/common/Segmented"
 import { useLists, listStore, campaignStore } from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import type { Campaign } from "@/lib/types"
 
-type Entity = "people" | "company"
-
 const COPY = {
   en: {
-    title: "Add prospects or companies",
-    desc: (name: string) => `Add prospects or companies to "${name}".`,
+    title: "Add prospects",
+    desc: (name: string) => `Add prospects to "${name}".`,
     attachExisting: "Link an existing list",
     pickList: "Choose a list to link…",
     attach: "Link",
@@ -33,15 +30,12 @@ const COPY = {
     searchNewDesc:
       "Run a search or import — the results become a new list linked to this campaign.",
     linkedElsewhere: " (linked elsewhere)",
-    companyList: " (companies)",
     attached: (name: string) => `Linked ${name}`,
     cancel: "Cancel",
-    contact: "Prospects",
-    company: "Companies",
   },
   es: {
-    title: "Añadir prospectos o empresas",
-    desc: (name: string) => `Añade prospectos o empresas a "${name}".`,
+    title: "Añadir prospectos",
+    desc: (name: string) => `Añade prospectos a "${name}".`,
     attachExisting: "Vincular una lista existente",
     pickList: "Elige una lista para vincular…",
     attach: "Vincular",
@@ -50,11 +44,8 @@ const COPY = {
     searchNewDesc:
       "Lanza una búsqueda o importación — los resultados se convierten en una lista nueva vinculada a esta campaña.",
     linkedElsewhere: " (vinculada en otro lugar)",
-    companyList: " (empresas)",
     attached: (name: string) => `${name} vinculada`,
     cancel: "Cancelar",
-    contact: "Prospectos",
-    company: "Empresas",
   },
 } as const
 
@@ -81,9 +72,12 @@ export function AddCampaignAudienceDialog({
   const [searchOpen, setSearchOpen] = React.useState(false)
   const [targetListId, setTargetListId] = React.useState<string | null>(null)
   const [pickListId, setPickListId] = React.useState("")
-  const [entity, setEntity] = React.useState<Entity>("people")
 
   const attachedList = lists.find((l) => l.id === campaign.listId)
+  // Only prospect lists can be linked going forward, but a campaign linked
+  // to a company list before that rule existed should keep working.
+  const recordKind = attachedList?.kind === "company" ? "company" : "contact"
+  const linkableLists = lists.filter((l) => l.kind !== "company")
 
   // Route on open (render-time check, house pattern) — skip straight to the
   // search when a list is already attached; otherwise ask how to get one.
@@ -92,7 +86,6 @@ export function AddCampaignAudienceDialog({
     setWasOpen(open)
     if (open) {
       setPickListId("")
-      setEntity(attachedList?.kind === "company" ? "company" : "people")
       if (attachedList) {
         setTargetListId(attachedList.id)
         setChooserOpen(false)
@@ -118,7 +111,7 @@ export function AddCampaignAudienceDialog({
       name: campaign.name,
       description: "",
       color: "#6366f1",
-      kind: entity,
+      kind: "people",
     })
     campaignStore.attachList(campaign.id, list.id)
     setTargetListId(list.id)
@@ -141,7 +134,7 @@ export function AddCampaignAudienceDialog({
             <DialogDescription>{c.desc(campaign.name)}</DialogDescription>
           </DialogHeader>
 
-          {lists.length > 0 && (
+          {linkableLists.length > 0 && (
             <>
               <div className="space-y-2">
                 <p className="text-sm font-medium">{c.attachExisting}</p>
@@ -149,15 +142,13 @@ export function AddCampaignAudienceDialog({
                   <SearchCombobox
                     value={pickListId}
                     onChange={setPickListId}
-                    options={lists.map((l) => ({
+                    options={linkableLists.map((l) => ({
                       value: l.id,
                       label: l.name,
                       sublabel:
                         l.campaignId && l.campaignId !== campaign.id
                           ? c.linkedElsewhere
-                          : l.kind === "company"
-                            ? c.companyList
-                            : undefined,
+                          : undefined,
                     }))}
                     placeholder={c.pickList}
                     searchPlaceholder={c.pickList}
@@ -181,14 +172,6 @@ export function AddCampaignAudienceDialog({
           )}
 
           <div className="space-y-2">
-            <Segmented
-              options={[
-                { v: "people" as Entity, label: c.contact, icon: Users },
-                { v: "company" as Entity, label: c.company, icon: Building2 },
-              ]}
-              value={entity}
-              onChange={setEntity}
-            />
             <Button variant="outline" onClick={searchNewList}>
               <Search className="size-4" />
               {c.searchNew}
@@ -210,7 +193,7 @@ export function AddCampaignAudienceDialog({
           setSearchOpen(v)
           if (!v) onOpenChange(false)
         }}
-        kind={entity === "company" ? "company" : "contact"}
+        kind={recordKind}
         listId={targetListId ?? undefined}
       />
     </>
