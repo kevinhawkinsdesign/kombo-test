@@ -140,6 +140,7 @@ import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type {
   CampaignStatus,
   StepChannel,
+  ConditionKind,
   EnrollmentStatus,
   Prospect,
   EmailTemplate,
@@ -284,19 +285,19 @@ const COPY = {
     aiScriptPlaceholder: "Script / instructions for the AI agent",
     aiCallPoweredBy: "Powered by ElevenLabs",
     aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
-    addBranchLabel: "Add reply / no-reply branch",
-    addBranchDesc: "One deviation off the main line — both tracks reconnect into the next step.",
-    replyTrack: "If they reply",
-    noReplyTrack: "If they don't reply",
-    removeBranchAria: "Remove branch",
-    remergeCaption: "Merges back into the next step",
+    conditionName: {
+      reply: "Replied",
+      open: "Opened",
+      click: "Clicked a link",
+    } as Record<ConditionKind, string>,
+    conditionActiveLabel: (name: string) => `Forks on: ${name}`,
+    removeCondition: "Remove condition",
+    parallelStepNote: "Sends at the same time as the step next to it.",
     addParallelStepTitle: "Add a parallel step",
     saveSequence: "Save sequence",
     sequenceSaved: "Sequence saved",
     noSteps: "No steps yet — add one to build the sequence.",
     addStep: "Add step",
-    useTemplate: "Use a template",
-    usePrompt: "Use a prompt",
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
     suggestedNext: (label: string) => `Suggested next: ${label}`,
@@ -494,19 +495,19 @@ const COPY = {
     aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
     aiCallPoweredBy: "Con tecnología de ElevenLabs",
     aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
-    addBranchLabel: "Añadir bifurcación de respuesta / sin respuesta",
-    addBranchDesc: "Una desviación de la línea principal — ambos caminos se reconectan en el siguiente paso.",
-    replyTrack: "Si responden",
-    noReplyTrack: "Si no responden",
-    removeBranchAria: "Quitar bifurcación",
-    remergeCaption: "Se reconecta con el siguiente paso",
+    conditionName: {
+      reply: "Respondió",
+      open: "Abrió",
+      click: "Hizo clic en un enlace",
+    } as Record<ConditionKind, string>,
+    conditionActiveLabel: (name: string) => `Bifurca en: ${name}`,
+    removeCondition: "Quitar condición",
+    parallelStepNote: "Se envía al mismo tiempo que el paso junto a él.",
     addParallelStepTitle: "Añadir un paso paralelo",
     saveSequence: "Guardar secuencia",
     sequenceSaved: "Secuencia guardada",
     noSteps: "Aún no hay pasos — añade uno para construir la secuencia.",
     addStep: "Añadir paso",
-    useTemplate: "Usar una plantilla",
-    usePrompt: "Usar un prompt",
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
     suggestedNext: (label: string) => `Sugerencia: ${label}`,
@@ -691,6 +692,10 @@ export default function CampaignDetail() {
   const [selectedStepId, setSelectedStepId] = React.useState<string | undefined>(undefined)
   const [stepPickerOpen, setStepPickerOpen] = React.useState(false)
   const [pendingGhost, setPendingGhost] = React.useState<AddNodeData | null>(null)
+  // Set instead of pendingGhost when the picker was opened from a step's
+  // inline "Add parallel step" button rather than a canvas ghost.
+  const [pendingParallelStep, setPendingParallelStep] =
+    React.useState<CampaignStep | null>(null)
   const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
   const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
@@ -737,12 +742,24 @@ export default function CampaignDetail() {
     : undefined
   // The step-type modal's template/prompt/suggested-next shortcuts only
   // make sense when the ghost that opened it appends to the very end of
-  // the top-level sequence — not a mid-sequence insert, branch-track
-  // append, or parallel fork, all of which need a specific channel.
+  // the top-level sequence — not a mid-sequence insert or track append,
+  // both of which need a specific channel.
   const isTrailingAdd =
-    pendingGhost?.kind === "add" &&
+    pendingGhost != null &&
     (!pendingGhost.afterStepId ||
       pendingGhost.afterStepId === steps[steps.length - 1]?.id)
+  // Conditions fork the sequence one level deep, so only offered when the
+  // ghost inserts at the top level (not inside an existing track) and the
+  // step it would anchor to isn't already forked or parallel-able.
+  const conditionAnchorStep =
+    pendingGhost && !pendingGhost.trackId && pendingGhost.afterStepId
+      ? findCampaignStep(steps, pendingGhost.afterStepId)
+      : undefined
+  const allowCondition = Boolean(
+    conditionAnchorStep &&
+      !conditionAnchorStep.fork &&
+      !conditionAnchorStep.parallelSteps?.length
+  )
   const enrolledIds = campaign.enrolledIds ?? []
 
   function insertStepFromTemplate(template: EmailTemplate) {
@@ -764,15 +781,19 @@ export default function CampaignDetail() {
     setSelectedStepId(created?.id)
   }
 
-  // Routes a channel picked in the step-type modal to whichever store
-  // action the ghost that triggered it calls for — top-level insert, a
-  // fork track, or a brand-new parallel fork.
+  // Routes a channel picked in the step-type modal to whichever action
+  // triggered it — a parallel add, a fork track, a top-level insert, or a
+  // brand-new append.
   function handleStepTypeSelect(channel: StepChannel) {
+    if (pendingParallelStep) {
+      campaignStore.addParallelStep(campaignId, pendingParallelStep.id, channel)
+      setPendingParallelStep(null)
+      setSelectedStepId(undefined)
+      return
+    }
     const ghost = pendingGhost
     if (!ghost) return
-    if (ghost.kind === "addParallel" && ghost.anchorStepId) {
-      campaignStore.addParallelStep(campaignId, ghost.anchorStepId, channel)
-    } else if (ghost.trackId && ghost.forkStepId) {
+    if (ghost.trackId && ghost.forkStepId) {
       campaignStore.addForkStep(campaignId, ghost.forkStepId, ghost.trackId, channel)
     } else if (ghost.afterStepId) {
       const idx = steps.findIndex((s) => s.id === ghost.afterStepId)
@@ -781,6 +802,14 @@ export default function CampaignDetail() {
       campaignStore.addStep(campaignId, channel)
     }
     setSelectedStepId(undefined)
+    setPendingGhost(null)
+  }
+
+  // A condition picked in the step-type modal always anchors to the step
+  // preceding the ghost that opened it (see allowCondition above).
+  function handleConditionSelect(condition: ConditionKind) {
+    if (!pendingGhost?.afterStepId) return
+    campaignStore.addCondition(campaignId, pendingGhost.afterStepId, condition)
     setPendingGhost(null)
   }
 
@@ -1638,6 +1667,12 @@ export default function CampaignDetail() {
                     onSelectStep={setSelectedStepId}
                     onAddRequest={(ghost) => {
                       setPendingGhost(ghost)
+                      setPendingParallelStep(null)
+                      setStepPickerOpen(true)
+                    }}
+                    onAddParallel={(step) => {
+                      setPendingParallelStep(step)
+                      setPendingGhost(null)
                       setStepPickerOpen(true)
                     }}
                   />
@@ -1649,15 +1684,18 @@ export default function CampaignDetail() {
                 {selectedStep && (() => {
                   const step = selectedStep
                   // Position within whichever list the step actually lives in
-                  // (top-level, or a branch track) — what "move up/down" and
-                  // "is first/last" need. A separate flattened index (which
-                  // walks branch tracks inline) drives the cosmetic stats
+                  // (top-level, a condition track, or a step's parallel
+                  // siblings) — what "move up/down" and "is first/last"
+                  // need. A separate flattened index (which walks tracks and
+                  // parallel siblings inline) drives the cosmetic stats
                   // below so they still degrade sensibly for nested steps.
                   const { list: stepList, index: i } = locateCampaignStep(
                     steps,
                     step.id
                   )
-                  const isTopLevel = stepList === steps
+                  const isParallelStep = steps.some((s) =>
+                    s.parallelSteps?.some((p) => p.id === step.id)
+                  )
                   const flatIndex = flattenCampaignSteps(steps).findIndex(
                     (s) => s.id === step.id
                   )
@@ -1759,11 +1797,17 @@ export default function CampaignDetail() {
                           </div>
                         </div>
 
-                        <TimeDelayField
-                          key={step.id}
-                          campaignId={campaign.id}
-                          step={step}
-                        />
+                        {isParallelStep ? (
+                          <p className="text-muted-foreground text-sm">
+                            {c.parallelStepNote}
+                          </p>
+                        ) : (
+                          <TimeDelayField
+                            key={step.id}
+                            campaignId={campaign.id}
+                            step={step}
+                          />
+                        )}
 
                         {step.isManualTask && (
                           <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
@@ -1782,38 +1826,19 @@ export default function CampaignDetail() {
                           </div>
                         )}
 
-                        {isTopLevel && (
+                        {step.fork && (
                           <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
                             <GitFork className="text-muted-foreground size-4 shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <Label
-                                htmlFor={`branch-${step.id}`}
-                                className="text-sm font-medium"
-                              >
-                                {c.addBranchLabel}
-                              </Label>
-                              <p className="text-muted-foreground text-xs">
-                                {c.addBranchDesc}
-                              </p>
-                            </div>
-                            <Switch
-                              id={`branch-${step.id}`}
-                              checked={step.fork?.type === "branch"}
-                              disabled={step.fork?.type === "parallel"}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  campaignStore.addBranch(
-                                    campaign.id,
-                                    step.id
-                                  )
-                                } else {
-                                  campaignStore.removeFork(
-                                    campaign.id,
-                                    step.id
-                                  )
-                                }
-                              }}
-                            />
+                            <p className="text-muted-foreground min-w-0 flex-1 text-sm">
+                              {c.conditionActiveLabel(c.conditionName[step.fork.condition])}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => campaignStore.removeFork(campaign.id, step.id)}
+                            >
+                              {c.removeCondition}
+                            </Button>
                           </div>
                         )}
 
@@ -2278,7 +2303,8 @@ export default function CampaignDetail() {
         open={stepPickerOpen}
         onOpenChange={setStepPickerOpen}
         onSelect={handleStepTypeSelect}
-        title={pendingGhost?.kind === "addParallel" ? c.addParallelStepTitle : undefined}
+        title={pendingParallelStep ? c.addParallelStepTitle : undefined}
+        onSelectCondition={allowCondition ? handleConditionSelect : undefined}
         onUseTemplate={
           isTrailingAdd ? () => setTemplatePickerOpen(true) : undefined
         }

@@ -9,7 +9,7 @@ import {
   type NodeTypes,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import { AlertTriangle, ListTodo, Plus, Split } from "lucide-react"
+import { AlertTriangle, ListTodo, Plus } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
 import {
@@ -20,7 +20,7 @@ import {
 import { stripHtml } from "@/lib/rich-text"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
-import type { CampaignStep } from "@/lib/types"
+import type { CampaignStep, StepTrackKind } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -38,9 +38,14 @@ const COPY = {
     waitDays: (n: number) => `Wait ${n} ${n === 1 ? "day" : "days"}`,
     manualTaskBadge: "Task",
     actionNeeded: "Action needed",
-    reply: "If they reply",
-    noReply: "If they don't reply",
-    deadEnd: "Ends here",
+    trackLabel: {
+      reply: "If they reply",
+      no_reply: "If they don't reply",
+      opened: "If opened",
+      not_opened: "If not opened",
+      clicked: "If clicked",
+      not_clicked: "If not clicked",
+    } as Record<StepTrackKind, string>,
     addStep: "Add step",
     addParallel: "Add parallel step",
   },
@@ -59,18 +64,24 @@ const COPY = {
     waitDays: (n: number) => `Espera ${n} ${n === 1 ? "día" : "días"}`,
     manualTaskBadge: "Tarea",
     actionNeeded: "Requiere acción",
-    reply: "Si responden",
-    noReply: "Si no responden",
-    deadEnd: "Termina aquí",
+    trackLabel: {
+      reply: "Si responden",
+      no_reply: "Si no responden",
+      opened: "Si se abre",
+      not_opened: "Si no se abre",
+      clicked: "Si se hace clic",
+      not_clicked: "Si no se hace clic",
+    } as Record<StepTrackKind, string>,
     addStep: "Añadir paso",
     addParallel: "Añadir paso paralelo",
   },
 } as const
 
 interface StepNodeExtraData extends StepNodeData {
-  selected: boolean
+  selectedStepId?: string
   interactive: boolean
   onClick?: (step: CampaignStep) => void
+  onAddParallel?: (step: CampaignStep) => void
 }
 
 // Invisible anchor points — nodesConnectable is false everywhere this canvas
@@ -79,108 +90,151 @@ interface StepNodeExtraData extends StepNodeData {
 // the edge (no line, no console error visible to the user).
 const HANDLE_CLASS = "invisible !size-0 !min-w-0 !border-0"
 
-function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
+function StepCard({
+  step,
+  selected,
+  interactive,
+  onClick,
+}: {
+  step: CampaignStep
+  selected: boolean
+  interactive: boolean
+  onClick?: (step: CampaignStep) => void
+}) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const { step, selected, interactive, onClick, trackLabel, deadEnd } = data
   const meta = channelMeta(step.channel)
   const needsAction = step.isManualTask
     ? stripHtml(step.subject ?? "").trim().length === 0
     : stripHtml(step.body).trim().length === 0
 
   return (
-    <div className="flex flex-col items-stretch gap-1" style={{ width: 240 }}>
+    <button
+      type="button"
+      disabled={!interactive}
+      onClick={() => onClick?.(step)}
+      style={{ width: 240 }}
+      className={cn(
+        "bg-card flex shrink-0 items-center gap-2.5 rounded-xl border p-3 text-left shadow-sm transition-colors",
+        selected ? "border-primary bg-primary/[0.04]" : interactive && "hover:bg-muted/40"
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-lg",
+          meta.tint
+        )}
+      >
+        <meta.Icon className="size-4" />
+      </span>
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="truncate text-sm font-medium">
+          {c.channelLabel[normalizeChannel(step.channel)]}
+        </p>
+        <p className="text-muted-foreground truncate text-xs">
+          {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
+        </p>
+        {(step.isManualTask || needsAction) && (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {step.isManualTask && (
+              <span className="bg-secondary text-secondary-foreground flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
+                <ListTodo className="size-3" />
+                {c.manualTaskBadge}
+              </span>
+            )}
+            {needsAction && (
+              <span className="bg-destructive/15 text-destructive flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
+                <AlertTriangle className="size-3" />
+                {c.actionNeeded}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </button>
+  )
+}
+
+function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const { step, selectedStepId, interactive, onClick, trackLabel, onAddParallel } = data
+  const parallelSteps = step.parallelSteps ?? []
+  // A step is either a fork anchor or parallel-able, never both — keeps the
+  // canvas geometry simple (no lane collisions between a wide parallel
+  // cluster and fork-track lanes on the same row). Only top-level steps
+  // qualify — a step inside a condition track already carries a
+  // `trackLabel`, which doubles as that signal.
+  const canAddParallel = interactive && !step.fork && !trackLabel
+
+  return (
+    <div className="flex flex-col items-stretch gap-1">
       <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
       {trackLabel && (
         <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
-          {trackLabel === "reply" ? c.reply : c.noReply}
+          {c.trackLabel[trackLabel]}
         </span>
       )}
-      <button
-        type="button"
-        disabled={!interactive}
-        onClick={() => onClick?.(step)}
-        className={cn(
-          "bg-card flex items-center gap-2.5 rounded-xl border p-3 text-left shadow-sm transition-colors",
-          selected ? "border-primary bg-primary/[0.04]" : interactive && "hover:bg-muted/40"
+      <div className="flex items-stretch gap-2">
+        <StepCard
+          step={step}
+          selected={step.id === selectedStepId}
+          interactive={interactive}
+          onClick={onClick}
+        />
+        {parallelSteps.map((p) => (
+          <StepCard
+            key={p.id}
+            step={p}
+            selected={p.id === selectedStepId}
+            interactive={interactive}
+            onClick={onClick}
+          />
+        ))}
+        {canAddParallel && (
+          <button
+            type="button"
+            onClick={() => onAddParallel?.(step)}
+            aria-label={c.addParallel}
+            className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
+          >
+            <Plus className="size-4" />
+          </button>
         )}
-      >
-        <span
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-            meta.tint
-          )}
-        >
-          <meta.Icon className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1 space-y-1">
-          <p className="truncate text-sm font-medium">
-            {c.channelLabel[normalizeChannel(step.channel)]}
-          </p>
-          <p className="text-muted-foreground truncate text-xs">
-            {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
-          </p>
-          {(step.isManualTask || needsAction) && (
-            <div className="flex flex-wrap gap-1 pt-0.5">
-              {step.isManualTask && (
-                <span className="bg-secondary text-secondary-foreground flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
-                  <ListTodo className="size-3" />
-                  {c.manualTaskBadge}
-                </span>
-              )}
-              {needsAction && (
-                <span className="bg-destructive/15 text-destructive flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
-                  <AlertTriangle className="size-3" />
-                  {c.actionNeeded}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </button>
-      {deadEnd && (
-        <span className="text-muted-foreground pl-1 text-[11px]">{c.deadEnd}</span>
-      )}
+      </div>
       <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} />
     </div>
   )
 }
 
+// A small "+" living on the connector line between two step cards, not a
+// full-width pill with its own row — the wrapper matches the step card's
+// width purely so the button centers on the line the edge actually draws.
 function AddNodeComponent({
   data,
 }: NodeProps & { data: AddNodeData & { onClick?: (ghost: AddNodeData) => void } }) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const isParallel = data.kind === "addParallel"
 
-  if (isParallel) {
-    return (
-      <button
-        type="button"
-        onClick={() => data.onClick?.(data)}
-        className="border-muted-foreground/30 text-muted-foreground hover:border-primary/50 hover:text-primary flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs font-medium transition-colors"
-      >
-        <Split className="size-3.5" />
-        {c.addParallel}
-      </button>
-    )
-  }
-
-  // A small "+" living on the connector line between two step cards, not a
-  // full-width pill with its own row — the wrapper matches the step card's
-  // width purely so the button centers on the line the edge actually draws.
   return (
-    <div style={{ width: 240 }} className="flex justify-center">
-      <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
-      <button
-        type="button"
-        onClick={() => data.onClick?.(data)}
-        aria-label={c.addStep}
-        className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 items-center justify-center rounded-full border-2 transition-colors"
-      >
-        <Plus className="size-4" />
-      </button>
-      <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} />
+    <div className="flex flex-col items-center gap-1">
+      {data.trackLabel && (
+        <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
+          {c.trackLabel[data.trackLabel]}
+        </span>
+      )}
+      <div style={{ width: 240 }} className="flex justify-center">
+        <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
+        <button
+          type="button"
+          onClick={() => data.onClick?.(data)}
+          aria-label={c.addStep}
+          className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 items-center justify-center rounded-full border-2 transition-colors"
+        >
+          <Plus className="size-4" />
+        </button>
+        <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} />
+      </div>
     </div>
   )
 }
@@ -196,6 +250,7 @@ interface SequenceCanvasProps {
   selectedStepId?: string
   onSelectStep?: (stepId: string) => void
   onAddRequest?: (ghost: AddNodeData) => void
+  onAddParallel?: (step: CampaignStep) => void
   className?: string
 }
 
@@ -205,6 +260,7 @@ export function SequenceCanvas({
   selectedStepId,
   onSelectStep,
   onAddRequest,
+  onAddParallel,
   className,
 }: SequenceCanvasProps) {
   const interactive = mode === "interactive"
@@ -218,9 +274,10 @@ export function SequenceCanvas({
           ...node,
           data: {
             ...stepData,
-            selected: stepData.step.id === selectedStepId,
+            selectedStepId,
             interactive,
             onClick: (step: CampaignStep) => onSelectStep?.(step.id),
+            onAddParallel,
           } satisfies StepNodeExtraData,
         }
       }
@@ -233,7 +290,7 @@ export function SequenceCanvas({
       }
     })
     return { nodes, edges: layout.edges }
-  }, [steps, interactive, selectedStepId, onSelectStep, onAddRequest])
+  }, [steps, interactive, selectedStepId, onSelectStep, onAddRequest, onAddParallel])
 
   return (
     <div className={cn("bg-muted/20 h-[600px] w-full rounded-xl border", className)}>
