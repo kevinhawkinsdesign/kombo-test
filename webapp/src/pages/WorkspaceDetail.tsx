@@ -8,15 +8,9 @@ import {
   Send,
   Sparkles,
   ArrowRight,
-  Mail,
-  MessageCircle,
   Check,
   Bookmark,
   X,
-  Phone,
-  ListTodo,
-  Workflow,
-  Rows3,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -31,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { SequenceCanvas } from "@/components/sequence/SequenceCanvas"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
@@ -46,7 +40,7 @@ import {
   workspaceStore,
   ownerOf,
 } from "@/lib/workspaces"
-import type { Campaign, ProspectList, Prospect, StepChannel } from "@/lib/types"
+import type { Campaign, ProspectList, Prospect } from "@/lib/types"
 
 type Step = "source" | "audience" | "outreach"
 
@@ -111,9 +105,6 @@ const COPY = {
     pause: "Pause",
     paused: "Campaign paused",
     editSteps: "Edit steps",
-    diagramView: "Diagram",
-    cardsView: "Cards",
-    day: (n: number) => `Day ${n}`,
     noCampaign: "No campaign yet — add one to start outreach.",
     addCampaign: "Add campaign",
     notFound: "Workspace not found.",
@@ -183,9 +174,6 @@ const COPY = {
     pause: "Pausar",
     paused: "Campaña pausada",
     editSteps: "Editar pasos",
-    diagramView: "Diagrama",
-    cardsView: "Tarjetas",
-    day: (n: number) => `Día ${n}`,
     noCampaign: "Aún no hay campaña — añade una para empezar.",
     addCampaign: "Añadir campaña",
     notFound: "Espacio de trabajo no encontrado.",
@@ -201,27 +189,6 @@ type Copy = (typeof COPY)[keyof typeof COPY]
 
 function listCount(l: ProspectList): number {
   return l.kind === "company" ? (l.accountIds?.length ?? 0) : l.prospectIds.length
-}
-
-const STEP_ICON: Record<StepChannel, React.ComponentType<{ className?: string }>> = {
-  email: Mail,
-  whatsapp: MessageCircle,
-  call: Phone,
-  ai_call: Sparkles,
-  linkedin_message: LinkedinIcon,
-  linkedin_dm: LinkedinIcon,
-  linkedin_inmail: LinkedinIcon,
-  manual: ListTodo,
-}
-const STEP_LABEL: Record<StepChannel, string> = {
-  email: "Email",
-  whatsapp: "WhatsApp",
-  call: "Call",
-  ai_call: "AI Voice Call",
-  linkedin_message: "LinkedIn",
-  linkedin_dm: "LinkedIn DM",
-  linkedin_inmail: "LinkedIn InMail",
-  manual: "Manual task",
 }
 
 export default function WorkspaceDetail() {
@@ -776,7 +743,6 @@ function OutreachPanel({
   onPause: () => void
 }) {
   const navigate = useNavigate()
-  const [seqView, setSeqView] = React.useState<"diagram" | "cards">("diagram")
   if (!campaign) {
     return (
       <Card className="flex flex-col items-center gap-3 py-12 text-center">
@@ -791,12 +757,6 @@ function OutreachPanel({
   const replyRate = campaign.enrolled
     ? Math.round((campaign.replied / campaign.enrolled) * 100)
     : 0
-  const steps = campaign.steps.map((s, i) => ({
-    step: s,
-    day: campaign.steps
-      .slice(0, i + 1)
-      .reduce((sum, x) => sum + x.delayDays, 0),
-  }))
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -810,36 +770,6 @@ function OutreachPanel({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-muted text-muted-foreground inline-flex h-9 shrink-0 items-center rounded-lg p-[3px]">
-            <button
-              type="button"
-              onClick={() => setSeqView("diagram")}
-              aria-pressed={seqView === "diagram"}
-              className={cn(
-                "inline-flex h-full items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors",
-                seqView === "diagram"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "hover:text-foreground"
-              )}
-            >
-              <Workflow className="size-4" />
-              <span className="hidden sm:inline">{c.diagramView}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSeqView("cards")}
-              aria-pressed={seqView === "cards"}
-              className={cn(
-                "inline-flex h-full items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors",
-                seqView === "cards"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "hover:text-foreground"
-              )}
-            >
-              <Rows3 className="size-4" />
-              <span className="hidden sm:inline">{c.cardsView}</span>
-            </button>
-          </div>
           <Button variant="outline" size="sm" onClick={onPause}>
             {c.pause}
           </Button>
@@ -849,58 +779,7 @@ function OutreachPanel({
         </div>
       </div>
 
-      {seqView === "diagram" ? (
-        <div className="flex flex-col items-center">
-          {steps.map(({ step: s, day }, i) => {
-            const Icon = STEP_ICON[s.channel]
-            return (
-              <React.Fragment key={s.id}>
-                {i > 0 && <span className="bg-border h-6 w-px" />}
-                <div className="flex w-full max-w-md items-center gap-3 rounded-lg border p-2.5">
-                  <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                    <Icon className="size-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-                      {c.day(day)} · {STEP_LABEL[s.channel]}
-                    </p>
-                    <p className="truncate text-sm font-medium">
-                      {s.subject || s.body}
-                    </p>
-                  </div>
-                </div>
-              </React.Fragment>
-            )
-          })}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {steps.map(({ step: s, day }) => {
-            const Icon = STEP_ICON[s.channel]
-            return (
-              <div key={s.id} className="flex gap-3">
-                <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                  <Icon className="size-4" />
-                </span>
-                <Card className="flex-1 gap-1 p-3">
-                  <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-                    {c.day(day)} · {STEP_LABEL[s.channel]}
-                  </p>
-                  {s.subject && <p className="text-sm font-semibold">{s.subject}</p>}
-                  <p
-                    className={cn(
-                      "text-muted-foreground text-sm",
-                      s.subject ? "line-clamp-2" : "line-clamp-3"
-                    )}
-                  >
-                    {s.body}
-                  </p>
-                </Card>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      <SequenceCanvas steps={campaign.steps} mode="readonly" />
     </div>
   )
 }
