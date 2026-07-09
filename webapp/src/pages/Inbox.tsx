@@ -143,6 +143,13 @@ const COPY = {
     email: "Email",
     linkedin: "LinkedIn",
     unreadOnly: "Unread only",
+    country: "Country",
+    allCountries: "All countries",
+    recency: "Last message",
+    recencyAny: "Any time",
+    recency24h: "Past 24 hours",
+    recency7d: "Past 7 days",
+    recency30d: "Past 30 days",
     clearFilters: "Clear filters",
     empty: "Nothing here",
     emptyHint: "New conversations will show up here.",
@@ -282,6 +289,13 @@ const COPY = {
     email: "Correo",
     linkedin: "LinkedIn",
     unreadOnly: "Solo sin leer",
+    country: "País",
+    allCountries: "Todos los países",
+    recency: "Último mensaje",
+    recencyAny: "Cualquier momento",
+    recency24h: "Últimas 24 horas",
+    recency7d: "Últimos 7 días",
+    recency30d: "Últimos 30 días",
     clearFilters: "Limpiar filtros",
     empty: "Nada por aquí",
     emptyHint: "Las nuevas conversaciones aparecerán aquí.",
@@ -538,6 +552,25 @@ function defaultLang(p: Prospect | undefined): ChatLang {
   return ES_LOCATIONS.some((x) => loc.includes(x)) ? "es" : "en"
 }
 
+// The mock location strings ("San Francisco, CA", "London, UK") end in either
+// a US state code or a country code — treat that trailing token as "country"
+// for filtering purposes; there's no real geo taxonomy in this prototype.
+function countryOf(location: string): string {
+  const parts = location.split(",")
+  return parts[parts.length - 1]?.trim() ?? location
+}
+
+type RecencyFilter = "any" | "24h" | "7d" | "30d"
+const RECENCY_MS: Record<Exclude<RecencyFilter, "any">, number> = {
+  "24h": 24 * 3600 * 1000,
+  "7d": 7 * 24 * 3600 * 1000,
+  "30d": 30 * 24 * 3600 * 1000,
+}
+function withinRecency(iso: string, filter: RecencyFilter): boolean {
+  if (filter === "any") return true
+  return Date.now() - new Date(iso).getTime() <= RECENCY_MS[filter]
+}
+
 function avatarColorFor(id: string): string {
   if (id === currentUser.id) return currentUser.avatarColor
   return getRep(id)?.avatarColor ?? "#7c3aed"
@@ -610,6 +643,8 @@ export default function Inbox() {
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
+  const [countryFilter, setCountryFilter] = React.useState<string>("all")
+  const [recencyFilter, setRecencyFilter] = React.useState<RecencyFilter>("any")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   // Focus mode: collapse the folder rail + conversation list to give the open
   // thread full width when reading/replying deep in a conversation.
@@ -731,12 +766,24 @@ export default function Inbox() {
     const filtered = inView.filter((conv) => {
       if (channelFilter !== "all" && conv.channel !== channelFilter) return false
       if (unreadOnly && conv.unread === 0) return false
+      if (countryFilter !== "all" && countryOf(getProspect(conv.prospectId)?.location ?? "") !== countryFilter)
+        return false
+      if (!withinRecency(conv.lastMessageAt, recencyFilter)) return false
       return matchesSearch(conv)
     })
     return filtered.sort(
       (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     )
-  }, [visible, conversations, view, channelFilter, unreadOnly, matchesSearch])
+  }, [visible, conversations, view, channelFilter, unreadOnly, countryFilter, recencyFilter, matchesSearch])
+
+  const countryOptions = React.useMemo(() => {
+    const set = new Set<string>()
+    for (const conv of conversations) {
+      const p = getProspect(conv.prospectId)
+      if (p) set.add(countryOf(p.location))
+    }
+    return Array.from(set).sort()
+  }, [conversations])
 
   const isMyTasksView = view.kind === "folder" && view.id === "my_tasks"
   const active = conversations.find((conv) => conv.id === activeId)
@@ -822,7 +869,8 @@ export default function Inbox() {
       ? STATUS_META[view.id][locale === "es" ? "es" : "en"]
       : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
-  const filtersActive = channelFilter !== "all" || unreadOnly
+  const filtersActive =
+    channelFilter !== "all" || unreadOnly || countryFilter !== "all" || recencyFilter !== "any"
 
   // Selection doesn't carry over when the user switches folders/outcomes.
   const viewSig = `${view.kind}:${view.id}`
@@ -1099,6 +1147,39 @@ export default function Inbox() {
                   <Checkbox checked={unreadOnly} className="pointer-events-none" />
                   {c.unreadOnly}
                 </DropdownMenuItem>
+                {countryOptions.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>{c.country}</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => setCountryFilter("all")}>
+                      <span className="size-4" />
+                      {c.allCountries}
+                      {countryFilter === "all" && <Check className="ml-auto size-4" />}
+                    </DropdownMenuItem>
+                    {countryOptions.map((country) => (
+                      <DropdownMenuItem key={country} onClick={() => setCountryFilter(country)}>
+                        <span className="size-4" />
+                        {country}
+                        {countryFilter === country && <Check className="ml-auto size-4" />}
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>{c.recency}</DropdownMenuLabel>
+                {(["any", "24h", "7d", "30d"] as const).map((r) => (
+                  <DropdownMenuItem key={r} onClick={() => setRecencyFilter(r)}>
+                    <span className="size-4" />
+                    {r === "any"
+                      ? c.recencyAny
+                      : r === "24h"
+                        ? c.recency24h
+                        : r === "7d"
+                          ? c.recency7d
+                          : c.recency30d}
+                    {recencyFilter === r && <Check className="ml-auto size-4" />}
+                  </DropdownMenuItem>
+                ))}
                 {filtersActive && (
                   <>
                     <DropdownMenuSeparator />
@@ -1106,6 +1187,8 @@ export default function Inbox() {
                       onClick={() => {
                         setChannelFilter("all")
                         setUnreadOnly(false)
+                        setCountryFilter("all")
+                        setRecencyFilter("any")
                       }}
                     >
                       <X className="size-4" />
