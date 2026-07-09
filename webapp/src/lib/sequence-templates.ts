@@ -135,9 +135,9 @@ function uid(): string {
   return `sq_${state.length + 1}_${state.reduce((n, t) => n + t.id.length, 0)}`
 }
 
-// Deep-copies a step list with fresh ids (fork tracks included, each track
-// also getting a fresh id), so a campaign, a template, and every insert of
-// that template never share step or track identity.
+// Deep-copies a step list with fresh ids (fork tracks and parallel siblings
+// included, each getting a fresh id), so a campaign, a template, and every
+// insert of that template never share step or track identity.
 let cloneCounter = 0
 export function cloneSequenceSteps(steps: CampaignStep[]): CampaignStep[] {
   return steps.map((s) => {
@@ -158,6 +158,7 @@ export function cloneSequenceSteps(steps: CampaignStep[]): CampaignStep[] {
             }),
           }
         : undefined,
+      parallelSteps: s.parallelSteps ? cloneSequenceSteps(s.parallelSteps) : undefined,
     }
   })
 }

@@ -260,38 +260,43 @@ export interface CampaignStep {
   // The rep the manual task is assigned to. Undefined reads as the campaign
   // owner / current user.
   assigneeId?: string
-  // One deviation off the main line, anchored at this step — either the
-  // reply/no-reply condition or an unconditional parallel fan-out, never
-  // both. Steps inside a track never carry their own `fork` (enforced by
-  // the UI, not this type) so the model stays exactly one level deep.
+  // A condition creates a fork anchored at this step: two mutually-
+  // exclusive tracks that both reconnect into whatever follows. Steps
+  // inside a track never carry their own `fork` or `parallelSteps`
+  // (enforced by the UI, not this type) so the model stays exactly one
+  // level deep.
   fork?: StepFork
+  // Steps that fire at the same time as this one — concurrent, not a fork:
+  // the sequence continues as a single line afterward, with no rejoin/
+  // dead-end concept. Each entry is a plain leaf step (no `fork` or
+  // `parallelSteps` of its own).
+  parallelSteps?: CampaignStep[]
 }
 
-// "reply"/"no_reply" are the two fixed, mutually-exclusive arms of a
-// conditional branch. "parallel" is an unconditional fan-out lane — a fork
-// can have one or more of these, distinguished only by id/position, not by
-// a condition.
-export type StepTrackKind = "reply" | "no_reply" | "parallel"
+// What the fork's two tracks are conditioned on.
+export type ConditionKind = "reply" | "open" | "click"
+
+// The two fixed, mutually-exclusive arms of a condition. Which pair
+// applies is determined by the fork's `condition`.
+export type StepTrackKind =
+  | "reply"
+  | "no_reply"
+  | "opened"
+  | "not_opened"
+  | "clicked"
+  | "not_clicked"
 
 export interface StepTrack {
   id: string
   kind: StepTrackKind
   steps: CampaignStep[]
-  // Whether this track's last step flows back into the step that follows
-  // the fork in the parent list (true), or the track dead-ends after its
-  // own steps (false). Branch tracks are always true — the UI never
-  // exposes this toggle for them. Only parallel tracks make it user-facing.
-  rejoins: boolean
 }
 
 export interface StepFork {
-  // "branch" = the reply/no-reply conditional: exactly two tracks (kind
-  // "reply" + "no_reply"), mutually exclusive at runtime, both rejoins:
-  // true, created/removed only via the branch toggle.
-  // "parallel" = an unconditional fan-out: one or more tracks (kind
-  // "parallel") that all run concurrently with the step's own
-  // continuation, each independently rejoining or dead-ending.
-  type: "branch" | "parallel"
+  // Exactly two tracks — the condition's met/not-met pair. Both always
+  // reconnect into the step that follows the fork in the parent list;
+  // there is no dead-ending arm.
+  condition: ConditionKind
   tracks: StepTrack[]
 }
 

@@ -1,4 +1,5 @@
-import { FileText, Sparkles, Lightbulb } from "lucide-react"
+import * as React from "react"
+import { FileText, Sparkles, Lightbulb, ListChecks, GitFork } from "lucide-react"
 
 import {
   Dialog,
@@ -10,10 +11,11 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Segmented } from "@/components/common/Segmented"
 import { useLocale } from "@/lib/locale"
 import { CHANNELS } from "@/lib/step-channels"
 import { cn } from "@/lib/utils"
-import type { StepChannel } from "@/lib/types"
+import type { ConditionKind, StepChannel } from "@/lib/types"
 
 interface ChannelCardCopy {
   label: string
@@ -30,11 +32,20 @@ const GROUPS: { key: GroupKey; channels: StepChannel[] }[] = [
   { key: "other", channels: ["manual"] },
 ]
 
+const CONDITIONS: ConditionKind[] = ["reply", "open", "click"]
+
+interface ConditionCardCopy {
+  label: string
+  description: string
+}
+
 const COPY = {
   en: {
     title: "Add a step",
     description: "Pick what happens next in the sequence.",
     cancel: "Cancel",
+    tabSteps: "Steps",
+    tabConditions: "Conditions",
     useTemplate: "Use a template",
     usePrompt: "Use a prompt",
     suggestedNext: (channel: string) => `Suggested next: ${channel}`,
@@ -71,10 +82,26 @@ const COPY = {
         description: "Create a manual task for the rep.",
       },
     } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "Replied",
+        description: "Splits the sequence based on whether they reply.",
+      },
+      open: {
+        label: "Opened",
+        description: "Splits the sequence based on whether they open the message.",
+      },
+      click: {
+        label: "Clicked a link",
+        description: "Splits the sequence based on whether they click a link.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
   },
   es: {
     title: "Añadir un paso",
     description: "Elige qué ocurre después en la secuencia.",
+    tabSteps: "Pasos",
+    tabConditions: "Condiciones",
     useTemplate: "Usar una plantilla",
     usePrompt: "Usar un prompt",
     suggestedNext: (channel: string) => `Sugerencia: ${channel}`,
@@ -112,6 +139,20 @@ const COPY = {
         description: "Crea una tarea manual para el representante.",
       },
     } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "Respondió",
+        description: "Divide la secuencia según si responden.",
+      },
+      open: {
+        label: "Abrió",
+        description: "Divide la secuencia según si abren el mensaje.",
+      },
+      click: {
+        label: "Hizo clic en un enlace",
+        description: "Divide la secuencia según si hacen clic en un enlace.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
   },
 } as const
 
@@ -121,6 +162,11 @@ interface StepTypePickerDialogProps {
   onSelect: (channel: StepChannel) => void
   title?: string
   description?: string
+  // Only offered when the ghost that opened this dialog is a top-level
+  // append/insert (not a track-nested one, and not on a step that already
+  // has parallel siblings) — conditions fork the sequence, which only
+  // makes sense one level deep.
+  onSelectCondition?: (condition: ConditionKind) => void
   // Quick-start shortcuts — only offered when the ghost that opened this
   // dialog is an append (not a mid-sequence insert or fork track), since
   // these always add to the end of the top-level sequence.
@@ -135,6 +181,7 @@ export function StepTypePickerDialog({
   onSelect,
   title,
   description,
+  onSelectCondition,
   onUseTemplate,
   onUsePrompt,
   suggestedNext,
@@ -142,6 +189,13 @@ export function StepTypePickerDialog({
   const { locale } = useLocale()
   const c = COPY[locale]
   const hasQuickActions = onUseTemplate || onUsePrompt || suggestedNext
+
+  const [tab, setTab] = React.useState<"steps" | "conditions">("steps")
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setTab("steps")
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -151,101 +205,143 @@ export function StepTypePickerDialog({
           <DialogDescription>{description ?? c.description}</DialogDescription>
         </DialogHeader>
 
-        {hasQuickActions && (
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              {onUseTemplate && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onUseTemplate()
-                    onOpenChange(false)
-                  }}
-                >
-                  <FileText className="size-4" />
-                  {c.useTemplate}
-                </Button>
-              )}
-              {onUsePrompt && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onUsePrompt()
-                    onOpenChange(false)
-                  }}
-                >
-                  <Sparkles className="size-4" />
-                  {c.usePrompt}
-                </Button>
-              )}
-              {suggestedNext && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    suggestedNext.onSelect()
-                    onOpenChange(false)
-                  }}
-                  className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
-                >
-                  <Lightbulb className="size-4" />
-                  {c.suggestedNext(c.channels[suggestedNext.channel].label)}
-                </button>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <Separator className="flex-1" />
-              <span className="text-muted-foreground text-xs uppercase">
-                {c.orPickChannel}
-              </span>
-              <Separator className="flex-1" />
-            </div>
-          </div>
+        {onSelectCondition && (
+          <Segmented
+            options={[
+              { v: "steps", label: c.tabSteps, icon: ListChecks },
+              { v: "conditions", label: c.tabConditions, icon: GitFork },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
         )}
 
-        <div className="max-h-[60vh] space-y-5 overflow-y-auto pr-1">
-          {GROUPS.map((group) => (
-            <div key={group.key} className="space-y-2">
-              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                {c.groups[group.key]}
-              </p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {group.channels.map((channel) => {
-                  const meta = CHANNELS[channel]
-                  const Icon = meta.Icon
-                  const card = c.channels[channel]
-                  return (
-                    <button
-                      key={channel}
-                      type="button"
+        {tab === "conditions" && onSelectCondition ? (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {CONDITIONS.map((condition) => {
+              const card = c.conditions[condition]
+              return (
+                <button
+                  key={condition}
+                  type="button"
+                  onClick={() => {
+                    onSelectCondition(condition)
+                    onOpenChange(false)
+                  }}
+                  className="hover:border-primary/40 hover:bg-muted/30 flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors"
+                >
+                  <span className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-md">
+                    <GitFork className="size-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">{card.label}</span>
+                    <span className="text-muted-foreground block text-xs">
+                      {card.description}
+                    </span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <>
+            {hasQuickActions && (
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {onUseTemplate && (
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
-                        onSelect(channel)
+                        onUseTemplate()
                         onOpenChange(false)
                       }}
-                      className="hover:border-primary/40 hover:bg-muted/30 flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors"
                     >
-                      <span
-                        className={cn(
-                          "flex size-8 items-center justify-center rounded-md",
-                          meta.tint
-                        )}
-                      >
-                        <Icon className="size-4" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium">{card.label}</span>
-                        <span className="text-muted-foreground block text-xs">
-                          {card.description}
-                        </span>
-                      </span>
+                      <FileText className="size-4" />
+                      {c.useTemplate}
+                    </Button>
+                  )}
+                  {onUsePrompt && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        onUsePrompt()
+                        onOpenChange(false)
+                      }}
+                    >
+                      <Sparkles className="size-4" />
+                      {c.usePrompt}
+                    </Button>
+                  )}
+                  {suggestedNext && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        suggestedNext.onSelect()
+                        onOpenChange(false)
+                      }}
+                      className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+                    >
+                      <Lightbulb className="size-4" />
+                      {c.suggestedNext(c.channels[suggestedNext.channel].label)}
                     </button>
-                  )
-                })}
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <Separator className="flex-1" />
+                  <span className="text-muted-foreground text-xs uppercase">
+                    {c.orPickChannel}
+                  </span>
+                  <Separator className="flex-1" />
+                </div>
               </div>
+            )}
+
+            <div className="max-h-[60vh] space-y-5 overflow-y-auto pr-1">
+              {GROUPS.map((group) => (
+                <div key={group.key} className="space-y-2">
+                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                    {c.groups[group.key]}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {group.channels.map((channel) => {
+                      const meta = CHANNELS[channel]
+                      const Icon = meta.Icon
+                      const card = c.channels[channel]
+                      return (
+                        <button
+                          key={channel}
+                          type="button"
+                          onClick={() => {
+                            onSelect(channel)
+                            onOpenChange(false)
+                          }}
+                          className="hover:border-primary/40 hover:bg-muted/30 flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors"
+                        >
+                          <span
+                            className={cn(
+                              "flex size-8 items-center justify-center rounded-md",
+                              meta.tint
+                            )}
+                          >
+                            <Icon className="size-4" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">{card.label}</span>
+                            <span className="text-muted-foreground block text-xs">
+                              {card.description}
+                            </span>
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>

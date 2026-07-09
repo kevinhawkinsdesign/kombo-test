@@ -26,7 +26,8 @@ import type {
   Campaign,
   CampaignStep,
   StepChannel,
-  StepTrack,
+  StepTrackKind,
+  ConditionKind,
   Deal,
   Task,
   EmailTemplate,
@@ -115,10 +116,10 @@ function migrateStep(s: LegacyStep): CampaignStep {
     return {
       ...rest,
       fork: {
-        type: "branch",
+        condition: "reply",
         tracks: [
-          { id: uid("trk"), kind: "reply", steps: branch.replySteps.map(migrateStep), rejoins: true },
-          { id: uid("trk"), kind: "no_reply", steps: branch.noReplySteps.map(migrateStep), rejoins: true },
+          { id: uid("trk"), kind: "reply", steps: branch.replySteps.map(migrateStep) },
+          { id: uid("trk"), kind: "no_reply", steps: branch.noReplySteps.map(migrateStep) },
         ],
       },
     }
@@ -203,9 +204,16 @@ function useSlice<T>(selector: (s: StoreState) => T): T {
 
 // Stable, increasing ids (seeded once at module load — not during render).
 let counter = Date.now()
-function uid(prefix: string): string {
+export function uid(prefix: string): string {
   counter += 1
   return `${prefix}_${counter.toString(36)}`
+}
+
+// The met/not-met track-kind pair a condition's fork is built from.
+const CONDITION_TRACK_KINDS: Record<ConditionKind, [StepTrackKind, StepTrackKind]> = {
+  reply: ["reply", "no_reply"],
+  open: ["opened", "not_opened"],
+  click: ["clicked", "not_clicked"],
 }
 function nowISO(): string {
   return new Date().toISOString()
@@ -430,15 +438,21 @@ export const templateStore = {
 // returns a new tree with that array replaced. Steps inside a track never
 // carry their own `fork`, so this never needs to recurse deeper than one
 // level.
-function updateStepTree(
+export function updateStepTree(
   steps: CampaignStep[],
   stepId: string,
   fn: (list: CampaignStep[], index: number) => CampaignStep[]
 ): CampaignStep[] {
   const index = steps.findIndex((s) => s.id === stepId)
   if (index !== -1) return fn(steps, index)
-  return steps.map((s) =>
-    s.fork
+  return steps.map((s) => {
+    if (s.parallelSteps) {
+      const pIndex = s.parallelSteps.findIndex((p) => p.id === stepId)
+      if (pIndex !== -1) {
+        return { ...s, parallelSteps: fn(s.parallelSteps, pIndex) }
+      }
+    }
+    return s.fork
       ? {
           ...s,
           fork: {
@@ -450,16 +464,18 @@ function updateStepTree(
           },
         }
       : s
-  )
+  })
 }
 
-// Flattens the tree in render order (a forking step, then each of its
-// tracks' steps in order, then the next top-level step) — used for
-// cosmetic per-step stats that degrade by position.
+// Flattens the tree in render order (a step, its parallel siblings, then
+// each of its fork tracks' steps in order, then the next top-level step) —
+// used for cosmetic per-step stats that degrade by position.
 export function flattenCampaignSteps(steps: CampaignStep[]): CampaignStep[] {
-  return steps.flatMap((s) =>
-    s.fork ? [s, ...s.fork.tracks.flatMap((t) => t.steps)] : [s]
-  )
+  return steps.flatMap((s) => [
+    s,
+    ...(s.parallelSteps ?? []),
+    ...(s.fork ? s.fork.tracks.flatMap((t) => t.steps) : []),
+  ])
 }
 
 export function findCampaignStep(
@@ -468,6 +484,10 @@ export function findCampaignStep(
 ): CampaignStep | undefined {
   for (const s of steps) {
     if (s.id === stepId) return s
+    if (s.parallelSteps) {
+      const found = s.parallelSteps.find((p) => p.id === stepId)
+      if (found) return found
+    }
     if (s.fork) {
       for (const t of s.fork.tracks) {
         const found = findCampaignStep(t.steps, stepId)
@@ -478,9 +498,10 @@ export function findCampaignStep(
   return undefined
 }
 
-// Finds the array a step actually lives in (top-level, or one of a fork's
-// tracks) plus its index there — the collection that "move up/down" and
-// "is first/last" checks need to reason about.
+// Finds the array a step actually lives in (top-level, a step's parallel
+// siblings, or one of a fork's tracks) plus its index there — the
+// collection that "move up/down" and "is first/last" checks need to
+// reason about.
 export function locateCampaignStep(
   steps: CampaignStep[],
   stepId: string
@@ -488,6 +509,10 @@ export function locateCampaignStep(
   const topIndex = steps.findIndex((s) => s.id === stepId)
   if (topIndex !== -1) return { list: steps, index: topIndex }
   for (const s of steps) {
+    if (s.parallelSteps) {
+      const pIndex = s.parallelSteps.findIndex((p) => p.id === stepId)
+      if (pIndex !== -1) return { list: s.parallelSteps, index: pIndex }
+    }
     if (!s.fork) continue
     for (const t of s.fork.tracks) {
       const found = locateCampaignStep(t.steps, stepId)
@@ -654,11 +679,12 @@ export const campaignStore = {
       ),
     })
   },
-  // Adds a fresh, blank reply/no-reply branch to a step — two tracks that
-  // both reconnect into the next step in the parent array. A step already
-  // inside a track can't itself fork (enforced by the UI only offering
-  // this on top-level steps).
-  addBranch(campaignId: string, stepId: string): void {
+  // Adds a fresh, blank condition fork to a step — two tracks (the
+  // condition's met/not-met pair) that both reconnect into the next step
+  // in the parent array. A step already inside a track can't itself fork
+  // (enforced by the UI only offering this on top-level steps).
+  addCondition(campaignId: string, stepId: string, condition: ConditionKind): void {
+    const [metKind, notMetKind] = CONDITION_TRACK_KINDS[condition]
     setState({
       campaigns: state.campaigns.map((c) =>
         c.id === campaignId
@@ -670,10 +696,10 @@ export const campaignStore = {
                     ? {
                         ...s,
                         fork: {
-                          type: "branch",
+                          condition,
                           tracks: [
-                            { id: uid("trk"), kind: "reply", steps: [], rejoins: true },
-                            { id: uid("trk"), kind: "no_reply", steps: [], rejoins: true },
+                            { id: uid("trk"), kind: metKind, steps: [] },
+                            { id: uid("trk"), kind: notMetKind, steps: [] },
                           ],
                         },
                       }
@@ -685,7 +711,7 @@ export const campaignStore = {
       ),
     })
   },
-  // Clears whichever fork (branch or parallel) a step has.
+  // Clears a step's condition fork.
   removeFork(campaignId: string, stepId: string): void {
     setState({
       campaigns: state.campaigns.map((c) =>
@@ -702,7 +728,7 @@ export const campaignStore = {
       ),
     })
   },
-  // Adds a blank step to one track of a fork (branch or parallel).
+  // Adds a blank step to one track of a condition fork.
   addForkStep(
     campaignId: string,
     stepId: string,
@@ -743,9 +769,10 @@ export const campaignStore = {
       ),
     })
   },
-  // Starts (or extends) an unconditional parallel fan-out at a step: the
-  // first call creates a new "parallel" fork seeded with one track holding
-  // one step of `channel`; later calls append another parallel track.
+  // Adds one step that fires at the same time as `stepId` — concurrent,
+  // not a fork. Each call appends another single, independent step;
+  // parallel steps never chain and never carry their own fork or
+  // parallelSteps.
   addParallelStep(campaignId: string, stepId: string, channel: StepChannel): void {
     setState({
       campaigns: state.campaigns.map((c) =>
@@ -758,77 +785,12 @@ export const campaignStore = {
                   const step: CampaignStep = {
                     id: uid("s"),
                     channel,
-                    delayDays: 3,
+                    delayDays: 0,
                     subject: "",
                     body: "",
                     ...(channel === "manual" ? { isManualTask: true } : {}),
                   }
-                  const track: StepTrack = {
-                    id: uid("trk"),
-                    kind: "parallel",
-                    steps: [step],
-                    rejoins: true,
-                  }
-                  return {
-                    ...s,
-                    fork:
-                      s.fork?.type === "parallel"
-                        ? { ...s.fork, tracks: [...s.fork.tracks, track] }
-                        : { type: "parallel", tracks: [track] },
-                  }
-                })
-              ),
-            }
-          : c
-      ),
-    })
-  },
-  // Toggles whether a parallel track rejoins the shared continuation after
-  // the fork, or dead-ends after its own steps. Not exposed for branch
-  // tracks — those always rejoin.
-  setTrackRejoins(
-    campaignId: string,
-    stepId: string,
-    trackId: string,
-    rejoins: boolean
-  ): void {
-    setState({
-      campaigns: state.campaigns.map((c) =>
-        c.id === campaignId
-          ? {
-              ...c,
-              steps: updateStepTree(c.steps, stepId, (list, index) =>
-                list.map((s, i) => {
-                  if (i !== index || !s.fork) return s
-                  return {
-                    ...s,
-                    fork: {
-                      ...s.fork,
-                      tracks: s.fork.tracks.map((t) =>
-                        t.id === trackId ? { ...t, rejoins } : t
-                      ),
-                    },
-                  }
-                })
-              ),
-            }
-          : c
-      ),
-    })
-  },
-  // Removes one parallel track from a fork; if it was the last track, the
-  // whole fork is cleared (equivalent to removeFork).
-  removeForkTrack(campaignId: string, stepId: string, trackId: string): void {
-    setState({
-      campaigns: state.campaigns.map((c) =>
-        c.id === campaignId
-          ? {
-              ...c,
-              steps: updateStepTree(c.steps, stepId, (list, index) =>
-                list.map((s, i) => {
-                  if (i !== index || !s.fork) return s
-                  const remaining = s.fork.tracks.filter((t) => t.id !== trackId)
-                  return { ...s, fork: remaining.length ? { ...s.fork, tracks: remaining } : undefined }
+                  return { ...s, parallelSteps: [...(s.parallelSteps ?? []), step] }
                 })
               ),
             }
