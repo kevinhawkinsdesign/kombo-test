@@ -21,7 +21,6 @@ export const V2_ONLY_PATHS = [
   "/extension",
   "/sequences",
   "/sequence-builder",
-  "/deals",
 ] as const
 
 // Where v1 lands when the user hits a hidden route. Home ("/") — the

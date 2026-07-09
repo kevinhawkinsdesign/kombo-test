@@ -3,18 +3,14 @@ import { Link } from "react-router-dom"
 import { Search, FolderKanban, Send, Mail, Plug, UserPlus } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useLocale } from "@/lib/locale"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { HomeModules } from "@/components/home/HomeModules"
-import { DealFlowBoard } from "@/components/home/DealFlowBoard"
 
 const COPY = {
   en: {
     title: "Home",
     description: "Jump back in, or start something new.",
-    tabHome: "Quick Actions",
-    tabDealFlow: "Deal Flow",
     findTitle: "Find prospects & companies",
     findDesc: "Search our database or import a CSV.",
     listTitle: "Create a list",
@@ -31,8 +27,6 @@ const COPY = {
   es: {
     title: "Inicio",
     description: "Retoma donde lo dejaste, o empieza algo nuevo.",
-    tabHome: "Acciones rápidas",
-    tabDealFlow: "Flujo de negocio",
     findTitle: "Buscar prospectos y empresas",
     findDesc: "Busca en nuestra base de datos o importa un CSV.",
     listTitle: "Crear una lista",
@@ -79,48 +73,37 @@ export default function Home() {
     <Page>
       <PageHeading title={t.title} description={t.description} />
 
-      <Tabs defaultValue="home">
-        <TabsList>
-          <TabsTrigger value="home">{t.tabHome}</TabsTrigger>
-          <TabsTrigger value="dealFlow">{t.tabDealFlow}</TabsTrigger>
-        </TabsList>
+      <div className="mt-4 space-y-6">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {actions.map((a) => {
+            const Icon = a.icon
+            const body = (
+              <>
+                <span className="bg-primary/10 flex size-9 shrink-0 items-center justify-center rounded-lg">
+                  <Icon className="text-primary size-4.5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{a.title}</span>
+                  <span className="text-muted-foreground block text-xs">{a.desc}</span>
+                </span>
+              </>
+            )
+            const className =
+              "hover:border-primary/40 hover:bg-muted/30 flex items-start gap-3 rounded-xl border p-4 text-left transition-colors"
+            return a.to ? (
+              <Link key={a.key} to={a.to} className={className}>
+                {body}
+              </Link>
+            ) : (
+              <button key={a.key} type="button" onClick={a.onClick} className={className}>
+                {body}
+              </button>
+            )
+          })}
+        </div>
 
-        <TabsContent value="home" className="mt-4 space-y-6">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {actions.map((a) => {
-              const Icon = a.icon
-              const body = (
-                <>
-                  <span className="bg-primary/10 flex size-9 shrink-0 items-center justify-center rounded-lg">
-                    <Icon className="text-primary size-4.5" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold">{a.title}</span>
-                    <span className="text-muted-foreground block text-xs">{a.desc}</span>
-                  </span>
-                </>
-              )
-              const className =
-                "hover:border-primary/40 hover:bg-muted/30 flex items-start gap-3 rounded-xl border p-4 text-left transition-colors"
-              return a.to ? (
-                <Link key={a.key} to={a.to} className={className}>
-                  {body}
-                </Link>
-              ) : (
-                <button key={a.key} type="button" onClick={a.onClick} className={className}>
-                  {body}
-                </button>
-              )
-            })}
-          </div>
-
-          <HomeModules />
-        </TabsContent>
-
-        <TabsContent value="dealFlow" className="mt-4">
-          <DealFlowBoard />
-        </TabsContent>
-      </Tabs>
+        <HomeModules />
+      </div>
 
       <AddRecordsDialog
         open={findOpen}
