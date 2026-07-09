@@ -26,6 +26,7 @@ import type {
   Campaign,
   CampaignStep,
   StepChannel,
+  StepTrack,
   Deal,
   Task,
   EmailTemplate,
@@ -92,6 +93,42 @@ function seed(): StoreState {
   }
 }
 
+// One-time migration for campaigns persisted before `CampaignStep.branch`
+// was generalized into `CampaignStep.fork` — converts a legacy
+// `{ replySteps, noReplySteps }` shape into an equivalent `fork` so nothing
+// a user already built gets silently dropped.
+type LegacyStep = CampaignStep & {
+  branch?: { replySteps: LegacyStep[]; noReplySteps: LegacyStep[] }
+}
+function migrateStep(s: LegacyStep): CampaignStep {
+  if (s.fork) {
+    return {
+      ...s,
+      fork: {
+        ...s.fork,
+        tracks: s.fork.tracks.map((t) => ({ ...t, steps: t.steps.map(migrateStep) })),
+      },
+    }
+  }
+  if (s.branch) {
+    const { branch, ...rest } = s
+    return {
+      ...rest,
+      fork: {
+        type: "branch",
+        tracks: [
+          { id: uid("trk"), kind: "reply", steps: branch.replySteps.map(migrateStep), rejoins: true },
+          { id: uid("trk"), kind: "no_reply", steps: branch.noReplySteps.map(migrateStep), rejoins: true },
+        ],
+      },
+    }
+  }
+  return s
+}
+function migrateCampaigns(campaigns: Campaign[]): Campaign[] {
+  return campaigns.map((c) => ({ ...c, steps: c.steps.map(migrateStep) }))
+}
+
 function load(): StoreState {
   try {
     const raw = localStorage.getItem(KEY)
@@ -102,7 +139,7 @@ function load(): StoreState {
       return {
         prospects: parsed.prospects ?? base.prospects,
         lists: parsed.lists ?? base.lists,
-        campaigns: parsed.campaigns ?? base.campaigns,
+        campaigns: migrateCampaigns(parsed.campaigns ?? base.campaigns),
         deals: parsed.deals ?? base.deals,
         tasks: parsed.tasks ?? base.tasks,
         templates: parsed.templates ?? base.templates,
@@ -389,10 +426,10 @@ export const templateStore = {
 }
 
 // Applies `fn` to whichever array in the one-level-deep step tree actually
-// contains `stepId` — the top-level list, or a branch's replySteps/
-// noReplySteps — and returns a new tree with that array replaced. Steps
-// inside a branch never carry their own `branch`, so this never needs to
-// recurse deeper than one level.
+// contains `stepId` — the top-level list, or one of a fork's tracks — and
+// returns a new tree with that array replaced. Steps inside a track never
+// carry their own `fork`, so this never needs to recurse deeper than one
+// level.
 function updateStepTree(
   steps: CampaignStep[],
   stepId: string,
@@ -401,24 +438,27 @@ function updateStepTree(
   const index = steps.findIndex((s) => s.id === stepId)
   if (index !== -1) return fn(steps, index)
   return steps.map((s) =>
-    s.branch
+    s.fork
       ? {
           ...s,
-          branch: {
-            replySteps: updateStepTree(s.branch.replySteps, stepId, fn),
-            noReplySteps: updateStepTree(s.branch.noReplySteps, stepId, fn),
+          fork: {
+            ...s.fork,
+            tracks: s.fork.tracks.map((t) => ({
+              ...t,
+              steps: updateStepTree(t.steps, stepId, fn),
+            })),
           },
         }
       : s
   )
 }
 
-// Flattens the tree in render order (a branching step, then its reply
-// steps, then its no-reply steps, then the next top-level step) — used for
+// Flattens the tree in render order (a forking step, then each of its
+// tracks' steps in order, then the next top-level step) — used for
 // cosmetic per-step stats that degrade by position.
 export function flattenCampaignSteps(steps: CampaignStep[]): CampaignStep[] {
   return steps.flatMap((s) =>
-    s.branch ? [s, ...s.branch.replySteps, ...s.branch.noReplySteps] : [s]
+    s.fork ? [s, ...s.fork.tracks.flatMap((t) => t.steps)] : [s]
   )
 }
 
@@ -428,19 +468,19 @@ export function findCampaignStep(
 ): CampaignStep | undefined {
   for (const s of steps) {
     if (s.id === stepId) return s
-    if (s.branch) {
-      const found =
-        findCampaignStep(s.branch.replySteps, stepId) ??
-        findCampaignStep(s.branch.noReplySteps, stepId)
-      if (found) return found
+    if (s.fork) {
+      for (const t of s.fork.tracks) {
+        const found = findCampaignStep(t.steps, stepId)
+        if (found) return found
+      }
     }
   }
   return undefined
 }
 
-// Finds the array a step actually lives in (top-level, or a branch's reply/
-// no-reply track) plus its index there — the collection that "move up/down"
-// and "is first/last" checks need to reason about.
+// Finds the array a step actually lives in (top-level, or one of a fork's
+// tracks) plus its index there — the collection that "move up/down" and
+// "is first/last" checks need to reason about.
 export function locateCampaignStep(
   steps: CampaignStep[],
   stepId: string
@@ -448,11 +488,11 @@ export function locateCampaignStep(
   const topIndex = steps.findIndex((s) => s.id === stepId)
   if (topIndex !== -1) return { list: steps, index: topIndex }
   for (const s of steps) {
-    if (!s.branch) continue
-    const reply = locateCampaignStep(s.branch.replySteps, stepId)
-    if (reply.index !== -1) return reply
-    const noReply = locateCampaignStep(s.branch.noReplySteps, stepId)
-    if (noReply.index !== -1) return noReply
+    if (!s.fork) continue
+    for (const t of s.fork.tracks) {
+      const found = locateCampaignStep(t.steps, stepId)
+      if (found.index !== -1) return found
+    }
   }
   return { list: steps, index: -1 }
 }
@@ -614,9 +654,9 @@ export const campaignStore = {
       ),
     })
   },
-  // Adds a fresh, blank fork to a step — a single reply/no-reply deviation
-  // that reconnects into the next step in the parent array. A step already
-  // inside a branch can't itself branch (enforced by the UI only offering
+  // Adds a fresh, blank reply/no-reply branch to a step — two tracks that
+  // both reconnect into the next step in the parent array. A step already
+  // inside a track can't itself fork (enforced by the UI only offering
   // this on top-level steps).
   addBranch(campaignId: string, stepId: string): void {
     setState({
@@ -627,7 +667,16 @@ export const campaignStore = {
               steps: updateStepTree(c.steps, stepId, (list, index) =>
                 list.map((s, i) =>
                   i === index
-                    ? { ...s, branch: { replySteps: [], noReplySteps: [] } }
+                    ? {
+                        ...s,
+                        fork: {
+                          type: "branch",
+                          tracks: [
+                            { id: uid("trk"), kind: "reply", steps: [], rejoins: true },
+                            { id: uid("trk"), kind: "no_reply", steps: [], rejoins: true },
+                          ],
+                        },
+                      }
                     : s
                 )
               ),
@@ -636,7 +685,8 @@ export const campaignStore = {
       ),
     })
   },
-  removeBranch(campaignId: string, stepId: string): void {
+  // Clears whichever fork (branch or parallel) a step has.
+  removeFork(campaignId: string, stepId: string): void {
     setState({
       campaigns: state.campaigns.map((c) =>
         c.id === campaignId
@@ -644,7 +694,7 @@ export const campaignStore = {
               ...c,
               steps: updateStepTree(c.steps, stepId, (list, index) =>
                 list.map((s, i) =>
-                  i === index ? { ...s, branch: undefined } : s
+                  i === index ? { ...s, fork: undefined } : s
                 )
               ),
             }
@@ -652,11 +702,11 @@ export const campaignStore = {
       ),
     })
   },
-  // Adds a blank step to one track of a branch.
-  addBranchStep(
+  // Adds a blank step to one track of a fork (branch or parallel).
+  addForkStep(
     campaignId: string,
-    parentStepId: string,
-    track: "reply" | "noReply",
+    stepId: string,
+    trackId: string,
     channel: StepChannel
   ): void {
     setState({
@@ -664,9 +714,9 @@ export const campaignStore = {
         c.id === campaignId
           ? {
               ...c,
-              steps: updateStepTree(c.steps, parentStepId, (list, index) =>
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
                 list.map((s, i) => {
-                  if (i !== index || !s.branch) return s
+                  if (i !== index || !s.fork) return s
                   const step: CampaignStep = {
                     id: uid("s"),
                     channel,
@@ -675,11 +725,110 @@ export const campaignStore = {
                     body: "",
                     ...(channel === "manual" ? { isManualTask: true } : {}),
                   }
-                  const key = track === "reply" ? "replySteps" : "noReplySteps"
                   return {
                     ...s,
-                    branch: { ...s.branch, [key]: [...s.branch[key], step] },
+                    fork: {
+                      ...s.fork,
+                      tracks: s.fork.tracks.map((t) =>
+                        t.id === trackId
+                          ? { ...t, steps: [...t.steps, step] }
+                          : t
+                      ),
+                    },
                   }
+                })
+              ),
+            }
+          : c
+      ),
+    })
+  },
+  // Starts (or extends) an unconditional parallel fan-out at a step: the
+  // first call creates a new "parallel" fork seeded with one track holding
+  // one step of `channel`; later calls append another parallel track.
+  addParallelStep(campaignId: string, stepId: string, channel: StepChannel): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.map((s, i) => {
+                  if (i !== index) return s
+                  const step: CampaignStep = {
+                    id: uid("s"),
+                    channel,
+                    delayDays: 3,
+                    subject: "",
+                    body: "",
+                    ...(channel === "manual" ? { isManualTask: true } : {}),
+                  }
+                  const track: StepTrack = {
+                    id: uid("trk"),
+                    kind: "parallel",
+                    steps: [step],
+                    rejoins: true,
+                  }
+                  return {
+                    ...s,
+                    fork:
+                      s.fork?.type === "parallel"
+                        ? { ...s.fork, tracks: [...s.fork.tracks, track] }
+                        : { type: "parallel", tracks: [track] },
+                  }
+                })
+              ),
+            }
+          : c
+      ),
+    })
+  },
+  // Toggles whether a parallel track rejoins the shared continuation after
+  // the fork, or dead-ends after its own steps. Not exposed for branch
+  // tracks — those always rejoin.
+  setTrackRejoins(
+    campaignId: string,
+    stepId: string,
+    trackId: string,
+    rejoins: boolean
+  ): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.map((s, i) => {
+                  if (i !== index || !s.fork) return s
+                  return {
+                    ...s,
+                    fork: {
+                      ...s.fork,
+                      tracks: s.fork.tracks.map((t) =>
+                        t.id === trackId ? { ...t, rejoins } : t
+                      ),
+                    },
+                  }
+                })
+              ),
+            }
+          : c
+      ),
+    })
+  },
+  // Removes one parallel track from a fork; if it was the last track, the
+  // whole fork is cleared (equivalent to removeFork).
+  removeForkTrack(campaignId: string, stepId: string, trackId: string): void {
+    setState({
+      campaigns: state.campaigns.map((c) =>
+        c.id === campaignId
+          ? {
+              ...c,
+              steps: updateStepTree(c.steps, stepId, (list, index) =>
+                list.map((s, i) => {
+                  if (i !== index || !s.fork) return s
+                  const remaining = s.fork.tracks.filter((t) => t.id !== trackId)
+                  return { ...s, fork: remaining.length ? { ...s.fork, tracks: remaining } : undefined }
                 })
               ),
             }

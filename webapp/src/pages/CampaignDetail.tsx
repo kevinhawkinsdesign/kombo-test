@@ -238,6 +238,7 @@ const COPY = {
     tabSequence: "Sequence",
     tabProspects: "Prospects",
     tabConversations: "Conversations",
+    tabSettings: "Settings",
     dailyPerformance: "Daily performance",
     dailyPerformanceDesc: "Sent, opened and replied per day.",
     noDailyData: "No daily data yet for this campaign.",
@@ -446,6 +447,7 @@ const COPY = {
     tabSequence: "Secuencia",
     tabProspects: "Prospectos",
     tabConversations: "Conversaciones",
+    tabSettings: "Configuración",
     dailyPerformance: "Rendimiento diario",
     dailyPerformanceDesc: "Enviados, abiertos y respondidos por día.",
     noDailyData: "Aún no hay datos diarios para esta campaña.",
@@ -1198,6 +1200,229 @@ export default function CampaignDetail() {
     }, 1800)
   }
 
+  // Sending, Linked List, and Automations — canonically the Settings tab,
+  // but also surfaced in Overview while the campaign has no performance
+  // data yet (not yet active/completed), so a brand-new campaign doesn't
+  // hide its own setup behind an extra tab click.
+  const campaignSettingsSection = (
+    <>
+      {/* Sending — account + language, locked once active/ended */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.sendingSettings}</CardTitle>
+          <CardDescription>{c.sendingSettingsDesc}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label
+                htmlFor="campaign-account"
+                className="text-sm font-medium"
+              >
+                {c.account}
+              </label>
+              {senderEditable ? (
+                <Select
+                  value={accountId}
+                  onValueChange={(v) => {
+                    const a =
+                      ACCOUNT_OPTIONS.find((o) => o.id === v) ??
+                      ACCOUNT_OPTIONS[0]
+                    saveSender({
+                      senderAccountId: a.id,
+                      senderAccount: a.name,
+                      language,
+                    })
+                  }}
+                >
+                  <SelectTrigger id="campaign-account" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCOUNT_OPTIONS.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        {a.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="rounded-md border px-3 py-2 text-sm">
+                  {accountName}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label
+                htmlFor="campaign-language"
+                className="text-sm font-medium"
+              >
+                {c.language}
+              </label>
+              {senderEditable ? (
+                <Select
+                  value={language}
+                  onValueChange={(v) =>
+                    saveSender({
+                      senderAccountId: accountId,
+                      senderAccount: accountName,
+                      language: v as Locale,
+                    })
+                  }
+                >
+                  <SelectTrigger id="campaign-language" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">{c.english}</SelectItem>
+                    <SelectItem value="es">{c.spanish}</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="rounded-md border px-3 py-2 text-sm">
+                  {langLabel}
+                </p>
+              )}
+            </div>
+          </div>
+          {!senderEditable && (
+            <p className="text-muted-foreground text-xs">
+              {c.locksAfterActivation}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Audience — 1-to-1 attached list */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.audience}</CardTitle>
+          <CardDescription>{c.audienceDesc}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {attachedList ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span
+                  className="size-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: attachedList.color }}
+                />
+                <div>
+                  <Link
+                    to={`/lists/${attachedList.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {attachedList.name}
+                  </Link>
+                  <p className="text-muted-foreground text-xs">
+                    {attachedList.kind === "company"
+                      ? c.companiesCount((attachedList.accountIds ?? []).length)
+                      : c.prospectsCount(attachedList.prospectIds.length)}
+                    {attachedList.dynamic ? c.dynamicSuffix : ""}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  campaignStore.detachList(campaign.id)
+                  toast.success(c.detached(attachedList.name))
+                }}
+              >
+                <X className="size-4" />
+                {c.detach}
+              </Button>
+            </div>
+          ) : lists.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <SearchCombobox
+                value={attachListId}
+                onChange={setAttachListId}
+                options={lists.map((l) => ({
+                  value: l.id,
+                  label: l.name,
+                  sublabel:
+                    l.campaignId && l.campaignId !== campaign.id
+                      ? c.linkedElsewhere
+                      : undefined,
+                }))}
+                placeholder={c.chooseList}
+                searchPlaceholder={c.chooseList}
+                emptyText={c.noListsToAttach}
+                className="w-[240px]"
+              />
+              <Button
+                disabled={!attachListId}
+                onClick={() => {
+                  const target = lists.find((l) => l.id === attachListId)
+                  campaignStore.attachList(campaign.id, attachListId)
+                  setAttachListId("")
+                  toast.success(
+                    target ? c.attached(target.name) : c.listAttached
+                  )
+                }}
+              >
+                {c.attach}
+              </Button>
+              <Button variant="outline" onClick={createAndAttachList}>
+                <Plus className="size-4" />
+                {c.createList}
+              </Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={createAndAttachList}>
+              <Plus className="size-4" />
+              {c.createList}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Automations — alert when a reply is classified Interested */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Sparkles className="text-primary size-4" />
+            {c.automations}
+          </CardTitle>
+          <CardDescription>{c.automationsDesc}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{c.alertInterested}</p>
+              <p className="text-muted-foreground text-sm">
+                {c.alertInterestedDesc}
+              </p>
+            </div>
+            <Switch
+              checked={alertInterested}
+              onCheckedChange={(v) => {
+                setAlertInterested(v)
+                if (v) toast.success(c.alertsOnToast)
+              }}
+              aria-label={c.alertInterested}
+            />
+          </div>
+          {alertInterested && (
+            <div className="flex items-center justify-between gap-3 border-t pt-4">
+              <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                <Mail className="size-4" />
+                {c.alsoEmail}
+              </p>
+              <Switch
+                checked={alertEmail}
+                onCheckedChange={setAlertEmail}
+                aria-label={c.alsoEmail}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
+  )
+
   return (
     <Page>
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
@@ -1339,10 +1564,38 @@ export default function CampaignDetail() {
           <TabsTrigger value="sequence">{c.tabSequence}</TabsTrigger>
           <TabsTrigger value="prospects">{c.tabProspects}</TabsTrigger>
           <TabsTrigger value="conversations">{c.tabConversations}</TabsTrigger>
+          <TabsTrigger value="settings">{c.tabSettings}</TabsTrigger>
         </TabsList>
 
         {/* Overview */}
         <TabsContent value="overview" className="mt-4 space-y-4">
+          {!setupComplete && (
+            <Card className="border-primary/30 bg-primary/[0.03]">
+              <CardHeader>
+                <CardTitle className="text-base">{c.setupTitle}</CardTitle>
+                <CardDescription>{c.setupDesc}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <SetupStep
+                  done={hasSequence}
+                  label={c.setupSequenceLabel}
+                  desc={c.setupSequenceDesc}
+                  actionLabel={c.setupSequenceCta}
+                  doneLabel={c.setupDone}
+                  onAction={() => setTab("sequence")}
+                />
+                <SetupStep
+                  done={hasFeed}
+                  label={c.setupProspectsLabel}
+                  desc={c.setupProspectsDesc}
+                  actionLabel={c.setupProspectsCta}
+                  doneLabel={c.setupDone}
+                  onAction={() => setTab("prospects")}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Merged at-a-glance stats — enrollment/funnel KPIs and the daily
               sent/opened/replied/bounced totals used to live in two separate
               places (a strip above the tabs, and a "Summary" card down here);
@@ -1411,33 +1664,6 @@ export default function CampaignDetail() {
             </CardContent>
           </Card>
 
-          {!setupComplete && (
-            <Card className="border-primary/30 bg-primary/[0.03]">
-              <CardHeader>
-                <CardTitle className="text-base">{c.setupTitle}</CardTitle>
-                <CardDescription>{c.setupDesc}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <SetupStep
-                  done={hasSequence}
-                  label={c.setupSequenceLabel}
-                  desc={c.setupSequenceDesc}
-                  actionLabel={c.setupSequenceCta}
-                  doneLabel={c.setupDone}
-                  onAction={() => setTab("sequence")}
-                />
-                <SetupStep
-                  done={hasFeed}
-                  label={c.setupProspectsLabel}
-                  desc={c.setupProspectsDesc}
-                  actionLabel={c.setupProspectsCta}
-                  doneLabel={c.setupDone}
-                  onAction={() => setTab("prospects")}
-                />
-              </CardContent>
-            </Card>
-          )}
-
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{c.dailyPerformance}</CardTitle>
@@ -1466,221 +1692,7 @@ export default function CampaignDetail() {
             </CardContent>
           </Card>
 
-          {/* Sending — account + language, locked once active/ended */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.sendingSettings}</CardTitle>
-              <CardDescription>{c.sendingSettingsDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="campaign-account"
-                    className="text-sm font-medium"
-                  >
-                    {c.account}
-                  </label>
-                  {senderEditable ? (
-                    <Select
-                      value={accountId}
-                      onValueChange={(v) => {
-                        const a =
-                          ACCOUNT_OPTIONS.find((o) => o.id === v) ??
-                          ACCOUNT_OPTIONS[0]
-                        saveSender({
-                          senderAccountId: a.id,
-                          senderAccount: a.name,
-                          language,
-                        })
-                      }}
-                    >
-                      <SelectTrigger id="campaign-account" className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ACCOUNT_OPTIONS.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="rounded-md border px-3 py-2 text-sm">
-                      {accountName}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="campaign-language"
-                    className="text-sm font-medium"
-                  >
-                    {c.language}
-                  </label>
-                  {senderEditable ? (
-                    <Select
-                      value={language}
-                      onValueChange={(v) =>
-                        saveSender({
-                          senderAccountId: accountId,
-                          senderAccount: accountName,
-                          language: v as Locale,
-                        })
-                      }
-                    >
-                      <SelectTrigger id="campaign-language" className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">{c.english}</SelectItem>
-                        <SelectItem value="es">{c.spanish}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="rounded-md border px-3 py-2 text-sm">
-                      {langLabel}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {!senderEditable && (
-                <p className="text-muted-foreground text-xs">
-                  {c.locksAfterActivation}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Audience — 1-to-1 attached list */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.audience}</CardTitle>
-              <CardDescription>{c.audienceDesc}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {attachedList ? (
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="size-3 shrink-0 rounded-full"
-                      style={{ backgroundColor: attachedList.color }}
-                    />
-                    <div>
-                      <Link
-                        to={`/lists/${attachedList.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {attachedList.name}
-                      </Link>
-                      <p className="text-muted-foreground text-xs">
-                        {attachedList.kind === "company"
-                          ? c.companiesCount((attachedList.accountIds ?? []).length)
-                          : c.prospectsCount(attachedList.prospectIds.length)}
-                        {attachedList.dynamic ? c.dynamicSuffix : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      campaignStore.detachList(campaign.id)
-                      toast.success(c.detached(attachedList.name))
-                    }}
-                  >
-                    <X className="size-4" />
-                    {c.detach}
-                  </Button>
-                </div>
-              ) : lists.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <SearchCombobox
-                    value={attachListId}
-                    onChange={setAttachListId}
-                    options={lists.map((l) => ({
-                      value: l.id,
-                      label: l.name,
-                      sublabel:
-                        l.campaignId && l.campaignId !== campaign.id
-                          ? c.linkedElsewhere
-                          : undefined,
-                    }))}
-                    placeholder={c.chooseList}
-                    searchPlaceholder={c.chooseList}
-                    emptyText={c.noListsToAttach}
-                    className="w-[240px]"
-                  />
-                  <Button
-                    disabled={!attachListId}
-                    onClick={() => {
-                      const target = lists.find((l) => l.id === attachListId)
-                      campaignStore.attachList(campaign.id, attachListId)
-                      setAttachListId("")
-                      toast.success(
-                        target ? c.attached(target.name) : c.listAttached
-                      )
-                    }}
-                  >
-                    {c.attach}
-                  </Button>
-                  <Button variant="outline" onClick={createAndAttachList}>
-                    <Plus className="size-4" />
-                    {c.createList}
-                  </Button>
-                </div>
-              ) : (
-                <Button variant="outline" onClick={createAndAttachList}>
-                  <Plus className="size-4" />
-                  {c.createList}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Automations — alert when a reply is classified Interested */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="text-primary size-4" />
-                {c.automations}
-              </CardTitle>
-              <CardDescription>{c.automationsDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{c.alertInterested}</p>
-                  <p className="text-muted-foreground text-sm">
-                    {c.alertInterestedDesc}
-                  </p>
-                </div>
-                <Switch
-                  checked={alertInterested}
-                  onCheckedChange={(v) => {
-                    setAlertInterested(v)
-                    if (v) toast.success(c.alertsOnToast)
-                  }}
-                  aria-label={c.alertInterested}
-                />
-              </div>
-              {alertInterested && (
-                <div className="flex items-center justify-between gap-3 border-t pt-4">
-                  <p className="text-muted-foreground flex items-center gap-2 text-sm">
-                    <Mail className="size-4" />
-                    {c.alsoEmail}
-                  </p>
-                  <Switch
-                    checked={alertEmail}
-                    onCheckedChange={setAlertEmail}
-                    aria-label={c.alsoEmail}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+          {!hasPerformanceData && campaignSettingsSection}
         </TabsContent>
 
         {/* Sequence */}
@@ -1713,22 +1725,22 @@ export default function CampaignDetail() {
                   {steps.map((step, index) => (
                     <React.Fragment key={step.id}>
                       {renderStepRow(step)}
-                      {step.branch && (
+                      {step.fork?.type === "branch" && (
                         <>
                           <PlainConnector />
                           <BranchTracks
                             step={step}
                             renderStepRow={renderStepRow}
-                            onAddStep={(track, channel) =>
-                              campaignStore.addBranchStep(
+                            onAddStep={(trackId, channel) =>
+                              campaignStore.addForkStep(
                                 campaignId,
                                 step.id,
-                                track,
+                                trackId,
                                 channel
                               )
                             }
                             onRemoveBranch={() =>
-                              campaignStore.removeBranch(campaignId, step.id)
+                              campaignStore.removeFork(campaignId, step.id)
                             }
                           />
                         </>
@@ -1972,7 +1984,8 @@ export default function CampaignDetail() {
                             </div>
                             <Switch
                               id={`branch-${step.id}`}
-                              checked={Boolean(step.branch)}
+                              checked={step.fork?.type === "branch"}
+                              disabled={step.fork?.type === "parallel"}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   campaignStore.addBranch(
@@ -1980,7 +1993,7 @@ export default function CampaignDetail() {
                                     step.id
                                   )
                                 } else {
-                                  campaignStore.removeBranch(
+                                  campaignStore.removeFork(
                                     campaign.id,
                                     step.id
                                   )
@@ -2425,6 +2438,12 @@ export default function CampaignDetail() {
             </Card>
           )}
         </TabsContent>
+
+        {/* Settings — Sending, Linked List, Automations. Also surfaced in
+            Overview until the campaign has performance data (see above). */}
+        <TabsContent value="settings" className="mt-4 space-y-4">
+          {campaignSettingsSection}
+        </TabsContent>
       </Tabs>
 
       <EditCampaignDialog
@@ -2640,12 +2659,15 @@ function BranchTracks({
 }: {
   step: CampaignStep
   renderStepRow: (step: CampaignStep) => React.ReactNode
-  onAddStep: (track: "reply" | "noReply", channel: StepChannel) => void
+  onAddStep: (trackId: string, channel: StepChannel) => void
   onRemoveBranch: () => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  if (!step.branch) return null
+  if (step.fork?.type !== "branch") return null
+  const replyTrack = step.fork.tracks.find((t) => t.kind === "reply")
+  const noReplyTrack = step.fork.tracks.find((t) => t.kind === "no_reply")
+  if (!replyTrack || !noReplyTrack) return null
   return (
     <div className="border-primary/30 ml-3 space-y-3 border-l-2 border-dashed py-1 pl-4">
       <div className="flex items-center justify-between">
@@ -2669,8 +2691,8 @@ function BranchTracks({
           <MessageCircleReply className="size-3.5" />
           {c.replyTrack}
         </p>
-        {step.branch.replySteps.map((s) => renderStepRow(s))}
-        <AddStepMenu onAdd={(channel) => onAddStep("reply", channel)} />
+        {replyTrack.steps.map((s) => renderStepRow(s))}
+        <AddStepMenu onAdd={(channel) => onAddStep(replyTrack.id, channel)} />
       </div>
 
       <div className="space-y-2">
@@ -2678,8 +2700,8 @@ function BranchTracks({
           <X className="size-3.5" />
           {c.noReplyTrack}
         </p>
-        {step.branch.noReplySteps.map((s) => renderStepRow(s))}
-        <AddStepMenu onAdd={(channel) => onAddStep("noReply", channel)} />
+        {noReplyTrack.steps.map((s) => renderStepRow(s))}
+        <AddStepMenu onAdd={(channel) => onAddStep(noReplyTrack.id, channel)} />
       </div>
 
       <p className="text-muted-foreground flex items-center gap-1 text-[11px]">

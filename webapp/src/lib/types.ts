@@ -260,15 +260,39 @@ export interface CampaignStep {
   // The rep the manual task is assigned to. Undefined reads as the campaign
   // owner / current user.
   assigneeId?: string
-  // One deviation off the main line: replies go down one track, non-replies
-  // down the other, and both tracks reconnect into the next step in the
-  // parent array — a single fork+remerge, not a nested branching tree.
-  // Branch steps never carry their own `branch` (enforced by the UI, not
-  // this type) so the model stays exactly one level deep.
-  branch?: {
-    replySteps: CampaignStep[]
-    noReplySteps: CampaignStep[]
-  }
+  // One deviation off the main line, anchored at this step — either the
+  // reply/no-reply condition or an unconditional parallel fan-out, never
+  // both. Steps inside a track never carry their own `fork` (enforced by
+  // the UI, not this type) so the model stays exactly one level deep.
+  fork?: StepFork
+}
+
+// "reply"/"no_reply" are the two fixed, mutually-exclusive arms of a
+// conditional branch. "parallel" is an unconditional fan-out lane — a fork
+// can have one or more of these, distinguished only by id/position, not by
+// a condition.
+export type StepTrackKind = "reply" | "no_reply" | "parallel"
+
+export interface StepTrack {
+  id: string
+  kind: StepTrackKind
+  steps: CampaignStep[]
+  // Whether this track's last step flows back into the step that follows
+  // the fork in the parent list (true), or the track dead-ends after its
+  // own steps (false). Branch tracks are always true — the UI never
+  // exposes this toggle for them. Only parallel tracks make it user-facing.
+  rejoins: boolean
+}
+
+export interface StepFork {
+  // "branch" = the reply/no-reply conditional: exactly two tracks (kind
+  // "reply" + "no_reply"), mutually exclusive at runtime, both rejoins:
+  // true, created/removed only via the branch toggle.
+  // "parallel" = an unconditional fan-out: one or more tracks (kind
+  // "parallel") that all run concurrently with the step's own
+  // continuation, each independently rejoining or dead-ending.
+  type: "branch" | "parallel"
+  tracks: StepTrack[]
 }
 
 export interface Campaign {
