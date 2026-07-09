@@ -3,6 +3,7 @@ import { toast } from "sonner"
 import {
   Briefcase,
   CalendarDays,
+  Columns3,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -29,17 +30,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import {
+  useColumnPrefs,
+  type ColumnDef,
+  type ColGroup,
+} from "@/lib/table-columns"
 import { DealFormDialog } from "@/components/deals/DealFormDialog"
 import { useView } from "@/lib/view-context"
 import { useDeals, dealStore } from "@/lib/store"
@@ -76,6 +77,10 @@ const COPY = {
       `"${name}" will be permanently removed.`,
     deleteConfirm: "Delete",
     dealDeleted: "Deal deleted",
+    deleteSelectedTitle: (n: number) => `Delete ${n} ${n === 1 ? "deal" : "deals"}?`,
+    deleteSelectedDescription: "These deals will be permanently removed.",
+    dealsDeleted: (n: number) => `${n} ${n === 1 ? "deal" : "deals"} deleted`,
+    columns: "Columns",
     stages: {
       interested: "Interested",
       meeting_booked: "Meeting booked",
@@ -130,6 +135,12 @@ const COPY = {
       `"${name}" se eliminará de forma permanente.`,
     deleteConfirm: "Eliminar",
     dealDeleted: "Negocio eliminado",
+    deleteSelectedTitle: (n: number) =>
+      `¿Eliminar ${n} ${n === 1 ? "negocio" : "negocios"}?`,
+    deleteSelectedDescription: "Estos negocios se eliminarán de forma permanente.",
+    dealsDeleted: (n: number) =>
+      `${n} ${n === 1 ? "negocio eliminado" : "negocios eliminados"}`,
+    columns: "Columnas",
     stages: {
       interested: "Interesado",
       meeting_booked: "Reunión agendada",
@@ -279,6 +290,10 @@ export default function Deals() {
   const [view, setView] = React.useState<CollectionView>("cards")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("value")
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false)
+  const dealColPrefs = useColumnPrefs("deals", DEAL_COL_DEFAULT_IDS)
 
   const scoped = impersonatingId
     ? deals.filter((d) => d.ownerId === impersonatingId)
@@ -326,6 +341,51 @@ export default function Deals() {
       ])
     )
     toast.success(c.exported)
+  }
+
+  const rowIds = React.useMemo(() => tableDeals.map((d) => d.id), [tableDeals])
+  const allSelected =
+    rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
+  const someSelected = rowIds.some((id) => selectedIds.has(id))
+
+  function toggleRow(deal: Deal) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(deal.id)) next.delete(deal.id)
+      else next.add(deal.id)
+      return next
+    })
+  }
+
+  function toggleAllRows() {
+    setSelectedIds((prev) =>
+      prev.size === rowIds.length ? new Set() : new Set(rowIds)
+    )
+  }
+
+  function exportSelectedCsv() {
+    const rows = tableDeals.filter((d) => selectedIds.has(d.id))
+    downloadCsv(
+      "kombo-deals.csv",
+      [c.colName, c.colAccount, c.colStage, c.colValue, c.colProbability, c.colClose],
+      rows.map((d) => [
+        d.name,
+        getAccount(d.accountId)?.name ?? "",
+        c.stages[d.stage],
+        d.value,
+        `${d.probability}%`,
+        formatDate(d.closeDate),
+      ])
+    )
+    toast.success(c.exported)
+  }
+
+  function deleteSelected() {
+    const n = selectedIds.size
+    for (const id of selectedIds) dealStore.remove(id)
+    setSelectedIds(new Set())
+    setBulkDeleteOpen(false)
+    toast.success(c.dealsDeleted(n))
   }
 
   // Open pipeline = anything not in a terminal outcome.
@@ -412,7 +472,14 @@ export default function Deals() {
           tableLabel={c.viewTable}
           onExport={exportCsv}
           exportLabel={c.exportLabel}
-        />
+        >
+          {view === "table" && (
+            <Button variant="outline" onClick={() => setColumnsOpen(true)}>
+              <Columns3 className="size-4" />
+              <span className="hidden sm:inline">{c.columns}</span>
+            </Button>
+          )}
+        </CollectionToolbar>
       </div>
 
       {view === "table" ? (
@@ -421,12 +488,76 @@ export default function Deals() {
             {c.noResults}
           </Card>
         ) : (
-          <DealTable
-            rows={tableDeals}
-            c={c}
-            onEdit={openEdit}
-            onDelete={setDeletingDeal}
-          />
+          <>
+            <DataTable
+              columns={DEAL_COLUMNS}
+              visible={dealColPrefs.visible}
+              rows={tableDeals}
+              rowKey={(deal) => deal.id}
+              locale={locale}
+              onRowClick={openEdit}
+              selection={{
+                isSelected: (deal) => selectedIds.has(deal.id),
+                toggle: toggleRow,
+                toggleAll: toggleAllRows,
+                allSelected,
+                someSelected,
+              }}
+              actions={(deal) => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label={c.dealActions}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem onSelect={() => openEdit(deal)}>
+                      <Pencil />
+                      {c.edit}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>{c.moveTo}</DropdownMenuLabel>
+                    {DEAL_STAGES.map((stage) => (
+                      <DropdownMenuItem
+                        key={stage.key}
+                        disabled={stage.key === deal.stage}
+                        onSelect={() => {
+                          dealStore.move(deal.id, stage.key)
+                          toast.success(c.movedTo(c.stages[stage.key]))
+                        }}
+                      >
+                        {c.stages[stage.key]}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => setDeletingDeal(deal)}
+                    >
+                      <Trash2 />
+                      {c.delete}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            />
+            <BulkActionsBar
+              count={selectedIds.size}
+              onClear={() => setSelectedIds(new Set())}
+              onExport={exportSelectedCsv}
+              extra={{
+                label: c.delete,
+                icon: <Trash2 className="size-4" />,
+                destructive: true,
+                onClick: () => setBulkDeleteOpen(true),
+              }}
+            />
+          </>
         )
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-2">
@@ -494,11 +625,28 @@ export default function Deals() {
           }
         }}
       />
+
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title={c.deleteSelectedTitle(selectedIds.size)}
+        description={c.deleteSelectedDescription}
+        confirmLabel={c.deleteConfirm}
+        destructive
+        onConfirm={deleteSelected}
+      />
+
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={DEAL_COLUMNS}
+        groups={DEAL_COL_GROUPS}
+        prefs={dealColPrefs}
+        locale={locale}
+      />
     </Page>
   )
 }
-
-type Copy = (typeof COPY)[keyof typeof COPY]
 
 const STAGE_VARIANT: Record<
   Deal["stage"],
@@ -514,112 +662,94 @@ const STAGE_VARIANT: Record<
   lost: "destructive",
 }
 
-function DealTable({
-  rows,
-  c,
-  onEdit,
-  onDelete,
-}: {
-  rows: Deal[]
-  c: Copy
-  onEdit: (deal: Deal) => void
-  onDelete: (deal: Deal) => void
-}) {
-  return (
-    <Card className="p-0">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{c.colName}</TableHead>
-            <TableHead>{c.colAccount}</TableHead>
-            <TableHead>{c.colStage}</TableHead>
-            <TableHead className="text-right">{c.colValue}</TableHead>
-            <TableHead className="text-right">{c.colProbability}</TableHead>
-            <TableHead className="text-right">{c.colClose}</TableHead>
-            <TableHead>{c.colOwner}</TableHead>
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((deal) => (
-            <TableRow
-              key={deal.id}
-              className="cursor-pointer"
-              onClick={() => onEdit(deal)}
-            >
-              <TableCell>
-                <p className="font-medium">{deal.name}</p>
-                <p className="text-muted-foreground text-xs">
-                  {deal.contactName}
-                </p>
-              </TableCell>
-              <TableCell className="text-muted-foreground text-sm">
-                {getAccount(deal.accountId)?.name ?? "—"}
-              </TableCell>
-              <TableCell>
-                <Badge variant={STAGE_VARIANT[deal.stage]} className="font-normal">
-                  {c.stages[deal.stage]}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right font-medium tabular-nums">
-                {money(deal.value)}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {deal.probability}%
-              </TableCell>
-              <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
-                {formatDate(deal.closeDate)}
-              </TableCell>
-              <TableCell>
-                <OwnerAvatar ownerId={deal.ownerId} />
-              </TableCell>
-              <TableCell onClick={(e) => e.stopPropagation()}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label={c.dealActions}
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => onEdit(deal)}>
-                      <Pencil className="size-4" />
-                      {c.edit}
-                    </DropdownMenuItem>
-                    <DropdownMenuLabel className="text-muted-foreground text-xs">
-                      {c.moveTo}
-                    </DropdownMenuLabel>
-                    {DEAL_STAGES.map((stage) => (
-                      <DropdownMenuItem
-                        key={stage.key}
-                        disabled={stage.key === deal.stage}
-                        onSelect={() => {
-                          dealStore.move(deal.id, stage.key)
-                          toast.success(c.movedTo(c.stages[stage.key]))
-                        }}
-                      >
-                        {c.stages[stage.key]}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onSelect={() => onDelete(deal)}
-                    >
-                      <Trash2 className="size-4" />
-                      {c.delete}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
-  )
-}
+// Table-view columns — the same shared registry shape + ColumnManager +
+// DataTable every prospect/company table uses (page-local defs, like
+// Templates.tsx and Campaigns.tsx).
+const DEAL_COL_GROUPS: ColGroup[] = [
+  { id: "deal", label: { en: "Deal", es: "Negocio" } },
+]
+const DEAL_COL_DEFAULT_IDS = [
+  "account",
+  "stage",
+  "value",
+  "probability",
+  "close",
+  "owner",
+]
+
+const DEAL_COLUMNS: ColumnDef<Deal>[] = [
+  {
+    id: "name",
+    label: { en: COPY.en.colName, es: COPY.es.colName },
+    group: "deal",
+    pinned: true,
+    minWidth: "200px",
+    render: (deal) => (
+      <div>
+        <p className="font-medium">{deal.name}</p>
+        <p className="text-muted-foreground text-xs">{deal.contactName}</p>
+      </div>
+    ),
+  },
+  {
+    id: "account",
+    label: { en: COPY.en.colAccount, es: COPY.es.colAccount },
+    group: "deal",
+    default: true,
+    render: (deal) => (
+      <span className="text-muted-foreground text-sm">
+        {getAccount(deal.accountId)?.name ?? "—"}
+      </span>
+    ),
+  },
+  {
+    id: "stage",
+    label: { en: COPY.en.colStage, es: COPY.es.colStage },
+    group: "deal",
+    default: true,
+    render: (deal, locale) => (
+      <Badge variant={STAGE_VARIANT[deal.stage]} className="font-normal">
+        {COPY[locale].stages[deal.stage]}
+      </Badge>
+    ),
+  },
+  {
+    id: "value",
+    label: { en: COPY.en.colValue, es: COPY.es.colValue },
+    group: "deal",
+    default: true,
+    align: "right",
+    render: (deal) => (
+      <span className="font-medium tabular-nums">{money(deal.value)}</span>
+    ),
+  },
+  {
+    id: "probability",
+    label: { en: COPY.en.colProbability, es: COPY.es.colProbability },
+    group: "deal",
+    default: true,
+    align: "right",
+    render: (deal) => (
+      <span className="tabular-nums">{deal.probability}%</span>
+    ),
+  },
+  {
+    id: "close",
+    label: { en: COPY.en.colClose, es: COPY.es.colClose },
+    group: "deal",
+    default: true,
+    align: "right",
+    render: (deal) => (
+      <span className="text-muted-foreground text-xs whitespace-nowrap">
+        {formatDate(deal.closeDate)}
+      </span>
+    ),
+  },
+  {
+    id: "owner",
+    label: { en: COPY.en.colOwner, es: COPY.es.colOwner },
+    group: "deal",
+    default: true,
+    render: (deal) => <OwnerAvatar ownerId={deal.ownerId} />,
+  },
+]

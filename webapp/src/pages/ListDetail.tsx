@@ -145,7 +145,7 @@ const COPY = {
     companies: "companies",
     companiesHeading: "Companies",
     addCompanies: "Find companies",
-    findContacts: "Find contacts",
+    findContacts: "Find prospects",
     emptyStateCo: "No companies yet — add some to get started.",
     addCompaniesTitle: "Add companies",
     addCompaniesDescription: (name: string) =>
@@ -240,7 +240,7 @@ const COPY = {
     companies: "empresas",
     companiesHeading: "Empresas",
     addCompanies: "Buscar empresas",
-    findContacts: "Buscar contactos",
+    findContacts: "Buscar prospectos",
     emptyStateCo: "Aún no hay empresas — añade algunas para empezar.",
     addCompaniesTitle: "Añadir empresas",
     addCompaniesDescription: (name: string) =>
