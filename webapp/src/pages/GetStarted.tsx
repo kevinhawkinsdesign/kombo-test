@@ -14,7 +14,6 @@ import {
   Send,
   Inbox,
   Mail,
-  CheckSquare,
   Briefcase,
   GraduationCap,
   BarChart3,
@@ -90,7 +89,6 @@ const CAPABILITIES: Capability[] = [
   { key: "campaigns", to: "/campaigns", icon: Send, tint: "bg-primary/10 text-primary" },
   { key: "inbox", to: "/inbox", icon: Inbox, tint: "bg-chart-1/15 text-chart-1" },
   { key: "templates", to: "/templates", icon: Mail, tint: "bg-chart-4/15 text-chart-4" },
-  { key: "tasks", to: "/tasks", icon: CheckSquare, tint: "bg-chart-3/15 text-chart-3" },
   { key: "deals", to: "/deals", icon: Briefcase, tint: "bg-primary/10 text-primary" },
   { key: "coach", to: "/coach", icon: GraduationCap, tint: "bg-chart-5/15 text-chart-5" },
   { key: "analytics", to: "/analytics", icon: BarChart3, tint: "bg-chart-1/15 text-chart-1" },
@@ -143,10 +141,6 @@ const COPY = {
       templates: {
         title: "Message templates",
         description: "Save your best-performing copy and personalize it at scale.",
-      },
-      tasks: {
-        title: "Tasks",
-        description: "Stay on top of every follow-up — in-app or offline.",
       },
       deals: {
         title: "Pipeline & deals",
@@ -260,10 +254,6 @@ const COPY = {
       templates: {
         title: "Plantillas de mensajes",
         description: "Guarda tus textos de mayor rendimiento y personalízalos a escala.",
-      },
-      tasks: {
-        title: "Tareas",
-        description: "Mantén el control de cada seguimiento — en la app o fuera de ella.",
       },
       deals: {
         title: "Pipeline y negocios",

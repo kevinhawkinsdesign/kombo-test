@@ -2711,7 +2711,7 @@ const CHANNEL_GROUPS: {
   // so it gets its own group rather than joining groupMessaging.
   { labelKey: "groupAiPowered", channels: ["ai_call"] },
   // Channel-less offline activities (calls, visits, handwritten notes) —
-  // free-form title + notes, same shape as a Tasks-page task.
+  // free-form title + notes.
   { labelKey: "groupOther", channels: ["manual"] },
 ]
 

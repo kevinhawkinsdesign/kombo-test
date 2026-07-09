@@ -104,7 +104,7 @@ export function TodayPanel({ className }: { className?: string }) {
             <CardDescription>{c.description}</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link to="/tasks">
+            <Link to="/inbox">
               {c.viewAll}
               <ArrowUpRight className="size-4" />
             </Link>
