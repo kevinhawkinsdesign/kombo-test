@@ -7,8 +7,6 @@ import {
   ArrowDown,
   Columns3,
   Mail,
-  Phone,
-  MessageCircle,
   Pause,
   Play,
   Pencil,
@@ -29,8 +27,6 @@ import {
   FileText,
   ListTodo,
   GitFork,
-  CornerDownRight,
-  MessageCircleReply,
   Copy,
   Bookmark,
   Lightbulb,
@@ -38,7 +34,10 @@ import {
   Building2,
 } from "lucide-react"
 
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { channelMeta, normalizeChannel } from "@/lib/step-channels"
+import { SequenceCanvas } from "@/components/sequence/SequenceCanvas"
+import { StepTypePickerDialog } from "@/components/sequence/StepTypePickerDialog"
+import type { AddNodeData } from "@/lib/sequence-layout"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import {
   PromptPickerDialog,
@@ -72,7 +71,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
-import { plainToHtml, stripHtml } from "@/lib/rich-text"
+import { plainToHtml } from "@/lib/rich-text"
 import {
   Tabs,
   TabsContent,
@@ -100,8 +99,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
@@ -295,6 +292,7 @@ const COPY = {
     noReplyTrack: "If they don't reply",
     removeBranchAria: "Remove branch",
     remergeCaption: "Merges back into the next step",
+    addParallelStepTitle: "Add a parallel step",
     saveSequence: "Save sequence",
     sequenceSaved: "Sequence saved",
     noSteps: "No steps yet — add one to build the sequence.",
@@ -504,6 +502,7 @@ const COPY = {
     noReplyTrack: "Si no responden",
     removeBranchAria: "Quitar bifurcación",
     remergeCaption: "Se reconecta con el siguiente paso",
+    addParallelStepTitle: "Añadir un paso paralelo",
     saveSequence: "Guardar secuencia",
     sequenceSaved: "Secuencia guardada",
     noSteps: "Aún no hay pasos — añade uno para construir la secuencia.",
@@ -656,62 +655,6 @@ const CAMPAIGN_STATUSES: CampaignStatus[] = [
   "completed",
 ]
 
-/* ------------------------------ channel meta ------------------------------ */
-interface ChannelMeta {
-  tint: string
-  Icon: React.ComponentType<{ className?: string }>
-}
-
-const CHANNELS: Record<StepChannel, ChannelMeta> = {
-  email: { tint: "bg-primary/15 text-primary", Icon: Mail },
-  whatsapp: {
-    tint: "bg-chart-1/15 text-chart-1",
-    Icon: MessageCircle,
-  },
-  call: {
-    tint: "bg-chart-4/15 text-chart-4",
-    Icon: Phone,
-  },
-  ai_call: {
-    tint: "bg-chart-5/15 text-chart-5",
-    Icon: Sparkles,
-  },
-  linkedin_message: {
-    tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
-    Icon: LinkedinIcon,
-  },
-  linkedin_dm: {
-    tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
-    Icon: LinkedinIcon,
-  },
-  linkedin_inmail: {
-    tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
-    Icon: LinkedinIcon,
-  },
-  manual: {
-    tint: "bg-muted text-muted-foreground",
-    Icon: ListTodo,
-  },
-}
-
-// Tolerant lookup so previously-persisted localStorage data (e.g. the legacy
-// "linkedin" channel, or any unknown value) still renders.
-function channelMeta(channel: string): ChannelMeta {
-  if (channel in CHANNELS) return CHANNELS[channel as StepChannel]
-  if (channel === "sms") return CHANNELS.whatsapp
-  if (channel === "instagram") return CHANNELS.linkedin_message
-  if (channel === "linkedin") return CHANNELS.linkedin_message
-  return CHANNELS.email
-}
-
-export function normalizeChannel(channel: string): StepChannel {
-  if (channel in CHANNELS) return channel as StepChannel
-  if (channel === "linkedin") return "linkedin_message"
-  if (channel === "sms") return "whatsapp"
-  if (channel === "instagram") return "linkedin_message"
-  return "email"
-}
-
 const POSITIVE_REPLIES = [
   "This is timely — we're actively evaluating tools in this space. Can you share availability this week?",
   "Interesting, the timing is good. Happy to take a quick look — send over a calendar link.",
@@ -747,6 +690,8 @@ export default function CampaignDetail() {
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
   const [selectedStepId, setSelectedStepId] = React.useState<string | undefined>(undefined)
+  const [stepPickerOpen, setStepPickerOpen] = React.useState(false)
+  const [pendingGhost, setPendingGhost] = React.useState<AddNodeData | null>(null)
   const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
   const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
@@ -812,6 +757,26 @@ export default function CampaignDetail() {
     setSelectedStepId(created?.id)
   }
 
+  // Routes a channel picked in the step-type modal to whichever store
+  // action the ghost that triggered it calls for — top-level insert, a
+  // fork track, or a brand-new parallel fork.
+  function handleStepTypeSelect(channel: StepChannel) {
+    const ghost = pendingGhost
+    if (!ghost) return
+    if (ghost.kind === "addParallel" && ghost.anchorStepId) {
+      campaignStore.addParallelStep(campaignId, ghost.anchorStepId, channel)
+    } else if (ghost.trackId && ghost.forkStepId) {
+      campaignStore.addForkStep(campaignId, ghost.forkStepId, ghost.trackId, channel)
+    } else if (ghost.afterStepId) {
+      const idx = steps.findIndex((s) => s.id === ghost.afterStepId)
+      campaignStore.insertStep(campaignId, idx + 1, channel)
+    } else {
+      campaignStore.addStep(campaignId, channel)
+    }
+    setSelectedStepId(undefined)
+    setPendingGhost(null)
+  }
+
   // Appends a deep-cloned copy of another sequence's steps (fresh ids,
   // branch tracks included) after the current ones.
   function copySequenceIn(source: CampaignStep[]) {
@@ -819,66 +784,6 @@ export default function CampaignDetail() {
     campaignStore.update(campaignId, { steps: [...steps, ...cloned] })
     toast.success(c.sequenceCopied(flattenCampaignSteps(cloned).length))
     setSelectedStepId(cloned[0]?.id)
-  }
-
-  // A single step row — reused for the top-level list and both branch
-  // tracks, so a nested step looks and behaves identically to a top-level
-  // one, just indented under its fork.
-  function renderStepRow(step: CampaignStep) {
-    const meta = channelMeta(step.channel)
-    const selected = step.id === selectedStep.id
-    const needsAction = step.isManualTask
-      ? stripHtml(step.subject ?? "").trim().length === 0
-      : stripHtml(step.body).trim().length === 0
-    return (
-      <button
-        key={step.id}
-        type="button"
-        onClick={() => setSelectedStepId(step.id)}
-        aria-current={selected}
-        className={cn(
-          "flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors",
-          selected
-            ? "border-primary bg-primary/[0.04]"
-            : "hover:bg-muted/40"
-        )}
-      >
-        <span
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-            meta.tint
-          )}
-        >
-          <meta.Icon className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
-            {c.channelLabel[normalizeChannel(step.channel)]}
-          </p>
-          <p className="text-muted-foreground truncate text-xs">
-            {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
-          </p>
-        </div>
-        {step.isManualTask && (
-          <Badge
-            variant="secondary"
-            className="shrink-0 gap-1 text-[10px] font-normal"
-          >
-            <ListTodo className="size-3" />
-            {c.manualTaskBadge}
-          </Badge>
-        )}
-        {needsAction && (
-          <Badge
-            variant="destructive"
-            className="shrink-0 gap-1 text-[10px] font-normal"
-          >
-            <AlertTriangle className="size-3" />
-            {c.actionNeeded}
-          </Badge>
-        )}
-      </button>
-    )
   }
 
   const openRate = campaign.enrolled
@@ -1718,82 +1623,46 @@ export default function CampaignDetail() {
                 </Button>
               </div>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                {/* Step diagram — a connected flow, not stacked cards. Pick a
-                    step to edit it on the right; "+" on a connector inserts
-                    a new step right there instead of only at the end. */}
-                <div className="flex shrink-0 flex-col lg:w-72">
-                  {steps.map((step, index) => (
-                    <React.Fragment key={step.id}>
-                      {renderStepRow(step)}
-                      {step.fork?.type === "branch" && (
-                        <>
-                          <PlainConnector />
-                          <BranchTracks
-                            step={step}
-                            renderStepRow={renderStepRow}
-                            onAddStep={(trackId, channel) =>
-                              campaignStore.addForkStep(
-                                campaignId,
-                                step.id,
-                                trackId,
-                                channel
-                              )
-                            }
-                            onRemoveBranch={() =>
-                              campaignStore.removeFork(campaignId, step.id)
-                            }
-                          />
-                        </>
-                      )}
-                      {index < steps.length - 1 && (
-                        <StepConnector
-                          onInsert={(channel) => {
-                            campaignStore.insertStep(
-                              campaign.id,
-                              index + 1,
-                              channel
-                            )
-                            setSelectedStepId(undefined)
-                          }}
-                        />
-                      )}
-                    </React.Fragment>
-                  ))}
-                  <div className="mt-2 flex flex-col gap-2">
-                  <AddStepMenu
-                    onAdd={(channel) => {
-                      campaignStore.addStep(campaign.id, channel)
-                      setSelectedStepId(undefined)
+                <div className="min-w-0 flex-1 space-y-3">
+                  <SequenceCanvas
+                    steps={steps}
+                    mode="interactive"
+                    selectedStepId={selectedStep.id}
+                    onSelectStep={setSelectedStepId}
+                    onAddRequest={(ghost) => {
+                      setPendingGhost(ghost)
+                      setStepPickerOpen(true)
                     }}
                   />
-                  <Button
-                    variant="outline"
-                    onClick={() => setTemplatePickerOpen(true)}
-                  >
-                    <FileText className="size-4" />
-                    {c.useTemplate}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPromptPickerOpen(true)}
-                  >
-                    <Sparkles className="size-4" />
-                    {c.usePrompt}
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      campaignStore.addStep(
-                        campaign.id,
-                        suggestNextChannel(steps)
-                      )
-                      setSelectedStepId(undefined)
-                    }}
-                    className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
-                  >
-                    <Lightbulb className="size-4" />
-                    {c.suggestedNext(c.channelLabel[suggestNextChannel(steps)])}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setTemplatePickerOpen(true)}
+                    >
+                      <FileText className="size-4" />
+                      {c.useTemplate}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setPromptPickerOpen(true)}
+                    >
+                      <Sparkles className="size-4" />
+                      {c.usePrompt}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        campaignStore.addStep(
+                          campaign.id,
+                          suggestNextChannel(steps)
+                        )
+                        setSelectedStepId(undefined)
+                      }}
+                      className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+                    >
+                      <Lightbulb className="size-4" />
+                      {c.suggestedNext(c.channelLabel[suggestNextChannel(steps)])}
+                    </button>
                   </div>
                 </div>
 
@@ -1824,7 +1693,7 @@ export default function CampaignDetail() {
                   const opened = Math.round(sent * 0.62)
                   const replied = Math.round(opened * 0.24)
                   return (
-                    <Card className="flex-1">
+                    <Card className="w-full lg:w-96 lg:shrink-0">
                       <CardContent className="space-y-3">
                         <div className="flex flex-wrap items-center gap-3">
                           <span
@@ -2141,11 +2010,15 @@ export default function CampaignDetail() {
               <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                 <p className="text-muted-foreground text-sm">{c.noSteps}</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  <AddStepMenu
-                    onAdd={(channel) =>
-                      campaignStore.addStep(campaign.id, channel)
-                    }
-                  />
+                  <Button
+                    onClick={() => {
+                      setPendingGhost({ kind: "add" })
+                      setStepPickerOpen(true)
+                    }}
+                  >
+                    <Plus className="size-4" />
+                    {c.addStep}
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={() => setTemplatePickerOpen(true)}
@@ -2470,6 +2343,13 @@ export default function CampaignDetail() {
         />
       )}
 
+      <StepTypePickerDialog
+        open={stepPickerOpen}
+        onOpenChange={setStepPickerOpen}
+        onSelect={handleStepTypeSelect}
+        title={pendingGhost?.kind === "addParallel" ? c.addParallelStepTitle : undefined}
+      />
+
       <TemplatePickerDialog
         open={templatePickerOpen}
         onOpenChange={setTemplatePickerOpen}
@@ -2648,70 +2528,6 @@ function SetupStep({
   )
 }
 
-// The one deviation-and-remerge a branching step gets: a reply track and a
-// no-reply track, stacked (the sidebar is too narrow for side-by-side),
-// both flowing back into the next step in the parent array once rendered.
-function BranchTracks({
-  step,
-  renderStepRow,
-  onAddStep,
-  onRemoveBranch,
-}: {
-  step: CampaignStep
-  renderStepRow: (step: CampaignStep) => React.ReactNode
-  onAddStep: (trackId: string, channel: StepChannel) => void
-  onRemoveBranch: () => void
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  if (step.fork?.type !== "branch") return null
-  const replyTrack = step.fork.tracks.find((t) => t.kind === "reply")
-  const noReplyTrack = step.fork.tracks.find((t) => t.kind === "no_reply")
-  if (!replyTrack || !noReplyTrack) return null
-  return (
-    <div className="border-primary/30 ml-3 space-y-3 border-l-2 border-dashed py-1 pl-4">
-      <div className="flex items-center justify-between">
-        <span className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-          <GitFork className="size-3.5" />
-          {c.addBranchLabel}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive size-6"
-          aria-label={c.removeBranchAria}
-          onClick={onRemoveBranch}
-        >
-          <X className="size-3.5" />
-        </Button>
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
-          <MessageCircleReply className="size-3.5" />
-          {c.replyTrack}
-        </p>
-        {replyTrack.steps.map((s) => renderStepRow(s))}
-        <AddStepMenu onAdd={(channel) => onAddStep(replyTrack.id, channel)} />
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
-          <X className="size-3.5" />
-          {c.noReplyTrack}
-        </p>
-        {noReplyTrack.steps.map((s) => renderStepRow(s))}
-        <AddStepMenu onAdd={(channel) => onAddStep(noReplyTrack.id, channel)} />
-      </div>
-
-      <p className="text-muted-foreground flex items-center gap-1 text-[11px]">
-        <CornerDownRight className="size-3" />
-        {c.remergeCaption}
-      </p>
-    </div>
-  )
-}
-
 // Grouped like Lemlist's step picker (Suggestions / LinkedIn actions / Phone
 // & Messaging, adapted to the channels we actually support).
 const CHANNEL_GROUPS: {
@@ -2749,97 +2565,6 @@ function suggestNextChannel(steps: CampaignStep[]): StepChannel {
     return "call"
   if (ch === "call") return "whatsapp"
   return "email"
-}
-
-function AddStepMenu({
-  onAdd,
-  children,
-}: {
-  onAdd: (channel: StepChannel) => void
-  children?: React.ReactNode
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {children ?? (
-          <Button variant="outline">
-            <Plus className="size-4" />
-            {c.addStep}
-          </Button>
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        {CHANNEL_GROUPS.map((group, gi) => (
-          <React.Fragment key={group.labelKey}>
-            {gi > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
-              {c[group.labelKey]}
-            </DropdownMenuLabel>
-            {group.channels.map((channelKey) => {
-              const meta = CHANNELS[channelKey]
-              return (
-                <DropdownMenuItem
-                  key={channelKey}
-                  onClick={() => onAdd(channelKey)}
-                >
-                  <span
-                    className={cn(
-                      "flex size-6 items-center justify-center rounded-md",
-                      meta.tint
-                    )}
-                  >
-                    <meta.Icon className="size-3.5" />
-                  </span>
-                  {c.channelLabel[channelKey]}
-                </DropdownMenuItem>
-              )
-            })}
-          </React.Fragment>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
-// A dashed "+" sitting on the connecting line between two steps — the
-// diagram view's way of inserting a step mid-sequence instead of only at
-// the end.
-function StepConnector({
-  onInsert,
-}: {
-  onInsert: (channel: StepChannel) => void
-}) {
-  const { locale } = useLocale()
-  const c = COPY[locale]
-  return (
-    <div className="relative flex justify-center py-1">
-      <div
-        className="bg-border absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2"
-        aria-hidden="true"
-      />
-      <AddStepMenu onAdd={onInsert}>
-        <button
-          type="button"
-          aria-label={c.insertStepAria}
-          className="text-muted-foreground hover:text-primary hover:border-primary/50 bg-background relative z-10 flex size-6 items-center justify-center rounded-full border border-dashed transition-colors"
-        >
-          <Plus className="size-3.5" />
-        </button>
-      </AddStepMenu>
-    </div>
-  )
-}
-
-// A plain connecting line, no insert control — used before a branch fork
-// where inserting a new top-level step doesn't apply.
-function PlainConnector() {
-  return (
-    <div className="flex justify-center py-1">
-      <div className="bg-border h-4 w-px" aria-hidden="true" />
-    </div>
-  )
 }
 
 function EditCampaignDialog({

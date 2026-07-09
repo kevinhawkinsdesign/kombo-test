@@ -17,7 +17,7 @@ import {
   usePromptTemplates,
   generatePromptedMessage,
 } from "@/lib/prompt-templates"
-import { normalizeChannel } from "@/pages/CampaignDetail"
+import { normalizeChannel } from "@/lib/step-channels"
 import { prospects, currentUser } from "@/lib/mock-data"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
