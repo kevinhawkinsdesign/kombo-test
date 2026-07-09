@@ -34,6 +34,7 @@ import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { BulkCrmSyncDialog } from "@/components/common/BulkCrmSyncDialog"
 import { ExportDialog } from "@/components/common/ExportDialog"
@@ -63,6 +64,7 @@ import { useLists, listStore, prospectStore, accountStore } from "@/lib/store"
 import { listTabsStore } from "@/lib/list-tabs"
 import { ListTabBar } from "@/components/lists/ListTabBar"
 import { isEnriched } from "@/lib/enrichment"
+import { usePagedSelection } from "@/lib/use-paged-selection"
 import { formatDate } from "@/lib/format"
 import type { Account, Prospect, ProspectList } from "@/lib/types"
 
@@ -274,7 +276,6 @@ export default function ListDetail() {
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [linkCampaignOpen, setLinkCampaignOpen] = React.useState(false)
   const [playlistOpen, setPlaylistOpen] = React.useState(false)
-  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
   const [bulkAddOpen, setBulkAddOpen] = React.useState(false)
   const [bulkMoveOpen, setBulkMoveOpen] = React.useState(false)
@@ -303,6 +304,23 @@ export default function ListDetail() {
     if (id) listTabsStore.open(id)
   }, [id])
 
+  // Computed with safe fallbacks (rather than after the `!list` guard below)
+  // so the paged-selection hook can be called unconditionally, per the rules
+  // of hooks.
+  const isCompany = list?.kind === "company"
+  const members: Prospect[] = list
+    ? list.prospectIds.map(getProspect).filter((p): p is Prospect => Boolean(p))
+    : []
+  const accountMembers: Account[] = list
+    ? (list.accountIds ?? []).map(getAccount).filter((a): a is Account => Boolean(a))
+    : []
+  const sel = usePagedSelection<Prospect | Account>(
+    isCompany ? accountMembers : members,
+    (r) => r.id,
+    list?.id
+  )
+  const { selectedIds, allSelected, someSelected } = sel
+
   if (!list) {
     return (
       <Page>
@@ -314,44 +332,15 @@ export default function ListDetail() {
     )
   }
 
-  const isCompany = list.kind === "company"
-
-  const members = list.prospectIds
-    .map(getProspect)
-    .filter((p): p is NonNullable<typeof p> => Boolean(p))
-  const accountMembers = (list.accountIds ?? [])
-    .map(getAccount)
-    .filter((a): a is NonNullable<typeof a> => Boolean(a))
-
   const memberCount = isCompany ? accountMembers.length : members.length
   const pending = members.filter((p) => !isEnriched(p))
   const enrichedCount = members.length - pending.length
 
-  // Bulk selection — the same DataTable selection pattern People/Companies
-  // use. Stale ids (removed members) are filtered out at compute time.
-  const rowIds = isCompany
-    ? accountMembers.map((a) => a.id)
-    : members.map((p) => p.id)
   const selectedMembers = members.filter((p) => selectedIds.has(p.id))
   const selectedAccounts = accountMembers.filter((a) => selectedIds.has(a.id))
   const selectedCount = isCompany
     ? selectedAccounts.length
     : selectedMembers.length
-  const allSelected =
-    rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
-  const someSelected =
-    !allSelected && rowIds.some((id) => selectedIds.has(id))
-  function toggleRow(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-  function toggleAllRows() {
-    setSelectedIds(allSelected ? new Set() : new Set(rowIds))
-  }
   const listId = list.id
   function removeSelected() {
     if (isCompany) {
@@ -360,7 +349,7 @@ export default function ListDetail() {
       selectedMembers.forEach((p) => listStore.removeProspect(listId, p.id))
     }
     toast.success(c.removedCount(selectedCount))
-    setSelectedIds(new Set())
+    sel.clear()
   }
   function exportSelected(opts: { sendTo?: string } = {}) {
     if (isCompany) {
@@ -383,7 +372,7 @@ export default function ListDetail() {
       )
     }
     toast.success(opts.sendTo ? c.exportedAndSent(opts.sendTo) : c.exported)
-    setSelectedIds(new Set())
+    sel.clear()
   }
 
   return (
@@ -525,11 +514,26 @@ export default function ListDetail() {
         </p>
       )}
 
+      <SelectionControls
+        allSelected={allSelected}
+        onTogglePage={sel.togglePage}
+        selectedCount={selectedIds.size}
+        selectableCount={sel.selectableCount}
+        onSelectAllCapped={sel.selectAllCapped}
+        pageStart={sel.pageStart}
+        pageEnd={sel.pageEnd}
+        total={isCompany ? accountMembers.length : members.length}
+        page={sel.page}
+        pageCount={sel.pageCount}
+        onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
+        onNextPage={() => sel.setPage(Math.min(sel.pageCount - 1, sel.page + 1))}
+      />
+
       {isCompany ? (
         <DataTable
           columns={allCompanyColumns}
           visible={accountColumnPrefs.visible}
-          rows={accountMembers}
+          rows={sel.pagedItems as Account[]}
           rowKey={(a) => a.id}
           locale={locale}
           editing={tableEditing}
@@ -538,8 +542,8 @@ export default function ListDetail() {
           empty={c.emptyStateCo}
           selection={{
             isSelected: (a) => selectedIds.has(a.id),
-            toggle: (a) => toggleRow(a.id),
-            toggleAll: toggleAllRows,
+            toggle: sel.toggleRow,
+            toggleAll: sel.togglePage,
             allSelected,
             someSelected,
           }}
@@ -563,7 +567,7 @@ export default function ListDetail() {
         <DataTable
           columns={allPeopleColumns}
           visible={columnPrefs.visible}
-          rows={members}
+          rows={sel.pagedItems as Prospect[]}
           rowKey={(p) => p.id}
           locale={locale}
           editing={tableEditing}
@@ -572,8 +576,8 @@ export default function ListDetail() {
           empty={c.emptyState}
           selection={{
             isSelected: (p) => selectedIds.has(p.id),
-            toggle: (p) => toggleRow(p.id),
-            toggleAll: toggleAllRows,
+            toggle: sel.toggleRow,
+            toggleAll: sel.togglePage,
             allSelected,
             someSelected,
           }}
@@ -597,7 +601,7 @@ export default function ListDetail() {
 
       <BulkActionsBar
         count={selectedCount}
-        onClear={() => setSelectedIds(new Set())}
+        onClear={sel.clear}
         onExport={() => setExportOpen(true)}
         onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
         onAddToList={() => setBulkAddOpen(true)}
@@ -626,7 +630,7 @@ export default function ListDetail() {
         ids={isCompany ? selectedAccounts.map((a) => a.id) : selectedMembers.map((p) => p.id)}
         excludeListId={listId}
         skipCostConfirm
-        onDone={() => setSelectedIds(new Set())}
+        onDone={sel.clear}
       />
 
       <BulkAddDialog
@@ -638,14 +642,14 @@ export default function ListDetail() {
         excludeListId={listId}
         moveFromListId={listId}
         skipCostConfirm
-        onDone={() => setSelectedIds(new Set())}
+        onDone={sel.clear}
       />
 
       <BulkCrmSyncDialog
         open={bulkCrmOpen}
         onOpenChange={setBulkCrmOpen}
         count={selectedCount}
-        onDone={() => setSelectedIds(new Set())}
+        onDone={sel.clear}
       />
 
       {isCompany ? (
