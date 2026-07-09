@@ -184,7 +184,7 @@ const COPY = {
     clearStatus: "Clear outcome",
     statusToast: (label: string) => `Outcome set to ${label}`,
     statusClearedToast: "Outcome cleared",
-    autoTaggedAs: "Outcome detected as",
+    autoTaggedAs: "Outcome changed:",
     aiGenerated: "AI-Generated",
     newDivider: "New",
     replyAs: "Reply as",
@@ -216,7 +216,7 @@ const COPY = {
       title: "Job title",
       sender: "Your name",
     } as Record<string, string>,
-    sendVia: (ch: string) => `Send via ${ch}`,
+    sendVia: () => `Send`,
     collapseList: "Collapse list",
     expandList: "Show list",
     showProfile: "Show profile panel",
@@ -297,7 +297,7 @@ const COPY = {
     clearStatus: "Quitar resultado",
     statusToast: (label: string) => `Resultado definido: ${label}`,
     statusClearedToast: "Resultado eliminado",
-    autoTaggedAs: "Resultado detectado:",
+    autoTaggedAs: "Resultado cambiado:",
     aiGenerated: "Generado por IA",
     newDivider: "Nuevo",
     replyAs: "Responder como",
@@ -329,7 +329,7 @@ const COPY = {
       title: "Cargo",
       sender: "Tu nombre",
     } as Record<string, string>,
-    sendVia: (ch: string) => `Enviar por ${ch}`,
+    sendVia: () => `Enviar`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
     showProfile: "Mostrar panel de perfil",
@@ -1481,13 +1481,13 @@ export default function Inbox() {
             />
 
             <Button
-              variant="outline"
-              size="sm"
-              className="hidden lg:inline-flex"
+              variant="ghost"
+              size="icon"
+              aria-label={c.createTask}
+              title={c.createTask}
               onClick={() => setTaskDialogOpen(true)}
             >
               <ListTodo className="size-4" />
-              {c.createTask}
             </Button>
 
             <DropdownMenu>
@@ -1497,13 +1497,6 @@ export default function Inbox() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  className="lg:hidden"
-                  onClick={() => setTaskDialogOpen(true)}
-                >
-                  <ListTodo className="size-4" />
-                  {c.createTask}
-                </DropdownMenuItem>
                 {effectiveActive.archived ? (
                   <DropdownMenuItem onClick={() => conversationStore.unarchive(effectiveActive.id)}>
                     <ArchiveRestore className="size-4" />
@@ -2042,7 +2035,7 @@ function Composer({
             onClick={send}
           >
             <Send className="size-4" />
-            {c.sendVia(channelLabel)}
+            {c.sendVia()}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
