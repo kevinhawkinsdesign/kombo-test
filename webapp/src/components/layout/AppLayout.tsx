@@ -4,6 +4,7 @@ import { AppSidebar, MobileBottomNav } from "@/components/layout/AppSidebar"
 import { AppHeader } from "@/components/layout/AppHeader"
 import { ProspectSearch } from "@/components/layout/ProspectSearch"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
+import { UnsavedChangesGuard } from "@/components/layout/UnsavedChangesGuard"
 import { NewCampaignProvider } from "@/components/campaign/NewCampaignWizard"
 import { SidebarCollapseProvider } from "@/lib/sidebar-collapse"
 import { useReleaseMode, isV2OnlyPath, V1_HOME, V2_HOME } from "@/lib/release-mode"
@@ -42,6 +43,7 @@ export function AppLayout() {
       </div>
       <MobileBottomNav />
       <ProspectSearch />
+      <UnsavedChangesGuard />
     </div>
     </NewCampaignProvider>
     </SidebarCollapseProvider>

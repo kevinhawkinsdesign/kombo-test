@@ -210,7 +210,7 @@ export function uid(prefix: string): string {
 }
 
 // The met/not-met track-kind pair a condition's fork is built from.
-const CONDITION_TRACK_KINDS: Record<ConditionKind, [StepTrackKind, StepTrackKind]> = {
+export const CONDITION_TRACK_KINDS: Record<ConditionKind, [StepTrackKind, StepTrackKind]> = {
   reply: ["reply", "no_reply"],
   open: ["opened", "not_opened"],
   click: ["clicked", "not_clicked"],
