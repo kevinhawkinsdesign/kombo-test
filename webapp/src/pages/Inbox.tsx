@@ -212,10 +212,35 @@ const COPY = {
     vars: {
       first_name: "First name",
       last_name: "Last name",
+      full_name: "Full name",
       company: "Company",
+      company_domain: "Company domain",
       title: "Job title",
-      sender: "Your name",
+      seniority: "Seniority",
+      department: "Department",
+      location: "Location",
+      email: "Email",
+      phone: "Phone",
+      linkedin_url: "LinkedIn URL",
+      industry: "Industry",
+      headcount: "Company size",
+      revenue: "Revenue",
+      about: "About",
+      signal_1: "Top signal",
+      signal_2: "Second signal",
+      score: "Lead score",
+      status: "Status",
+      tags: "Tags",
+      last_activity: "Last activity",
+      added_at: "Added",
+      sender: "Your first name",
+      sender_full_name: "Your full name",
+      sender_email: "Your email",
+      sender_role: "Your role",
+      sender_company: "Your company",
     } as Record<string, string>,
+    varsSearchPlaceholder: "Search variables…",
+    varsEmpty: "No variables match your search.",
     sendVia: () => `Send`,
     collapseList: "Collapse list",
     expandList: "Show list",
@@ -325,10 +350,35 @@ const COPY = {
     vars: {
       first_name: "Nombre",
       last_name: "Apellido",
+      full_name: "Nombre completo",
       company: "Empresa",
+      company_domain: "Dominio de la empresa",
       title: "Cargo",
+      seniority: "Antigüedad",
+      department: "Departamento",
+      location: "Ubicación",
+      email: "Email",
+      phone: "Teléfono",
+      linkedin_url: "URL de LinkedIn",
+      industry: "Sector",
+      headcount: "Tamaño de la empresa",
+      revenue: "Ingresos",
+      about: "Descripción",
+      signal_1: "Señal principal",
+      signal_2: "Segunda señal",
+      score: "Puntuación del lead",
+      status: "Estado",
+      tags: "Etiquetas",
+      last_activity: "Última actividad",
+      added_at: "Añadido",
       sender: "Tu nombre",
+      sender_full_name: "Tu nombre completo",
+      sender_email: "Tu email",
+      sender_role: "Tu rol",
+      sender_company: "Tu empresa",
     } as Record<string, string>,
+    varsSearchPlaceholder: "Buscar variables…",
+    varsEmpty: "Ninguna variable coincide con tu búsqueda.",
     sendVia: () => `Enviar`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
@@ -1783,6 +1833,7 @@ function Composer({
   const [regenLength, setRegenLength] = React.useState<ReplyLength>("normal")
   const [regenLang, setRegenLang] = React.useState<ChatLang>(recipientLang)
   const [regenInstructions, setRegenInstructions] = React.useState("")
+  const [varSearch, setVarSearch] = React.useState("")
   const taRef = React.useRef<RichTextEditorHandle>(null)
 
   // wasOpen reset pattern — seed every field back to its default each time
@@ -1817,9 +1868,32 @@ function Composer({
   const vars: { tag: string; value: string }[] = [
     { tag: "first_name", value: prospect.firstName },
     { tag: "last_name", value: prospect.lastName },
+    { tag: "full_name", value: `${prospect.firstName} ${prospect.lastName}` },
     { tag: "company", value: prospect.company },
+    { tag: "company_domain", value: prospect.companyDomain },
     { tag: "title", value: prospect.title },
+    { tag: "seniority", value: prospect.seniority },
+    { tag: "department", value: prospect.department },
+    { tag: "location", value: prospect.location },
+    { tag: "email", value: prospect.email },
+    { tag: "phone", value: prospect.phone ?? "" },
+    { tag: "linkedin_url", value: prospect.linkedinUrl },
+    { tag: "industry", value: prospect.industry },
+    { tag: "headcount", value: prospect.headcount },
+    { tag: "revenue", value: prospect.revenue },
+    { tag: "about", value: prospect.about },
+    { tag: "signal_1", value: prospect.signals[0] ?? "" },
+    { tag: "signal_2", value: prospect.signals[1] ?? "" },
+    { tag: "score", value: String(prospect.score) },
+    { tag: "status", value: prospect.status },
+    { tag: "tags", value: prospect.tags.join(", ") },
+    { tag: "last_activity", value: relativeTime(prospect.lastActivity) },
+    { tag: "added_at", value: relativeTime(prospect.addedAt) },
     { tag: "sender", value: firstName },
+    { tag: "sender_full_name", value: currentUser.name },
+    { tag: "sender_email", value: currentUser.email },
+    { tag: "sender_role", value: currentUser.role },
+    { tag: "sender_company", value: currentUser.company },
   ]
   const renderedReply = vars.reduce(
     (text, v) => text.replaceAll(`{{${v.tag}}}`, v.value),
@@ -1827,6 +1901,14 @@ function Composer({
   )
   // Same variables as a tag→value map, for the template picker's live preview.
   const varsMap = Object.fromEntries(vars.map((v) => [v.tag, v.value]))
+  const varSearchQuery = varSearch.trim().toLowerCase()
+  const filteredVars = varSearchQuery
+    ? vars.filter(
+        (v) =>
+          (c.vars[v.tag] ?? v.tag).toLowerCase().includes(varSearchQuery) ||
+          v.tag.toLowerCase().includes(varSearchQuery)
+      )
+    : vars
 
   function runGenerate(options?: DraftReplyOptions) {
     const next = seed + 1
@@ -1945,17 +2027,33 @@ function Composer({
             {c.personalize}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel>{c.personalize}</DropdownMenuLabel>
-          {vars.map((v) => (
-            <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
-              <Braces className="text-primary size-3.5" />
-              <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
-              <span className="text-muted-foreground font-mono text-[11px]">
-                {`{{${v.tag}}}`}
-              </span>
-            </DropdownMenuItem>
-          ))}
+          <div className="px-2 pb-1.5" onClick={(e) => e.stopPropagation()}>
+            <Input
+              value={varSearch}
+              onChange={(e) => setVarSearch(e.target.value)}
+              placeholder={c.varsSearchPlaceholder}
+              className="h-8"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-64 overflow-y-auto">
+            {filteredVars.map((v) => (
+              <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
+                <Braces className="text-primary size-3.5" />
+                <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
+                <span className="text-muted-foreground font-mono text-[11px]">
+                  {`{{${v.tag}}}`}
+                </span>
+              </DropdownMenuItem>
+            ))}
+            {filteredVars.length === 0 && (
+              <p className="text-muted-foreground px-2 py-3 text-center text-xs">
+                {c.varsEmpty}
+              </p>
+            )}
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
