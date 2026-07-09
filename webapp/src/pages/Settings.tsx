@@ -13,6 +13,8 @@ import {
   Link2,
   Eye,
   X,
+  Users,
+  Building2,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -65,7 +67,7 @@ import { useTheme } from "@/components/theme-provider"
 import { IcpManager } from "@/components/settings/IcpManager"
 import { useAuth } from "@/lib/auth"
 import { useView } from "@/lib/view-context"
-import { team, type TeamMember } from "@/lib/team"
+import { team, teams, type TeamMember } from "@/lib/team"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
 import { SALES_METHODOLOGIES } from "@/lib/mock-settings"
@@ -91,6 +93,11 @@ const COPY = {
     teamViewAs: "View as",
     teamViewingAs: (name: string) => `Currently viewing as ${name}`,
     teamExit: "Exit",
+    teamScope: "Data scope",
+    teamScopeDesc: "Filter dashboards and reports to the whole organization or a single team.",
+    teamWholeOrg: "Whole organization",
+    teamClientBadge: "Client",
+    teamViewTeam: "View",
     tabValue: "Value props",
     tabSelling: "Selling",
     tabBlacklists: "Blacklists",
@@ -216,6 +223,11 @@ const COPY = {
     teamViewAs: "Ver como",
     teamViewingAs: (name: string) => `Viendo actualmente como ${name}`,
     teamExit: "Salir",
+    teamScope: "Alcance de datos",
+    teamScopeDesc: "Filtra los paneles e informes por toda la organización o por un equipo.",
+    teamWholeOrg: "Toda la organización",
+    teamClientBadge: "Cliente",
+    teamViewTeam: "Ver",
     tabValue: "Propuesta de valor",
     tabSelling: "Ventas",
     tabBlacklists: "Listas negras",
@@ -339,7 +351,8 @@ export default function Settings() {
   const c = COPY[locale]
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
-  const { impersonating, viewTeam, impersonate, exitImpersonation } = useView()
+  const { scope, impersonating, viewTeam, impersonate, viewAsTeam, exitImpersonation } =
+    useView()
   // URL-addressable tabs: /settings?tab=billing deep-links the Billing tab.
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get("tab") ?? "account"
@@ -421,6 +434,50 @@ export default function Settings() {
               </Button>
             </div>
           )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.teamScope}</CardTitle>
+              <CardDescription>{c.teamScopeDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="hover:bg-muted/60 flex items-center gap-3 rounded-md px-2 py-2">
+                <Users className="text-muted-foreground size-4 shrink-0" />
+                <p className="flex-1 truncate text-sm font-medium">{c.teamWholeOrg}</p>
+                {scope.kind === "org" ? (
+                  <Check className="text-primary size-4 shrink-0" />
+                ) : (
+                  <Button variant="outline" size="sm" onClick={exitImpersonation}>
+                    {c.teamViewTeam}
+                  </Button>
+                )}
+              </div>
+              {teams.map((tm) => (
+                <div
+                  key={tm.id}
+                  className="hover:bg-muted/60 flex items-center gap-3 rounded-md px-2 py-2"
+                >
+                  <Building2 className="text-muted-foreground size-4 shrink-0" />
+                  <p className="flex-1 truncate text-sm font-medium">
+                    {tm.name}
+                    {tm.type === "client" && (
+                      <span className="text-muted-foreground ml-2 text-[10px] font-normal tracking-wide uppercase">
+                        {c.teamClientBadge}
+                      </span>
+                    )}
+                  </p>
+                  {scope.kind === "team" && scope.id === tm.id ? (
+                    <Check className="text-primary size-4 shrink-0" />
+                  ) : (
+                    <Button variant="outline" size="sm" onClick={() => viewAsTeam(tm.id)}>
+                      {c.teamViewTeam}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{c.tabTeam}</CardTitle>
