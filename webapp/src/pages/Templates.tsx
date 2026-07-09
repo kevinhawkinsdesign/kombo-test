@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import {
   useColumnPrefs,
   type ColumnDef,
@@ -209,6 +210,9 @@ const COPY = {
     deleteTitle: "Delete template?",
     deleteDescription: (name: string) => `"${name}" will be permanently removed.`,
     delete: "Delete",
+    deleteSelectedTitle: (n: number) => `Delete ${n} ${n === 1 ? "template" : "templates"}?`,
+    deleteSelectedDescription: "These templates will be permanently removed.",
+    templatesDeleted: (n: number) => `${n} ${n === 1 ? "template" : "templates"} deleted`,
     variablesTitle: "Variables",
     variablesSubtitle: "Click to insert, drag into the body, or copy.",
     tabVariables: "Variables",
@@ -322,6 +326,11 @@ const COPY = {
     deleteDescription: (name: string) =>
       `«${name}» se eliminará de forma permanente.`,
     delete: "Eliminar",
+    deleteSelectedTitle: (n: number) =>
+      `¿Eliminar ${n} ${n === 1 ? "plantilla" : "plantillas"}?`,
+    deleteSelectedDescription: "Estas plantillas se eliminarán de forma permanente.",
+    templatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "plantilla eliminada" : "plantillas eliminadas"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
     tabVariables: "Variables",
@@ -702,6 +711,8 @@ export default function Templates() {
   const [confirmTarget, setConfirmTarget] = React.useState<EmailTemplate | null>(
     null
   )
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false)
 
   // All folders shown = managed folders ∪ any folder referenced by a template.
   const allFolders = React.useMemo(() => {
@@ -889,6 +900,46 @@ export default function Templates() {
     toast.success(c.exported)
   }
 
+  // Bulk selection — same DataTable selection pattern used elsewhere.
+  const rowIds = flat.map((t) => t.id)
+  const allSelected =
+    rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
+  const someSelected = !allSelected && rowIds.some((id) => selectedIds.has(id))
+  function toggleRow(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAllRows() {
+    setSelectedIds(allSelected ? new Set() : new Set(rowIds))
+  }
+  function exportSelectedCsv() {
+    const selected = flat.filter((t) => selectedIds.has(t.id))
+    downloadCsv(
+      "kombo-templates.csv",
+      [c.colName, c.colFolder, c.colChannel, c.colSubject, c.colSent, c.colReply, c.colUpdated],
+      selected.map((t) => [
+        t.name,
+        t.folder,
+        channelLabel(t.channel, c),
+        t.subject,
+        t.sent,
+        `${t.replyRate}%`,
+        formatDate(t.updatedAt),
+      ])
+    )
+    toast.success(c.exported)
+  }
+  function deleteSelected() {
+    selectedIds.forEach((id) => templateStore.remove(id))
+    toast.success(c.templatesDeleted(selectedIds.size))
+    setSelectedIds(new Set())
+    setBulkDeleteOpen(false)
+  }
+
   const [folderDialog, setFolderDialog] = React.useState<{
     mode: "create" | "rename"
     original?: string
@@ -1053,25 +1104,45 @@ export default function Templates() {
             {c.noResults}
           </Card>
         ) : (
-          <DataTable
-            columns={TEMPLATE_COLUMNS}
-            visible={templateColPrefs.visible}
-            rows={flat}
-            rowKey={(t) => t.id}
-            locale={locale}
-            onRowClick={(t) => openEditor(t)}
-            actions={(t) => (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={c.deleteAria(t.name)}
-                className="text-muted-foreground hover:text-destructive size-8"
-                onClick={() => setConfirmTarget(t)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            )}
-          />
+          <>
+            <DataTable
+              columns={TEMPLATE_COLUMNS}
+              visible={templateColPrefs.visible}
+              rows={flat}
+              rowKey={(t) => t.id}
+              locale={locale}
+              onRowClick={(t) => openEditor(t)}
+              selection={{
+                isSelected: (t) => selectedIds.has(t.id),
+                toggle: (t) => toggleRow(t.id),
+                toggleAll: toggleAllRows,
+                allSelected,
+                someSelected,
+              }}
+              actions={(t) => (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={c.deleteAria(t.name)}
+                  className="text-muted-foreground hover:text-destructive size-8"
+                  onClick={() => setConfirmTarget(t)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
+            />
+            <BulkActionsBar
+              count={selectedIds.size}
+              onClear={() => setSelectedIds(new Set())}
+              onExport={exportSelectedCsv}
+              extra={{
+                label: c.delete,
+                icon: <Trash2 className="size-4" />,
+                destructive: true,
+                onClick: () => setBulkDeleteOpen(true),
+              }}
+            />
+          </>
         )
       ) : grouped.length === 0 ? (
         <Card className="text-muted-foreground p-8 text-center text-sm">
@@ -1494,6 +1565,16 @@ export default function Templates() {
         confirmLabel={c.delete}
         destructive
         onConfirm={handleDelete}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title={c.deleteSelectedTitle(selectedIds.size)}
+        description={c.deleteSelectedDescription}
+        confirmLabel={c.delete}
+        destructive
+        onConfirm={deleteSelected}
       />
 
       {/* New template — pick a creation method first. */}
