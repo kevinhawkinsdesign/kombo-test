@@ -92,7 +92,7 @@ export function DataTable<T>({
               {selection && (
                 <TableHead
                   className="bg-muted sticky left-0 z-20 w-10 pl-4"
-                  style={{ width: CHECKBOX_W }}
+                  style={{ width: CHECKBOX_W, minWidth: CHECKBOX_W, maxWidth: CHECKBOX_W }}
                 >
                   <Checkbox
                     checked={
@@ -118,7 +118,12 @@ export function DataTable<T>({
               {actions && (
                 <TableHead
                   className="bg-muted sticky z-20 w-12 pr-4"
-                  style={{ left: actionsLeft, width: ACTIONS_W }}
+                  style={{
+                    left: actionsLeft,
+                    width: ACTIONS_W,
+                    minWidth: ACTIONS_W,
+                    maxWidth: ACTIONS_W,
+                  }}
                 />
               )}
               {shown.map((col) => (
@@ -149,7 +154,7 @@ export function DataTable<T>({
                       "sticky z-10 pl-4",
                       selection.isSelected(row) ? "bg-primary/[0.04]" : "bg-background"
                     )}
-                    style={{ left: 0, width: CHECKBOX_W }}
+                    style={{ left: 0, width: CHECKBOX_W, minWidth: CHECKBOX_W, maxWidth: CHECKBOX_W }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     {(selection.isSelectable?.(row) ?? true) && (
@@ -178,7 +183,12 @@ export function DataTable<T>({
                       "sticky z-10 pr-4 text-right",
                       selection?.isSelected(row) ? "bg-primary/[0.04]" : "bg-background"
                     )}
-                    style={{ left: actionsLeft, width: ACTIONS_W }}
+                    style={{
+                      left: actionsLeft,
+                      width: ACTIONS_W,
+                      minWidth: ACTIONS_W,
+                      maxWidth: ACTIONS_W,
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     {actions(row)}
