@@ -135,6 +135,8 @@ const COPY = {
     scheduled: "Scheduled",
     sent: "Sent",
     archivedFolder: "Archived",
+    expandFolders: "Expand folders",
+    collapseFolders: "Collapse folders",
     tags: "Outcomes",
     search: "Search prospects, companies…",
     filters: "Filters",
@@ -281,6 +283,8 @@ const COPY = {
     scheduled: "Programados",
     sent: "Enviados",
     archivedFolder: "Archivados",
+    expandFolders: "Expandir carpetas",
+    collapseFolders: "Contraer carpetas",
     tags: "Resultados",
     search: "Buscar prospectos, empresas…",
     filters: "Filtros",
@@ -442,8 +446,8 @@ type FolderLabelKey =
   | "archivedFolder"
 
 const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
-  { id: "inbox", key: "inbox", icon: InboxIcon },
   { id: "my_tasks", key: "myTasks", icon: ListTodo },
+  { id: "inbox", key: "inbox", icon: InboxIcon },
   { id: "drafts", key: "drafts", icon: Wand2 },
   { id: "unread", key: "unread", icon: MailOpen },
   { id: "needs_reply", key: "needs_reply", icon: Reply },
@@ -650,6 +654,7 @@ export default function Inbox() {
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
   const [outcomesOpen, setOutcomesOpen] = React.useState(true)
+  const [inboxOpen, setInboxOpen] = React.useState(true)
   // Prospect/company summary panel: defaults open (unlike focus mode) since
   // a context panel's job is to be glanceable while triaging, not to hide
   // chrome for reading one thread.
@@ -1010,18 +1015,24 @@ export default function Inbox() {
         )}
       >
         <nav className="space-y-0.5 p-3">
-          {FOLDERS.map((f) => {
-            const Icon = f.icon
-            const activeFolder = view.kind === "folder" && view.id === f.id
-            const count = folderCount(f.id)
-            return (
-              <React.Fragment key={f.id}>
-                {f.id === "my_tasks" && <div className="bg-border my-1.5 h-px" />}
+          {(() => {
+            const myTasksFolder = FOLDERS.find((f) => f.id === "my_tasks")!
+            const inboxFolder = FOLDERS.find((f) => f.id === "inbox")!
+            const childFolders = FOLDERS.filter(
+              (f) => f.id !== "my_tasks" && f.id !== "inbox"
+            )
+            const folderButton = (f: (typeof FOLDERS)[number], fill: "w-full" | "flex-1") => {
+              const Icon = f.icon
+              const activeFolder = view.kind === "folder" && view.id === f.id
+              const count = folderCount(f.id)
+              return (
                 <button
+                  key={f.id}
                   type="button"
                   onClick={() => setView({ kind: "folder", id: f.id })}
                   className={cn(
-                    "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                    "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                    fill,
                     activeFolder
                       ? "bg-muted font-medium text-foreground"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -1042,10 +1053,38 @@ export default function Inbox() {
                     </span>
                   )}
                 </button>
-                {f.id === "my_tasks" && <div className="bg-border my-1.5 h-px" />}
-              </React.Fragment>
+              )
+            }
+            return (
+              <>
+                {folderButton(myTasksFolder, "w-full")}
+                <div className="bg-border my-1.5 h-px" />
+                <div className="flex items-center gap-0.5">
+                  {folderButton(inboxFolder, "flex-1")}
+                  <button
+                    type="button"
+                    onClick={() => setInboxOpen((v) => !v)}
+                    aria-expanded={inboxOpen}
+                    aria-label={inboxOpen ? c.collapseFolders : c.expandFolders}
+                    title={inboxOpen ? c.collapseFolders : c.expandFolders}
+                    className="text-muted-foreground hover:bg-muted/60 hover:text-foreground shrink-0 rounded-md p-1.5"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "size-3.5 transition-transform",
+                        !inboxOpen && "-rotate-90"
+                      )}
+                    />
+                  </button>
+                </div>
+                {inboxOpen && (
+                  <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
+                    {childFolders.map((f) => folderButton(f, "w-full"))}
+                  </div>
+                )}
+              </>
             )
-          })}
+          })()}
         </nav>
 
         <div className="px-3 pb-4">
