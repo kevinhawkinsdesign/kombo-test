@@ -6,7 +6,6 @@ import {
   Columns3,
   MoreHorizontal,
   Pencil,
-  Plus,
   Trash2,
 } from "lucide-react"
 
@@ -54,7 +53,6 @@ const COPY = {
   en: {
     title: "Deals",
     description: "Your pipeline by outcome.",
-    newDeal: "New deal",
     introTitle: "Manage your pipeline by outcome",
     introDescription:
       "Track every prospect through outcome stages — interested, meeting booked, qualified — and forecast with confidence.",
@@ -112,7 +110,6 @@ const COPY = {
   es: {
     title: "Negocios",
     description: "Tu pipeline por resultado.",
-    newDeal: "Nuevo negocio",
     introTitle: "Gestiona tu pipeline por resultado",
     introDescription:
       "Haz seguimiento de cada prospecto a través de etapas de resultado — interesado, reunión agendada, cualificado — y prevé con confianza.",
@@ -408,11 +405,6 @@ export default function Deals() {
     { label: c.openDeals, value: String(openDeals.length) },
   ]
 
-  function openCreate() {
-    setEditingDeal(undefined)
-    setFormOpen(true)
-  }
-
   function openEdit(deal: Deal) {
     setEditingDeal(deal)
     setFormOpen(true)
@@ -420,16 +412,7 @@ export default function Deals() {
 
   return (
     <Page>
-      <PageHeading
-        title={c.title}
-        description={c.description}
-        action={
-          <Button variant="volt" onClick={openCreate}>
-            <Plus className="size-4" />
-            {c.newDeal}
-          </Button>
-        }
-      />
+      <PageHeading title={c.title} description={c.description} />
 
       <FeatureIntro
         featureKey="deals"
