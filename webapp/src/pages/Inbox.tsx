@@ -1533,7 +1533,7 @@ export default function Inbox() {
         <div className={cn("min-w-0 flex-1 flex-col", showThreadMobile ? "flex" : "hidden md:flex")}>
           {/* Header — kept to a single row; lower-priority actions collapse
               into the "..." menu on narrow viewports instead of wrapping. */}
-          <div className="flex min-h-14 items-center gap-2 overflow-hidden border-b px-4 py-2">
+          <div className="flex min-h-14 items-center gap-1 overflow-hidden border-b px-4 py-2">
             <Button
               variant="ghost"
               size="icon"
@@ -1626,20 +1626,6 @@ export default function Inbox() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={effectiveActive.unread > 0 ? c.markRead : c.markUnread}
-              title={effectiveActive.unread > 0 ? c.markRead : c.markUnread}
-              onClick={() =>
-                effectiveActive.unread > 0
-                  ? conversationStore.markRead(effectiveActive.id)
-                  : conversationStore.markUnread(effectiveActive.id)
-              }
-            >
-              {effectiveActive.unread > 0 ? <MailOpen className="size-4" /> : <Mail className="size-4" />}
-            </Button>
-
             <AssigneePicker
               variant="icon"
               value={effectiveActive.assigneeId}
@@ -1655,16 +1641,6 @@ export default function Inbox() {
               unassignLabel={c.unassign}
             />
 
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={c.createTask}
-              title={c.createTask}
-              onClick={() => setTaskDialogOpen(true)}
-            >
-              <ListTodo className="size-4" />
-            </Button>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label={c.more}>
@@ -1672,6 +1648,25 @@ export default function Inbox() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() =>
+                    effectiveActive.unread > 0
+                      ? conversationStore.markRead(effectiveActive.id)
+                      : conversationStore.markUnread(effectiveActive.id)
+                  }
+                >
+                  {effectiveActive.unread > 0 ? (
+                    <MailOpen className="size-4" />
+                  ) : (
+                    <Mail className="size-4" />
+                  )}
+                  {effectiveActive.unread > 0 ? c.markRead : c.markUnread}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTaskDialogOpen(true)}>
+                  <ListTodo className="size-4" />
+                  {c.createTask}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 {effectiveActive.archived ? (
                   <DropdownMenuItem onClick={() => conversationStore.unarchive(effectiveActive.id)}>
                     <ArchiveRestore className="size-4" />
