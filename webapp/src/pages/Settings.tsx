@@ -11,6 +11,8 @@ import {
   Camera,
   Download,
   Link2,
+  Eye,
+  X,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -23,6 +25,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import {
   Select,
   SelectContent,
@@ -54,7 +64,8 @@ import {
 import { useTheme } from "@/components/theme-provider"
 import { IcpManager } from "@/components/settings/IcpManager"
 import { useAuth } from "@/lib/auth"
-import { team } from "@/lib/team"
+import { useView } from "@/lib/view-context"
+import { team, type TeamMember } from "@/lib/team"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
 import { SALES_METHODOLOGIES } from "@/lib/mock-settings"
@@ -72,6 +83,14 @@ const COPY = {
     description:
       "Manage your account, value proposition, and selling config.",
     tabAccount: "Account",
+    tabTeam: "Team",
+    teamDesc: "See and manage the reps in your organization.",
+    teamRep: "Rep",
+    teamEmail: "Email",
+    teamRole: "Role",
+    teamViewAs: "View as",
+    teamViewingAs: (name: string) => `Currently viewing as ${name}`,
+    teamExit: "Exit",
     tabValue: "Value props",
     tabSelling: "Selling",
     tabBlacklists: "Blacklists",
@@ -189,6 +208,14 @@ const COPY = {
     description:
       "Gestiona tu cuenta, propuesta de valor y configuración de ventas.",
     tabAccount: "Cuenta",
+    tabTeam: "Equipo",
+    teamDesc: "Consulta y gestiona a los vendedores de tu organización.",
+    teamRep: "Vendedor",
+    teamEmail: "Email",
+    teamRole: "Rol",
+    teamViewAs: "Ver como",
+    teamViewingAs: (name: string) => `Viendo actualmente como ${name}`,
+    teamExit: "Salir",
     tabValue: "Propuesta de valor",
     tabSelling: "Ventas",
     tabBlacklists: "Listas negras",
@@ -312,9 +339,15 @@ export default function Settings() {
   const c = COPY[locale]
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
+  const { impersonating, viewTeam, impersonate, exitImpersonation } = useView()
   // URL-addressable tabs: /settings?tab=billing deep-links the Billing tab.
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get("tab") ?? "account"
+
+  function viewAsRep(rep: TeamMember) {
+    impersonate(rep.id)
+    toast.success(c.teamViewingAs(rep.name))
+  }
 
   return (
     <Page className="max-w-3xl">
@@ -326,6 +359,7 @@ export default function Settings() {
       >
         <TabsList className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-16 z-20 mb-4 h-auto flex-wrap backdrop-blur">
           <TabsTrigger value="account">{c.tabAccount}</TabsTrigger>
+          <TabsTrigger value="team">{c.tabTeam}</TabsTrigger>
           <TabsTrigger value="value">{c.tabValue}</TabsTrigger>
           <TabsTrigger value="selling">{c.tabSelling}</TabsTrigger>
           <TabsTrigger value="blacklists">{c.tabBlacklists}</TabsTrigger>
@@ -365,6 +399,81 @@ export default function Settings() {
                   {c.saveChanges}
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TEAM */}
+        <TabsContent value="team" className="space-y-4">
+          {(impersonating || viewTeam) && (
+            <div className="bg-primary/10 flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+              <div className="flex items-center gap-2">
+                <Eye className="size-4 shrink-0" />
+                <span>
+                  {impersonating
+                    ? c.teamViewingAs(impersonating.name)
+                    : viewTeam && c.teamViewingAs(viewTeam.name)}
+                </span>
+              </div>
+              <Button size="sm" variant="secondary" onClick={exitImpersonation}>
+                <X className="size-3.5" />
+                {c.teamExit}
+              </Button>
+            </div>
+          )}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.tabTeam}</CardTitle>
+              <CardDescription>{c.teamDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="px-0 pt-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{c.teamRep}</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      {c.teamEmail}
+                    </TableHead>
+                    <TableHead>{c.teamRole}</TableHead>
+                    <TableHead className="w-px text-right">{c.teamViewAs}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {team.map((rep) => {
+                    const [first, last] = rep.name.split(" ")
+                    return (
+                      <TableRow key={rep.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-9">
+                              <AvatarImage src={portraitFor(rep.name)} alt="" />
+                              <AvatarFallback
+                                style={{ backgroundColor: rep.avatarColor, color: "white" }}
+                                className="text-xs"
+                              >
+                                {initials(first, last)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <p className="truncate font-medium">{rep.name}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground hidden md:table-cell">
+                          {rep.email}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {rep.role}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="outline" size="sm" onClick={() => viewAsRep(rep)}>
+                            <Eye className="size-4" />
+                            {c.teamViewAs}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>

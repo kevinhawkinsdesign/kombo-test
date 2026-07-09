@@ -3,7 +3,6 @@ import { Navigate, Outlet, useLocation } from "react-router-dom"
 import { AppSidebar, MobileBottomNav } from "@/components/layout/AppSidebar"
 import { AppHeader } from "@/components/layout/AppHeader"
 import { ProspectSearch } from "@/components/layout/ProspectSearch"
-import { ImpersonationBanner } from "@/components/layout/ImpersonationBanner"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
 import { NewCampaignProvider } from "@/components/campaign/NewCampaignWizard"
 import { SidebarCollapseProvider } from "@/lib/sidebar-collapse"
@@ -30,7 +29,6 @@ export function AppLayout() {
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <UpdateBanner />
-        <ImpersonationBanner />
         <AppHeader />
         <main id="main-content" className="flex-1 pb-16 md:pb-0">
           {blockedInV1 ? (
