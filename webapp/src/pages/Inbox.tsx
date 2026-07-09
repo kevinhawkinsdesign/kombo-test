@@ -446,13 +446,13 @@ type FolderLabelKey =
   | "archivedFolder"
 
 const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
-  { id: "my_tasks", key: "myTasks", icon: ListTodo },
   { id: "inbox", key: "inbox", icon: InboxIcon },
   { id: "drafts", key: "drafts", icon: Wand2 },
   { id: "unread", key: "unread", icon: MailOpen },
   { id: "needs_reply", key: "needs_reply", icon: Reply },
   { id: "scheduled", key: "scheduled", icon: CalendarClock },
   { id: "sent", key: "sent", icon: Send },
+  { id: "my_tasks", key: "myTasks", icon: ListTodo },
   { id: "archived", key: "archivedFolder", icon: Archive },
 ]
 
@@ -1057,8 +1057,6 @@ export default function Inbox() {
             }
             return (
               <>
-                {folderButton(myTasksFolder, "w-full")}
-                <div className="bg-border my-1.5 h-px" />
                 <div className="flex items-center gap-0.5">
                   {folderButton(inboxFolder, "flex-1")}
                   <button
@@ -1082,6 +1080,8 @@ export default function Inbox() {
                     {childFolders.map((f) => folderButton(f, "w-full"))}
                   </div>
                 )}
+                <div className="bg-border my-1.5 h-px" />
+                {folderButton(myTasksFolder, "w-full")}
               </>
             )
           })()}
