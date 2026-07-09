@@ -1,3 +1,4 @@
+import * as React from "react"
 import { Link } from "react-router-dom"
 import {
   Phone,
@@ -10,6 +11,7 @@ import {
   UserPlus,
   MailOpen,
   ArrowUpRight,
+  Pencil,
 } from "lucide-react"
 
 import {
@@ -22,12 +24,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
 import { useTasks, taskStore } from "@/lib/store"
 import { recentActivity } from "@/lib/mock-data"
 import { relativeTime } from "@/lib/format"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
-import type { TaskType, ActivityItem } from "@/lib/types"
+import type { Task, TaskType, ActivityItem } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -38,6 +41,7 @@ const COPY = {
     viewAll: "View all",
     allClear: "All clear — no open tasks 🎉",
     completed: (title: string) => `Completed "${title}"`,
+    edit: "Edit task",
   },
   es: {
     title: "Hoy",
@@ -47,6 +51,7 @@ const COPY = {
     viewAll: "Ver todo",
     allClear: "Todo en orden — sin tareas pendientes 🎉",
     completed: (title: string) => `"${title}" completada`,
+    edit: "Editar tarea",
   },
 } as const
 
@@ -84,6 +89,7 @@ export function TodayPanel({ className }: { className?: string }) {
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 5)
   const activity = recentActivity.slice(0, 5)
+  const [editingTask, setEditingTask] = React.useState<Task | undefined>()
 
   return (
     <div className={cn("grid gap-6 lg:grid-cols-2", className)}>
@@ -135,6 +141,16 @@ export function TodayPanel({ className }: { className?: string }) {
                   <span className="text-muted-foreground shrink-0 text-xs">
                     {relativeTime(task.dueDate)}
                   </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 shrink-0"
+                    aria-label={c.edit}
+                    title={c.edit}
+                    onClick={() => setEditingTask(task)}
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
                 </div>
               )
             })
@@ -178,6 +194,14 @@ export function TodayPanel({ className }: { className?: string }) {
           })}
         </CardContent>
       </Card>
+
+      <TaskFormDialog
+        open={Boolean(editingTask)}
+        onOpenChange={(v) => {
+          if (!v) setEditingTask(undefined)
+        }}
+        task={editingTask}
+      />
     </div>
   )
 }

@@ -42,6 +42,7 @@ import {
   CheckCircle2,
   ClipboardList,
   CornerUpRight,
+  Pencil,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -157,6 +158,7 @@ const COPY = {
     emptyHint: "New conversations will show up here.",
     backToInbox: "Back",
     createTask: "Create task",
+    editTask: "Edit task",
     bulkSelected: (n: number) => `${n} selected`,
     clearSelection: "Clear",
     replyTo: (name: string) => `Reply to ${name}…`,
@@ -305,6 +307,7 @@ const COPY = {
     emptyHint: "Las nuevas conversaciones aparecerán aquí.",
     backToInbox: "Volver",
     createTask: "Crear tarea",
+    editTask: "Editar tarea",
     bulkSelected: (n: number) => `${n} seleccionados`,
     clearSelection: "Limpiar",
     replyTo: (name: string) => `Responder a ${name}…`,
@@ -644,6 +647,7 @@ export default function Inbox() {
   const [shownTranslations, setShownTranslations] = React.useState<Set<string>>(new Set())
   const [toDelete, setToDelete] = React.useState<string | null>(null)
   const [taskDialogOpen, setTaskDialogOpen] = React.useState(false)
+  const [editingTask, setEditingTask] = React.useState<Task | undefined>()
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
@@ -1345,6 +1349,19 @@ export default function Inbox() {
                     <span className="text-muted-foreground shrink-0 text-xs">
                       {formatDueAt(task.dueDate)}
                     </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7 shrink-0"
+                      aria-label={c.editTask}
+                      title={c.editTask}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingTask(task)
+                      }}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
                   </div>
                 )
               })
@@ -1926,6 +1943,14 @@ export default function Inbox() {
           defaultProspectId={effectiveActive.prospectId}
         />
       )}
+
+      <TaskFormDialog
+        open={Boolean(editingTask)}
+        onOpenChange={(v) => {
+          if (!v) setEditingTask(undefined)
+        }}
+        task={editingTask}
+      />
     </div>
   )
 }
