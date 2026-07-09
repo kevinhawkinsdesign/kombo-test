@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Copy, Mail, MessageCircle, Phone, Search } from "lucide-react"
+import { Copy, Mail, MessageCircle, Phone, Search, Sparkles } from "lucide-react"
 
 import {
   Dialog,
@@ -61,6 +61,7 @@ function StepGlyph({ channel }: { channel: StepChannel }) {
   const cls = "size-3"
   if (ch === "whatsapp") return <MessageCircle className={cn(cls, "text-chart-1")} />
   if (ch === "call") return <Phone className={cn(cls, "text-chart-4")} />
+  if (ch === "ai_call") return <Sparkles className={cn(cls, "text-chart-5")} />
   if (ch.startsWith("linkedin")) return <LinkedinIcon className={cn(cls, "text-[#0a66c2]")} />
   return <Mail className={cn(cls, "text-primary")} />
 }

@@ -21,8 +21,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
+import { CrmSyncFlow } from "@/components/crm/CrmSyncFlow"
 import { useLocale } from "@/lib/locale"
 import { CRM_PROVIDERS } from "@/lib/mock-depth"
+import { crmSyncNeedsManualMapping } from "@/lib/crm-mapping"
 import type { CrmProvider } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -45,7 +47,9 @@ interface AddToCrmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   kind: "prospect" | "company"
+  recordId: string
   recordName: string
+  accountName: string
   fields: { label: string; value: string }[]
 }
 
@@ -82,7 +86,7 @@ const STEP_DESCRIPTIONS: Record<number, string> = {
   0: "Pick the CRM you want to sync this record to.",
   1: "Match Kombo fields to fields in your CRM.",
   2: "We checked for existing records before syncing.",
-  3: "The record has been synced successfully.",
+  3: "Pushing this record to your CRM.",
 }
 
 const firstConnectedProviderId =
@@ -141,7 +145,9 @@ export function AddToCrmDialog({
   open,
   onOpenChange,
   kind,
+  recordId,
   recordName,
+  accountName,
   fields,
 }: AddToCrmDialogProps) {
   const { locale } = useLocale()
@@ -196,8 +202,6 @@ export function AddToCrmDialog({
     ],
     [recordName]
   )
-  const chosenMatch = dupMatches.find((m) => m.id === dupChoice)
-
   function selectProvider(candidate: CrmProvider) {
     if (!candidate.connected) {
       toast.info(`Connect ${candidate.name} first`)
@@ -215,29 +219,16 @@ export function AddToCrmDialog({
   }
 
   function handlePrimary() {
-    if (step === 0 || step === 1) {
-      setStep((current) => current + 1)
-      return
-    }
-    if (step === 2) {
-      setStep(3)
-      if (provider) {
-        toast.success(`${recordName} synced to ${provider.name}`)
-      }
-      return
-    }
-    onOpenChange(false)
+    setStep((current) => current + 1)
   }
 
-  const primaryLabel =
-    step === 2 ? "Confirm" : step === 3 ? "Done" : "Continue"
+  const primaryLabel = step === 2 ? "Confirm" : "Continue"
   const primaryDisabled = step === 0 && !selectedConnected
   const showBack = step !== 0 && step !== 3
-
-  const actionSummary =
-    !hasDuplicate || dupChoice === CREATE_NEW
-      ? `Created a new ${provider?.objectName ?? "record"}`
-      : `Updated the existing ${provider?.objectName ?? "record"} (${chosenMatch?.detail ?? ""})`
+  const needsManualMapping = crmSyncNeedsManualMapping(
+    kind === "prospect" ? "person" : "company",
+    recordId
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -433,27 +424,27 @@ export function AddToCrmDialog({
         )}
 
         {step === 3 && provider && (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <CheckCircle2 className="text-chart-1 size-12" />
-            <div className="space-y-1">
-              <p className="text-base font-medium">
-                {recordName} added to {provider.name}
-              </p>
-              <p className="text-muted-foreground text-sm">{actionSummary}</p>
-            </div>
-          </div>
+          <CrmSyncFlow
+            crmName={provider.name}
+            recordName={recordName}
+            accountName={accountName}
+            willFail={needsManualMapping}
+            onDone={() => onOpenChange(false)}
+          />
         )}
 
-        <DialogFooter>
-          {showBack && (
-            <Button variant="ghost" onClick={goBack}>
-              Back
+        {step !== 3 && (
+          <DialogFooter>
+            {showBack && (
+              <Button variant="ghost" onClick={goBack}>
+                Back
+              </Button>
+            )}
+            <Button variant="volt" onClick={handlePrimary} disabled={primaryDisabled}>
+              {primaryLabel}
             </Button>
-          )}
-          <Button variant="volt" onClick={handlePrimary} disabled={primaryDisabled}>
-            {primaryLabel}
-          </Button>
-        </DialogFooter>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )

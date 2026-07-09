@@ -34,6 +34,7 @@ import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
 import { isEnriched } from "@/lib/enrichment"
+import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { useReleaseMode } from "@/lib/release-mode"
 import { useLists, useCampaigns, useProspects } from "@/lib/store"
 import { useSavedSearches, type SavedAiSearch } from "@/lib/mock-ai-search"
@@ -92,9 +93,6 @@ const COPY = {
     runSearch: "Run a search",
     newList: "New list",
     enrichAll: "Enrich all",
-    pushToCampaign: "Push to campaign →",
-    enrichedToast: (name: string) => `Enriching ${name}…`,
-    pushedToast: "Pushed to campaign",
     colName: "Name",
     colCompany: "Company",
     colLocation: "Location",
@@ -165,9 +163,6 @@ const COPY = {
     runSearch: "Ejecutar búsqueda",
     newList: "Nueva lista",
     enrichAll: "Enriquecer todo",
-    pushToCampaign: "Enviar a campaña →",
-    enrichedToast: (name: string) => `Enriqueciendo ${name}…`,
-    pushedToast: "Enviado a la campaña",
     colName: "Nombre",
     colCompany: "Empresa",
     colLocation: "Ubicación",
@@ -206,6 +201,7 @@ const STEP_ICON: Record<StepChannel, React.ComponentType<{ className?: string }>
   email: Mail,
   whatsapp: MessageCircle,
   call: Phone,
+  ai_call: Sparkles,
   linkedin_message: LinkedinIcon,
   linkedin_dm: LinkedinIcon,
   linkedin_inmail: LinkedinIcon,
@@ -215,6 +211,7 @@ const STEP_LABEL: Record<StepChannel, string> = {
   email: "Email",
   whatsapp: "WhatsApp",
   call: "Call",
+  ai_call: "AI Voice Call",
   linkedin_message: "LinkedIn",
   linkedin_dm: "LinkedIn DM",
   linkedin_inmail: "LinkedIn InMail",
@@ -361,8 +358,6 @@ export default function WorkspaceDetail() {
               }
             }}
             prospects={prospects}
-            onPush={() => toast.success(c.pushedToast)}
-            onEnrich={(name) => toast.success(c.enrichedToast(name))}
           />
         ) : (
           <OutreachPanel
@@ -580,8 +575,6 @@ function AudiencePanel({
   onNewList,
   onRemoveList,
   prospects,
-  onPush,
-  onEnrich,
 }: {
   c: Copy
   lists: ProspectList[]
@@ -590,9 +583,8 @@ function AudiencePanel({
   onNewList: () => void
   onRemoveList: (id: string, name: string) => void
   prospects: Prospect[]
-  onPush: () => void
-  onEnrich: (name: string) => void
 }) {
+  const [enrichOpen, setEnrichOpen] = React.useState(false)
   if (lists.length === 0) {
     return (
       <Card className="flex flex-col items-center gap-3 py-12 text-center">
@@ -679,13 +671,10 @@ function AudiencePanel({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onEnrich(selectedList.name)}
+                onClick={() => setEnrichOpen(true)}
               >
                 <Sparkles className="size-4" />
                 {c.enrichAll}
-              </Button>
-              <Button variant="volt" size="sm" onClick={onPush}>
-                {c.pushToCampaign}
               </Button>
             </div>
           </div>
@@ -756,6 +745,11 @@ function AudiencePanel({
           <p className="text-muted-foreground mt-2 text-xs">
             {c.tableFoot(members.length, enrichedCount)}
           </p>
+          <EnrichListDialog
+            open={enrichOpen}
+            onOpenChange={setEnrichOpen}
+            prospects={members}
+          />
         </>
       )}
     </div>

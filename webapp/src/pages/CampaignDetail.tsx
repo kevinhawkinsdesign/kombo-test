@@ -133,6 +133,7 @@ import {
   findCampaignStep,
   locateCampaignStep,
   flattenCampaignSteps,
+  AI_VOICES,
 } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
@@ -162,6 +163,7 @@ const COPY = {
       email: "Email",
       whatsapp: "WhatsApp",
       call: "Phone call",
+      ai_call: "AI Voice Call — ElevenLabs",
       linkedin_message: "LinkedIn message",
       linkedin_dm: "LinkedIn DM",
       linkedin_inmail: "LinkedIn InMail",
@@ -280,6 +282,10 @@ const COPY = {
     taskTitlePlaceholder: "Task title, e.g. \"Call to follow up\"",
     taskNotesPlaceholder: "Notes for the rep (optional)",
     manualTaskFooter: "This step creates a task for the assigned rep — it doesn't send automatically.",
+    aiVoiceLabel: "Voice",
+    aiScriptPlaceholder: "Script / instructions for the AI agent",
+    aiCallPoweredBy: "Powered by ElevenLabs",
+    aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
     addBranchLabel: "Add reply / no-reply branch",
     addBranchDesc: "One deviation off the main line — both tracks reconnect into the next step.",
     replyTrack: "If they reply",
@@ -302,6 +308,7 @@ const COPY = {
     groupEmail: "Email",
     groupMessaging: "Messaging",
     groupLinkedin: "LinkedIn",
+    groupAiPowered: "AI-powered",
     groupOther: "Other",
     setupTitle: "Finish setting up this campaign",
     setupDesc: "A campaign needs a sequence and prospects before it can run.",
@@ -360,6 +367,7 @@ const COPY = {
       email: "Correo",
       whatsapp: "WhatsApp",
       call: "Llamada",
+      ai_call: "Llamada de voz IA — ElevenLabs",
       linkedin_message: "Mensaje de LinkedIn",
       linkedin_dm: "Mensaje directo de LinkedIn",
       linkedin_inmail: "InMail de LinkedIn",
@@ -478,6 +486,10 @@ const COPY = {
     taskTitlePlaceholder: "Título de la tarea, p. ej. «Llamar para dar seguimiento»",
     taskNotesPlaceholder: "Notas para el vendedor (opcional)",
     manualTaskFooter: "Este paso crea una tarea para el vendedor asignado — no se envía automáticamente.",
+    aiVoiceLabel: "Voz",
+    aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
+    aiCallPoweredBy: "Con tecnología de ElevenLabs",
+    aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
     addBranchLabel: "Añadir bifurcación de respuesta / sin respuesta",
     addBranchDesc: "Una desviación de la línea principal — ambos caminos se reconectan en el siguiente paso.",
     replyTrack: "Si responden",
@@ -500,6 +512,7 @@ const COPY = {
     groupEmail: "Correo",
     groupMessaging: "Mensajería",
     groupLinkedin: "LinkedIn",
+    groupAiPowered: "Con IA",
     groupOther: "Otro",
     setupTitle: "Termina de configurar esta campaña",
     setupDesc: "Una campaña necesita una secuencia y prospectos antes de ejecutarse.",
@@ -644,6 +657,10 @@ const CHANNELS: Record<StepChannel, ChannelMeta> = {
   call: {
     tint: "bg-chart-4/15 text-chart-4",
     Icon: Phone,
+  },
+  ai_call: {
+    tint: "bg-chart-5/15 text-chart-5",
+    Icon: Sparkles,
   },
   linkedin_message: {
     tint: "bg-[#0a66c2]/15 text-[#0a66c2]",
@@ -1753,6 +1770,7 @@ export default function CampaignDetail() {
                   )
                   const meta = channelMeta(step.channel)
                   const isEmail = normalizeChannel(step.channel) === "email"
+                  const isAiCall = normalizeChannel(step.channel) === "ai_call"
                   const sent = Math.max(
                     0,
                     campaign.enrolled -
@@ -1861,30 +1879,32 @@ export default function CampaignDetail() {
                           </span>
                         </div>
 
-                        <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
-                          <ListTodo className="text-muted-foreground size-4 shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <Label
-                              htmlFor={`manual-task-${step.id}`}
-                              className="text-sm font-medium"
-                            >
-                              {c.markManualTask}
-                            </Label>
-                            <p className="text-muted-foreground text-xs">
-                              {c.manualTaskDesc}
-                            </p>
+                        {!isAiCall && (
+                          <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
+                            <ListTodo className="text-muted-foreground size-4 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <Label
+                                htmlFor={`manual-task-${step.id}`}
+                                className="text-sm font-medium"
+                              >
+                                {c.markManualTask}
+                              </Label>
+                              <p className="text-muted-foreground text-xs">
+                                {c.manualTaskDesc}
+                              </p>
+                            </div>
+                            <Switch
+                              id={`manual-task-${step.id}`}
+                              checked={Boolean(step.isManualTask)}
+                              disabled={step.channel === "manual"}
+                              onCheckedChange={(checked) =>
+                                campaignStore.updateStep(campaign.id, step.id, {
+                                  isManualTask: checked,
+                                })
+                              }
+                            />
                           </div>
-                          <Switch
-                            id={`manual-task-${step.id}`}
-                            checked={Boolean(step.isManualTask)}
-                            disabled={step.channel === "manual"}
-                            onCheckedChange={(checked) =>
-                              campaignStore.updateStep(campaign.id, step.id, {
-                                isManualTask: checked,
-                              })
-                            }
-                          />
-                        </div>
+                        )}
 
                         {step.isManualTask && (
                           <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
@@ -1959,6 +1979,45 @@ export default function CampaignDetail() {
                               className="min-h-20"
                             />
                           </>
+                        ) : isAiCall ? (
+                          <>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">{c.aiVoiceLabel}</Label>
+                              <Select
+                                value={step.aiVoice ?? AI_VOICES[0]}
+                                onValueChange={(aiVoice) =>
+                                  campaignStore.updateStep(campaign.id, step.id, {
+                                    aiVoice,
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="w-48">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {AI_VOICES.map((voice) => (
+                                    <SelectItem key={voice} value={voice}>
+                                      {voice}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Textarea
+                              value={step.body}
+                              placeholder={c.aiScriptPlaceholder}
+                              onChange={(e) =>
+                                campaignStore.updateStep(campaign.id, step.id, {
+                                  body: e.target.value,
+                                })
+                              }
+                              className="min-h-20"
+                            />
+                            <p className="text-muted-foreground flex items-center gap-1 text-xs">
+                              <Sparkles className="size-3" />
+                              {c.aiCallPoweredBy}
+                            </p>
+                          </>
                         ) : (
                           <>
                             {isEmail && (
@@ -1992,6 +2051,10 @@ export default function CampaignDetail() {
                         {step.isManualTask ? (
                           <p className="text-muted-foreground text-xs">
                             {c.manualTaskFooter}
+                          </p>
+                        ) : isAiCall ? (
+                          <p className="text-muted-foreground text-xs">
+                            {c.aiCallFooter}
                           </p>
                         ) : (
                           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
@@ -2501,7 +2564,12 @@ function BranchTracks({
 // Grouped like Lemlist's step picker (Suggestions / LinkedIn actions / Phone
 // & Messaging, adapted to the channels we actually support).
 const CHANNEL_GROUPS: {
-  labelKey: "groupEmail" | "groupMessaging" | "groupLinkedin" | "groupOther"
+  labelKey:
+    | "groupEmail"
+    | "groupMessaging"
+    | "groupLinkedin"
+    | "groupAiPowered"
+    | "groupOther"
   channels: StepChannel[]
 }[] = [
   { labelKey: "groupEmail", channels: ["email"] },
@@ -2510,6 +2578,9 @@ const CHANNEL_GROUPS: {
     labelKey: "groupLinkedin",
     channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],
   },
+  // Agentic, AI-driven steps — a distinct mechanism from a human `call`,
+  // so it gets its own group rather than joining groupMessaging.
+  { labelKey: "groupAiPowered", channels: ["ai_call"] },
   // Channel-less offline activities (calls, visits, handwritten notes) —
   // free-form title + notes, same shape as a Tasks-page task.
   { labelKey: "groupOther", channels: ["manual"] },

@@ -160,6 +160,19 @@ const TARGET_LABELS: Record<string, string[]> = {
   tier: [], // skip by default
 }
 
+// One designated record per kind that simulates a real-world CRM sync
+// failure (an unresolved linked Account) so the manual-mapping flow always
+// has a reliable, repeatable record to demo — every other record syncs
+// cleanly.
+const SYNC_FAILS_FOR: Record<RecordKind, string> = {
+  person: "p_1",
+  company: "acc_1",
+}
+
+export function crmSyncNeedsManualMapping(kind: RecordKind, id: string): boolean {
+  return SYNC_FAILS_FOR[kind] === id
+}
+
 export function defaultMapping(
   fields: KomboField[],
   crmFields: CrmField[]

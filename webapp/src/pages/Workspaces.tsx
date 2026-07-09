@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react"
 
+import kaiUrl from "@/assets/kai-pleased.png"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Card } from "@/components/ui/card"
@@ -115,6 +116,7 @@ export default function Workspaces() {
 
       {workspaces.length === 0 ? (
         <Card className="text-muted-foreground flex flex-col items-center gap-1 py-16 text-center text-sm">
+          <img src={kaiUrl} alt="" className="mb-2 size-16" />
           <p className="font-medium">{c.empty}</p>
           <p className="text-xs">{c.emptyHint}</p>
         </Card>

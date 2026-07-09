@@ -13,7 +13,7 @@ const COPY = {
   en: {
     title: "Home",
     description: "Jump back in, or start something new.",
-    tabHome: "Home",
+    tabHome: "Quick Actions",
     tabDealFlow: "Deal Flow",
     findTitle: "Find prospects & companies",
     findDesc: "Search our database or import a CSV.",
@@ -31,7 +31,7 @@ const COPY = {
   es: {
     title: "Inicio",
     description: "Retoma donde lo dejaste, o empieza algo nuevo.",
-    tabHome: "Inicio",
+    tabHome: "Acciones rápidas",
     tabDealFlow: "Flujo de negocio",
     findTitle: "Buscar prospectos y empresas",
     findDesc: "Busca en nuestra base de datos o importa un CSV.",
