@@ -109,6 +109,7 @@ import { DataTable } from "@/components/common/DataTable"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { SelectionControls } from "@/components/common/SelectionControls"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
 import { ColumnManager } from "@/components/common/ColumnManager"
@@ -140,6 +141,7 @@ import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
+import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type {
   CampaignStatus,
   StepChannel,
@@ -332,6 +334,7 @@ const COPY = {
     removedFromCampaign: "Removed from campaign",
     removedFromCampaignCount: (n: number) => `${n} removed from campaign`,
     exportedCsv: "Exported to CSV",
+    capNote: (max: number) => `Only ${max.toLocaleString()} can be enriched at a time.`,
     noProspects: "No prospects or companies yet — add some to get started.",
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
@@ -539,6 +542,7 @@ const COPY = {
     removedFromCampaign: "Eliminado de la campaña",
     removedFromCampaignCount: (n: number) => `${n} eliminados de la campaña`,
     exportedCsv: "Exportado a CSV",
+    capNote: (max: number) => `Solo se pueden enriquecer ${max.toLocaleString()} a la vez.`,
     noProspects:
       "Aún no hay prospectos ni empresas — añade algunos para empezar.",
     noReplies: "Aún no hay respuestas.",
@@ -755,12 +759,11 @@ export default function CampaignDetail() {
     "campaign-prospects",
     PROSPECT_COL_DEFAULT_IDS
   )
-  // Bulk selection on the Prospects tab. Only manually-added rows are
-  // selectable — enrollment rows are driven by the attached list/sequence.
+  const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
   const [selectedRowIds, setSelectedRowIds] = React.useState<Set<string>>(
     new Set()
   )
-  const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+  const [prospectPage, setProspectPage] = React.useState(0)
 
   // Visiting a campaign registers it as an open tab — same mental model as
   // the Lists tab bar (lib/list-tabs.ts).
@@ -948,14 +951,29 @@ export default function CampaignDetail() {
   ]
 
   // Bulk selection spans the manually-added rows only; stale ids (already
-  // removed) drop out at compute time.
+  // removed) drop out at compute time. Paginated like every other
+  // enrichment-capable table, but "select page"/"select all" only ever
+  // touch the selectable (manual) rows within that scope — enrollment rows
+  // never gain a checkbox. Plain (non-hook) pagination here, rather than
+  // usePagedSelection, since prospectRows isn't computable until after this
+  // component's not-found early return, and hooks can't follow it.
+  const PROSPECTS_PER_PAGE = 50
+  const prospectPageCount = Math.max(1, Math.ceil(prospectRows.length / PROSPECTS_PER_PAGE))
+  const safeProspectPage = Math.min(prospectPage, prospectPageCount - 1)
+  const prospectPageStart = safeProspectPage * PROSPECTS_PER_PAGE
+  const prospectPageEnd = Math.min(prospectPageStart + PROSPECTS_PER_PAGE, prospectRows.length)
+  const pagedProspectRows = prospectRows.slice(prospectPageStart, prospectPageEnd)
+
   const selectableRows = prospectRows.filter((r) => r.manual)
+  const selectablePagedRows = pagedProspectRows.filter((r) => r.manual)
   const selectedRows = selectableRows.filter((r) => selectedRowIds.has(r.id))
   const allRowsSelected =
-    selectableRows.length > 0 &&
-    selectableRows.every((r) => selectedRowIds.has(r.id))
+    selectablePagedRows.length > 0 &&
+    selectablePagedRows.every((r) => selectedRowIds.has(r.id))
   const someRowsSelected =
-    !allRowsSelected && selectableRows.some((r) => selectedRowIds.has(r.id))
+    !allRowsSelected && selectablePagedRows.some((r) => selectedRowIds.has(r.id))
+  const selectableCount = Math.min(selectableRows.length, MAX_ENRICH_BATCH)
+  const overCap = selectedRowIds.size > MAX_ENRICH_BATCH
   function toggleProspectRow(id: string) {
     setSelectedRowIds((prev) => {
       const next = new Set(prev)
@@ -965,9 +983,15 @@ export default function CampaignDetail() {
     })
   }
   function toggleAllProspectRows() {
-    setSelectedRowIds(
-      allRowsSelected ? new Set() : new Set(selectableRows.map((r) => r.id))
-    )
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      if (allRowsSelected) selectablePagedRows.forEach((r) => next.delete(r.id))
+      else selectablePagedRows.forEach((r) => next.add(r.id))
+      return next
+    })
+  }
+  function selectAllRowsCapped() {
+    setSelectedRowIds(new Set(selectableRows.slice(0, MAX_ENRICH_BATCH).map((r) => r.id)))
   }
   function removeSelectedProspects() {
     selectedRows.forEach((r) => campaignStore.removeProspect(campaignId, r.id))
@@ -2178,10 +2202,27 @@ export default function CampaignDetail() {
                   {c.columns}
                 </Button>
               </div>
+              <SelectionControls
+                allSelected={allRowsSelected}
+                onTogglePage={toggleAllProspectRows}
+                selectedCount={selectedRowIds.size}
+                selectableCount={selectableCount}
+                onSelectAllCapped={selectAllRowsCapped}
+                pageStart={prospectPageStart}
+                pageEnd={prospectPageEnd}
+                total={prospectRows.length}
+                page={safeProspectPage}
+                pageCount={prospectPageCount}
+                onPrevPage={() => setProspectPage(Math.max(0, safeProspectPage - 1))}
+                onNextPage={() =>
+                  setProspectPage(Math.min(prospectPageCount - 1, safeProspectPage + 1))
+                }
+              />
+
               <DataTable
                 columns={prospectColumns}
                 visible={prospectColPrefs.visible}
-                rows={prospectRows}
+                rows={pagedProspectRows}
                 rowKey={(r) => r.id}
                 locale={locale}
                 selection={{
@@ -2220,6 +2261,7 @@ export default function CampaignDetail() {
 
               <BulkActionsBar
                 count={selectedRows.length}
+                capNote={overCap ? c.capNote(MAX_ENRICH_BATCH) : undefined}
                 onClear={() => setSelectedRowIds(new Set())}
                 onExport={exportSelectedProspects}
                 onEnrich={() => setBulkEnrichOpen(true)}

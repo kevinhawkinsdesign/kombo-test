@@ -8,8 +8,6 @@ import {
   Check,
   Columns3,
   Waypoints,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -28,6 +26,7 @@ import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
@@ -51,6 +50,7 @@ import { ListSelector } from "@/components/common/ListSelector"
 import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_LABELS } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
+import { usePagedSelection } from "@/lib/use-paged-selection"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Prospect, ProspectStatus } from "@/lib/types"
 
@@ -109,11 +109,6 @@ const COPY = {
     done: "Done",
     editingHint: "Editing — changes save automatically",
     selectAll: "Select all",
-    selectPage: "Select page",
-    deselectPage: "Deselect page",
-    selectAllCapped: (n: number) => `Select all ${n.toLocaleString()}`,
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     capNote: (max: number) => `Only ${max.toLocaleString()} contacts can be added at a time.`,
   },
   es: {
@@ -151,11 +146,6 @@ const COPY = {
     done: "Listo",
     editingHint: "Editando — los cambios se guardan solos",
     selectAll: "Seleccionar todo",
-    selectPage: "Seleccionar página",
-    deselectPage: "Deseleccionar página",
-    selectAllCapped: (n: number) => `Seleccionar todos (${n.toLocaleString()})`,
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     capNote: (max: number) => `Solo se pueden añadir ${max.toLocaleString()} contactos a la vez.`,
   },
 } as const
@@ -176,7 +166,6 @@ export default function People() {
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
-  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkCampaign, setBulkCampaign] = React.useState(false)
   const [bulkEnrich, setBulkEnrich] = React.useState(false)
@@ -215,24 +204,13 @@ export default function People() {
     return matchesQuery && matchesStatus && matchesList
   })
 
-  // Pagination — "select page" imports a controlled batch instead of every
-  // matching result. Reset to the first page whenever the filters change.
-  const [page, setPage] = React.useState(0)
-  const resultSig = `${query}|${status}|${listFilter}`
-  const [pageSig, setPageSig] = React.useState(resultSig)
-  if (resultSig !== pageSig) {
-    setPageSig(resultSig)
-    setPage(0)
-  }
-  const pageCount = Math.max(1, Math.ceil(results.length / RESULTS_PER_PAGE))
-  const safePage = Math.min(page, pageCount - 1)
-  const pageStart = safePage * RESULTS_PER_PAGE
-  const pageEnd = Math.min(pageStart + RESULTS_PER_PAGE, results.length)
-  const pagedResults = results.slice(pageStart, pageEnd)
-
-  const allSelected =
-    pagedResults.length > 0 && pagedResults.every((p) => selectedIds.has(p.id))
-  const someSelected = pagedResults.some((p) => selectedIds.has(p.id))
+  const sel = usePagedSelection(
+    results,
+    (p) => p.id,
+    `${query}|${status}|${listFilter}`,
+    RESULTS_PER_PAGE
+  )
+  const { selectedIds, allSelected, someSelected, overCap, selectableCount } = sel
   const selectedProspects = prospects.filter((p) => selectedIds.has(p.id))
   // Adding to a list/campaign is capped at MAX_ENRICH_BATCH and, for people,
   // limited to at most N per company — applied right before committing.
@@ -241,31 +219,7 @@ export default function People() {
     MAX_ENRICH_BATCH
   )
   const addIdsArr = cappedForAdd.map((p) => p.id)
-  const overCap = selectedIds.size > MAX_ENRICH_BATCH
-  const selectableCount = Math.min(results.length, MAX_ENRICH_BATCH)
 
-  function toggleRow(p: Prospect) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(p.id)) next.delete(p.id)
-      else next.add(p.id)
-      return next
-    })
-  }
-  // Toggles the current page only — mirrors the Search/Add-records pattern so
-  // a single click never imports more than one page at a time.
-  function togglePage() {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (pagedResults.every((p) => prev.has(p.id)))
-        pagedResults.forEach((p) => next.delete(p.id))
-      else pagedResults.forEach((p) => next.add(p.id))
-      return next
-    })
-  }
-  function selectAllCapped() {
-    setSelectedIds(new Set(results.slice(0, MAX_ENRICH_BATCH).map((p) => p.id)))
-  }
   function exportSelected() {
     downloadCsv(
       "people.csv",
@@ -443,55 +397,25 @@ export default function People() {
         <EmptyState description={c.noMatch} />
       ) : (
         <>
-          {/* Selection controls — page at a time, plus a capped "select all". */}
-          <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2 px-1 text-xs">
-            <button
-              type="button"
-              onClick={togglePage}
-              className="text-primary font-medium hover:underline"
-            >
-              {allSelected ? c.deselectPage : c.selectPage}
-            </button>
-            {selectedIds.size < selectableCount && (
-              <button
-                type="button"
-                onClick={selectAllCapped}
-                className="text-primary font-medium hover:underline"
-              >
-                {c.selectAllCapped(selectableCount)}
-              </button>
-            )}
-            <div className="ml-auto flex items-center gap-1">
-              <span className="text-muted-foreground px-1 tabular-nums">
-                {c.pageRange(pageStart + 1, pageEnd, results.length)}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-7"
-                disabled={safePage === 0}
-                onClick={() => setPage(Math.max(0, safePage - 1))}
-                aria-label="Previous page"
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-7"
-                disabled={safePage >= pageCount - 1}
-                onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
-                aria-label="Next page"
-              >
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
+          <SelectionControls
+            allSelected={allSelected}
+            onTogglePage={sel.togglePage}
+            selectedCount={selectedIds.size}
+            selectableCount={selectableCount}
+            onSelectAllCapped={sel.selectAllCapped}
+            pageStart={sel.pageStart}
+            pageEnd={sel.pageEnd}
+            total={results.length}
+            page={sel.page}
+            pageCount={sel.pageCount}
+            onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
+            onNextPage={() => sel.setPage(Math.min(sel.pageCount - 1, sel.page + 1))}
+          />
 
           <DataTable
             columns={allColumns}
             visible={columnPrefs.visible}
-            rows={pagedResults}
+            rows={sel.pagedItems}
             rowKey={(p) => p.id}
             locale={locale}
             editing={editing}
@@ -499,8 +423,8 @@ export default function People() {
             actions={(p) => <RecordActionsMenu kind="person" record={p} />}
             selection={{
               isSelected: (p) => selectedIds.has(p.id),
-              toggle: toggleRow,
-              toggleAll: togglePage,
+              toggle: sel.toggleRow,
+              toggleAll: sel.togglePage,
               allSelected,
               someSelected,
             }}
@@ -513,7 +437,7 @@ export default function People() {
         capNote={overCap ? c.capNote(MAX_ENRICH_BATCH) : undefined}
         perCompanyCap={perCompanyCap}
         onPerCompanyCapChange={setPerCompanyCap}
-        onClear={() => setSelectedIds(new Set())}
+        onClear={sel.clear}
         onExport={exportSelected}
         onEnrich={() => setBulkEnrich(true)}
         onAddToList={() => setBulkList(true)}
