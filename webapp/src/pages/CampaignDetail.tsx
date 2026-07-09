@@ -335,6 +335,9 @@ const COPY = {
     noProspects: "No prospects or companies yet — add some to get started.",
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
+    of: "of",
+    prevPage: "Previous",
+    nextPage: "Next",
     editCampaign: "Edit campaign",
     editCampaignDesc: "Update the campaign name and status.",
     name: "Name",
@@ -540,6 +543,9 @@ const COPY = {
       "Aún no hay prospectos ni empresas — añade algunos para empezar.",
     noReplies: "Aún no hay respuestas.",
     viewInInbox: "Ver en la bandeja",
+    of: "de",
+    prevPage: "Anterior",
+    nextPage: "Siguiente",
     editCampaign: "Editar campaña",
     editCampaignDesc: "Actualiza el nombre y el estado de la campaña.",
     name: "Nombre",
@@ -623,6 +629,8 @@ interface CampaignProspectRow {
   lastTouchLabel: string
   manual: boolean
 }
+
+const CONVERSATIONS_PAGE_SIZE = 50
 
 const PROSPECT_COL_GROUPS: ColGroup[] = [
   { id: "prospect", label: { en: "Prospect", es: "Prospecto" } },
@@ -742,6 +750,7 @@ export default function CampaignDetail() {
   // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
   // Hooks must run before the not-found early return below.
   const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [conversationsPage, setConversationsPage] = React.useState(0)
   const prospectColPrefs = useColumnPrefs(
     "campaign-prospects",
     PROSPECT_COL_DEFAULT_IDS
@@ -2243,51 +2252,129 @@ export default function CampaignDetail() {
           )}
         </TabsContent>
 
-        {/* Conversations */}
+        {/* Conversations — a plain table (not cards) so it stays usable and
+            paginates cleanly at enterprise scale (1000+ replies). */}
         <TabsContent value="conversations" className="mt-4 space-y-3">
           {replies.length > 0 ? (
-            replies.map((e, i) => {
-              const prospect = getProspect(e.prospectId)
-              const reply = POSITIVE_REPLIES[i % POSITIVE_REPLIES.length]
-              return (
-                <Card key={e.prospectId}>
-                  <CardContent className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="flex min-w-0 items-start gap-3">
-                      {prospect && (
-                        <ProspectAvatar prospect={prospect} className="mt-0.5" />
+            (() => {
+              const rows = replies.map((e, i) => ({
+                id: e.prospectId,
+                prospect: getProspect(e.prospectId),
+                reply: POSITIVE_REPLIES[i % POSITIVE_REPLIES.length],
+                lastTouch: e.lastTouch,
+              }))
+              const conversationColumns: ColumnDef<(typeof rows)[number]>[] = [
+                {
+                  id: "prospect",
+                  label: { en: "Prospect", es: "Prospecto" },
+                  group: "conversation",
+                  pinned: true,
+                  render: (row) =>
+                    row.prospect ? (
+                      <div className="flex items-center gap-2.5">
+                        <ProspectAvatar prospect={row.prospect} />
+                        <span className="truncate font-medium">
+                          {row.prospect.firstName} {row.prospect.lastName}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">{c.unknownProspect}</span>
+                    ),
+                },
+                {
+                  id: "status",
+                  label: { en: "Status", es: "Estado" },
+                  group: "conversation",
+                  render: () => (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+                        <Sparkles className="size-3" />
+                        {c.interested}
+                      </Badge>
+                      {alertInterested && (
+                        <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                          <Zap className="text-chart-4 size-3" />
+                          {c.alertSent}
+                          {alertEmail ? " · email" : ""}
+                        </span>
                       )}
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium">
-                            {prospect
-                              ? `${prospect.firstName} ${prospect.lastName}`
-                              : c.unknownProspect}
-                          </p>
-                          <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
-                            <Sparkles className="size-3" />
-                            {c.interested}
-                          </Badge>
-                          {alertInterested && (
-                            <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-                              <Zap className="text-chart-4 size-3" />
-                              {c.alertSent}
-                              {alertEmail ? " · email" : ""}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-muted-foreground text-sm">{reply}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {relativeTime(e.lastTouch)}
-                        </p>
+                    </div>
+                  ),
+                },
+                {
+                  id: "reply",
+                  label: { en: "Last message", es: "Último mensaje" },
+                  group: "conversation",
+                  minWidth: "280px",
+                  render: (row) => (
+                    <span className="text-muted-foreground line-clamp-1 text-sm">
+                      {row.reply}
+                    </span>
+                  ),
+                },
+                {
+                  id: "lastTouch",
+                  label: { en: "Time", es: "Hora" },
+                  group: "conversation",
+                  render: (row) => (
+                    <span className="text-muted-foreground text-sm">
+                      {relativeTime(row.lastTouch)}
+                    </span>
+                  ),
+                },
+              ]
+              const pageCount = Math.max(
+                1,
+                Math.ceil(rows.length / CONVERSATIONS_PAGE_SIZE)
+              )
+              const safePage = Math.min(conversationsPage, pageCount - 1)
+              const pageStart = safePage * CONVERSATIONS_PAGE_SIZE
+              const pageRows = rows.slice(
+                pageStart,
+                pageStart + CONVERSATIONS_PAGE_SIZE
+              )
+              return (
+                <>
+                  <DataTable
+                    columns={conversationColumns}
+                    visible={["status", "reply", "lastTouch"]}
+                    rows={pageRows}
+                    rowKey={(row) => row.id}
+                    locale={locale}
+                    actions={() => (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/inbox">{c.viewInInbox}</Link>
+                      </Button>
+                    )}
+                  />
+                  {rows.length > CONVERSATIONS_PAGE_SIZE && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {pageStart + 1}–{Math.min(pageStart + CONVERSATIONS_PAGE_SIZE, rows.length)} {c.of} {rows.length}
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={safePage === 0}
+                          onClick={() => setConversationsPage((p) => p - 1)}
+                        >
+                          {c.prevPage}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={safePage >= pageCount - 1}
+                          onClick={() => setConversationsPage((p) => p + 1)}
+                        >
+                          {c.nextPage}
+                        </Button>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/inbox">{c.viewInInbox}</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
+                  )}
+                </>
               )
-            })
+            })()
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
