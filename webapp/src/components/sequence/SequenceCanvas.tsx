@@ -3,6 +3,8 @@ import {
   ReactFlow,
   Background,
   Controls,
+  Handle,
+  Position,
   type NodeProps,
   type NodeTypes,
 } from "@xyflow/react"
@@ -71,6 +73,12 @@ interface StepNodeExtraData extends StepNodeData {
   onClick?: (step: CampaignStep) => void
 }
 
+// Invisible anchor points — nodesConnectable is false everywhere this canvas
+// is used, so these only exist to give edges somewhere to attach; without a
+// Handle, React Flow can't compute a connection point and silently drops
+// the edge (no line, no console error visible to the user).
+const HANDLE_CLASS = "invisible !size-0 !min-w-0 !border-0"
+
 function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -82,6 +90,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
 
   return (
     <div className="flex flex-col items-stretch gap-1" style={{ width: 240 }}>
+      <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
       {trackLabel && (
         <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
           {trackLabel === "reply" ? c.reply : c.noReply}
@@ -132,6 +141,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
       {deadEnd && (
         <span className="text-muted-foreground pl-1 text-[11px]">{c.deadEnd}</span>
       )}
+      <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} />
     </div>
   )
 }
@@ -142,16 +152,36 @@ function AddNodeComponent({
   const { locale } = useLocale()
   const c = COPY[locale]
   const isParallel = data.kind === "addParallel"
+
+  if (isParallel) {
+    return (
+      <button
+        type="button"
+        onClick={() => data.onClick?.(data)}
+        className="border-muted-foreground/30 text-muted-foreground hover:border-primary/50 hover:text-primary flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs font-medium transition-colors"
+      >
+        <Split className="size-3.5" />
+        {c.addParallel}
+      </button>
+    )
+  }
+
+  // A small "+" living on the connector line between two step cards, not a
+  // full-width pill with its own row — the wrapper matches the step card's
+  // width purely so the button centers on the line the edge actually draws.
   return (
-    <button
-      type="button"
-      onClick={() => data.onClick?.(data)}
-      className="border-muted-foreground/30 text-muted-foreground hover:border-primary/50 hover:text-primary flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-xs font-medium transition-colors"
-      style={{ width: isParallel ? undefined : 220 }}
-    >
-      {isParallel ? <Split className="size-3.5" /> : <Plus className="size-3.5" />}
-      {isParallel ? c.addParallel : c.addStep}
-    </button>
+    <div style={{ width: 240 }} className="flex justify-center">
+      <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
+      <button
+        type="button"
+        onClick={() => data.onClick?.(data)}
+        aria-label={c.addStep}
+        className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 items-center justify-center rounded-full border-2 transition-colors"
+      >
+        <Plus className="size-4" />
+      </button>
+      <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} />
+    </div>
   )
 }
 
@@ -218,6 +248,10 @@ export function SequenceCanvas({
         proOptions={{ hideAttribution: true }}
         fitView
         fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
+        defaultEdgeOptions={{
+          type: "smoothstep",
+          style: { stroke: "var(--color-border)", strokeWidth: 2 },
+        }}
       >
         <Background gap={24} size={1} />
         <Controls position="bottom-left" showInteractive={false} />
