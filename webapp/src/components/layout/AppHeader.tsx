@@ -1,8 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
-  Moon,
-  Sun,
   LogOut,
   User,
   CreditCard,
@@ -36,7 +34,6 @@ import {
 } from "@/components/ui/dialog"
 import { ReleaseToggle } from "@/components/layout/ReleaseToggle"
 import { NotificationsBell } from "@/components/notifications/NotificationsBell"
-import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/lib/auth"
 import { useCredits } from "@/lib/credits"
 import { useLocale, type Locale } from "@/lib/locale"
@@ -64,7 +61,6 @@ function openHelpCenter() {
 }
 
 export function AppHeader() {
-  const { resolvedTheme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const { balance } = useCredits()
   const { locale, setLocale, t } = useLocale()
@@ -176,19 +172,6 @@ export function AppHeader() {
         </DropdownMenu>
 
         <NotificationsBell />
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          aria-label="Toggle theme"
-        >
-          {resolvedTheme === "dark" ? (
-            <Sun className="size-4" />
-          ) : (
-            <Moon className="size-4" />
-          )}
-        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
