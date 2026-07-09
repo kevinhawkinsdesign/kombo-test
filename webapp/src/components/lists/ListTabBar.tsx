@@ -83,18 +83,20 @@ export function ListTabBar({ currentId }: { currentId: string }) {
           <div
             key={t.id}
             className={cn(
-              "group relative -mb-px flex shrink-0 items-center gap-1.5 rounded-t-lg border px-3 py-2 text-sm transition-colors",
+              "group relative -mb-px flex shrink-0 items-center gap-2 rounded-t-lg border transition-colors",
               active
-                ? "border-border border-b-background bg-background text-foreground font-medium"
-                : "border-transparent text-muted-foreground hover:bg-muted/60"
+                ? "border-border border-b-background bg-background text-foreground px-4 py-2.5 text-base font-semibold"
+                : "border-transparent px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
             )}
           >
             <Link to={`/lists/${t.id}`} className="flex min-w-0 items-center gap-1.5">
               <span
-                className="size-2 shrink-0 rounded-full"
+                className={cn("shrink-0 rounded-full", active ? "size-2.5" : "size-2")}
                 style={{ backgroundColor: t.color }}
               />
-              <span className="max-w-40 truncate">{t.name}</span>
+              <span className={cn("truncate", active ? "max-w-64" : "max-w-40")}>
+                {t.name}
+              </span>
             </Link>
             <button
               type="button"

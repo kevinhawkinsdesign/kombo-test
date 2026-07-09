@@ -21,21 +21,14 @@ import {
   ShieldCheck,
   TriangleAlert,
   UserSearch,
-  ChevronsUpDown,
   ListTodo,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
-import { useLocale, type Locale } from "@/lib/locale"
+import { useLocale } from "@/lib/locale"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
@@ -71,7 +64,6 @@ import { listTabsStore } from "@/lib/list-tabs"
 import { ListTabBar } from "@/components/lists/ListTabBar"
 import { isEnriched } from "@/lib/enrichment"
 import { formatDate } from "@/lib/format"
-import { cn } from "@/lib/utils"
 import type { Account, Prospect, ProspectList } from "@/lib/types"
 
 const COPY = {
@@ -79,11 +71,6 @@ const COPY = {
     listNotFound: "List not found.",
     backToLists: "Back to lists",
     lists: "Lists",
-    switchList: "Switch list",
-    searchLists: "Search lists…",
-    groupProspectLists: "Prospect lists",
-    groupCompanyLists: "Company lists",
-    noListsFound: "No lists match.",
     prospects: "prospects",
     edit: "Edit",
     deleteList: "Delete list",
@@ -178,11 +165,6 @@ const COPY = {
     listNotFound: "Lista no encontrada.",
     backToLists: "Volver a las listas",
     lists: "Listas",
-    switchList: "Cambiar de lista",
-    searchLists: "Buscar listas…",
-    groupProspectLists: "Listas de prospectos",
-    groupCompanyLists: "Listas de empresas",
-    noListsFound: "Ninguna lista coincide.",
     prospects: "prospectos",
     edit: "Editar",
     deleteList: "Eliminar lista",
@@ -406,8 +388,6 @@ export default function ListDetail() {
 
   return (
     <Page>
-      <ListTabBar currentId={list.id} />
-
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/lists">
           <ArrowLeft className="size-4" />
@@ -415,21 +395,14 @@ export default function ListDetail() {
         </Link>
       </Button>
 
+      <ListTabBar currentId={list.id} />
+
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <span
-            className="mt-1 size-3 rounded-full"
-            style={{ backgroundColor: list.color }}
-          />
-          <div>
-            <ListSwitcher current={list} lists={lists} locale={locale} />
-            <p className="text-muted-foreground mt-1 text-sm">
-              {list.description}
-            </p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {memberCount} {isCompany ? c.companies : c.prospects}
-            </p>
-          </div>
+        <div className="space-y-1">
+          <p className="text-muted-foreground text-sm">{list.description}</p>
+          <p className="text-muted-foreground text-xs">
+            {memberCount} {isCompany ? c.companies : c.prospects}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setEditOpen(true)}>
@@ -773,116 +746,6 @@ export default function ListDetail() {
         list={list}
       />
     </Page>
-  )
-}
-
-// Turns the H1 into a switcher so the user can jump to another list without
-// going back to /lists — grouped by kind since prospect and company lists
-// don't share a namespace.
-function ListSwitcher({
-  current,
-  lists,
-  locale,
-}: {
-  current: ProspectList
-  lists: ProspectList[]
-  locale: Locale
-}) {
-  const c = COPY[locale]
-  const navigate = useNavigate()
-  const [open, setOpen] = React.useState(false)
-  const [q, setQ] = React.useState("")
-
-  const query = q.trim().toLowerCase()
-  const filtered = lists.filter((l) => l.name.toLowerCase().includes(query))
-  const peopleLists = filtered.filter((l) => (l.kind ?? "people") !== "company")
-  const companyLists = filtered.filter((l) => l.kind === "company")
-
-  function choose(id: string) {
-    setOpen(false)
-    setQ("")
-    if (id !== current.id) navigate(`/lists/${id}`)
-  }
-
-  function renderRow(l: ProspectList) {
-    return (
-      <button
-        key={l.id}
-        type="button"
-        onClick={() => choose(l.id)}
-        className={cn(
-          "hover:bg-muted/60 flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm",
-          l.id === current.id && "bg-primary/5"
-        )}
-      >
-        <span
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: l.color }}
-        />
-        <span className="min-w-0 flex-1 truncate">{l.name}</span>
-        <span className="bg-muted rounded-full px-1.5 py-0.5 text-[11px] tabular-nums">
-          {(l.kind === "company" ? l.accountIds : l.prospectIds)?.length ?? 0}
-        </span>
-      </button>
-    )
-  }
-
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v)
-        if (!v) setQ("")
-      }}
-    >
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={c.switchList}
-          className="hover:bg-muted/60 group -ml-1 flex items-center gap-1.5 rounded-md px-1 py-0.5"
-        >
-          <h2 className="text-xl font-semibold tracking-tight">{current.name}</h2>
-          <ChevronsUpDown className="text-muted-foreground size-4 shrink-0 opacity-60 group-hover:opacity-100" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-0">
-        <div className="border-b p-2">
-          <div className="relative">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
-            <Input
-              autoFocus
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={c.searchLists}
-              className="h-8 pl-8 text-sm"
-            />
-          </div>
-        </div>
-        <div className="max-h-80 overflow-y-auto p-1">
-          {peopleLists.length > 0 && (
-            <>
-              <p className="text-muted-foreground px-2 pt-1.5 pb-1 text-[11px] font-semibold tracking-wide uppercase">
-                {c.groupProspectLists}
-              </p>
-              {peopleLists.map(renderRow)}
-            </>
-          )}
-          {companyLists.length > 0 && (
-            <>
-              <p className="text-muted-foreground px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wide uppercase">
-                {c.groupCompanyLists}
-              </p>
-              {companyLists.map(renderRow)}
-            </>
-          )}
-          {filtered.length === 0 && (
-            <p className="text-muted-foreground px-2 py-6 text-center text-sm">
-              {c.noListsFound}
-            </p>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
   )
 }
 
