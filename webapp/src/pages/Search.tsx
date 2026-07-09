@@ -142,9 +142,9 @@ const COPY = {
     searchBtn: "Search",
     clearQuery: "Clear search",
     srTitle: "Search",
-    idleTitle: "Write a prompt to search",
+    idleTitle: "Search prospects and companies your way",
     idleDesc:
-      "Describe who you're looking for above, or open filters to build a query by hand — matching prospects and companies runs a live search.",
+      "Describe your ideal prospect or company, or search by name, role, location, industry, and more — then narrow with advanced filters. From your results, enrich contacts, build a list, or launch a campaign.",
     urlsTab: "URLs",
     urlsIdleBtn: "Search by URLs",
     urlsPlaceholder: "acme.com, example.com — paste or type company URLs/domains",
@@ -434,9 +434,9 @@ const COPY = {
     searchBtn: "Buscar",
     clearQuery: "Borrar búsqueda",
     srTitle: "Buscar",
-    idleTitle: "Escribe un prompt para buscar",
+    idleTitle: "Busca prospectos y empresas a tu manera",
     idleDesc:
-      "Describe a quién buscas arriba, o abre los filtros para crear una consulta a mano — buscar prospectos y empresas ejecuta una búsqueda en vivo.",
+      "Describe a tu prospecto o empresa ideal, o busca por nombre, cargo, ubicación, sector y más — luego afina con filtros avanzados. Con los resultados, enriquece contactos, crea una lista o lanza una campaña.",
     urlsTab: "URLs",
     urlsIdleBtn: "Buscar por URLs",
     urlsPlaceholder: "acme.com, ejemplo.com — pega o escribe URLs/dominios de empresas",
