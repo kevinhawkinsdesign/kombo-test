@@ -429,10 +429,10 @@ type FolderLabelKey =
 
 const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "inbox", key: "inbox", icon: InboxIcon },
+  { id: "my_tasks", key: "myTasks", icon: ListTodo },
   { id: "drafts", key: "drafts", icon: Wand2 },
   { id: "unread", key: "unread", icon: MailOpen },
   { id: "needs_reply", key: "needs_reply", icon: Reply },
-  { id: "my_tasks", key: "myTasks", icon: ListTodo },
   { id: "scheduled", key: "scheduled", icon: CalendarClock },
   { id: "sent", key: "sent", icon: Send },
   { id: "archived", key: "archivedFolder", icon: Archive },
@@ -967,32 +967,35 @@ export default function Inbox() {
             const activeFolder = view.kind === "folder" && view.id === f.id
             const count = folderCount(f.id)
             return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setView({ kind: "folder", id: f.id })}
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                  activeFolder
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                )}
-              >
-                <Icon className={cn("size-4 shrink-0", f.id === "drafts" && "text-primary")} />
-                <span className="flex-1 truncate text-left">{c[f.key]}</span>
-                {count > 0 && (
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 text-[11px] tabular-nums",
-                      f.id === "unread"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
+              <React.Fragment key={f.id}>
+                {f.id === "my_tasks" && <div className="bg-border my-1.5 h-px" />}
+                <button
+                  type="button"
+                  onClick={() => setView({ kind: "folder", id: f.id })}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                    activeFolder
+                      ? "bg-muted font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  )}
+                >
+                  <Icon className={cn("size-4 shrink-0", f.id === "drafts" && "text-primary")} />
+                  <span className="flex-1 truncate text-left">{c[f.key]}</span>
+                  {count > 0 && (
+                    <span
+                      className={cn(
+                        "rounded-full px-1.5 text-[11px] tabular-nums",
+                        f.id === "unread"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+                {f.id === "my_tasks" && <div className="bg-border my-1.5 h-px" />}
+              </React.Fragment>
             )
           })}
         </nav>
