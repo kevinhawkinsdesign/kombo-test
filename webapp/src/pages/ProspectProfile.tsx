@@ -509,7 +509,9 @@ export default function ProspectProfile() {
         open={crmOpen}
         onOpenChange={setCrmOpen}
         kind="prospect"
+        recordId={prospect.id}
         recordName={`${prospect.firstName} ${prospect.lastName}`}
+        accountName={prospect.company}
         fields={[
           { label: c.crmFirstName, value: prospect.firstName },
           { label: c.crmLastName, value: prospect.lastName },

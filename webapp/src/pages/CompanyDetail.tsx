@@ -471,7 +471,9 @@ export default function CompanyDetail() {
         open={crmOpen}
         onOpenChange={setCrmOpen}
         kind="company"
+        recordId={account.id}
         recordName={account.name}
+        accountName={account.name}
         fields={[
           { label: c.crmCompany, value: account.name },
           { label: c.crmWebsite, value: account.domain },

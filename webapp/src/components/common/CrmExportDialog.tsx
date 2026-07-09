@@ -1,5 +1,4 @@
 import * as React from "react"
-import { toast } from "sonner"
 import { ArrowRight, Check } from "lucide-react"
 
 import {
@@ -30,9 +29,11 @@ import {
   komboFields,
   targetFields,
   defaultMapping,
+  crmSyncNeedsManualMapping,
   type CrmObject,
   type RecordKind,
 } from "@/lib/crm-mapping"
+import { CrmSyncFlow } from "@/components/crm/CrmSyncFlow"
 import { cn } from "@/lib/utils"
 import type { Account, Prospect } from "@/lib/types"
 
@@ -73,7 +74,6 @@ const COPY = {
     confirm: "Add to CRM",
     person: "person",
     company: "company",
-    pushed: (crm: string) => `Pushed to ${crm}`,
   },
   es: {
     titleDest: "Elige el destino",
@@ -109,7 +109,6 @@ const COPY = {
     confirm: "Añadir al CRM",
     person: "persona",
     company: "empresa",
-    pushed: (crm: string) => `Enviado a ${crm}`,
   },
 } as const
 
@@ -187,48 +186,52 @@ export function CrmExportDialog({
     ) {
       prospectStore.update(record.id, { ownerId: assigneeId })
     }
-    toast.success(c.pushed(crm))
-    onOpenChange(false)
+    setStep(4)
   }
 
   const kindWord = recordKind === "person" ? c.person : c.company
   const titles = [c.titleDest, c.titleMap, c.titleRules, c.titleReview]
   const descs = [c.descDest, c.descMap, c.descRules, c.descReview]
+  const accountName =
+    recordKind === "person" ? (record as Prospect).company : (record as Account).name
+  const needsManualMapping = crmSyncNeedsManualMapping(recordKind, record.id)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{titles[step]}</DialogTitle>
-          <DialogDescription>{descs[step]}</DialogDescription>
+        {step < STEPS && (
+          <DialogHeader>
+            <DialogTitle>{titles[step]}</DialogTitle>
+            <DialogDescription>{descs[step]}</DialogDescription>
 
-          {/* Stepper */}
-          <ol className="mt-3 flex items-center gap-1.5">
-            {titles.map((label, i) => (
-              <li key={label} className="flex flex-1 items-center gap-1.5">
-                <span
-                  className={cn(
-                    "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
-                    i < step && "bg-primary text-primary-foreground",
-                    i === step && "border-primary text-primary border-2",
-                    i > step && "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {i < step ? <Check className="size-3" /> : i + 1}
-                </span>
-                <span
-                  className={cn(
-                    "hidden text-xs font-medium sm:inline",
-                    i === step ? "text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {label}
-                </span>
-                {i < titles.length - 1 && <span className="bg-border h-px flex-1" />}
-              </li>
-            ))}
-          </ol>
-        </DialogHeader>
+            {/* Stepper */}
+            <ol className="mt-3 flex items-center gap-1.5">
+              {titles.map((label, i) => (
+                <li key={label} className="flex flex-1 items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
+                      i < step && "bg-primary text-primary-foreground",
+                      i === step && "border-primary text-primary border-2",
+                      i > step && "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {i < step ? <Check className="size-3" /> : i + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "hidden text-xs font-medium sm:inline",
+                      i === step ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    {label}
+                  </span>
+                  {i < titles.length - 1 && <span className="bg-border h-px flex-1" />}
+                </li>
+              ))}
+            </ol>
+          </DialogHeader>
+        )}
 
         {/* Step 1 — destination */}
         {step === 0 && (
@@ -377,22 +380,35 @@ export function CrmExportDialog({
           </div>
         )}
 
-        <DialogFooter className="sm:justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => (step === 0 ? onOpenChange(false) : setStep((s) => s - 1))}
-          >
-            {step === 0 ? c.cancel : c.back}
-          </Button>
-          {step < STEPS - 1 ? (
-            <Button onClick={() => setStep((s) => s + 1)}>{c.continue}</Button>
-          ) : (
-            <Button variant="volt" onClick={confirm}>
-              <Check className="size-4" />
-              {c.confirm}
+        {/* Step 5 — simulated external sync, then success or manual mapping */}
+        {step === 4 && (
+          <CrmSyncFlow
+            crmName={crm}
+            recordName={recordName}
+            accountName={accountName}
+            willFail={needsManualMapping}
+            onDone={() => onOpenChange(false)}
+          />
+        )}
+
+        {step < STEPS && (
+          <DialogFooter className="sm:justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => (step === 0 ? onOpenChange(false) : setStep((s) => s - 1))}
+            >
+              {step === 0 ? c.cancel : c.back}
             </Button>
-          )}
-        </DialogFooter>
+            {step < STEPS - 1 ? (
+              <Button onClick={() => setStep((s) => s + 1)}>{c.continue}</Button>
+            ) : (
+              <Button variant="volt" onClick={confirm}>
+                <Check className="size-4" />
+                {c.confirm}
+              </Button>
+            )}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )
