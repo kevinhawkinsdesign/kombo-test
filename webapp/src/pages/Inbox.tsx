@@ -1863,29 +1863,6 @@ function Composer({
     toast.success(c.regenerated)
   }
 
-  // Tone rewrite — restyle the draft (stand-in: a fresh AI variant).
-  function refineTone(label: string) {
-    const next = seed + 1
-    setSeed(next)
-    setReply(plainToHtml(draftReply(prospect, conv, next)))
-    setAiUsed(true)
-    toast.success(c.refined(label))
-  }
-  function refineLength(kind: "shorter" | "longer", label: string) {
-    setReply((cur) => {
-      const plain = stripHtml(cur)
-      if (!plain) return cur
-      if (kind === "shorter") {
-        const parts = plain.split(/(?<=[.!?])\s+/)
-        return plainToHtml(
-          parts.slice(0, Math.max(1, Math.ceil(parts.length / 2))).join(" ")
-        )
-      }
-      return `${cur}<br><br>Happy to share more detail or hop on a quick call if it helps.`
-    })
-    toast.success(c.refined(label))
-  }
-
   // Insert a {{variable}} at the editor caret.
   function insertVar(tag: string) {
     taRef.current?.insertText(`{{${tag}}}`)
@@ -2040,53 +2017,6 @@ function Composer({
         </Button>
 
         <div className="bg-border/60 mx-0.5 hidden h-5 w-px sm:block" />
-
-        {/* Tone rewrite */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              disabled={!hasText}
-            >
-              <Sparkles className="size-4" />
-              {c.tone}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {[c.toneFormal, c.toneFriendly, c.toneProfessional, c.toneConcise].map(
-              (label) => (
-                <DropdownMenuItem key={label} onClick={() => refineTone(label)}>
-                  {label}
-                </DropdownMenuItem>
-              )
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Length */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              disabled={!hasText}
-            >
-              <Languages className="size-4 rotate-90" />
-              {c.length}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => refineLength("shorter", c.shorter)}>
-              {c.shorter}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => refineLength("longer", c.longer)}>
-              {c.longer}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         {showTranslate && (
           <Button
