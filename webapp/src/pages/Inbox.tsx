@@ -512,7 +512,6 @@ const TASK_STATE_META: Record<
   done: { en: "Task completed", es: "Tarea completada", icon: CheckCircle2 },
 }
 
-// Mirrors Tasks.tsx's TYPE_ICON so a task reads the same way in both places.
 const TASK_TYPE_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> = {
   call: Phone,
   email: Mail,
