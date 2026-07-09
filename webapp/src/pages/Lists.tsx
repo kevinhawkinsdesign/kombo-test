@@ -89,6 +89,10 @@ const COPY = {
       `"${name}" will be permanently removed. Prospects stay in your workspace.`,
     deleteConfirm: "Delete",
     listDeleted: "List deleted",
+    deleteSelectedTitle: (n: number) => `Delete ${n} ${n === 1 ? "list" : "lists"}?`,
+    deleteSelectedDescription:
+      "These lists will be permanently removed. Prospects and companies stay in your workspace.",
+    listsDeleted: (n: number) => `${n} ${n === 1 ? "list" : "lists"} deleted`,
     imported: (count: number) =>
       `${count} prospects imported into a new list`,
     needEnrich: (count: number) => `${count} to enrich`,
@@ -148,6 +152,10 @@ const COPY = {
       `"${name}" se eliminará de forma permanente. Los prospectos permanecen en tu espacio de trabajo.`,
     deleteConfirm: "Eliminar",
     listDeleted: "Lista eliminada",
+    deleteSelectedTitle: (n: number) => `¿Eliminar ${n} ${n === 1 ? "lista" : "listas"}?`,
+    deleteSelectedDescription:
+      "Estas listas se eliminarán de forma permanente. Los prospectos y empresas permanecen en tu espacio de trabajo.",
+    listsDeleted: (n: number) => `${n} ${n === 1 ? "lista eliminada" : "listas eliminadas"}`,
     imported: (count: number) =>
       `${count} prospectos importados a una nueva lista`,
     needEnrich: (count: number) => `${count} por enriquecer`,
