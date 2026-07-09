@@ -4,7 +4,6 @@ import { toast } from "sonner"
 import {
   Mail,
   Send,
-  ExternalLink,
   ArrowLeft,
   Inbox as InboxIcon,
   MailOpen,
@@ -148,7 +147,6 @@ const COPY = {
     empty: "Nothing here",
     emptyHint: "New conversations will show up here.",
     backToInbox: "Back",
-    viewProfile: "Profile",
     createTask: "Create task",
     bulkSelected: (n: number) => `${n} selected`,
     clearSelection: "Clear",
@@ -263,7 +261,6 @@ const COPY = {
     empty: "Nada por aquí",
     emptyHint: "Las nuevas conversaciones aparecerán aquí.",
     backToInbox: "Volver",
-    viewProfile: "Perfil",
     createTask: "Crear tarea",
     bulkSelected: (n: number) => `${n} seleccionados`,
     clearSelection: "Limpiar",
@@ -1359,8 +1356,9 @@ export default function Inbox() {
       {/* Thread */}
       {effectiveActive && activeProspect ? (
         <div className={cn("min-w-0 flex-1 flex-col", showThreadMobile ? "flex" : "hidden md:flex")}>
-          {/* Header */}
-          <div className="flex min-h-14 flex-wrap items-center gap-2 border-b px-4 py-2">
+          {/* Header — kept to a single row; lower-priority actions collapse
+              into the "..." menu on narrow viewports instead of wrapping. */}
+          <div className="flex min-h-14 items-center gap-2 overflow-hidden border-b px-4 py-2">
             <Button
               variant="ghost"
               size="icon"
@@ -1388,16 +1386,21 @@ export default function Inbox() {
               )}
             </Button>
 
-            <ProspectAvatar prospect={activeProspect} className="size-9" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
-                {activeProspect.firstName} {activeProspect.lastName}
-              </p>
-              <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-                <ChannelIcon channel={effectiveActive.channel} className="size-3" />
-                {activeProspect.title} · {activeProspect.company}
-              </p>
-            </div>
+            <Link
+              to={`/prospects/${activeProspect.id}`}
+              className="flex min-w-0 flex-1 items-center gap-2 hover:opacity-80"
+            >
+              <ProspectAvatar prospect={activeProspect} className="size-9 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
+                  {activeProspect.firstName} {activeProspect.lastName}
+                </p>
+                <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+                  <ChannelIcon channel={effectiveActive.channel} className="size-3" />
+                  {activeProspect.title} · {activeProspect.company}
+                </p>
+              </div>
+            </Link>
 
             {/* Status tag selector */}
             <DropdownMenu>
@@ -1480,18 +1483,11 @@ export default function Inbox() {
             <Button
               variant="outline"
               size="sm"
-              className="hidden sm:inline-flex"
+              className="hidden lg:inline-flex"
               onClick={() => setTaskDialogOpen(true)}
             >
               <ListTodo className="size-4" />
               {c.createTask}
-            </Button>
-
-            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to={`/prospects/${activeProspect.id}`}>
-                <ExternalLink className="size-4" />
-                {c.viewProfile}
-              </Link>
             </Button>
 
             <DropdownMenu>
@@ -1501,6 +1497,13 @@ export default function Inbox() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="lg:hidden"
+                  onClick={() => setTaskDialogOpen(true)}
+                >
+                  <ListTodo className="size-4" />
+                  {c.createTask}
+                </DropdownMenuItem>
                 {effectiveActive.archived ? (
                   <DropdownMenuItem onClick={() => conversationStore.unarchive(effectiveActive.id)}>
                     <ArchiveRestore className="size-4" />
