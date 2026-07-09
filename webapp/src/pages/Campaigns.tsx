@@ -12,6 +12,8 @@ import {
   Sparkles,
   RefreshCw,
   CalendarClock,
+  Columns3,
+  Trash2,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -34,17 +36,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
+import { DataTable } from "@/components/common/DataTable"
+import { ColumnManager } from "@/components/common/ColumnManager"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import {
+  useColumnPrefs,
+  type ColumnDef,
+  type ColGroup,
+} from "@/lib/table-columns"
 import { useCampaigns, useLists, campaignStore } from "@/lib/store"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate, isCampaignScheduled } from "@/lib/format"
@@ -108,6 +110,10 @@ const COPY = {
     deleteDescription: (name: string) =>
       `"${name}" and its sequence will be permanently removed.`,
     delete: "Delete",
+    deleteSelectedTitle: (n: number) => `Archive ${n} ${n === 1 ? "campaign" : "campaigns"}?`,
+    deleteSelectedDescription:
+      "These campaigns and their sequences will be permanently removed.",
+    campaignsDeleted: (n: number) => `${n} ${n === 1 ? "campaign" : "campaigns"} archived`,
     search: "Search campaigns…",
     viewCards: "Cards",
     viewTable: "Table",
@@ -123,6 +129,7 @@ const COPY = {
     colReply: "Reply rate",
     colCreated: "Created",
     more: "Campaign options",
+    columns: "Columns",
   },
   es: {
     statusLabel: {
@@ -173,6 +180,12 @@ const COPY = {
     deleteDescription: (name: string) =>
       `«${name}» y su secuencia se eliminarán de forma permanente.`,
     delete: "Eliminar",
+    deleteSelectedTitle: (n: number) =>
+      `¿Archivar ${n} ${n === 1 ? "campaña" : "campañas"}?`,
+    deleteSelectedDescription:
+      "Estas campañas y sus secuencias se eliminarán de forma permanente.",
+    campaignsDeleted: (n: number) =>
+      `${n} ${n === 1 ? "campaña archivada" : "campañas archivadas"}`,
     search: "Buscar campañas…",
     viewCards: "Tarjetas",
     viewTable: "Tabla",
@@ -188,6 +201,7 @@ const COPY = {
     colReply: "Tasa de respuesta",
     colCreated: "Creada",
     more: "Opciones de campaña",
+    columns: "Columnas",
   },
 } as const
 
@@ -405,100 +419,98 @@ function CampaignCard({
   )
 }
 
-function CampaignTable({
-  rows,
-  c,
-  replyRateOf,
-  onDuplicate,
-  onDelete,
-}: {
-  rows: Campaign[]
-  c: (typeof COPY)[keyof typeof COPY]
-  replyRateOf: (cm: Campaign) => number
-  onDuplicate: (campaign: Campaign) => void
-  onDelete: (campaign: Campaign) => void
-}) {
-  return (
-    <Card className="p-0">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{c.colName}</TableHead>
-            <TableHead>{c.colStatus}</TableHead>
-            <TableHead className="text-right">{c.enrolled}</TableHead>
-            <TableHead className="text-right">{c.opened}</TableHead>
-            <TableHead className="text-right">{c.colReply}</TableHead>
-            <TableHead className="text-right">{c.meetings}</TableHead>
-            <TableHead className="text-right">{c.colCreated}</TableHead>
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((cm) => (
-            <TableRow key={cm.id}>
-              <TableCell>
-                <Link
-                  to={`/campaigns/${cm.id}`}
-                  className="font-medium hover:underline"
-                >
-                  {cm.name}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <Badge variant={STATUS_VARIANT[cm.status]}>
-                  {c.statusLabel[cm.status]}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {cm.enrolled}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {cm.opened}
-              </TableCell>
-              <TableCell className="text-chart-1 text-right font-medium tabular-nums">
-                {replyRateOf(cm)}%
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {cm.meetings}
-              </TableCell>
-              <TableCell className="text-muted-foreground text-right text-xs whitespace-nowrap">
-                {formatDate(cm.createdAt)}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label={c.more}
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link to={`/campaigns/${cm.id}`}>{c.editSequence}</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDuplicate(cm)}>
-                      {c.duplicate}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onDelete(cm)}
-                    >
-                      {c.archive}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
-  )
+function replyRateOf(cm: Campaign): number {
+  return cm.enrolled ? Math.round((cm.replied / cm.enrolled) * 100) : 0
 }
+
+// Table-view columns — the same shared registry shape + ColumnManager +
+// DataTable every prospect/company table uses (page-local defs, like
+// Templates.tsx and CampaignDetail's prospect table).
+const CAMPAIGN_COL_GROUPS: ColGroup[] = [
+  { id: "campaign", label: { en: "Campaign", es: "Campaña" } },
+]
+const CAMPAIGN_COL_DEFAULT_IDS = [
+  "status",
+  "enrolled",
+  "opened",
+  "reply",
+  "meetings",
+  "created",
+]
+
+const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
+  {
+    id: "name",
+    label: { en: COPY.en.colName, es: COPY.es.colName },
+    group: "campaign",
+    pinned: true,
+    minWidth: "200px",
+    render: (cm) => (
+      <Link to={`/campaigns/${cm.id}`} className="font-medium hover:underline">
+        {cm.name}
+      </Link>
+    ),
+  },
+  {
+    id: "status",
+    label: { en: COPY.en.colStatus, es: COPY.es.colStatus },
+    group: "campaign",
+    default: true,
+    render: (cm, locale) => (
+      <Badge variant={STATUS_VARIANT[cm.status]}>
+        {COPY[locale].statusLabel[cm.status]}
+      </Badge>
+    ),
+  },
+  {
+    id: "enrolled",
+    label: { en: COPY.en.enrolled, es: COPY.es.enrolled },
+    group: "campaign",
+    default: true,
+    align: "right",
+    render: (cm) => <span className="tabular-nums">{cm.enrolled}</span>,
+  },
+  {
+    id: "opened",
+    label: { en: COPY.en.opened, es: COPY.es.opened },
+    group: "campaign",
+    default: true,
+    align: "right",
+    render: (cm) => <span className="tabular-nums">{cm.opened}</span>,
+  },
+  {
+    id: "reply",
+    label: { en: COPY.en.colReply, es: COPY.es.colReply },
+    group: "campaign",
+    default: true,
+    align: "right",
+    render: (cm) => (
+      <span className="text-chart-1 font-medium tabular-nums">
+        {replyRateOf(cm)}%
+      </span>
+    ),
+  },
+  {
+    id: "meetings",
+    label: { en: COPY.en.meetings, es: COPY.es.meetings },
+    group: "campaign",
+    default: true,
+    align: "right",
+    render: (cm) => <span className="tabular-nums">{cm.meetings}</span>,
+  },
+  {
+    id: "created",
+    label: { en: COPY.en.colCreated, es: COPY.es.colCreated },
+    group: "campaign",
+    default: true,
+    align: "right",
+    render: (cm) => (
+      <span className="text-muted-foreground text-xs whitespace-nowrap">
+        {formatDate(cm.createdAt)}
+      </span>
+    ),
+  },
+]
 
 export default function Campaigns() {
   const { locale } = useLocale()
@@ -512,9 +524,10 @@ export default function Campaigns() {
   const [view, setView] = React.useState<CollectionView>("table")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
-
-  const replyRateOf = (cm: Campaign) =>
-    cm.enrolled ? Math.round((cm.replied / cm.enrolled) * 100) : 0
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [columnsOpen, setColumnsOpen] = React.useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false)
+  const campaignColPrefs = useColumnPrefs("campaigns", CAMPAIGN_COL_DEFAULT_IDS)
 
   const visible = React.useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -554,6 +567,46 @@ export default function Campaigns() {
       ])
     )
     toast.success(c.exported)
+  }
+
+  // Bulk selection — same DataTable selection pattern used elsewhere.
+  const rowIds = visible.map((cm) => cm.id)
+  const allSelected =
+    rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
+  const someSelected = !allSelected && rowIds.some((id) => selectedIds.has(id))
+  function toggleRow(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAllRows() {
+    setSelectedIds(allSelected ? new Set() : new Set(rowIds))
+  }
+  function exportSelectedCsv() {
+    const selected = visible.filter((cm) => selectedIds.has(cm.id))
+    downloadCsv(
+      "kombo-campaigns.csv",
+      [c.colName, c.colStatus, c.enrolled, c.opened, c.colReply, c.meetings, c.colCreated],
+      selected.map((cm) => [
+        cm.name,
+        c.statusLabel[cm.status],
+        cm.enrolled,
+        cm.opened,
+        `${replyRateOf(cm)}%`,
+        cm.meetings,
+        formatDate(cm.createdAt),
+      ])
+    )
+    toast.success(c.exported)
+  }
+  function deleteSelected() {
+    selectedIds.forEach((id) => campaignStore.remove(id))
+    toast.success(c.campaignsDeleted(selectedIds.size))
+    setSelectedIds(new Set())
+    setBulkDeleteOpen(false)
   }
 
   // Map each campaign to the playlist that feeds it (if any).
@@ -625,7 +678,14 @@ export default function Campaigns() {
         tableLabel={c.viewTable}
         onExport={exportCsv}
         exportLabel={c.exportLabel}
-      />
+      >
+        {view === "table" && (
+          <Button variant="outline" onClick={() => setColumnsOpen(true)}>
+            <Columns3 className="size-4" />
+            <span className="hidden sm:inline">{c.columns}</span>
+          </Button>
+        )}
+      </CollectionToolbar>
 
       {visible.length === 0 ? (
         <Card className="text-muted-foreground p-8 text-center text-sm">
@@ -644,13 +704,61 @@ export default function Campaigns() {
           ))}
         </div>
       ) : (
-        <CampaignTable
-          rows={visible}
-          c={c}
-          replyRateOf={replyRateOf}
-          onDuplicate={handleDuplicate}
-          onDelete={setPendingDelete}
-        />
+        <>
+          <DataTable
+            columns={CAMPAIGN_COLUMNS}
+            visible={campaignColPrefs.visible}
+            rows={visible}
+            rowKey={(cm) => cm.id}
+            locale={locale}
+            selection={{
+              isSelected: (cm) => selectedIds.has(cm.id),
+              toggle: (cm) => toggleRow(cm.id),
+              toggleAll: toggleAllRows,
+              allSelected,
+              someSelected,
+            }}
+            actions={(cm) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.more}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to={`/campaigns/${cm.id}`}>{c.editSequence}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDuplicate(cm)}>
+                    {c.duplicate}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setPendingDelete(cm)}
+                  >
+                    {c.archive}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          />
+          <BulkActionsBar
+            count={selectedIds.size}
+            onClear={() => setSelectedIds(new Set())}
+            onExport={exportSelectedCsv}
+            extra={{
+              label: c.archive,
+              icon: <Trash2 className="size-4" />,
+              destructive: true,
+              onClick: () => setBulkDeleteOpen(true),
+            }}
+          />
+        </>
       )}
 
       <ConfirmDialog
@@ -665,6 +773,25 @@ export default function Campaigns() {
         confirmLabel={c.delete}
         destructive
         onConfirm={handleDelete}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title={c.deleteSelectedTitle(selectedIds.size)}
+        description={c.deleteSelectedDescription}
+        confirmLabel={c.delete}
+        destructive
+        onConfirm={deleteSelected}
+      />
+
+      <ColumnManager
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        columns={CAMPAIGN_COLUMNS}
+        groups={CAMPAIGN_COL_GROUPS}
+        prefs={campaignColPrefs}
+        locale={locale}
       />
     </Page>
   )
