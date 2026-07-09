@@ -24,12 +24,9 @@ import {
   CalendarClock,
   ChevronDown,
   Ban,
-  FileText,
-  ListTodo,
   GitFork,
   Copy,
   Bookmark,
-  Lightbulb,
   UserSearch,
   Building2,
 } from "lucide-react"
@@ -45,6 +42,7 @@ import {
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
+import { Segmented } from "@/components/common/Segmented"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
 import { SAMPLE_DATA } from "@/pages/Templates"
@@ -266,18 +264,18 @@ const COPY = {
     moveStepUp: "Move step up",
     moveStepDown: "Move step down",
     removeStep: "Delete step",
+    closePanel: "Close panel",
     insertStepAria: "Insert step here",
     stepChannelAria: (n: number) => `Step ${n} channel`,
-    wait: "Wait",
-    daysBeforeSending: "days before sending",
+    timeDelay: "Time Delay",
     sendImmediately: "Send immediately",
-    waitDays: (n: number) => `Wait ${n} ${n === 1 ? "day" : "days"}`,
+    delayByDays: "Delay by days",
+    daysBeforeSending: "days before sending",
+    clearDelay: "Reset to send immediately",
     actionNeeded: "Action needed",
     subjectLine: "Subject line",
     messageBody: "Message body",
     manualTaskBadge: "Manual",
-    markManualTask: "Mark as manual task",
-    manualTaskDesc: "Creates a task for the rep instead of sending automatically.",
     manualTaskAssignee: "Assigned to",
     taskTitlePlaceholder: "Task title, e.g. \"Call to follow up\"",
     taskNotesPlaceholder: "Notes for the rep (optional)",
@@ -476,18 +474,18 @@ const COPY = {
     moveStepUp: "Subir paso",
     moveStepDown: "Bajar paso",
     removeStep: "Eliminar paso",
+    closePanel: "Cerrar panel",
     insertStepAria: "Insertar paso aquí",
     stepChannelAria: (n: number) => `Canal del paso ${n}`,
-    wait: "Espera",
-    daysBeforeSending: "días antes de enviar",
+    timeDelay: "Retraso de tiempo",
     sendImmediately: "Enviar inmediatamente",
-    waitDays: (n: number) => `Esperar ${n} ${n === 1 ? "día" : "días"}`,
+    delayByDays: "Retrasar por días",
+    daysBeforeSending: "días antes de enviar",
+    clearDelay: "Restablecer a envío inmediato",
     actionNeeded: "Necesita acción",
     subjectLine: "Asunto",
     messageBody: "Cuerpo del mensaje",
     manualTaskBadge: "Manual",
-    markManualTask: "Marcar como tarea manual",
-    manualTaskDesc: "Crea una tarea para el vendedor en lugar de enviarse automáticamente.",
     manualTaskAssignee: "Asignada a",
     taskTitlePlaceholder: "Título de la tarea, p. ej. «Llamar para dar seguimiento»",
     taskNotesPlaceholder: "Notas para el vendedor (opcional)",
@@ -732,11 +730,19 @@ export default function CampaignDetail() {
 
   const campaignId = campaign.id
   const steps = campaign.steps
-  // Falls back to the last top-level step — so adding a new one selects it
-  // immediately, and removing the selected step lands on a step that still
-  // exists. Searches branch tracks too, since a selected step can live there.
-  const selectedStep =
-    findCampaignStep(steps, selectedStepId ?? "") ?? steps[steps.length - 1]
+  // undefined when the panel is dismissed (or nothing's been picked yet) —
+  // searches branch tracks too, since a selected step can live there.
+  const selectedStep = selectedStepId
+    ? findCampaignStep(steps, selectedStepId)
+    : undefined
+  // The step-type modal's template/prompt/suggested-next shortcuts only
+  // make sense when the ghost that opened it appends to the very end of
+  // the top-level sequence — not a mid-sequence insert, branch-track
+  // append, or parallel fork, all of which need a specific channel.
+  const isTrailingAdd =
+    pendingGhost?.kind === "add" &&
+    (!pendingGhost.afterStepId ||
+      pendingGhost.afterStepId === steps[steps.length - 1]?.id)
   const enrolledIds = campaign.enrolledIds ?? []
 
   function insertStepFromTemplate(template: EmailTemplate) {
@@ -1628,47 +1634,19 @@ export default function CampaignDetail() {
                   <SequenceCanvas
                     steps={steps}
                     mode="interactive"
-                    selectedStepId={selectedStep.id}
+                    selectedStepId={selectedStepId}
                     onSelectStep={setSelectedStepId}
                     onAddRequest={(ghost) => {
                       setPendingGhost(ghost)
                       setStepPickerOpen(true)
                     }}
                   />
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setTemplatePickerOpen(true)}
-                    >
-                      <FileText className="size-4" />
-                      {c.useTemplate}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setPromptPickerOpen(true)}
-                    >
-                      <Sparkles className="size-4" />
-                      {c.usePrompt}
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        campaignStore.addStep(
-                          campaign.id,
-                          suggestNextChannel(steps)
-                        )
-                        setSelectedStepId(undefined)
-                      }}
-                      className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
-                    >
-                      <Lightbulb className="size-4" />
-                      {c.suggestedNext(c.channelLabel[suggestNextChannel(steps)])}
-                    </button>
-                  </div>
                 </div>
 
-                {/* Detail panel — the selected step's full editor. */}
-                {(() => {
+                {/* Detail panel — the selected step's full editor. Dismissible
+                    so the diagram can take the full width; clicking a step
+                    card reopens it via onSelectStep above. */}
+                {selectedStep && (() => {
                   const step = selectedStep
                   // Position within whichever list the step actually lives in
                   // (top-level, or a branch track) — what "move up/down" and
@@ -1710,6 +1688,7 @@ export default function CampaignDetail() {
                             onValueChange={(v) =>
                               campaignStore.updateStep(campaign.id, step.id, {
                                 channel: v as StepChannel,
+                                isManualTask: v === "manual",
                               })
                             }
                           >
@@ -1768,58 +1747,23 @@ export default function CampaignDetail() {
                             >
                               <Trash2 className="size-4" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={c.closePanel}
+                              className="ml-1"
+                              onClick={() => setSelectedStepId(undefined)}
+                            >
+                              <X className="size-4" />
+                            </Button>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-muted-foreground text-sm">
-                            {c.wait}
-                          </span>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={step.delayDays}
-                            onChange={(e) =>
-                              campaignStore.updateStep(campaign.id, step.id, {
-                                delayDays: Math.max(
-                                  0,
-                                  Number(e.target.value) || 0
-                                ),
-                              })
-                            }
-                            className="h-8 w-16 tabular-nums"
-                          />
-                          <span className="text-muted-foreground text-sm">
-                            {c.daysBeforeSending}
-                          </span>
-                        </div>
-
-                        {!isAiCall && (
-                          <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
-                            <ListTodo className="text-muted-foreground size-4 shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <Label
-                                htmlFor={`manual-task-${step.id}`}
-                                className="text-sm font-medium"
-                              >
-                                {c.markManualTask}
-                              </Label>
-                              <p className="text-muted-foreground text-xs">
-                                {c.manualTaskDesc}
-                              </p>
-                            </div>
-                            <Switch
-                              id={`manual-task-${step.id}`}
-                              checked={Boolean(step.isManualTask)}
-                              disabled={step.channel === "manual"}
-                              onCheckedChange={(checked) =>
-                                campaignStore.updateStep(campaign.id, step.id, {
-                                  isManualTask: checked,
-                                })
-                              }
-                            />
-                          </div>
-                        )}
+                        <TimeDelayField
+                          key={step.id}
+                          campaignId={campaign.id}
+                          step={step}
+                        />
 
                         {step.isManualTask && (
                           <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
@@ -2019,20 +1963,6 @@ export default function CampaignDetail() {
                   >
                     <Plus className="size-4" />
                     {c.addStep}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setTemplatePickerOpen(true)}
-                  >
-                    <FileText className="size-4" />
-                    {c.useTemplate}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPromptPickerOpen(true)}
-                  >
-                    <Sparkles className="size-4" />
-                    {c.usePrompt}
                   </Button>
                   <Button
                     variant="outline"
@@ -2349,6 +2279,21 @@ export default function CampaignDetail() {
         onOpenChange={setStepPickerOpen}
         onSelect={handleStepTypeSelect}
         title={pendingGhost?.kind === "addParallel" ? c.addParallelStepTitle : undefined}
+        onUseTemplate={
+          isTrailingAdd ? () => setTemplatePickerOpen(true) : undefined
+        }
+        onUsePrompt={isTrailingAdd ? () => setPromptPickerOpen(true) : undefined}
+        suggestedNext={
+          isTrailingAdd && steps.length > 0
+            ? {
+                channel: suggestNextChannel(steps),
+                onSelect: () => {
+                  campaignStore.addStep(campaign.id, suggestNextChannel(steps))
+                  setSelectedStepId(undefined)
+                },
+              }
+            : undefined
+        }
       />
 
       <TemplatePickerDialog
@@ -2482,6 +2427,81 @@ export default function CampaignDetail() {
 }
 
 /* ------------------------------ sub-components ----------------------------- */
+// A step's send timing: immediate, or delayed by N days. Keeps its own
+// draft text for the day-count input (keyed by step.id at the call site) —
+// a plain controlled number input snaps back to "0" mid-edit and fights
+// the user trying to clear or retype it.
+function TimeDelayField({
+  campaignId,
+  step,
+}: {
+  campaignId: string
+  step: CampaignStep
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const [text, setText] = React.useState(String(step.delayDays || ""))
+
+  function commit(raw: string) {
+    campaignStore.updateStep(campaignId, step.id, {
+      delayDays: Math.max(1, Math.round(Number(raw)) || 1),
+    })
+  }
+
+  return (
+    <div className="space-y-2">
+      <span className="text-muted-foreground text-sm">{c.timeDelay}</span>
+      <Segmented
+        options={[
+          { v: "immediate", label: c.sendImmediately, icon: Zap },
+          { v: "delay", label: c.delayByDays, icon: CalendarClock },
+        ]}
+        value={step.delayDays > 0 ? "delay" : "immediate"}
+        onChange={(v) => {
+          if (v === "immediate") {
+            setText("")
+            campaignStore.updateStep(campaignId, step.id, { delayDays: 0 })
+          } else {
+            const n = step.delayDays > 0 ? step.delayDays : 1
+            setText(String(n))
+            campaignStore.updateStep(campaignId, step.id, { delayDays: n })
+          }
+        }}
+      />
+      {step.delayDays > 0 && (
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            min={1}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value)
+              if (e.target.value !== "") commit(e.target.value)
+            }}
+            onBlur={() => commit(text)}
+            className="h-8 w-16 tabular-nums"
+          />
+          <span className="text-muted-foreground text-sm">
+            {c.daysBeforeSending}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={c.clearDelay}
+            onClick={() => {
+              setText("")
+              campaignStore.updateStep(campaignId, step.id, { delayDays: 0 })
+            }}
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // One row of the guided-setup checklist on the campaign Overview.
 function SetupStep({
   done,

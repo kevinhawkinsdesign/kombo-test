@@ -1,3 +1,5 @@
+import { FileText, Sparkles, Lightbulb } from "lucide-react"
+
 import {
   Dialog,
   DialogContent,
@@ -7,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { useLocale } from "@/lib/locale"
 import { CHANNELS } from "@/lib/step-channels"
 import { cn } from "@/lib/utils"
@@ -32,6 +35,10 @@ const COPY = {
     title: "Add a step",
     description: "Pick what happens next in the sequence.",
     cancel: "Cancel",
+    useTemplate: "Use a template",
+    usePrompt: "Use a prompt",
+    suggestedNext: (channel: string) => `Suggested next: ${channel}`,
+    orPickChannel: "Or pick a channel",
     groups: {
       email: "Email",
       linkedin: "LinkedIn",
@@ -68,6 +75,10 @@ const COPY = {
   es: {
     title: "Añadir un paso",
     description: "Elige qué ocurre después en la secuencia.",
+    useTemplate: "Usar una plantilla",
+    usePrompt: "Usar un prompt",
+    suggestedNext: (channel: string) => `Sugerencia: ${channel}`,
+    orPickChannel: "O elige un canal",
     cancel: "Cancelar",
     groups: {
       email: "Correo",
@@ -110,6 +121,12 @@ interface StepTypePickerDialogProps {
   onSelect: (channel: StepChannel) => void
   title?: string
   description?: string
+  // Quick-start shortcuts — only offered when the ghost that opened this
+  // dialog is an append (not a mid-sequence insert or fork track), since
+  // these always add to the end of the top-level sequence.
+  onUseTemplate?: () => void
+  onUsePrompt?: () => void
+  suggestedNext?: { channel: StepChannel; onSelect: () => void }
 }
 
 export function StepTypePickerDialog({
@@ -118,9 +135,13 @@ export function StepTypePickerDialog({
   onSelect,
   title,
   description,
+  onUseTemplate,
+  onUsePrompt,
+  suggestedNext,
 }: StepTypePickerDialogProps) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const hasQuickActions = onUseTemplate || onUsePrompt || suggestedNext
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,6 +150,59 @@ export function StepTypePickerDialog({
           <DialogTitle>{title ?? c.title}</DialogTitle>
           <DialogDescription>{description ?? c.description}</DialogDescription>
         </DialogHeader>
+
+        {hasQuickActions && (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {onUseTemplate && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onUseTemplate()
+                    onOpenChange(false)
+                  }}
+                >
+                  <FileText className="size-4" />
+                  {c.useTemplate}
+                </Button>
+              )}
+              {onUsePrompt && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onUsePrompt()
+                    onOpenChange(false)
+                  }}
+                >
+                  <Sparkles className="size-4" />
+                  {c.usePrompt}
+                </Button>
+              )}
+              {suggestedNext && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    suggestedNext.onSelect()
+                    onOpenChange(false)
+                  }}
+                  className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
+                >
+                  <Lightbulb className="size-4" />
+                  {c.suggestedNext(c.channels[suggestedNext.channel].label)}
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1" />
+              <span className="text-muted-foreground text-xs uppercase">
+                {c.orPickChannel}
+              </span>
+              <Separator className="flex-1" />
+            </div>
+          </div>
+        )}
 
         <div className="max-h-[60vh] space-y-5 overflow-y-auto pr-1">
           {GROUPS.map((group) => (

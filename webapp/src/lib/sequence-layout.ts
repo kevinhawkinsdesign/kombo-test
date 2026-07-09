@@ -7,7 +7,7 @@ import type { Edge, Node } from "@xyflow/react"
 
 import type { CampaignStep, StepFork } from "@/lib/types"
 
-export const ROW_HEIGHT = 132
+export const ROW_HEIGHT = 108
 export const LANE_WIDTH = 260
 
 export interface StepNodeData extends Record<string, unknown> {
@@ -89,7 +89,9 @@ function layoutTrack(
   if (interactive) {
     const ghostId = `add-track-${trackId}`
     const source = prevId ?? forkStepId
-    nodes.push(addNode(ghostId, depth, lane, { kind: "add", trackId, forkStepId, afterStepId: prevId }))
+    // Sit halfway below the last real step in the track, so the "+" reads
+    // as living on the connector line rather than owning its own row.
+    nodes.push(addNode(ghostId, depth - 0.5, lane, { kind: "add", trackId, forkStepId, afterStepId: prevId }))
     edges.push({ id: `${source}->${ghostId}`, source, target: ghostId })
   }
   return { nodes, edges, endDepth: depth, lastId: prevId }
@@ -183,9 +185,11 @@ export function computeLayout(
 
       // "Add Step" ghost — sits right after this step (and its tracks),
       // doubling as the "insert here" affordance and, for the last step,
-      // the trailing "append" button.
+      // the trailing "append" button. Positioned halfway between this step
+      // and the next so it reads as living on their connector line, not as
+      // owning its own row.
       const ghostId = `add-after-${step.id}`
-      nodes.push(addNode(ghostId, depth, 0, { kind: "add", afterStepId: step.id }))
+      nodes.push(addNode(ghostId, depth - 0.5, 0, { kind: "add", afterStepId: step.id }))
       for (const src of result.rejoinSources) {
         edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
       }
