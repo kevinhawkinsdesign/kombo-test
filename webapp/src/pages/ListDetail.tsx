@@ -419,10 +419,12 @@ export default function ListDetail() {
               {c.buildPlaylist}
             </Button>
           )}
-          <Button variant="volt" onClick={() => setLinkCampaignOpen(true)}>
-            <Link2 className="size-4" />
-            {c.linkToCampaign}
-          </Button>
+          {!isCompany && (
+            <Button variant="volt" onClick={() => setLinkCampaignOpen(true)}>
+              <Link2 className="size-4" />
+              {c.linkToCampaign}
+            </Button>
+          )}
         </div>
       </div>
 

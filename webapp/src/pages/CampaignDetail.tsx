@@ -211,7 +211,7 @@ const COPY = {
     senderSaved: "Sending settings updated",
     alreadyMessagedSkipped: "Already-messaged recipients are skipped",
     edit: "Edit",
-    addProspects: "Add prospects or companies",
+    addProspects: "Add prospects",
     columns: "Columns",
     paused: (name: string) => `${name} paused`,
     activated: (name: string) => `${name} activated`,
@@ -241,7 +241,7 @@ const COPY = {
     noDailyData: "No daily data yet for this campaign.",
     audience: "Linked List",
     audienceDesc:
-      "Link a single prospect or company list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
+      "Link a single prospect list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
     prospectsCount: (count: number) => `${count} prospects`,
     companiesCount: (count: number) => `${count} companies`,
     findContacts: "Find prospects",
@@ -421,7 +421,7 @@ const COPY = {
     senderSaved: "Ajustes de envío actualizados",
     alreadyMessagedSkipped: "Se omiten los destinatarios ya contactados",
     edit: "Editar",
-    addProspects: "Añadir prospectos o empresas",
+    addProspects: "Añadir prospectos",
     columns: "Columnas",
     paused: (name: string) => `${name} en pausa`,
     activated: (name: string) => `${name} activada`,
@@ -451,7 +451,7 @@ const COPY = {
     noDailyData: "Aún no hay datos diarios para esta campaña.",
     audience: "Lista vinculada",
     audienceDesc:
-      "Vincula una única lista de prospectos o empresas para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
+      "Vincula una única lista de prospectos para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
     prospectsCount: (count: number) => `${count} prospectos`,
     companiesCount: (count: number) => `${count} empresas`,
     findContacts: "Buscar prospectos",
@@ -675,6 +675,7 @@ export default function CampaignDetail() {
   const { id } = useParams()
   const campaigns = useCampaigns()
   const lists = useLists()
+  const linkableLists = lists.filter((l) => l.kind !== "company")
   const accounts = useAccounts()
   const campaign = campaigns.find((item) => item.id === id)
 
@@ -1239,12 +1240,12 @@ export default function CampaignDetail() {
                 {c.detach}
               </Button>
             </div>
-          ) : lists.length > 0 ? (
+          ) : linkableLists.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               <SearchCombobox
                 value={attachListId}
                 onChange={setAttachListId}
-                options={lists.map((l) => ({
+                options={linkableLists.map((l) => ({
                   value: l.id,
                   label: l.name,
                   sublabel:
