@@ -14,6 +14,9 @@ import {
   GraduationCap,
   ThumbsUp,
   Target,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -43,6 +46,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { coachRecordings } from "@/lib/mock-data"
@@ -62,6 +75,8 @@ const SENTIMENT = {
   neutral: { icon: Meh, className: "text-chart-4" },
   negative: { icon: Frown, className: "text-destructive" },
 }
+
+const PAGE_SIZE = 10
 
 const COPY = {
   en: {
@@ -125,6 +140,16 @@ const COPY = {
     colDuration: "Duration",
     colSentiment: "Sentiment",
     colScore: "Score",
+    filters: "Filters",
+    filterDialogTitle: "Filter calls",
+    filterDialogDescription: "Narrow the list to calls in a specific date range.",
+    dateFrom: "From",
+    dateTo: "To",
+    clearAll: "Clear all",
+    cancel: "Cancel",
+    apply: "Apply",
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     skill: {
       rapport: "Rapport",
       discovery: "Discovery",
@@ -197,6 +222,16 @@ const COPY = {
     colDuration: "Duración",
     colSentiment: "Sentimiento",
     colScore: "Puntuación",
+    filters: "Filtros",
+    filterDialogTitle: "Filtrar llamadas",
+    filterDialogDescription: "Reduce la lista a llamadas en un rango de fechas específico.",
+    dateFrom: "Desde",
+    dateTo: "Hasta",
+    clearAll: "Limpiar todo",
+    cancel: "Cancelar",
+    apply: "Aplicar",
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     skill: {
       rapport: "Rapport",
       discovery: "Descubrimiento",
@@ -244,20 +279,28 @@ const rankedCalls = [...coachRecordings].sort((a, b) => b.score - a.score)
 export default function Coach() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const [view, setView] = React.useState<CollectionView>("cards")
+  const [view, setView] = React.useState<CollectionView>("table")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
+  const [filterOpen, setFilterOpen] = React.useState(false)
+  const [dateFrom, setDateFrom] = React.useState("")
+  const [dateTo, setDateTo] = React.useState("")
+  const [page, setPage] = React.useState(0)
+  const filtersActive = Boolean(dateFrom || dateTo)
 
   const visible = React.useMemo(() => {
     const q = query.trim().toLowerCase()
-    const filtered = q
-      ? coachRecordings.filter(
-          (r) =>
-            r.title.toLowerCase().includes(q) ||
-            r.prospectName.toLowerCase().includes(q) ||
-            r.company.toLowerCase().includes(q)
-        )
-      : coachRecordings
+    const filtered = coachRecordings.filter((r) => {
+      const matchesQuery =
+        !q ||
+        r.title.toLowerCase().includes(q) ||
+        r.prospectName.toLowerCase().includes(q) ||
+        r.company.toLowerCase().includes(q)
+      const day = r.date.slice(0, 10)
+      const matchesFrom = !dateFrom || day >= dateFrom
+      const matchesTo = !dateTo || day <= dateTo
+      return matchesQuery && matchesFrom && matchesTo
+    })
     const sorted = [...filtered]
     sorted.sort((a, b) => {
       switch (sort) {
@@ -270,7 +313,20 @@ export default function Coach() {
       }
     })
     return sorted
-  }, [query, sort])
+  }, [query, sort, dateFrom, dateTo])
+
+  // Reset to the first page whenever the filtered/sorted result set changes.
+  const resultSig = `${query}|${sort}|${dateFrom}|${dateTo}`
+  const [pageSig, setPageSig] = React.useState(resultSig)
+  if (resultSig !== pageSig) {
+    setPageSig(resultSig)
+    setPage(0)
+  }
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageStart = safePage * PAGE_SIZE
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, visible.length)
+  const paged = visible.slice(pageStart, pageEnd)
 
   function exportCsv() {
     downloadCsv(
@@ -347,20 +403,61 @@ export default function Coach() {
             tableLabel={c.viewTable}
             onExport={exportCsv}
             exportLabel={c.exportLabel}
-          />
+          >
+            <Button
+              variant="outline"
+              className={cn(
+                "shrink-0",
+                filtersActive && "border-primary bg-primary/10 text-primary"
+              )}
+              onClick={() => setFilterOpen(true)}
+            >
+              <SlidersHorizontal className="size-4" />
+              <span className="hidden sm:inline">{c.filters}</span>
+            </Button>
+          </CollectionToolbar>
 
           {visible.length === 0 ? (
             <Card className="text-muted-foreground p-8 text-center text-sm">
               {c.noResults}
             </Card>
-          ) : view === "table" ? (
-            <RecordingTable rows={visible} c={c} />
           ) : (
-            <div className="space-y-4">
-              {visible.map((rec) => (
-                <RecordingCard key={rec.id} rec={rec} />
-              ))}
-            </div>
+            <>
+              {view === "table" ? (
+                <RecordingTable rows={paged} c={c} />
+              ) : (
+                <div className="space-y-4">
+                  {paged.map((rec) => (
+                    <RecordingCard key={rec.id} rec={rec} />
+                  ))}
+                </div>
+              )}
+              <div className="mt-3 flex items-center justify-end gap-1">
+                <span className="text-muted-foreground px-1 text-xs tabular-nums">
+                  {c.pageRange(pageStart + 1, pageEnd, visible.length)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={safePage === 0}
+                  onClick={() => setPage(Math.max(0, safePage - 1))}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={safePage >= pageCount - 1}
+                  onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </>
           )}
         </TabsContent>
 
@@ -372,7 +469,113 @@ export default function Coach() {
           <TeamTab c={c} />
         </TabsContent>
       </Tabs>
+
+      <CoachFilterDialog
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onApply={(next) => {
+          setDateFrom(next.dateFrom)
+          setDateTo(next.dateTo)
+        }}
+      />
     </Page>
+  )
+}
+
+function CoachFilterDialog({
+  open,
+  onOpenChange,
+  dateFrom,
+  dateTo,
+  onApply,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  dateFrom: string
+  dateTo: string
+  onApply: (next: { dateFrom: string; dateTo: string }) => void
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+
+  const [from, setFrom] = React.useState(dateFrom)
+  const [to, setTo] = React.useState(dateTo)
+
+  // Reset on open (house pattern — render-time check, never an effect).
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setFrom(dateFrom)
+      setTo(dateTo)
+    }
+  }
+
+  function handleApply() {
+    onApply({ dateFrom: from, dateTo: to })
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
+              <SlidersHorizontal className="size-4" />
+            </span>
+            {c.filterDialogTitle}
+          </DialogTitle>
+          <DialogDescription>{c.filterDialogDescription}</DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="coach-filter-from">{c.dateFrom}</Label>
+            <Input
+              id="coach-filter-from"
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(e) => setFrom(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="coach-filter-to">{c.dateTo}</Label>
+            <Input
+              id="coach-filter-to"
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(e) => setTo(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="sm:justify-between">
+          <Button
+            variant="ghost"
+            disabled={!from && !to}
+            onClick={() => {
+              setFrom("")
+              setTo("")
+            }}
+          >
+            {c.clearAll}
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              {c.cancel}
+            </Button>
+            <Button variant="volt" onClick={handleApply}>
+              {c.apply}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

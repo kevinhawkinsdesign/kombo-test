@@ -104,6 +104,12 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
       { id: "t5", speaker: "prospect", name: "Wei", time: "11:40", text: "Before we go further — what does your security posture look like? We'd need a review." },
       { id: "t6", speaker: "rep", name: "Maya", time: "11:58", text: "Totally fair. We're SOC 2 Type II — I'll send the report right after this." },
     ],
+    keyFields: {
+      problem: "Manual list-building leads to wildly inconsistent outbound results week to week.",
+      impact: "Booked meetings swing from 4 in a good week to 0 in a bad one, and it's getting worse as the team scales.",
+      context: "Reps build prospect lists by hand today, with no shared enrichment or sequencing tooling.",
+      people: "Wei Zhang (Head of Sales), with procurement and a RevOps lead looped in for the security review.",
+    },
   },
   r_2: {
     longestMonologueMin: 4.3,
@@ -145,6 +151,12 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
       { id: "t2", speaker: "prospect", name: "Marcus", time: "03:20", text: "Got it… this is a lot. How does this compare to what we already pay for?" },
       { id: "t3", speaker: "rep", name: "Jordan", time: "18:10", text: "Great question — pricing depends on seats. Let me send an ROI breakdown." },
     ],
+    keyFields: {
+      problem: "Unclear how the platform's ROI compares to the tool they already pay for.",
+      impact: "Budget approval is stuck until RevOps can show the incremental value over the current stack.",
+      context: "Already running a competing tool; evaluating whether to switch or add on top of it.",
+      people: "Marcus Riley (Head of RevOps), who owns the budget decision.",
+    },
   },
   r_3: {
     longestMonologueMin: 5.8,
@@ -184,6 +196,12 @@ export const recordingDetails: Record<string, RecordingAnalysis> = {
       { id: "t1", speaker: "rep", name: "Ethan", time: "00:08", text: "I'll keep this quick — here's what we do and why it's a fit." },
       { id: "t2", speaker: "prospect", name: "Diego", time: "09:45", text: "Look, we're pretty happy with how things are. I'm not sure what problem this solves for us." },
     ],
+    keyFields: {
+      problem: "No acknowledged problem yet — the prospect is satisfied with the status quo.",
+      impact: "Not yet quantified; budget was never qualified during the call.",
+      context: "Currently has no automated outbound tooling and hasn't felt the pain of that gap.",
+      people: "Diego Fernández (Sales Director), sole voice on the call — no other stakeholders identified.",
+    },
   },
 }
 

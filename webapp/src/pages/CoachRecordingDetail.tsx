@@ -23,9 +23,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   Search,
-  Mail,
-  Zap,
-  Gauge,
   Send,
   Sparkles,
   Loader2,
@@ -52,15 +49,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Segmented } from "@/components/common/Segmented"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { CallScorecard } from "@/components/coach/CoachScorecard"
@@ -91,6 +80,10 @@ const SENTIMENT = {
   negative: { icon: Frown, variant: "destructive" as const },
 }
 
+// No real per-item priority data exists yet — cycles a deterministic
+// high/medium/low so the Next Steps list reads as prioritized.
+const ACTION_ITEM_PRIORITIES = ["high", "medium", "low"] as const
+
 const MOMENT_STYLES: Record<
   KeyMoment["type"],
   { dot: string; badge: string }
@@ -116,8 +109,8 @@ const MOMENT_STYLES: Record<
 const COPY = {
   en: {
     recordingNotFound: "Recording not found.",
-    backToCoach: "Back to Coach",
-    coach: "Coach",
+    backToCoach: "Back to Call Coach",
+    coach: "Call Coach",
     callScore: "Call score",
     reanalyzing: "Re-analyzing recording…",
     reanalyze: "Re-analyze",
@@ -125,11 +118,32 @@ const COPY = {
     addNotesToCrm: "Add notes to CRM",
     pause: "Pause",
     play: "Play",
-    modeEfficiency: "Efficiency",
-    modePerformance: "Performance",
+    tabAnalysis: "Analysis",
+    tabSummary: "Summary",
+    tabTranscript: "Transcript",
+    tabParticipants: "Participants",
+    tabKeyFields: "Key Fields",
+    tabFollowUp: "Follow-Up",
+    host: "Host",
+    joined: "Joined",
+    addToSalesforce: "Add to Salesforce",
+    fieldProblem: "Problem",
+    fieldProblemHint: "The main problem the customer is facing.",
+    fieldImpact: "Impact",
+    fieldImpactHint: "The business or personal cost of the problem.",
+    fieldContext: "Context",
+    fieldContextHint: "How the customer works today.",
+    fieldPeople: "People",
+    fieldPeopleHint: "Stakeholders involved in the decision.",
+    noKeyFields: "No key fields captured for this call.",
+    priorityLabel: (p: string) => `Priority: ${p}`,
+    priority: {
+      high: "High",
+      medium: "Medium",
+      low: "Low",
+    } as Record<"high" | "medium" | "low", string>,
+    wasFollowUpHelpful: "Was the information above helpful?",
     summary: "Summary",
-    keyInsights: "Key insights",
-    prepareFollowUp: "Prepare follow-up email",
     followUpTitle: (name: string) => `Follow up with ${name}`,
     followUpSubjectLabel: "Subject",
     followUpBodyLabel: "Message",
@@ -220,8 +234,8 @@ const COPY = {
   },
   es: {
     recordingNotFound: "Grabación no encontrada.",
-    backToCoach: "Volver al Coach",
-    coach: "Coach",
+    backToCoach: "Volver al Coach de llamadas",
+    coach: "Coach de llamadas",
     callScore: "Puntuación",
     reanalyzing: "Reanalizando la grabación…",
     reanalyze: "Reanalizar",
@@ -229,11 +243,32 @@ const COPY = {
     addNotesToCrm: "Añadir notas al CRM",
     pause: "Pausar",
     play: "Reproducir",
-    modeEfficiency: "Eficiencia",
-    modePerformance: "Rendimiento",
+    tabAnalysis: "Análisis",
+    tabSummary: "Resumen",
+    tabTranscript: "Transcripción",
+    tabParticipants: "Participantes",
+    tabKeyFields: "Campos clave",
+    tabFollowUp: "Seguimiento",
+    host: "Anfitrión",
+    joined: "Unido",
+    addToSalesforce: "Añadir a Salesforce",
+    fieldProblem: "Problema",
+    fieldProblemHint: "El principal problema que enfrenta el cliente.",
+    fieldImpact: "Impacto",
+    fieldImpactHint: "El coste empresarial o personal del problema.",
+    fieldContext: "Contexto",
+    fieldContextHint: "Cómo trabaja el cliente hoy.",
+    fieldPeople: "Personas",
+    fieldPeopleHint: "Personas implicadas en la decisión.",
+    noKeyFields: "No se capturaron campos clave para esta llamada.",
+    priorityLabel: (p: string) => `Prioridad: ${p}`,
+    priority: {
+      high: "Alta",
+      medium: "Media",
+      low: "Baja",
+    } as Record<"high" | "medium" | "low", string>,
+    wasFollowUpHelpful: "¿Te resultó útil la información anterior?",
     summary: "Resumen",
-    keyInsights: "Datos clave",
-    prepareFollowUp: "Preparar correo de seguimiento",
     followUpTitle: (name: string) => `Seguimiento con ${name}`,
     followUpSubjectLabel: "Asunto",
     followUpBodyLabel: "Mensaje",
@@ -374,11 +409,8 @@ export default function CoachRecordingDetail() {
   const rec = coachRecordings.find((r) => r.id === id)
   const analysis = id ? recordingDetails[id] : undefined
 
-  const [mode, setMode] = React.useState<"efficiency" | "performance">(
-    "efficiency"
-  )
+  const [tab, setTab] = React.useState("analysis")
   const [transcriptQuery, setTranscriptQuery] = React.useState("")
-  const [followUpOpen, setFollowUpOpen] = React.useState(false)
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [positionSec, setPositionSec] = React.useState(0)
   const [speed, setSpeed] = React.useState<number>(1)
@@ -408,6 +440,7 @@ export default function CoachRecordingDetail() {
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
   const [rating, setRating] = React.useState(0)
   const [helpful, setHelpful] = React.useState<boolean | null>(null)
+  const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
 
   if (!rec) {
     return (
@@ -444,10 +477,10 @@ export default function CoachRecordingDetail() {
   }
 
   // "See parts of conversations on specific topics" — jump the transcript to a
-  // topic keyword and switch to the Efficiency view where the transcript lives.
+  // topic keyword and switch to the tab where the transcript lives.
   const jumpToTopic = (label: string) => {
     setTranscriptQuery(label)
-    setMode("efficiency")
+    setTab("transcript")
   }
 
   const participantsCard = analysis?.participants &&
@@ -459,7 +492,7 @@ export default function CoachRecordingDetail() {
         <CardContent className="space-y-4">
           {analysis.participants.map((p) => (
             <div key={p.name}>
-              <div className="mb-1 flex items-center justify-between">
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Users className="text-muted-foreground size-4" />
                   <span className="text-sm font-medium">{p.name}</span>
@@ -469,10 +502,30 @@ export default function CoachRecordingDetail() {
                   >
                     {p.role === "rep" ? c.you : c.prospect}
                   </Badge>
+                  {p.role === "rep" && (
+                    <Badge variant="outline" className="font-normal">
+                      {c.host}
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="font-normal">
+                    {c.joined}
+                  </Badge>
                 </div>
-                <span className="text-muted-foreground text-sm tabular-nums">
-                  {p.talkPct}% {c.talkTime}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm tabular-nums">
+                    {p.talkPct}% {c.talkTime}
+                  </span>
+                  {p.role === "prospect" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toast.success(c.notesAdded)}
+                    >
+                      <Building2 className="size-4" />
+                      {c.addToSalesforce}
+                    </Button>
+                  )}
+                </div>
               </div>
               <p className="text-muted-foreground mb-1.5 text-xs">{p.title}</p>
               <div className="bg-muted h-2 overflow-hidden rounded-full">
@@ -570,6 +623,7 @@ export default function CoachRecordingDetail() {
       <CardContent className="space-y-2">
         {analysis.actionItems.map((item, i) => {
           const done = doneItems[i] ?? false
+          const priority = ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
           return (
             <div
               key={item}
@@ -596,6 +650,9 @@ export default function CoachRecordingDetail() {
               >
                 {item}
               </span>
+              <Badge variant="outline" className="shrink-0 font-normal">
+                {c.priorityLabel(c.priority[priority])}
+              </Badge>
             </div>
           )
         })}
@@ -798,418 +855,396 @@ export default function CoachRecordingDetail() {
         </Card>
       )}
 
-      {/* Two intents: Efficiency (work the deal) vs Performance (get better). */}
-      <Segmented
-        className="mb-6 w-fit"
-        options={[
-          { v: "efficiency", label: c.modeEfficiency, icon: Zap },
-          { v: "performance", label: c.modePerformance, icon: Gauge },
-        ]}
-        value={mode}
-        onChange={setMode}
-      />
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="mb-6 flex-wrap">
+          <TabsTrigger value="analysis">{c.tabAnalysis}</TabsTrigger>
+          <TabsTrigger value="summary">{c.tabSummary}</TabsTrigger>
+          <TabsTrigger value="transcript">{c.tabTranscript}</TabsTrigger>
+          <TabsTrigger value="participants">{c.tabParticipants}</TabsTrigger>
+          <TabsTrigger value="keyFields">{c.tabKeyFields}</TabsTrigger>
+          <TabsTrigger value="followUp">{c.tabFollowUp}</TabsTrigger>
+        </TabsList>
 
-      {mode === "efficiency" ? (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            {/* Summary — what happened, at a glance */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-1.5 text-base">
-                  {c.summary}
-                  <InfoHint label={c.summaryHintLabel}>{c.summaryHint}</InfoHint>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm">{scorecard.headline}</p>
-                {rec.highlights.length > 0 && (
-                  <ul className="space-y-1.5">
-                    {rec.highlights.map((h) => (
-                      <li
-                        key={h}
-                        className="text-muted-foreground flex items-start gap-2 text-sm"
-                      >
-                        <CheckCircle2 className="text-chart-1 mt-0.5 size-4 shrink-0" />
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
+        <TabsContent value="analysis">
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <CallScorecard scorecard={scorecard} />
 
-            {/* Transcript with free-text search */}
-            <Card>
-              <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
-                <CardTitle className="text-base">{c.transcript}</CardTitle>
-                <div className="relative w-52 max-w-[55%]">
-                  <Search className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
-                  <Input
-                    value={transcriptQuery}
-                    onChange={(e) => setTranscriptQuery(e.target.value)}
-                    placeholder={c.searchTranscript}
-                    className="h-8 pl-7 text-sm"
-                    aria-label={c.searchTranscript}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                {transcriptTurns.length === 0 ? (
-                  <p className="text-muted-foreground py-6 text-center text-sm">
-                    {c.noTranscript}
-                  </p>
-                ) : filteredTranscript.length === 0 ? (
-                  <EmptyState variant="plain" description={c.noTranscriptMatch} />
-                ) : (
-                  <div className="space-y-3">
-                    {filteredTranscript.map((turn) => (
-                      <div
-                        key={turn.id}
-                        className={cn(
-                          "rounded-md px-3 py-2 text-sm",
-                          turn.speaker === "rep"
-                            ? "bg-muted"
-                            : "border-primary border-l-2 pl-3"
-                        )}
-                      >
-                        <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
-                          <span className="font-medium">{turn.name}</span>
-                          <span className="tabular-nums">{turn.time}</span>
-                        </div>
-                        <p>{turn.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardContent>
-                <Button
-                  variant="volt"
-                  className="w-full"
-                  onClick={() => setFollowUpOpen(true)}
-                >
-                  <Mail className="size-4" />
-                  {c.prepareFollowUp}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {participantsCard}
-
-            {/* Key insights — deal-relevant facts to act on */}
-            {analysis &&
-              (analysis.topics.length > 0 ||
-                analysis.objections.length > 0 ||
-                analysis.personality) && (
+              {/* Notable quotes — verbatim, tagged by section */}
+              {quotes.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">{c.keyInsights}</CardTitle>
+                    <CardTitle className="text-base">{c.notableQuotes}</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {analysis.topics.length > 0 && (
-                      <div className="space-y-2.5">
-                        {analysis.topics.map((topic) => (
-                          <div key={topic.label}>
-                            <div className="mb-1 flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">
-                                {topic.label}
-                              </span>
-                              <span className="font-medium tabular-nums">
-                                {topic.pct}%
-                              </span>
-                            </div>
-                            <div className="bg-muted h-2.5 overflow-hidden rounded-md">
-                              <div
-                                className="bg-primary h-full rounded-md transition-all"
-                                style={{ width: `${topic.pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {analysis.objections.length > 0 && (
-                      <div>
-                        <p className="text-muted-foreground mb-1.5 text-xs font-medium">
-                          {c.objections}
+                  <CardContent className="space-y-3">
+                    {quotes.map((s) => (
+                      <blockquote
+                        key={s.label}
+                        className="border-muted-foreground/30 border-l-2 pl-3"
+                      >
+                        <p className="text-sm italic">“{s.quote}”</p>
+                        <p className="text-muted-foreground mt-1 text-xs">
+                          {s.label}
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                          {analysis.objections.map((objection) => (
-                            <Badge
-                              key={objection}
-                              variant="outline"
-                              className="font-normal"
-                            >
-                              {objection}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {analysis.personality && (
-                      <div>
-                        <p className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-xs font-medium">
-                          <Brain className="size-3.5" />
-                          {c.personalityRead}
-                        </p>
-                        <Badge variant="secondary">
-                          {analysis.personality.disc}
-                        </Badge>
-                        <p className="text-muted-foreground mt-2 text-sm">
-                          {analysis.personality.summary}
-                        </p>
-                      </div>
-                    )}
+                      </blockquote>
+                    ))}
                   </CardContent>
                 </Card>
               )}
 
-            {actionItemsCard}
-          </div>
-        </div>
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <CallScorecard scorecard={scorecard} />
-
-            {/* Notable quotes — verbatim, tagged by section */}
-            {quotes.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">{c.notableQuotes}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {quotes.map((s) => (
-                    <blockquote
-                      key={s.label}
-                      className="border-muted-foreground/30 border-l-2 pl-3"
-                    >
-                      <p className="text-sm italic">“{s.quote}”</p>
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        {s.label}
-                      </p>
-                    </blockquote>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {analysis && analysis.keyMoments.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">{c.keyMoments}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ol className="space-y-3">
-                    {analysis.keyMoments.map((moment, i) => {
-                      const style = MOMENT_STYLES[moment.type]
-                      return (
-                        <li
-                          key={`${moment.time}-${i}`}
-                          className="flex items-start gap-3"
-                        >
-                          <span className="text-muted-foreground mt-0.5 w-12 shrink-0 font-mono text-xs tabular-nums">
-                            {moment.time}
-                          </span>
-                          <span
-                            className={cn(
-                              "mt-1.5 size-2 shrink-0 rounded-full",
-                              style.dot
-                            )}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm">{moment.label}</p>
+              {analysis && analysis.keyMoments.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{c.keyMoments}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ol className="space-y-3">
+                      {analysis.keyMoments.map((moment, i) => {
+                        const style = MOMENT_STYLES[moment.type]
+                        return (
+                          <li
+                            key={`${moment.time}-${i}`}
+                            className="flex items-start gap-3"
+                          >
+                            <span className="text-muted-foreground mt-0.5 w-12 shrink-0 font-mono text-xs tabular-nums">
+                              {moment.time}
+                            </span>
                             <span
                               className={cn(
-                                "mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
-                                style.badge
+                                "mt-1.5 size-2 shrink-0 rounded-full",
+                                style.dot
                               )}
-                            >
-                              {c.moments[moment.type]}
-                            </span>
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ol>
-                </CardContent>
-              </Card>
-            )}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm">{moment.label}</p>
+                              <span
+                                className={cn(
+                                  "mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
+                                  style.badge
+                                )}
+                              >
+                                {c.moments[moment.type]}
+                              </span>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Ask precise questions about this call */}
-            <CallQaPanel recordingId={rec.id} />
-          </div>
+              {/* Ask precise questions about this call */}
+              <CallQaPanel recordingId={rec.id} />
+            </div>
 
-          <div className="space-y-6">
-            {callMetricsCard}
+            <div className="space-y-6">
+              {callMetricsCard}
 
-            {/* Drill into specific topics — jumps the transcript */}
-            {analysis && analysis.topics.length > 0 && (
+              {/* Drill into specific topics — jumps the transcript */}
+              {analysis && analysis.topics.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {c.topicsDiscussed}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2.5">
+                    <p className="text-muted-foreground text-xs">
+                      {c.topicJumpHint}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.topics.map((topic) => (
+                        <button
+                          key={topic.label}
+                          type="button"
+                          onClick={() => jumpToTopic(topic.label)}
+                          className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors"
+                        >
+                          {topic.label}
+                          <span className="text-muted-foreground tabular-nums">
+                            {topic.pct}%
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {analysis && analysis.coachingTips.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <GraduationCap className="text-primary size-4" />
+                      {c.coachingTips}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {analysis.coachingTips.map((tip) => (
+                      <div
+                        key={tip}
+                        className="bg-primary/10 text-primary rounded px-3 py-2 text-sm font-medium"
+                      >
+                        {tip}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">
-                    {c.topicsDiscussed}
-                  </CardTitle>
+                  <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2.5">
-                  <p className="text-muted-foreground text-xs">
-                    {c.topicJumpHint}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {analysis.topics.map((topic) => (
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
                       <button
-                        key={topic.label}
-                        type="button"
-                        onClick={() => jumpToTopic(topic.label)}
-                        className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors"
+                        key={n}
+                        onClick={() => {
+                          setRating(n)
+                          toast.success(c.thanksFeedback)
+                        }}
+                        aria-label={c.rateStar(n)}
                       >
-                        {topic.label}
-                        <span className="text-muted-foreground tabular-nums">
-                          {topic.pct}%
-                        </span>
+                        <Star
+                          className={cn(
+                            "size-6 transition-colors",
+                            n <= rating
+                              ? "fill-chart-4 text-chart-4"
+                              : "text-muted-foreground/40"
+                          )}
+                        />
                       </button>
                     ))}
                   </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-sm">
+                      {c.wasHelpful}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant={helpful === true ? "default" : "outline"}
+                        size="icon"
+                        className="size-8"
+                        aria-label={c.helpful}
+                        onClick={() => {
+                          setHelpful(true)
+                          toast.success(c.gladHelped)
+                        }}
+                      >
+                        <ThumbsUp className="size-4" />
+                      </Button>
+                      <Button
+                        variant={helpful === false ? "default" : "outline"}
+                        size="icon"
+                        className="size-8"
+                        aria-label={c.notHelpful}
+                        onClick={() => {
+                          setHelpful(false)
+                          toast.info(c.willImprove)
+                        }}
+                      >
+                        <ThumbsDown className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            )}
+            </div>
+          </div>
+        </TabsContent>
 
-            {analysis && analysis.coachingTips.length > 0 && (
+        <TabsContent value="summary">
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <GraduationCap className="text-primary size-4" />
-                    {c.coachingTips}
+                  <CardTitle className="flex items-center gap-1.5 text-base">
+                    {c.summary}
+                    <InfoHint label={c.summaryHintLabel}>{c.summaryHint}</InfoHint>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  {analysis.coachingTips.map((tip) => (
-                    <div
-                      key={tip}
-                      className="bg-primary/10 text-primary rounded px-3 py-2 text-sm font-medium"
-                    >
-                      {tip}
-                    </div>
-                  ))}
+                <CardContent className="space-y-3">
+                  <p className="text-sm">{scorecard.headline}</p>
+                  {rec.highlights.length > 0 && (
+                    <ul className="space-y-1.5">
+                      {rec.highlights.map((h) => (
+                        <li
+                          key={h}
+                          className="text-muted-foreground flex items-start gap-2 text-sm"
+                        >
+                          <CheckCircle2 className="text-chart-1 mt-0.5 size-4 shrink-0" />
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </CardContent>
               </Card>
-            )}
+            </div>
+            <div className="space-y-6">{actionItemsCard}</div>
+          </div>
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => {
-                        setRating(n)
-                        toast.success(c.thanksFeedback)
-                      }}
-                      aria-label={c.rateStar(n)}
+        <TabsContent value="transcript">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
+              <CardTitle className="text-base">{c.transcript}</CardTitle>
+              <div className="relative w-52 max-w-[55%]">
+                <Search className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
+                <Input
+                  value={transcriptQuery}
+                  onChange={(e) => setTranscriptQuery(e.target.value)}
+                  placeholder={c.searchTranscript}
+                  className="h-8 pl-7 text-sm"
+                  aria-label={c.searchTranscript}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {transcriptTurns.length === 0 ? (
+                <p className="text-muted-foreground py-6 text-center text-sm">
+                  {c.noTranscript}
+                </p>
+              ) : filteredTranscript.length === 0 ? (
+                <EmptyState variant="plain" description={c.noTranscriptMatch} />
+              ) : (
+                <div className="space-y-3">
+                  {filteredTranscript.map((turn) => (
+                    <div
+                      key={turn.id}
+                      className={cn(
+                        "rounded-md px-3 py-2 text-sm",
+                        turn.speaker === "rep"
+                          ? "bg-muted"
+                          : "border-primary border-l-2 pl-3"
+                      )}
                     >
-                      <Star
-                        className={cn(
-                          "size-6 transition-colors",
-                          n <= rating
-                            ? "fill-chart-4 text-chart-4"
-                            : "text-muted-foreground/40"
-                        )}
-                      />
-                    </button>
+                      <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
+                        <span className="font-medium">{turn.name}</span>
+                        <span className="tabular-nums">{turn.time}</span>
+                      </div>
+                      <p>{turn.text}</p>
+                    </div>
                   ))}
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">
-                    {c.wasHelpful}
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      variant={helpful === true ? "default" : "outline"}
-                      size="icon"
-                      className="size-8"
-                      aria-label={c.helpful}
-                      onClick={() => {
-                        setHelpful(true)
-                        toast.success(c.gladHelped)
-                      }}
-                    >
-                      <ThumbsUp className="size-4" />
-                    </Button>
-                    <Button
-                      variant={helpful === false ? "default" : "outline"}
-                      size="icon"
-                      className="size-8"
-                      aria-label={c.notHelpful}
-                      onClick={() => {
-                        setHelpful(false)
-                        toast.info(c.willImprove)
-                      }}
-                    >
-                      <ThumbsDown className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <FollowUpDialog
-        open={followUpOpen}
-        onOpenChange={setFollowUpOpen}
-        rec={rec}
-        c={c}
-        locale={locale}
-      />
+        <TabsContent value="participants">
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">{participantsCard}</div>
+            <div className="space-y-6">
+              {analysis?.personality && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Brain className="text-muted-foreground size-4" />
+                      {c.personalityRead}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Badge variant="secondary">{analysis.personality.disc}</Badge>
+                    <p className="text-muted-foreground text-sm">
+                      {analysis.personality.summary}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+              {analysis && analysis.objections.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{c.objections}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap gap-2">
+                    {analysis.objections.map((objection) => (
+                      <Badge key={objection} variant="outline" className="font-normal">
+                        {objection}
+                      </Badge>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="keyFields">
+          {analysis?.keyFields ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(
+                [
+                  ["problem", c.fieldProblem, c.fieldProblemHint],
+                  ["impact", c.fieldImpact, c.fieldImpactHint],
+                  ["context", c.fieldContext, c.fieldContextHint],
+                  ["people", c.fieldPeople, c.fieldPeopleHint],
+                ] as const
+              ).map(([key, label, hint]) => (
+                <Card key={key}>
+                  <CardHeader>
+                    <CardTitle className="text-base">{label}</CardTitle>
+                    <p className="text-muted-foreground text-xs">{hint}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">{analysis.keyFields![key]}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="text-muted-foreground p-8 text-center text-sm">
+              {c.noKeyFields}
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="followUp">
+          <FollowUpTab
+            rec={rec}
+            c={c}
+            locale={locale}
+            helpful={followUpHelpful}
+            setHelpful={setFollowUpHelpful}
+          />
+        </TabsContent>
+      </Tabs>
     </Page>
   )
 }
 
-function FollowUpDialog({
-  open,
-  onOpenChange,
+function FollowUpTab({
   rec,
   c,
   locale,
+  helpful,
+  setHelpful,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
   rec: CoachRecording
   c: Copy
   locale: Locale
+  helpful: boolean | null
+  setHelpful: (v: boolean | null) => void
 }) {
   const templates = useFollowUpTemplates()
-  const [subject, setSubject] = React.useState("")
-  const [body, setBody] = React.useState("")
+  // Radix unmounts inactive TabsContent, so this mounts fresh each time the
+  // Follow-Up tab is selected — a plain initializer is enough, no dialog-style
+  // open/close reset needed.
+  const [subject, setSubject] = React.useState(() =>
+    c.followUpDefaultSubject(rec.company)
+  )
+  const [body, setBody] = React.useState(() =>
+    plainToHtml(buildFollowUpDraft(rec, locale))
+  )
   const [generating, setGenerating] = React.useState(false)
   // "" = the AI draft; otherwise the id of the applied follow-up template.
   const [templateId, setTemplateId] = React.useState("")
   const [saveAsOpen, setSaveAsOpen] = React.useState(false)
   const [saveName, setSaveName] = React.useState("")
-  const [wasOpen, setWasOpen] = React.useState(false)
-
-  // Seed a call-aware draft each time the dialog opens (adjust state during
-  // render — reseeds on the open→true transition without an effect).
-  if (open && !wasOpen) {
-    setWasOpen(true)
-    setSubject(c.followUpDefaultSubject(rec.company))
-    setBody(plainToHtml(buildFollowUpDraft(rec, locale)))
-    setTemplateId("")
-    setSaveAsOpen(false)
-    setSaveName("")
-  } else if (!open && wasOpen) {
-    setWasOpen(false)
-  }
 
   const AI_DRAFT = "__ai_draft__"
 
@@ -1270,139 +1305,178 @@ function FollowUpDialog({
   const hasText = stripHtml(body).trim().length > 0
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{c.followUpTitle(rec.prospectName)}</DialogTitle>
-          <DialogDescription>{rec.company}</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label>{c.templateLabel}</Label>
-            <div className="flex items-center gap-1.5">
-              <Select
-                value={templateId || AI_DRAFT}
-                onValueChange={applyTemplateChoice}
-              >
-                <SelectTrigger className="min-w-0 flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={AI_DRAFT}>{c.aiDraftOption}</SelectItem>
-                  {templates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {templateId && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 shrink-0"
-                    onClick={updateTemplate}
-                    aria-label={c.updateTemplate}
-                    title={c.updateTemplate}
-                  >
-                    <Save className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive size-8 shrink-0"
-                    onClick={deleteTemplate}
-                    aria-label={c.deleteTemplate}
-                    title={c.deleteTemplate}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0"
-                onClick={() => setSaveAsOpen((v) => !v)}
-              >
-                <Plus className="size-4" />
-                {c.saveAsTemplate}
-              </Button>
-            </div>
-            {saveAsOpen && (
+    <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {c.followUpTitle(rec.prospectName)}
+            </CardTitle>
+            <p className="text-muted-foreground text-sm">{rec.company}</p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>{c.templateLabel}</Label>
               <div className="flex items-center gap-1.5">
-                <Input
-                  autoFocus
-                  value={saveName}
-                  onChange={(e) => setSaveName(e.target.value)}
-                  placeholder={c.templateNamePlaceholder}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      saveAsTemplate()
-                    }
-                  }}
-                  className="h-8 flex-1"
-                />
-                <Button
-                  variant="volt"
-                  size="sm"
-                  onClick={saveAsTemplate}
-                  disabled={saveName.trim().length === 0}
+                <Select
+                  value={templateId || AI_DRAFT}
+                  onValueChange={applyTemplateChoice}
                 >
-                  {c.saveTemplateBtn}
+                  <SelectTrigger className="min-w-0 flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={AI_DRAFT}>{c.aiDraftOption}</SelectItem>
+                    {templates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {templateId && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 shrink-0"
+                      onClick={updateTemplate}
+                      aria-label={c.updateTemplate}
+                      title={c.updateTemplate}
+                    >
+                      <Save className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                      onClick={deleteTemplate}
+                      aria-label={c.deleteTemplate}
+                      title={c.deleteTemplate}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => setSaveAsOpen((v) => !v)}
+                >
+                  <Plus className="size-4" />
+                  {c.saveAsTemplate}
                 </Button>
               </div>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label>{c.followUpSubjectLabel}</Label>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label>{c.followUpBodyLabel}</Label>
+              {saveAsOpen && (
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    autoFocus
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    placeholder={c.templateNamePlaceholder}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        saveAsTemplate()
+                      }
+                    }}
+                    className="h-8 flex-1"
+                  />
+                  <Button
+                    variant="volt"
+                    size="sm"
+                    onClick={saveAsTemplate}
+                    disabled={saveName.trim().length === 0}
+                  >
+                    {c.saveTemplateBtn}
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label>{c.followUpSubjectLabel}</Label>
+              <Input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label>{c.followUpBodyLabel}</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={generate}
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-4" />
+                  )}
+                  {c.aiDraft}
+                </Button>
+              </div>
+              <RichTextEditor
+                value={body}
+                onChange={setBody}
+                minHeight="min-h-44"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <Button
+              variant="volt"
+              className="w-full"
+              disabled={!hasText}
+              onClick={() => toast.success(c.followUpSent)}
+            >
+              <Send className="size-4" />
+              {c.sendFollowUp}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{c.wasFollowUpHelpful}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-1">
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={generate}
-                disabled={generating}
+                variant={helpful === true ? "default" : "outline"}
+                size="icon"
+                className="size-8"
+                aria-label={c.helpful}
+                onClick={() => {
+                  setHelpful(true)
+                  toast.success(c.gladHelped)
+                }}
               >
-                {generating ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Sparkles className="size-4" />
-                )}
-                {c.aiDraft}
+                <ThumbsUp className="size-4" />
+              </Button>
+              <Button
+                variant={helpful === false ? "default" : "outline"}
+                size="icon"
+                className="size-8"
+                aria-label={c.notHelpful}
+                onClick={() => {
+                  setHelpful(false)
+                  toast.info(c.willImprove)
+                }}
+              >
+                <ThumbsDown className="size-4" />
               </Button>
             </div>
-            <RichTextEditor
-              value={body}
-              onChange={setBody}
-              minHeight="min-h-44"
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="volt"
-            disabled={!hasText}
-            onClick={() => {
-              onOpenChange(false)
-              toast.success(c.followUpSent)
-            }}
-          >
-            <Send className="size-4" />
-            {c.sendFollowUp}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }
