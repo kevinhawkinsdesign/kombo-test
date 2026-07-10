@@ -55,21 +55,25 @@ export function SelectionControls({
 
   return (
     <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2 px-1 text-xs">
-      <button
-        type="button"
-        onClick={onTogglePage}
-        className="text-primary font-medium hover:underline"
-      >
-        {allSelected ? c.deselectPage : c.selectPage}
-      </button>
-      {selectedCount < selectableCount && (
-        <button
-          type="button"
-          onClick={onSelectAllCapped}
-          className="text-primary font-medium hover:underline"
-        >
-          {c.selectAllCapped(selectableCount)}
-        </button>
+      {selectableCount > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={onTogglePage}
+            className="text-primary font-medium hover:underline"
+          >
+            {allSelected ? c.deselectPage : c.selectPage}
+          </button>
+          {selectedCount < selectableCount && (
+            <button
+              type="button"
+              onClick={onSelectAllCapped}
+              className="text-primary font-medium hover:underline"
+            >
+              {c.selectAllCapped(selectableCount)}
+            </button>
+          )}
+        </>
       )}
       <div className="ml-auto flex items-center gap-1">
         <span className="text-muted-foreground px-1 tabular-nums">
