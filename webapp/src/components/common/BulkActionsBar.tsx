@@ -4,7 +4,6 @@ import {
   Layers,
   FolderPlus,
   FolderInput,
-  Send,
   ScanSearch,
   UserSearch,
   Plug,
@@ -22,7 +21,6 @@ const COPY = {
     enrich: "Enrich",
     addToList: "Add to list",
     moveToList: "Move to list",
-    addToCampaign: "Add to campaign",
     addToCrm: "Add to CRM",
     lookalikes: "Find lookalikes",
     findContacts: "Find prospects",
@@ -36,7 +34,6 @@ const COPY = {
     enrich: "Enriquecer",
     addToList: "Añadir a lista",
     moveToList: "Mover a lista",
-    addToCampaign: "Añadir a campaña",
     addToCrm: "Añadir al CRM",
     lookalikes: "Buscar similares",
     findContacts: "Buscar prospectos",
@@ -71,7 +68,6 @@ export function BulkActionsBar({
   onEnrich,
   onAddToList,
   onMoveToList,
-  onAddToCampaign,
   onAddToCrm,
   onLookalikes,
   onFindContacts,
@@ -89,7 +85,6 @@ export function BulkActionsBar({
   onAddToList?: () => void
   // Moves the selection into another list, removing it from the current one.
   onMoveToList?: () => void
-  onAddToCampaign?: () => void
   onAddToCrm?: () => void
   onLookalikes?: () => void
   // Companies only: find people at the selected accounts.
@@ -142,12 +137,6 @@ export function BulkActionsBar({
         <Button variant="outline" size="sm" onClick={onMoveToList}>
           <FolderInput className="size-4" />
           {c.moveToList}
-        </Button>
-      )}
-      {onAddToCampaign && (
-        <Button variant="outline" size="sm" onClick={onAddToCampaign}>
-          <Send className="size-4" />
-          {c.addToCampaign}
         </Button>
       )}
       {onAddToCrm && (
