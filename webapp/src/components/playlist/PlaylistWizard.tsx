@@ -55,13 +55,13 @@ const STEPS = ["Prospects", "Enrich", "Outreach", "Review"] as const
 // the per-file COPY convention).
 const ASSIGN_COPY = {
   en: {
-    assignTo: "Assign to",
+    assignTo: "Owner",
     assignToHint:
       "Prospects entering this playlist are assigned to this teammate.",
     unassigned: "Unassigned",
   },
   es: {
-    assignTo: "Asignar a",
+    assignTo: "Responsable",
     assignToHint:
       "Los prospectos que entren en esta playlist se asignan a este compañero.",
     unassigned: "Sin asignar",

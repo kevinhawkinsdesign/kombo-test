@@ -24,13 +24,13 @@ import { cn } from "@/lib/utils"
 // the per-file COPY convention).
 const ASSIGN_COPY = {
   en: {
-    assignTo: "Assign to",
+    assignTo: "Owner",
     assignToHint:
       "New prospects entering this list are assigned to this teammate.",
     unassigned: "Unassigned",
   },
   es: {
-    assignTo: "Asignar a",
+    assignTo: "Responsable",
     assignToHint:
       "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
     unassigned: "Sin asignar",
