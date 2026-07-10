@@ -1,5 +1,5 @@
 import * as React from "react"
-import { FileText, Sparkles, Lightbulb, ListChecks, GitFork } from "lucide-react"
+import { FileText, Sparkles, ListChecks, GitFork } from "lucide-react"
 
 import {
   Dialog,
@@ -26,7 +26,7 @@ type GroupKey = "email" | "linkedin" | "messaging" | "aiPowered" | "other"
 
 const GROUPS: { key: GroupKey; channels: StepChannel[] }[] = [
   { key: "email", channels: ["email"] },
-  { key: "linkedin", channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"] },
+  { key: "linkedin", channels: ["linkedin_message"] },
   { key: "messaging", channels: ["whatsapp", "call"] },
   { key: "aiPowered", channels: ["ai_call"] },
   { key: "other", channels: ["manual"] },
@@ -48,7 +48,6 @@ const COPY = {
     tabConditions: "Conditions",
     useTemplate: "Use a template",
     usePrompt: "Use a prompt",
-    suggestedNext: (channel: string) => `Suggested next: ${channel}`,
     orPickChannel: "Or pick a channel",
     groups: {
       email: "Email",
@@ -104,7 +103,6 @@ const COPY = {
     tabConditions: "Condiciones",
     useTemplate: "Usar una plantilla",
     usePrompt: "Usar un prompt",
-    suggestedNext: (channel: string) => `Sugerencia: ${channel}`,
     orPickChannel: "O elige un canal",
     cancel: "Cancelar",
     groups: {
@@ -172,7 +170,6 @@ interface StepTypePickerDialogProps {
   // these always add to the end of the top-level sequence.
   onUseTemplate?: () => void
   onUsePrompt?: () => void
-  suggestedNext?: { channel: StepChannel; onSelect: () => void }
 }
 
 export function StepTypePickerDialog({
@@ -184,11 +181,10 @@ export function StepTypePickerDialog({
   onSelectCondition,
   onUseTemplate,
   onUsePrompt,
-  suggestedNext,
 }: StepTypePickerDialogProps) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const hasQuickActions = onUseTemplate || onUsePrompt || suggestedNext
+  const hasQuickActions = onUseTemplate || onUsePrompt
 
   const [tab, setTab] = React.useState<"steps" | "conditions">("steps")
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -206,14 +202,16 @@ export function StepTypePickerDialog({
         </DialogHeader>
 
         {onSelectCondition && (
-          <Segmented
-            options={[
-              { v: "steps", label: c.tabSteps, icon: ListChecks },
-              { v: "conditions", label: c.tabConditions, icon: GitFork },
-            ]}
-            value={tab}
-            onChange={setTab}
-          />
+          <div className="flex justify-center">
+            <Segmented
+              options={[
+                { v: "steps", label: c.tabSteps, icon: ListChecks },
+                { v: "conditions", label: c.tabConditions, icon: GitFork },
+              ]}
+              value={tab}
+              onChange={setTab}
+            />
+          </div>
         )}
 
         {tab === "conditions" && onSelectCondition ? (
@@ -273,19 +271,6 @@ export function StepTypePickerDialog({
                       <Sparkles className="size-4" />
                       {c.usePrompt}
                     </Button>
-                  )}
-                  {suggestedNext && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        suggestedNext.onSelect()
-                        onOpenChange(false)
-                      }}
-                      className="border-primary/40 text-primary hover:bg-primary/5 flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors"
-                    >
-                      <Lightbulb className="size-4" />
-                      {c.suggestedNext(c.channels[suggestedNext.channel].label)}
-                    </button>
                   )}
                 </div>
                 <div className="flex items-center gap-3">

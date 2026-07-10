@@ -111,12 +111,13 @@ const groups: NavGroup[] = [
   },
   {
     key: "outreach",
-    labelKey: "nav.outreach",
+    labelKey: "nav.engage",
     icon: Megaphone,
     items: [
       { to: "/campaigns", labelKey: "nav.campaigns", icon: Send },
       { to: "/sequences", labelKey: "nav.sequences", icon: Workflow, isNew: true },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
+      { to: "/coach", labelKey: "nav.coach", icon: GraduationCap },
     ],
   },
   {
@@ -126,7 +127,6 @@ const groups: NavGroup[] = [
     items: [
       { to: "/deals", labelKey: "nav.deals", icon: Briefcase, isNew: true },
       { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3, isNew: true },
-      { to: "/coach", labelKey: "nav.coach", icon: GraduationCap },
     ],
   },
 ]

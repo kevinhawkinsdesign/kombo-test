@@ -2695,17 +2695,6 @@ export default function CampaignDetail() {
           isTrailingAdd ? () => setTemplatePickerOpen(true) : undefined
         }
         onUsePrompt={isTrailingAdd ? () => setPromptPickerOpen(true) : undefined}
-        suggestedNext={
-          isTrailingAdd && draft.steps.length > 0
-            ? {
-                channel: suggestNextChannel(draft.steps),
-                onSelect: () => {
-                  draft.addStep(suggestNextChannel(draft.steps))
-                  setSelectedStepId(undefined)
-                },
-              }
-            : undefined
-        }
       />
 
       <TemplatePickerDialog
@@ -2987,7 +2976,7 @@ const CHANNEL_GROUPS: {
   { labelKey: "groupMessaging", channels: ["whatsapp", "call"] },
   {
     labelKey: "groupLinkedin",
-    channels: ["linkedin_message", "linkedin_dm", "linkedin_inmail"],
+    channels: ["linkedin_message"],
   },
   // Agentic, AI-driven steps — a distinct mechanism from a human `call`,
   // so it gets its own group rather than joining groupMessaging.
@@ -2996,20 +2985,6 @@ const CHANNEL_GROUPS: {
   // free-form title + notes.
   { labelKey: "groupOther", channels: ["manual"] },
 ]
-
-// What a rep would most naturally reach for next, given the last step —
-// the sequence builder surfaces it as a one-click suggestion.
-function suggestNextChannel(steps: CampaignStep[]): StepChannel {
-  const flat = flattenCampaignSteps(steps)
-  const last = flat[flat.length - 1]
-  if (!last) return "email"
-  const ch = normalizeChannel(last.channel)
-  if (ch === "email") return "linkedin_message"
-  if (ch === "linkedin_message" || ch === "linkedin_dm" || ch === "linkedin_inmail")
-    return "call"
-  if (ch === "call") return "whatsapp"
-  return "email"
-}
 
 function EditCampaignDialog({
   open,

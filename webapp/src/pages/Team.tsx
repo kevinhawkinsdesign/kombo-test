@@ -1,7 +1,21 @@
-import { Plus, Eye, MoreHorizontal, Users } from "lucide-react"
+import * as React from "react"
+import {
+  Plus,
+  Eye,
+  MoreHorizontal,
+  Users,
+  Search,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import { toast } from "sonner"
 
 import { useLocale } from "@/lib/locale"
+import { cn } from "@/lib/utils"
+import { Input } from "@/components/ui/input"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
@@ -65,7 +79,11 @@ const COPY = {
     pipeline: "Pipeline",
     meetings: "Meetings",
     actions: "Actions",
-    viewAs: "View as",
+    viewAs: (name: string) => `View as ${name}`,
+    searchPlaceholder: "Search reps by name, email, or role…",
+    noResults: "No reps match your search.",
+    pageRange: (start: number, end: number, total: number) =>
+      `${start}–${end} of ${total}`,
     viewingAs: (name: string) => `Viewing as ${name}`,
     moreActions: (name: string) => `More actions for ${name}`,
     message: "Message",
@@ -102,7 +120,11 @@ const COPY = {
     pipeline: "Pipeline",
     meetings: "Reuniones",
     actions: "Acciones",
-    viewAs: "Ver como",
+    viewAs: (name: string) => `Ver como ${name}`,
+    searchPlaceholder: "Busca representantes por nombre, correo o rol…",
+    noResults: "Ningún representante coincide con tu búsqueda.",
+    pageRange: (start: number, end: number, total: number) =>
+      `${start}–${end} de ${total}`,
     viewingAs: (name: string) => `Viendo como ${name}`,
     moreActions: (name: string) => `Más acciones para ${name}`,
     message: "Mensaje",
@@ -115,11 +137,94 @@ const COPY = {
   },
 } as const
 
+type SortKey = "name" | "quota" | "attainment" | "pipeline" | "meetings"
+type SortState = { key: SortKey; dir: "asc" | "desc" }
+const PAGE_SIZE = 10
+
+function SortHeader({
+  sortKey,
+  sort,
+  onToggle,
+  children,
+}: {
+  sortKey: SortKey
+  sort: SortState
+  onToggle: (key: SortKey) => void
+  children: React.ReactNode
+}) {
+  const active = sort.key === sortKey
+  const Icon = active ? (sort.dir === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(sortKey)}
+      className="hover:text-foreground -m-2 flex items-center gap-1 p-2 text-inherit"
+    >
+      {children}
+      <Icon className={cn("size-3", active ? "text-foreground" : "text-muted-foreground/50")} />
+    </button>
+  )
+}
+
 export default function Team() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const { impersonate } = useView()
-  const reps = leaderboard()
+  const [query, setQuery] = React.useState("")
+  const [sort, setSort] = React.useState<SortState>({
+    key: "attainment",
+    dir: "desc",
+  })
+  const [page, setPage] = React.useState(0)
+
+  const attainmentOf = (m: TeamMember) => m.metrics.won / m.quota
+
+  const filtered = React.useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const base = q
+      ? leaderboard().filter(
+          (m) =>
+            m.name.toLowerCase().includes(q) ||
+            m.email.toLowerCase().includes(q) ||
+            m.role.toLowerCase().includes(q)
+        )
+      : leaderboard()
+    const sorted = [...base].sort((a, b) => {
+      const dir = sort.dir === "asc" ? 1 : -1
+      switch (sort.key) {
+        case "name":
+          return a.name.localeCompare(b.name) * dir
+        case "quota":
+          return (a.quota - b.quota) * dir
+        case "attainment":
+          return (attainmentOf(a) - attainmentOf(b)) * dir
+        case "pipeline":
+          return (a.metrics.pipeline - b.metrics.pipeline) * dir
+        case "meetings":
+          return (a.metrics.meetings - b.metrics.meetings) * dir
+      }
+    })
+    return sorted
+  }, [query, sort])
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageStart = safePage * PAGE_SIZE
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, filtered.length)
+  const reps = filtered.slice(pageStart, pageEnd)
+
+  const querySig = query
+  const [querySigSeen, setQuerySigSeen] = React.useState(querySig)
+  if (querySig !== querySigSeen) {
+    setQuerySigSeen(querySig)
+    setPage(0)
+  }
+
+  function toggleSort(key: SortKey) {
+    setSort((s) =>
+      s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "desc" }
+    )
+  }
 
   const totalQuota = team.reduce((a, m) => a + m.quota, 0)
   const openPipeline = team.reduce((a, m) => a + m.metrics.pipeline, 0)
@@ -182,22 +287,51 @@ export default function Team() {
             <CardTitle>{c.reps}</CardTitle>
             <CardDescription>{c.repsDescription}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            <div className="relative max-w-sm">
+              <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={c.searchPlaceholder}
+                className="pl-8"
+              />
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{c.rep}</TableHead>
+                  <TableHead>
+                    <SortHeader sortKey="name" sort={sort} onToggle={toggleSort}>{c.rep}</SortHeader>
+                  </TableHead>
                   <TableHead className="hidden md:table-cell">
                     {c.email}
                   </TableHead>
-                  <TableHead className="text-right">{c.quota}</TableHead>
-                  <TableHead className="text-right">{c.attainment}</TableHead>
-                  <TableHead className="text-right">{c.pipeline}</TableHead>
-                  <TableHead className="text-right">{c.meetings}</TableHead>
+                  <TableHead className="text-right">
+                    <SortHeader sortKey="quota" sort={sort} onToggle={toggleSort}>{c.quota}</SortHeader>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <SortHeader sortKey="attainment" sort={sort} onToggle={toggleSort}>{c.attainment}</SortHeader>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <SortHeader sortKey="pipeline" sort={sort} onToggle={toggleSort}>{c.pipeline}</SortHeader>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <SortHeader sortKey="meetings" sort={sort} onToggle={toggleSort}>{c.meetings}</SortHeader>
+                  </TableHead>
                   <TableHead className="w-px text-right">{c.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {reps.length === 0 && (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell
+                      colSpan={7}
+                      className="text-muted-foreground py-10 text-center text-sm"
+                    >
+                      {c.noResults}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {reps.map((rep) => {
                   const attainment = Math.round(
                     (rep.metrics.won / rep.quota) * 100
@@ -250,11 +384,11 @@ export default function Team() {
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon"
+                            aria-label={c.viewAs(rep.name)}
                             onClick={() => handleImpersonate(rep)}
                           >
                             <Eye className="size-4" />
-                            {c.viewAs}
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -299,6 +433,34 @@ export default function Team() {
                 })}
               </TableBody>
             </Table>
+
+            {filtered.length > 0 && (
+              <div className="flex items-center justify-end gap-1">
+                <span className="text-muted-foreground px-1 text-xs tabular-nums">
+                  {c.pageRange(pageStart + 1, pageEnd, filtered.length)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={safePage === 0}
+                  onClick={() => setPage(Math.max(0, safePage - 1))}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-7"
+                  disabled={safePage >= pageCount - 1}
+                  onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
