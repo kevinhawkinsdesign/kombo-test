@@ -78,6 +78,7 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   RichTextEditor,
   type RichTextEditorHandle,
@@ -147,6 +148,8 @@ import {
   locateCampaignStep,
   flattenCampaignSteps,
   AI_VOICES,
+  AI_CALL_AGENTS,
+  AI_CALL_RETRY_DELAYS_MINUTES,
 } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
@@ -332,6 +335,11 @@ const COPY = {
     taskNotesPlaceholder: "Notes for the rep (optional)",
     manualTaskFooter: "This step creates a task for the assigned rep — it doesn't send automatically.",
     aiVoiceLabel: "Voice",
+    aiCallAgentLabel: "Agent / goal",
+    aiCallRetryLabel: "Retry unanswered calls",
+    aiCallRetryCadenceLabel: (delays: string) => `Delays: ${delays}`,
+    aiCallRetryFootnote: "Only for not-answered outcomes. Answered/voicemail keep normal behavior.",
+    aiCallCadence: { rapid: "Rapid", relaxed: "Relaxed" },
     aiScriptPlaceholder: "Script / instructions for the AI agent",
     aiCallPoweredBy: "Powered by ElevenLabs",
     aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
@@ -568,6 +576,11 @@ const COPY = {
     taskNotesPlaceholder: "Notas para el vendedor (opcional)",
     manualTaskFooter: "Este paso crea una tarea para el vendedor asignado — no se envía automáticamente.",
     aiVoiceLabel: "Voz",
+    aiCallAgentLabel: "Agente / objetivo",
+    aiCallRetryLabel: "Reintentar llamadas sin respuesta",
+    aiCallRetryCadenceLabel: (delays: string) => `Demoras: ${delays}`,
+    aiCallRetryFootnote: "Solo para resultados sin respuesta. Contestadas/buzón de voz mantienen el comportamiento normal.",
+    aiCallCadence: { rapid: "Rápido", relaxed: "Relajado" },
     aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
     aiCallPoweredBy: "Con tecnología de ElevenLabs",
     aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
@@ -2164,6 +2177,28 @@ export default function CampaignDetail() {
                                 </SelectContent>
                               </Select>
                             </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">{c.aiCallAgentLabel}</Label>
+                              <Select
+                                value={step.aiCallAgentId ?? AI_CALL_AGENTS[0].id}
+                                onValueChange={(aiCallAgentId) =>
+                                  draft.updateStep(step.id, {
+                                    aiCallAgentId,
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {AI_CALL_AGENTS.map((agent) => (
+                                    <SelectItem key={agent.id} value={agent.id}>
+                                      {agent.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                             <div className="flex justify-end">{variablesMenu}</div>
                             <Textarea
                               ref={aiScriptRef}
@@ -2176,6 +2211,65 @@ export default function CampaignDetail() {
                               }
                               className="min-h-20"
                             />
+                            <Separator />
+                            <label className="flex items-center gap-2 text-sm">
+                              <Checkbox
+                                checked={step.aiCallRetryEnabled ?? false}
+                                onCheckedChange={(checked) =>
+                                  draft.updateStep(step.id, {
+                                    aiCallRetryEnabled: checked === true,
+                                    aiCallRetryCadence:
+                                      checked === true
+                                        ? (step.aiCallRetryCadence ?? "rapid")
+                                        : step.aiCallRetryCadence,
+                                  })
+                                }
+                              />
+                              {c.aiCallRetryLabel}
+                            </label>
+                            {step.aiCallRetryEnabled && (
+                              <div className="space-y-1.5">
+                                <div className="flex gap-2">
+                                  {(["rapid", "relaxed"] as const).map((cadence) => (
+                                    <Button
+                                      key={cadence}
+                                      type="button"
+                                      size="sm"
+                                      variant={
+                                        (step.aiCallRetryCadence ?? "rapid") === cadence
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      onClick={() =>
+                                        draft.updateStep(step.id, {
+                                          aiCallRetryCadence: cadence,
+                                        })
+                                      }
+                                    >
+                                      {c.aiCallCadence[cadence]}
+                                    </Button>
+                                  ))}
+                                </div>
+                                <p className="text-muted-foreground text-xs">
+                                  {c.aiCallRetryCadenceLabel(
+                                    AI_CALL_RETRY_DELAYS_MINUTES[
+                                      step.aiCallRetryCadence ?? "rapid"
+                                    ]
+                                      .map((m) =>
+                                        m < 60
+                                          ? `${m}m`
+                                          : m < 1440
+                                            ? `${Math.round(m / 60)}h`
+                                            : `${Math.round(m / 1440)}d`
+                                      )
+                                      .join(", ")
+                                  )}
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  {c.aiCallRetryFootnote}
+                                </p>
+                              </div>
+                            )}
                             <p className="text-muted-foreground flex items-center gap-1 text-xs">
                               <Sparkles className="size-3" />
                               {c.aiCallPoweredBy}

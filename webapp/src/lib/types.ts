@@ -287,6 +287,15 @@ export interface CampaignStep {
   // The ElevenLabs voice used for an `ai_call` step; `body` doubles as the
   // call script/instructions given to the agent.
   aiVoice?: string
+  // Which mocked ElevenLabs agent/goal handles this call. Undefined reads
+  // as the first entry in AI_CALL_AGENTS.
+  aiCallAgentId?: string
+  // When true, an unanswered call (no answer/voicemail is unaffected) is
+  // retried on the aiCallRetryCadence schedule below.
+  aiCallRetryEnabled?: boolean
+  // Which fixed retry-delay preset to use; undefined reads as "rapid" once
+  // retry is enabled (matches the extension's default-on-enable behavior).
+  aiCallRetryCadence?: "rapid" | "relaxed"
   // The rep the manual task is assigned to. Undefined reads as the campaign
   // owner / current user.
   assigneeId?: string
