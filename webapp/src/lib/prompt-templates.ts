@@ -9,7 +9,7 @@ import * as React from "react"
 import { generateTemplate, type GeneratedTemplate } from "@/lib/mock-template-ai"
 import { getPrimaryIcp } from "@/lib/mock-icps"
 import { currentUser } from "@/lib/mock-data"
-import type { Channel } from "@/lib/types"
+import type { Channel, CampaignStep, StepChannel } from "@/lib/types"
 
 export interface PromptTemplate {
   id: string
@@ -230,4 +230,55 @@ export function generatePromptedMessage(
     return { ...base, body }
   }
   return { ...base, body: `${base.body}\n\n${line}` }
+}
+
+/* -------------------- campaign-level sequence generation ------------------ */
+
+// A handful of plausible touch patterns for a freshly generated sequence —
+// mirrors the channel/delay shapes of the seeded sequence templates
+// (lib/sequence-templates.ts) so a generated sequence doesn't look out of
+// place next to a hand-built one. Picked by seed, not by the prompt text
+// itself — this is a mock generator, not a real planner.
+const SEQUENCE_SKELETONS: { channel: Channel; delayDays: number }[][] = [
+  [
+    { channel: "email", delayDays: 0 },
+    { channel: "linkedin", delayDays: 3 },
+    { channel: "email", delayDays: 4 },
+  ],
+  [
+    { channel: "email", delayDays: 0 },
+    { channel: "email", delayDays: 3 },
+    { channel: "linkedin", delayDays: 2 },
+    { channel: "email", delayDays: 5 },
+  ],
+  [
+    { channel: "linkedin", delayDays: 0 },
+    { channel: "email", delayDays: 2 },
+    { channel: "whatsapp", delayDays: 3 },
+  ],
+]
+
+function stepChannelFor(channel: Channel): StepChannel {
+  return channel === "linkedin" ? "linkedin_message" : channel
+}
+
+let genCounter = 0
+
+// The campaign-level counterpart to generatePromptedMessage: turns a free-
+// text goal ("book demos with VPs of Sales at mid-market SaaS companies…")
+// into a full multi-step sequence. Each step's copy still comes from
+// generatePromptedMessage, so the same seller-context weaving applies.
+export function generateSequenceFromPrompt(prompt: string, seed = 0): CampaignStep[] {
+  const skeleton = SEQUENCE_SKELETONS[seed % SEQUENCE_SKELETONS.length]
+  return skeleton.map((step, i) => {
+    const generated = generatePromptedMessage(prompt, step.channel, seed + i)
+    genCounter += 1
+    return {
+      id: `s_gen${genCounter}_${Date.now().toString(36)}`,
+      channel: stepChannelFor(step.channel),
+      delayDays: step.delayDays,
+      subject: step.channel === "email" ? generated.subject : undefined,
+      body: generated.body,
+    }
+  })
 }

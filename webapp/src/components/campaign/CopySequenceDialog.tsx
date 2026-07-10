@@ -99,8 +99,8 @@ export function CopySequenceDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
   currentCampaignId: string
-  /** Receives the source steps verbatim — the caller clones ids before inserting. */
-  onCopy: (steps: CampaignStep[]) => void
+  /** Receives the source steps verbatim (caller clones ids before inserting) and the source's display name. */
+  onCopy: (steps: CampaignStep[], sourceName: string) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -139,7 +139,7 @@ export function CopySequenceDialog({
 
   function handleCopy() {
     if (!selected) return
-    onCopy(selected.steps)
+    onCopy(selected.steps, selected.name)
     onOpenChange(false)
   }
 
