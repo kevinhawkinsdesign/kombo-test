@@ -18,6 +18,10 @@ import type { CampaignStep, StepFork, StepTrackKind } from "@/lib/types"
 // either one.
 export const ROW_HEIGHT = 200
 export const LANE_WIDTH = 260
+// How far past the trailing "+" ghost the next real card starts, in the
+// same row-unit scale as ROW_HEIGHT — was effectively 1.5 rows (huge dead
+// space below the ghost); this is ~80% smaller.
+const GHOST_TRAILING_GAP = 0.2
 
 export interface StepNodeData extends Record<string, unknown> {
   kind: "step"
@@ -190,14 +194,16 @@ export function computeLayout(
       // before the next real row regardless.
       const ghostId = `add-after-${step.id}`
       const ghostOffset = step.parallelSteps?.length ? 0.1 : 0.5
-      nodes.push(
-        addNode(ghostId, depth - ghostOffset, 0, { kind: "add", afterStepId: step.id })
-      )
+      const ghostDepth = depth - ghostOffset
+      nodes.push(addNode(ghostId, ghostDepth, 0, { kind: "add", afterStepId: step.id }))
       for (const src of result.rejoinSources) {
         edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
       }
       pendingSources = [ghostId]
-      depth += 1
+      // Old behavior reserved a full extra row (depth += 1) past the ghost
+      // before the next real card, leaving a lot of dead space on the
+      // connector line. GHOST_TRAILING_GAP is ~80% smaller than that.
+      depth = ghostDepth + GHOST_TRAILING_GAP
     } else {
       pendingSources = result.rejoinSources
     }
