@@ -8,7 +8,6 @@ import {
   Send,
   Mail,
   Briefcase,
-  BarChart3,
   GraduationCap,
   Users,
   Plug,
@@ -126,7 +125,6 @@ const groups: NavGroup[] = [
     icon: TrendingUp,
     items: [
       { to: "/deals", labelKey: "nav.deals", icon: Briefcase, isNew: true },
-      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3, isNew: true },
     ],
   },
 ]
@@ -435,7 +433,7 @@ function SidebarContent({
 
   // v1 only ships surfaces that exist in the Chrome extension. Gate by route
   // (V2_ONLY_PATHS), not the `isNew` badge — so a page can ship in v1 and still
-  // be badged "New" (e.g. Analytics).
+  // be badged "New" (e.g. Deals).
   const inV1 = (to: string) => !isV2OnlyPath(to)
   // v2 has no separate Home — Overview (the dashboard) is the landing page.
   const visiblePrimary = isV1
