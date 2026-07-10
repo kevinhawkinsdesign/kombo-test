@@ -82,6 +82,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ChannelIcon } from "@/components/common/ChannelIcon"
+import { TruncatedText } from "@/components/common/TruncatedText"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
@@ -1583,13 +1584,17 @@ export default function Inbox() {
             >
               <ProspectAvatar prospect={activeProspect} className="size-9 shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">
-                  {activeProspect.firstName} {activeProspect.lastName}
-                </p>
-                <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-                  <ChannelIcon channel={effectiveActive.channel} className="size-3" />
-                  {activeProspect.title} · {activeProspect.company}
-                </p>
+                <TruncatedText label={`${activeProspect.firstName} ${activeProspect.lastName}`}>
+                  <p className="truncate text-sm font-semibold">
+                    {activeProspect.firstName} {activeProspect.lastName}
+                  </p>
+                </TruncatedText>
+                <TruncatedText label={`${activeProspect.title} · ${activeProspect.company}`}>
+                  <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+                    <ChannelIcon channel={effectiveActive.channel} className="size-3" />
+                    {activeProspect.title} · {activeProspect.company}
+                  </p>
+                </TruncatedText>
               </div>
             </Link>
 

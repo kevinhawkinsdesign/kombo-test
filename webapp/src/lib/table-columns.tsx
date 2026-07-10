@@ -10,6 +10,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 
+import { TruncatedText } from "@/components/common/TruncatedText"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
@@ -206,13 +207,17 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
           {a.name.charAt(0)}
         </span>
         <div className="min-w-0">
-          <Link
-            to={`/companies/${a.id}`}
-            className="truncate font-medium hover:underline"
-          >
-            {a.name}
-          </Link>
-          <p className="text-muted-foreground truncate text-xs">{a.domain}</p>
+          <TruncatedText label={a.name}>
+            <Link
+              to={`/companies/${a.id}`}
+              className="truncate font-medium hover:underline"
+            >
+              {a.name}
+            </Link>
+          </TruncatedText>
+          <TruncatedText label={a.domain}>
+            <p className="text-muted-foreground truncate text-xs">{a.domain}</p>
+          </TruncatedText>
         </div>
       </div>
     ),
@@ -510,13 +515,17 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
       <div className="flex items-center gap-3">
         <ProspectAvatar prospect={p} />
         <div className="min-w-0">
-          <Link
-            to={`/prospects/${p.id}`}
-            className="truncate font-medium hover:underline"
-          >
-            {p.firstName} {p.lastName}
-          </Link>
-          <p className="text-muted-foreground truncate text-xs">{p.title}</p>
+          <TruncatedText label={`${p.firstName} ${p.lastName}`}>
+            <Link
+              to={`/prospects/${p.id}`}
+              className="truncate font-medium hover:underline"
+            >
+              {p.firstName} {p.lastName}
+            </Link>
+          </TruncatedText>
+          <TruncatedText label={p.title}>
+            <p className="text-muted-foreground truncate text-xs">{p.title}</p>
+          </TruncatedText>
         </div>
       </div>
     ),
@@ -539,8 +548,12 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   // Company
   { id: "company", label: L("Company", "Empresa"), group: "company", default: true, render: (p) => (
     <div className="min-w-0">
-      <p className="truncate font-medium">{p.company}</p>
-      <p className="text-muted-foreground truncate text-xs">{p.location}</p>
+      <TruncatedText label={p.company}>
+        <p className="truncate font-medium">{p.company}</p>
+      </TruncatedText>
+      <TruncatedText label={p.location}>
+        <p className="text-muted-foreground truncate text-xs">{p.location}</p>
+      </TruncatedText>
     </div>
   ) },
   { id: "companyDomain", label: L("Company domain", "Dominio"), group: "company", render: (p) => mut(p.companyDomain) },

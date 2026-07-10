@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DataTable } from "@/components/common/DataTable"
+import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import {
   useColumnPrefs,
@@ -244,6 +245,8 @@ export default function Lists() {
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const listColPrefs = useColumnPrefs("lists", LIST_COL_DEFAULT_IDS)
   const navigate = useNavigate()
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false)
 
   function openCreate() {
     setEditingList(undefined)
@@ -283,19 +286,54 @@ export default function Lists() {
     return sorted
   }, [lists, query, sort])
 
+  function listsToRows(rows: ProspectList[]) {
+    return rows.map((l) => [
+      l.name,
+      l.kind === "company" ? c.companyList : c.peopleList,
+      l.source,
+      memberCountOfList(l),
+      formatDate(l.createdAt),
+    ])
+  }
+
   function exportCsv() {
     downloadCsv(
       "kombo-lists.csv",
       [c.colName, c.colType, c.colSource, c.colMembers, c.colCreated],
-      sortedLists.map((l) => [
-        l.name,
-        l.kind === "company" ? c.companyList : c.peopleList,
-        l.source,
-        memberCountOfList(l),
-        formatDate(l.createdAt),
-      ])
+      listsToRows(sortedLists)
     )
     toast.success(c.exported)
+  }
+
+  // Bulk selection — same DataTable selection pattern used elsewhere (Templates.tsx).
+  const rowIds = sortedLists.map((l) => l.id)
+  const allSelected =
+    rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
+  const someSelected = !allSelected && rowIds.some((id) => selectedIds.has(id))
+  function toggleRow(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAllRows() {
+    setSelectedIds(allSelected ? new Set() : new Set(rowIds))
+  }
+  function exportSelectedCsv() {
+    downloadCsv(
+      "kombo-lists.csv",
+      [c.colName, c.colType, c.colSource, c.colMembers, c.colCreated],
+      listsToRows(sortedLists.filter((l) => selectedIds.has(l.id)))
+    )
+    toast.success(c.exported)
+  }
+  function deleteSelected() {
+    selectedIds.forEach((id) => listStore.remove(id))
+    toast.success(c.listsDeleted(selectedIds.size))
+    setSelectedIds(new Set())
+    setBulkDeleteOpen(false)
   }
 
   return (
@@ -364,6 +402,7 @@ export default function Lists() {
           {c.noResults}
         </Card>
       ) : view === "table" ? (
+        <>
         <DataTable
           columns={LIST_COLUMNS}
           visible={listColPrefs.visible}
@@ -371,6 +410,13 @@ export default function Lists() {
           rowKey={(l) => l.id}
           locale={locale}
           onRowClick={(l) => navigate(`/lists/${l.id}`)}
+          selection={{
+            isSelected: (l) => selectedIds.has(l.id),
+            toggle: (l) => toggleRow(l.id),
+            toggleAll: toggleAllRows,
+            allSelected,
+            someSelected,
+          }}
           actions={(list) => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -399,6 +445,18 @@ export default function Lists() {
             </DropdownMenu>
           )}
         />
+        <BulkActionsBar
+          count={selectedIds.size}
+          onClear={() => setSelectedIds(new Set())}
+          onExport={exportSelectedCsv}
+          extra={{
+            label: c.delete,
+            icon: <Trash2 className="size-4" />,
+            destructive: true,
+            onClick: () => setBulkDeleteOpen(true),
+          }}
+        />
+        </>
       ) : (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {sortedLists.map((list) => {
@@ -593,6 +651,16 @@ export default function Lists() {
           toast.success(c.listDeleted)
           setDeletingList(undefined)
         }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title={c.deleteSelectedTitle(selectedIds.size)}
+        description={c.deleteSelectedDescription}
+        confirmLabel={c.deleteConfirm}
+        destructive
+        onConfirm={deleteSelected}
       />
 
       <ImportCsvDialog
