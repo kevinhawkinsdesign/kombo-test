@@ -51,6 +51,7 @@ import { BackLink } from "@/components/common/BackLink"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
+import { VoiceMessageRecorder } from "@/components/campaign/VoiceMessageRecorder"
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
 import { useSequenceDraft } from "@/lib/sequence-draft"
 import { registerUnsavedChangesBlocker } from "@/lib/unsaved-changes"
@@ -162,9 +163,17 @@ import type {
   EmailTemplate,
   CampaignStep,
   LinkedInAction,
+  WhatsAppAction,
 } from "@/lib/types"
 
-const LINKEDIN_ACTIONS: LinkedInAction[] = ["message", "connect", "like_post", "view_profile"]
+const LINKEDIN_ACTIONS: LinkedInAction[] = [
+  "message",
+  "connect",
+  "like_post",
+  "view_profile",
+  "voice_message",
+]
+const WHATSAPP_ACTIONS: WhatsAppAction[] = ["message", "voice_message"]
 const LINKEDIN_ACTION_ICON: Record<LinkedInAction, typeof MessageSquare> = {
   message: MessageSquare,
   connect: UserPlus,
@@ -1847,10 +1856,17 @@ export default function CampaignDetail() {
                   const isLinkedIn = ["linkedin_message", "linkedin_dm", "linkedin_inmail"].includes(
                     normalizeChannel(step.channel)
                   )
+                  const isWhatsApp = normalizeChannel(step.channel) === "whatsapp"
                   const linkedinAction = step.linkedinAction ?? "message"
+                  const whatsappAction = step.whatsappAction ?? "message"
+                  const isVoiceMessage =
+                    (isLinkedIn && linkedinAction === "voice_message") ||
+                    (isWhatsApp && whatsappAction === "voice_message")
                   // Connect/Like Post/View Profile carry no message content —
                   // only "message" (the default) shows the subject/body editor.
-                  const isLinkedInActionOnly = isLinkedIn && linkedinAction !== "message"
+                  // Voice Message gets its own recorder UI, handled separately.
+                  const isLinkedInActionOnly =
+                    isLinkedIn && linkedinAction !== "message" && linkedinAction !== "voice_message"
                   // Shared between the AI-call script's plain textarea (as a
                   // standalone control) and the RichTextEditor's toolbarEnd —
                   // same menu, same handler, different mount point.
@@ -1962,6 +1978,37 @@ export default function CampaignDetail() {
                               </SelectContent>
                             </Select>
                           )}
+                          {isWhatsApp && (
+                            <Select
+                              value={step.whatsappAction ?? "message"}
+                              onValueChange={(v) =>
+                                draft.updateStep(step.id, {
+                                  whatsappAction: v as WhatsAppAction,
+                                })
+                              }
+                            >
+                              <SelectTrigger
+                                size="sm"
+                                className="w-[150px]"
+                                aria-label={c.linkedinActionAria(i + 1)}
+                              >
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {WHATSAPP_ACTIONS.map((action) => {
+                                  const ActionIcon = LINKEDIN_ACTION_ICON[action]
+                                  return (
+                                    <SelectItem key={action} value={action}>
+                                      <span className="flex items-center gap-2">
+                                        <ActionIcon className="size-3.5" />
+                                        {c.linkedinActionLabel[action]}
+                                      </span>
+                                    </SelectItem>
+                                  )
+                                })}
+                              </SelectContent>
+                            </Select>
+                          )}
                           <div className="ml-auto flex items-center gap-1">
                             <Button
                               variant="ghost"
@@ -2050,7 +2097,24 @@ export default function CampaignDetail() {
                           </div>
                         )}
 
-                        {isLinkedInActionOnly ? (
+                        {isVoiceMessage ? (
+                          <VoiceMessageRecorder
+                            recordingUrl={step.voiceRecordingUrl}
+                            durationSec={step.voiceDurationSec}
+                            onRecorded={(url, durationSec) =>
+                              draft.updateStep(step.id, {
+                                voiceRecordingUrl: url,
+                                voiceDurationSec: durationSec,
+                              })
+                            }
+                            onDelete={() =>
+                              draft.updateStep(step.id, {
+                                voiceRecordingUrl: undefined,
+                                voiceDurationSec: undefined,
+                              })
+                            }
+                          />
+                        ) : isLinkedInActionOnly ? (
                           <p className="text-muted-foreground text-sm">
                             {c.linkedinActionDescription[linkedinAction]}
                           </p>

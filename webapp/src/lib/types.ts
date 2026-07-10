@@ -259,6 +259,10 @@ export type StepChannel =
 // instead of typed body text.
 export type LinkedInAction = "message" | "connect" | "like_post" | "view_profile" | "voice_message"
 
+// WhatsApp only ever has these two — no Connect/Like Post/View Profile
+// equivalent exists on that channel.
+export type WhatsAppAction = "message" | "voice_message"
+
 export interface CampaignStep {
   id: string
   channel: StepChannel
@@ -268,6 +272,13 @@ export interface CampaignStep {
   // Only meaningful when channel is linkedin_message/linkedin_dm/
   // linkedin_inmail; undefined reads as "message" (the existing behavior).
   linkedinAction?: LinkedInAction
+  // Only meaningful when channel is whatsapp; undefined reads as "message".
+  whatsappAction?: WhatsAppAction
+  // A real recorded voice note for a linkedinAction/whatsappAction of
+  // "voice_message" — an object URL (URL.createObjectURL), so it only lives
+  // for the current browser session (no backend to persist the blob to).
+  voiceRecordingUrl?: string
+  voiceDurationSec?: number
   // When true, this step creates a task for the assigned rep to complete by
   // hand (a manual LinkedIn touch, a handwritten note, etc.) instead of
   // auto-sending. `subject` becomes the task title and `body` becomes
