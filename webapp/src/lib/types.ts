@@ -252,12 +252,22 @@ export type StepChannel =
   | "linkedin_inmail"
   | "manual" // channel-less offline activity (a visit, a handwritten note, etc.)
 
+// The specific LinkedIn action a linkedin_* step performs — separate from
+// StepChannel so it doesn't collide with the existing message/DM/InMail
+// channel split. "connect"/"like_post"/"view_profile" carry no message
+// content (subject/body stay unused); "voice_message" is a recorded note
+// instead of typed body text.
+export type LinkedInAction = "message" | "connect" | "like_post" | "view_profile" | "voice_message"
+
 export interface CampaignStep {
   id: string
   channel: StepChannel
   delayDays: number
   subject?: string
   body: string
+  // Only meaningful when channel is linkedin_message/linkedin_dm/
+  // linkedin_inmail; undefined reads as "message" (the existing behavior).
+  linkedinAction?: LinkedInAction
   // When true, this step creates a task for the assigned rep to complete by
   // hand (a manual LinkedIn touch, a handwritten note, etc.) instead of
   // auto-sending. `subject` becomes the task title and `body` becomes

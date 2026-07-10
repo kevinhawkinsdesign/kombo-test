@@ -188,15 +188,25 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   // ghosts — shares the same lane x position (its wrapper's left edge), so
   // the spine only stays a straight vertical line if every node's handle
   // sits at the same fixed offset from that shared edge: 120, half of a
-  // plain 240px card. A parallel group's dashed wrapper starts flush at
-  // that same edge too, so it needs the identical 120 — centering on the
-  // group's own (wider, button-inclusive) rendered width instead is what
-  // previously dragged the handle right and drew the connector on a
-  // diagonal.
+  // plain 240px card.
   const handleLeft = 120
+  // A parallel group's card cluster is visually centered on that same 120
+  // spine (not left-anchored at the lane edge like a plain card) — a
+  // translateX shift, computed from the cluster's actual width, pulls the
+  // dashed box left by however much it's wider than a single 240px card.
+  // translateX is a paint-only transform, so it can't perturb the layout
+  // math the shared handleLeft invariant above depends on.
+  const CARD_WIDTH = 240
+  const CARD_GAP = 8 // gap-2
+  const GROUP_PAD = 12 // p-3
+  const GROUP_BORDER = 2 // border-2
+  const clusterCount = 1 + parallelSteps.length
+  const clusterWidth = clusterCount * CARD_WIDTH + (clusterCount - 1) * CARD_GAP
+  const groupWidth = clusterWidth + 2 * (GROUP_PAD + GROUP_BORDER)
+  const groupShift = groupWidth / 2 - handleLeft
 
-  const row = (
-    <div className="flex items-stretch gap-2">
+  const cards = (
+    <>
       <StepCard
         step={step}
         selected={step.id === selectedStepId}
@@ -214,34 +224,34 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
           onClick={onClick}
         />
       ))}
-      {canAddParallel && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onAddParallel?.(step)}
-              aria-label={c.addParallel}
-              className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
-            >
-              <Plus className="size-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{c.addParallel}</TooltipContent>
-        </Tooltip>
-      )}
+    </>
+  )
+
+  const addParallelButton = canAddParallel && (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={() => onAddParallel?.(step)}
+          aria-label={c.addParallel}
+          className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
+        >
+          <Plus className="size-4" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{c.addParallel}</TooltipContent>
+    </Tooltip>
+  )
+
+  const row = (
+    <div className="flex items-stretch gap-2">
+      {cards}
+      {addParallelButton}
     </div>
   )
 
   return (
     <div className="flex flex-col items-stretch gap-1">
-      {/* A plain step (no parallel siblings) pins the handle to the anchor
-          card's own center (half its 240px width) rather than the node's
-          overall center — otherwise the adjacent "+" button would drag the
-          center sideways and the connector would jog instead of running
-          straight through the card. A parallel group instead wants the
-          opposite: centered on the whole cluster (default 50%), so the
-          line lands on the middle of the grouping box below, matching the
-          old sequence builder's grouped/centered look. */}
       <Handle
         type="target"
         position={Position.Top}
@@ -254,12 +264,18 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
         </span>
       )}
       {hasParallel ? (
-        <div className="border-primary/30 bg-primary/[0.03] flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-3">
-          <span className="text-primary flex items-center gap-1 text-[11px] font-semibold tracking-wide uppercase">
-            <Split className="size-3" />
-            {c.inParallel}
-          </span>
-          {row}
+        <div className="flex items-stretch gap-2">
+          <div
+            className="border-primary/30 bg-primary/[0.03] flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-3"
+            style={{ transform: `translateX(-${groupShift}px)` }}
+          >
+            <span className="text-primary flex items-center gap-1 text-[11px] font-semibold tracking-wide uppercase">
+              <Split className="size-3" />
+              {c.inParallel}
+            </span>
+            <div className="flex items-stretch gap-2">{cards}</div>
+          </div>
+          {addParallelButton}
         </div>
       ) : (
         row

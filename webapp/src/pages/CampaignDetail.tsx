@@ -30,6 +30,9 @@ import {
   Building2,
   Eye,
   Braces,
+  MessageSquare,
+  ThumbsUp,
+  Mic,
 } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
@@ -158,7 +161,17 @@ import type {
   Prospect,
   EmailTemplate,
   CampaignStep,
+  LinkedInAction,
 } from "@/lib/types"
+
+const LINKEDIN_ACTIONS: LinkedInAction[] = ["message", "connect", "like_post", "view_profile"]
+const LINKEDIN_ACTION_ICON: Record<LinkedInAction, typeof MessageSquare> = {
+  message: MessageSquare,
+  connect: UserPlus,
+  like_post: ThumbsUp,
+  view_profile: Eye,
+  voice_message: Mic,
+}
 
 // Sending accounts: the current user first, then teammates, deduped by id.
 const ACCOUNT_OPTIONS = [
@@ -281,6 +294,21 @@ const COPY = {
     closePanel: "Close panel",
     insertStepAria: "Insert step here",
     stepChannelAria: (n: number) => `Step ${n} channel`,
+    linkedinActionAria: (n: number) => `Step ${n} LinkedIn action`,
+    linkedinActionLabel: {
+      message: "Message",
+      connect: "Connect",
+      like_post: "Like post",
+      view_profile: "View profile",
+      voice_message: "Voice message",
+    } as Record<LinkedInAction, string>,
+    linkedinActionDescription: {
+      message: "",
+      connect: "Sends a LinkedIn connection request — no message.",
+      like_post: "Likes the prospect's most recent post.",
+      view_profile: "Visits the prospect's LinkedIn profile.",
+      voice_message: "Sends a recorded voice message.",
+    } as Record<LinkedInAction, string>,
     timeDelay: "Time Delay",
     sendImmediately: "Send immediately",
     delayByDays: "Delay by days",
@@ -502,6 +530,21 @@ const COPY = {
     closePanel: "Cerrar panel",
     insertStepAria: "Insertar paso aquí",
     stepChannelAria: (n: number) => `Canal del paso ${n}`,
+    linkedinActionAria: (n: number) => `Acción de LinkedIn del paso ${n}`,
+    linkedinActionLabel: {
+      message: "Mensaje",
+      connect: "Conectar",
+      like_post: "Dar me gusta",
+      view_profile: "Ver perfil",
+      voice_message: "Mensaje de voz",
+    } as Record<LinkedInAction, string>,
+    linkedinActionDescription: {
+      message: "",
+      connect: "Envía una solicitud de conexión de LinkedIn — sin mensaje.",
+      like_post: "Da me gusta a la publicación más reciente del prospecto.",
+      view_profile: "Visita el perfil de LinkedIn del prospecto.",
+      voice_message: "Envía un mensaje de voz grabado.",
+    } as Record<LinkedInAction, string>,
     timeDelay: "Retraso de tiempo",
     sendImmediately: "Enviar inmediatamente",
     delayByDays: "Retrasar por días",
@@ -1801,6 +1844,13 @@ export default function CampaignDetail() {
                   const meta = channelMeta(step.channel)
                   const isEmail = normalizeChannel(step.channel) === "email"
                   const isAiCall = normalizeChannel(step.channel) === "ai_call"
+                  const isLinkedIn = ["linkedin_message", "linkedin_dm", "linkedin_inmail"].includes(
+                    normalizeChannel(step.channel)
+                  )
+                  const linkedinAction = step.linkedinAction ?? "message"
+                  // Connect/Like Post/View Profile carry no message content —
+                  // only "message" (the default) shows the subject/body editor.
+                  const isLinkedInActionOnly = isLinkedIn && linkedinAction !== "message"
                   // Shared between the AI-call script's plain textarea (as a
                   // standalone control) and the RichTextEditor's toolbarEnd —
                   // same menu, same handler, different mount point.
@@ -1881,6 +1931,37 @@ export default function CampaignDetail() {
                               ))}
                             </SelectContent>
                           </Select>
+                          {isLinkedIn && (
+                            <Select
+                              value={step.linkedinAction ?? "message"}
+                              onValueChange={(v) =>
+                                draft.updateStep(step.id, {
+                                  linkedinAction: v as LinkedInAction,
+                                })
+                              }
+                            >
+                              <SelectTrigger
+                                size="sm"
+                                className="w-[150px]"
+                                aria-label={c.linkedinActionAria(i + 1)}
+                              >
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LINKEDIN_ACTIONS.map((action) => {
+                                  const ActionIcon = LINKEDIN_ACTION_ICON[action]
+                                  return (
+                                    <SelectItem key={action} value={action}>
+                                      <span className="flex items-center gap-2">
+                                        <ActionIcon className="size-3.5" />
+                                        {c.linkedinActionLabel[action]}
+                                      </span>
+                                    </SelectItem>
+                                  )
+                                })}
+                              </SelectContent>
+                            </Select>
+                          )}
                           <div className="ml-auto flex items-center gap-1">
                             <Button
                               variant="ghost"
@@ -1969,7 +2050,11 @@ export default function CampaignDetail() {
                           </div>
                         )}
 
-                        {step.isManualTask ? (
+                        {isLinkedInActionOnly ? (
+                          <p className="text-muted-foreground text-sm">
+                            {c.linkedinActionDescription[linkedinAction]}
+                          </p>
+                        ) : step.isManualTask ? (
                           <>
                             <Input
                               value={step.subject ?? ""}
