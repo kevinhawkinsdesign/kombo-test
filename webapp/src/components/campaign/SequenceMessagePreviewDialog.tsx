@@ -13,7 +13,9 @@ import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { useLocale } from "@/lib/locale"
 import { flattenCampaignSteps } from "@/lib/store"
 import { channelMeta } from "@/lib/step-channels"
-import { mergeVars, prospectMergeData } from "@/lib/merge-vars"
+import { prospectMergeData } from "@/lib/merge-vars"
+import { mergeVarsHighlighted } from "@/lib/merge-vars-highlight"
+import { stripHtml } from "@/lib/rich-text"
 import { cn } from "@/lib/utils"
 import type { CampaignStep, Prospect } from "@/lib/types"
 
@@ -128,11 +130,11 @@ export function SequenceMessagePreviewDialog({
                       </div>
                       {step.subject && (
                         <p className="text-sm font-medium">
-                          {mergeVars(step.subject, data)}
+                          {mergeVarsHighlighted(stripHtml(step.subject), data)}
                         </p>
                       )}
                       <p className="text-muted-foreground text-sm whitespace-pre-line">
-                        {mergeVars(step.body, data)}
+                        {mergeVarsHighlighted(stripHtml(step.body), data)}
                       </p>
                     </div>
                   )
