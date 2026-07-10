@@ -346,6 +346,10 @@ const COPY = {
     editCampaignDesc: "Update the campaign name and status.",
     name: "Name",
     namePlaceholder: "Campaign name",
+    goal: "Goal / intent",
+    goalOptional: "Optional",
+    goalPlaceholder:
+      "What outcome are you driving? Book demos, revive cold leads, expand into a new segment…",
     status: "Status",
     cancel: "Cancel",
     saveChanges: "Save changes",
@@ -558,6 +562,10 @@ const COPY = {
     editCampaignDesc: "Actualiza el nombre y el estado de la campaña.",
     name: "Nombre",
     namePlaceholder: "Nombre de la campaña",
+    goal: "Objetivo / intención",
+    goalOptional: "Opcional",
+    goalPlaceholder:
+      "¿Qué resultado buscas? Agendar demos, reactivar leads fríos, entrar en un nuevo segmento…",
     status: "Estado",
     cancel: "Cancelar",
     saveChanges: "Guardar cambios",
@@ -2308,6 +2316,7 @@ export default function CampaignDetail() {
         campaignId={campaign.id}
         currentName={campaign.name}
         currentStatus={campaign.status}
+        currentGoal={campaign.goal}
       />
 
       <AddCampaignAudienceDialog
@@ -2529,7 +2538,13 @@ function TimeDelayField({
               if (e.target.value !== "") commit(e.target.value)
             }}
             onBlur={() => commit(text)}
-            className="h-8 w-16 tabular-nums"
+            // The field already has its own explicit clear button (below,
+            // resets to "Send immediately") — the shared Input's built-in
+            // clear (×) would render inside this narrow box and crowd out
+            // the digits, which is why the value looked like it wasn't
+            // showing.
+            clearable={false}
+            className="h-8 w-20 tabular-nums"
           />
           <span className="text-muted-foreground text-sm">
             {c.daysBeforeSending}
@@ -2644,17 +2659,20 @@ function EditCampaignDialog({
   campaignId,
   currentName,
   currentStatus,
+  currentGoal,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   campaignId: string
   currentName: string
   currentStatus: CampaignStatus
+  currentGoal?: string
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const [name, setName] = React.useState(currentName)
   const [status, setStatus] = React.useState<CampaignStatus>(currentStatus)
+  const [goal, setGoal] = React.useState(currentGoal ?? "")
 
   // Re-sync the form whenever the dialog opens.
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -2663,13 +2681,14 @@ function EditCampaignDialog({
     if (open) {
       setName(currentName)
       setStatus(currentStatus)
+      setGoal(currentGoal ?? "")
     }
   }
 
   function handleSave() {
     const trimmed = name.trim()
     if (!trimmed) return
-    campaignStore.update(campaignId, { name: trimmed, status })
+    campaignStore.update(campaignId, { name: trimmed, status, goal: goal.trim() || undefined })
     toast.success(c.campaignUpdated)
     onOpenChange(false)
   }
@@ -2713,6 +2732,19 @@ function EditCampaignDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="campaign-goal">{c.goal}</Label>
+              <span className="text-muted-foreground text-xs">{c.goalOptional}</span>
+            </div>
+            <Textarea
+              id="campaign-goal"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder={c.goalPlaceholder}
+              className="min-h-16 resize-none"
+            />
           </div>
         </div>
 
