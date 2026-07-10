@@ -342,7 +342,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     align: "right",
     render: (a) => <span className="text-sm font-medium tabular-nums">{money(a.pipeline)}</span>,
   },
-  { id: "contacts", label: L("Contacts", "Contactos"), group: "crm", align: "right", render: (a) => num(a.contacts) },
+  { id: "contacts", label: L("Prospects", "Prospectos"), group: "crm", align: "right", render: (a) => num(a.contacts) },
   {
     id: "owner",
     label: L("Owner", "Responsable"),
@@ -510,9 +510,12 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
       <div className="flex items-center gap-3">
         <ProspectAvatar prospect={p} />
         <div className="min-w-0">
-          <p className="truncate font-medium">
+          <Link
+            to={`/prospects/${p.id}`}
+            className="truncate font-medium hover:underline"
+          >
             {p.firstName} {p.lastName}
-          </p>
+          </Link>
           <p className="text-muted-foreground truncate text-xs">{p.title}</p>
         </div>
       </div>
