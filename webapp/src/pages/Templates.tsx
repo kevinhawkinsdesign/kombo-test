@@ -152,6 +152,7 @@ function textToHtml(s: string): string {
 const COPY = {
   en: {
     topPerformer: "Top performer",
+    more: "Template actions",
     deleteAria: (name: string) => `Delete ${name}`,
     duplicateAria: (name: string) => `Duplicate ${name}`,
     copySuffix: "(copy)",
@@ -269,6 +270,7 @@ const COPY = {
   },
   es: {
     topPerformer: "Mejor rendimiento",
+    more: "Acciones de la plantilla",
     deleteAria: (name: string) => `Eliminar ${name}`,
     duplicateAria: (name: string) => `Duplicar ${name}`,
     copySuffix: "(copia)",
@@ -1176,26 +1178,31 @@ export default function Templates() {
                 someSelected,
               }}
               actions={(t) => (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={c.duplicateAria(t.name)}
-                    className="text-muted-foreground size-8"
-                    onClick={() => duplicateTemplate(t)}
-                  >
-                    <Copy className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={c.deleteAria(t.name)}
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    onClick={() => setConfirmTarget(t)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label={c.more}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => duplicateTemplate(t)}>
+                      <Copy className="size-4" />
+                      {c.copy}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setConfirmTarget(t)}
+                    >
+                      <Trash2 className="size-4" />
+                      {c.delete}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             />
             <BulkActionsBar
