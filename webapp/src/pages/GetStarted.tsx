@@ -16,7 +16,6 @@ import {
   Mail,
   Briefcase,
   GraduationCap,
-  BarChart3,
   Puzzle,
   Plug,
   FolderKanban,
@@ -91,7 +90,6 @@ const CAPABILITIES: Capability[] = [
   { key: "templates", to: "/templates", icon: Mail, tint: "bg-chart-4/15 text-chart-4" },
   { key: "deals", to: "/deals", icon: Briefcase, tint: "bg-primary/10 text-primary" },
   { key: "coach", to: "/coach", icon: GraduationCap, tint: "bg-chart-5/15 text-chart-5" },
-  { key: "analytics", to: "/analytics", icon: BarChart3, tint: "bg-chart-1/15 text-chart-1" },
   { key: "extension", to: "/extension", icon: Puzzle, tint: "bg-chart-4/15 text-chart-4" },
   { key: "integrations", to: "/integrations", icon: Plug, tint: "bg-chart-3/15 text-chart-3" },
 ]
@@ -149,10 +147,6 @@ const COPY = {
       coach: {
         title: "Call coaching",
         description: "Score calls and get actionable coaching to win more deals.",
-      },
-      analytics: {
-        title: "Analytics",
-        description: "Measure outreach performance and double down on what works.",
       },
       extension: {
         title: "Chrome extension",
@@ -262,10 +256,6 @@ const COPY = {
       coach: {
         title: "Coaching de llamadas",
         description: "Evalúa llamadas y recibe coaching accionable para cerrar más.",
-      },
-      analytics: {
-        title: "Analítica",
-        description: "Mide el rendimiento del outreach y potencia lo que funciona.",
       },
       extension: {
         title: "Extensión de Chrome",

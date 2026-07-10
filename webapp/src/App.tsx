@@ -25,7 +25,6 @@ import Sequences from "@/pages/Sequences"
 import Templates from "@/pages/Templates"
 import Playbook from "@/pages/Playbook"
 import Deals from "@/pages/Deals"
-import Analytics from "@/pages/Analytics"
 import Coach from "@/pages/Coach"
 import CoachRecordingDetail from "@/pages/CoachRecordingDetail"
 import Team from "@/pages/Team"
@@ -101,7 +100,10 @@ function App() {
         <Route path="/templates" element={<Templates />} />
         <Route path="/playbook" element={<Playbook />} />
         <Route path="/deals" element={<Deals />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route
+          path="/analytics"
+          element={<Navigate to="/deals?tab=analytics" replace />}
+        />
         <Route path="/coach" element={<Coach />} />
         <Route path="/coach/:id" element={<CoachRecordingDetail />} />
         <Route path="/team" element={<Team />} />

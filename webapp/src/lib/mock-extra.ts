@@ -534,13 +534,15 @@ export function getTask(id: string): Task | undefined {
   return liveTasks.find((t) => t.id === id)
 }
 
+// Ordered to match the Outcomes dropdown (lib/conv-status.ts STATUS_ORDER) —
+// the app's one canonical outcome-stage ordering, top to bottom.
 export const DEAL_STAGES: { key: Deal["stage"]; label: string }[] = [
   { key: "interested", label: "Interested" },
+  { key: "not_interested", label: "Not interested" },
+  { key: "qualified", label: "Qualified" },
+  { key: "disqualified", label: "Disqualified" },
   { key: "meeting_booked", label: "Meeting booked" },
   { key: "needs_review", label: "Needs review" },
-  { key: "qualified", label: "Qualified" },
   { key: "won", label: "Won" },
-  { key: "not_interested", label: "Not interested" },
-  { key: "disqualified", label: "Disqualified" },
   { key: "lost", label: "Lost" },
 ]
