@@ -2,7 +2,6 @@ import * as React from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  ArrowLeft,
   Send,
   Link2,
   Download,
@@ -29,6 +28,7 @@ import { useLocale } from "@/lib/locale"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { BackLink } from "@/components/common/BackLink"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { TableViews } from "@/components/common/TableViews"
@@ -325,9 +325,7 @@ export default function ListDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.listNotFound}</p>
-        <Button variant="link" asChild className="px-0">
-          <Link to="/lists">{c.backToLists}</Link>
-        </Button>
+        <BackLink to="/lists" label={c.backToLists} variant="link" />
       </Page>
     )
   }
@@ -377,12 +375,7 @@ export default function ListDetail() {
 
   return (
     <Page>
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link to="/lists">
-          <ArrowLeft className="size-4" />
-          {c.lists}
-        </Link>
-      </Button>
+      <BackLink to="/lists" label={c.lists} />
 
       <ListTabBar currentId={list.id} />
 

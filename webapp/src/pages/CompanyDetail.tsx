@@ -2,7 +2,6 @@ import * as React from "react"
 import { Link, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  ArrowLeft,
   Building2,
   Plus,
   Users,
@@ -33,6 +32,7 @@ import {
 } from "@/components/ui/table"
 import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
 import { TrackButton } from "@/components/common/TrackButton"
+import { BackLink } from "@/components/common/BackLink"
 import { CompanyMetrics } from "@/components/company/CompanyMetrics"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { getAccount, deals, DEAL_STAGES } from "@/lib/mock-extra"
@@ -162,9 +162,7 @@ export default function CompanyDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.companyNotFound}</p>
-        <Button variant="link" asChild className="px-0">
-          <Link to="/companies">{c.backToCompanies}</Link>
-        </Button>
+        <BackLink to="/companies" label={c.backToCompanies} variant="link" />
       </Page>
     )
   }
@@ -185,12 +183,7 @@ export default function CompanyDetail() {
 
   return (
     <Page>
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link to="/companies">
-          <ArrowLeft className="size-4" />
-          {c.companies}
-        </Link>
-      </Button>
+      <BackLink to="/companies" label={c.companies} />
 
       <Card className="mb-6">
         <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-start">

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { ArrowLeft, Check, Workflow } from "lucide-react"
 
@@ -17,7 +17,7 @@ const COPY = {
     defaultName: "Multi-channel — VP Sales",
     untitled: "Untitled",
     sequenceSaved: (name: string) => `Sequence "${name}" saved`,
-    backToCampaigns: "Back to campaigns",
+    backToSequences: "Back to sequences",
     sequenceName: "Sequence name",
     description: "Design the touches, triggers, and branches for this sequence.",
     saveSequence: "Save sequence",
@@ -35,7 +35,7 @@ const COPY = {
     defaultName: "Multicanal — VP de Ventas",
     untitled: "Sin título",
     sequenceSaved: (name: string) => `Secuencia «${name}» guardada`,
-    backToCampaigns: "Volver a campañas",
+    backToSequences: "Volver a secuencias",
     sequenceName: "Nombre de la secuencia",
     description:
       "Diseña los contactos, disparadores y ramificaciones de esta secuencia.",
@@ -53,15 +53,22 @@ const COPY = {
 } as const
 
 export default function SequenceBuilderPage() {
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
+  const location = useLocation()
+  const hasHistory = location.key !== "default"
   const [name, setName] = React.useState<string>(c.defaultName)
   const [initial] = React.useState<BuilderStep[]>(() => defaultSequence())
 
+  function goBack() {
+    if (hasHistory) navigate(-1)
+    else navigate("/sequences")
+  }
+
   function handleSave() {
     toast.success(c.sequenceSaved(name.trim() || c.untitled))
-    navigate("/campaigns")
+    goBack()
   }
 
   return (
@@ -70,8 +77,8 @@ export default function SequenceBuilderPage() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label={c.backToCampaigns}
-          onClick={() => navigate("/campaigns")}
+          aria-label={hasHistory ? t("common.back") : c.backToSequences}
+          onClick={goBack}
           className="-ml-2"
         >
           <ArrowLeft className="size-4" />
