@@ -184,6 +184,11 @@ export interface Message {
   read: boolean
   lang?: ChatLang // language the message was written in
   aiGenerated?: boolean // outbound message was drafted by Kai
+  // A recorded voice note (LinkedIn/WhatsApp only) instead of a text body —
+  // `body` still carries a plain-text fallback (for search/translation), and
+  // `voiceDurationSec` drives the mock waveform/playback bubble.
+  kind?: "text" | "voice"
+  voiceDurationSec?: number
 }
 
 // A non-message activity that happened in the thread (connection sent, post

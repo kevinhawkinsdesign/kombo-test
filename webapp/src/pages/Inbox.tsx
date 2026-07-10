@@ -43,6 +43,10 @@ import {
   ClipboardList,
   CornerUpRight,
   Pencil,
+  Mic,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -264,6 +268,9 @@ const COPY = {
     draftReady: "Kai drafted a reply — review and send.",
     scheduledFor: (d: string) => `Reply scheduled for ${d}`,
     cancelSchedule: "Cancel",
+    recordVoice: "Voice message",
+    recording: "Recording",
+    stopAndSend: "Stop & send",
     sentScheduled: "Scheduled reply sent",
     scheduleCancelled: "Scheduled reply cancelled",
     sendLater: "Send later",
@@ -415,6 +422,9 @@ const COPY = {
     draftReady: "Kai redactó una respuesta — revísala y envía.",
     scheduledFor: (d: string) => `Respuesta programada para ${d}`,
     cancelSchedule: "Cancelar",
+    recordVoice: "Mensaje de voz",
+    recording: "Grabando",
+    stopAndSend: "Detener y enviar",
     sentScheduled: "Respuesta programada enviada",
     scheduleCancelled: "Respuesta programada cancelada",
     sendLater: "Enviar más tarde",
@@ -637,6 +647,57 @@ function StatusBadge({ status, locale }: { status: ConvStatus; locale: Locale })
       <span className={cn("size-1.5 rounded-full", m.dot)} />
       {locale === "es" ? m.es : m.en}
     </span>
+  )
+}
+
+// Mock voice-note bubble — play/pause just toggles state (no real audio) and
+// a static, message-seeded waveform stands in for a real recording.
+function VoiceMessageBubble({ durationSec, outbound }: { durationSec: number; outbound: boolean }) {
+  const [playing, setPlaying] = React.useState(false)
+  React.useEffect(() => {
+    if (!playing) return
+    const t = setTimeout(() => setPlaying(false), durationSec * 1000)
+    return () => clearTimeout(t)
+  }, [playing, durationSec])
+  const bars = React.useMemo(
+    () => Array.from({ length: 22 }, (_, i) => 5 + ((i * 37 + durationSec * 13) % 15)),
+    [durationSec]
+  )
+  return (
+    <div className="flex min-w-[170px] items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setPlaying((p) => !p)}
+        aria-label={playing ? "Pause" : "Play"}
+        className={cn(
+          "flex size-7 shrink-0 items-center justify-center rounded-full",
+          outbound ? "bg-primary-foreground/20" : "bg-background"
+        )}
+      >
+        {playing ? <Pause className="size-3.5" /> : <Play className="ml-0.5 size-3.5" />}
+      </button>
+      <div className="flex h-6 flex-1 items-center gap-0.5">
+        {bars.map((h, i) => (
+          <span
+            key={i}
+            className={cn(
+              "w-0.5 rounded-full",
+              outbound ? "bg-primary-foreground/50" : "bg-muted-foreground/40",
+              playing && "animate-pulse"
+            )}
+            style={{ height: `${h}px` }}
+          />
+        ))}
+      </div>
+      <span
+        className={cn(
+          "text-[10px] tabular-nums",
+          outbound ? "text-primary-foreground/70" : "text-muted-foreground"
+        )}
+      >
+        0:{String(durationSec).padStart(2, "0")}
+      </span>
+    </div>
   )
 }
 
@@ -1846,7 +1907,14 @@ export default function Inbox() {
                           : "bg-muted rounded-bl-sm"
                       )}
                     >
-                      <MessageBody html={showTr ? translate(m.body, locale) : m.body} />
+                      {m.kind === "voice" ? (
+                        <VoiceMessageBubble
+                          durationSec={m.voiceDurationSec ?? 0}
+                          outbound={outbound}
+                        />
+                      ) : (
+                        <MessageBody html={showTr ? translate(m.body, locale) : m.body} />
+                      )}
                       {showTr && (
                         <p className={cn("mt-1 text-[10px] italic", outbound ? "text-primary-foreground/70" : "text-muted-foreground")}>
                           {c.translatedFrom(LANG_LABEL[msgLang])}
@@ -2003,6 +2071,26 @@ function Composer({
   const [reply, setReply] = React.useState(conv.aiDraft ?? "")
   const [aiUsed, setAiUsed] = React.useState(Boolean(conv.aiDraft))
   const [seed, setSeed] = React.useState(0)
+  // Mock voice-message recording — no real mic access, just a timer UI that
+  // replaces the composer while "recording," same shape LinkedIn/WhatsApp's
+  // own voice-note affordance has.
+  const [recording, setRecording] = React.useState(false)
+  const [recordSec, setRecordSec] = React.useState(0)
+  React.useEffect(() => {
+    if (!recording) return
+    const id = setInterval(() => setRecordSec((s) => s + 1), 1000)
+    return () => clearInterval(id)
+  }, [recording])
+  function sendVoice() {
+    conversationStore.sendVoiceMessage(conv.id, Math.max(1, recordSec), recipientLang)
+    setRecording(false)
+    setRecordSec(0)
+    toast.success(c.replySent(prospect.firstName))
+  }
+  function cancelVoice() {
+    setRecording(false)
+    setRecordSec(0)
+  }
   const [templateOpen, setTemplateOpen] = React.useState(false)
   const [customOpen, setCustomOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
@@ -2261,29 +2349,63 @@ function Composer({
         </span>
       </div>
 
-      <RichTextEditor
-        ref={taRef}
-        value={reply}
-        onChange={(html) => {
-          setReply(html)
-          if (stripHtml(html) === "") setAiUsed(false)
-        }}
-        placeholder={c.replyTo(prospect.firstName)}
-        ariaLabel={c.replyTo(prospect.firstName)}
-        minHeight="min-h-24"
-        className={cn(showDraftChip && "border-primary/30 bg-primary/[0.03]")}
-        toolbarEnd={toolbarEnd}
-      />
+      {recording ? (
+        <div className="border-destructive/30 bg-destructive/5 flex items-center gap-3 rounded-md border px-3 py-2.5">
+          <span className="relative flex size-2.5 shrink-0">
+            <span className="bg-destructive absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+            <span className="bg-destructive relative inline-flex size-2.5 rounded-full" />
+          </span>
+          <span className="text-sm font-medium tabular-nums">
+            {c.recording} · 0:{String(recordSec).padStart(2, "0")}
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Button variant="ghost" size="sm" onClick={cancelVoice}>
+              {c.cancelSchedule}
+            </Button>
+            <Button variant="volt" size="sm" onClick={sendVoice}>
+              <Square className="size-3.5" />
+              {c.stopAndSend}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <RichTextEditor
+          ref={taRef}
+          value={reply}
+          onChange={(html) => {
+            setReply(html)
+            if (stripHtml(html) === "") setAiUsed(false)
+          }}
+          placeholder={c.replyTo(prospect.firstName)}
+          ariaLabel={c.replyTo(prospect.firstName)}
+          minHeight="min-h-24"
+          className={cn(showDraftChip && "border-primary/30 bg-primary/[0.03]")}
+          toolbarEnd={toolbarEnd}
+        />
+      )}
 
       <div className="flex flex-wrap items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
+          disabled={recording}
           onClick={hasText ? openRegenerate : generate}
         >
           <Wand2 className="size-4" />
           {hasText ? c.regenerate : c.generate}
         </Button>
+
+        {(conv.channel === "whatsapp" || conv.channel === "linkedin") && !recording && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={() => setRecording(true)}
+          >
+            <Mic className="size-4" />
+            {c.recordVoice}
+          </Button>
+        )}
 
         <div className="bg-border/60 mx-0.5 hidden h-5 w-px sm:block" />
 
@@ -2307,7 +2429,7 @@ function Composer({
             size="sm"
             variant="volt"
             className="rounded-r-none"
-            disabled={!hasText}
+            disabled={!hasText || recording}
             onClick={send}
           >
             <Send className="size-4" />
@@ -2319,7 +2441,7 @@ function Composer({
                 size="sm"
                 variant="volt"
                 className="rounded-l-none border-l border-white/25 px-2"
-                disabled={!hasText}
+                disabled={!hasText || recording}
                 aria-label={c.sendLater}
               >
                 <ChevronDown className="size-4" />

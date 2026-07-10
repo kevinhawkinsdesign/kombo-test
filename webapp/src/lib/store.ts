@@ -1048,6 +1048,29 @@ export const conversationStore = {
     }))
     return message
   },
+  sendVoiceMessage(id: string, durationSec: number, lang: ChatLang): Message {
+    const message: Message = {
+      id: uid("msg"),
+      channel: state.conversations.find((c) => c.id === id)?.channel ?? "whatsapp",
+      direction: "outbound",
+      body: "🎤 Voice message",
+      timestamp: nowISO(),
+      read: true,
+      lang,
+      kind: "voice",
+      voiceDurationSec: durationSec,
+    }
+    patchConversation(id, (c) => ({
+      ...c,
+      messages: [...c.messages, message],
+      lastMessageAt: message.timestamp,
+      unread: 0,
+      scheduledAt: null,
+      aiDraft: undefined,
+      archived: false,
+    }))
+    return message
+  },
   setStatus(id: string, status: ConvStatus | undefined): void {
     patchConversation(id, (c) => ({ ...c, status }))
   },
