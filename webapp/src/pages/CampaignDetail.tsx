@@ -112,6 +112,8 @@ import { downloadCsv } from "@/lib/csv"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import {
   useColumnPrefs,
+  PEOPLE_COLUMNS,
+  PEOPLE_GROUPS,
   type ColumnDef,
   type ColGroup,
 } from "@/lib/table-columns"
@@ -651,13 +653,39 @@ const CONVERSATIONS_PAGE_SIZE = 50
 const PROSPECT_COL_GROUPS: ColGroup[] = [
   { id: "prospect", label: { en: "Prospect", es: "Prospecto" } },
   { id: "progress", label: { en: "Progress", es: "Progreso" } },
+  ...PEOPLE_GROUPS,
 ]
 const PROSPECT_COL_DEFAULT_IDS = [
-  "titleCompany",
+  "p_title",
+  "p_company",
   "currentStep",
   "status",
   "lastTouch",
 ]
+
+// Reuses the same full prospect-detail field registry as the People page
+// (Job title, Seniority, Department, … the full 44-column set) so a
+// campaign's Prospects tab isn't limited to a hand-picked handful — pulled
+// in via ColumnManager just like People/Lists already do. Prefixed with
+// "p_" so ids never collide with this tab's own progress columns (e.g. its
+// "status" means enrollment status, not the prospect's own status badge).
+// The pinned "name" column is skipped — this tab already has its own
+// pinned "prospect" column linking to the profile.
+const PROSPECT_DETAIL_COLUMNS: ColumnDef<CampaignProspectRow>[] = PEOPLE_COLUMNS.filter(
+  (col) => !col.pinned
+).map((col) => ({
+  id: `p_${col.id}`,
+  label: col.label,
+  group: col.group,
+  align: col.align,
+  minWidth: col.minWidth,
+  render: (row, locale) =>
+    row.prospect ? (
+      col.render(row.prospect, locale)
+    ) : (
+      <span className="text-muted-foreground">—</span>
+    ),
+}))
 
 const CAMPAIGN_STATUSES: CampaignStatus[] = [
   "draft",
@@ -1006,22 +1034,6 @@ export default function CampaignDetail() {
         ),
     },
     {
-      id: "titleCompany",
-      label: { en: "Title / Company", es: "Cargo / Empresa" },
-      group: "prospect",
-      render: (row) =>
-        row.prospect ? (
-          <div>
-            <p className="text-sm">{row.prospect.title}</p>
-            <p className="text-muted-foreground text-xs">
-              {row.prospect.company}
-            </p>
-          </div>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
-    },
-    {
       id: "currentStep",
       label: { en: "Current step", es: "Paso actual" },
       group: "progress",
@@ -1051,6 +1063,7 @@ export default function CampaignDetail() {
         </span>
       ),
     },
+    ...PROSPECT_DETAIL_COLUMNS,
   ]
 
   // Enrichment gate: a campaign with an email step shouldn't launch while some

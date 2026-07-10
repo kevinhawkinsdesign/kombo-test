@@ -12,7 +12,7 @@ import {
   type NodeTypes,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import { AlertTriangle, ListTodo, Plus } from "lucide-react"
+import { AlertTriangle, ListTodo, Plus, Split } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
 import {
@@ -53,6 +53,7 @@ const COPY = {
     } as Record<StepTrackKind, string>,
     addStep: "Add step",
     addParallel: "Add parallel step",
+    inParallel: "In parallel",
   },
   es: {
     channelLabel: {
@@ -79,6 +80,7 @@ const COPY = {
     } as Record<StepTrackKind, string>,
     addStep: "Añadir paso",
     addParallel: "Añadir paso paralelo",
+    inParallel: "En paralelo",
   },
 } as const
 
@@ -181,18 +183,59 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   // qualify — a step inside a condition track already carries a
   // `trackLabel`, which doubles as that signal.
   const canAddParallel = interactive && !step.fork && !trackLabel
+  const hasParallel = parallelSteps.length > 0
+
+  const row = (
+    <div className="flex items-stretch gap-2">
+      <StepCard
+        step={step}
+        selected={step.id === selectedStepId}
+        interactive={interactive}
+        isDropTarget={isDropTarget}
+        onClick={onClick}
+      />
+      {parallelSteps.map((p) => (
+        <StepCard
+          key={p.id}
+          step={p}
+          selected={p.id === selectedStepId}
+          interactive={interactive}
+          isDropTarget={isDropTarget}
+          onClick={onClick}
+        />
+      ))}
+      {canAddParallel && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => onAddParallel?.(step)}
+              aria-label={c.addParallel}
+              className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
+            >
+              <Plus className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{c.addParallel}</TooltipContent>
+        </Tooltip>
+      )}
+    </div>
+  )
 
   return (
     <div className="flex flex-col items-stretch gap-1">
-      {/* Pinned to the anchor card's own center (half its 240px width), not
-          the node's overall center — once parallel siblings or the "+"
-          button widen the node, the default centered handle would drift
-          right and the connector line into/out of this node would jog
-          sideways instead of running straight down through the anchor. */}
+      {/* A plain step (no parallel siblings) pins the handle to the anchor
+          card's own center (half its 240px width) rather than the node's
+          overall center — otherwise the adjacent "+" button would drag the
+          center sideways and the connector would jog instead of running
+          straight through the card. A parallel group instead wants the
+          opposite: centered on the whole cluster (default 50%), so the
+          line lands on the middle of the grouping box below, matching the
+          old sequence builder's grouped/centered look. */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{ left: 120 }}
+        style={hasParallel ? undefined : { left: 120 }}
         className={HANDLE_CLASS}
       />
       {trackLabel && (
@@ -200,44 +243,21 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
           {c.trackLabel[trackLabel]}
         </span>
       )}
-      <div className="flex items-stretch gap-2">
-        <StepCard
-          step={step}
-          selected={step.id === selectedStepId}
-          interactive={interactive}
-          isDropTarget={isDropTarget}
-          onClick={onClick}
-        />
-        {parallelSteps.map((p) => (
-          <StepCard
-            key={p.id}
-            step={p}
-            selected={p.id === selectedStepId}
-            interactive={interactive}
-            isDropTarget={isDropTarget}
-            onClick={onClick}
-          />
-        ))}
-        {canAddParallel && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => onAddParallel?.(step)}
-                aria-label={c.addParallel}
-                className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
-              >
-                <Plus className="size-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>{c.addParallel}</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
+      {hasParallel ? (
+        <div className="border-primary/30 bg-primary/[0.03] flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-3">
+          <span className="text-primary flex items-center gap-1 text-[11px] font-semibold tracking-wide uppercase">
+            <Split className="size-3" />
+            {c.inParallel}
+          </span>
+          {row}
+        </div>
+      ) : (
+        row
+      )}
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ left: 120 }}
+        style={hasParallel ? undefined : { left: 120 }}
         className={HANDLE_CLASS}
       />
     </div>

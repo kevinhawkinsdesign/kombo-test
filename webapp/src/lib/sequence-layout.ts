@@ -184,9 +184,15 @@ export function computeLayout(
       // doubling as the "insert here" affordance and, for the last step,
       // the trailing "append" button. Positioned halfway between this step
       // and the next so it reads as living on their connector line, not as
-      // owning its own row.
+      // owning its own row. A parallel group renders inside a taller
+      // grouping box (label + padding + border on top of the card itself),
+      // so it gets pushed further down — there's plenty of unused space
+      // before the next real row regardless.
       const ghostId = `add-after-${step.id}`
-      nodes.push(addNode(ghostId, depth - 0.5, 0, { kind: "add", afterStepId: step.id }))
+      const ghostOffset = step.parallelSteps?.length ? 0.1 : 0.5
+      nodes.push(
+        addNode(ghostId, depth - ghostOffset, 0, { kind: "add", afterStepId: step.id })
+      )
       for (const src of result.rejoinSources) {
         edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
       }
