@@ -67,6 +67,13 @@ export function DataTable<T>({
     .map((id) => byId.get(id))
     .filter((c): c is ColumnDef<T> => Boolean(c))
 
+  // When a row-level isSelectable gate excludes every row on the page (e.g.
+  // list-sourced campaign prospects), skip the header checkbox too — an
+  // active-looking "select all" control that toggles nothing is confusing.
+  const anySelectableOnPage = Boolean(
+    selection && rows.some((r) => selection.isSelectable?.(r) ?? true)
+  )
+
   // Sticky-left columns, in order: select checkbox, the pinned identity
   // column, then row actions — kept as a fixed-width group so later columns
   // can scroll horizontally underneath them without misaligning.
@@ -94,6 +101,7 @@ export function DataTable<T>({
                   className="bg-muted sticky left-0 z-20 w-10 pl-4"
                   style={{ width: CHECKBOX_W, minWidth: CHECKBOX_W, maxWidth: CHECKBOX_W }}
                 >
+                  {anySelectableOnPage && (
                   <Checkbox
                     checked={
                       selection.allSelected
@@ -105,6 +113,7 @@ export function DataTable<T>({
                     onCheckedChange={() => selection.toggleAll()}
                     aria-label="Select all"
                   />
+                  )}
                 </TableHead>
               )}
               {pinned && (

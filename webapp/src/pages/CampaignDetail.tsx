@@ -33,6 +33,7 @@ import {
   MessageSquare,
   ThumbsUp,
   Mic,
+  ExternalLink,
 } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
@@ -2665,9 +2666,22 @@ export default function CampaignDetail() {
                     rowKey={(row) => row.id}
                     locale={locale}
                     actions={() => (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to="/inbox">{c.viewInInbox}</Link>
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label={c.viewInInbox}
+                            asChild
+                          >
+                            <Link to="/inbox">
+                              <ExternalLink className="size-4" />
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{c.viewInInbox}</TooltipContent>
+                      </Tooltip>
                     )}
                   />
                   {rows.length > CONVERSATIONS_PAGE_SIZE && (
