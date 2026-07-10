@@ -7,7 +7,7 @@ type Dict = Record<string, string>
 const en: Dict = {
   "nav.workspace": "Workspace",
   "nav.engage": "Engage",
-  "nav.prospecting": "Prospect or Find",
+  "nav.prospecting": "Find",
   "nav.revenue": "Revenue",
   "nav.manage": "Manage",
   "nav.searchHome": "Home",
@@ -69,6 +69,7 @@ const en: Dict = {
   "search.navigate": "navigate",
   "search.open": "open",
   "header.credits": "Credits remaining",
+  "header.refer": "Refer: Get €350",
   "header.help": "Help & support",
   "menu.profile": "Profile",
   "menu.billing": "Plan & billing",
@@ -99,7 +100,7 @@ const en: Dict = {
 const es: Dict = {
   "nav.workspace": "Espacio de trabajo",
   "nav.engage": "Interacción",
-  "nav.prospecting": "Prospectar o buscar",
+  "nav.prospecting": "Buscar",
   "nav.revenue": "Ingresos",
   "nav.manage": "Gestión",
   "nav.searchHome": "Inicio",
@@ -161,6 +162,7 @@ const es: Dict = {
   "search.navigate": "navegar",
   "search.open": "abrir",
   "header.credits": "Créditos restantes",
+  "header.refer": "Recomienda: Gana 350€",
   "header.help": "Ayuda y soporte",
   "menu.profile": "Perfil",
   "menu.billing": "Plan y facturación",

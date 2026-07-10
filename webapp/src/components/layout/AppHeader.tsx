@@ -12,6 +12,7 @@ import {
   BookOpen,
   Keyboard,
   Rocket,
+  Gift,
 } from "lucide-react"
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -75,6 +76,15 @@ export function AppHeader() {
       <AppSearch />
 
       <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <button
+          onClick={() => navigate("/settings?tab=referral")}
+          className="hover:bg-muted text-foreground hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors sm:flex"
+          title={t("header.refer")}
+        >
+          <Gift className="text-primary size-3.5" />
+          <span>{t("header.refer")}</span>
+        </button>
+
         <button
           onClick={() => navigate("/usage")}
           className="hover:bg-muted text-foreground hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors sm:flex"
