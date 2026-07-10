@@ -23,6 +23,7 @@ import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -130,6 +131,10 @@ const COPY = {
     colCreated: "Created",
     more: "Campaign options",
     columns: "Columns",
+    kpiActiveCampaigns: "Active campaigns",
+    kpiTotalEnrolled: "Total enrolled",
+    kpiAvgReplyRate: "Avg. reply rate",
+    kpiMeetingsBooked: "Meetings booked",
   },
   es: {
     statusLabel: {
@@ -202,6 +207,10 @@ const COPY = {
     colCreated: "Creada",
     more: "Opciones de campaña",
     columns: "Columnas",
+    kpiActiveCampaigns: "Campañas activas",
+    kpiTotalEnrolled: "Total inscritos",
+    kpiAvgReplyRate: "Tasa de respuesta media",
+    kpiMeetingsBooked: "Reuniones agendadas",
   },
 } as const
 
@@ -529,6 +538,27 @@ export default function Campaigns() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = React.useState(false)
   const campaignColPrefs = useColumnPrefs("campaigns", CAMPAIGN_COL_DEFAULT_IDS)
 
+  // Account-wide at-a-glance KPIs — unaffected by the search/sort below, same
+  // "aggregate row above the table" pattern as Deals.tsx's analytics tab.
+  const kpis = React.useMemo(() => {
+    const active = campaigns.filter((cm) => cm.status === "active").length
+    const totalEnrolled = campaigns.reduce((sum, cm) => sum + cm.enrolled, 0)
+    const totalMeetings = campaigns.reduce((sum, cm) => sum + cm.meetings, 0)
+    const withEnrolled = campaigns.filter((cm) => cm.enrolled > 0)
+    const avgReplyRate = withEnrolled.length
+      ? Math.round(
+          withEnrolled.reduce((sum, cm) => sum + replyRateOf(cm), 0) /
+            withEnrolled.length
+        )
+      : 0
+    return [
+      { label: c.kpiActiveCampaigns, value: String(active) },
+      { label: c.kpiTotalEnrolled, value: totalEnrolled.toLocaleString() },
+      { label: c.kpiAvgReplyRate, value: `${avgReplyRate}%` },
+      { label: c.kpiMeetingsBooked, value: String(totalMeetings) },
+    ]
+  }, [campaigns, c])
+
   const visible = React.useMemo(() => {
     const q = query.trim().toLowerCase()
     const filtered = q
@@ -659,6 +689,17 @@ export default function Campaigns() {
         points={[...c.introPoints]}
         className="mb-6"
       />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {kpis.map((k) => (
+          <Card key={k.label}>
+            <CardHeader>
+              <CardDescription>{k.label}</CardDescription>
+              <CardTitle className="text-2xl tabular-nums">{k.value}</CardTitle>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
 
       <CollectionToolbar
         query={query}
