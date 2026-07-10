@@ -326,6 +326,10 @@ export interface Campaign {
   // Recipient ids that already received at least one message, so re-activation
   // after being made inactive skips them.
   messagedIds?: string[]
+  // Whether the sequence pauses itself the instant a prospect replies.
+  // Undefined behaves as true (the sensible default) for back-compat with
+  // seeded campaigns that predate this field.
+  autoPauseOnReply?: boolean
 }
 
 export interface CoachRecording {
