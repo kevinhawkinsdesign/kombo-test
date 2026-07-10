@@ -5,6 +5,7 @@ import { CheckCircle2, CircleDashed, X, Lock, Building2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScoreBadge } from "@/components/common/ProspectBits"
+import { TruncatedText } from "@/components/common/TruncatedText"
 import type { ColumnDef, ColGroup } from "@/lib/table-columns"
 import { mockLeadEmail, mockLeadPhone, type AiLead, type AiCompany } from "@/lib/mock-ai-search"
 import type { Locale } from "@/lib/locale"
@@ -137,7 +138,9 @@ function EmailCell({ lead, locale }: { lead: AiLead; locale: Locale }) {
         ) : (
           <CircleDashed className="size-3.5 shrink-0" />
         )}
-        <span className="truncate">{mockLeadEmail(lead)}</span>
+        <TruncatedText label={mockLeadEmail(lead)}>
+          <span className="truncate">{mockLeadEmail(lead)}</span>
+        </TruncatedText>
       </span>
     )
   }
@@ -173,7 +176,9 @@ function PhoneCell({ lead, locale }: { lead: AiLead; locale: Locale }) {
     return (
       <span className="text-foreground inline-flex items-center gap-1.5 text-xs font-medium">
         <CheckCircle2 className="text-chart-1 size-3.5 shrink-0" />
-        <span className="truncate">{mockLeadPhone(lead)}</span>
+        <TruncatedText label={mockLeadPhone(lead)}>
+          <span className="truncate">{mockLeadPhone(lead)}</span>
+        </TruncatedText>
         <span className="text-muted-foreground font-normal">
           · {lead.phoneStatus === "mobile" ? t.mobile : t.direct}
         </span>
@@ -224,10 +229,14 @@ export const LEAD_RESULT_COLUMNS: ColumnDef<AiLead>[] = [
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="truncate font-medium">
-            {l.firstName} {l.lastName}
-          </p>
-          <p className="text-muted-foreground truncate text-xs">{l.title}</p>
+          <TruncatedText label={`${l.firstName} ${l.lastName}`}>
+            <p className="truncate font-medium">
+              {l.firstName} {l.lastName}
+            </p>
+          </TruncatedText>
+          <TruncatedText label={l.title}>
+            <p className="text-muted-foreground truncate text-xs">{l.title}</p>
+          </TruncatedText>
         </div>
       </div>
     ),
@@ -287,8 +296,12 @@ export const COMPANY_RESULT_COLUMNS: ColumnDef<AiCompany>[] = [
           {co.name.slice(0, 2)}
         </span>
         <div className="min-w-0">
-          <p className="truncate font-medium">{co.name}</p>
-          <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
+          <TruncatedText label={co.name}>
+            <p className="truncate font-medium">{co.name}</p>
+          </TruncatedText>
+          <TruncatedText label={co.domain}>
+            <p className="text-muted-foreground truncate text-xs">{co.domain}</p>
+          </TruncatedText>
         </div>
       </div>
     ),
