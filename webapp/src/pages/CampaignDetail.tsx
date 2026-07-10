@@ -810,15 +810,20 @@ export default function CampaignDetail() {
   }
 
   const campaignId = campaign.id
-  // Inserts a {{variable}} for whichever body field is actually mounted for
-  // a step type — the rich editor's own caret-aware insertText for email/
-  // LinkedIn/etc, or an append-at-end for the AI-call script's plain
-  // textarea (which has no equivalent caret-tracking handle).
+  // Inserts at the caret of whichever body field is actually mounted for a
+  // step type — the rich editor's own insertText for email/LinkedIn/etc, or
+  // a manual selection-range splice for the AI-call script's plain textarea.
   function insertStepVariable(tag: string, step: CampaignStep, isAiCall: boolean) {
     const ins = `{{${tag}}}`
     if (isAiCall) {
-      draft.updateStep(step.id, { body: step.body + ins })
-      aiScriptRef.current?.focus()
+      const start = aiScriptRef.current?.selectionStart ?? step.body.length
+      const end = aiScriptRef.current?.selectionEnd ?? step.body.length
+      const next = step.body.slice(0, start) + ins + step.body.slice(end)
+      draft.updateStep(step.id, { body: next })
+      requestAnimationFrame(() => {
+        aiScriptRef.current?.focus()
+        aiScriptRef.current?.setSelectionRange(start + ins.length, start + ins.length)
+      })
     } else {
       stepBodyRef.current?.insertText(ins)
     }
