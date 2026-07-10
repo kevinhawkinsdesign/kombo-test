@@ -6,13 +6,23 @@ import {
   FolderInput,
   ScanSearch,
   UserSearch,
-  Plug,
   X,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PerCompanyCap } from "@/components/common/PerCompanyCap"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useLocale } from "@/lib/locale"
+import { CRM_PROVIDERS } from "@/lib/mock-depth"
+
+// The button shows this CRM's logo — the one a bulk push actually lands in
+// today. Falls back to the catalog's first entry if nothing is connected.
+const crmLogoProvider =
+  CRM_PROVIDERS.find((provider) => provider.connected) ?? CRM_PROVIDERS[0]
 
 const COPY = {
   en: {
@@ -139,11 +149,25 @@ export function BulkActionsBar({
           {c.moveToList}
         </Button>
       )}
-      {onAddToCrm && (
-        <Button variant="outline" size="sm" onClick={onAddToCrm}>
-          <Plug className="size-4" />
-          {c.addToCrm}
-        </Button>
+      {onAddToCrm && crmLogoProvider && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onAddToCrm}
+              aria-label={c.addToCrm}
+            >
+              <span
+                className="flex size-5 items-center justify-center rounded-sm text-[11px] font-semibold text-white"
+                style={{ backgroundColor: crmLogoProvider.logoColor }}
+              >
+                {crmLogoProvider.name.charAt(0)}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{c.addToCrm}</TooltipContent>
+        </Tooltip>
       )}
       {onFindContacts && (
         <Button variant="outline" size="sm" onClick={onFindContacts}>
