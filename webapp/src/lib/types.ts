@@ -184,6 +184,11 @@ export interface Message {
   read: boolean
   lang?: ChatLang // language the message was written in
   aiGenerated?: boolean // outbound message was drafted by Kai
+  // A recorded voice note (LinkedIn/WhatsApp only) instead of a text body —
+  // `body` still carries a plain-text fallback (for search/translation), and
+  // `voiceDurationSec` drives the mock waveform/playback bubble.
+  kind?: "text" | "voice"
+  voiceDurationSec?: number
 }
 
 // A non-message activity that happened in the thread (connection sent, post
@@ -229,6 +234,10 @@ export interface Conversation {
   aiDraft?: string // Kai's suggested reply, ready to send
   scheduledAt?: string | null // ISO date; a reply queued to send later
   events?: ConvEvent[] // activity timeline interleaved with messages
+  // When true, an inbound reply on this thread auto-populates aiDraft via the
+  // same draftReply() generator the composer's "Kai draft" uses — the rep
+  // still reviews and sends it manually, it's never auto-sent.
+  autoReply?: boolean
 }
 
 export type CampaignStatus = "active" | "paused" | "draft" | "completed"

@@ -184,6 +184,16 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   // `trackLabel`, which doubles as that signal.
   const canAddParallel = interactive && !step.fork && !trackLabel
   const hasParallel = parallelSteps.length > 0
+  // Every node in this diagram — plain steps, parallel groups, and the "+"
+  // ghosts — shares the same lane x position (its wrapper's left edge), so
+  // the spine only stays a straight vertical line if every node's handle
+  // sits at the same fixed offset from that shared edge: 120, half of a
+  // plain 240px card. A parallel group's dashed wrapper starts flush at
+  // that same edge too, so it needs the identical 120 — centering on the
+  // group's own (wider, button-inclusive) rendered width instead is what
+  // previously dragged the handle right and drew the connector on a
+  // diagonal.
+  const handleLeft = 120
 
   const row = (
     <div className="flex items-stretch gap-2">
@@ -235,7 +245,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
       <Handle
         type="target"
         position={Position.Top}
-        style={hasParallel ? undefined : { left: 120 }}
+        style={{ left: handleLeft }}
         className={HANDLE_CLASS}
       />
       {trackLabel && (
@@ -257,7 +267,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
       <Handle
         type="source"
         position={Position.Bottom}
-        style={hasParallel ? undefined : { left: 120 }}
+        style={{ left: handleLeft }}
         className={HANDLE_CLASS}
       />
     </div>
