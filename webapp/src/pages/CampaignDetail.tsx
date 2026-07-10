@@ -1693,6 +1693,7 @@ export default function CampaignDetail() {
                       setPendingGhost(null)
                       setStepPickerOpen(true)
                     }}
+                    onMoveStep={(id, target) => draft.moveStepToTarget(id, target)}
                   />
                 </div>
 

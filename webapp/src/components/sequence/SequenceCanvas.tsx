@@ -1,10 +1,13 @@
 import * as React from "react"
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   Handle,
   Position,
+  useReactFlow,
+  type Node,
   type NodeProps,
   type NodeTypes,
 } from "@xyflow/react"
@@ -20,7 +23,9 @@ import {
 import { stripHtml } from "@/lib/rich-text"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { CampaignStep, StepTrackKind } from "@/lib/types"
+import type { MoveTarget } from "@/lib/sequence-draft"
 
 const COPY = {
   en: {
@@ -82,6 +87,9 @@ interface StepNodeExtraData extends StepNodeData {
   interactive: boolean
   onClick?: (step: CampaignStep) => void
   onAddParallel?: (step: CampaignStep) => void
+  // True while a dragged step is currently hovering this node as a
+  // candidate parallel-attach target.
+  isDropTarget?: boolean
 }
 
 // Invisible anchor points — nodesConnectable is false everywhere this canvas
@@ -94,11 +102,13 @@ function StepCard({
   step,
   selected,
   interactive,
+  isDropTarget,
   onClick,
 }: {
   step: CampaignStep
   selected: boolean
   interactive: boolean
+  isDropTarget?: boolean
   onClick?: (step: CampaignStep) => void
 }) {
   const { locale } = useLocale()
@@ -116,7 +126,11 @@ function StepCard({
       style={{ width: 240 }}
       className={cn(
         "bg-card flex shrink-0 items-center gap-2.5 rounded-xl border p-3 text-left shadow-sm transition-colors",
-        selected ? "border-primary bg-primary/[0.04]" : interactive && "hover:bg-muted/40"
+        isDropTarget
+          ? "border-primary bg-primary/10 ring-primary/30 ring-2"
+          : selected
+            ? "border-primary bg-primary/[0.04]"
+            : interactive && "hover:bg-muted/40"
       )}
     >
       <span
@@ -158,7 +172,8 @@ function StepCard({
 function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const { step, selectedStepId, interactive, onClick, trackLabel, onAddParallel } = data
+  const { step, selectedStepId, interactive, onClick, trackLabel, onAddParallel, isDropTarget } =
+    data
   const parallelSteps = step.parallelSteps ?? []
   // A step is either a fork anchor or parallel-able, never both — keeps the
   // canvas geometry simple (no lane collisions between a wide parallel
@@ -169,7 +184,17 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
 
   return (
     <div className="flex flex-col items-stretch gap-1">
-      <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
+      {/* Pinned to the anchor card's own center (half its 240px width), not
+          the node's overall center — once parallel siblings or the "+"
+          button widen the node, the default centered handle would drift
+          right and the connector line into/out of this node would jog
+          sideways instead of running straight down through the anchor. */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ left: 120 }}
+        className={HANDLE_CLASS}
+      />
       {trackLabel && (
         <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
           {c.trackLabel[trackLabel]}
@@ -180,6 +205,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
           step={step}
           selected={step.id === selectedStepId}
           interactive={interactive}
+          isDropTarget={isDropTarget}
           onClick={onClick}
         />
         {parallelSteps.map((p) => (
@@ -188,21 +214,32 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
             step={p}
             selected={p.id === selectedStepId}
             interactive={interactive}
+            isDropTarget={isDropTarget}
             onClick={onClick}
           />
         ))}
         {canAddParallel && (
-          <button
-            type="button"
-            onClick={() => onAddParallel?.(step)}
-            aria-label={c.addParallel}
-            className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
-          >
-            <Plus className="size-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => onAddParallel?.(step)}
+                aria-label={c.addParallel}
+                className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 shrink-0 items-center justify-center self-center rounded-full border-2 transition-colors"
+              >
+                <Plus className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{c.addParallel}</TooltipContent>
+          </Tooltip>
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} className={HANDLE_CLASS} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ left: 120 }}
+        className={HANDLE_CLASS}
+      />
     </div>
   )
 }
@@ -212,7 +249,9 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
 // width purely so the button centers on the line the edge actually draws.
 function AddNodeComponent({
   data,
-}: NodeProps & { data: AddNodeData & { onClick?: (ghost: AddNodeData) => void } }) {
+}: NodeProps & {
+  data: AddNodeData & { onClick?: (ghost: AddNodeData) => void; isDropTarget?: boolean }
+}) {
   const { locale } = useLocale()
   const c = COPY[locale]
 
@@ -229,7 +268,12 @@ function AddNodeComponent({
           type="button"
           onClick={() => data.onClick?.(data)}
           aria-label={c.addStep}
-          className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 items-center justify-center rounded-full border-2 transition-colors"
+          className={cn(
+            "flex size-7 items-center justify-center rounded-full border-2 transition-colors",
+            data.isDropTarget
+              ? "border-primary bg-primary/10 text-primary scale-125"
+              : "border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background"
+          )}
         >
           <Plus className="size-4" />
         </button>
@@ -251,27 +295,49 @@ interface SequenceCanvasProps {
   onSelectStep?: (stepId: string) => void
   onAddRequest?: (ghost: AddNodeData) => void
   onAddParallel?: (step: CampaignStep) => void
+  onMoveStep?: (stepId: string, target: MoveTarget) => void
   className?: string
 }
 
-export function SequenceCanvas({
+export function SequenceCanvas(props: SequenceCanvasProps) {
+  // useReactFlow (for drag-and-drop hit-testing) only works inside a
+  // ReactFlowProvider — the canvas owns its own here since nothing else on
+  // the page needs the instance.
+  return (
+    <ReactFlowProvider>
+      <SequenceCanvasInner {...props} />
+    </ReactFlowProvider>
+  )
+}
+
+function SequenceCanvasInner({
   steps,
   mode,
   selectedStepId,
   onSelectStep,
   onAddRequest,
   onAddParallel,
+  onMoveStep,
   className,
 }: SequenceCanvasProps) {
   const interactive = mode === "interactive"
+  const { getIntersectingNodes } = useReactFlow()
+  const [dragTargetId, setDragTargetId] = React.useState<string | null>(null)
 
   const { nodes, edges } = React.useMemo(() => {
     const layout = computeLayout(steps, { interactive })
     const nodes = layout.nodes.map((node) => {
       if (node.type === "step") {
         const stepData = node.data as StepNodeData
+        // Draggable only for "plain" steps — a fork's tracks or a
+        // parallel anchor's siblings would need to travel with it, which
+        // this drop-target model doesn't support; those still reorder via
+        // the move up/down buttons in the detail panel instead.
+        const draggable =
+          interactive && !stepData.step.fork && !stepData.step.parallelSteps?.length
         return {
           ...node,
+          draggable,
           data: {
             ...stepData,
             selectedStepId,
@@ -292,22 +358,82 @@ export function SequenceCanvas({
     return { nodes, edges: layout.edges }
   }, [steps, interactive, selectedStepId, onSelectStep, onAddRequest, onAddParallel])
 
+  // A separate highlight pass so dragging doesn't force the layout memo
+  // above (and the whole node/edge tree) to recompute on every pointer move.
+  const displayNodes = React.useMemo(
+    () => nodes.map((n) => ({ ...n, data: { ...n.data, isDropTarget: n.id === dragTargetId } })),
+    [nodes, dragTargetId]
+  )
+
+  // Kanban-style "highlight the nearest valid slot": positions are always
+  // computed from the step tree (never persisted), so a drop just mutates
+  // the tree and the next render snaps every node — including the one just
+  // dragged — back into its correct computed position.
+  const dragCandidate = React.useCallback(
+    (node: Node) => {
+      if (node.type !== "step") return null
+      return getIntersectingNodes(node, true).find((n) => n.id !== node.id) ?? null
+    },
+    [getIntersectingNodes]
+  )
+
+  const handleNodeDrag = React.useCallback(
+    (_event: MouseEvent | TouchEvent, node: Node) => {
+      setDragTargetId(dragCandidate(node)?.id ?? null)
+    },
+    [dragCandidate]
+  )
+
+  const handleNodeDragStop = React.useCallback(
+    (_event: MouseEvent | TouchEvent, node: Node) => {
+      const target = dragCandidate(node)
+      setDragTargetId(null)
+      if (!target || !onMoveStep) return
+      const draggedStepId = (node.data as StepNodeData).step.id
+      if (target.type === "add") {
+        const addData = target.data as AddNodeData
+        onMoveStep(draggedStepId, {
+          kind: "sequence",
+          trackId: addData.trackId,
+          forkStepId: addData.forkStepId,
+          afterStepId: addData.afterStepId,
+        })
+      } else if (target.type === "step") {
+        const targetStep = target.data as StepNodeData
+        // Only a top-level, non-forked step is a valid parallel anchor —
+        // keeps a step either forked or parallel-able, never both.
+        if (
+          !targetStep.trackLabel &&
+          !targetStep.step.fork &&
+          targetStep.step.id !== draggedStepId
+        ) {
+          onMoveStep(draggedStepId, { kind: "parallel", anchorStepId: targetStep.step.id })
+        }
+      }
+    },
+    [dragCandidate, onMoveStep]
+  )
+
   return (
     <div className={cn("bg-muted/20 h-[600px] w-full rounded-xl border", className)}>
       <ReactFlow
-        nodes={nodes}
+        nodes={displayNodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={interactive}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragStop={handleNodeDragStop}
         panOnScroll
         proOptions={{ hideAttribution: true }}
         fitView
         fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
         defaultEdgeOptions={{
-          type: "smoothstep",
-          style: { stroke: "var(--color-border)", strokeWidth: 2 },
+          // Straight, not smoothstep — a direct line is always the shortest
+          // path between two nodes; smoothstep's right-angle routing added
+          // unnecessary jogs even between same-lane nodes.
+          type: "straight",
+          style: { stroke: "var(--color-muted-foreground)", strokeWidth: 2 },
         }}
       >
         <Background gap={24} size={1} />
