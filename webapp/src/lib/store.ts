@@ -1086,6 +1086,9 @@ export const conversationStore = {
   setRecipientLang(id: string, lang: ChatLang): void {
     patchConversation(id, (c) => ({ ...c, recipientLang: lang }))
   },
+  setAutoReply(id: string, autoReply: boolean): void {
+    patchConversation(id, (c) => ({ ...c, autoReply }))
+  },
   remove(id: string): void {
     setState({ conversations: state.conversations.filter((c) => c.id !== id) })
   },

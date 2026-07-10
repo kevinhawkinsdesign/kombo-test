@@ -160,6 +160,9 @@ const COPY = {
     backToInbox: "Back",
     createTask: "Create task",
     editTask: "Edit task",
+    autoReply: "AI auto-reply",
+    autoReplyEnabled: (name: string) => `AI auto-reply on for ${name}`,
+    autoReplyDisabled: "AI auto-reply off",
     bulkSelected: (n: number) => `${n} selected`,
     clearSelection: "Clear",
     replyTo: (name: string) => `Reply to ${name}…`,
@@ -309,6 +312,9 @@ const COPY = {
     backToInbox: "Volver",
     createTask: "Crear tarea",
     editTask: "Editar tarea",
+    autoReply: "Respuesta automática con IA",
+    autoReplyEnabled: (name: string) => `Respuesta automática con IA activada para ${name}`,
+    autoReplyDisabled: "Respuesta automática con IA desactivada",
     bulkSelected: (n: number) => `${n} seleccionados`,
     clearSelection: "Limpiar",
     replyTo: (name: string) => `Responder a ${name}…`,
@@ -1686,6 +1692,29 @@ export default function Inbox() {
                 <DropdownMenuItem onClick={() => setTaskDialogOpen(true)}>
                   <ListTodo className="size-4" />
                   {c.createTask}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const next = !effectiveActive.autoReply
+                    conversationStore.setAutoReply(effectiveActive.id, next)
+                    // Mock "the agent already drafted one" the moment auto-reply
+                    // turns on for a thread that's already awaiting a reply —
+                    // there's no live inbound-message simulation to hang this
+                    // off of, so this is the closest honest stand-in.
+                    if (next && !effectiveActive.aiDraft && needsReply(effectiveActive) && activeProspect) {
+                      conversationStore.setDraft(
+                        effectiveActive.id,
+                        draftReply(activeProspect, effectiveActive)
+                      )
+                    }
+                    toast.success(
+                      next ? c.autoReplyEnabled(activeProspect?.firstName ?? "") : c.autoReplyDisabled
+                    )
+                  }}
+                >
+                  <Checkbox checked={Boolean(effectiveActive.autoReply)} className="pointer-events-none" />
+                  <Sparkles className="size-4" />
+                  {c.autoReply}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {effectiveActive.archived ? (

@@ -229,6 +229,10 @@ export interface Conversation {
   aiDraft?: string // Kai's suggested reply, ready to send
   scheduledAt?: string | null // ISO date; a reply queued to send later
   events?: ConvEvent[] // activity timeline interleaved with messages
+  // When true, an inbound reply on this thread auto-populates aiDraft via the
+  // same draftReply() generator the composer's "Kai draft" uses — the rep
+  // still reviews and sends it manually, it's never auto-sent.
+  autoReply?: boolean
 }
 
 export type CampaignStatus = "active" | "paused" | "draft" | "completed"
