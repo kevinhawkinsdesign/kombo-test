@@ -206,7 +206,7 @@ export function TaskFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="task-owner">Assign to</Label>
+              <Label htmlFor="task-owner">Owner</Label>
               <Select value={ownerId} onValueChange={setOwnerId}>
                 <SelectTrigger id="task-owner" className="w-full">
                   <SelectValue />

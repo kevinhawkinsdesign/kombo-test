@@ -51,8 +51,8 @@ const COPY = {
     descReview: "Double-check before pushing to your CRM.",
     crm: "CRM",
     object: "Create as",
-    assignTo: "Assign to",
-    assignToHint: "Owner of the new record in your CRM.",
+    assignTo: "Owner",
+    assignToHint: "Who owns this record in your CRM.",
     crmDefaultOwner: "CRM default owner",
     notConnected: "Not connected",
     creatingIn: (object: string, crm: string, kind: string) => (
@@ -86,9 +86,9 @@ const COPY = {
     descReview: "Revisa antes de enviar a tu CRM.",
     crm: "CRM",
     object: "Crear como",
-    assignTo: "Asignar a",
-    assignToHint: "Propietario del nuevo registro en tu CRM.",
-    crmDefaultOwner: "Propietario por defecto del CRM",
+    assignTo: "Responsable",
+    assignToHint: "Quién será el responsable de este registro en tu CRM.",
+    crmDefaultOwner: "Responsable por defecto del CRM",
     notConnected: "No conectado",
     creatingIn: (object: string, crm: string, kind: string) => (
       <>

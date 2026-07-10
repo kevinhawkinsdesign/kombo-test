@@ -359,7 +359,7 @@ const COPY = {
     selectAllCapped: (n: number) => `Select all ${n.toLocaleString()}`,
     enrichCompaniesToast: (n: number) =>
       `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
-    buildAssign: "Assign to",
+    buildAssign: "Owner",
     buildAssignHint:
       "New prospects entering this list are assigned to this teammate.",
     buildUnassigned: "Unassigned",
@@ -651,7 +651,7 @@ const COPY = {
     selectAllCapped: (n: number) => `Seleccionar todos (${n.toLocaleString()})`,
     enrichCompaniesToast: (n: number) =>
       `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
-    buildAssign: "Asignar a",
+    buildAssign: "Responsable",
     buildAssignHint:
       "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
     buildUnassigned: "Sin asignar",

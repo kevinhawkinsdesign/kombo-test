@@ -32,14 +32,14 @@ import { cn } from "@/lib/utils"
 // the per-file COPY convention).
 const ASSIGN_COPY = {
   en: {
-    assignTo: "Assign to",
-    assignToHint: "Owner of the new record in your CRM.",
+    assignTo: "Owner",
+    assignToHint: "Who owns this record in your CRM.",
     crmDefaultOwner: "CRM default owner",
   },
   es: {
-    assignTo: "Asignar a",
-    assignToHint: "Propietario del nuevo registro en tu CRM.",
-    crmDefaultOwner: "Propietario por defecto del CRM",
+    assignTo: "Responsable",
+    assignToHint: "Quién será el responsable de este registro en tu CRM.",
+    crmDefaultOwner: "Responsable por defecto del CRM",
   },
 } as const
 

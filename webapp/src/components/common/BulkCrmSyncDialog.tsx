@@ -36,9 +36,9 @@ const COPY = {
   },
   es: {
     title: (n: number) => `Sincronizar ${n} con el CRM`,
-    desc: "Elige un CRM y un propietario — la misma asignación se aplica a todos los registros seleccionados.",
+    desc: "Elige un CRM y un responsable — la misma asignación se aplica a todos los registros seleccionados.",
     crmLabel: "CRM",
-    ownerLabel: "Propietario del registro",
+    ownerLabel: "Responsable del registro",
     noOwner: "Sin asignar",
     cancel: "Cancelar",
     syncAction: "Sincronizar",
