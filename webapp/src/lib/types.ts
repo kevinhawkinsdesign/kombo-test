@@ -587,6 +587,14 @@ export interface Personality {
   tips: string[]
 }
 
+// Structured Q&A pulled from the call — the "Key Fields" tab on a recording.
+export interface RecordingKeyFields {
+  problem: string // The main problem the customer is facing.
+  impact: string // The business or personal cost of the problem.
+  context: string // How the customer works today.
+  people: string // Stakeholders involved in the decision.
+}
+
 export interface RecordingAnalysis {
   longestMonologueMin: number
   questionsAsked: number
@@ -600,6 +608,7 @@ export interface RecordingAnalysis {
   callType?: CallType
   participants?: CallParticipant[]
   personality?: Personality
+  keyFields?: RecordingKeyFields
 }
 
 // --- Depth: company intelligence ---
