@@ -112,6 +112,8 @@ import { downloadCsv } from "@/lib/csv"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import {
   useColumnPrefs,
+  PEOPLE_COLUMNS,
+  PEOPLE_GROUPS,
   type ColumnDef,
   type ColGroup,
 } from "@/lib/table-columns"
@@ -346,6 +348,10 @@ const COPY = {
     editCampaignDesc: "Update the campaign name and status.",
     name: "Name",
     namePlaceholder: "Campaign name",
+    goal: "Goal / intent",
+    goalOptional: "Optional",
+    goalPlaceholder:
+      "What outcome are you driving? Book demos, revive cold leads, expand into a new segment…",
     status: "Status",
     cancel: "Cancel",
     saveChanges: "Save changes",
@@ -558,6 +564,10 @@ const COPY = {
     editCampaignDesc: "Actualiza el nombre y el estado de la campaña.",
     name: "Nombre",
     namePlaceholder: "Nombre de la campaña",
+    goal: "Objetivo / intención",
+    goalOptional: "Opcional",
+    goalPlaceholder:
+      "¿Qué resultado buscas? Agendar demos, reactivar leads fríos, entrar en un nuevo segmento…",
     status: "Estado",
     cancel: "Cancelar",
     saveChanges: "Guardar cambios",
@@ -643,13 +653,39 @@ const CONVERSATIONS_PAGE_SIZE = 50
 const PROSPECT_COL_GROUPS: ColGroup[] = [
   { id: "prospect", label: { en: "Prospect", es: "Prospecto" } },
   { id: "progress", label: { en: "Progress", es: "Progreso" } },
+  ...PEOPLE_GROUPS,
 ]
 const PROSPECT_COL_DEFAULT_IDS = [
-  "titleCompany",
+  "p_title",
+  "p_company",
   "currentStep",
   "status",
   "lastTouch",
 ]
+
+// Reuses the same full prospect-detail field registry as the People page
+// (Job title, Seniority, Department, … the full 44-column set) so a
+// campaign's Prospects tab isn't limited to a hand-picked handful — pulled
+// in via ColumnManager just like People/Lists already do. Prefixed with
+// "p_" so ids never collide with this tab's own progress columns (e.g. its
+// "status" means enrollment status, not the prospect's own status badge).
+// The pinned "name" column is skipped — this tab already has its own
+// pinned "prospect" column linking to the profile.
+const PROSPECT_DETAIL_COLUMNS: ColumnDef<CampaignProspectRow>[] = PEOPLE_COLUMNS.filter(
+  (col) => !col.pinned
+).map((col) => ({
+  id: `p_${col.id}`,
+  label: col.label,
+  group: col.group,
+  align: col.align,
+  minWidth: col.minWidth,
+  render: (row, locale) =>
+    row.prospect ? (
+      col.render(row.prospect, locale)
+    ) : (
+      <span className="text-muted-foreground">—</span>
+    ),
+}))
 
 const CAMPAIGN_STATUSES: CampaignStatus[] = [
   "draft",
@@ -998,22 +1034,6 @@ export default function CampaignDetail() {
         ),
     },
     {
-      id: "titleCompany",
-      label: { en: "Title / Company", es: "Cargo / Empresa" },
-      group: "prospect",
-      render: (row) =>
-        row.prospect ? (
-          <div>
-            <p className="text-sm">{row.prospect.title}</p>
-            <p className="text-muted-foreground text-xs">
-              {row.prospect.company}
-            </p>
-          </div>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
-    },
-    {
       id: "currentStep",
       label: { en: "Current step", es: "Paso actual" },
       group: "progress",
@@ -1043,6 +1063,7 @@ export default function CampaignDetail() {
         </span>
       ),
     },
+    ...PROSPECT_DETAIL_COLUMNS,
   ]
 
   // Enrichment gate: a campaign with an email step shouldn't launch while some
@@ -2308,6 +2329,7 @@ export default function CampaignDetail() {
         campaignId={campaign.id}
         currentName={campaign.name}
         currentStatus={campaign.status}
+        currentGoal={campaign.goal}
       />
 
       <AddCampaignAudienceDialog
@@ -2529,7 +2551,13 @@ function TimeDelayField({
               if (e.target.value !== "") commit(e.target.value)
             }}
             onBlur={() => commit(text)}
-            className="h-8 w-16 tabular-nums"
+            // The field already has its own explicit clear button (below,
+            // resets to "Send immediately") — the shared Input's built-in
+            // clear (×) would render inside this narrow box and crowd out
+            // the digits, which is why the value looked like it wasn't
+            // showing.
+            clearable={false}
+            className="h-8 w-20 tabular-nums"
           />
           <span className="text-muted-foreground text-sm">
             {c.daysBeforeSending}
@@ -2644,17 +2672,20 @@ function EditCampaignDialog({
   campaignId,
   currentName,
   currentStatus,
+  currentGoal,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   campaignId: string
   currentName: string
   currentStatus: CampaignStatus
+  currentGoal?: string
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const [name, setName] = React.useState(currentName)
   const [status, setStatus] = React.useState<CampaignStatus>(currentStatus)
+  const [goal, setGoal] = React.useState(currentGoal ?? "")
 
   // Re-sync the form whenever the dialog opens.
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -2663,13 +2694,14 @@ function EditCampaignDialog({
     if (open) {
       setName(currentName)
       setStatus(currentStatus)
+      setGoal(currentGoal ?? "")
     }
   }
 
   function handleSave() {
     const trimmed = name.trim()
     if (!trimmed) return
-    campaignStore.update(campaignId, { name: trimmed, status })
+    campaignStore.update(campaignId, { name: trimmed, status, goal: goal.trim() || undefined })
     toast.success(c.campaignUpdated)
     onOpenChange(false)
   }
@@ -2713,6 +2745,19 @@ function EditCampaignDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="campaign-goal">{c.goal}</Label>
+              <span className="text-muted-foreground text-xs">{c.goalOptional}</span>
+            </div>
+            <Textarea
+              id="campaign-goal"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder={c.goalPlaceholder}
+              className="min-h-16 resize-none"
+            />
           </div>
         </div>
 
