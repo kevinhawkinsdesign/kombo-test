@@ -2,7 +2,6 @@ import * as React from "react"
 import { Link, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  ArrowLeft,
   ArrowUp,
   ArrowDown,
   Columns3,
@@ -30,6 +29,7 @@ import {
   UserSearch,
   Building2,
   Eye,
+  Braces,
 } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
@@ -43,6 +43,8 @@ import {
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { SequenceMessagePreviewDialog } from "@/components/campaign/SequenceMessagePreviewDialog"
+import { MERGE_VARIABLES } from "@/lib/merge-vars"
+import { BackLink } from "@/components/common/BackLink"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
@@ -72,7 +74,10 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { RichTextEditor } from "@/components/common/RichTextEditor"
+import {
+  RichTextEditor,
+  type RichTextEditorHandle,
+} from "@/components/common/RichTextEditor"
 import { plainToHtml } from "@/lib/rich-text"
 import {
   Tabs,
@@ -101,6 +106,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
@@ -292,6 +298,11 @@ const COPY = {
     aiScriptPlaceholder: "Script / instructions for the AI agent",
     aiCallPoweredBy: "Powered by ElevenLabs",
     aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
+    insertVariable: "Insert variable",
+    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+      acc[v.tag] = v.en
+      return acc
+    }, {}),
     conditionName: {
       reply: "Replied",
       open: "Opened",
@@ -508,6 +519,11 @@ const COPY = {
     aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
     aiCallPoweredBy: "Con tecnología de ElevenLabs",
     aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
+    insertVariable: "Insertar variable",
+    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+      acc[v.tag] = v.es
+      return acc
+    }, {}),
     conditionName: {
       reply: "Respondió",
       open: "Abrió",
@@ -746,6 +762,12 @@ export default function CampaignDetail() {
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
   const [saveSeqOpen, setSaveSeqOpen] = React.useState(false)
   const [previewOpen, setPreviewOpen] = React.useState(false)
+  // Whichever of the step-detail panel's body fields is currently rendered
+  // (RichTextEditor for email/LinkedIn/etc, a plain Textarea for the AI-call
+  // script) — only one is ever mounted at a time, so a single pair of refs
+  // covers "insert variable" for the selected step regardless of its type.
+  const stepBodyRef = React.useRef<RichTextEditorHandle>(null)
+  const aiScriptRef = React.useRef<HTMLTextAreaElement>(null)
   const { spend } = useCredits()
 
   // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
@@ -782,14 +804,25 @@ export default function CampaignDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.campaignNotFound}</p>
-        <Button variant="link" asChild className="px-0">
-          <Link to="/campaigns">{c.backToCampaigns}</Link>
-        </Button>
+        <BackLink to="/campaigns" label={c.backToCampaigns} variant="link" />
       </Page>
     )
   }
 
   const campaignId = campaign.id
+  // Inserts a {{variable}} for whichever body field is actually mounted for
+  // a step type — the rich editor's own caret-aware insertText for email/
+  // LinkedIn/etc, or an append-at-end for the AI-call script's plain
+  // textarea (which has no equivalent caret-tracking handle).
+  function insertStepVariable(tag: string, step: CampaignStep, isAiCall: boolean) {
+    const ins = `{{${tag}}}`
+    if (isAiCall) {
+      draft.updateStep(step.id, { body: step.body + ins })
+      aiScriptRef.current?.focus()
+    } else {
+      stepBodyRef.current?.insertText(ins)
+    }
+  }
   // The real, applied campaign — used everywhere on this page EXCEPT the
   // Sequence tab, which reads/writes `draft.steps` instead (see the
   // useSequenceDraft call above the not-found guard).
@@ -1417,12 +1450,7 @@ export default function CampaignDetail() {
 
   return (
     <Page>
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link to="/campaigns">
-          <ArrowLeft className="size-4" />
-          {c.campaigns}
-        </Link>
-      </Button>
+      <BackLink to="/campaigns" label={c.campaigns} />
 
       <CampaignTabBar currentId={campaign.id} />
 
@@ -1768,6 +1796,38 @@ export default function CampaignDetail() {
                   const meta = channelMeta(step.channel)
                   const isEmail = normalizeChannel(step.channel) === "email"
                   const isAiCall = normalizeChannel(step.channel) === "ai_call"
+                  // Shared between the AI-call script's plain textarea (as a
+                  // standalone control) and the RichTextEditor's toolbarEnd —
+                  // same menu, same handler, different mount point.
+                  const variablesMenu = (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-muted-foreground">
+                          <Braces className="size-4" />
+                          {c.insertVariable}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>{c.insertVariable}</DropdownMenuLabel>
+                        {MERGE_VARIABLES.map((v) => (
+                          <DropdownMenuItem
+                            key={v.tag}
+                            // False positive: only reads the ref from this click,
+                            // same shape as Inbox.tsx's insertVar — the rule can't
+                            // trace refs through this panel's pre-existing IIFE.
+                            // eslint-disable-next-line react-hooks/refs
+                            onClick={() => insertStepVariable(v.tag, step, isAiCall)}
+                          >
+                            <Braces className="text-primary size-3.5" />
+                            <span className="flex-1">{c.variables[v.tag]}</span>
+                            <span className="text-muted-foreground font-mono text-[11px]">
+                              {`{{${v.tag}}}`}
+                            </span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
                   const sent = Math.max(
                     0,
                     campaign.enrolled -
@@ -1950,7 +2010,9 @@ export default function CampaignDetail() {
                                 </SelectContent>
                               </Select>
                             </div>
+                            <div className="flex justify-end">{variablesMenu}</div>
                             <Textarea
+                              ref={aiScriptRef}
                               value={step.body}
                               placeholder={c.aiScriptPlaceholder}
                               onChange={(e) =>
@@ -1980,6 +2042,7 @@ export default function CampaignDetail() {
                             )}
 
                             <RichTextEditor
+                              ref={stepBodyRef}
                               value={plainToHtml(step.body)}
                               placeholder={c.messageBody}
                               ariaLabel={c.messageBody}
@@ -1989,6 +2052,7 @@ export default function CampaignDetail() {
                                 })
                               }
                               minHeight="min-h-20"
+                              toolbarEnd={variablesMenu}
                             />
                           </>
                         )}
