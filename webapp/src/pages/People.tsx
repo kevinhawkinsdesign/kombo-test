@@ -28,6 +28,7 @@ import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkCrmSyncDialog } from "@/components/common/BulkCrmSyncDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
 import { prospectSource } from "@/lib/format"
@@ -168,6 +169,7 @@ export default function People() {
   const [addOpen, setAddOpen] = React.useState(false)
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkEnrich, setBulkEnrich] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
   const columnPrefs = useColumnPrefs("people", PEOPLE_DEFAULT_IDS)
@@ -440,6 +442,7 @@ export default function People() {
         onExport={exportSelected}
         onEnrich={() => setBulkEnrich(true)}
         onAddToList={() => setBulkList(true)}
+        onAddToCrm={() => setBulkCrmOpen(true)}
         onLookalikes={findLookalikes}
       />
 
@@ -454,6 +457,12 @@ export default function People() {
         open={bulkEnrich}
         onOpenChange={setBulkEnrich}
         prospects={selectedProspects}
+      />
+      <BulkCrmSyncDialog
+        open={bulkCrmOpen}
+        onOpenChange={setBulkCrmOpen}
+        count={selectedIds.size}
+        onDone={sel.clear}
       />
 
       <ColumnManager

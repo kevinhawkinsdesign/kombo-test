@@ -28,6 +28,7 @@ import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkCrmSyncDialog } from "@/components/common/BulkCrmSyncDialog"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { downloadCsv } from "@/lib/csv"
 import {
@@ -163,6 +164,7 @@ export default function Companies() {
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [bulkList, setBulkList] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
@@ -389,6 +391,7 @@ export default function Companies() {
         onExport={exportSelected}
         onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
         onAddToList={() => setBulkList(true)}
+        onAddToCrm={() => setBulkCrmOpen(true)}
         onLookalikes={findLookalikes}
         onFindContacts={() => setFindContactsOpen(true)}
       />
@@ -399,6 +402,13 @@ export default function Companies() {
         mode="list"
         recordKind="company"
         ids={addIdsArr}
+      />
+
+      <BulkCrmSyncDialog
+        open={bulkCrmOpen}
+        onOpenChange={setBulkCrmOpen}
+        count={selectedIds.size}
+        onDone={sel.clear}
       />
 
       <ColumnManager
