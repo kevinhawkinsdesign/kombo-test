@@ -150,6 +150,8 @@ import {
   AI_VOICES,
   AI_CALL_AGENTS,
   AI_CALL_RETRY_DELAYS_MINUTES,
+  TASK_START_TIME_OPTIONS,
+  TASK_REMINDER_OPTIONS,
 } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
 import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
@@ -333,6 +335,8 @@ const COPY = {
     manualTaskAssignee: "Assigned to",
     taskTitlePlaceholder: "Task title, e.g. \"Call to follow up\"",
     taskNotesPlaceholder: "Notes for the rep (optional)",
+    taskStartTimeLabel: "Start time",
+    taskReminderLabel: "Reminder",
     manualTaskFooter: "This step creates a task for the assigned rep — it doesn't send automatically.",
     aiVoiceLabel: "Voice",
     aiCallAgentLabel: "Agent / goal",
@@ -574,6 +578,8 @@ const COPY = {
     manualTaskAssignee: "Asignada a",
     taskTitlePlaceholder: "Título de la tarea, p. ej. «Llamar para dar seguimiento»",
     taskNotesPlaceholder: "Notas para el vendedor (opcional)",
+    taskStartTimeLabel: "Hora de inicio",
+    taskReminderLabel: "Recordatorio",
     manualTaskFooter: "Este paso crea una tarea para el vendedor asignado — no se envía automáticamente.",
     aiVoiceLabel: "Voz",
     aiCallAgentLabel: "Agente / objetivo",
@@ -2152,6 +2158,52 @@ export default function CampaignDetail() {
                               }
                               className="min-h-20"
                             />
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1.5">
+                                <Label className="text-xs">{c.taskStartTimeLabel}</Label>
+                                <Select
+                                  value={String(step.taskStartTime ?? TASK_START_TIME_OPTIONS[0].value)}
+                                  onValueChange={(v) =>
+                                    draft.updateStep(step.id, {
+                                      taskStartTime: Number(v),
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {TASK_START_TIME_OPTIONS.map((opt) => (
+                                      <SelectItem key={opt.value} value={String(opt.value)}>
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs">{c.taskReminderLabel}</Label>
+                                <Select
+                                  value={String(step.taskReminderMinutes ?? TASK_REMINDER_OPTIONS[0].value)}
+                                  onValueChange={(v) =>
+                                    draft.updateStep(step.id, {
+                                      taskReminderMinutes: Number(v),
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {TASK_REMINDER_OPTIONS.map((opt) => (
+                                      <SelectItem key={opt.value} value={String(opt.value)}>
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
                           </>
                         ) : isAiCall ? (
                           <>

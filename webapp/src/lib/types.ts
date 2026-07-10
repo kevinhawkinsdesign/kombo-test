@@ -284,6 +284,12 @@ export interface CampaignStep {
   // auto-sending. `subject` becomes the task title and `body` becomes
   // optional notes; status is binary (to-do vs done) on the rep's task list.
   isManualTask?: boolean
+  // Hour of day (0-23) the task is due at; undefined reads as the first
+  // entry in TASK_START_TIME_OPTIONS (9am).
+  taskStartTime?: number
+  // Minutes before the task's start time to surface a reminder; 0 reads as
+  // "no reminder." Undefined reads as 0.
+  taskReminderMinutes?: number
   // The ElevenLabs voice used for an `ai_call` step; `body` doubles as the
   // call script/instructions given to the agent.
   aiVoice?: string
