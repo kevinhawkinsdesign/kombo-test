@@ -48,6 +48,22 @@ import {
 // account is wired up in this prototype.
 export const AI_VOICES = ["Rachel", "Adam", "Bella", "Antoni"]
 
+// Mock ElevenLabs agent/goal roster for ai_call steps — mirrors the
+// extension's listElevenLabsAgents(), which has no backend equivalent here.
+export const AI_CALL_AGENTS = [
+  { id: "agent-qualify", name: "Qualify inbound lead" },
+  { id: "agent-book-demo", name: "Book a demo" },
+  { id: "agent-renewal", name: "Renewal check-in" },
+  { id: "agent-reengage", name: "Re-engage cold prospect" },
+]
+
+// Fixed retry-delay presets for an unanswered ai_call step, in minutes —
+// same schedules as the extension's AgenticCallSection.
+export const AI_CALL_RETRY_DELAYS_MINUTES: Record<"rapid" | "relaxed", number[]> = {
+  rapid: [5, 15, 30, 60, 120, 480, 720, 1440],
+  relaxed: [5, 30, 120, 1440, 2880, 7200],
+}
+
 // Deterministic mock direct-dial derived from a contact id, so the same
 // contact always "reveals" the same number across renders.
 function mockPhone(seed: string): string {
