@@ -8,7 +8,6 @@ import {
   Users,
   Building2,
   ArrowRight,
-  ArrowLeft,
   ArrowDownUp,
   SlidersHorizontal,
   ChevronDown,
@@ -21,14 +20,11 @@ import {
   Link2,
   Columns3,
   Download,
-  Globe,
-  ScanSearch,
 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
@@ -72,7 +68,6 @@ import {
   searchCompanies,
   sortLeads,
   sortCompanies,
-  parseDomainList,
   EMPTY_QUERY,
   type AiQuery,
   type AiLead,
@@ -84,10 +79,6 @@ import type { AccountTier } from "@/lib/types"
 
 type Kind = "contact" | "company"
 type Mode = "search" | "import"
-// "splash" is the entry pre-step (Search vs Guide Me); "wizard" is the guided
-// flow's placeholder landing until its question steps are specified; "results"
-// is today's existing search/import screen.
-type Screen = "splash" | "wizard" | "results"
 
 const COPY = {
   en: {
@@ -98,61 +89,7 @@ const COPY = {
     company: "Companies",
     search: "Search",
     import: "Import",
-    splashSearchTitle: "Search",
-    splashSearchDesc: "Describe who you're looking for and search our database directly.",
-    splashSearchWithFilters: "Search with filters",
-    splashGuideTitle: "Guide me",
-    splashGuideDesc: "Answer a few quick questions and we'll build the search for you.",
-    splashGuideCta: "Start guided search",
-    splashBack: "Back",
     cancel: "Cancel",
-    wizRootTitle: "Let's find who you need",
-    wizRootDesc: "Start by telling us how you'd like to add records.",
-    wizImportTitle: "Import",
-    wizImportDesc: "Bring in prospects or companies you already have — a file, your CRM, or a link.",
-    wizSearchTitle: "Search",
-    wizSearchDesc: "Find new prospects or companies directly from our database.",
-    wizImportSourceTitle: "Select your import source",
-    wizImportSourceDesc: "Choose how you'd like to bring records in.",
-    wizFileTitle: "File",
-    wizFileDesc: "CSV, XLS, XLSX, JSON, or TSV",
-    wizCrmTitle: "CRM",
-    wizCrmDesc: "Import a view, list, query, or table from your connected CRM",
-    wizLinkTitle: "Link",
-    wizLinkDesc: "A LinkedIn URL, or your connected account",
-    wizLinkSourceTitle: "Import from a LinkedIn link",
-    wizLinkSourceDesc: "Paste a URL, or sync directly from your connected account.",
-    wizLiFollowersDesc: "Import everyone following your connected LinkedIn account",
-    wizConnectLinkedinPrompt: "Connect your LinkedIn account first to import your followers.",
-    wizConnectLinkedinCta: "Connect LinkedIn",
-    wizSearchEntityTitle: "What are you looking for?",
-    wizSearchEntityDesc: "Choose the kind of record to search for.",
-    wizProspectDesc: "Find contacts by role, seniority, or activity",
-    wizCompanyDesc: "Find businesses by industry, size, or location",
-    wizProspectSourceTitle: "Find prospects",
-    wizProspectSourceDesc: "Choose where to search for people.",
-    wizKomboDbTitle: "KomboAI database",
-    wizKomboDbDesc:
-      "Find persons from our database of 100+ million contacts. We use 19+ data providers through a waterfall enrichment system that searches for verified phone numbers and emails in sequence, then enrich personalization with information from 60+ external sources.",
-    wizLiDbTitle: "LinkedIn database",
-    wizLiDbDesc: "Find persons based on attributes and parameters of their LinkedIn profile or activity.",
-    wizLookalikeTitle: "Lookalikes",
-    wizLookalikeDesc:
-      "Find persons based on being similar to another person you already know — by name, role, and more.",
-    wizCompanySourceTitle: "Find companies",
-    wizCompanySourceDesc: "Choose where to search for companies.",
-    wizDomainTitle: "Website link, URL, or domain",
-    wizDomainDesc: "Find a company by its website URL.",
-    wizGmapsTitle: "Google Maps",
-    wizGmapsDesc: "Find local businesses in or near a location.",
-    wizSalesNavTitle: "LinkedIn Sales Navigator",
-    wizSalesNavDesc: "Find companies by name or filters.",
-    domainDialogTitle: "Search by website or domain",
-    domainDialogDesc: "Paste one or more company URLs or domains, one per line.",
-    domainDialogPlaceholder: "acme.com\nhttps://example.io\nwww.someco.com",
-    domainDialogDetected: (n: number) => `${n} ${n === 1 ? "domain" : "domains"} detected`,
-    domainDialogEmpty: "No domains detected yet.",
-    domainDialogApply: "Search",
     searchPeoplePlaceholder: "Search prospects — e.g. VPs of Sales at SaaS companies",
     searchCompanyPlaceholder: "Search companies — e.g. Series B fintechs hiring sales",
     run: "Search",
@@ -245,61 +182,7 @@ const COPY = {
     company: "Empresas",
     search: "Buscar",
     import: "Importar",
-    splashSearchTitle: "Buscar",
-    splashSearchDesc: "Describe a quién buscas y busca directamente en nuestra base de datos.",
-    splashSearchWithFilters: "Buscar con filtros",
-    splashGuideTitle: "Guíame",
-    splashGuideDesc: "Responde unas preguntas rápidas y crearemos la búsqueda por ti.",
-    splashGuideCta: "Iniciar búsqueda guiada",
-    splashBack: "Atrás",
     cancel: "Cancelar",
-    wizRootTitle: "Encontremos a quién necesitas",
-    wizRootDesc: "Empieza indicando cómo quieres añadir registros.",
-    wizImportTitle: "Importar",
-    wizImportDesc: "Trae prospectos o empresas que ya tienes — un archivo, tu CRM o un enlace.",
-    wizSearchTitle: "Buscar",
-    wizSearchDesc: "Encuentra nuevos prospectos o empresas directamente en nuestra base de datos.",
-    wizImportSourceTitle: "Elige tu fuente de importación",
-    wizImportSourceDesc: "Elige cómo quieres traer los registros.",
-    wizFileTitle: "Archivo",
-    wizFileDesc: "CSV, XLS, XLSX, JSON o TSV",
-    wizCrmTitle: "CRM",
-    wizCrmDesc: "Importa una vista, lista, consulta o tabla de tu CRM conectado",
-    wizLinkTitle: "Enlace",
-    wizLinkDesc: "Una URL de LinkedIn, o tu cuenta conectada",
-    wizLinkSourceTitle: "Importar desde un enlace de LinkedIn",
-    wizLinkSourceDesc: "Pega una URL, o sincroniza directamente desde tu cuenta conectada.",
-    wizLiFollowersDesc: "Importa a todos los que siguen tu cuenta de LinkedIn conectada",
-    wizConnectLinkedinPrompt: "Conecta tu cuenta de LinkedIn primero para importar tus seguidores.",
-    wizConnectLinkedinCta: "Conectar LinkedIn",
-    wizSearchEntityTitle: "¿Qué estás buscando?",
-    wizSearchEntityDesc: "Elige el tipo de registro que quieres buscar.",
-    wizProspectDesc: "Encuentra contactos por cargo, antigüedad o actividad",
-    wizCompanyDesc: "Encuentra empresas por sector, tamaño o ubicación",
-    wizProspectSourceTitle: "Buscar prospectos",
-    wizProspectSourceDesc: "Elige dónde buscar personas.",
-    wizKomboDbTitle: "Base de datos de KomboAI",
-    wizKomboDbDesc:
-      "Encuentra personas en nuestra base de datos de más de 100 millones de contactos. Usamos más de 19 proveedores de datos mediante un sistema de enriquecimiento en cascada que busca teléfonos y correos verificados en secuencia, y personalizamos con información de más de 60 fuentes externas.",
-    wizLiDbTitle: "Base de datos de LinkedIn",
-    wizLiDbDesc: "Encuentra personas según atributos y parámetros de su perfil o actividad en LinkedIn.",
-    wizLookalikeTitle: "Similares",
-    wizLookalikeDesc:
-      "Encuentra personas similares a otra persona que ya conoces — por nombre, cargo y más.",
-    wizCompanySourceTitle: "Buscar empresas",
-    wizCompanySourceDesc: "Elige dónde buscar empresas.",
-    wizDomainTitle: "Enlace, URL o dominio del sitio web",
-    wizDomainDesc: "Encuentra una empresa por la URL de su sitio web.",
-    wizGmapsTitle: "Google Maps",
-    wizGmapsDesc: "Encuentra negocios locales en una ubicación o cerca de ella.",
-    wizSalesNavTitle: "LinkedIn Sales Navigator",
-    wizSalesNavDesc: "Encuentra empresas por nombre o filtros.",
-    domainDialogTitle: "Buscar por sitio web o dominio",
-    domainDialogDesc: "Pega una o más URLs o dominios de empresas, uno por línea.",
-    domainDialogPlaceholder: "acme.com\nhttps://example.io\nwww.someco.com",
-    domainDialogDetected: (n: number) => `${n} ${n === 1 ? "dominio detectado" : "dominios detectados"}`,
-    domainDialogEmpty: "Aún no se ha detectado ningún dominio.",
-    domainDialogApply: "Buscar",
     searchPeoplePlaceholder: "Busca prospectos — p. ej. VPs de Ventas en empresas SaaS",
     searchCompanyPlaceholder: "Busca empresas — p. ej. fintechs Serie B contratando ventas",
     run: "Buscar",
@@ -399,12 +282,6 @@ function entityFromKind(kind: Kind): AiEntity {
 const CONNECTED_CRM =
   integrations.find((i) => i.category === "crm" && i.connected)?.name ?? null
 
-// Whether the user's LinkedIn account is connected — gates the "Followers"
-// import method, which syncs from that account rather than a pasted URL.
-const CONNECTED_LINKEDIN = Boolean(
-  integrations.find((i) => i.name === "LinkedIn" && i.connected)
-)
-
 // Results paging + selection limits for the add flow.
 const PAGE_SIZE = 25
 const MAX_SELECT = MAX_ENRICH_BATCH // 1,000
@@ -461,7 +338,6 @@ export function AddRecordsDialog({
 
   const [entity, setEntity] = React.useState<AiEntity>(entityFromKind(kind))
   const [mode, setMode] = React.useState<Mode>("search")
-  const [screen, setScreen] = React.useState<Screen>("results")
   const [input, setInput] = React.useState("")
   const [query, setQuery] = React.useState<AiQuery>({ ...EMPTY_QUERY })
   const [sortKey, setSortKey] = React.useState<SortKey>("fit")
@@ -472,9 +348,6 @@ export function AddRecordsDialog({
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [confirmOpen, setConfirmOpen] = React.useState(false)
-  // Which link-paste method the guided wizard preselected, if any — read once
-  // by ImportPane on mount to land straight on that method's URL box.
-  const [pendingActiveLink, setPendingActiveLink] = React.useState<string | null>(null)
 
   // Customizable result columns — the same shared registry + ColumnManager the
   // Search page uses, so the add-modal exposes the identical columns + picker.
@@ -482,18 +355,12 @@ export function AddRecordsDialog({
   const companyColPrefs = useColumnPrefs("add-companies", COMPANY_RESULT_DEFAULT_IDS)
 
   const scoped = (scopeCompanies?.length ?? 0) > 0
-  // Only opens that actually visited the splash have anywhere to go "back" to.
-  const cameFromSplash = !scoped
 
   if (open && !wasOpen) {
     setWasOpen(true)
     // Scoping to companies means we're finding their people.
     setEntity(scoped ? "people" : entityFromKind(kind))
     setMode("search")
-    // A scoped open (e.g. "Find contacts" from a company list) already has
-    // clear intent — skip the splash and land straight on results, same as
-    // before this screen existed.
-    setScreen(scoped ? "results" : "splash")
     setInput("")
     setQuery({ ...EMPTY_QUERY })
     setSortKey("fit")
@@ -534,47 +401,6 @@ export function AddRecordsDialog({
     setSelected(new Set())
     setPage(0)
   }
-  // Submitting the splash screen's search box runs the same search and moves
-  // to the results screen — "the screen they get today".
-  function runSplashSearch() {
-    runSearch()
-    setScreen("results")
-  }
-  // "Search with filters" skips the AI prompt — it jumps to the same results
-  // screen with the filters rail (always visible there) ready to build a
-  // query from scratch instead of describing it in the prompt.
-  function runSplashWithFilters() {
-    setScreen("results")
-  }
-  // Guided-wizard resolutions — each leaf lands on the existing results/import
-  // screens (or hands off to the Search page for sources it already owns fully)
-  // instead of re-implementing that UI a second time inside the wizard.
-  function wizardGoImport(activeLink?: string) {
-    setPendingActiveLink(activeLink ?? null)
-    setMode("import")
-    setScreen("results")
-  }
-  function wizardGoSearch(source: "kombo" | "linkedin") {
-    setLinkedinOn(source === "linkedin")
-    setMode("search")
-    setScreen("results")
-  }
-  function wizardDomainSearch(domains: string[]) {
-    setEntity("companies")
-    setQuery((prev) => ({ ...prev, companyDomains: domains }))
-    setMode("search")
-    setScreen("results")
-  }
-  function wizardLookalikes() {
-    onOpenChange(false)
-    navigate("/search", { state: { openLookalike: true, entity } })
-  }
-  function wizardGoogleMaps() {
-    onOpenChange(false)
-    navigate("/search", { state: { initialSource: "google_maps" } })
-  }
-  // Shared by every ImportPane instance (the splash frame's and the results
-  // screen's) so both stay in sync with a single implementation.
   function handleImportFile() {
     toast.success(c.importingFile)
     onOpenChange(false)
@@ -820,95 +646,10 @@ export function AddRecordsDialog({
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton fullScreen>
-        {screen !== "results" && <DialogTitle className="sr-only">{title}</DialogTitle>}
-        {screen === "splash" ? (
-          <>
-            {/* Shared frame for both Search and Import — switching modes here
-                never leaves this lightweight splash chrome for the busy
-                results-screen header (that only happens once a search is
-                actually submitted). */}
-            <div className="flex flex-wrap items-center justify-center gap-3 border-b px-6 py-3">
-              {allowEntityToggle && (
-                <Segmented
-                  options={[
-                    { v: "people" as AiEntity, label: c.contact, icon: Users },
-                    { v: "companies" as AiEntity, label: c.company, icon: Building2 },
-                  ]}
-                  value={entity}
-                  onChange={switchEntity}
-                />
-              )}
-              <Segmented
-                options={[
-                  { v: "search" as Mode, label: c.search, icon: Search },
-                  { v: "import" as Mode, label: c.import, icon: Upload },
-                ]}
-                value={mode}
-                onChange={setMode}
-              />
-            </div>
-            {mode === "search" ? (
-              <SplashScreen
-                entity={entity}
-                input={input}
-                onInputChange={setInput}
-                onSubmit={runSplashSearch}
-                onSearchWithFilters={runSplashWithFilters}
-                onGuideMe={() => setScreen("wizard")}
-                c={c}
-              />
-            ) : (
-              <ImportPane
-                entity={entity}
-                c={c}
-                initialActiveLink={pendingActiveLink}
-                onFile={handleImportFile}
-                onConnect={handleImportConnect}
-                onSync={handleImportSync}
-                onLinkImport={handleImportLink}
-                onDownloadTemplate={downloadImportTemplate}
-              />
-            )}
-          </>
-        ) : screen === "wizard" ? (
-          <GuidedWizard
-            entity={entity}
-            allowEntityToggle={allowEntityToggle}
-            onEntityChange={switchEntity}
-            onBack={() => setScreen("splash")}
-            onGoImportFile={() => wizardGoImport()}
-            onGoImportCrm={() => wizardGoImport()}
-            onGoImportLink={(method) => wizardGoImport(method)}
-            connectedLinkedin={CONNECTED_LINKEDIN}
-            onSyncLinkedin={() => {
-              toast.success(c.syncing)
-              onOpenChange(false)
-            }}
-            onConnectLinkedin={() => leave("/integrations")}
-            onGoSearch={wizardGoSearch}
-            onLookalikes={wizardLookalikes}
-            onGoogleMaps={wizardGoogleMaps}
-            onDomainSearch={wizardDomainSearch}
-            c={c}
-          />
-        ) : (
         <>
         <header className="relative flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
-          {cameFromSplash && (
-            <button
-              type="button"
-              onClick={() => {
-                setMode("search")
-                setScreen("splash")
-              }}
-              aria-label={c.splashBack}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted -ml-1.5 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
-            >
-              <ArrowLeft className="size-4" />
-            </button>
-          )}
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
-          {/* Centered to match the splash screen's shared Search/Import chrome. */}
+          {/* Centered to match the Search/Import mode toggle below. */}
           <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-3">
             {allowEntityToggle && (
               <Segmented
@@ -1236,7 +977,6 @@ export function AddRecordsDialog({
           <ImportPane
             entity={entity}
             c={c}
-            initialActiveLink={pendingActiveLink}
             onFile={handleImportFile}
             onConnect={handleImportConnect}
             onSync={handleImportSync}
@@ -1245,7 +985,6 @@ export function AddRecordsDialog({
           />
         )}
         </>
-        )}
       </DialogContent>
     </Dialog>
 
@@ -1280,513 +1019,6 @@ export function AddRecordsDialog({
   )
 }
 
-// A row of numbered circles previewing the guided flow's step count — shown
-// both on the splash's "Guide me" side and on the wizard placeholder itself.
-function StepPreview() {
-  return (
-    <div className="flex items-center gap-1.5">
-      {[1, 2, 3].map((n, i) => (
-        <React.Fragment key={n}>
-          <span className="border-primary/40 text-primary bg-primary/5 flex size-7 items-center justify-center rounded-full border text-xs font-semibold">
-            {n}
-          </span>
-          {i < 2 && <span className="bg-border h-px w-4" />}
-        </React.Fragment>
-      ))}
-    </div>
-  )
-}
-
-// The pre-step splash screen: a vertical split between a direct search (left,
-// submits into today's existing results screen) and the entry point for a
-// guided, step-by-step wizard (right — its actual questions arrive later).
-function SplashScreen({
-  entity,
-  input,
-  onInputChange,
-  onSubmit,
-  onSearchWithFilters,
-  onGuideMe,
-  c,
-}: {
-  entity: AiEntity
-  input: string
-  onInputChange: (v: string) => void
-  onSubmit: () => void
-  onSearchWithFilters: () => void
-  onGuideMe: () => void
-  c: Copy
-}) {
-  return (
-    <div className="divide-border flex min-h-0 flex-1 divide-x">
-      <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-        <span className="bg-primary/10 flex size-12 items-center justify-center rounded-full">
-          <Search className="text-primary size-5" />
-        </span>
-        <div>
-          <h2 className="text-lg font-semibold">{c.splashSearchTitle}</h2>
-          <p className="text-muted-foreground mt-1 max-w-xs text-sm">{c.splashSearchDesc}</p>
-        </div>
-        <form
-          className="flex w-full max-w-sm items-center gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (input.trim().length >= 2) onSubmit()
-          }}
-        >
-          <div className="relative min-w-0 flex-1">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input
-              autoFocus
-              value={input}
-              onChange={(e) => onInputChange(e.target.value)}
-              placeholder={
-                entity === "people" ? c.searchPeoplePlaceholder : c.searchCompanyPlaceholder
-              }
-              clearable={false}
-              className="h-10 pl-9"
-            />
-          </div>
-          <Button
-            type="submit"
-            variant="volt"
-            size="icon"
-            className="h-10 shrink-0"
-            aria-label={c.run}
-            disabled={input.trim().length < 2}
-          >
-            <ArrowRight className="size-4" />
-          </Button>
-        </form>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onSearchWithFilters}
-          className="text-muted-foreground hover:text-foreground gap-1.5"
-        >
-          <SlidersHorizontal className="size-3.5" />
-          {c.splashSearchWithFilters}
-        </Button>
-      </div>
-
-      <button
-        type="button"
-        onClick={onGuideMe}
-        className="hover:bg-muted/40 flex min-w-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center transition-colors"
-      >
-        <span className="bg-primary/10 flex size-12 items-center justify-center rounded-full">
-          <Compass className="text-primary size-5" />
-        </span>
-        <div>
-          <h2 className="text-lg font-semibold">{c.splashGuideTitle}</h2>
-          <p className="text-muted-foreground mt-1 max-w-xs text-sm">{c.splashGuideDesc}</p>
-        </div>
-        <StepPreview />
-        <span className="text-primary inline-flex items-center gap-1 text-sm font-medium">
-          {c.splashGuideCta}
-          <ArrowRight className="size-4" />
-        </span>
-      </button>
-    </div>
-  )
-}
-
-// The guided wizard's question tree — a Lemlist-style "pick a big card"
-// narrowing flow. The root question is always Import vs Search; each answer
-// pushes one step deeper until a leaf is reached, at which point the parent
-// resolves it onto the existing results/import screens (or, for sources the
-// Search page already owns fully — Lookalikes, Google Maps — hands off there
-// instead of duplicating that experience a second time).
-type WizStep =
-  | "root"
-  | "import-source"
-  | "import-link"
-  | "search-entity"
-  | "prospect-source"
-  | "company-source"
-
-function WizardStepHeader({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="mb-6">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <p className="text-muted-foreground mt-1 text-sm">{desc}</p>
-    </div>
-  )
-}
-
-function WizardOption({
-  icon: Icon,
-  title,
-  description,
-  onClick,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  title: React.ReactNode
-  description: React.ReactNode
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="hover:border-primary/40 hover:bg-muted/40 group flex w-full items-start gap-3.5 rounded-xl border p-4 text-left transition-colors"
-    >
-      <span className="bg-muted flex size-11 shrink-0 items-center justify-center rounded-lg">
-        <Icon className="text-muted-foreground size-5" />
-      </span>
-      <div className="min-w-0 flex-1 pt-0.5">
-        <p className="font-medium">{title}</p>
-        <p className="text-muted-foreground mt-0.5 text-sm">{description}</p>
-      </div>
-      <ArrowRight className="text-muted-foreground mt-3 size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-    </button>
-  )
-}
-
-// Import → Link: a URL-paste method per entity, plus "Followers" — which
-// syncs the connected LinkedIn account instead of taking a pasted URL, so it
-// needs its own connected/not-connected branch.
-function ImportLinkStep({
-  entity,
-  c,
-  connectedLinkedin,
-  onPick,
-  onSync,
-  onConnect,
-}: {
-  entity: AiEntity
-  c: Copy
-  connectedLinkedin: boolean
-  onPick: (method: string) => void
-  onSync: () => void
-  onConnect: () => void
-}) {
-  const [needsConnect, setNeedsConnect] = React.useState(false)
-
-  const methods: {
-    key: string
-    label: string
-    desc: string
-    icon: React.ComponentType<{ className?: string }>
-  }[] =
-    entity === "people"
-      ? [
-          { key: "sn-leads", label: c.snLeads, desc: c.snLeadsPh, icon: Compass },
-          { key: "li-search", label: c.liSearch, desc: c.liSearchPh, icon: LinkedinIcon },
-          { key: "li-post", label: c.liPost, desc: c.liPostPh, icon: LinkedinIcon },
-        ]
-      : [{ key: "sn-companies", label: c.snCompanies, desc: c.snCompaniesPh, icon: Compass }]
-
-  return (
-    <>
-      <WizardStepHeader title={c.wizLinkSourceTitle} desc={c.wizLinkSourceDesc} />
-      <div className="space-y-3">
-        {methods.map((m) => (
-          <WizardOption
-            key={m.key}
-            icon={m.icon}
-            title={m.label}
-            description={m.desc}
-            onClick={() => onPick(m.key)}
-          />
-        ))}
-        {entity === "people" && (
-          <WizardOption
-            icon={LinkedinIcon}
-            title={c.liFollowers}
-            description={c.wizLiFollowersDesc}
-            onClick={() => {
-              if (connectedLinkedin) onSync()
-              else setNeedsConnect(true)
-            }}
-          />
-        )}
-      </div>
-      {needsConnect && (
-        <div className="border-primary/30 bg-primary/5 text-primary mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed p-3 text-sm">
-          <span>{c.wizConnectLinkedinPrompt}</span>
-          <Button size="sm" variant="outline" onClick={onConnect}>
-            {c.wizConnectLinkedinCta}
-          </Button>
-        </div>
-      )}
-    </>
-  )
-}
-
-// Search → Company → "Link/URL/domain": paste a list of company URLs or
-// domains, same parsing the Search page uses, applied via `companyDomains`
-// (a generic filter both people-at-these-companies and company search share).
-function DomainListDialog({
-  open,
-  onOpenChange,
-  c,
-  onApply,
-}: {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-  c: Copy
-  onApply: (domains: string[]) => void
-}) {
-  const [text, setText] = React.useState("")
-  const [wasOpen, setWasOpen] = React.useState(open)
-  if (open && !wasOpen) {
-    setWasOpen(true)
-    setText("")
-  }
-  if (!open && wasOpen) setWasOpen(false)
-
-  const domains = React.useMemo(() => parseDomainList(text), [text])
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogTitle className="flex items-center gap-2">
-          <Globe className="text-primary size-5" />
-          {c.domainDialogTitle}
-        </DialogTitle>
-        <p className="text-muted-foreground -mt-3 text-sm">{c.domainDialogDesc}</p>
-        <Textarea
-          autoFocus
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={c.domainDialogPlaceholder}
-          rows={7}
-          className="font-mono text-xs"
-        />
-        <p className="text-muted-foreground text-xs">
-          {domains.length > 0 ? c.domainDialogDetected(domains.length) : c.domainDialogEmpty}
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {c.cancel}
-          </Button>
-          <Button
-            variant="volt"
-            disabled={domains.length === 0}
-            onClick={() => onApply(domains)}
-          >
-            <Search className="size-4" />
-            {c.domainDialogApply}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function GuidedWizard({
-  entity,
-  allowEntityToggle,
-  onEntityChange,
-  onBack,
-  onGoImportFile,
-  onGoImportCrm,
-  onGoImportLink,
-  connectedLinkedin,
-  onSyncLinkedin,
-  onConnectLinkedin,
-  onGoSearch,
-  onLookalikes,
-  onGoogleMaps,
-  onDomainSearch,
-  c,
-}: {
-  entity: AiEntity
-  allowEntityToggle: boolean
-  onEntityChange: (e: AiEntity) => void
-  onBack: () => void
-  onGoImportFile: () => void
-  onGoImportCrm: () => void
-  onGoImportLink: (method: string) => void
-  connectedLinkedin: boolean
-  onSyncLinkedin: () => void
-  onConnectLinkedin: () => void
-  onGoSearch: (source: "kombo" | "linkedin") => void
-  onLookalikes: () => void
-  onGoogleMaps: () => void
-  onDomainSearch: (domains: string[]) => void
-  c: Copy
-}) {
-  const [path, setPath] = React.useState<WizStep[]>(["root"])
-  const [domainDialogOpen, setDomainDialogOpen] = React.useState(false)
-  const step = path[path.length - 1]
-
-  function go(next: WizStep) {
-    setPath((prev) => [...prev, next])
-  }
-  function back() {
-    if (path.length > 1) setPath((prev) => prev.slice(0, -1))
-    else onBack()
-  }
-  // "Search" only asks Prospect-vs-Company when the modal is generic — a
-  // scoped entry point (e.g. a Prospects list) already knows its entity.
-  function chooseSearch() {
-    go(allowEntityToggle ? "search-entity" : entity === "people" ? "prospect-source" : "company-source")
-  }
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <div className="mx-auto w-full max-w-lg px-6 py-8">
-        <button
-          type="button"
-          onClick={back}
-          className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1.5 text-sm font-medium"
-        >
-          <ArrowLeft className="size-4" />
-          {c.splashBack}
-        </button>
-
-        {step === "root" && (
-          <>
-            <WizardStepHeader title={c.wizRootTitle} desc={c.wizRootDesc} />
-            <div className="space-y-3">
-              <WizardOption
-                icon={Upload}
-                title={c.wizImportTitle}
-                description={c.wizImportDesc}
-                onClick={() => go("import-source")}
-              />
-              <WizardOption
-                icon={Search}
-                title={c.wizSearchTitle}
-                description={c.wizSearchDesc}
-                onClick={chooseSearch}
-              />
-            </div>
-          </>
-        )}
-
-        {step === "import-source" && (
-          <>
-            <WizardStepHeader title={c.wizImportSourceTitle} desc={c.wizImportSourceDesc} />
-            <div className="space-y-3">
-              <WizardOption
-                icon={Upload}
-                title={c.wizFileTitle}
-                description={c.wizFileDesc}
-                onClick={onGoImportFile}
-              />
-              <WizardOption
-                icon={Database}
-                title={c.wizCrmTitle}
-                description={c.wizCrmDesc}
-                onClick={onGoImportCrm}
-              />
-              <WizardOption
-                icon={Link2}
-                title={c.wizLinkTitle}
-                description={c.wizLinkDesc}
-                onClick={() => go("import-link")}
-              />
-            </div>
-          </>
-        )}
-
-        {step === "import-link" && (
-          <ImportLinkStep
-            entity={entity}
-            c={c}
-            connectedLinkedin={connectedLinkedin}
-            onPick={onGoImportLink}
-            onSync={onSyncLinkedin}
-            onConnect={onConnectLinkedin}
-          />
-        )}
-
-        {step === "search-entity" && (
-          <>
-            <WizardStepHeader title={c.wizSearchEntityTitle} desc={c.wizSearchEntityDesc} />
-            <div className="space-y-3">
-              <WizardOption
-                icon={Users}
-                title={c.contact}
-                description={c.wizProspectDesc}
-                onClick={() => {
-                  onEntityChange("people")
-                  go("prospect-source")
-                }}
-              />
-              <WizardOption
-                icon={Building2}
-                title={c.company}
-                description={c.wizCompanyDesc}
-                onClick={() => {
-                  onEntityChange("companies")
-                  go("company-source")
-                }}
-              />
-            </div>
-          </>
-        )}
-
-        {step === "prospect-source" && (
-          <>
-            <WizardStepHeader title={c.wizProspectSourceTitle} desc={c.wizProspectSourceDesc} />
-            <div className="space-y-3">
-              <WizardOption
-                icon={Database}
-                title={c.wizKomboDbTitle}
-                description={c.wizKomboDbDesc}
-                onClick={() => onGoSearch("kombo")}
-              />
-              <WizardOption
-                icon={LinkedinIcon}
-                title={c.wizLiDbTitle}
-                description={c.wizLiDbDesc}
-                onClick={() => onGoSearch("linkedin")}
-              />
-              <WizardOption
-                icon={ScanSearch}
-                title={c.wizLookalikeTitle}
-                description={c.wizLookalikeDesc}
-                onClick={onLookalikes}
-              />
-            </div>
-          </>
-        )}
-
-        {step === "company-source" && (
-          <>
-            <WizardStepHeader title={c.wizCompanySourceTitle} desc={c.wizCompanySourceDesc} />
-            <div className="space-y-3">
-              <WizardOption
-                icon={Globe}
-                title={c.wizDomainTitle}
-                description={c.wizDomainDesc}
-                onClick={() => setDomainDialogOpen(true)}
-              />
-              <WizardOption
-                icon={MapPin}
-                title={c.wizGmapsTitle}
-                description={c.wizGmapsDesc}
-                onClick={onGoogleMaps}
-              />
-              <WizardOption
-                icon={LinkedinIcon}
-                title={c.wizSalesNavTitle}
-                description={c.wizSalesNavDesc}
-                onClick={() => onGoSearch("linkedin")}
-              />
-            </div>
-          </>
-        )}
-      </div>
-
-      <DomainListDialog
-        open={domainDialogOpen}
-        onOpenChange={setDomainDialogOpen}
-        c={c}
-        onApply={(domains) => {
-          setDomainDialogOpen(false)
-          onDomainSearch(domains)
-        }}
-      />
-    </div>
-  )
-}
-
 type ImportMethod = {
   key: string
   label: string
@@ -1797,7 +1029,6 @@ type ImportMethod = {
 function ImportPane({
   entity,
   c,
-  initialActiveLink = null,
   onFile,
   onConnect,
   onSync,
@@ -1806,9 +1037,6 @@ function ImportPane({
 }: {
   entity: AiEntity
   c: Copy
-  // Preselects a link-paste method — set by the guided wizard when the user
-  // already named a specific LinkedIn link type.
-  initialActiveLink?: string | null
   onFile: () => void
   onConnect: () => void
   onSync: () => void
@@ -1816,7 +1044,7 @@ function ImportPane({
   onDownloadTemplate: () => void
 }) {
   // Which "link" method is being entered, plus the pasted URL.
-  const [activeLink, setActiveLink] = React.useState<string | null>(initialActiveLink)
+  const [activeLink, setActiveLink] = React.useState<string | null>(null)
   const [url, setUrl] = React.useState("")
 
   const linkTint = "bg-[#0a66c2]/10 text-[#0a66c2]"
