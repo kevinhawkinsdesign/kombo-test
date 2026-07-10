@@ -167,7 +167,6 @@ export default function People() {
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [bulkList, setBulkList] = React.useState(false)
-  const [bulkCampaign, setBulkCampaign] = React.useState(false)
   const [bulkEnrich, setBulkEnrich] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
@@ -441,7 +440,6 @@ export default function People() {
         onExport={exportSelected}
         onEnrich={() => setBulkEnrich(true)}
         onAddToList={() => setBulkList(true)}
-        onAddToCampaign={() => setBulkCampaign(true)}
         onLookalikes={findLookalikes}
       />
 
@@ -449,13 +447,6 @@ export default function People() {
         open={bulkList}
         onOpenChange={setBulkList}
         mode="list"
-        recordKind="person"
-        ids={addIdsArr}
-      />
-      <BulkAddDialog
-        open={bulkCampaign}
-        onOpenChange={setBulkCampaign}
-        mode="campaign"
         recordKind="person"
         ids={addIdsArr}
       />

@@ -25,9 +25,9 @@ import type { Prospect } from "@/lib/types"
 
 const COPY = {
   en: {
-    title: "Enrich contacts",
+    title: "Enrich prospects",
     description:
-      "Reveal verified emails and direct dials, plus 30+ data points per contact.",
+      "Reveal verified emails and direct dials, plus 30+ data points per prospect.",
     chooseScope: "What do you want to reveal? Pick any combination.",
     scopeEmail: "Verified email",
     scopePhone: "Phone number",
@@ -35,27 +35,27 @@ const COPY = {
     scopeEmailDesc: "Verified work email",
     scopePhoneDesc: "Direct dial & mobile",
     scopeProfileDesc: "Scoring + 30+ data points",
-    toEnrich: "Contacts to enrich",
+    toEnrich: "Prospects to enrich",
     total: "Total",
     pickOne: "Pick at least one thing to reveal.",
     cappedNote: (max: number) =>
-      `Enrichment runs ${max.toLocaleString()} contacts at a time. The rest stay queued.`,
-    perContact: "per contact",
+      `Enrichment runs ${max.toLocaleString()} prospects at a time. The rest stay queued.`,
+    perContact: "per prospect",
     credits: "credits",
     balanceAfter: "Balance after",
-    allEnriched: "Every selected contact already has this.",
+    allEnriched: "Every selected prospect already has this.",
     cancel: "Cancel",
     enrich: (count: number) =>
-      `Enrich ${count.toLocaleString()} ${count === 1 ? "contact" : "contacts"}`,
+      `Enrich ${count.toLocaleString()} ${count === 1 ? "prospect" : "prospects"}`,
     done: (count: number) =>
-      `${count.toLocaleString()} ${count === 1 ? "contact" : "contacts"} enriched`,
+      `${count.toLocaleString()} ${count === 1 ? "prospect" : "prospects"} enriched`,
     queued: (count: number) => ` · ${count.toLocaleString()} queued for the next batch`,
     usageLabel: (count: number, scope: string) => `Enrichment · ${scope} (${count})`,
   },
   es: {
-    title: "Enriquecer contactos",
+    title: "Enriquecer prospectos",
     description:
-      "Revela correos verificados y teléfonos directos, además de más de 30 datos por contacto.",
+      "Revela correos verificados y teléfonos directos, además de más de 30 datos por prospecto.",
     chooseScope: "¿Qué quieres revelar? Elige cualquier combinación.",
     scopeEmail: "Correo verificado",
     scopePhone: "Teléfono",
@@ -63,20 +63,20 @@ const COPY = {
     scopeEmailDesc: "Correo de trabajo verificado",
     scopePhoneDesc: "Teléfono directo y móvil",
     scopeProfileDesc: "Puntuación + más de 30 datos",
-    toEnrich: "Contactos por enriquecer",
+    toEnrich: "Prospectos por enriquecer",
     total: "Total",
     pickOne: "Elige al menos una cosa para revelar.",
     cappedNote: (max: number) =>
-      `El enriquecimiento procesa ${max.toLocaleString()} contactos a la vez. El resto queda en cola.`,
-    perContact: "por contacto",
+      `El enriquecimiento procesa ${max.toLocaleString()} prospectos a la vez. El resto queda en cola.`,
+    perContact: "por prospecto",
     credits: "créditos",
     balanceAfter: "Saldo después",
-    allEnriched: "Todos los contactos seleccionados ya lo tienen.",
+    allEnriched: "Todos los prospectos seleccionados ya lo tienen.",
     cancel: "Cancelar",
     enrich: (count: number) =>
-      `Enriquecer ${count.toLocaleString()} ${count === 1 ? "contacto" : "contactos"}`,
+      `Enriquecer ${count.toLocaleString()} ${count === 1 ? "prospecto" : "prospectos"}`,
     done: (count: number) =>
-      `${count.toLocaleString()} ${count === 1 ? "contacto enriquecido" : "contactos enriquecidos"}`,
+      `${count.toLocaleString()} ${count === 1 ? "prospecto enriquecido" : "prospectos enriquecidos"}`,
     queued: (count: number) => ` · ${count.toLocaleString()} en cola para el próximo lote`,
     usageLabel: (count: number, scope: string) => `Enriquecimiento · ${scope} (${count})`,
   },
