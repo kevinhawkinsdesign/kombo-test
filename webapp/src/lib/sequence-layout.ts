@@ -134,9 +134,13 @@ function layoutStep(step: CampaignStep, depth: number, interactive: boolean): St
 
   const lanes = trackLanes(step.fork)
   let maxRejoinDepth = depth + 1
-  // A Set, not an array — when two tracks are both still empty (e.g. right
-  // after adding a condition), they'd otherwise both resolve to the same
-  // anchor step id, producing a duplicate edge into the trailing ghost.
+  // An empty track (right after adding a condition, before either arm has a
+  // step yet) contributes no rejoin source at all — falling back to the
+  // fork step's own id here used to draw a third, redundant line straight
+  // down from the fork step to the trailing "after both tracks" ghost, on
+  // top of the two diagonal lines already going to each track's own empty-
+  // track ghost. Once a track has a real step, that step becomes the
+  // rejoin source as normal.
   const rejoinSources = new Set<string>()
 
   step.fork.tracks.forEach((track, i) => {
@@ -152,7 +156,7 @@ function layoutStep(step: CampaignStep, depth: number, interactive: boolean): St
     nodes.push(...result.nodes)
     edges.push(...result.edges)
     maxRejoinDepth = Math.max(maxRejoinDepth, result.endDepth)
-    rejoinSources.add(result.lastId ?? step.id)
+    if (result.lastId) rejoinSources.add(result.lastId)
   })
 
   return {
