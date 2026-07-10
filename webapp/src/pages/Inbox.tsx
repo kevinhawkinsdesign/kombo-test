@@ -47,6 +47,7 @@ import {
   Play,
   Pause,
   Square,
+  ListFilter,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -90,6 +91,12 @@ import { TruncatedText } from "@/components/common/TruncatedText"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
+import { FilterConversationsDialog } from "@/components/inbox/FilterConversationsDialog"
+import {
+  emptyConversationFilters,
+  countConversationFilters,
+  type ConversationFilters,
+} from "@/lib/conversation-filters"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
@@ -158,6 +165,7 @@ const COPY = {
     recency24h: "Past 24 hours",
     recency7d: "Past 7 days",
     recency30d: "Past 30 days",
+    moreFilters: "More filters…",
     clearFilters: "Clear filters",
     empty: "Nothing here",
     emptyHint: "New conversations will show up here.",
@@ -313,6 +321,7 @@ const COPY = {
     recency24h: "Últimas 24 horas",
     recency7d: "Últimos 7 días",
     recency30d: "Últimos 30 días",
+    moreFilters: "Más filtros…",
     clearFilters: "Limpiar filtros",
     empty: "Nada por aquí",
     emptyHint: "Las nuevas conversaciones aparecerán aquí.",
@@ -720,6 +729,10 @@ export default function Inbox() {
   const [unreadOnly, setUnreadOnly] = React.useState(false)
   const [countryFilter, setCountryFilter] = React.useState<string>("all")
   const [recencyFilter, setRecencyFilter] = React.useState<RecencyFilter>("any")
+  const [advancedFilters, setAdvancedFilters] = React.useState<ConversationFilters>(
+    emptyConversationFilters()
+  )
+  const [filterDialogOpen, setFilterDialogOpen] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   // Focus mode: collapse the folder rail + conversation list to give the open
   // thread full width when reading/replying deep in a conversation.
@@ -809,6 +822,21 @@ export default function Inbox() {
     [query]
   )
 
+  // Which campaign(s) a prospect is enrolled in, at any status — Conversation
+  // has no direct campaignId, so this is the same enrollment lookup already
+  // used above for the "next sequence step" timeline preview.
+  const prospectCampaignIds = React.useMemo(() => {
+    const map = new Map<string, Set<string>>()
+    for (const campaign of campaigns) {
+      for (const enrollment of campaignEnrollments[campaign.id] ?? []) {
+        const set = map.get(enrollment.prospectId) ?? new Set<string>()
+        set.add(campaign.id)
+        map.set(enrollment.prospectId, set)
+      }
+    }
+    return map
+  }, [campaigns])
+
   const list = React.useMemo(() => {
     // The Archived folder is the one view that reaches past `visible` (which
     // excludes archived threads everywhere else) to show exactly what's archived.
@@ -845,12 +873,37 @@ export default function Inbox() {
       if (countryFilter !== "all" && countryOf(getProspect(conv.prospectId)?.location ?? "") !== countryFilter)
         return false
       if (!withinRecency(conv.lastMessageAt, recencyFilter)) return false
+      if (advancedFilters.campaignIds.size > 0) {
+        const ids = prospectCampaignIds.get(conv.prospectId)
+        if (!ids || ![...advancedFilters.campaignIds].some((id) => ids.has(id))) return false
+      }
+      if (
+        advancedFilters.outcomes.size > 0 &&
+        (!conv.status || !advancedFilters.outcomes.has(conv.status))
+      )
+        return false
+      if (
+        advancedFilters.assigneeIds.size > 0 &&
+        (!conv.assigneeId || !advancedFilters.assigneeIds.has(conv.assigneeId))
+      )
+        return false
       return matchesSearch(conv)
     })
     return filtered.sort(
       (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     )
-  }, [visible, conversations, view, channelFilter, unreadOnly, countryFilter, recencyFilter, matchesSearch])
+  }, [
+    visible,
+    conversations,
+    view,
+    channelFilter,
+    unreadOnly,
+    countryFilter,
+    recencyFilter,
+    advancedFilters,
+    prospectCampaignIds,
+    matchesSearch,
+  ])
 
   const countryOptions = React.useMemo(() => {
     const set = new Set<string>()
@@ -946,7 +999,11 @@ export default function Inbox() {
       : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive =
-    channelFilter !== "all" || unreadOnly || countryFilter !== "all" || recencyFilter !== "any"
+    channelFilter !== "all" ||
+    unreadOnly ||
+    countryFilter !== "all" ||
+    recencyFilter !== "any" ||
+    countConversationFilters(advancedFilters) > 0
 
   // Selection doesn't carry over when the user switches folders/outcomes.
   const viewSig = `${view.kind}:${view.id}`
@@ -1290,6 +1347,16 @@ export default function Inbox() {
                     {recencyFilter === r && <Check className="ml-auto size-4" />}
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setFilterDialogOpen(true)}>
+                  <ListFilter className="size-4" />
+                  {c.moreFilters}
+                  {countConversationFilters(advancedFilters) > 0 && (
+                    <span className="text-muted-foreground ml-auto text-[11px] tabular-nums">
+                      {countConversationFilters(advancedFilters)}
+                    </span>
+                  )}
+                </DropdownMenuItem>
                 {filtersActive && (
                   <>
                     <DropdownMenuSeparator />
@@ -1299,6 +1366,7 @@ export default function Inbox() {
                         setUnreadOnly(false)
                         setCountryFilter("all")
                         setRecencyFilter("any")
+                        setAdvancedFilters(emptyConversationFilters())
                       }}
                     >
                       <X className="size-4" />
@@ -2051,6 +2119,14 @@ export default function Inbox() {
           if (!v) setEditingTask(undefined)
         }}
         task={editingTask}
+      />
+
+      <FilterConversationsDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        campaigns={campaigns}
+        filters={advancedFilters}
+        onApply={setAdvancedFilters}
       />
     </div>
   )
