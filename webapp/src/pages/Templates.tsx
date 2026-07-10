@@ -153,6 +153,9 @@ const COPY = {
   en: {
     topPerformer: "Top performer",
     deleteAria: (name: string) => `Delete ${name}`,
+    duplicateAria: (name: string) => `Duplicate ${name}`,
+    copySuffix: "(copy)",
+    duplicated: (name: string) => `"${name}" created`,
     sent: (count: string) => `${count} sent`,
     replySuffix: "reply",
     pageTitle: "Campaign Templates",
@@ -267,6 +270,9 @@ const COPY = {
   es: {
     topPerformer: "Mejor rendimiento",
     deleteAria: (name: string) => `Eliminar ${name}`,
+    duplicateAria: (name: string) => `Duplicar ${name}`,
+    copySuffix: "(copia)",
+    duplicated: (name: string) => `«${name}» creada`,
     sent: (count: string) => `${count} enviados`,
     replySuffix: "respuesta",
     pageTitle: "Plantillas de campaña",
@@ -500,12 +506,14 @@ function PromptsSection({
   onCreate,
   onEdit,
   onDelete,
+  onDuplicate,
 }: {
   prompts: PromptTemplate[]
   c: Copy
   onCreate: () => void
   onEdit: (p: PromptTemplate) => void
   onDelete: (p: PromptTemplate) => void
+  onDuplicate: (p: PromptTemplate) => void
 }) {
   const grouped = new Map<string, PromptTemplate[]>()
   for (const p of prompts) {
@@ -561,6 +569,18 @@ function PromptsSection({
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label={c.duplicateAria(p.name)}
+                    className="text-muted-foreground -mt-1 size-8 shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDuplicate(p)
+                    }}
+                  >
+                    <Copy className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     aria-label={c.deleteAria(p.name)}
                     className="text-muted-foreground hover:text-destructive -mt-1 -mr-1 size-8 shrink-0"
                     onClick={(e) => {
@@ -590,10 +610,12 @@ function TemplateCard({
   template,
   onOpen,
   onDelete,
+  onDuplicate,
 }: {
   template: EmailTemplate
   onOpen: (template: EmailTemplate) => void
   onDelete: (template: EmailTemplate) => void
+  onDuplicate: (template: EmailTemplate) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -633,8 +655,20 @@ function TemplateCard({
         <Button
           variant="ghost"
           size="icon"
+          aria-label={c.duplicateAria(template.name)}
+          className="text-muted-foreground -mt-1 size-8 shrink-0"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDuplicate(template)
+          }}
+        >
+          <Copy className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label={c.deleteAria(template.name)}
-          className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+          className="text-muted-foreground hover:text-destructive -mt-1 -mr-1 size-8 shrink-0"
           onClick={(e) => {
             e.stopPropagation()
             onDelete(template)
@@ -816,6 +850,18 @@ export default function Templates() {
     toast.success(c.templateDeleted)
   }
 
+  function duplicateTemplate(t: EmailTemplate) {
+    const created = templateStore.create({
+      name: `${t.name} ${c.copySuffix}`,
+      folder: t.folder,
+      channel: t.channel,
+      subject: t.subject,
+      body: t.body,
+      tags: t.tags,
+    })
+    toast.success(c.duplicated(created.name))
+  }
+
   const [view, setView] = React.useState<CollectionView>("table")
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   // Campaign Templates has two sections: fixed messages and AI prompts.
@@ -834,6 +880,15 @@ export default function Templates() {
   function openPromptForm(prompt: PromptTemplate | null) {
     setEditingPrompt(prompt)
     setPromptFormOpen(true)
+  }
+  function duplicatePrompt(p: PromptTemplate) {
+    const created = promptTemplateStore.create({
+      name: `${p.name} ${c.copySuffix}`,
+      channel: p.channel,
+      folder: p.folder,
+      prompt: p.prompt,
+    })
+    toast.success(c.duplicated(created.name))
   }
   const templateColPrefs = useColumnPrefs("templates", TEMPLATE_COL_DEFAULT_IDS)
   const [query, setQuery] = React.useState("")
@@ -1031,6 +1086,7 @@ export default function Templates() {
           onCreate={() => openPromptForm(null)}
           onEdit={(pt) => openPromptForm(pt)}
           onDelete={setDeletingPrompt}
+          onDuplicate={duplicatePrompt}
         />
       )}
 
@@ -1120,15 +1176,26 @@ export default function Templates() {
                 someSelected,
               }}
               actions={(t) => (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={c.deleteAria(t.name)}
-                  className="text-muted-foreground hover:text-destructive size-8"
-                  onClick={() => setConfirmTarget(t)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={c.duplicateAria(t.name)}
+                    className="text-muted-foreground size-8"
+                    onClick={() => duplicateTemplate(t)}
+                  >
+                    <Copy className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={c.deleteAria(t.name)}
+                    className="text-muted-foreground hover:text-destructive size-8"
+                    onClick={() => setConfirmTarget(t)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
               )}
             />
             <BulkActionsBar
@@ -1204,6 +1271,7 @@ export default function Templates() {
                     template={template}
                     onOpen={openEditor}
                     onDelete={setConfirmTarget}
+                    onDuplicate={duplicateTemplate}
                   />
                 ))}
               </div>

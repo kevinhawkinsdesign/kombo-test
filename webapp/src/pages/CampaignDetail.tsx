@@ -29,6 +29,7 @@ import {
   Bookmark,
   UserSearch,
   Building2,
+  Eye,
 } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
@@ -41,6 +42,7 @@ import {
   type PromptStepSeed,
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
+import { SequenceMessagePreviewDialog } from "@/components/campaign/SequenceMessagePreviewDialog"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
@@ -306,6 +308,7 @@ const COPY = {
     addStep: "Add step",
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
+    previewMessages: "Preview messages",
     suggestedNext: (label: string) => `Suggested next: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -521,6 +524,7 @@ const COPY = {
     addStep: "Añadir paso",
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
+    previewMessages: "Vista previa de mensajes",
     suggestedNext: (label: string) => `Sugerencia: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -741,6 +745,7 @@ export default function CampaignDetail() {
   const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
   const [saveSeqOpen, setSaveSeqOpen] = React.useState(false)
+  const [previewOpen, setPreviewOpen] = React.useState(false)
   const { spend } = useCredits()
 
   // Prospects-tab table: shared DataTable + ColumnManager (like People/Lists).
@@ -947,6 +952,12 @@ export default function CampaignDetail() {
       manual: true,
     })),
   ]
+
+  // Real enrolled prospects, for previewing actual resolved message copy
+  // (as opposed to the fixed sample recipients used elsewhere).
+  const audienceProspects = prospectRows
+    .map((r) => r.prospect)
+    .filter((p): p is Prospect => Boolean(p))
 
   // Bulk selection spans the manually-added rows only; stale ids (already
   // removed) drop out at compute time. Paginated like every other
@@ -1690,6 +1701,14 @@ export default function CampaignDetail() {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => setPreviewOpen(true)}
+                >
+                  <Eye className="size-4" />
+                  {c.previewMessages}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setCopySeqOpen(true)}
                 >
                   <Copy className="size-4" />
@@ -2402,6 +2421,13 @@ export default function CampaignDetail() {
         open={saveSeqOpen}
         onOpenChange={setSaveSeqOpen}
         steps={draft.steps}
+      />
+
+      <SequenceMessagePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        steps={draft.steps}
+        prospects={audienceProspects}
       />
 
       <ColumnManager

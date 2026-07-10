@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { Rocket, PenLine, Copy } from "lucide-react"
+import { Rocket, PenLine, Copy, Sparkles, RefreshCw } from "lucide-react"
 
 import {
   Dialog,
@@ -15,11 +15,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { SearchCombobox } from "@/components/common/SearchCombobox"
+import { Badge } from "@/components/ui/badge"
+import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { useLocale } from "@/lib/locale"
-import { useCampaigns, campaignStore, flattenCampaignSteps } from "@/lib/store"
+import { campaignStore } from "@/lib/store"
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
+import { generateSequenceFromPrompt } from "@/lib/prompt-templates"
+import { channelMeta } from "@/lib/step-channels"
 import { cn } from "@/lib/utils"
+import type { CampaignStep } from "@/lib/types"
 
 /* ----------------------------- context ---------------------------------- */
 
@@ -53,20 +57,25 @@ const COPY = {
     title: "New campaign",
     modeManual: "Create manually",
     modeManualDesc: "Just a name and a goal — build the sequence and audience after.",
-    modeCopy: "Copy a campaign",
-    modeCopyDesc: "Duplicate another campaign's whole sequence.",
-    copyFromLabel: "Copy from",
-    copySearchPlaceholder: "Search campaigns…",
-    copyEmpty: "No campaigns found.",
-    copyPlaceholder: "Choose a campaign…",
-    stepCount: (n: number) => `${n} ${n === 1 ? "step" : "steps"}`,
+    modeCopy: "Duplicate",
+    modeCopyDesc: "Reuse another campaign's or a saved template's whole sequence.",
+    modePrompt: "Generate with AI",
+    modePromptDesc: "Describe the outcome — get a full sequence.",
+    chooseSource: "Choose a campaign or template…",
+    changeSource: "Change",
+    sourceSteps: (n: number) => `${n} ${n === 1 ? "step" : "steps"}`,
     nameLabel: "Campaign name",
     namePlaceholder: "e.g. Enterprise CRO Outbound",
     goalLabel: "Goal / intent",
     goalPlaceholder:
       "What outcome are you driving? Book demos, revive cold leads, expand into a new segment…",
+    goalPlaceholderPrompt:
+      "Book demos with VPs of Sales at mid-market SaaS companies — 3-4 touches over two weeks, email + LinkedIn…",
     goalOptional: "Optional",
     copySuffix: "(copy)",
+    generateSequence: "Generate sequence",
+    regenerate: "Regenerate",
+    dayLabel: (n: number) => (n === 0 ? "Day 0" : `Day ${n}`),
     cancel: "Cancel",
     create: "Create campaign",
     created: (name: string) => `"${name}" created`,
@@ -77,20 +86,25 @@ const COPY = {
     title: "Nueva campaña",
     modeManual: "Crear manualmente",
     modeManualDesc: "Solo un nombre y un objetivo — la secuencia y la audiencia se hacen después.",
-    modeCopy: "Copiar una campaña",
-    modeCopyDesc: "Duplica la secuencia completa de otra campaña.",
-    copyFromLabel: "Copiar de",
-    copySearchPlaceholder: "Buscar campañas…",
-    copyEmpty: "No se encontraron campañas.",
-    copyPlaceholder: "Elige una campaña…",
-    stepCount: (n: number) => `${n} ${n === 1 ? "paso" : "pasos"}`,
+    modeCopy: "Duplicar",
+    modeCopyDesc: "Reutiliza la secuencia completa de otra campaña o de una plantilla guardada.",
+    modePrompt: "Generar con IA",
+    modePromptDesc: "Describe el resultado — obtén una secuencia completa.",
+    chooseSource: "Elige una campaña o plantilla…",
+    changeSource: "Cambiar",
+    sourceSteps: (n: number) => `${n} ${n === 1 ? "paso" : "pasos"}`,
     nameLabel: "Nombre de la campaña",
     namePlaceholder: "p. ej. Outbound CRO Enterprise",
     goalLabel: "Objetivo / intención",
     goalPlaceholder:
       "¿Qué resultado buscas? Agendar demos, reactivar leads fríos, entrar en un nuevo segmento…",
+    goalPlaceholderPrompt:
+      "Agendar demos con VPs de Ventas en empresas SaaS medianas — 3-4 toques en dos semanas, email + LinkedIn…",
     goalOptional: "Opcional",
     copySuffix: "(copia)",
+    generateSequence: "Generar secuencia",
+    regenerate: "Regenerar",
+    dayLabel: (n: number) => (n === 0 ? "Día 0" : `Día ${n}`),
     cancel: "Cancelar",
     create: "Crear campaña",
     created: (name: string) => `«${name}» creada`,
@@ -99,7 +113,7 @@ const COPY = {
   },
 } as const
 
-type Mode = "manual" | "copy"
+type Mode = "manual" | "copy" | "prompt"
 
 /* ------------------------------ component -------------------------------- */
 
@@ -113,13 +127,18 @@ function NewCampaignWizard({
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
-  const campaigns = useCampaigns()
 
   const [mode, setMode] = React.useState<Mode>("manual")
-  const [copySourceId, setCopySourceId] = React.useState("")
   const [name, setName] = React.useState("")
   const [nameTouched, setNameTouched] = React.useState(false)
   const [goal, setGoal] = React.useState("")
+
+  const [copySeqOpen, setCopySeqOpen] = React.useState(false)
+  const [copiedSteps, setCopiedSteps] = React.useState<CampaignStep[] | null>(null)
+  const [copiedSourceName, setCopiedSourceName] = React.useState("")
+
+  const [generatedSteps, setGeneratedSteps] = React.useState<CampaignStep[] | null>(null)
+  const [genSeed, setGenSeed] = React.useState(0)
 
   // Reset on open (render-time check, house pattern — never an effect).
   const [wasOpen, setWasOpen] = React.useState(open)
@@ -127,32 +146,35 @@ function NewCampaignWizard({
     setWasOpen(open)
     if (open) {
       setMode("manual")
-      setCopySourceId("")
       setName("")
       setNameTouched(false)
       setGoal("")
+      setCopySeqOpen(false)
+      setCopiedSteps(null)
+      setCopiedSourceName("")
+      setGeneratedSteps(null)
+      setGenSeed(0)
     }
   }
 
-  const copySource = campaigns.find((cm) => cm.id === copySourceId)
-  const copyOptions = campaigns.map((cm) => ({
-    value: cm.id,
-    label: cm.name,
-    sublabel: c.stepCount(flattenCampaignSteps(cm.steps).length),
-  }))
+  function handleCopied(steps: CampaignStep[], sourceName: string) {
+    setCopiedSteps(steps)
+    setCopiedSourceName(sourceName)
+    if (!nameTouched) setName(`${sourceName} ${c.copySuffix}`)
+  }
 
-  function pickCopySource(id: string) {
-    setCopySourceId(id)
-    const source = campaigns.find((cm) => cm.id === id)
-    if (source && !nameTouched) {
-      setName(`${source.name} ${c.copySuffix}`)
-      if (!goal.trim()) setGoal(source.goal ?? "")
-    }
+  function generate() {
+    const nextSeed = generatedSteps ? genSeed + 1 : genSeed
+    setGenSeed(nextSeed)
+    setGeneratedSteps(generateSequenceFromPrompt(goal.trim(), nextSeed))
   }
 
   const trimmedName = name.trim()
   const canCreate =
-    trimmedName.length > 0 && (mode === "manual" || Boolean(copySource))
+    trimmedName.length > 0 &&
+    (mode === "manual" ||
+      (mode === "copy" && Boolean(copiedSteps?.length)) ||
+      (mode === "prompt" && Boolean(generatedSteps?.length)))
 
   function create() {
     if (!canCreate) return
@@ -162,10 +184,10 @@ function NewCampaignWizard({
       locale,
       goal: goal.trim() || undefined,
     })
-    if (mode === "copy" && copySource) {
-      campaignStore.update(created.id, {
-        steps: cloneSequenceSteps(copySource.steps),
-      })
+    if (mode === "copy" && copiedSteps) {
+      campaignStore.update(created.id, { steps: cloneSequenceSteps(copiedSteps) })
+    } else if (mode === "prompt" && generatedSteps) {
+      campaignStore.update(created.id, { steps: generatedSteps })
     }
     toast.success(c.created(trimmedName))
     onOpenChange(false)
@@ -173,6 +195,7 @@ function NewCampaignWizard({
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -185,7 +208,7 @@ function NewCampaignWizard({
           <DialogDescription className="sr-only">{c.title}</DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-3">
           <button
             type="button"
             onClick={() => setMode("manual")}
@@ -210,6 +233,32 @@ function NewCampaignWizard({
             <span className="text-sm font-medium">{c.modeManual}</span>
             <span className="text-muted-foreground text-xs">
               {c.modeManualDesc}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("prompt")}
+            aria-pressed={mode === "prompt"}
+            className={cn(
+              "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors",
+              mode === "prompt"
+                ? "border-primary ring-primary/30 bg-primary/5 ring-1"
+                : "hover:border-primary/40 hover:bg-muted/40"
+            )}
+          >
+            <span
+              className={cn(
+                "flex size-7 items-center justify-center rounded-md",
+                mode === "prompt"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              <Sparkles className="size-3.5" />
+            </span>
+            <span className="text-sm font-medium">{c.modePrompt}</span>
+            <span className="text-muted-foreground text-xs">
+              {c.modePromptDesc}
             </span>
           </button>
           <button
@@ -241,18 +290,37 @@ function NewCampaignWizard({
         </div>
 
         {mode === "copy" && (
-          <div className="space-y-2">
-            <Label htmlFor="copy-source">{c.copyFromLabel}</Label>
-            <SearchCombobox
-              id="copy-source"
-              value={copySourceId}
-              onChange={pickCopySource}
-              options={copyOptions}
-              placeholder={c.copyPlaceholder}
-              searchPlaceholder={c.copySearchPlaceholder}
-              emptyText={c.copyEmpty}
-              className="w-full"
-            />
+          <div className="min-w-0 space-y-2">
+            {copiedSteps ? (
+              <div className="flex items-center gap-3 rounded-lg border px-3 py-2">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">
+                    {copiedSourceName}
+                  </span>
+                  <Badge variant="secondary" className="mt-0.5 font-normal">
+                    {c.sourceSteps(copiedSteps.length)}
+                  </Badge>
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCopySeqOpen(true)}
+                >
+                  {c.changeSource}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setCopySeqOpen(true)}
+              >
+                <Copy className="size-4" />
+                {c.chooseSource}
+              </Button>
+            )}
           </div>
         )}
 
@@ -272,16 +340,63 @@ function NewCampaignWizard({
         <div className="space-y-2">
           <div className="flex items-baseline justify-between">
             <Label htmlFor="campaign-goal">{c.goalLabel}</Label>
-            <span className="text-muted-foreground text-xs">{c.goalOptional}</span>
+            {mode !== "prompt" && (
+              <span className="text-muted-foreground text-xs">{c.goalOptional}</span>
+            )}
           </div>
           <Textarea
             id="campaign-goal"
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            placeholder={c.goalPlaceholder}
+            placeholder={mode === "prompt" ? c.goalPlaceholderPrompt : c.goalPlaceholder}
             className="min-h-16 resize-none"
           />
         </div>
+
+        {mode === "prompt" && (
+          <div className="min-w-0 space-y-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={generate}
+              disabled={!goal.trim()}
+            >
+              {generatedSteps ? (
+                <RefreshCw className="size-3.5" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )}
+              {generatedSteps ? c.regenerate : c.generateSequence}
+            </Button>
+            {generatedSteps && (
+              <div className="min-w-0 space-y-1 rounded-lg border p-2">
+                {generatedSteps.map((step) => {
+                  const meta = channelMeta(step.channel)
+                  const Icon = meta.Icon
+                  return (
+                    <div key={step.id} className="flex min-w-0 items-center gap-2 text-xs">
+                      <span
+                        className={cn(
+                          "flex size-5 shrink-0 items-center justify-center rounded",
+                          meta.tint
+                        )}
+                      >
+                        <Icon className="size-3" />
+                      </span>
+                      <span className="text-muted-foreground shrink-0">
+                        {c.dayLabel(step.delayDays)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">
+                        {step.subject || step.body}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         <p className="text-muted-foreground text-xs">{c.nextStepsHint}</p>
 
@@ -296,5 +411,13 @@ function NewCampaignWizard({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <CopySequenceDialog
+      open={copySeqOpen}
+      onOpenChange={setCopySeqOpen}
+      currentCampaignId=""
+      onCopy={handleCopied}
+    />
+    </>
   )
 }
