@@ -11,7 +11,12 @@ import type { Edge, Node } from "@xyflow/react"
 
 import type { CampaignStep, StepFork, StepTrackKind } from "@/lib/types"
 
-export const ROW_HEIGHT = 108
+// As tight as possible while still clearing a real step card at its
+// tallest (title + subtitle + two badge chips, ~90px) with the "+" ghost
+// sitting halfway between two rows (see addNode calls at depth - 0.5) —
+// keeps consecutive step cards close together without the ghost overlapping
+// either one.
+export const ROW_HEIGHT = 200
 export const LANE_WIDTH = 260
 
 export interface StepNodeData extends Record<string, unknown> {
