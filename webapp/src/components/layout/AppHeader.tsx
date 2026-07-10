@@ -37,6 +37,7 @@ import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useAuth } from "@/lib/auth"
 import { useCredits } from "@/lib/credits"
 import { useLocale, type Locale } from "@/lib/locale"
+import { APP_VERSION } from "@/lib/version"
 import { portraitFor } from "@/lib/avatars"
 import { initials } from "@/lib/format"
 
@@ -217,6 +218,10 @@ export function AppHeader() {
               <LogOut className="size-4" />
               {t("menu.logout")}
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <p className="text-muted-foreground px-2 py-1.5 text-xs">
+              V. {APP_VERSION}
+            </p>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
