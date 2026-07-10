@@ -119,6 +119,7 @@ import {
 } from "@/lib/table-columns"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignAudienceDialog } from "@/components/campaigns/AddCampaignAudienceDialog"
+import { AutomationStatusBox } from "@/components/campaigns/AutomationStatusBox"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { CampaignTabBar } from "@/components/campaigns/CampaignTabBar"
 import { campaignTabsStore } from "@/lib/campaign-tabs"
@@ -1679,6 +1680,12 @@ export default function CampaignDetail() {
         <TabsContent value="sequence" className="mt-4 space-y-4">
           {draft.steps.length > 0 ? (
             <>
+              <AutomationStatusBox
+                autoPauseOnReply={camp.autoPauseOnReply ?? true}
+                onToggle={(next) =>
+                  campaignStore.update(camp.id, { autoPauseOnReply: next })
+                }
+              />
               <div className="flex flex-wrap justify-end gap-2">
                 <Button
                   variant="outline"
