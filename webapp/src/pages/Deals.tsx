@@ -4,8 +4,11 @@ import {
   Briefcase,
   CalendarDays,
   Columns3,
+  DollarSign,
   MoreHorizontal,
   Pencil,
+  Scale,
+  Target,
   Trash2,
 } from "lucide-react"
 
@@ -35,12 +38,14 @@ import type { CollectionView } from "@/components/common/ViewToggle"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { Segmented } from "@/components/common/Segmented"
 import {
   useColumnPrefs,
   type ColumnDef,
   type ColGroup,
 } from "@/lib/table-columns"
 import { DealFormDialog } from "@/components/deals/DealFormDialog"
+import { DealDetailSheet } from "@/components/deals/DealDetailSheet"
 import { useView } from "@/lib/view-context"
 import { useDeals, dealStore } from "@/lib/store"
 import { getAccount, DEAL_STAGES } from "@/lib/mock-extra"
@@ -99,6 +104,9 @@ const COPY = {
     sortClose: "Closing soonest",
     sortName: "Name (A–Z)",
     sortProbability: "Win probability",
+    metricTotal: "Total amount",
+    metricWeighted: "Weighted value",
+    metricScore: "Deal score",
     colName: "Deal",
     colAccount: "Account",
     colStage: "Stage",
@@ -158,6 +166,9 @@ const COPY = {
     sortClose: "Cierre más próximo",
     sortName: "Nombre (A–Z)",
     sortProbability: "Probabilidad de cierre",
+    metricTotal: "Importe total",
+    metricWeighted: "Valor ponderado",
+    metricScore: "Puntuación del negocio",
     colName: "Negocio",
     colAccount: "Cuenta",
     colStage: "Etapa",
@@ -186,10 +197,12 @@ function OwnerAvatar({ ownerId }: { ownerId: string }) {
 
 function DealCard({
   deal,
+  onOpen,
   onEdit,
   onDelete,
 }: {
   deal: Deal
+  onOpen: (deal: Deal) => void
   onEdit: (deal: Deal) => void
   onDelete: (deal: Deal) => void
 }) {
@@ -197,7 +210,15 @@ function DealCard({
   const c = COPY[locale]
   const account = getAccount(deal.accountId)
   return (
-    <div className="bg-card hover:border-primary/40 space-y-2 rounded-lg border p-3 transition-colors">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(deal)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onOpen(deal)
+      }}
+      className="bg-card hover:border-primary/40 space-y-2 rounded-lg border p-3 text-left transition-colors"
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5">
           <p className="text-sm font-medium">{deal.name}</p>
@@ -213,6 +234,7 @@ function DealCard({
               size="icon"
               className="-mt-1 -mr-1 size-7 shrink-0"
               aria-label={c.dealActions}
+              onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="size-4" />
             </Button>
@@ -284,7 +306,9 @@ export default function Deals() {
     undefined
   )
   const [deletingDeal, setDeletingDeal] = React.useState<Deal | null>(null)
+  const [detailDeal, setDetailDeal] = React.useState<Deal | null>(null)
   const [view, setView] = React.useState<CollectionView>("cards")
+  const [boardMetric, setBoardMetric] = React.useState<"total" | "weighted" | "score">("total")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("value")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
@@ -410,6 +434,10 @@ export default function Deals() {
     setFormOpen(true)
   }
 
+  function openDetail(deal: Deal) {
+    setDetailDeal(deal)
+  }
+
   return (
     <Page>
       <PageHeading title={c.title} description={c.description} />
@@ -478,7 +506,7 @@ export default function Deals() {
               rows={tableDeals}
               rowKey={(deal) => deal.id}
               locale={locale}
-              onRowClick={openEdit}
+              onRowClick={openDetail}
               selection={{
                 isSelected: (deal) => selectedIds.has(deal.id),
                 toggle: toggleRow,
@@ -543,44 +571,73 @@ export default function Deals() {
           </>
         )
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {DEAL_STAGES.map((stage) => {
-            const stageDeals = scoped.filter((d) => d.stage === stage.key)
-            const stageValue = stageDeals.reduce((sum, d) => sum + d.value, 0)
-            return (
-              <div
-                key={stage.key}
-                className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-lg p-2"
-              >
-                <div className="flex items-center gap-2 px-1 pt-1">
-                  <span className="font-medium">{c.stages[stage.key]}</span>
-                  <Badge variant="secondary" className="tabular-nums">
-                    {stageDeals.length}
-                  </Badge>
-                  <span className="text-muted-foreground ml-auto text-sm tabular-nums">
-                    {money(stageValue)}
-                  </span>
-                </div>
+        <div className="space-y-3">
+          <Segmented
+            options={[
+              { v: "total", label: c.metricTotal, icon: DollarSign },
+              { v: "weighted", label: c.metricWeighted, icon: Scale },
+              { v: "score", label: c.metricScore, icon: Target },
+            ]}
+            value={boardMetric}
+            onChange={setBoardMetric}
+            className="w-fit"
+          />
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {DEAL_STAGES.map((stage) => {
+              const stageDeals = scoped.filter((d) => d.stage === stage.key)
+              const stageValue = stageDeals.reduce((sum, d) => sum + d.value, 0)
+              const stageWeighted = stageDeals.reduce(
+                (sum, d) => sum + (d.value * d.probability) / 100,
+                0
+              )
+              const stageScore = stageDeals.length
+                ? Math.round(
+                    stageDeals.reduce((sum, d) => sum + d.probability, 0) /
+                      stageDeals.length
+                  )
+                : 0
+              const stageMetric =
+                boardMetric === "total"
+                  ? money(stageValue)
+                  : boardMetric === "weighted"
+                    ? money(Math.round(stageWeighted))
+                    : `${stageScore}%`
+              return (
+                <div
+                  key={stage.key}
+                  className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-lg p-2"
+                >
+                  <div className="flex items-center gap-2 px-1 pt-1">
+                    <span className="font-medium">{c.stages[stage.key]}</span>
+                    <Badge variant="secondary" className="tabular-nums">
+                      {stageDeals.length}
+                    </Badge>
+                    <span className="text-muted-foreground ml-auto text-sm tabular-nums">
+                      {stageMetric}
+                    </span>
+                  </div>
 
-                <div className="space-y-2">
-                  {stageDeals.length > 0 ? (
-                    stageDeals.map((deal) => (
-                      <DealCard
-                        key={deal.id}
-                        deal={deal}
-                        onEdit={openEdit}
-                        onDelete={setDeletingDeal}
-                      />
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground px-1 py-6 text-center text-xs">
-                      {c.noDeals}
-                    </p>
-                  )}
+                  <div className="space-y-2">
+                    {stageDeals.length > 0 ? (
+                      stageDeals.map((deal) => (
+                        <DealCard
+                          key={deal.id}
+                          deal={deal}
+                          onOpen={openDetail}
+                          onEdit={openEdit}
+                          onDelete={setDeletingDeal}
+                        />
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground px-1 py-6 text-center text-xs">
+                        {c.noDeals}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -588,6 +645,19 @@ export default function Deals() {
         open={formOpen}
         onOpenChange={setFormOpen}
         deal={editingDeal}
+      />
+
+      <DealDetailSheet
+        deal={detailDeal}
+        open={detailDeal !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailDeal(null)
+        }}
+        onEdit={(deal) => {
+          setDetailDeal(null)
+          openEdit(deal)
+        }}
+        stageLabel={c.stages}
       />
 
       <ConfirmDialog
