@@ -93,10 +93,22 @@ export const RichTextEditor = React.forwardRef<
         sel?.removeAllRanges()
         sel?.addRange(lastRangeRef.current)
       }
+      // A merge-var tag ("{{first_name}}") gets a colored span instead of a
+      // plain text node, so it reads as a token distinct from the
+      // surrounding message copy — same visual language as the resolved
+      // preview (see mergeVarsHighlighted).
+      const isMergeVar = /^\{\{\w+\}\}$/.test(text)
+      const node: Node = isMergeVar
+        ? (() => {
+            const span = document.createElement("span")
+            span.className = "text-primary bg-primary/10 rounded px-0.5 font-medium"
+            span.textContent = text
+            return span
+          })()
+        : document.createTextNode(text)
       const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null
       if (range && el.contains(range.commonAncestorContainer)) {
         range.deleteContents()
-        const node = document.createTextNode(text)
         range.insertNode(node)
         range.setStartAfter(node)
         range.collapse(true)
@@ -104,7 +116,7 @@ export const RichTextEditor = React.forwardRef<
         sel?.addRange(range)
         lastRangeRef.current = range.cloneRange()
       } else {
-        el.appendChild(document.createTextNode(text))
+        el.appendChild(node)
       }
       emit()
     },

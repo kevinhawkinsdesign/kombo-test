@@ -20,6 +20,7 @@ import {
 import { normalizeChannel } from "@/lib/step-channels"
 import { prospects, currentUser } from "@/lib/mock-data"
 import { useLocale } from "@/lib/locale"
+import { mergeVarsHighlighted } from "@/lib/merge-vars-highlight"
 import { cn } from "@/lib/utils"
 import type { Channel, StepChannel } from "@/lib/types"
 
@@ -92,10 +93,6 @@ function ChannelGlyph({
 }
 
 const SAMPLE_RECIPIENTS = prospects.slice(0, 5)
-
-function mergeVars(text: string, data: Record<string, string>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (_, tag: string) => data[tag] ?? `{{${tag}}}`)
-}
 
 /** What the caller inserts as a sequence step when a prompt is chosen. */
 export interface PromptStepSeed {
@@ -325,12 +322,12 @@ export function PromptPickerDialog({
                     <p className="text-sm">
                       <span className="text-muted-foreground">{c.subject}: </span>
                       <span className="font-medium">
-                        {mergeVars(generated.subject, mergeData)}
+                        {mergeVarsHighlighted(generated.subject, mergeData)}
                       </span>
                     </p>
                   )}
                   <p className="text-sm whitespace-pre-wrap">
-                    {mergeVars(generated.body, mergeData)}
+                    {mergeVarsHighlighted(generated.body, mergeData)}
                   </p>
                 </>
               ) : (

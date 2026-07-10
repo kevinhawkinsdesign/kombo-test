@@ -32,6 +32,7 @@ import {
 import { prospects, currentUser } from "@/lib/mock-data"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
+import { mergeVarsHighlighted } from "@/lib/merge-vars-highlight"
 import type { Channel } from "@/lib/types"
 
 const COPY = {
@@ -120,10 +121,6 @@ function ChannelGlyph({
 // A rotating pool of real mock recipients so each example reads like a
 // different person actually received it.
 const SAMPLE_RECIPIENTS = prospects.slice(0, 5)
-
-function mergeVars(text: string, data: Record<string, string>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (_, tag: string) => data[tag] ?? `{{${tag}}}`)
-}
 
 export function PromptFormDialog({
   open,
@@ -355,12 +352,12 @@ export function PromptFormDialog({
                     <p className="text-sm">
                       <span className="text-muted-foreground">{c.subject}: </span>
                       <span className="font-medium">
-                        {mergeVars(generated.subject, mergeData)}
+                        {mergeVarsHighlighted(generated.subject, mergeData)}
                       </span>
                     </p>
                   )}
                   <p className="text-sm whitespace-pre-wrap">
-                    {mergeVars(generated.body, mergeData)}
+                    {mergeVarsHighlighted(generated.body, mergeData)}
                   </p>
                 </>
               ) : (
