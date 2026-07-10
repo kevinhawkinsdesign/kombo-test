@@ -133,6 +133,7 @@ import {
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { AddCampaignAudienceDialog } from "@/components/campaigns/AddCampaignAudienceDialog"
 import { AutomationStatusBox } from "@/components/campaigns/AutomationStatusBox"
+import { SequenceCostSummary } from "@/components/campaigns/SequenceCostSummary"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { CampaignTabBar } from "@/components/campaigns/CampaignTabBar"
 import { campaignTabsStore } from "@/lib/campaign-tabs"
@@ -1801,6 +1802,7 @@ export default function CampaignDetail() {
                   campaignStore.update(camp.id, { autoPauseOnReply: next })
                 }
               />
+              <SequenceCostSummary steps={draft.steps} />
               <div className="flex flex-wrap justify-end gap-2">
                 <Button
                   variant="outline"

@@ -10,6 +10,8 @@
 import type { Edge, Node } from "@xyflow/react"
 
 import type { CampaignStep, StepFork, StepTrackKind } from "@/lib/types"
+import { normalizeChannel } from "@/lib/step-channels"
+import { STEP_CREDIT_COST } from "@/lib/store"
 
 // As tight as possible while still clearing a real step card at its
 // tallest (title + subtitle + two badge chips, ~90px) with the "+" ghost
@@ -214,4 +216,31 @@ export function computeLayout(
   })
 
   return { nodes, edges }
+}
+
+// Worst-case totals for a prospect completing the whole sequence: total
+// elapsed days and total credits spent. A fork's two tracks are mutually
+// exclusive per-prospect, so each contributes its own total and only the
+// larger one counts toward the worst case — same logic for both days and
+// credits. Parallel siblings run alongside their anchor (no extra days) but
+// still send their own message, so their credit cost is additive.
+export function sequenceTotals(steps: CampaignStep[]): {
+  days: number
+  credits: number
+} {
+  let days = 0
+  let credits = 0
+  for (const step of steps) {
+    days += step.delayDays
+    credits += STEP_CREDIT_COST[normalizeChannel(step.channel)]
+    for (const parallel of step.parallelSteps ?? []) {
+      credits += STEP_CREDIT_COST[normalizeChannel(parallel.channel)]
+    }
+    if (step.fork) {
+      const trackTotals = step.fork.tracks.map((t) => sequenceTotals(t.steps))
+      days += Math.max(0, ...trackTotals.map((t) => t.days))
+      credits += Math.max(0, ...trackTotals.map((t) => t.credits))
+    }
+  }
+  return { days, credits }
 }

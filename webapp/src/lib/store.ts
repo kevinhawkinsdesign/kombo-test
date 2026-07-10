@@ -103,6 +103,20 @@ export const TASK_REMINDER_OPTIONS = [
   { label: "1 week before", value: 10080 },
 ]
 
+// Mock per-send credit cost by step channel — no live billing API in this
+// prototype. Manual tasks are human effort, so they're free; the agentic
+// AI call carries a premium over a plain logged call.
+export const STEP_CREDIT_COST: Record<StepChannel, number> = {
+  email: 1,
+  linkedin_message: 1,
+  linkedin_dm: 1,
+  linkedin_inmail: 1,
+  whatsapp: 1,
+  call: 5,
+  ai_call: 8,
+  manual: 0,
+}
+
 // Deterministic mock direct-dial derived from a contact id, so the same
 // contact always "reveals" the same number across renders.
 function mockPhone(seed: string): string {

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog"
 import { SequenceCanvas } from "@/components/sequence/SequenceCanvas"
 import { AutomationStatusBox } from "@/components/campaigns/AutomationStatusBox"
+import { SequenceCostSummary } from "@/components/campaigns/SequenceCostSummary"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { initials } from "@/lib/format"
@@ -797,6 +798,9 @@ function OutreachPanel({
       </div>
 
       <AutomationStatusBox autoPauseOnReply={campaign.autoPauseOnReply ?? true} />
+      <div className="mt-3">
+        <SequenceCostSummary steps={campaign.steps} />
+      </div>
       <div className="mt-3">
         <SequenceCanvas steps={campaign.steps} mode="readonly" />
       </div>
