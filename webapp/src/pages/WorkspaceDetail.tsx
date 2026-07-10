@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   ArrowLeft,
@@ -366,15 +366,31 @@ export default function WorkspaceDetail() {
 }
 
 function BackLink({ label, pill, color }: { label: string; pill?: string; color?: string }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const hasHistory = location.key !== "default"
+  const { t } = useLocale()
+
   return (
     <div className="mb-4 flex items-center gap-2 text-sm">
-      <Link
-        to="/workspaces"
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-      >
-        <ArrowLeft className="size-4" />
-        {label}
-      </Link>
+      {hasHistory ? (
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+        >
+          <ArrowLeft className="size-4" />
+          {t("common.back")}
+        </button>
+      ) : (
+        <Link
+          to="/workspaces"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+        >
+          <ArrowLeft className="size-4" />
+          {label}
+        </Link>
+      )}
       {pill && (
         <>
           <span className="text-muted-foreground/50">/</span>

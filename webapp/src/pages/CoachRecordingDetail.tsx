@@ -1,8 +1,7 @@
 import * as React from "react"
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  ArrowLeft,
   RefreshCw,
   Building2,
   Play,
@@ -40,6 +39,7 @@ import {
 
 import { useLocale, type Locale } from "@/lib/locale"
 import { InfoHint } from "@/components/common/InfoHint"
+import { BackLink } from "@/components/common/BackLink"
 import { Page } from "@/components/layout/Page"
 import {
   Card,
@@ -413,9 +413,7 @@ export default function CoachRecordingDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.recordingNotFound}</p>
-        <Button variant="link" asChild className="px-0">
-          <Link to="/coach">{c.backToCoach}</Link>
-        </Button>
+        <BackLink to="/coach" label={c.backToCoach} variant="link" />
       </Page>
     )
   }
@@ -616,12 +614,7 @@ export default function CoachRecordingDetail() {
 
   return (
     <Page>
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link to="/coach">
-          <ArrowLeft className="size-4" />
-          {c.coach}
-        </Link>
-      </Button>
+      <BackLink to="/coach" label={c.coach} />
 
       <Card className="mb-6">
         <CardContent className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

@@ -2,7 +2,6 @@ import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  ArrowLeft,
   Mail,
   Phone,
   Plus,
@@ -63,6 +62,7 @@ import {
   StatusBadge,
 } from "@/components/common/ProspectBits"
 import { TrackButton } from "@/components/common/TrackButton"
+import { BackLink } from "@/components/common/BackLink"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -289,9 +289,7 @@ export default function ProspectProfile() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.prospectNotFound}</p>
-        <Button variant="link" asChild className="px-0">
-          <Link to="/search">{c.backToSearch}</Link>
-        </Button>
+        <BackLink to="/search" label={c.backToSearch} variant="link" />
       </Page>
     )
   }
@@ -300,12 +298,7 @@ export default function ProspectProfile() {
 
   return (
     <Page>
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link to="/search">
-          <ArrowLeft className="size-4" />
-          {c.backToSearch}
-        </Link>
-      </Button>
+      <BackLink to="/search" label={c.backToSearch} />
 
       <Card className="mb-6">
         <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-start">

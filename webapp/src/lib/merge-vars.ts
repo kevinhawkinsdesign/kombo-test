@@ -9,6 +9,27 @@ export function mergeVars(text: string, data: Record<string, string>): string {
   return text.replace(/\{\{(\w+)\}\}/g, (_, tag: string) => data[tag] ?? `{{${tag}}}`)
 }
 
+export interface MergeVariable {
+  tag: string
+  en: string
+  es: string
+}
+
+// The tag set every merge-var picker in the app offers, kept in one place so
+// "insert a variable" reads the same everywhere it appears.
+export const MERGE_VARIABLES: MergeVariable[] = [
+  { tag: "first_name", en: "First name", es: "Nombre" },
+  { tag: "last_name", en: "Last name", es: "Apellido" },
+  { tag: "company", en: "Company", es: "Empresa" },
+  { tag: "title", en: "Job title", es: "Cargo" },
+  { tag: "industry", en: "Industry", es: "Sector" },
+  { tag: "city", en: "City", es: "Ciudad" },
+  { tag: "sender", en: "Sender", es: "Remitente" },
+  { tag: "sender_company", en: "Your company", es: "Tu empresa" },
+  { tag: "sender_title", en: "Your title", es: "Tu cargo" },
+  { tag: "calendar_link", en: "Booking link", es: "Enlace de reserva" },
+]
+
 export function prospectMergeData(p: Prospect): Record<string, string> {
   return {
     first_name: p.firstName,
