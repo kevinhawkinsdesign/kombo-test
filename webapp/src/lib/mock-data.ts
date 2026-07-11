@@ -61,6 +61,10 @@ export const prospects: Prospect[] = [
     about:
       "Sarah leads a 40-person sales org and recently posted about scaling outbound. Strong fit for AI-assisted prospecting.",
     signals: ["Hiring SDRs", "Posted about outbound", "Visited pricing page"],
+    ageRange: "35-44",
+    personalityDisc: "D",
+    companyLocation: "San Francisco, CA",
+    companyLinkedinUrl: "https://linkedin.com/company/fever",
   },
   {
     id: "p_2",
@@ -86,6 +90,10 @@ export const prospects: Prospect[] = [
     about:
       "Owns the GTM tech stack at Softonic. Evaluating tools to improve pipeline forecasting accuracy.",
     signals: ["Evaluating CRM add-ons", "Attended webinar"],
+    ageRange: "30-39",
+    personalityDisc: "C",
+    companyLocation: "Barcelona, Spain",
+    companyLinkedinUrl: "https://linkedin.com/company/softonic",
   },
   {
     id: "p_3",
@@ -111,6 +119,10 @@ export const prospects: Prospect[] = [
     about:
       "New CRO at Clarity AI, mandate to build a modern outbound motion from scratch.",
     signals: ["New in role", "Funding round (Series C)", "Expanding GTM team"],
+    ageRange: "40-49",
+    personalityDisc: "D",
+    companyLocation: "Madrid, Spain",
+    companyLinkedinUrl: "https://linkedin.com/company/clarity-ai",
   },
   {
     id: "p_4",
@@ -136,6 +148,10 @@ export const prospects: Prospect[] = [
     about:
       "Manages regional sales teams across North America. Skeptical buyer, needs strong ROI case.",
     signals: ["Opened 3 emails", "Clicked case study link"],
+    ageRange: "38-47",
+    personalityDisc: "C",
+    companyLocation: "Valencia, Spain",
+    companyLinkedinUrl: "https://linkedin.com/company/edicom",
   },
   {
     id: "p_5",
@@ -161,6 +177,10 @@ export const prospects: Prospect[] = [
     about:
       "Runs demand gen and influences tooling decisions. Interested in pipeline attribution.",
     signals: ["Downloaded report", "Followed company page"],
+    ageRange: "28-37",
+    personalityDisc: "I",
+    companyLocation: "Milan, Italy",
+    companyLinkedinUrl: "https://linkedin.com/company/talent-garden",
   },
   {
     id: "p_6",
@@ -186,6 +206,10 @@ export const prospects: Prospect[] = [
     about:
       "Hands-on founder selling into enterprise. Wants to give his small team leverage with AI.",
     signals: ["Replied positively", "Booked demo link"],
+    ageRange: "32-41",
+    personalityDisc: "I",
+    companyLocation: "Amsterdam, Netherlands",
+    companyLinkedinUrl: "https://linkedin.com/company/product-hackers",
   },
   {
     id: "p_7",
@@ -210,6 +234,10 @@ export const prospects: Prospect[] = [
     revenue: "$50M-$100M",
     about: "Not a fit right now — no budget allocated for outbound tooling.",
     signals: ["Replied: not now"],
+    ageRange: "36-45",
+    personalityDisc: "S",
+    companyLocation: "Paris, France",
+    companyLinkedinUrl: "https://linkedin.com/company/weekendesk",
   },
   {
     id: "p_8",
@@ -235,6 +263,10 @@ export const prospects: Prospect[] = [
     about:
       "Building out a new BD function. Looking for ways to identify in-market accounts faster.",
     signals: ["New territory", "Hiring BDRs"],
+    ageRange: "33-42",
+    personalityDisc: "D",
+    companyLocation: "Madrid, Spain",
+    companyLinkedinUrl: "https://linkedin.com/company/el-corte-ingles",
   },
   {
     id: "p_9",
@@ -261,6 +293,10 @@ export const prospects: Prospect[] = [
       "Scaling the sales team 2x this year. Demoed Kombo and is championing internally.",
     signals: ["Demo completed", "Looped in procurement"],
     enriched: false,
+    ageRange: "34-43",
+    personalityDisc: "I",
+    companyLocation: "Paris, France",
+    companyLinkedinUrl: "https://linkedin.com/company/criteo",
   },
   {
     id: "p_10",
@@ -287,6 +323,10 @@ export const prospects: Prospect[] = [
       "Owns CRM hygiene and reporting. Frustrated with manual data entry from reps.",
     signals: ["Opened email", "Visited integrations page"],
     enriched: false,
+    ageRange: "29-38",
+    personalityDisc: "S",
+    companyLocation: "London, UK",
+    companyLinkedinUrl: "https://linkedin.com/company/shakers",
   },
   {
     id: "p_11",
@@ -311,6 +351,10 @@ export const prospects: Prospect[] = [
     revenue: "$250M-$500M",
     about: "Front-line AE who could become a bottoms-up champion for the team.",
     signals: ["Engaged on LinkedIn"],
+    ageRange: "27-36",
+    personalityDisc: "I",
+    companyLocation: "Barcelona, Spain",
+    companyLinkedinUrl: "https://linkedin.com/company/nuclio",
   },
   {
     id: "p_12",
@@ -337,6 +381,10 @@ export const prospects: Prospect[] = [
       "Driving a digital transformation initiative. High-value enterprise opportunity.",
     signals: ["Digital transformation initiative", "Budget approved for tooling"],
     enriched: false,
+    ageRange: "42-51",
+    personalityDisc: "D",
+    companyLocation: "Santiago, Chile",
+    companyLinkedinUrl: "https://linkedin.com/company/betterfly",
   },
   {
     id: "p_13",

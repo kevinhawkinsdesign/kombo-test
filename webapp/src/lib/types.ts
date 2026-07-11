@@ -47,6 +47,11 @@ export interface Prospect {
   revenue: string
   about: string
   signals: string[] // buying / intent signals
+  // Extended profile fields
+  ageRange?: string // e.g. "35-44"
+  personalityDisc?: "D" | "I" | "S" | "C"
+  companyLocation?: string
+  companyLinkedinUrl?: string
   // Enrichment status — false when a contact was sourced but not yet enriched
   // (verified email/direct dial + full data points). Undefined counts as enriched
   // so existing seed contacts stay clean.

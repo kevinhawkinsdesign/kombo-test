@@ -33,6 +33,13 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  MapPin,
+  Globe,
+  Users,
+  Building2,
+  DollarSign,
+  RefreshCw,
+  Pencil,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -49,7 +56,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
+import { ScoreBadge } from "@/components/common/ProspectBits"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team, getRep } from "@/lib/team"
@@ -167,6 +182,29 @@ const COPY = {
     bold: "Bold",
     italic: "Italic",
     draftReadyTag: "Draft ready",
+    // right panel
+    aiSummary: "AI Summary",
+    regenerate: "Regenerate",
+    customizePrompt: "Customize",
+    customizeTitle: "Customize AI summary",
+    customizeLabel: "What should the summary focus on?",
+    customizePlaceholder: "Budget authority, recent signals, best opening angle…",
+    generateSummary: "Generate",
+    prospectDetails: "Prospect",
+    companyDetails: "Company",
+    ageRange: "Age range",
+    personality: "Personality",
+    employees: "Employees",
+    revenue: "Revenue",
+    industry: "Industry",
+    location: "Location",
+    website: "Website",
+    linkedinPerson: "LinkedIn",
+    linkedinCompany: "Company page",
+    discD: "Driver",
+    discI: "Influencer",
+    discS: "Steady",
+    discC: "Analytical",
   },
   es: {
     inbox: "Bandeja",
@@ -257,6 +295,29 @@ const COPY = {
     bold: "Negrita",
     italic: "Cursiva",
     draftReadyTag: "Borrador listo",
+    // right panel
+    aiSummary: "Resumen IA",
+    regenerate: "Regenerar",
+    customizePrompt: "Personalizar",
+    customizeTitle: "Personalizar resumen IA",
+    customizeLabel: "¿En qué debe centrarse el resumen?",
+    customizePlaceholder: "Autoridad de presupuesto, señales recientes, ángulo de apertura…",
+    generateSummary: "Generar",
+    prospectDetails: "Prospecto",
+    companyDetails: "Empresa",
+    ageRange: "Rango de edad",
+    personality: "Personalidad",
+    employees: "Empleados",
+    revenue: "Ingresos",
+    industry: "Industria",
+    location: "Ubicación",
+    website: "Web",
+    linkedinPerson: "LinkedIn",
+    linkedinCompany: "Página empresa",
+    discD: "Conductor",
+    discI: "Influyente",
+    discS: "Estable",
+    discC: "Analítico",
   },
 } as const
 
@@ -367,6 +428,22 @@ const EVENT_META: Record<
 
 type View = { kind: "folder"; id: Folder } | { kind: "tag"; id: ConvStatus }
 
+const DISC_META = {
+  D: { label: "Driver", labelEs: "Conductor", bg: "bg-rose-500" },
+  I: { label: "Influencer", labelEs: "Influyente", bg: "bg-amber-500" },
+  S: { label: "Steady", labelEs: "Estable", bg: "bg-emerald-500" },
+  C: { label: "Analytical", labelEs: "Analítico", bg: "bg-sky-500" },
+} as const
+
+function mockAiSummary(p: Prospect, seed: number): string {
+  const variants = [
+    `${p.firstName} ${p.about} Their signals suggest a timely outreach — ${(p.signals[0] ?? "").toLowerCase()}.`,
+    `Strong ${p.seniority}-level fit in ${p.industry}. ${p.firstName} is focused on ${(p.signals[0] ?? "scaling the team").toLowerCase()} and ${(p.signals[1] ?? "evaluating new tools").toLowerCase()}. Lead with ROI and reference similar wins.`,
+    `${p.firstName} leads ${p.department} at ${p.company} (${p.headcount} employees, ${p.revenue}). ${p.about} Best angle: ${(p.signals[0] ?? "personalize around recent activity").toLowerCase()}.`,
+  ]
+  return variants[seed % variants.length]
+}
+
 const ChannelIcon = ({ channel, className }: { channel: Channel; className?: string }) =>
   channel === "email" ? (
     <Mail className={className ?? "size-3.5"} />
@@ -451,6 +528,9 @@ export default function Inbox() {
   // Focus mode: collapse the folder rail + conversation list to give the open
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
+  const [summarySeeds, setSummarySeeds] = React.useState<Record<string, number>>({})
+  const [promptOpen, setPromptOpen] = React.useState(false)
+  const [promptText, setPromptText] = React.useState("")
 
   const visible = conversations.filter((conv) => !conv.archived)
 
@@ -895,9 +975,9 @@ export default function Inbox() {
         </div>
       </div>
 
-      {/* Thread */}
+      {/* Thread + Info panel */}
       {effectiveActive && activeProspect ? (
-        <div className={cn("min-w-0 flex-1 flex-col", showThreadMobile ? "flex" : "hidden md:flex")}>
+        <div className={cn("min-w-0 flex-1", showThreadMobile ? "flex" : "hidden md:flex")}><div className="flex min-w-0 flex-1 flex-col">
           {/* Header */}
           <div className="flex h-14 items-center gap-2 border-b px-4">
             <Button
@@ -1248,7 +1328,67 @@ export default function Inbox() {
               c={c}
             />
           )}
-        </div>
+        </div>{/* end thread column */}
+
+        {/* Right info panel */}
+        <aside className="hidden w-72 shrink-0 flex-col overflow-y-auto border-l xl:flex">
+          <ProspectInfoPanel
+            prospect={activeProspect}
+            seed={summarySeeds[activeProspect.id] ?? 0}
+            onRegenerate={() =>
+              setSummarySeeds((prev) => ({
+                ...prev,
+                [activeProspect.id]: ((prev[activeProspect.id] ?? 0) + 1),
+              }))
+            }
+            onCustomize={() => setPromptOpen(true)}
+            locale={locale}
+            c={c}
+          />
+        </aside>
+
+        {/* AI Summary customize modal */}
+        <Dialog open={promptOpen} onOpenChange={setPromptOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <span className="bg-primary/10 text-primary flex size-7 items-center justify-center rounded-md">
+                  <Sparkles className="size-4" />
+                </span>
+                {c.customizeTitle}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 py-2">
+              <p className="text-muted-foreground text-sm">{c.customizeLabel}</p>
+              <Textarea
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                placeholder={c.customizePlaceholder}
+                className="min-h-24 resize-none"
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-2">
+              <Button variant="ghost" onClick={() => setPromptOpen(false)}>
+                {c.cancelSchedule}
+              </Button>
+              <Button
+                variant="volt"
+                onClick={() => {
+                  setSummarySeeds((prev) => ({
+                    ...prev,
+                    [activeProspect.id]: ((prev[activeProspect.id] ?? 0) + 1),
+                  }))
+                  setPromptOpen(false)
+                  toast.success(c.aiSummary)
+                }}
+              >
+                <Sparkles className="size-4" />
+                {c.generateSummary}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        </div>{/* end outer flex wrapper */}
       ) : (
         <div className="hidden flex-1 flex-col items-center justify-center gap-3 text-center md:flex">
           <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
@@ -1276,6 +1416,178 @@ export default function Inbox() {
           setToDelete(null)
         }}
       />
+    </div>
+  )
+}
+
+function ProspectInfoPanel({
+  prospect: p,
+  seed,
+  onRegenerate,
+  onCustomize,
+  locale,
+  c,
+}: {
+  prospect: Prospect
+  seed: number
+  onRegenerate: () => void
+  onCustomize: () => void
+  locale: Locale
+  c: Copy
+}) {
+  const summary = mockAiSummary(p, seed)
+  const disc = p.personalityDisc ? DISC_META[p.personalityDisc] : undefined
+  const discLabel = disc
+    ? locale === "es"
+      ? disc.labelEs
+      : disc.label
+    : undefined
+
+  function InfoRow({
+    icon: Icon,
+    label,
+    value,
+    href,
+  }: {
+    icon: typeof MapPin
+    label: string
+    value?: string
+    href?: string
+  }) {
+    if (!value && !href) return null
+    return (
+      <div className="flex items-start gap-2.5 py-1.5">
+        <Icon className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-muted-foreground text-[11px] leading-none">{label}</p>
+          {href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary mt-0.5 flex items-center gap-1 text-xs font-medium hover:underline"
+            >
+              {value ?? href}
+              <ExternalLink className="size-3 shrink-0 opacity-70" />
+            </a>
+          ) : (
+            <p className="mt-0.5 text-xs font-medium">{value}</p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-0 divide-y text-sm">
+      {/* AI Summary */}
+      <div className="space-y-2 p-4">
+        <div className="flex items-center justify-between gap-1">
+          <span className="text-muted-foreground flex items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase">
+            <Sparkles className="text-primary size-3" />
+            {c.aiSummary}
+          </span>
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6"
+              title={c.regenerate}
+              onClick={onRegenerate}
+            >
+              <RefreshCw className="size-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6"
+              title={c.customizePrompt}
+              onClick={onCustomize}
+            >
+              <Pencil className="size-3" />
+            </Button>
+          </div>
+        </div>
+        <p className="text-muted-foreground text-xs leading-relaxed">{summary}</p>
+      </div>
+
+      {/* Prospect details */}
+      <div className="p-4">
+        <div className="mb-3 flex items-center gap-3">
+          <ProspectAvatar prospect={p} className="size-10 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-sm font-semibold">
+                {p.firstName} {p.lastName}
+              </p>
+              <ScoreBadge score={p.score} />
+            </div>
+            <p className="text-muted-foreground truncate text-xs">{p.title}</p>
+          </div>
+        </div>
+
+        {p.tags.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-1">
+            {p.tags.map((t) => (
+              <span
+                key={t}
+                className="bg-muted text-muted-foreground rounded-md px-1.5 py-0.5 text-[11px] font-medium"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="divide-y divide-border/50">
+          <InfoRow icon={MapPin} label={c.location} value={p.location} />
+          {p.ageRange && <InfoRow icon={Users} label={c.ageRange} value={p.ageRange} />}
+          {disc && discLabel && (
+            <div className="flex items-start gap-2.5 py-1.5">
+              <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", disc.bg)} />
+              <div className="min-w-0 flex-1">
+                <p className="text-muted-foreground text-[11px] leading-none">{c.personality}</p>
+                <p className="mt-0.5 text-xs font-medium">{discLabel} ({p.personalityDisc})</p>
+              </div>
+            </div>
+          )}
+          <InfoRow
+            icon={ExternalLink}
+            label={c.linkedinPerson}
+            value="View profile"
+            href={p.linkedinUrl}
+          />
+        </div>
+      </div>
+
+      {/* Company details */}
+      <div className="p-4">
+        <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-wide uppercase">
+          {c.companyDetails}
+        </p>
+        <div className="divide-y divide-border/50">
+          <InfoRow icon={Building2} label={c.industry} value={p.industry} />
+          <InfoRow icon={Users} label={c.employees} value={p.headcount} />
+          <InfoRow icon={DollarSign} label={c.revenue} value={p.revenue} />
+          {p.companyLocation && (
+            <InfoRow icon={MapPin} label={c.location} value={p.companyLocation} />
+          )}
+          <InfoRow
+            icon={Globe}
+            label={c.website}
+            value={p.companyDomain}
+            href={`https://${p.companyDomain}`}
+          />
+          {p.companyLinkedinUrl && (
+            <InfoRow
+              icon={ExternalLink}
+              label={c.linkedinCompany}
+              value="View page"
+              href={p.companyLinkedinUrl}
+            />
+          )}
+        </div>
+      </div>
     </div>
   )
 }
