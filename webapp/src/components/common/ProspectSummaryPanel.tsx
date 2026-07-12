@@ -190,12 +190,28 @@ export function ProspectSummaryPanel({
 
   return (
     <div className="space-y-5 p-4">
+      <div className="space-y-2">
+        <ProspectAvatar prospect={prospect} className="size-14 text-base" />
+        <div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="font-semibold">
+              {prospect.firstName} {prospect.lastName}
+            </p>
+            <ScoreBadge score={prospect.score} />
+          </div>
+          <p className="text-muted-foreground text-sm">
+            {prospect.title} · {prospect.company}
+          </p>
+        </div>
+        <StatusBadge status={prospect.status} />
+      </div>
+
       <div className="bg-primary/[0.03] space-y-2 rounded-lg border p-3">
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
           <Sparkles className="text-primary size-3.5" />
           {c.aiSummary}
         </p>
-        <p className="text-sm leading-relaxed">{summary}</p>
+        <p className="text-xs leading-snug">{summary}</p>
         <div className="flex gap-1.5 pt-1">
           <Button variant="outline" size="sm" className="h-7 text-xs" onClick={regenerate}>
             <RefreshCw className="size-3.5" />
@@ -211,22 +227,6 @@ export function ProspectSummaryPanel({
             {c.customize}
           </Button>
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <ProspectAvatar prospect={prospect} className="size-14 text-base" />
-        <div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <p className="font-semibold">
-              {prospect.firstName} {prospect.lastName}
-            </p>
-            <ScoreBadge score={prospect.score} />
-          </div>
-          <p className="text-muted-foreground text-sm">
-            {prospect.title} · {prospect.company}
-          </p>
-        </div>
-        <StatusBadge status={prospect.status} />
       </div>
 
       {prospect.tags.length > 0 && (
