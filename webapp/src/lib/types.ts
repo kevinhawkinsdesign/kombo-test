@@ -56,6 +56,12 @@ export interface Prospect {
   source?: ProspectSource
   // The rep who owns this lead. Undefined reads as unassigned.
   ownerId?: string
+  // Optional enrichment extras shown in Inbox's ProspectSummaryPanel.
+  // Undefined fields are simply omitted from the panel.
+  ageRange?: string // e.g. "35-44"
+  personalityType?: "D" | "I" | "S" | "C" // DISC-style read
+  companyLocation?: string // HQ, distinct from the prospect's own `location`
+  companyLinkedinUrl?: string
 }
 
 export interface SavedSearchCriteria {
