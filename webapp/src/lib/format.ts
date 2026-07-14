@@ -1,5 +1,12 @@
 import type { ProspectSource } from "@/lib/types"
 
+export const LANGUAGE_FLAGS: Record<string, string> = {
+  en: "🇬🇧", es: "🇪🇸", fr: "🇫🇷", de: "🇩🇪", it: "🇮🇹",
+  pt: "🇵🇹", nl: "🇳🇱", ru: "🇷🇺", zh: "🇨🇳", ja: "🇯🇵",
+  ko: "🇰🇷", ar: "🇸🇦", pl: "🇵🇱", hi: "🇮🇳", ur: "🇵🇰",
+  sv: "🇸🇪", da: "🇩🇰", fi: "🇫🇮", no: "🇳🇴", tr: "🇹🇷",
+}
+
 export function initials(first: string, last?: string): string {
   const a = first?.[0] ?? ""
   const b = last?.[0] ?? ""

@@ -40,6 +40,9 @@ import {
   DollarSign,
   RefreshCw,
   Pencil,
+  Cake,
+  Briefcase,
+  SquarePen,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -66,9 +69,10 @@ import {
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ScoreBadge } from "@/components/common/ProspectBits"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { ComposeDialog } from "@/components/prospect/ComposeDialog"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team, getRep } from "@/lib/team"
-import { useConversations, conversationStore, useTemplates } from "@/lib/store"
+import { useConversations, conversationStore, useProspects, useTemplates } from "@/lib/store"
 import { draftReply } from "@/lib/mock-ai-reply"
 import {
   translate,
@@ -76,7 +80,7 @@ import {
   LANG_FLAG,
   LANG_LABEL,
 } from "@/lib/mock-translate"
-import { relativeTime, initials } from "@/lib/format"
+import { relativeTime, initials, LANGUAGE_FLAGS } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale } from "@/lib/locale"
 import type {
@@ -531,6 +535,12 @@ export default function Inbox() {
   const [summarySeeds, setSummarySeeds] = React.useState<Record<string, number>>({})
   const [promptOpen, setPromptOpen] = React.useState(false)
   const [promptText, setPromptText] = React.useState("")
+  // New conversation compose
+  const allProspects = useProspects()
+  const [newConvOpen, setNewConvOpen] = React.useState(false)
+  const [newConvSearch, setNewConvSearch] = React.useState("")
+  const [newConvProspect, setNewConvProspect] = React.useState<Prospect | undefined>()
+  const [composeOpen, setComposeOpen] = React.useState(false)
 
   const visible = conversations.filter((conv) => !conv.archived)
 
@@ -768,6 +778,17 @@ export default function Inbox() {
                 {viewCount}
               </span>
             </h2>
+            <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              aria-label="New conversation"
+              title="New conversation"
+              onClick={() => { setNewConvSearch(""); setNewConvOpen(true) }}
+            >
+              <SquarePen className="size-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -815,6 +836,7 @@ export default function Inbox() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>{/* end flex items-center gap-1 */}
           </div>
 
           <div className="relative">
@@ -1401,6 +1423,92 @@ export default function Inbox() {
         </div>
       )}
 
+      {/* New conversation: prospect search */}
+      <Dialog open={newConvOpen} onOpenChange={(v) => { setNewConvOpen(v); if (!v) setNewConvSearch("") }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="bg-primary/10 text-primary flex size-7 items-center justify-center rounded-md">
+                <SquarePen className="size-4" />
+              </span>
+              New conversation
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <div className="relative">
+              <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+              <Input
+                autoFocus
+                value={newConvSearch}
+                onChange={(e) => setNewConvSearch(e.target.value)}
+                placeholder="Search prospects by name or company…"
+                className="pl-8"
+              />
+            </div>
+            {newConvSearch.trim().length > 0 && (
+              <div className="max-h-64 overflow-y-auto rounded-md border">
+                {allProspects
+                  .filter((p) => {
+                    const q = newConvSearch.toLowerCase()
+                    return (
+                      p.firstName.toLowerCase().includes(q) ||
+                      p.lastName.toLowerCase().includes(q) ||
+                      p.company.toLowerCase().includes(q)
+                    )
+                  })
+                  .slice(0, 8)
+                  .map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className="hover:bg-muted/60 flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                      onClick={() => {
+                        setNewConvProspect(p)
+                        setNewConvOpen(false)
+                        setComposeOpen(true)
+                      }}
+                    >
+                      <ProspectAvatar prospect={p} className="size-8 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {p.firstName} {p.lastName}
+                        </p>
+                        <p className="text-muted-foreground truncate text-xs">
+                          {p.title} · {p.company}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                {allProspects.filter((p) => {
+                  const q = newConvSearch.toLowerCase()
+                  return (
+                    p.firstName.toLowerCase().includes(q) ||
+                    p.lastName.toLowerCase().includes(q) ||
+                    p.company.toLowerCase().includes(q)
+                  )
+                }).length === 0 && (
+                  <p className="text-muted-foreground px-3 py-4 text-center text-sm">
+                    No prospects found
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {newConvProspect && (
+        <ComposeDialog
+          open={composeOpen}
+          onOpenChange={setComposeOpen}
+          prospect={newConvProspect}
+          onSent={(convId) => {
+            setActiveId(convId)
+            setShowThreadMobile(true)
+          }}
+        />
+      )}
+
       <ConfirmDialog
         open={toDelete !== null}
         onOpenChange={(v) => !v && setToDelete(null)}
@@ -1525,6 +1633,33 @@ function ProspectInfoPanel({
             <p className="text-muted-foreground truncate text-xs">{p.title}</p>
           </div>
         </div>
+
+        {(p.ageRange || p.yearsExperience || p.languages?.length) && (
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {p.ageRange && (
+              <span className="bg-primary/8 text-primary inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium">
+                <Cake className="size-3" />
+                Age: {p.ageRange}
+              </span>
+            )}
+            {p.yearsExperience && (
+              <span className="bg-primary/8 text-primary inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium">
+                <Briefcase className="size-3" />
+                {p.yearsExperience} ({p.seniority})
+              </span>
+            )}
+            {p.languages && p.languages.length > 0 && (
+              <span className="bg-primary/8 text-primary inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium">
+                {p.languages.slice(0, 3).map((l) => LANGUAGE_FLAGS[l] ?? "").join(" ")}
+                {p.languages.length > 3 && (
+                  <span className="bg-primary text-primary-foreground ml-0.5 flex size-3.5 items-center justify-center rounded-full text-[8px] font-bold">
+                    +{p.languages.length - 3}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+        )}
 
         {p.tags.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1">

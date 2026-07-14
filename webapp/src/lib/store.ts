@@ -25,6 +25,7 @@ import type {
   Campaign,
   CampaignStep,
   StepChannel,
+  Channel,
   Deal,
   Task,
   EmailTemplate,
@@ -545,6 +546,30 @@ function patchConversation(id: string, fn: (c: Conversation) => Conversation): v
 }
 
 export const conversationStore = {
+  create(prospectId: string, channel: Channel, subject: string, body: string): Conversation {
+    const now = nowISO()
+    const conv: Conversation = {
+      id: uid("conv"),
+      prospectId,
+      channel,
+      subject,
+      messages: [
+        {
+          id: uid("msg"),
+          channel,
+          direction: "outbound",
+          body,
+          timestamp: now,
+          read: true,
+        },
+      ],
+      unread: 0,
+      lastMessageAt: now,
+    }
+    setState({ conversations: [...state.conversations, conv] })
+    sync()
+    return conv
+  },
   sendMessage(id: string, body: string, lang: ChatLang, aiGenerated = false): Message {
     const message: Message = {
       id: uid("msg"),

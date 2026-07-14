@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { conversationStore } from "@/lib/store"
 import type { Channel, Prospect } from "@/lib/types"
 
 function draftFor(prospect: Prospect, channel: Channel): string {
@@ -30,10 +31,12 @@ export function ComposeDialog({
   open,
   onOpenChange,
   prospect,
+  onSent,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   prospect: Prospect
+  onSent?: (convId: string) => void
 }) {
   const [channel, setChannel] = React.useState<Channel>("email")
   const [subject, setSubject] = React.useState(
@@ -122,8 +125,15 @@ export function ComposeDialog({
           <Button
             disabled={!body.trim()}
             onClick={() => {
+              const conv = conversationStore.create(
+                prospect.id,
+                channel,
+                channel === "email" ? subject : `LinkedIn · ${prospect.firstName} ${prospect.lastName}`,
+                body.trim()
+              )
               onOpenChange(false)
               toast.success(`Message sent to ${prospect.firstName}`)
+              onSent?.(conv.id)
             }}
           >
             <Send className="size-4" />

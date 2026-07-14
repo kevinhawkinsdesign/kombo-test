@@ -49,6 +49,8 @@ export interface Prospect {
   signals: string[] // buying / intent signals
   // Extended profile fields
   ageRange?: string // e.g. "35-44"
+  yearsExperience?: string // e.g. "10+"
+  languages?: string[] // ISO 639-1 codes e.g. ["en", "es"]
   personalityDisc?: "D" | "I" | "S" | "C"
   companyLocation?: string
   companyLinkedinUrl?: string

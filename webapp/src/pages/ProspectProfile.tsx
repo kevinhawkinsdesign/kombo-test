@@ -25,6 +25,8 @@ import {
   StickyNote,
   PhoneCall,
   Waypoints,
+  Cake,
+  Briefcase,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -89,7 +91,7 @@ import {
 import { getIntroPaths, type IntroStrength } from "@/lib/mock-network"
 import { useCredits } from "@/lib/credits"
 import { useAuth } from "@/lib/auth"
-import { initials, relativeTime } from "@/lib/format"
+import { initials, relativeTime, LANGUAGE_FLAGS } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Prospect } from "@/lib/types"
 
@@ -330,6 +332,33 @@ export default function ProspectProfile() {
                 </Badge>
               ))}
             </div>
+            {(prospect.ageRange || prospect.yearsExperience || prospect.languages?.length) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {prospect.ageRange && (
+                  <span className="bg-primary/8 text-primary inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium">
+                    <Cake className="size-3.5" />
+                    Age: {prospect.ageRange}
+                  </span>
+                )}
+                {prospect.yearsExperience && (
+                  <span className="bg-primary/8 text-primary inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium">
+                    <Briefcase className="size-3.5" />
+                    Years: {prospect.yearsExperience} ({prospect.seniority})
+                  </span>
+                )}
+                {prospect.languages && prospect.languages.length > 0 && (
+                  <span className="bg-primary/8 text-primary inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium">
+                    Languages:{" "}
+                    {prospect.languages.slice(0, 3).map((l) => LANGUAGE_FLAGS[l] ?? "").join(" ")}
+                    {prospect.languages.length > 3 && (
+                      <span className="bg-primary text-primary-foreground ml-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold">
+                        +{prospect.languages.length - 3}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="volt" onClick={() => setComposeOpen(true)}>
@@ -502,6 +531,7 @@ export default function ProspectProfile() {
         open={composeOpen}
         onOpenChange={setComposeOpen}
         prospect={prospect}
+        onSent={() => navigate("/inbox")}
       />
       <AddToCrmDialog
         open={crmOpen}
