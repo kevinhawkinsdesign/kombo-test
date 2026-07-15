@@ -1,6 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Sparkles, Send, Loader2, Mail } from "lucide-react"
+import { Sparkles, Send, Loader2, Mail, FileText } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -17,8 +17,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TemplatePickerDialog } from "@/components/templates/TemplatePickerDialog"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
+import { currentUser } from "@/lib/mock-data"
+import { useLocale } from "@/lib/locale"
 import type { Channel, Prospect } from "@/lib/types"
+
+const COPY = {
+  en: { templates: "Templates" },
+  es: { templates: "Plantillas" },
+} as const
 
 function draftFor(prospect: Prospect, channel: Channel): string {
   if (channel === "linkedin") {
@@ -36,12 +44,28 @@ export function ComposeDialog({
   onOpenChange: (open: boolean) => void
   prospect: Prospect
 }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
   const [channel, setChannel] = React.useState<Channel>("email")
   const [subject, setSubject] = React.useState(
     `Quick idea for ${prospect.company}`
   )
   const [body, setBody] = React.useState("")
   const [generating, setGenerating] = React.useState(false)
+  const [templateOpen, setTemplateOpen] = React.useState(false)
+
+  // Resolved recipient/sender values for the template picker's live preview.
+  const templateVars: Record<string, string> = {
+    first_name: prospect.firstName,
+    last_name: prospect.lastName,
+    company: prospect.company,
+    title: prospect.title,
+    industry: prospect.industry,
+    city: prospect.location,
+    sender: currentUser.name,
+    sender_company: currentUser.company,
+    sender_title: currentUser.role,
+  }
 
   function generate() {
     setGenerating(true)
@@ -90,21 +114,33 @@ export function ComposeDialog({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="body">Message</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={generate}
-                disabled={generating}
-                className="text-primary h-7"
-              >
-                {generating ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Sparkles className="size-3.5" />
-                )}
-                Generate with AI
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setTemplateOpen(true)}
+                  className="text-muted-foreground h-7"
+                >
+                  <FileText className="size-3.5" />
+                  {c.templates}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={generate}
+                  disabled={generating}
+                  className="text-primary h-7"
+                >
+                  {generating ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-3.5" />
+                  )}
+                  Generate with AI
+                </Button>
+              </div>
             </div>
             <RichTextEditor
               value={body}
@@ -131,6 +167,19 @@ export function ComposeDialog({
             Send
           </Button>
         </DialogFooter>
+
+        <TemplatePickerDialog
+          open={templateOpen}
+          onOpenChange={setTemplateOpen}
+          onInsert={(t) => {
+            setBody(plainToHtml(t.body))
+            if (channel === "email" && t.subject) setSubject(t.subject)
+          }}
+          vars={templateVars}
+          recipientName={`${prospect.firstName} ${prospect.lastName}`}
+          channel={channel}
+          locale={locale}
+        />
       </DialogContent>
     </Dialog>
   )

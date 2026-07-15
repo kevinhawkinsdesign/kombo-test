@@ -34,6 +34,7 @@ import {
   ThumbsUp,
   Mic,
   ExternalLink,
+  FileText,
 } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
@@ -163,6 +164,7 @@ import { useLocale, type Locale } from "@/lib/locale"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type {
   CampaignStatus,
+  Channel,
   StepChannel,
   ConditionKind,
   EnrollmentStatus,
@@ -371,6 +373,8 @@ const COPY = {
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
     previewMessages: "Preview messages",
+    stepTemplates: "Templates",
+    stepAiPrompt: "AI prompt",
     suggestedNext: (label: string) => `Suggested next: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -614,6 +618,8 @@ const COPY = {
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
     previewMessages: "Vista previa de mensajes",
+    stepTemplates: "Plantillas",
+    stepAiPrompt: "Prompt de IA",
     suggestedNext: (label: string) => `Sugerencia: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -832,6 +838,10 @@ export default function CampaignDetail() {
     React.useState<CampaignStep | null>(null)
   const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
   const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
+  // Same two pickers, but applying to the step being edited in the detail
+  // panel rather than appending a new step to the sequence.
+  const [stepTemplateOpen, setStepTemplateOpen] = React.useState(false)
+  const [stepPromptOpen, setStepPromptOpen] = React.useState(false)
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
   const [saveSeqOpen, setSaveSeqOpen] = React.useState(false)
   const [previewOpen, setPreviewOpen] = React.useState(false)
@@ -950,6 +960,38 @@ export default function CampaignDetail() {
       body: seed.body,
     })
     setSelectedStepId(created.id)
+  }
+
+  // The template picker filters by the plain messaging Channel, so collapse
+  // a step's finer-grained StepChannel (linkedin_message/_dm/_inmail…) down.
+  function templateChannelOf(step: CampaignStep): Channel | undefined {
+    const ch = normalizeChannel(step.channel)
+    if (ch === "email" || ch === "whatsapp") return ch
+    if (ch.startsWith("linkedin")) return "linkedin"
+    return undefined
+  }
+
+  // Apply a picked template/prompt to the step open in the detail panel.
+  // Deliberately keeps the step's channel — swapping content shouldn't
+  // silently turn an email step into a LinkedIn one.
+  function applyTemplateToStep(template: EmailTemplate) {
+    if (!selectedStep) return
+    draft.updateStep(selectedStep.id, {
+      body: template.body,
+      ...(normalizeChannel(selectedStep.channel) === "email"
+        ? { subject: template.subject }
+        : {}),
+    })
+  }
+
+  function applyPromptToStep(seed: PromptStepSeed) {
+    if (!selectedStep) return
+    draft.updateStep(selectedStep.id, {
+      body: seed.body,
+      ...(normalizeChannel(selectedStep.channel) === "email" && seed.subject
+        ? { subject: seed.subject }
+        : {}),
+    })
   }
 
   // Routes a channel picked in the step-type modal to whichever action
@@ -2355,7 +2397,29 @@ export default function CampaignDetail() {
                                 })
                               }
                               minHeight="min-h-20"
-                              toolbarEnd={variablesMenu}
+                              toolbarEnd={
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-muted-foreground"
+                                    onClick={() => setStepTemplateOpen(true)}
+                                  >
+                                    <FileText className="size-4" />
+                                    {c.stepTemplates}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-muted-foreground"
+                                    onClick={() => setStepPromptOpen(true)}
+                                  >
+                                    <Sparkles className="size-4" />
+                                    {c.stepAiPrompt}
+                                  </Button>
+                                  {variablesMenu}
+                                </>
+                              }
                             />
                           </>
                         )}
@@ -2777,6 +2841,23 @@ export default function CampaignDetail() {
         open={promptPickerOpen}
         onOpenChange={setPromptPickerOpen}
         onInsert={insertStepFromPrompt}
+      />
+
+      {/* Same pickers, opened from the step editor's toolbar — these swap
+          the selected step's content instead of appending a new step. */}
+      <TemplatePickerDialog
+        open={stepTemplateOpen}
+        onOpenChange={setStepTemplateOpen}
+        onInsert={applyTemplateToStep}
+        vars={SAMPLE_DATA}
+        channel={selectedStep ? templateChannelOf(selectedStep) : undefined}
+        locale={locale}
+      />
+
+      <PromptPickerDialog
+        open={stepPromptOpen}
+        onOpenChange={setStepPromptOpen}
+        onInsert={applyPromptToStep}
       />
 
       <CopySequenceDialog
