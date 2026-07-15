@@ -145,6 +145,20 @@ const COPY = {
     idleTitle: "Search prospects and companies your way",
     idleDesc:
       "Describe your ideal prospect or company, or search by name, role, location, industry, and more — then narrow with advanced filters. From your results, enrich contacts, build a list, or launch a campaign.",
+    idleSuggestedTitle: "Or try one of these",
+    idleSuggestionsPeople: [
+      "VPs of Sales at SaaS scale-ups in EMEA",
+      "Heads of RevOps at companies hiring SDRs",
+      "Founders of B2B startups that raised a Series A this year",
+      "CROs in Iberia at companies with 50-500 employees",
+    ],
+    idleSuggestionsCompanies: [
+      "SaaS companies in Iberia with 50-500 employees",
+      "Agencies using HubSpot that opened a sales role",
+      "Logistics companies adopting AI tools in their stack",
+      "E-commerce brands that just expanded into the US",
+    ],
+    aiHint: "Natural-language search · AI-powered",
     urlsTab: "URLs",
     urlsIdleBtn: "Search by URLs",
     urlsPlaceholder: "acme.com, example.com — paste or type company URLs/domains",
@@ -437,6 +451,20 @@ const COPY = {
     idleTitle: "Busca prospectos y empresas a tu manera",
     idleDesc:
       "Describe a tu prospecto o empresa ideal, o busca por nombre, cargo, ubicación, sector y más — luego afina con filtros avanzados. Con los resultados, enriquece contactos, crea una lista o lanza una campaña.",
+    idleSuggestedTitle: "O prueba una de estas",
+    idleSuggestionsPeople: [
+      "VPs de Ventas en scale-ups SaaS de EMEA",
+      "Responsables de RevOps en empresas que contratan SDRs",
+      "Fundadores de startups B2B con Serie A este año",
+      "CROs en Iberia en empresas de 50-500 empleados",
+    ],
+    idleSuggestionsCompanies: [
+      "Empresas SaaS en Iberia de 50-500 empleados",
+      "Agencias que usan HubSpot con vacantes de ventas",
+      "Empresas de logística que adoptan herramientas de IA",
+      "Marcas de e-commerce recién expandidas a EE. UU.",
+    ],
+    aiHint: "Búsqueda en lenguaje natural · impulsada por IA",
     urlsTab: "URLs",
     urlsIdleBtn: "Buscar por URLs",
     urlsPlaceholder: "acme.com, ejemplo.com — pega o escribe URLs/dominios de empresas",
@@ -1746,8 +1774,15 @@ export default function Search() {
           />
         </div>
 
-        {/* Search query bar — the prompt IS the query, no chat thread. */}
-        <Card className="p-3">
+        {/* Search query bar — the prompt IS the query, no chat thread. A soft
+            brand-gradient halo behind the card makes it read as the page's
+            hero control rather than one more toolbar. */}
+        <div className="relative">
+          <div
+            aria-hidden
+            className="from-primary/25 via-volt/20 to-primary/25 absolute -inset-1 rounded-2xl bg-gradient-to-r opacity-70 blur-md"
+          />
+          <Card className="border-primary/30 shadow-primary/10 relative p-3 shadow-lg">
           <form
             className="flex items-end gap-2"
             onSubmit={(e) => {
@@ -1821,41 +1856,44 @@ export default function Search() {
                 <p className="text-muted-foreground px-1 text-xs">{c.urlsHint}</p>
               </div>
             ) : (
-            <div className="relative flex-1">
-              <SearchIcon className="text-muted-foreground pointer-events-none absolute top-3 left-3 size-4" />
-              <Textarea
-                id="search-prompt"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    runPrompt(input)
-                  }
-                }}
-                placeholder={
-                  entity === "companies"
-                    ? c.inputPlaceholderCompanies
-                    : c.inputPlaceholder
-                }
-                rows={2}
-                aria-label={c.srTitle}
-                className="max-h-40 min-h-12 resize-y pr-9 pl-9"
-              />
-              {input.length > 0 && (
-                <button
-                  type="button"
-                  aria-label={c.clearQuery}
-                  title={c.clearQuery}
-                  onClick={() => {
-                    setInput("")
-                    document.getElementById("search-prompt")?.focus()
+            <div className="flex-1 space-y-1">
+              <div className="relative">
+                <Sparkles className="text-primary pointer-events-none absolute top-3 left-3 size-4" />
+                <Textarea
+                  id="search-prompt"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      runPrompt(input)
+                    }
                   }}
-                  className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2.5 right-2.5 flex size-6 items-center justify-center rounded-md transition-colors"
-                >
-                  <X className="size-4" />
-                </button>
-              )}
+                  placeholder={
+                    entity === "companies"
+                      ? c.inputPlaceholderCompanies
+                      : c.inputPlaceholder
+                  }
+                  rows={2}
+                  aria-label={c.srTitle}
+                  className="max-h-40 min-h-12 resize-y pr-9 pl-9"
+                />
+                {input.length > 0 && (
+                  <button
+                    type="button"
+                    aria-label={c.clearQuery}
+                    title={c.clearQuery}
+                    onClick={() => {
+                      setInput("")
+                      document.getElementById("search-prompt")?.focus()
+                    }}
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2.5 right-2.5 flex size-6 items-center justify-center rounded-md transition-colors"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-muted-foreground px-1 text-xs">{c.aiHint}</p>
             </div>
             )}
             <Button
@@ -1875,12 +1913,18 @@ export default function Search() {
               <span className="hidden sm:inline">{c.searchBtn}</span>
             </Button>
           </form>
-        </Card>
+          </Card>
+        </div>
 
         {/* Matching runs a real (costly) query, so nothing renders — no
             filter sidebar, no results — until a search actually starts. */}
         {!searchStarted && (
-          <SearchIdleState c={c} />
+          <SearchIdleState
+            c={c}
+            entity={entity}
+            urlsMode={urlsMode}
+            onSuggestion={(s) => runPrompt(s, entity)}
+          />
         )}
 
         {searchStarted && (
@@ -3410,12 +3454,45 @@ function SavedSearchesControl({
 // query, so the page holds off rendering the filter sidebar or any results.
 // Saved searches are a separate entry point: reopen one directly, no need to
 // run anything first.
-function SearchIdleState({ c }: { c: Copy }) {
+function SearchIdleState({
+  c,
+  entity,
+  urlsMode,
+  onSuggestion,
+}: {
+  c: Copy
+  entity: AiEntity
+  urlsMode: boolean
+  onSuggestion: (prompt: string) => void
+}) {
+  const suggestions =
+    entity === "companies" ? c.idleSuggestionsCompanies : c.idleSuggestionsPeople
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-20 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed px-4 py-16 text-center">
       <img src={kaiUrl} alt="" className="size-16" />
       <p className="text-lg font-semibold">{c.idleTitle}</p>
       <p className="text-muted-foreground max-w-md text-sm">{c.idleDesc}</p>
+      {/* One-click curated prompts — swapped per entity tab; URL mode has its
+          own pill input, so suggestions would mislead there. */}
+      {!urlsMode && (
+        <>
+          <p className="text-muted-foreground mt-3 text-xs font-medium tracking-wide uppercase">
+            {c.idleSuggestedTitle}
+          </p>
+          <div className="flex max-w-2xl flex-wrap justify-center gap-2">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onSuggestion(s)}
+                className="border-primary/30 bg-primary/5 hover:border-primary hover:bg-primary/10 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+              >
+                + {s}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
