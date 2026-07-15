@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Mic, Pause, Play, Square, Trash2 } from "lucide-react"
+import { Mic, Pause, Play, Square, Trash2, Upload } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useLocale } from "@/lib/locale"
@@ -10,22 +10,31 @@ const SPEEDS = [1, 1.5, 2] as const
 const COPY = {
   en: {
     record: "Record voice message",
+    upload: "Upload audio file",
     recording: "Recording",
     stop: "Stop",
     micDenied: "Microphone access denied — allow it in your browser to record.",
+    uploadError:
+      "Couldn't read that audio file — try MP3, M4A, WAV, or OGG.",
   },
   es: {
     record: "Grabar mensaje de voz",
+    upload: "Subir archivo de audio",
     recording: "Grabando",
     stop: "Detener",
     micDenied: "Acceso al micrófono denegado — permítelo en tu navegador para grabar.",
+    uploadError:
+      "No se pudo leer ese archivo de audio — prueba con MP3, M4A, WAV u OGG.",
   },
 } as const
 
 // A real recorded voice note — getUserMedia + MediaRecorder capture, with
 // playback (play/pause, scrub, speed) and delete/re-record on the same
-// card. No backend to persist the blob to, so the object URL only lives
-// for this browser session (revoked on unmount/re-record).
+// card. Voice messages can also be uploaded as an audio file: some teams
+// send recordings made outside Kombo (e.g. supplied by their own client),
+// so the mic is not the only source. No backend to persist the blob to,
+// so the object URL only lives for this browser session (revoked on
+// unmount/re-record).
 export function VoiceMessageRecorder({
   recordingUrl,
   durationSec,
@@ -42,6 +51,8 @@ export function VoiceMessageRecorder({
   const [recording, setRecording] = React.useState(false)
   const [recordSec, setRecordSec] = React.useState(0)
   const [error, setError] = React.useState(false)
+  const [uploadError, setUploadError] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [playing, setPlaying] = React.useState(false)
   const [currentTime, setCurrentTime] = React.useState(0)
   const [speedIdx, setSpeedIdx] = React.useState(0)
@@ -103,6 +114,24 @@ export function VoiceMessageRecorder({
     mediaRecorderRef.current?.stop()
   }
 
+  // An uploaded file feeds the same onRecorded contract as the mic — probe
+  // it with an off-DOM <audio> first so the player gets a real duration.
+  function handleFile(file: File) {
+    setUploadError(false)
+    setError(false)
+    const url = URL.createObjectURL(file)
+    const probe = new Audio()
+    probe.onloadedmetadata = () => {
+      const d = probe.duration
+      onRecorded(url, Number.isFinite(d) ? Math.round(d) : 0)
+    }
+    probe.onerror = () => {
+      URL.revokeObjectURL(url)
+      setUploadError(true)
+    }
+    probe.src = url
+  }
+
   React.useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop())
@@ -110,18 +139,6 @@ export function VoiceMessageRecorder({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only clean up on unmount
   }, [])
-
-  if (error) {
-    return (
-      <div className="space-y-2">
-        <p className="text-destructive text-xs">{c.micDenied}</p>
-        <Button variant="outline" onClick={startRecording}>
-          <Mic className="size-4" />
-          {c.record}
-        </Button>
-      </div>
-    )
-  }
 
   if (recording) {
     return (
@@ -213,9 +230,39 @@ export function VoiceMessageRecorder({
   }
 
   return (
-    <Button variant="volt" className="w-full" onClick={startRecording}>
-      <Mic className="size-4" />
-      {c.record}
-    </Button>
+    <div className="space-y-2">
+      {error && <p className="text-destructive text-xs">{c.micDenied}</p>}
+      {uploadError && <p className="text-destructive text-xs">{c.uploadError}</p>}
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button
+          variant={error ? "outline" : "volt"}
+          className="flex-1"
+          onClick={startRecording}
+        >
+          <Mic className="size-4" />
+          {c.record}
+        </Button>
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="size-4" />
+          {c.upload}
+        </Button>
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*"
+        className="hidden"
+        aria-label={c.upload}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleFile(file)
+          e.target.value = ""
+        }}
+      />
+    </div>
   )
 }
