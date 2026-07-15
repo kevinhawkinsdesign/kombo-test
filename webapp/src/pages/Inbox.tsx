@@ -2283,9 +2283,11 @@ function Composer({
     toast.success(c.regenerated)
   }
 
-  // Insert a {{variable}} at the editor caret.
+  // Insert the prospect's resolved value at the caret — the composer writes to
+  // one known recipient, so live data beats a {{tag}} placeholder here. Falls
+  // back to the literal tag when this prospect has no value for the field.
   function insertVar(tag: string) {
-    taRef.current?.insertText(`{{${tag}}}`)
+    taRef.current?.insertText(varsMap[tag] || `{{${tag}}}`)
   }
 
   // Insert the template body (merge variables intact) so the composer's
@@ -2388,8 +2390,8 @@ function Composer({
               <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
                 <Braces className="text-primary size-3.5" />
                 <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
-                <span className="text-muted-foreground font-mono text-[11px]">
-                  {`{{${v.tag}}}`}
+                <span className="text-muted-foreground max-w-40 truncate text-[11px]">
+                  {v.value || `{{${v.tag}}}`}
                 </span>
               </DropdownMenuItem>
             ))}
