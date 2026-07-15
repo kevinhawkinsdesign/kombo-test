@@ -15,7 +15,6 @@ import {
   X,
   Users,
   Building2,
-  Gift,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -105,22 +104,6 @@ const COPY = {
     tabPreferences: "Preferences",
     tabNotifications: "Notifications",
     tabBilling: "Billing",
-    tabReferral: "Referrals",
-    referralTitle: "Share & earn",
-    referralDesc:
-      "Invite your sales friends to Kombo and earn 200 credits per accepted invite. Get €350 for every referral who becomes a paying customer.",
-    referralPlaceholder: "Add referred email",
-    referralSend: "Send invite",
-    referralSentToast: (email: string) => `Invite sent to ${email}`,
-    referralDuplicateToast: "Already invited",
-    referralColEmail: "Email",
-    referralColStatus: "Status",
-    referralColAdded: "Added date",
-    referralStatusPending: "Pending",
-    referralStatusAccepted: "Accepted",
-    referralStatusCustomer: "Customer",
-    referralCreditsEarned: "Credits earned",
-    referralMoneyEarned: "Money earned",
     profileDetails: "Profile details",
     profileDetailsDesc: "Update your personal information.",
     fullName: "Full name",
@@ -251,22 +234,6 @@ const COPY = {
     tabPreferences: "Preferencias",
     tabNotifications: "Notificaciones",
     tabBilling: "Facturación",
-    tabReferral: "Referidos",
-    referralTitle: "Comparte y gana",
-    referralDesc:
-      "Invita a tus amigos de ventas a Kombo y gana 200 créditos por cada invitación aceptada. Consigue 350€ por cada referido que se convierta en cliente de pago.",
-    referralPlaceholder: "Añadir correo del referido",
-    referralSend: "Enviar invitación",
-    referralSentToast: (email: string) => `Invitación enviada a ${email}`,
-    referralDuplicateToast: "Ya invitado",
-    referralColEmail: "Correo",
-    referralColStatus: "Estado",
-    referralColAdded: "Fecha de alta",
-    referralStatusPending: "Pendiente",
-    referralStatusAccepted: "Aceptado",
-    referralStatusCustomer: "Cliente",
-    referralCreditsEarned: "Créditos ganados",
-    referralMoneyEarned: "Dinero ganado",
     profileDetails: "Datos del perfil",
     profileDetailsDesc: "Actualiza tu información personal.",
     fullName: "Nombre completo",
@@ -379,29 +346,6 @@ const COPY = {
   },
 } as const
 
-interface Referral {
-  id: string
-  email: string
-  status: "pending" | "accepted" | "customer"
-  addedDate: string // ISO
-}
-
-const REFERRAL_CREDITS_PER_ACCEPT = 200
-const REFERRAL_EUR_PER_CUSTOMER = 350
-
-const INITIAL_REFERRALS: Referral[] = [
-  { id: "ref_1", email: "morgan.lee@ext-agency.com", status: "pending", addedDate: "2026-06-02" },
-  { id: "ref_2", email: "priya.n@salesloop.io", status: "accepted", addedDate: "2026-05-14" },
-  { id: "ref_3", email: "diego.f@revopshq.com", status: "customer", addedDate: "2026-03-28" },
-  { id: "ref_4", email: "sara.oconnor@teamsystem.com", status: "pending", addedDate: "2026-06-20" },
-]
-
-const REFERRAL_BADGE_VARIANT: Record<Referral["status"], "outline" | "secondary" | "success"> = {
-  pending: "outline",
-  accepted: "secondary",
-  customer: "success",
-}
-
 export default function Settings() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -416,29 +360,6 @@ export default function Settings() {
   function viewAsRep(rep: TeamMember) {
     impersonate(rep.id)
     toast.success(c.teamViewingAs(rep.name))
-  }
-
-  const [referralEmail, setReferralEmail] = React.useState("")
-  const [referrals, setReferrals] = React.useState<Referral[]>(INITIAL_REFERRALS)
-  const referralCreditsEarned =
-    referrals.filter((r) => r.status === "accepted" || r.status === "customer").length *
-    REFERRAL_CREDITS_PER_ACCEPT
-  const referralMoneyEarned =
-    referrals.filter((r) => r.status === "customer").length * REFERRAL_EUR_PER_CUSTOMER
-
-  function sendReferralInvite() {
-    const email = referralEmail.trim()
-    if (!email) return
-    if (referrals.some((r) => r.email.toLowerCase() === email.toLowerCase())) {
-      toast.error(c.referralDuplicateToast)
-      return
-    }
-    setReferrals((rs) => [
-      { id: `ref_new_${rs.length + 1}`, email, status: "pending", addedDate: new Date().toISOString() },
-      ...rs,
-    ])
-    setReferralEmail("")
-    toast.success(c.referralSentToast(email))
   }
 
   return (
@@ -458,7 +379,6 @@ export default function Settings() {
           <TabsTrigger value="preferences">{c.tabPreferences}</TabsTrigger>
           <TabsTrigger value="notifications">{c.tabNotifications}</TabsTrigger>
           <TabsTrigger value="billing">{c.tabBilling}</TabsTrigger>
-          <TabsTrigger value="referral">{c.tabReferral}</TabsTrigger>
         </TabsList>
 
         {/* ACCOUNT */}
@@ -855,80 +775,6 @@ export default function Settings() {
               ))}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        {/* REFERRAL */}
-        <TabsContent value="referral" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.referralTitle}</CardTitle>
-              <CardDescription>{c.referralDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={referralEmail}
-                  onChange={(e) => setReferralEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") sendReferralInvite()
-                  }}
-                  placeholder={c.referralPlaceholder}
-                  type="email"
-                  className="flex-1"
-                />
-                <Button onClick={sendReferralInvite}>
-                  <Gift className="size-4" />
-                  {c.referralSend}
-                </Button>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{c.referralColEmail}</TableHead>
-                    <TableHead>{c.referralColStatus}</TableHead>
-                    <TableHead>{c.referralColAdded}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {referrals.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-medium">{r.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={REFERRAL_BADGE_VARIANT[r.status]} className="font-normal">
-                          {r.status === "pending"
-                            ? c.referralStatusPending
-                            : r.status === "accepted"
-                              ? c.referralStatusAccepted
-                              : c.referralStatusCustomer}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(r.addedDate).toLocaleDateString(
-                          locale === "es" ? "es-ES" : "en-GB"
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-sm">{c.referralCreditsEarned}</p>
-                <p className="text-2xl font-semibold tabular-nums">{referralCreditsEarned}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-sm">{c.referralMoneyEarned}</p>
-                <p className="text-2xl font-semibold tabular-nums">€{referralMoneyEarned}</p>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
       </Tabs>
     </Page>
