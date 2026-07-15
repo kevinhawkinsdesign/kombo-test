@@ -40,7 +40,6 @@ import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale, type Locale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card } from "@/components/ui/card"
 import {
@@ -1858,25 +1857,18 @@ export default function Search() {
             ) : (
             <div className="flex-1 space-y-1">
               <div className="relative">
-                <Sparkles className="text-primary pointer-events-none absolute top-3 left-3 size-4" />
-                <Textarea
+                <Sparkles className="text-primary pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                <Input
                   id="search-prompt"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      runPrompt(input)
-                    }
-                  }}
                   placeholder={
                     entity === "companies"
                       ? c.inputPlaceholderCompanies
                       : c.inputPlaceholder
                   }
-                  rows={2}
                   aria-label={c.srTitle}
-                  className="max-h-40 min-h-12 resize-y pr-9 pl-9"
+                  className="h-12 pr-9 pl-9"
                 />
                 {input.length > 0 && (
                   <button
@@ -1887,7 +1879,7 @@ export default function Search() {
                       setInput("")
                       document.getElementById("search-prompt")?.focus()
                     }}
-                    className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2.5 right-2.5 flex size-6 items-center justify-center rounded-md transition-colors"
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-1/2 right-2.5 flex size-6 -translate-y-1/2 items-center justify-center rounded-md transition-colors"
                   >
                     <X className="size-4" />
                   </button>
