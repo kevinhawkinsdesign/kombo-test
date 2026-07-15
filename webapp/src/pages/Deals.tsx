@@ -3,17 +3,16 @@ import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Briefcase,
+  Building2,
   CalendarDays,
   Columns3,
-  DollarSign,
   Mail,
   MoreHorizontal,
   Pencil,
   Phone,
-  Scale,
-  Target,
   TrendingUp,
   Trash2,
+  Users,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -160,9 +159,8 @@ const COPY = {
     sortClose: "Closing soonest",
     sortName: "Name (A–Z)",
     sortProbability: "Win probability",
-    metricTotal: "Total amount",
-    metricWeighted: "Weighted value",
-    metricScore: "Deal score",
+    entityProspects: "Prospects",
+    entityCompanies: "Companies",
     colName: "Deal",
     colAccount: "Account",
     colStage: "Stage",
@@ -248,9 +246,8 @@ const COPY = {
     sortClose: "Cierre más próximo",
     sortName: "Nombre (A–Z)",
     sortProbability: "Probabilidad de cierre",
-    metricTotal: "Importe total",
-    metricWeighted: "Valor ponderado",
-    metricScore: "Puntuación del negocio",
+    entityProspects: "Prospectos",
+    entityCompanies: "Empresas",
     colName: "Negocio",
     colAccount: "Cuenta",
     colStage: "Etapa",
@@ -303,9 +300,12 @@ function DealCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5">
-          <p className="text-sm font-medium">{deal.name}</p>
+          <p className="text-sm font-medium">{deal.contactName}</p>
           {account && (
-            <p className="text-muted-foreground text-xs">{account.name}</p>
+            <p className="text-muted-foreground flex items-center gap-1 text-xs">
+              <Building2 className="size-3" />
+              {account.name}
+            </p>
           )}
         </div>
 
@@ -377,6 +377,79 @@ function DealCard({
   )
 }
 
+// Company-grain board card: one card per account within a stage, its related
+// prospects listed inside (each row opens that prospect's deal detail).
+function CompanyDealCard({
+  accountId,
+  deals,
+  onOpen,
+}: {
+  accountId: string
+  deals: Deal[]
+  onOpen: (deal: Deal) => void
+}) {
+  const account = getAccount(accountId)
+  const totalValue = deals.reduce((sum, d) => sum + d.value, 0)
+  const avgProbability = Math.round(
+    deals.reduce((sum, d) => sum + d.probability, 0) / deals.length
+  )
+  const nearestClose = deals.reduce(
+    (min, d) => (d.closeDate < min ? d.closeDate : min),
+    deals[0].closeDate
+  )
+  return (
+    <div className="bg-card space-y-2 rounded-lg border p-3">
+      <p className="flex items-center gap-1.5 text-sm font-medium">
+        <Building2 className="text-muted-foreground size-3.5 shrink-0" />
+        {account?.name ?? deals[0].contactName}
+      </p>
+
+      <p className="font-semibold tabular-nums">{money(totalValue)}</p>
+
+      <div className="space-y-1">
+        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+          <div
+            className="bg-primary h-full rounded-full"
+            style={{ width: `${avgProbability}%` }}
+          />
+        </div>
+        <p className="text-muted-foreground text-xs tabular-nums">
+          {avgProbability}%
+        </p>
+      </div>
+
+      <div className="space-y-0.5">
+        {deals.map((deal) => (
+          <button
+            key={deal.id}
+            type="button"
+            onClick={() => onOpen(deal)}
+            className="hover:bg-muted/60 flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-xs"
+          >
+            <Users className="text-muted-foreground size-3 shrink-0" />
+            <span className="min-w-0 flex-1 truncate">{deal.contactName}</span>
+            <span className="text-muted-foreground tabular-nums">
+              {money(deal.value)}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between pt-1">
+        <span className="text-muted-foreground flex items-center gap-1 text-xs">
+          <CalendarDays className="size-3.5" />
+          {formatDate(nearestClose)}
+        </span>
+        <div className="flex -space-x-1.5">
+          {[...new Set(deals.map((d) => d.ownerId))].slice(0, 3).map((ownerId) => (
+            <OwnerAvatar key={ownerId} ownerId={ownerId} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Deals() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -394,7 +467,11 @@ export default function Deals() {
   const [deletingDeal, setDeletingDeal] = React.useState<Deal | null>(null)
   const [detailDeal, setDetailDeal] = React.useState<Deal | null>(null)
   const [view, setView] = React.useState<CollectionView>("cards")
-  const [boardMetric, setBoardMetric] = React.useState<"total" | "weighted" | "score">("total")
+  // Board grain: one card per prospect (deal contact) or one card per company
+  // with its related prospects listed inside.
+  const [boardEntity, setBoardEntity] = React.useState<"prospects" | "companies">(
+    "prospects"
+  )
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("value")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
@@ -685,34 +762,27 @@ export default function Deals() {
         <div className="space-y-3">
           <Segmented
             options={[
-              { v: "total", label: c.metricTotal, icon: DollarSign },
-              { v: "weighted", label: c.metricWeighted, icon: Scale },
-              { v: "score", label: c.metricScore, icon: Target },
+              { v: "prospects", label: c.entityProspects, icon: Users },
+              { v: "companies", label: c.entityCompanies, icon: Building2 },
             ]}
-            value={boardMetric}
-            onChange={setBoardMetric}
+            value={boardEntity}
+            onChange={setBoardEntity}
             className="w-fit"
           />
           <div className="flex gap-4 overflow-x-auto pb-2">
             {DEAL_STAGES.map((stage) => {
               const stageDeals = scoped.filter((d) => d.stage === stage.key)
               const stageValue = stageDeals.reduce((sum, d) => sum + d.value, 0)
-              const stageWeighted = stageDeals.reduce(
-                (sum, d) => sum + (d.value * d.probability) / 100,
-                0
-              )
-              const stageScore = stageDeals.length
-                ? Math.round(
-                    stageDeals.reduce((sum, d) => sum + d.probability, 0) /
-                      stageDeals.length
-                  )
-                : 0
-              const stageMetric =
-                boardMetric === "total"
-                  ? money(stageValue)
-                  : boardMetric === "weighted"
-                    ? money(Math.round(stageWeighted))
-                    : `${stageScore}%`
+              // Company grain: group the stage's deals by account, preserving
+              // deal order so cards don't jump when toggling.
+              const byAccount = new Map<string, Deal[]>()
+              for (const d of stageDeals) {
+                const group = byAccount.get(d.accountId)
+                if (group) group.push(d)
+                else byAccount.set(d.accountId, [d])
+              }
+              const cardCount =
+                boardEntity === "companies" ? byAccount.size : stageDeals.length
               return (
                 <div
                   key={stage.key}
@@ -721,15 +791,28 @@ export default function Deals() {
                   <div className="flex items-center gap-2 px-1 pt-1">
                     <span className="font-medium">{c.stages[stage.key]}</span>
                     <Badge variant="secondary" className="tabular-nums">
-                      {stageDeals.length}
+                      {cardCount}
                     </Badge>
                     <span className="text-muted-foreground ml-auto text-sm tabular-nums">
-                      {stageMetric}
+                      {money(stageValue)}
                     </span>
                   </div>
 
                   <div className="space-y-2">
-                    {stageDeals.length > 0 ? (
+                    {stageDeals.length === 0 ? (
+                      <p className="text-muted-foreground px-1 py-6 text-center text-xs">
+                        {c.noDeals}
+                      </p>
+                    ) : boardEntity === "companies" ? (
+                      [...byAccount.entries()].map(([accountId, group]) => (
+                        <CompanyDealCard
+                          key={accountId}
+                          accountId={accountId}
+                          deals={group}
+                          onOpen={openDetail}
+                        />
+                      ))
+                    ) : (
                       stageDeals.map((deal) => (
                         <DealCard
                           key={deal.id}
@@ -739,10 +822,6 @@ export default function Deals() {
                           onDelete={setDeletingDeal}
                         />
                       ))
-                    ) : (
-                      <p className="text-muted-foreground px-1 py-6 text-center text-xs">
-                        {c.noDeals}
-                      </p>
                     )}
                   </div>
                 </div>
