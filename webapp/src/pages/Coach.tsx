@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -970,9 +971,13 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
             ))}
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <Badge variant="secondary" className="font-normal">
-              {c.aiGenerated}
-            </Badge>
+            <span
+              className="text-primary inline-flex items-center"
+              title={c.aiGenerated}
+              aria-label={c.aiGenerated}
+            >
+              <Sparkles className="size-4" />
+            </span>
             <Button variant="ghost" size="sm" asChild>
               <Link to={`/coach/${rec.id}`}>
                 {c.viewFullAnalysis}

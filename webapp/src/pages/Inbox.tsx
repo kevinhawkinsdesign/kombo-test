@@ -1994,9 +1994,12 @@ export default function Inbox() {
                         {LANG_FLAG[msgLang]} {relativeTime(m.timestamp)}
                       </span>
                       {outbound && m.aiGenerated && (
-                        <span className="text-primary inline-flex items-center gap-0.5 font-medium">
+                        <span
+                          className="text-primary inline-flex items-center"
+                          title={c.aiGenerated}
+                          aria-label={c.aiGenerated}
+                        >
                           <Sparkles className="size-2.5" />
-                          {c.aiGenerated}
                         </span>
                       )}
                       {canTranslate && (
