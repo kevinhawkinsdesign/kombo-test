@@ -32,6 +32,7 @@ import {
   Save,
   Trash2,
   Plus,
+  AlertTriangle,
 } from "lucide-react"
 
 import { useLocale, type Locale } from "@/lib/locale"
@@ -63,16 +64,25 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
   useFollowUpTemplates,
   followUpTemplateStore,
 } from "@/lib/followup-templates"
 import { coachRecordings, currentUser } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import { recordingDetails } from "@/lib/mock-depth"
+import { CALL_TYPES, CALL_TYPE_META } from "@/lib/call-types"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { KeyMoment, CoachRecording } from "@/lib/types"
+import type { KeyMoment, CoachRecording, CallType } from "@/lib/types"
 
 const SENTIMENT = {
   positive: { icon: Smile, variant: "success" as const },
@@ -114,6 +124,20 @@ const COPY = {
     callScore: "Call score",
     reanalyzing: "Re-analyzing recording…",
     reanalyze: "Re-analyze",
+    callTypeAria: "Call type",
+    aiAssigned: "AI-assigned",
+    aiAssignedHint: "Kai classified this call automatically from the transcript.",
+    retypeTitle: "Re-analyze recording with the new type?",
+    retypeDesc:
+      "The summary, key fields, and insights for this recording were generated using the previous type. Re-analyzing will clear them and re-run the analysis against the new type's prompts and key-field definitions. The transcript itself is preserved either way.",
+    justSave: "Just save",
+    saveReanalyze: "Save and re-analyze",
+    cancel: "Cancel",
+    typeUpdated: "Call type updated",
+    analysisUpdated: "Analysis updated",
+    staleAnalysis: (t: string) =>
+      `This analysis was generated with the “${t}” type — re-analyze to refresh it.`,
+    analysisFocus: "Analysis focus",
     notesAdded: "Notes added to CRM",
     addNotesToCrm: "Add notes to CRM",
     pause: "Pause",
@@ -239,6 +263,20 @@ const COPY = {
     callScore: "Puntuación",
     reanalyzing: "Reanalizando la grabación…",
     reanalyze: "Reanalizar",
+    callTypeAria: "Tipo de llamada",
+    aiAssigned: "Asignado por IA",
+    aiAssignedHint: "Kai clasificó esta llamada automáticamente a partir de la transcripción.",
+    retypeTitle: "¿Reanalizar la grabación con el nuevo tipo?",
+    retypeDesc:
+      "El resumen, los campos clave y los insights de esta grabación se generaron con el tipo anterior. Al reanalizar se borrarán y se volverá a ejecutar el análisis con los prompts y campos clave del nuevo tipo. La transcripción se conserva en cualquier caso.",
+    justSave: "Solo guardar",
+    saveReanalyze: "Guardar y reanalizar",
+    cancel: "Cancelar",
+    typeUpdated: "Tipo de llamada actualizado",
+    analysisUpdated: "Análisis actualizado",
+    staleAnalysis: (t: string) =>
+      `Este análisis se generó con el tipo «${t}» — reanaliza para actualizarlo.`,
+    analysisFocus: "Enfoque del análisis",
     notesAdded: "Notas añadidas al CRM",
     addNotesToCrm: "Añadir notas al CRM",
     pause: "Pausar",
@@ -386,20 +424,30 @@ function mergeFollowUpVars(text: string, rec: CoachRecording): string {
 
 const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2] as const
 
-// A call-aware first draft that seeds the follow-up composer.
-function buildFollowUpDraft(rec: CoachRecording, locale: Locale): string {
+// A call-aware first draft that seeds the follow-up composer — opens with the
+// line the recording's call type prescribes (a demo thanks differently than a
+// negotiation), then the shared next-steps block.
+function buildFollowUpDraft(
+  rec: CoachRecording,
+  locale: Locale,
+  callType: CallType
+): string {
   const first = rec.prospectName.split(" ")[0]
   const steps = rec.nextSteps
+  const opener = CALL_TYPE_META[callType].followUpOpener[locale].replace(
+    /\{\{company\}\}/g,
+    rec.company
+  )
   if (locale === "es") {
     const s = steps.length
       ? `\n\nPróximos pasos:\n${steps.map((x) => `• ${x}`).join("\n")}`
       : ""
-    return `Hola ${first}:\n\nGracias por tu tiempo hoy — un gusto hablar sobre ${rec.company}.${s}\n\nUn saludo,\nKevin`
+    return `Hola ${first}:\n\n${opener}${s}\n\nUn saludo,\nKevin`
   }
   const s = steps.length
     ? `\n\nNext steps:\n${steps.map((x) => `• ${x}`).join("\n")}`
     : ""
-  return `Hi ${first},\n\nThanks for your time today — great to talk things through with ${rec.company}.${s}\n\nBest,\nKevin`
+  return `Hi ${first},\n\n${opener}${s}\n\nBest,\nKevin`
 }
 
 export default function CoachRecordingDetail() {
@@ -410,6 +458,20 @@ export default function CoachRecordingDetail() {
   const analysis = id ? recordingDetails[id] : undefined
 
   const [tab, setTab] = React.useState("analysis")
+  // The saved call type vs the type the visible analysis was generated with —
+  // "Just save" updates only the label, so the two can drift until the user
+  // re-analyzes (the stale-analysis banner nudges them to).
+  const [callType, setCallType] = React.useState<CallType>(
+    analysis?.callType ?? "Discovery"
+  )
+  const [analyzedType, setAnalyzedType] = React.useState<CallType>(
+    analysis?.callType ?? "Discovery"
+  )
+  // True until the user overrides the type Kai picked from the transcript.
+  const [aiAssigned, setAiAssigned] = React.useState(true)
+  // Non-null = the change-type confirm dialog is open for this target type.
+  const [pendingType, setPendingType] = React.useState<CallType | null>(null)
+  const [analyzing, setAnalyzing] = React.useState(false)
   const [transcriptQuery, setTranscriptQuery] = React.useState("")
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [positionSec, setPositionSec] = React.useState(0)
@@ -467,6 +529,34 @@ export default function CoachRecordingDetail() {
           t.name.toLowerCase().includes(tq)
       )
     : transcriptTurns
+
+  // Mock re-analysis: brief "working" state, then the analysis adopts the
+  // target type (focus areas, summary lens, follow-up draft all re-derive).
+  function runReanalysis(target: CallType) {
+    setAnalyzing(true)
+    window.setTimeout(() => {
+      setAnalyzedType(target)
+      setAnalyzing(false)
+      toast.success(c.analysisUpdated)
+    }, 1200)
+  }
+
+  function confirmJustSave() {
+    if (!pendingType) return
+    setCallType(pendingType)
+    setAiAssigned(false)
+    setPendingType(null)
+    toast.success(c.typeUpdated)
+  }
+
+  function confirmSaveAndReanalyze() {
+    if (!pendingType) return
+    const target = pendingType
+    setCallType(target)
+    setAiAssigned(false)
+    setPendingType(null)
+    runReanalysis(target)
+  }
 
   const toggleDone = (index: number, label: string) => {
     setDoneItems((prev) => {
@@ -692,8 +782,35 @@ export default function CoachRecordingDetail() {
                 <SentimentIcon className="size-3" />
                 {c.sentiment[rec.sentiment]}
               </Badge>
-              {analysis?.callType && (
-                <Badge variant="secondary">{analysis.callType}</Badge>
+              <Select
+                value={callType}
+                onValueChange={(v) => {
+                  if (v !== callType) setPendingType(v as CallType)
+                }}
+              >
+                <SelectTrigger
+                  size="sm"
+                  className="w-[160px]"
+                  aria-label={c.callTypeAria}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CALL_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {CALL_TYPE_META[t].label[locale]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {aiAssigned && (
+                <span
+                  className="text-primary inline-flex items-center gap-1 text-xs font-medium"
+                  title={c.aiAssignedHint}
+                >
+                  <Sparkles className="size-3" />
+                  {c.aiAssigned}
+                </span>
               )}
             </div>
             <p className="text-muted-foreground mt-1 text-sm">
@@ -702,8 +819,16 @@ export default function CoachRecordingDetail() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => toast.info(c.reanalyzing)}>
-              <RefreshCw className="size-4" />
+            <Button
+              variant="outline"
+              onClick={() => runReanalysis(callType)}
+              disabled={analyzing}
+            >
+              {analyzing ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="size-4" />
+              )}
               {c.reanalyze}
             </Button>
             <Button variant="volt" onClick={() => toast.success(c.notesAdded)}>
@@ -713,6 +838,27 @@ export default function CoachRecordingDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* The label can drift from the analysis when the user picks "Just
+          save" in the change-type dialog — surface that until re-analysis. */}
+      {callType !== analyzedType && !analyzing && (
+        <Card className="border-chart-4/40 bg-chart-4/5 mb-6">
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <AlertTriangle className="text-chart-4 size-4 shrink-0" />
+            <p className="min-w-0 flex-1 text-sm">
+              {c.staleAnalysis(CALL_TYPE_META[analyzedType].label[locale])}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => runReanalysis(callType)}
+            >
+              <RefreshCw className="size-4" />
+              {c.reanalyze}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Full original video (1.6.0). LinkedIn can't embed its recordings, so
           those calls link out to the original instead of playing inline. */}
@@ -868,6 +1014,23 @@ export default function CoachRecordingDetail() {
         <TabsContent value="analysis">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
+              {/* What this call type's analysis scores — changes with the type. */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-1.5 text-base">
+                    <Sparkles className="text-primary size-4" />
+                    {c.analysisFocus} · {CALL_TYPE_META[analyzedType].label[locale]}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-1.5">
+                  {CALL_TYPE_META[analyzedType].focus[locale].map((f) => (
+                    <Badge key={f} variant="secondary" className="font-normal">
+                      {f}
+                    </Badge>
+                  ))}
+                </CardContent>
+              </Card>
+
               <CallScorecard scorecard={scorecard} />
 
               {/* Notable quotes — verbatim, tagged by section */}
@@ -1068,6 +1231,9 @@ export default function CoachRecordingDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  <p className="text-muted-foreground text-xs">
+                    {CALL_TYPE_META[analyzedType].summaryLens[locale]}
+                  </p>
                   <p className="text-sm">{scorecard.headline}</p>
                   {rec.highlights.length > 0 && (
                     <ul className="space-y-1.5">
@@ -1204,15 +1370,45 @@ export default function CoachRecordingDetail() {
         </TabsContent>
 
         <TabsContent value="followUp">
+          {/* Keyed on the analyzed type so a re-analysis rebuilds the draft
+              even if this tab happens to be mounted at the time. */}
           <FollowUpTab
+            key={analyzedType}
             rec={rec}
             c={c}
             locale={locale}
+            callType={analyzedType}
             helpful={followUpHelpful}
             setHelpful={setFollowUpHelpful}
           />
         </TabsContent>
       </Tabs>
+
+      <Dialog
+        open={pendingType !== null}
+        onOpenChange={(v) => {
+          if (!v) setPendingType(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{c.retypeTitle}</DialogTitle>
+            <DialogDescription>{c.retypeDesc}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPendingType(null)}>
+              {c.cancel}
+            </Button>
+            <Button variant="outline" onClick={confirmJustSave}>
+              {c.justSave}
+            </Button>
+            <Button variant="volt" onClick={confirmSaveAndReanalyze}>
+              <RefreshCw className="size-4" />
+              {c.saveReanalyze}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Page>
   )
 }
@@ -1221,12 +1417,14 @@ function FollowUpTab({
   rec,
   c,
   locale,
+  callType,
   helpful,
   setHelpful,
 }: {
   rec: CoachRecording
   c: Copy
   locale: Locale
+  callType: CallType
   helpful: boolean | null
   setHelpful: (v: boolean | null) => void
 }) {
@@ -1238,7 +1436,7 @@ function FollowUpTab({
     c.followUpDefaultSubject(rec.company)
   )
   const [body, setBody] = React.useState(() =>
-    plainToHtml(buildFollowUpDraft(rec, locale))
+    plainToHtml(buildFollowUpDraft(rec, locale, callType))
   )
   const [generating, setGenerating] = React.useState(false)
   // "" = the AI draft; otherwise the id of the applied follow-up template.
@@ -1254,7 +1452,7 @@ function FollowUpTab({
     if (v === AI_DRAFT) {
       setTemplateId("")
       setSubject(c.followUpDefaultSubject(rec.company))
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale)))
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType)))
       return
     }
     const tpl = templates.find((t) => t.id === v)
@@ -1297,7 +1495,7 @@ function FollowUpTab({
   function generate() {
     setGenerating(true)
     setTimeout(() => {
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale)))
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType)))
       setGenerating(false)
     }, 600)
   }
