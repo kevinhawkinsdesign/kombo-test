@@ -2,6 +2,7 @@ import * as React from "react"
 import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
+  Banknote,
   Briefcase,
   Building2,
   CalendarDays,
@@ -70,6 +71,7 @@ import { DealDetailSheet } from "@/components/deals/DealDetailSheet"
 import { useView } from "@/lib/view-context"
 import { useDeals, dealStore } from "@/lib/store"
 import { getAccount, DEAL_STAGES } from "@/lib/mock-extra"
+import { STATUS_META } from "@/lib/conv-status"
 import { getRep, getScopeData, leaderboard, MONTHS, WEEKS, team } from "@/lib/team"
 import { initials, formatDate, formatMoney as money } from "@/lib/format"
 import { downloadCsv } from "@/lib/csv"
@@ -124,6 +126,7 @@ const COPY = {
     openPipeline: "Open pipeline",
     weightedForecast: "Weighted forecast",
     openDeals: "Open deals",
+    statusTitle: "Pipeline status",
     noDeals: "No deals",
     dealActions: "Deal actions",
     edit: "Edit",
@@ -209,6 +212,7 @@ const COPY = {
     openPipeline: "Pipeline abierto",
     weightedForecast: "Previsión ponderada",
     openDeals: "Negocios abiertos",
+    statusTitle: "Estado del pipeline",
     noDeals: "Sin negocios",
     dealActions: "Acciones del negocio",
     edit: "Editar",
@@ -274,6 +278,19 @@ function OwnerAvatar({ ownerId }: { ownerId: string }) {
   )
 }
 
+// Stage dots reuse the Inbox outcome palette — same funnel, same hues. (Deal
+// stages spell "needs_review"; conv-status spells "need_review".)
+const STAGE_DOT: Record<Deal["stage"], string> = {
+  interested: STATUS_META.interested.dot,
+  not_interested: STATUS_META.not_interested.dot,
+  qualified: STATUS_META.qualified.dot,
+  disqualified: STATUS_META.disqualified.dot,
+  meeting_booked: STATUS_META.meeting_booked.dot,
+  needs_review: STATUS_META.need_review.dot,
+  won: STATUS_META.won.dot,
+  lost: STATUS_META.lost.dot,
+}
+
 function DealCard({
   deal,
   onOpen,
@@ -288,6 +305,7 @@ function DealCard({
   const { locale } = useLocale()
   const c = COPY[locale]
   const account = getAccount(deal.accountId)
+  const [first, last] = deal.contactName.split(" ")
   return (
     <div
       role="button"
@@ -296,17 +314,24 @@ function DealCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onOpen(deal)
       }}
-      className="bg-card hover:border-primary/40 space-y-2 rounded-lg border p-3 text-left transition-colors"
+      className="bg-card hover:border-primary/40 space-y-2.5 rounded-lg border p-3 text-left shadow-xs transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="space-y-0.5">
-          <p className="text-sm font-medium">{deal.contactName}</p>
-          {account && (
-            <p className="text-muted-foreground flex items-center gap-1 text-xs">
-              <Building2 className="size-3" />
-              {account.name}
-            </p>
-          )}
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar className="size-8 shrink-0">
+            <AvatarFallback className="text-[10px]">
+              {initials(first, last)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 space-y-0.5">
+            <p className="truncate text-sm font-medium">{deal.contactName}</p>
+            {account && (
+              <p className="text-muted-foreground flex items-center gap-1 text-xs">
+                <Building2 className="size-3 shrink-0" />
+                <span className="truncate">{account.name}</span>
+              </p>
+            )}
+          </div>
         </div>
 
         <DropdownMenu>
@@ -352,24 +377,27 @@ function DealCard({
         </DropdownMenu>
       </div>
 
-      <p className="font-semibold tabular-nums">{money(deal.value)}</p>
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <CalendarDays className="size-3.5" />
+        {formatDate(deal.closeDate)}
+      </p>
 
-      <div className="space-y-1">
-        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+      <div className="flex items-center gap-2">
+        <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
           <div
             className="bg-primary h-full rounded-full"
             style={{ width: `${deal.probability}%` }}
           />
         </div>
-        <p className="text-muted-foreground text-xs tabular-nums">
+        <span className="text-muted-foreground text-xs tabular-nums">
           {deal.probability}%
-        </p>
+        </span>
       </div>
 
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-muted-foreground flex items-center gap-1 text-xs">
-          <CalendarDays className="size-3.5" />
-          {formatDate(deal.closeDate)}
+      <div className="flex items-center justify-between border-t pt-2">
+        <span className="flex items-center gap-1.5 font-semibold tabular-nums">
+          <Banknote className="text-chart-1 size-4" />
+          {money(deal.value)}
         </span>
         <OwnerAvatar ownerId={deal.ownerId} />
       </div>
@@ -398,24 +426,31 @@ function CompanyDealCard({
     deals[0].closeDate
   )
   return (
-    <div className="bg-card space-y-2 rounded-lg border p-3">
-      <p className="flex items-center gap-1.5 text-sm font-medium">
-        <Building2 className="text-muted-foreground size-3.5 shrink-0" />
-        {account?.name ?? deals[0].contactName}
+    <div className="bg-card space-y-2.5 rounded-lg border p-3 shadow-xs">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
+          <Building2 className="text-muted-foreground size-4" />
+        </span>
+        <p className="min-w-0 truncate text-sm font-medium">
+          {account?.name ?? deals[0].contactName}
+        </p>
+      </div>
+
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <CalendarDays className="size-3.5" />
+        {formatDate(nearestClose)}
       </p>
 
-      <p className="font-semibold tabular-nums">{money(totalValue)}</p>
-
-      <div className="space-y-1">
-        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+      <div className="flex items-center gap-2">
+        <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
           <div
             className="bg-primary h-full rounded-full"
             style={{ width: `${avgProbability}%` }}
           />
         </div>
-        <p className="text-muted-foreground text-xs tabular-nums">
+        <span className="text-muted-foreground text-xs tabular-nums">
           {avgProbability}%
-        </p>
+        </span>
       </div>
 
       <div className="space-y-0.5">
@@ -435,10 +470,10 @@ function CompanyDealCard({
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-muted-foreground flex items-center gap-1 text-xs">
-          <CalendarDays className="size-3.5" />
-          {formatDate(nearestClose)}
+      <div className="flex items-center justify-between border-t pt-2">
+        <span className="flex items-center gap-1.5 font-semibold tabular-nums">
+          <Banknote className="text-chart-1 size-4" />
+          {money(totalValue)}
         </span>
         <div className="flex -space-x-1.5">
           {[...new Set(deals.map((d) => d.ownerId))].slice(0, 3).map((ownerId) => (
@@ -639,18 +674,66 @@ export default function Deals() {
         </TabsList>
 
         <TabsContent value="pipeline">
-      <div className="grid gap-4 sm:grid-cols-3">
-        {summary.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader>
-              <CardDescription>{stat.label}</CardDescription>
-              <CardTitle className="text-2xl tabular-nums">
-                {stat.value}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      {/* Stage distribution — one segmented bar over the whole scoped
+          pipeline (CaseIQ-style "work status"), with the old headline
+          numbers folded into the title row. */}
+      <Card className="p-4">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <p className="font-semibold">{c.statusTitle}</p>
+            <div className="text-muted-foreground flex flex-wrap gap-x-6 gap-y-1 text-sm">
+              {summary.map((stat) => (
+                <span key={stat.label} className="flex items-baseline gap-1.5">
+                  {stat.label}
+                  <span className="text-foreground font-semibold tabular-nums">
+                    {stat.value}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full">
+            {scoped.length === 0 ? (
+              <div className="bg-muted h-full w-full" />
+            ) : (
+              DEAL_STAGES.map((stage) => {
+                const count = scoped.filter((d) => d.stage === stage.key).length
+                if (count === 0) return null
+                return (
+                  <div
+                    key={stage.key}
+                    className={cn("h-full", STAGE_DOT[stage.key])}
+                    style={{ width: `${(count / scoped.length) * 100}%` }}
+                    title={`${c.stages[stage.key]} · ${count}`}
+                  />
+                )
+              })
+            )}
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+            {DEAL_STAGES.map((stage) => {
+              const count = scoped.filter((d) => d.stage === stage.key).length
+              return (
+                <span
+                  key={stage.key}
+                  className="flex items-center gap-1.5 text-xs"
+                >
+                  <span
+                    className={cn(
+                      "size-2 shrink-0 rounded-full",
+                      STAGE_DOT[stage.key]
+                    )}
+                  />
+                  <span className="text-muted-foreground">
+                    {c.stages[stage.key]}
+                  </span>
+                  <span className="font-semibold tabular-nums">{count}</span>
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      </Card>
 
       <div className="mt-6">
         <CollectionToolbar
@@ -786,11 +869,20 @@ export default function Deals() {
               return (
                 <div
                   key={stage.key}
-                  className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-lg p-2"
+                  className="bg-muted/40 w-[280px] min-w-[280px] shrink-0 space-y-3 rounded-xl p-2"
                 >
                   <div className="flex items-center gap-2 px-1 pt-1">
+                    <span
+                      className={cn(
+                        "size-2 shrink-0 rounded-full",
+                        STAGE_DOT[stage.key]
+                      )}
+                    />
                     <span className="font-medium">{c.stages[stage.key]}</span>
-                    <Badge variant="secondary" className="tabular-nums">
+                    <Badge
+                      variant="outline"
+                      className="rounded-full tabular-nums"
+                    >
                       {cardCount}
                     </Badge>
                     <span className="text-muted-foreground ml-auto text-sm tabular-nums">
