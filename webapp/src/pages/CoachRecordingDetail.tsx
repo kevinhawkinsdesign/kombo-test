@@ -805,11 +805,11 @@ export default function CoachRecordingDetail() {
               </Select>
               {aiAssigned && (
                 <span
-                  className="text-primary inline-flex items-center gap-1 text-xs font-medium"
+                  className="text-primary inline-flex items-center"
                   title={c.aiAssignedHint}
+                  aria-label={c.aiAssigned}
                 >
-                  <Sparkles className="size-3" />
-                  {c.aiAssigned}
+                  <Sparkles className="size-4" />
                 </span>
               )}
             </div>
