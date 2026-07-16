@@ -1295,7 +1295,7 @@ const NEXT_STEP_CHANNEL_LABEL: Record<StepChannel, { en: string; es: string }> =
   email: { en: "Email", es: "Correo" },
   whatsapp: { en: "WhatsApp", es: "WhatsApp" },
   call: { en: "Phone call", es: "Llamada" },
-  ai_call: { en: "AI Voice Call — ElevenLabs", es: "Llamada de voz IA — ElevenLabs" },
+  ai_call: { en: "AI Voice Call", es: "Llamada de voz IA" },
   linkedin_message: { en: "LinkedIn message", es: "Mensaje de LinkedIn" },
   linkedin_dm: { en: "LinkedIn DM", es: "Mensaje directo de LinkedIn" },
   linkedin_inmail: { en: "LinkedIn InMail", es: "InMail de LinkedIn" },

@@ -205,7 +205,7 @@ const COPY = {
       email: "Email",
       whatsapp: "WhatsApp",
       call: "Phone call",
-      ai_call: "AI Voice Call — ElevenLabs",
+      ai_call: "AI Voice Call",
       linkedin_message: "LinkedIn message",
       linkedin_dm: "LinkedIn DM",
       linkedin_inmail: "LinkedIn InMail",
@@ -349,7 +349,6 @@ const COPY = {
     aiCallRetryFootnote: "Only for not-answered outcomes. Answered/voicemail keep normal behavior.",
     aiCallCadence: { rapid: "Rapid", relaxed: "Relaxed" },
     aiScriptPlaceholder: "Script / instructions for the AI agent",
-    aiCallPoweredBy: "Powered by ElevenLabs",
     aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
     insertVariable: "Insert variable",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -450,7 +449,7 @@ const COPY = {
       email: "Correo",
       whatsapp: "WhatsApp",
       call: "Llamada",
-      ai_call: "Llamada de voz IA — ElevenLabs",
+      ai_call: "Llamada de voz IA",
       linkedin_message: "Mensaje de LinkedIn",
       linkedin_dm: "Mensaje directo de LinkedIn",
       linkedin_inmail: "InMail de LinkedIn",
@@ -594,7 +593,6 @@ const COPY = {
     aiCallRetryFootnote: "Solo para resultados sin respuesta. Contestadas/buzón de voz mantienen el comportamiento normal.",
     aiCallCadence: { rapid: "Rápido", relaxed: "Relajado" },
     aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
-    aiCallPoweredBy: "Con tecnología de ElevenLabs",
     aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
     insertVariable: "Insertar variable",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -696,7 +694,7 @@ const COPY = {
       email: "Email",
       whatsapp: "WhatsApp",
       call: "Telefonata",
-      ai_call: "Chiamata vocale IA — ElevenLabs",
+      ai_call: "Chiamata vocale IA",
       linkedin_message: "Messaggio LinkedIn",
       linkedin_dm: "Messaggio diretto di LinkedIn",
       linkedin_inmail: "InMail di LinkedIn",
@@ -840,7 +838,6 @@ const COPY = {
     aiCallRetryFootnote: "Solo per gli esiti senza risposta. Risposte/segreteria mantengono il comportamento normale.",
     aiCallCadence: { rapid: "Rapido", relaxed: "Rilassato" },
     aiScriptPlaceholder: "Script / istruzioni per l'agente IA",
-    aiCallPoweredBy: "Basato su ElevenLabs",
     aiCallFooter: "Questo passaggio effettua una chiamata vocale IA agentica usando lo script e la voce sopra — non viene inviato automaticamente.",
     insertVariable: "Inserisci variabile",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -941,7 +938,7 @@ const COPY = {
       email: "E-mail",
       whatsapp: "WhatsApp",
       call: "Appel téléphonique",
-      ai_call: "Appel vocal IA — ElevenLabs",
+      ai_call: "Appel vocal IA",
       linkedin_message: "Message LinkedIn",
       linkedin_dm: "Message direct LinkedIn",
       linkedin_inmail: "InMail LinkedIn",
@@ -1085,7 +1082,6 @@ const COPY = {
     aiCallRetryFootnote: "Uniquement pour les résultats sans réponse. Les appels décrochés ou messagerie vocale suivent le comportement normal.",
     aiCallCadence: { rapid: "Rapide", relaxed: "Détendu" },
     aiScriptPlaceholder: "Script / instructions pour l'agent IA",
-    aiCallPoweredBy: "Propulsé par ElevenLabs",
     aiCallFooter: "Cette étape passe un appel vocal IA agentique en utilisant le script et la voix ci-dessus — il n'est pas envoyé automatiquement.",
     insertVariable: "Insérer une variable",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -1187,7 +1183,7 @@ const COPY = {
       email: "E-Mail",
       whatsapp: "WhatsApp",
       call: "Anruf",
-      ai_call: "KI-Sprachanruf — ElevenLabs",
+      ai_call: "KI-Sprachanruf",
       linkedin_message: "LinkedIn-Nachricht",
       linkedin_dm: "LinkedIn-Direktnachricht",
       linkedin_inmail: "LinkedIn InMail",
@@ -1331,7 +1327,6 @@ const COPY = {
     aiCallRetryFootnote: "Nur für nicht angenommene Anrufe. Angenommene Anrufe/Mailbox behalten das normale Verhalten.",
     aiCallCadence: { rapid: "Schnell", relaxed: "Entspannt" },
     aiScriptPlaceholder: "Skript / Anweisungen für den KI-Agenten",
-    aiCallPoweredBy: "Unterstützt von ElevenLabs",
     aiCallFooter: "Dieser Schritt führt einen agentischen KI-Sprachanruf mit dem obigen Skript und der obigen Stimme durch — er wird nicht automatisch gesendet.",
     insertVariable: "Variable einfügen",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -1433,7 +1428,7 @@ const COPY = {
       email: "E-mail",
       whatsapp: "WhatsApp",
       call: "Chamada telefónica",
-      ai_call: "Chamada de voz IA — ElevenLabs",
+      ai_call: "Chamada de voz IA",
       linkedin_message: "Mensagem do LinkedIn",
       linkedin_dm: "Mensagem direta do LinkedIn",
       linkedin_inmail: "InMail do LinkedIn",
@@ -1577,7 +1572,6 @@ const COPY = {
     aiCallRetryFootnote: "Apenas para resultados sem resposta. Chamadas atendidas/correio de voz mantêm o comportamento normal.",
     aiCallCadence: { rapid: "Rápido", relaxed: "Relaxado" },
     aiScriptPlaceholder: "Guião / instruções para o agente de IA",
-    aiCallPoweredBy: "Com tecnologia ElevenLabs",
     aiCallFooter: "Este passo faz uma chamada de voz com IA agencial usando o guião e a voz acima — não é enviada automaticamente.",
     insertVariable: "Inserir variável",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -1679,7 +1673,7 @@ const COPY = {
       email: "E-mail",
       whatsapp: "WhatsApp",
       call: "Ligação",
-      ai_call: "Chamada de voz IA — ElevenLabs",
+      ai_call: "Chamada de voz IA",
       linkedin_message: "Mensagem do LinkedIn",
       linkedin_dm: "Mensagem direta do LinkedIn",
       linkedin_inmail: "InMail do LinkedIn",
@@ -1823,7 +1817,6 @@ const COPY = {
     aiCallRetryFootnote: "Somente para resultados sem resposta. Ligações atendidas/caixa postal mantêm o comportamento normal.",
     aiCallCadence: { rapid: "Rápido", relaxed: "Relaxado" },
     aiScriptPlaceholder: "Roteiro / instruções para o agente de IA",
-    aiCallPoweredBy: "Com tecnologia ElevenLabs",
     aiCallFooter: "Esta etapa faz uma ligação de voz com IA agêntica usando o roteiro e a voz acima — ela não é enviada automaticamente.",
     insertVariable: "Inserir variável",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
@@ -3650,10 +3643,6 @@ export default function CampaignDetail() {
                                 </p>
                               </div>
                             )}
-                            <p className="text-muted-foreground flex items-center gap-1 text-xs">
-                              <Sparkles className="size-3" />
-                              {c.aiCallPoweredBy}
-                            </p>
                           </>
                         ) : (
                           <>
