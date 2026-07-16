@@ -61,7 +61,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Send a WhatsApp message." },
       call: { label: "Phone call", description: "Log a phone call to place." },
       ai_call: {
-        label: "AI Voice Call — ElevenLabs",
+        label: "AI Voice Call",
         description: "Place an agentic AI voice call.",
       },
       linkedin_message: {
@@ -117,7 +117,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Envía un mensaje de WhatsApp." },
       call: { label: "Llamada", description: "Registra una llamada telefónica pendiente." },
       ai_call: {
-        label: "Llamada de voz IA — ElevenLabs",
+        label: "Llamada de voz IA",
         description: "Realiza una llamada de voz con IA agente.",
       },
       linkedin_message: {
@@ -173,7 +173,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Invia un messaggio WhatsApp." },
       call: { label: "Chiamata", description: "Registra una chiamata da effettuare." },
       ai_call: {
-        label: "Chiamata vocale IA — ElevenLabs",
+        label: "Chiamata vocale IA",
         description: "Effettua una chiamata vocale con IA agentica.",
       },
       linkedin_message: {
@@ -229,7 +229,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Envoyez un message WhatsApp." },
       call: { label: "Appel téléphonique", description: "Consignez un appel à passer." },
       ai_call: {
-        label: "Appel vocal IA — ElevenLabs",
+        label: "Appel vocal IA",
         description: "Passez un appel vocal IA agentique.",
       },
       linkedin_message: {
@@ -285,7 +285,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Sende eine WhatsApp-Nachricht." },
       call: { label: "Telefonanruf", description: "Erfasse einen zu führenden Anruf." },
       ai_call: {
-        label: "KI-Sprachanruf — ElevenLabs",
+        label: "KI-Sprachanruf",
         description: "Führe einen agentischen KI-Sprachanruf durch.",
       },
       linkedin_message: {
@@ -341,7 +341,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
       call: { label: "Chamada", description: "Registe uma chamada a fazer." },
       ai_call: {
-        label: "Chamada de voz IA — ElevenLabs",
+        label: "Chamada de voz IA",
         description: "Faça uma chamada de voz com um agente de IA.",
       },
       linkedin_message: {
@@ -397,7 +397,7 @@ const COPY = {
       whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
       call: { label: "Ligação", description: "Registre uma ligação a fazer." },
       ai_call: {
-        label: "Ligação de voz IA — ElevenLabs",
+        label: "Ligação de voz IA",
         description: "Faça uma ligação de voz com um agente de IA.",
       },
       linkedin_message: {
