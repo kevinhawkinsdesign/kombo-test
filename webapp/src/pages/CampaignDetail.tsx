@@ -350,7 +350,9 @@ const COPY = {
     aiCallCadence: { rapid: "Rapid", relaxed: "Relaxed" },
     aiScriptPlaceholder: "Script / instructions for the AI agent",
     aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
-    insertVariable: "Insert variable",
+    insertVariable: "+ Variables",
+    varsSearchPlaceholder: "Search variables…",
+    varsEmpty: "No variables match your search.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.en
       return acc
@@ -594,7 +596,9 @@ const COPY = {
     aiCallCadence: { rapid: "Rápido", relaxed: "Relajado" },
     aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
     aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
-    insertVariable: "Insertar variable",
+    insertVariable: "+ Variables",
+    varsSearchPlaceholder: "Buscar variables…",
+    varsEmpty: "Ninguna variable coincide con tu búsqueda.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.es
       return acc
@@ -839,7 +843,9 @@ const COPY = {
     aiCallCadence: { rapid: "Rapido", relaxed: "Rilassato" },
     aiScriptPlaceholder: "Script / istruzioni per l'agente IA",
     aiCallFooter: "Questo passaggio effettua una chiamata vocale IA agentica usando lo script e la voce sopra — non viene inviato automaticamente.",
-    insertVariable: "Inserisci variabile",
+    insertVariable: "+ Variabili",
+    varsSearchPlaceholder: "Cerca variabili…",
+    varsEmpty: "Nessuna variabile corrisponde alla tua ricerca.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.it
       return acc
@@ -1083,7 +1089,9 @@ const COPY = {
     aiCallCadence: { rapid: "Rapide", relaxed: "Détendu" },
     aiScriptPlaceholder: "Script / instructions pour l'agent IA",
     aiCallFooter: "Cette étape passe un appel vocal IA agentique en utilisant le script et la voix ci-dessus — il n'est pas envoyé automatiquement.",
-    insertVariable: "Insérer une variable",
+    insertVariable: "+ Variables",
+    varsSearchPlaceholder: "Rechercher des variables…",
+    varsEmpty: "Aucune variable ne correspond à votre recherche.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.fr
       return acc
@@ -1328,7 +1336,9 @@ const COPY = {
     aiCallCadence: { rapid: "Schnell", relaxed: "Entspannt" },
     aiScriptPlaceholder: "Skript / Anweisungen für den KI-Agenten",
     aiCallFooter: "Dieser Schritt führt einen agentischen KI-Sprachanruf mit dem obigen Skript und der obigen Stimme durch — er wird nicht automatisch gesendet.",
-    insertVariable: "Variable einfügen",
+    insertVariable: "+ Variablen",
+    varsSearchPlaceholder: "Variablen suchen…",
+    varsEmpty: "Keine Variablen entsprechen deiner Suche.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.de
       return acc
@@ -1573,7 +1583,9 @@ const COPY = {
     aiCallCadence: { rapid: "Rápido", relaxed: "Relaxado" },
     aiScriptPlaceholder: "Guião / instruções para o agente de IA",
     aiCallFooter: "Este passo faz uma chamada de voz com IA agencial usando o guião e a voz acima — não é enviada automaticamente.",
-    insertVariable: "Inserir variável",
+    insertVariable: "+ Variáveis",
+    varsSearchPlaceholder: "Pesquisar variáveis…",
+    varsEmpty: "Nenhuma variável corresponde à pesquisa.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.pt
       return acc
@@ -1818,7 +1830,9 @@ const COPY = {
     aiCallCadence: { rapid: "Rápido", relaxed: "Relaxado" },
     aiScriptPlaceholder: "Roteiro / instruções para o agente de IA",
     aiCallFooter: "Esta etapa faz uma ligação de voz com IA agêntica usando o roteiro e a voz acima — ela não é enviada automaticamente.",
-    insertVariable: "Inserir variável",
+    insertVariable: "+ Variáveis",
+    varsSearchPlaceholder: "Buscar variáveis…",
+    varsEmpty: "Nenhuma variável corresponde à sua busca.",
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.pt_BR
       return acc
@@ -2089,6 +2103,10 @@ export default function CampaignDetail() {
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
   const [saveSeqOpen, setSaveSeqOpen] = React.useState(false)
   const [previewOpen, setPreviewOpen] = React.useState(false)
+  // Search box inside the step editor's variables popup — same
+  // filter-as-you-type pattern as Inbox.tsx's composer, needed now that the
+  // merge-var catalog is large enough that a plain list scrolls off-screen.
+  const [stepVarSearch, setStepVarSearch] = React.useState("")
   // Whichever of the step-detail panel's body fields is currently rendered
   // (RichTextEditor for email/LinkedIn/etc, a plain Textarea for the AI-call
   // script) — only one is ever mounted at a time, so a single pair of refs
@@ -3209,33 +3227,60 @@ export default function CampaignDetail() {
                     isLinkedIn && linkedinAction !== "message" && linkedinAction !== "voice_message"
                   // Shared between the AI-call script's plain textarea (as a
                   // standalone control) and the RichTextEditor's toolbarEnd —
-                  // same menu, same handler, different mount point.
+                  // same menu, same handler, different mount point. A search
+                  // box + capped scroll height keep this usable once the
+                  // merge-var catalog grows well past what fits on screen —
+                  // same fix already shipped on Inbox.tsx's composer.
+                  const stepVarQuery = stepVarSearch.trim().toLowerCase()
+                  const filteredStepVars = stepVarQuery
+                    ? MERGE_VARIABLES.filter(
+                        (v) =>
+                          c.variables[v.tag].toLowerCase().includes(stepVarQuery) ||
+                          v.tag.toLowerCase().includes(stepVarQuery)
+                      )
+                    : MERGE_VARIABLES
                   const variablesMenu = (
-                    <DropdownMenu>
+                    <DropdownMenu onOpenChange={(open) => !open && setStepVarSearch("")}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="text-muted-foreground">
                           <Braces className="size-4" />
                           {c.insertVariable}
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuContent align="end" className="w-64">
                         <DropdownMenuLabel>{c.insertVariable}</DropdownMenuLabel>
-                        {MERGE_VARIABLES.map((v) => (
-                          <DropdownMenuItem
-                            key={v.tag}
-                            // False positive: only reads the ref from this click,
-                            // same shape as Inbox.tsx's insertVar — the rule can't
-                            // trace refs through this panel's pre-existing IIFE.
-                            // eslint-disable-next-line react-hooks/refs
-                            onClick={() => insertStepVariable(v.tag, step, isAiCall)}
-                          >
-                            <Braces className="text-primary size-3.5" />
-                            <span className="flex-1">{c.variables[v.tag]}</span>
-                            <span className="text-muted-foreground font-mono text-[11px]">
-                              {`{{${v.tag}}}`}
-                            </span>
-                          </DropdownMenuItem>
-                        ))}
+                        <div className="px-2 pb-1.5" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={stepVarSearch}
+                            onChange={(e) => setStepVarSearch(e.target.value)}
+                            placeholder={c.varsSearchPlaceholder}
+                            className="h-8"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="max-h-64 overflow-y-auto">
+                          {filteredStepVars.map((v) => (
+                            <DropdownMenuItem
+                              key={v.tag}
+                              // False positive: only reads the ref from this click,
+                              // same shape as Inbox.tsx's insertVar — the rule can't
+                              // trace refs through this panel's pre-existing IIFE.
+                              // eslint-disable-next-line react-hooks/refs
+                              onClick={() => insertStepVariable(v.tag, step, isAiCall)}
+                            >
+                              <Braces className="text-primary size-3.5" />
+                              <span className="flex-1">{c.variables[v.tag]}</span>
+                              <span className="text-muted-foreground font-mono text-[11px]">
+                                {`{{${v.tag}}}`}
+                              </span>
+                            </DropdownMenuItem>
+                          ))}
+                          {filteredStepVars.length === 0 && (
+                            <p className="text-muted-foreground px-2 py-3 text-center text-xs">
+                              {c.varsEmpty}
+                            </p>
+                          )}
+                        </div>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )
@@ -3247,7 +3292,7 @@ export default function CampaignDetail() {
                   const opened = Math.round(sent * 0.62)
                   const replied = Math.round(opened * 0.24)
                   return (
-                    <Card className="w-full lg:w-96 lg:shrink-0">
+                    <Card className="w-full lg:w-[30rem] lg:shrink-0">
                       <CardContent className="space-y-3">
                         <div className="flex flex-wrap items-center gap-3">
                           <span
@@ -3582,7 +3627,7 @@ export default function CampaignDetail() {
                                   body: e.target.value,
                                 })
                               }
-                              className="min-h-20"
+                              className="min-h-64"
                             />
                             <Separator />
                             <label className="flex items-center gap-2 text-sm">
@@ -3668,7 +3713,7 @@ export default function CampaignDetail() {
                                   body: html,
                                 })
                               }
-                              minHeight="min-h-20"
+                              minHeight="min-h-64"
                               toolbarEnd={
                                 <>
                                   <Button
