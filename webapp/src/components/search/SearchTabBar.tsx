@@ -12,6 +12,26 @@ const COPY = {
     closeTab: (label: string) => `Cerrar ${label}`,
     addTab: "Nueva búsqueda",
   },
+  it: {
+    closeTab: (label: string) => `Chiudi ${label}`,
+    addTab: "Nuova ricerca",
+  },
+  fr: {
+    closeTab: (label: string) => `Fermer ${label}`,
+    addTab: "Nouvelle recherche",
+  },
+  de: {
+    closeTab: (label: string) => `${label} schließen`,
+    addTab: "Neue Suche",
+  },
+  pt: {
+    closeTab: (label: string) => `Fechar ${label}`,
+    addTab: "Nova pesquisa",
+  },
+  pt_BR: {
+    closeTab: (label: string) => `Fechar ${label}`,
+    addTab: "Nova busca",
+  },
 } as const
 
 export interface SearchTabBarItem {

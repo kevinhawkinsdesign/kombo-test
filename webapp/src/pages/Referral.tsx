@@ -3,6 +3,7 @@ import { Copy, Gift, Mail, Share2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { useLocale } from "@/lib/locale"
+import { INTL_LOCALE } from "@/lib/locale-meta"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
@@ -228,6 +229,298 @@ const COPY = {
       customer: "Cliente",
     } as Record<ReferralStatus, string>,
   },
+  it: {
+    title: "Consiglia e guadagna",
+    description:
+      "Guadagna 200 crediti per ogni invito accettato e 350€ per ogni persona consigliata che diventa cliente pagante.",
+    shareLink: "Condividi link",
+    yourReferralLink: "Il tuo link di referral",
+    yourReferralLinkDesc:
+      "Condividi questo link ovunque: è collegato al tuo account.",
+    linkAriaLabel: "Il tuo link di referral",
+    copiedToast: "Copiato negli appunti",
+    copyErrorToast: "Impossibile copiare il link",
+    copy: "Copia",
+    emailToast: "Apertura bozza email — presto disponibile",
+    email: "Email",
+    linkedinToast: "Apertura condivisione LinkedIn — presto disponibile",
+    linkedin: "LinkedIn",
+    inviteByEmail: "Invita via email",
+    inviteByEmailDesc:
+      "Invia un invito direttamente nella casella email di un collega.",
+    invitePlaceholder: "Aggiungi l'email della persona consigliata",
+    inviteSend: "Invia invito",
+    inviteSentToast: (email: string) => `Invito inviato a ${email}`,
+    inviteDuplicateToast: "Già invitato",
+    statPeople: "Persone consigliate",
+    statCredits: "Crediti guadagnati",
+    statMoney: "Denaro guadagnato",
+    howItWorks: "Come funziona",
+    howItWorksDesc: "Tre passaggi per iniziare a guadagnare.",
+    yourReferrals: "I tuoi referral",
+    yourReferralsDesc: "Le persone che hai invitato e il loro stato attuale.",
+    person: "Persona",
+    status: "Stato",
+    date: "Data",
+    reward: "Ricompensa",
+    creditsReward: "+200 crediti",
+    moneyReward: "+350€",
+    steps: [
+      {
+        title: "Condividi il tuo link",
+        description:
+          "Invia il tuo link personale o invita direttamente i colleghi via email.",
+      },
+      {
+        title: "Si registrano",
+        description:
+          "Guadagni 200 crediti nel momento in cui il tuo invito viene accettato.",
+      },
+      {
+        title: "Diventano clienti",
+        description:
+          "Guadagni 350€ quando la persona che hai consigliato passa a un piano a pagamento.",
+      },
+    ],
+    statusLabels: {
+      pending: "In attesa",
+      accepted: "Accettato",
+      customer: "Cliente",
+    } as Record<ReferralStatus, string>,
+  },
+  fr: {
+    title: "Parrainez et gagnez",
+    description:
+      "Gagnez 200 crédits par invitation acceptée et 350 € pour chaque filleul qui devient client payant.",
+    shareLink: "Partager le lien",
+    yourReferralLink: "Votre lien de parrainage",
+    yourReferralLinkDesc:
+      "Partagez ce lien où vous voulez : il est lié à votre compte.",
+    linkAriaLabel: "Votre lien de parrainage",
+    copiedToast: "Copié dans le presse-papiers",
+    copyErrorToast: "Impossible de copier le lien",
+    copy: "Copier",
+    emailToast: "Ouverture du brouillon d'e-mail — bientôt disponible",
+    email: "E-mail",
+    linkedinToast: "Ouverture du partage LinkedIn — bientôt disponible",
+    linkedin: "LinkedIn",
+    inviteByEmail: "Inviter par e-mail",
+    inviteByEmailDesc:
+      "Envoyez une invitation directement dans la boîte de réception d'un collègue.",
+    invitePlaceholder: "Ajouter l'e-mail du filleul",
+    inviteSend: "Envoyer l'invitation",
+    inviteSentToast: (email: string) => `Invitation envoyée à ${email}`,
+    inviteDuplicateToast: "Déjà invité",
+    statPeople: "Personnes parrainées",
+    statCredits: "Crédits gagnés",
+    statMoney: "Argent gagné",
+    howItWorks: "Comment ça marche",
+    howItWorksDesc: "Trois étapes pour commencer à gagner.",
+    yourReferrals: "Vos parrainages",
+    yourReferralsDesc: "Les personnes que vous avez invitées et leur statut actuel.",
+    person: "Personne",
+    status: "Statut",
+    date: "Date",
+    reward: "Récompense",
+    creditsReward: "+200 crédits",
+    moneyReward: "+350 €",
+    steps: [
+      {
+        title: "Partagez votre lien",
+        description:
+          "Envoyez votre lien personnel ou invitez directement des collègues par e-mail.",
+      },
+      {
+        title: "Ils s'inscrivent",
+        description:
+          "Vous gagnez 200 crédits dès que votre invitation est acceptée.",
+      },
+      {
+        title: "Ils deviennent client",
+        description:
+          "Vous gagnez 350 € quand votre filleul passe à un forfait payant.",
+      },
+    ],
+    statusLabels: {
+      pending: "En attente",
+      accepted: "Accepté",
+      customer: "Client",
+    } as Record<ReferralStatus, string>,
+  },
+  de: {
+    title: "Empfehlen & verdienen",
+    description:
+      "Verdiene 200 Credits pro angenommener Einladung und 350 € für jede Empfehlung, die zahlender Kunde wird.",
+    shareLink: "Link teilen",
+    yourReferralLink: "Dein Empfehlungslink",
+    yourReferralLinkDesc:
+      "Teile diesen Link überall — er ist mit deinem Konto verknüpft.",
+    linkAriaLabel: "Dein Empfehlungslink",
+    copiedToast: "In die Zwischenablage kopiert",
+    copyErrorToast: "Link konnte nicht kopiert werden",
+    copy: "Kopieren",
+    emailToast: "E-Mail-Entwurf wird geöffnet — bald verfügbar",
+    email: "E-Mail",
+    linkedinToast: "LinkedIn-Freigabe wird geöffnet — bald verfügbar",
+    linkedin: "LinkedIn",
+    inviteByEmail: "Per E-Mail einladen",
+    inviteByEmailDesc:
+      "Sende eine Einladung direkt an das Postfach einer Kollegin oder eines Kollegen.",
+    invitePlaceholder: "E-Mail der Empfehlung hinzufügen",
+    inviteSend: "Einladung senden",
+    inviteSentToast: (email: string) => `Einladung an ${email} gesendet`,
+    inviteDuplicateToast: "Bereits eingeladen",
+    statPeople: "Empfohlene Personen",
+    statCredits: "Verdiente Credits",
+    statMoney: "Verdientes Geld",
+    howItWorks: "So funktioniert's",
+    howItWorksDesc: "Drei Schritte, um mit dem Verdienen zu starten.",
+    yourReferrals: "Deine Empfehlungen",
+    yourReferralsDesc: "Personen, die du eingeladen hast, und ihr aktueller Status.",
+    person: "Person",
+    status: "Status",
+    date: "Datum",
+    reward: "Prämie",
+    creditsReward: "+200 Credits",
+    moneyReward: "+350 €",
+    steps: [
+      {
+        title: "Teile deinen Link",
+        description:
+          "Sende deinen persönlichen Link oder lade Kolleg:innen direkt per E-Mail ein.",
+      },
+      {
+        title: "Sie melden sich an",
+        description:
+          "Du verdienst 200 Credits, sobald deine Einladung angenommen wird.",
+      },
+      {
+        title: "Sie werden Kunde",
+        description:
+          "Du verdienst 350 €, wenn deine Empfehlung auf einen kostenpflichtigen Plan upgradet.",
+      },
+    ],
+    statusLabels: {
+      pending: "Ausstehend",
+      accepted: "Angenommen",
+      customer: "Kunde",
+    } as Record<ReferralStatus, string>,
+  },
+  pt: {
+    title: "Indique e ganhe",
+    description:
+      "Ganhe 200 créditos por cada convite aceite e 350€ por cada indicação que se torne cliente pagante.",
+    shareLink: "Partilhar link",
+    yourReferralLink: "O seu link de indicação",
+    yourReferralLinkDesc:
+      "Partilhe este link onde quiser — está associado à sua conta.",
+    linkAriaLabel: "O seu link de indicação",
+    copiedToast: "Copiado para a área de transferência",
+    copyErrorToast: "Não foi possível copiar o link",
+    copy: "Copiar",
+    emailToast: "A abrir rascunho de email — brevemente",
+    email: "Email",
+    linkedinToast: "A abrir partilha do LinkedIn — brevemente",
+    linkedin: "LinkedIn",
+    inviteByEmail: "Convidar por email",
+    inviteByEmailDesc:
+      "Envie um convite diretamente para a caixa de entrada de um colega.",
+    invitePlaceholder: "Adicionar email da pessoa indicada",
+    inviteSend: "Enviar convite",
+    inviteSentToast: (email: string) => `Convite enviado para ${email}`,
+    inviteDuplicateToast: "Já convidado",
+    statPeople: "Pessoas indicadas",
+    statCredits: "Créditos ganhos",
+    statMoney: "Dinheiro ganho",
+    howItWorks: "Como funciona",
+    howItWorksDesc: "Três passos para começar a ganhar.",
+    yourReferrals: "As suas indicações",
+    yourReferralsDesc: "Pessoas que convidou e o respetivo estado atual.",
+    person: "Pessoa",
+    status: "Estado",
+    date: "Data",
+    reward: "Recompensa",
+    creditsReward: "+200 créditos",
+    moneyReward: "+350€",
+    steps: [
+      {
+        title: "Partilhe o seu link",
+        description:
+          "Envie o seu link pessoal ou convide colegas diretamente por email.",
+      },
+      {
+        title: "Registam-se",
+        description: "Ganha 200 créditos assim que o seu convite for aceite.",
+      },
+      {
+        title: "Tornam-se clientes",
+        description: "Ganha 350€ quando a sua indicação passa a um plano pago.",
+      },
+    ],
+    statusLabels: {
+      pending: "Pendente",
+      accepted: "Aceite",
+      customer: "Cliente",
+    } as Record<ReferralStatus, string>,
+  },
+  pt_BR: {
+    title: "Indique e ganhe",
+    description:
+      "Ganhe 200 créditos a cada convite aceito e 350€ para cada indicação que virar cliente pagante.",
+    shareLink: "Compartilhar link",
+    yourReferralLink: "Seu link de indicação",
+    yourReferralLinkDesc:
+      "Compartilhe esse link onde quiser — ele está vinculado à sua conta.",
+    linkAriaLabel: "Seu link de indicação",
+    copiedToast: "Copiado para a área de transferência",
+    copyErrorToast: "Não foi possível copiar o link",
+    copy: "Copiar",
+    emailToast: "Abrindo rascunho de e-mail — em breve",
+    email: "E-mail",
+    linkedinToast: "Abrindo compartilhamento no LinkedIn — em breve",
+    linkedin: "LinkedIn",
+    inviteByEmail: "Convidar por e-mail",
+    inviteByEmailDesc:
+      "Envie um convite direto para a caixa de entrada de um colega.",
+    invitePlaceholder: "Adicionar e-mail da pessoa indicada",
+    inviteSend: "Enviar convite",
+    inviteSentToast: (email: string) => `Convite enviado para ${email}`,
+    inviteDuplicateToast: "Já convidado",
+    statPeople: "Pessoas indicadas",
+    statCredits: "Créditos ganhos",
+    statMoney: "Dinheiro ganho",
+    howItWorks: "Como funciona",
+    howItWorksDesc: "Três passos para começar a ganhar.",
+    yourReferrals: "Suas indicações",
+    yourReferralsDesc: "Pessoas que você convidou e o status atual delas.",
+    person: "Pessoa",
+    status: "Status",
+    date: "Data",
+    reward: "Recompensa",
+    creditsReward: "+200 créditos",
+    moneyReward: "+350€",
+    steps: [
+      {
+        title: "Compartilhe seu link",
+        description:
+          "Envie seu link pessoal ou convide colegas direto por e-mail.",
+      },
+      {
+        title: "Eles se cadastram",
+        description: "Você ganha 200 créditos assim que seu convite é aceito.",
+      },
+      {
+        title: "Eles viram clientes",
+        description:
+          "Você ganha 350€ quando sua indicação faz upgrade para um plano pago.",
+      },
+    ],
+    statusLabels: {
+      pending: "Pendente",
+      accepted: "Aceito",
+      customer: "Cliente",
+    } as Record<ReferralStatus, string>,
+  },
 } as const
 
 function rowInitials(row: ReferralRow): string {
@@ -248,16 +541,18 @@ export default function Referral() {
     rows.filter((r) => r.status !== "pending").length * CREDITS_PER_ACCEPT
   const moneyEarned =
     rows.filter((r) => r.status === "customer").length * EUR_PER_CUSTOMER
-  const numberLocale = locale === "es" ? "es-ES" : "en-GB"
+  const numberLocale = INTL_LOCALE[locale]
   const stats = [
     { label: c.statPeople, value: rows.length.toLocaleString(numberLocale) },
     { label: c.statCredits, value: creditsEarned.toLocaleString(numberLocale) },
     {
       label: c.statMoney,
       value:
-        locale === "es"
-          ? `${moneyEarned.toLocaleString(numberLocale)}€`
-          : `€${moneyEarned.toLocaleString(numberLocale)}`,
+        locale === "en"
+          ? `€${moneyEarned.toLocaleString(numberLocale)}`
+          : locale === "fr" || locale === "de"
+            ? `${moneyEarned.toLocaleString(numberLocale)} €`
+            : `${moneyEarned.toLocaleString(numberLocale)}€`,
     },
   ]
 
@@ -395,17 +690,22 @@ export default function Referral() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-3">
-              {c.steps.map((step, index) => (
-                <div key={step.title} className="flex flex-col gap-2">
-                  <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
-                    {index + 1}
-                  </span>
-                  <p className="font-medium">{step.title}</p>
-                  <p className="text-muted-foreground text-sm">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
+              {c.steps.map(
+                (
+                  step: { title: string; description: string },
+                  index: number
+                ) => (
+                  <div key={step.title} className="flex flex-col gap-2">
+                    <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
+                      {index + 1}
+                    </span>
+                    <p className="font-medium">{step.title}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {step.description}
+                    </p>
+                  </div>
+                )
+              )}
             </div>
           </CardContent>
         </Card>

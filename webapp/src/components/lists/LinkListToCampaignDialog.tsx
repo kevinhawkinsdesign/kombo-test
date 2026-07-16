@@ -49,6 +49,81 @@ const COPY = {
     linked: (name: string) => `Vinculada a ${name}`,
     cancel: "Cancelar",
   },
+  it: {
+    title: "Collega a una campagna",
+    desc: (name: string) =>
+      `Collega "${name}" a una campagna — è lì che vivono la sequenza e i modelli dei messaggi.`,
+    pickExisting: "Collega una campagna esistente",
+    pickCampaign: "Scegli una campagna da collegare…",
+    link: "Collega",
+    or: "o",
+    createNew: "Crea una nuova campagna",
+    createNewDesc: (name: string) =>
+      `Crea una nuova campagna chiamata "${name}", già collegata a questa lista.`,
+    linkedElsewhere: " (collegata a un'altra lista)",
+    linked: (name: string) => `Collegata a ${name}`,
+    cancel: "Annulla",
+  },
+  fr: {
+    title: "Lier à une campagne",
+    desc: (name: string) =>
+      `Liez « ${name} » à une campagne — c'est là que vivent la séquence et les modèles de messages.`,
+    pickExisting: "Lier une campagne existante",
+    pickCampaign: "Choisissez une campagne à lier…",
+    link: "Lier",
+    or: "ou",
+    createNew: "Créer une nouvelle campagne",
+    createNewDesc: (name: string) =>
+      `Crée une nouvelle campagne nommée « ${name} », déjà liée à cette liste.`,
+    linkedElsewhere: " (liée à une autre liste)",
+    linked: (name: string) => `Liée à ${name}`,
+    cancel: "Annuler",
+  },
+  de: {
+    title: "Mit Kampagne verknüpfen",
+    desc: (name: string) =>
+      `Verknüpfe „${name}“ mit einer Kampagne — dort leben die Sequenz und die Nachrichtenvorlagen.`,
+    pickExisting: "Bestehende Kampagne verknüpfen",
+    pickCampaign: "Wähle eine Kampagne zum Verknüpfen…",
+    link: "Verknüpfen",
+    or: "oder",
+    createNew: "Neue Kampagne erstellen",
+    createNewDesc: (name: string) =>
+      `Startet eine neue Kampagne namens „${name}“, bereits mit dieser Liste verknüpft.`,
+    linkedElsewhere: " (mit einer anderen Liste verknüpft)",
+    linked: (name: string) => `Mit ${name} verknüpft`,
+    cancel: "Abbrechen",
+  },
+  pt: {
+    title: "Associar a campanha",
+    desc: (name: string) =>
+      `Associe "${name}" a uma campanha — é lá que vivem a sequência e os modelos de mensagens.`,
+    pickExisting: "Associar uma campanha existente",
+    pickCampaign: "Escolha uma campanha para associar…",
+    link: "Associar",
+    or: "ou",
+    createNew: "Criar uma nova campanha",
+    createNewDesc: (name: string) =>
+      `Cria uma nova campanha chamada "${name}", já associada a esta lista.`,
+    linkedElsewhere: " (associada a outra lista)",
+    linked: (name: string) => `Associada a ${name}`,
+    cancel: "Cancelar",
+  },
+  pt_BR: {
+    title: "Vincular a campanha",
+    desc: (name: string) =>
+      `Vincule "${name}" a uma campanha — é lá que ficam a sequência e os modelos de mensagens.`,
+    pickExisting: "Vincular uma campanha existente",
+    pickCampaign: "Escolha uma campanha para vincular…",
+    link: "Vincular",
+    or: "ou",
+    createNew: "Criar uma nova campanha",
+    createNewDesc: (name: string) =>
+      `Cria uma nova campanha chamada "${name}", já vinculada a esta lista.`,
+    linkedElsewhere: " (vinculada a outra lista)",
+    linked: (name: string) => `Vinculada a ${name}`,
+    cancel: "Cancelar",
+  },
 } as const
 
 // The list's own entry point to a campaign — the mirror of

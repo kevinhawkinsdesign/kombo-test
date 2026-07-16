@@ -74,5 +74,5 @@ export function getCallQa(id: string, locale: Locale): CoachQaPair[] {
 }
 
 export function genericAnswer(locale: Locale): string {
-  return GENERIC[locale]
+  return locale === "es" ? GENERIC.es : GENERIC.en
 }

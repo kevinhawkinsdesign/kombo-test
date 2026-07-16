@@ -83,12 +83,21 @@ export function StatusBadge({ status }: { status: Prospect["status"] }) {
 
 const SOURCE_META: Record<
   ProspectSource,
-  { en: string; es: string; icon: typeof Search }
+  {
+    en: string
+    es: string
+    it: string
+    fr: string
+    de: string
+    pt: string
+    pt_BR: string
+    icon: typeof Search
+  }
 > = {
-  search: { en: "Search", es: "Búsqueda", icon: Search },
-  list: { en: "List", es: "Lista", icon: FolderKanban },
-  import: { en: "Import", es: "Importación", icon: Upload },
-  extension: { en: "Extension", es: "Extensión", icon: Puzzle },
+  search: { en: "Search", es: "Búsqueda", it: "Ricerca", fr: "Recherche", de: "Suche", pt: "Pesquisa", pt_BR: "Busca", icon: Search },
+  list: { en: "List", es: "Lista", it: "Lista", fr: "Liste", de: "Liste", pt: "Lista", pt_BR: "Lista", icon: FolderKanban },
+  import: { en: "Import", es: "Importación", it: "Importazione", fr: "Import", de: "Import", pt: "Importação", pt_BR: "Importação", icon: Upload },
+  extension: { en: "Extension", es: "Extensión", it: "Estensione", fr: "Extension", de: "Erweiterung", pt: "Extensão", pt_BR: "Extensão", icon: Puzzle },
 }
 
 export function SourceBadge({
@@ -103,7 +112,7 @@ export function SourceBadge({
   return (
     <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
       <Icon className="size-3 shrink-0" />
-      {locale === "es" ? m.es : m.en}
+      {m[locale]}
     </span>
   )
 }

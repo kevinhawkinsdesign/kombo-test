@@ -35,6 +35,36 @@ const ASSIGN_COPY = {
       "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
     unassigned: "Sin asignar",
   },
+  it: {
+    assignTo: "Proprietario",
+    assignToHint:
+      "I nuovi prospect che entrano in questa lista vengono assegnati a questo collega.",
+    unassigned: "Non assegnato",
+  },
+  fr: {
+    assignTo: "Propriétaire",
+    assignToHint:
+      "Les nouveaux prospects qui entrent dans cette liste sont attribués à ce membre de l'équipe.",
+    unassigned: "Non attribué",
+  },
+  de: {
+    assignTo: "Owner",
+    assignToHint:
+      "Neue Prospects in dieser Liste werden diesem Teammitglied zugewiesen.",
+    unassigned: "Nicht zugewiesen",
+  },
+  pt: {
+    assignTo: "Proprietário",
+    assignToHint:
+      "Os novos prospects que entram nesta lista são atribuídos a este membro da equipa.",
+    unassigned: "Não atribuído",
+  },
+  pt_BR: {
+    assignTo: "Proprietário",
+    assignToHint:
+      "Os novos prospects que entram nesta lista são atribuídos a este membro do time.",
+    unassigned: "Não atribuído",
+  },
 } as const
 
 interface ListFormDialogProps {

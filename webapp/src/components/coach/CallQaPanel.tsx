@@ -24,6 +24,46 @@ const COPY = {
     send: "Preguntar",
     disclaimer: "Las respuestas se generan con IA a partir de esta llamada.",
   },
+  it: {
+    title: "Chiedi di questa chiamata",
+    subtitle: "Kai risponde in base alla trascrizione e al resoconto.",
+    suggested: "Domande suggerite",
+    placeholder: "Fai una domanda precisa…",
+    send: "Chiedi",
+    disclaimer: "Le risposte sono generate dall'IA a partire da questa chiamata.",
+  },
+  fr: {
+    title: "Poser une question sur cet appel",
+    subtitle: "Kai répond à partir de la transcription et du compte-rendu.",
+    suggested: "Questions suggérées",
+    placeholder: "Posez une question précise…",
+    send: "Demander",
+    disclaimer: "Les réponses sont générées par IA à partir de cet appel.",
+  },
+  de: {
+    title: "Frage zu diesem Anruf stellen",
+    subtitle: "Kai antwortet anhand von Transkript und Auswertung.",
+    suggested: "Vorgeschlagene Fragen",
+    placeholder: "Stell eine präzise Frage…",
+    send: "Fragen",
+    disclaimer: "Antworten werden von der KI aus diesem Anruf generiert.",
+  },
+  pt: {
+    title: "Pergunte sobre esta chamada",
+    subtitle: "O Kai responde com base na transcrição e no relatório.",
+    suggested: "Perguntas sugeridas",
+    placeholder: "Faça uma pergunta precisa…",
+    send: "Perguntar",
+    disclaimer: "As respostas são geradas por IA a partir desta chamada.",
+  },
+  pt_BR: {
+    title: "Pergunte sobre esta ligação",
+    subtitle: "O Kai responde com base na transcrição e no relatório.",
+    suggested: "Perguntas sugeridas",
+    placeholder: "Faça uma pergunta precisa…",
+    send: "Perguntar",
+    disclaimer: "As respostas são geradas por IA a partir desta ligação.",
+  },
 } as const
 
 interface Turn {

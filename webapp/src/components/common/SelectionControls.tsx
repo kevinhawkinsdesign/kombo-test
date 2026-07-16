@@ -18,6 +18,41 @@ const COPY = {
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
   },
+  it: {
+    selectPage: "Seleziona pagina",
+    deselectPage: "Deseleziona pagina",
+    selectAllCapped: (n: number) => `Seleziona tutti i ${n.toLocaleString()}`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} di ${total.toLocaleString()}`,
+  },
+  fr: {
+    selectPage: "Sélectionner la page",
+    deselectPage: "Désélectionner la page",
+    selectAllCapped: (n: number) => `Sélectionner les ${n.toLocaleString()}`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} sur ${total.toLocaleString()}`,
+  },
+  de: {
+    selectPage: "Seite auswählen",
+    deselectPage: "Seitenauswahl aufheben",
+    selectAllCapped: (n: number) => `Alle ${n.toLocaleString()} auswählen`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} von ${total.toLocaleString()}`,
+  },
+  pt: {
+    selectPage: "Selecionar página",
+    deselectPage: "Anular seleção da página",
+    selectAllCapped: (n: number) => `Selecionar todos os ${n.toLocaleString()}`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
+  },
+  pt_BR: {
+    selectPage: "Selecionar página",
+    deselectPage: "Desmarcar página",
+    selectAllCapped: (n: number) => `Selecionar todos os ${n.toLocaleString()}`,
+    pageRange: (from: number, to: number, total: number) =>
+      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
+  },
 } as const
 
 // The "select page at a time, plus a capped select-all" row every

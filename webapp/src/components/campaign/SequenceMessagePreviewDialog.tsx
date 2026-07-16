@@ -41,6 +41,61 @@ const COPY = {
       "Aún no hay prospectos en esta campaña — añade algunos para ver mensajes reales.",
     dayLabel: (n: number) => (n === 0 ? "Día 0" : `Día ${n}`),
   },
+  it: {
+    title: "Anteprima dei messaggi",
+    description: "Guarda esattamente cosa riceverebbe un prospect specifico.",
+    pickLabel: "Anteprima come",
+    pickPlaceholder: "Scegli un prospect…",
+    searchPlaceholder: "Cerca prospect…",
+    empty: "Nessun prospect trovato.",
+    noAudience:
+      "Ancora nessun prospect in questa campagna — aggiungine qualcuno per vedere messaggi reali.",
+    dayLabel: (n: number) => (n === 0 ? "Giorno 0" : `Giorno ${n}`),
+  },
+  fr: {
+    title: "Aperçu des messages",
+    description: "Voyez exactement ce qu'un prospect précis recevrait.",
+    pickLabel: "Aperçu en tant que",
+    pickPlaceholder: "Choisissez un prospect…",
+    searchPlaceholder: "Rechercher des prospects…",
+    empty: "Aucun prospect trouvé.",
+    noAudience:
+      "Pas encore de prospects dans cette campagne — ajoutez-en pour voir de vrais messages.",
+    dayLabel: (n: number) => (n === 0 ? "Jour 0" : `Jour ${n}`),
+  },
+  de: {
+    title: "Nachrichtenvorschau",
+    description: "Sieh genau, was ein bestimmter Prospect erhalten würde.",
+    pickLabel: "Vorschau als",
+    pickPlaceholder: "Prospect auswählen…",
+    searchPlaceholder: "Prospects suchen…",
+    empty: "Keine Prospects gefunden.",
+    noAudience:
+      "Noch keine Prospects in dieser Kampagne — füge welche hinzu, um echte Nachrichten zu sehen.",
+    dayLabel: (n: number) => (n === 0 ? "Tag 0" : `Tag ${n}`),
+  },
+  pt: {
+    title: "Pré-visualizar mensagens",
+    description: "Veja exatamente o que um prospect específico receberia.",
+    pickLabel: "Pré-visualizar como",
+    pickPlaceholder: "Escolha um prospect…",
+    searchPlaceholder: "Pesquisar prospects…",
+    empty: "Nenhum prospect encontrado.",
+    noAudience:
+      "Ainda não há prospects nesta campanha — adicione alguns para ver mensagens reais.",
+    dayLabel: (n: number) => (n === 0 ? "Dia 0" : `Dia ${n}`),
+  },
+  pt_BR: {
+    title: "Pré-visualizar mensagens",
+    description: "Veja exatamente o que um prospect específico receberia.",
+    pickLabel: "Visualizar como",
+    pickPlaceholder: "Escolha um prospect…",
+    searchPlaceholder: "Buscar prospects…",
+    empty: "Nenhum prospect encontrado.",
+    noAudience:
+      "Ainda não há prospects nesta campanha — adicione alguns para ver mensagens reais.",
+    dayLabel: (n: number) => (n === 0 ? "Dia 0" : `Dia ${n}`),
+  },
 } as const
 
 export function SequenceMessagePreviewDialog({

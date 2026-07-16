@@ -30,6 +30,41 @@ const COPY = {
     noOtherLists: "No hay más listas para abrir.",
     createNewList: "Crear nueva lista",
   },
+  it: {
+    closeTab: (name: string) => `Chiudi ${name}`,
+    addTab: "Apri un'altra lista",
+    searchToOpen: "Cerca liste da aprire…",
+    noOtherLists: "Nessun'altra lista da aprire.",
+    createNewList: "Crea nuova lista",
+  },
+  fr: {
+    closeTab: (name: string) => `Fermer ${name}`,
+    addTab: "Ouvrir une autre liste",
+    searchToOpen: "Rechercher des listes à ouvrir…",
+    noOtherLists: "Aucune autre liste à ouvrir.",
+    createNewList: "Créer une nouvelle liste",
+  },
+  de: {
+    closeTab: (name: string) => `${name} schließen`,
+    addTab: "Weitere Liste öffnen",
+    searchToOpen: "Listen zum Öffnen suchen…",
+    noOtherLists: "Keine weiteren Listen zum Öffnen.",
+    createNewList: "Neue Liste erstellen",
+  },
+  pt: {
+    closeTab: (name: string) => `Fechar ${name}`,
+    addTab: "Abrir outra lista",
+    searchToOpen: "Pesquisar listas para abrir…",
+    noOtherLists: "Não há mais listas para abrir.",
+    createNewList: "Criar nova lista",
+  },
+  pt_BR: {
+    closeTab: (name: string) => `Fechar ${name}`,
+    addTab: "Abrir outra lista",
+    searchToOpen: "Buscar listas para abrir…",
+    noOtherLists: "Não há mais listas para abrir.",
+    createNewList: "Criar nova lista",
+  },
 } as const
 
 function memberCount(list: ProspectList): number {

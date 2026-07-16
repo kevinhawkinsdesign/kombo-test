@@ -80,6 +80,147 @@ const COPY = {
     queued: (count: number) => ` · ${count.toLocaleString()} en cola para el próximo lote`,
     usageLabel: (count: number, scope: string) => `Enriquecimiento · ${scope} (${count})`,
   },
+  it: {
+    title: "Arricchisci prospect",
+    description:
+      "Rivela email verificate e numeri diretti, oltre a più di 30 dati per prospect.",
+    chooseScope: "Cosa vuoi rivelare? Scegli qualsiasi combinazione.",
+    scopeEmail: "Email verificata",
+    scopePhone: "Numero di telefono",
+    scopeProfile: "Arricchimento del profilo",
+    scopeEmailDesc: "Email di lavoro verificata",
+    scopePhoneDesc: "Numero diretto e cellulare",
+    scopeProfileDesc: "Punteggio + oltre 30 dati",
+    toEnrich: "Prospect da arricchire",
+    total: "Totale",
+    pickOne: "Scegli almeno una cosa da rivelare.",
+    cappedNote: (max: number) =>
+      `L'arricchimento elabora ${max.toLocaleString()} prospect alla volta. Il resto resta in coda.`,
+    perContact: "per prospect",
+    credits: "crediti",
+    balanceAfter: "Saldo dopo",
+    allEnriched: "Tutti i prospect selezionati ce l'hanno già.",
+    cancel: "Annulla",
+    enrich: (count: number) =>
+      `Arricchisci ${count.toLocaleString()} ${count === 1 ? "prospect" : "prospect"}`,
+    done: (count: number) =>
+      `${count.toLocaleString()} prospect ${count === 1 ? "arricchito" : "arricchiti"}`,
+    queued: (count: number) => ` · ${count.toLocaleString()} in coda per il prossimo lotto`,
+    usageLabel: (count: number, scope: string) => `Arricchimento · ${scope} (${count})`,
+  },
+  fr: {
+    title: "Enrichir les prospects",
+    description:
+      "Révélez des e-mails vérifiés et des lignes directes, ainsi que plus de 30 points de données par prospect.",
+    chooseScope: "Que voulez-vous révéler ? Choisissez n'importe quelle combinaison.",
+    scopeEmail: "E-mail vérifié",
+    scopePhone: "Numéro de téléphone",
+    scopeProfile: "Enrichissement du profil",
+    scopeEmailDesc: "E-mail professionnel vérifié",
+    scopePhoneDesc: "Ligne directe et mobile",
+    scopeProfileDesc: "Scoring + plus de 30 points de données",
+    toEnrich: "Prospects à enrichir",
+    total: "Total",
+    pickOne: "Choisissez au moins un élément à révéler.",
+    cappedNote: (max: number) =>
+      `L'enrichissement traite ${max.toLocaleString()} prospects à la fois. Le reste reste en file d'attente.`,
+    perContact: "par prospect",
+    credits: "crédits",
+    balanceAfter: "Solde après",
+    allEnriched: "Tous les prospects sélectionnés l'ont déjà.",
+    cancel: "Annuler",
+    enrich: (count: number) =>
+      `Enrichir ${count.toLocaleString()} ${count === 1 ? "prospect" : "prospects"}`,
+    done: (count: number) =>
+      `${count.toLocaleString()} ${count === 1 ? "prospect enrichi" : "prospects enrichis"}`,
+    queued: (count: number) => ` · ${count.toLocaleString()} en attente pour le prochain lot`,
+    usageLabel: (count: number, scope: string) => `Enrichissement · ${scope} (${count})`,
+  },
+  de: {
+    title: "Prospects anreichern",
+    description:
+      "Zeige verifizierte E-Mails und Durchwahlen sowie über 30 Datenpunkte pro Prospect an.",
+    chooseScope: "Was möchtest du aufdecken? Wähle eine beliebige Kombination.",
+    scopeEmail: "Verifizierte E-Mail",
+    scopePhone: "Telefonnummer",
+    scopeProfile: "Profilanreicherung",
+    scopeEmailDesc: "Verifizierte geschäftliche E-Mail",
+    scopePhoneDesc: "Durchwahl & Mobilnummer",
+    scopeProfileDesc: "Scoring + über 30 Datenpunkte",
+    toEnrich: "Zu bereichernde Prospects",
+    total: "Gesamt",
+    pickOne: "Wähle mindestens eine Option zum Aufdecken.",
+    cappedNote: (max: number) =>
+      `Die Anreicherung verarbeitet jeweils ${max.toLocaleString()} Prospects. Der Rest bleibt in der Warteschlange.`,
+    perContact: "pro Prospect",
+    credits: "Credits",
+    balanceAfter: "Guthaben danach",
+    allEnriched: "Alle ausgewählten Prospects haben das bereits.",
+    cancel: "Abbrechen",
+    enrich: (count: number) =>
+      `${count.toLocaleString()} ${count === 1 ? "Prospect" : "Prospects"} anreichern`,
+    done: (count: number) =>
+      `${count.toLocaleString()} ${count === 1 ? "Prospect" : "Prospects"} angereichert`,
+    queued: (count: number) =>
+      ` · ${count.toLocaleString()} für den nächsten Batch in der Warteschlange`,
+    usageLabel: (count: number, scope: string) => `Anreicherung · ${scope} (${count})`,
+  },
+  pt: {
+    title: "Enriquecer prospects",
+    description:
+      "Revele emails verificados e contactos diretos, além de mais de 30 pontos de dados por prospect.",
+    chooseScope: "O que quer revelar? Escolha qualquer combinação.",
+    scopeEmail: "Email verificado",
+    scopePhone: "Número de telefone",
+    scopeProfile: "Enriquecimento do perfil",
+    scopeEmailDesc: "Email profissional verificado",
+    scopePhoneDesc: "Contacto direto e telemóvel",
+    scopeProfileDesc: "Pontuação + mais de 30 pontos de dados",
+    toEnrich: "Prospects a enriquecer",
+    total: "Total",
+    pickOne: "Escolha pelo menos uma coisa para revelar.",
+    cappedNote: (max: number) =>
+      `O enriquecimento processa ${max.toLocaleString()} prospects de cada vez. O resto fica em fila de espera.`,
+    perContact: "por prospect",
+    credits: "créditos",
+    balanceAfter: "Saldo depois",
+    allEnriched: "Todos os prospects selecionados já têm isto.",
+    cancel: "Cancelar",
+    enrich: (count: number) =>
+      `Enriquecer ${count.toLocaleString()} ${count === 1 ? "prospect" : "prospects"}`,
+    done: (count: number) =>
+      `${count.toLocaleString()} ${count === 1 ? "prospect enriquecido" : "prospects enriquecidos"}`,
+    queued: (count: number) => ` · ${count.toLocaleString()} em fila para o próximo lote`,
+    usageLabel: (count: number, scope: string) => `Enriquecimento · ${scope} (${count})`,
+  },
+  pt_BR: {
+    title: "Enriquecer prospects",
+    description:
+      "Revele emails verificados e contatos diretos, além de mais de 30 pontos de dados por prospect.",
+    chooseScope: "O que você quer revelar? Escolha qualquer combinação.",
+    scopeEmail: "Email verificado",
+    scopePhone: "Número de telefone",
+    scopeProfile: "Enriquecimento do perfil",
+    scopeEmailDesc: "Email profissional verificado",
+    scopePhoneDesc: "Contato direto e celular",
+    scopeProfileDesc: "Pontuação + mais de 30 pontos de dados",
+    toEnrich: "Prospects a enriquecer",
+    total: "Total",
+    pickOne: "Escolha pelo menos uma coisa para revelar.",
+    cappedNote: (max: number) =>
+      `O enriquecimento processa ${max.toLocaleString()} prospects por vez. O restante fica na fila.`,
+    perContact: "por prospect",
+    credits: "créditos",
+    balanceAfter: "Saldo depois",
+    allEnriched: "Todos os prospects selecionados já têm isso.",
+    cancel: "Cancelar",
+    enrich: (count: number) =>
+      `Enriquecer ${count.toLocaleString()} ${count === 1 ? "prospect" : "prospects"}`,
+    done: (count: number) =>
+      `${count.toLocaleString()} ${count === 1 ? "prospect enriquecido" : "prospects enriquecidos"}`,
+    queued: (count: number) => ` · ${count.toLocaleString()} na fila para o próximo lote`,
+    usageLabel: (count: number, scope: string) => `Enriquecimento · ${scope} (${count})`,
+  },
 } as const
 
 interface EnrichListDialogProps {

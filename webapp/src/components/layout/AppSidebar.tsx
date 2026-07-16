@@ -625,7 +625,7 @@ function SidebarContent({
             <button
               type="button"
               onClick={onToggleCollapse}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={collapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
               className={cn(
                 "text-sidebar-foreground hover:bg-sidebar-accent/60 flex items-center rounded-md text-sm font-medium transition-colors",
                 collapsed ? "size-9 justify-center" : "w-full gap-3 px-3 py-2"
@@ -636,7 +636,7 @@ function SidebarContent({
               ) : (
                 <>
                   <ChevronsLeft className="size-4 shrink-0" />
-                  <span className="flex-1 text-left">Collapse</span>
+                  <span className="flex-1 text-left">{t("nav.collapseSidebar")}</span>
                 </>
               )}
             </button>

@@ -41,6 +41,69 @@ const COPY = {
     viewAll: "Abrir búsqueda",
     signal: "Señal",
   },
+  it: {
+    title: "Consigliato per te oggi",
+    description:
+      "Selezione fresca in target con il tuo ICP e segnale di acquisto — salva con un clic.",
+    people: "Prospect",
+    companies: "Aziende",
+    add: "Aggiungi",
+    added: "Aggiunto",
+    addedToast: (name: string) =>
+      `${name} aggiunto alle tue selezioni del giorno`,
+    viewAll: "Apri ricerca",
+    signal: "Segnale",
+  },
+  fr: {
+    title: "Recommandé pour vous aujourd'hui",
+    description:
+      "Sélection fraîche dans votre ICP avec un signal d'achat — enregistrez en un clic.",
+    people: "Prospects",
+    companies: "Entreprises",
+    add: "Ajouter",
+    added: "Ajouté",
+    addedToast: (name: string) => `${name} ajouté à vos sélections du jour`,
+    viewAll: "Ouvrir la recherche",
+    signal: "Signal",
+  },
+  de: {
+    title: "Heute für dich empfohlen",
+    description:
+      "Frische, ICP-passende Empfehlungen mit Kaufsignal — mit einem Klick speichern.",
+    people: "Prospects",
+    companies: "Unternehmen",
+    add: "Hinzufügen",
+    added: "Hinzugefügt",
+    addedToast: (name: string) =>
+      `${name} zu deinen täglichen Empfehlungen hinzugefügt`,
+    viewAll: "Suche öffnen",
+    signal: "Signal",
+  },
+  pt: {
+    title: "Recomendado para ti hoje",
+    description:
+      "Seleção fresca dentro do teu ICP com sinal de compra — guarda com um clique.",
+    people: "Prospects",
+    companies: "Empresas",
+    add: "Adicionar",
+    added: "Adicionado",
+    addedToast: (name: string) =>
+      `${name} adicionado às tuas seleções do dia`,
+    viewAll: "Abrir pesquisa",
+    signal: "Sinal",
+  },
+  pt_BR: {
+    title: "Recomendado para você hoje",
+    description:
+      "Seleção fresca dentro do seu ICP com sinal de compra — salve com um clique.",
+    people: "Prospects",
+    companies: "Empresas",
+    add: "Adicionar",
+    added: "Adicionado",
+    addedToast: (name: string) => `${name} adicionado às suas seleções do dia`,
+    viewAll: "Abrir busca",
+    signal: "Sinal",
+  },
 } as const
 
 // Deterministic "today's picks": highest-scoring prospects + accounts with a

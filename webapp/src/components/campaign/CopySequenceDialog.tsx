@@ -53,6 +53,86 @@ const COPY = {
     copyCta: (n: number) => `Copiar ${n} ${n === 1 ? "paso" : "pasos"}`,
     copyCtaEmpty: "Copiar pasos",
   },
+  it: {
+    title: "Copia una sequenza",
+    description:
+      "Importa i passaggi di un'altra campagna o di un modello di sequenza salvato — tempi e contenuto dei messaggi inclusi.",
+    fromCampaign: "Da una campagna",
+    fromTemplate: "Da un modello",
+    emptyCampaigns: "Ancora nessun'altra campagna con una sequenza.",
+    emptyTemplates:
+      "Ancora nessun modello di sequenza — salvane uno dalla scheda Sequenza di qualsiasi campagna.",
+    stepCount: (n: number) => `${n} ${n === 1 ? "passaggio" : "passaggi"}`,
+    search: "Cerca…",
+    noMatch: "Nessun risultato per la tua ricerca.",
+    cancel: "Annulla",
+    copyCta: (n: number) => `Copia ${n} ${n === 1 ? "passaggio" : "passaggi"}`,
+    copyCtaEmpty: "Copia passaggi",
+  },
+  fr: {
+    title: "Copier une séquence",
+    description:
+      "Importez les étapes d'une autre campagne ou d'un modèle de séquence enregistré — délais et contenu des messages inclus.",
+    fromCampaign: "Depuis une campagne",
+    fromTemplate: "Depuis un modèle",
+    emptyCampaigns: "Pas encore d'autre campagne avec une séquence.",
+    emptyTemplates:
+      "Pas encore de modèle de séquence — enregistrez-en un depuis l'onglet Séquence de n'importe quelle campagne.",
+    stepCount: (n: number) => `${n} ${n === 1 ? "étape" : "étapes"}`,
+    search: "Rechercher…",
+    noMatch: "Aucun résultat pour votre recherche.",
+    cancel: "Annuler",
+    copyCta: (n: number) => `Copier ${n} ${n === 1 ? "étape" : "étapes"}`,
+    copyCtaEmpty: "Copier les étapes",
+  },
+  de: {
+    title: "Sequenz kopieren",
+    description:
+      "Übernimm die Schritte aus einer anderen Kampagne oder einer gespeicherten Sequenzvorlage — inklusive Wartezeiten und Nachrichteninhalt.",
+    fromCampaign: "Aus einer Kampagne",
+    fromTemplate: "Aus einer Vorlage",
+    emptyCampaigns: "Noch keine anderen Kampagnen mit einer Sequenz.",
+    emptyTemplates:
+      "Noch keine Sequenzvorlagen — speichere eine über den Sequenz-Tab einer beliebigen Kampagne.",
+    stepCount: (n: number) => `${n} ${n === 1 ? "Schritt" : "Schritte"}`,
+    search: "Suchen…",
+    noMatch: "Nichts entspricht deiner Suche.",
+    cancel: "Abbrechen",
+    copyCta: (n: number) => `${n} ${n === 1 ? "Schritt" : "Schritte"} kopieren`,
+    copyCtaEmpty: "Schritte kopieren",
+  },
+  pt: {
+    title: "Copiar uma sequência",
+    description:
+      "Importe os passos de outra campanha ou de um modelo de sequência guardado — com tempos e conteúdo das mensagens.",
+    fromCampaign: "De uma campanha",
+    fromTemplate: "De um modelo",
+    emptyCampaigns: "Ainda não há outras campanhas com sequência.",
+    emptyTemplates:
+      "Ainda não há modelos de sequência — guarde um a partir do separador Sequência de qualquer campanha.",
+    stepCount: (n: number) => `${n} ${n === 1 ? "passo" : "passos"}`,
+    search: "Pesquisar…",
+    noMatch: "Nada corresponde à sua pesquisa.",
+    cancel: "Cancelar",
+    copyCta: (n: number) => `Copiar ${n} ${n === 1 ? "passo" : "passos"}`,
+    copyCtaEmpty: "Copiar passos",
+  },
+  pt_BR: {
+    title: "Copiar uma sequência",
+    description:
+      "Importe as etapas de outra campanha ou de um modelo de sequência salvo — com tempos e conteúdo das mensagens.",
+    fromCampaign: "De uma campanha",
+    fromTemplate: "De um modelo",
+    emptyCampaigns: "Ainda não há outras campanhas com sequência.",
+    emptyTemplates:
+      "Ainda não há modelos de sequência — salve um na aba Sequência de qualquer campanha.",
+    stepCount: (n: number) => `${n} ${n === 1 ? "etapa" : "etapas"}`,
+    search: "Buscar…",
+    noMatch: "Nada corresponde à sua busca.",
+    cancel: "Cancelar",
+    copyCta: (n: number) => `Copiar ${n} ${n === 1 ? "etapa" : "etapas"}`,
+    copyCtaEmpty: "Copiar etapas",
+  },
 } as const
 
 // Minimal channel glyphs for the step chips (colors match the sequence tab).

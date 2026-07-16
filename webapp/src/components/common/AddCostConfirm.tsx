@@ -39,6 +39,66 @@ const COPY = {
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
     confirmCompanies: (n: number) => `Añadir ${n.toLocaleString()}`,
   },
+  it: {
+    titlePeople: (n: number) => `Aggiungere ${n} prospect?`,
+    titleCompanies: (n: number) => `Aggiungere ${n} ${n === 1 ? "azienda" : "aziende"}?`,
+    toTarget: (name: string) => `Verranno aggiunti a ${name}.`,
+    estimatePeople: (n: number, credits: number) =>
+      `${n.toLocaleString()} × ${SAVE_COST.prospect} crediti = ≈ ${credits.toLocaleString()} crediti`,
+    estimateCompanies: "Salvataggio gratuito · 0 crediti",
+    note: "I crediti si spendono solo al salvataggio — l'arricchimento viene addebitato separatamente.",
+    cancel: "Annulla",
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} crediti`,
+    confirmCompanies: (n: number) => `Aggiungi ${n.toLocaleString()}`,
+  },
+  fr: {
+    titlePeople: (n: number) => `Ajouter ${n} ${n === 1 ? "prospect" : "prospects"} ?`,
+    titleCompanies: (n: number) => `Ajouter ${n} ${n === 1 ? "entreprise" : "entreprises"} ?`,
+    toTarget: (name: string) => `Ils seront ajoutés à ${name}.`,
+    estimatePeople: (n: number, credits: number) =>
+      `${n.toLocaleString()} × ${SAVE_COST.prospect} crédits = ≈ ${credits.toLocaleString()} crédits`,
+    estimateCompanies: "Gratuit à enregistrer · 0 crédit",
+    note: "Les crédits ne sont dépensés qu'à l'enregistrement — l'enrichissement est facturé séparément.",
+    cancel: "Annuler",
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} crédits`,
+    confirmCompanies: (n: number) => `Ajouter ${n.toLocaleString()}`,
+  },
+  de: {
+    titlePeople: (n: number) => `${n} ${n === 1 ? "Prospect" : "Prospects"} hinzufügen?`,
+    titleCompanies: (n: number) => `${n} Unternehmen hinzufügen?`,
+    toTarget: (name: string) => `Sie werden zu ${name} hinzugefügt.`,
+    estimatePeople: (n: number, credits: number) =>
+      `${n.toLocaleString()} × ${SAVE_COST.prospect} Credits = ≈ ${credits.toLocaleString()} Credits`,
+    estimateCompanies: "Kostenlos zu speichern · 0 Credits",
+    note: "Credits werden nur beim Speichern verbraucht — die Anreicherung wird separat berechnet.",
+    cancel: "Abbrechen",
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} Credits`,
+    confirmCompanies: (n: number) => `${n.toLocaleString()} hinzufügen`,
+  },
+  pt: {
+    titlePeople: (n: number) => `Adicionar ${n} ${n === 1 ? "prospect" : "prospects"}?`,
+    titleCompanies: (n: number) => `Adicionar ${n} ${n === 1 ? "empresa" : "empresas"}?`,
+    toTarget: (name: string) => `Serão adicionados a ${name}.`,
+    estimatePeople: (n: number, credits: number) =>
+      `${n.toLocaleString()} × ${SAVE_COST.prospect} créditos = ≈ ${credits.toLocaleString()} créditos`,
+    estimateCompanies: "Guardar é gratuito · 0 créditos",
+    note: "Os créditos só são gastos ao guardar — o enriquecimento é cobrado à parte.",
+    cancel: "Cancelar",
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
+    confirmCompanies: (n: number) => `Adicionar ${n.toLocaleString()}`,
+  },
+  pt_BR: {
+    titlePeople: (n: number) => `Adicionar ${n} ${n === 1 ? "prospect" : "prospects"}?`,
+    titleCompanies: (n: number) => `Adicionar ${n} ${n === 1 ? "empresa" : "empresas"}?`,
+    toTarget: (name: string) => `Serão adicionados a ${name}.`,
+    estimatePeople: (n: number, credits: number) =>
+      `${n.toLocaleString()} × ${SAVE_COST.prospect} créditos = ≈ ${credits.toLocaleString()} créditos`,
+    estimateCompanies: "Salvar é grátis · 0 créditos",
+    note: "Os créditos só são gastos ao salvar — o enriquecimento é cobrado separadamente.",
+    cancel: "Cancelar",
+    confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
+    confirmCompanies: (n: number) => `Adicionar ${n.toLocaleString()}`,
+  },
 } as const
 
 /**

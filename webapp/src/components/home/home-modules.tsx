@@ -23,7 +23,7 @@ import {
   Share2,
 } from "lucide-react"
 
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
 import { Badge } from "@/components/ui/badge"
 import { libraryQueries } from "@/lib/mock-library"
 import {
@@ -47,7 +47,7 @@ import { useSetup } from "@/lib/setup"
  */
 export interface HomeModuleDef {
   id: string
-  title: { en: string; es: string }
+  title: Record<Locale, string>
   icon: React.ComponentType<{ className?: string }>
   defaultOn: boolean
   Component: React.ComponentType
@@ -82,6 +82,66 @@ const COPY = {
     count: (n: number) => `${n} ${n === 1 ? "registro" : "registros"}`,
     comingSoon: "Próximamente",
   },
+  it: {
+    empty: "Non c'è ancora niente qui.",
+    noRecent: "Le tue ricerche recenti appariranno qui.",
+    noLists: "Crea una lista per vederla qui.",
+    noProspects: "I prospect che aggiungi appariranno qui.",
+    noSuggestedProspects: "Nessun prospect corrispondente al momento.",
+    noSuggestedCompanies: "Nessuna azienda corrispondente al momento.",
+    setupProgress: (n: number) => `${n}% completato`,
+    continueSetup: "Continua la configurazione",
+    count: (n: number) => `${n} record`,
+    comingSoon: "In arrivo",
+  },
+  fr: {
+    empty: "Rien ici pour l'instant.",
+    noRecent: "Vos recherches récentes apparaîtront ici.",
+    noLists: "Créez une liste pour la voir ici.",
+    noProspects: "Les prospects que vous ajoutez apparaîtront ici.",
+    noSuggestedProspects: "Aucun prospect correspondant pour le moment.",
+    noSuggestedCompanies: "Aucune entreprise correspondante pour le moment.",
+    setupProgress: (n: number) => `${n}% terminé`,
+    continueSetup: "Poursuivre la configuration",
+    count: (n: number) => `${n} ${n === 1 ? "enregistrement" : "enregistrements"}`,
+    comingSoon: "Bientôt disponible",
+  },
+  de: {
+    empty: "Hier ist noch nichts.",
+    noRecent: "Deine letzten Suchen erscheinen hier.",
+    noLists: "Erstelle eine Liste, um sie hier zu sehen.",
+    noProspects: "Prospects, die du hinzufügst, erscheinen hier.",
+    noSuggestedProspects: "Gerade keine passenden Prospects.",
+    noSuggestedCompanies: "Gerade keine passenden Unternehmen.",
+    setupProgress: (n: number) => `${n}% abgeschlossen`,
+    continueSetup: "Einrichtung fortsetzen",
+    count: (n: number) => `${n} ${n === 1 ? "Datensatz" : "Datensätze"}`,
+    comingSoon: "Bald verfügbar",
+  },
+  pt: {
+    empty: "Ainda não há nada aqui.",
+    noRecent: "As suas pesquisas recentes vão aparecer aqui.",
+    noLists: "Crie uma lista para a ver aqui.",
+    noProspects: "Os prospects que adicionar vão aparecer aqui.",
+    noSuggestedProspects: "Sem prospects correspondentes por agora.",
+    noSuggestedCompanies: "Sem empresas correspondentes por agora.",
+    setupProgress: (n: number) => `${n}% concluído`,
+    continueSetup: "Continuar a configuração",
+    count: (n: number) => `${n} ${n === 1 ? "registo" : "registos"}`,
+    comingSoon: "Brevemente",
+  },
+  pt_BR: {
+    empty: "Ainda não há nada aqui.",
+    noRecent: "Suas buscas recentes vão aparecer aqui.",
+    noLists: "Crie uma lista para vê-la aqui.",
+    noProspects: "Os prospects que você adicionar vão aparecer aqui.",
+    noSuggestedProspects: "Sem prospects correspondentes no momento.",
+    noSuggestedCompanies: "Sem empresas correspondentes no momento.",
+    setupProgress: (n: number) => `${n}% concluído`,
+    continueSetup: "Continuar a configuração",
+    count: (n: number) => `${n} ${n === 1 ? "registro" : "registros"}`,
+    comingSoon: "Em breve",
+  },
 } as const
 
 // Intent-signal search shortcuts — one entry per real SIGNAL_OPTIONS value, so
@@ -92,62 +152,140 @@ const COPY = {
 const SIGNAL_TILES: Record<
   string,
   {
-    title: { en: string; es: string }
-    desc: { en: string; es: string }
+    title: Record<Locale, string>
+    desc: Record<Locale, string>
     prompt: string
     icon: React.ComponentType<{ className?: string }>
   }
 > = {
   "Recently funded": {
-    title: { en: "Funding announcement", es: "Anuncio de financiación" },
+    title: {
+      en: "Funding announcement",
+      es: "Anuncio de financiación",
+      it: "Annuncio di finanziamento",
+      fr: "Annonce de financement",
+      de: "Neue Finanzierungsrunde",
+      pt: "Anúncio de financiamento",
+      pt_BR: "Anúncio de investimento",
+    },
     desc: {
       en: "Companies that recently raised a funding round.",
       es: "Empresas que acaban de levantar financiación.",
+      it: "Aziende che hanno appena raccolto un round di finanziamento.",
+      fr: "Entreprises qui viennent de lever des fonds.",
+      de: "Unternehmen, die gerade eine Finanzierungsrunde abgeschlossen haben.",
+      pt: "Empresas que acabaram de angariar uma ronda de financiamento.",
+      pt_BR: "Empresas que acabaram de captar uma rodada de investimento.",
     },
     prompt: "Find leads at companies that recently raised a funding round",
     icon: Coins,
   },
   "New exec hire": {
-    title: { en: "New leadership hire", es: "Nueva contratación de liderazgo" },
+    title: {
+      en: "New leadership hire",
+      es: "Nueva contratación de liderazgo",
+      it: "Nuova assunzione dirigenziale",
+      fr: "Nouveau dirigeant recruté",
+      de: "Neue Führungskraft",
+      pt: "Nova contratação de liderança",
+      pt_BR: "Nova contratação de liderança",
+    },
     desc: {
       en: "Companies that just hired a new senior leader.",
       es: "Empresas que acaban de contratar a un nuevo líder.",
+      it: "Aziende che hanno appena assunto un nuovo senior leader.",
+      fr: "Entreprises qui viennent de recruter un dirigeant senior.",
+      de: "Unternehmen, die gerade eine neue Führungskraft eingestellt haben.",
+      pt: "Empresas que acabaram de contratar um novo líder sénior.",
+      pt_BR: "Empresas que acabaram de contratar um novo líder sênior.",
     },
     prompt: "Find leads at companies that just hired a new senior leader",
     icon: UserPlus,
   },
   "Hiring sales": {
-    title: { en: "Actively hiring for sales", es: "Contratando para ventas" },
+    title: {
+      en: "Actively hiring for sales",
+      es: "Contratando para ventas",
+      it: "Assunzioni attive nelle vendite",
+      fr: "Recrutement commercial actif",
+      de: "Stellt aktiv im Vertrieb ein",
+      pt: "A contratar para vendas",
+      pt_BR: "Contratando para vendas",
+    },
     desc: {
       en: "Companies actively hiring for sales roles.",
       es: "Empresas contratando activamente para roles de ventas.",
+      it: "Aziende che assumono attivamente per ruoli di vendita.",
+      fr: "Entreprises qui recrutent activement des profils commerciaux.",
+      de: "Unternehmen, die aktiv Vertriebsrollen besetzen.",
+      pt: "Empresas a contratar ativamente para funções de vendas.",
+      pt_BR: "Empresas contratando ativamente para cargos de vendas.",
     },
     prompt: "Find leads at companies actively hiring for sales roles",
     icon: Briefcase,
   },
   "Adopting AI": {
-    title: { en: "Adopting AI tools", es: "Adoptando herramientas de IA" },
+    title: {
+      en: "Adopting AI tools",
+      es: "Adoptando herramientas de IA",
+      it: "Adozione di strumenti IA",
+      fr: "Adoption d'outils IA",
+      de: "Führt KI-Tools ein",
+      pt: "A adotar ferramentas de IA",
+      pt_BR: "Adotando ferramentas de IA",
+    },
     desc: {
       en: "Companies adopting AI in their tech stack.",
       es: "Empresas que adoptan IA en su stack tecnológico.",
+      it: "Aziende che adottano l'IA nel loro stack tecnologico.",
+      fr: "Entreprises qui adoptent l'IA dans leur stack technique.",
+      de: "Unternehmen, die KI in ihren Tech-Stack integrieren.",
+      pt: "Empresas a adotar IA no seu stack tecnológico.",
+      pt_BR: "Empresas adotando IA em seu stack de tecnologia.",
     },
     prompt: "Find leads at companies adopting AI tools in their tech stack",
     icon: Cpu,
   },
   "Expanding to EMEA": {
-    title: { en: "Expanding to EMEA", es: "Expandiéndose a EMEA" },
+    title: {
+      en: "Expanding to EMEA",
+      es: "Expandiéndose a EMEA",
+      it: "Espansione in EMEA",
+      fr: "Expansion en EMEA",
+      de: "Expansion nach EMEA",
+      pt: "Expansão para a EMEA",
+      pt_BR: "Expansão para a EMEA",
+    },
     desc: {
       en: "Companies expanding their footprint into EMEA.",
       es: "Empresas que se expanden a EMEA.",
+      it: "Aziende che stanno espandendo la loro presenza in EMEA.",
+      fr: "Entreprises qui étendent leur présence en EMEA.",
+      de: "Unternehmen, die nach EMEA expandieren.",
+      pt: "Empresas a expandir a sua presença na EMEA.",
+      pt_BR: "Empresas expandindo sua presença na EMEA.",
     },
     prompt: "Find leads at companies expanding their footprint into EMEA",
     icon: Globe,
   },
   "High web intent": {
-    title: { en: "High web intent", es: "Alta intención web" },
+    title: {
+      en: "High web intent",
+      es: "Alta intención web",
+      it: "Alto intent web",
+      fr: "Forte intention web",
+      de: "Hoher Web-Intent",
+      pt: "Alta intenção web",
+      pt_BR: "Alta intenção na web",
+    },
     desc: {
       en: "Companies showing high website buying intent.",
       es: "Empresas con alta intención de compra en su web.",
+      it: "Aziende con alto intent di acquisto sul sito web.",
+      fr: "Entreprises montrant une forte intention d'achat sur le web.",
+      de: "Unternehmen mit hoher Kaufabsicht auf der Website.",
+      pt: "Empresas com alta intenção de compra no site.",
+      pt_BR: "Empresas com alta intenção de compra no site.",
     },
     prompt: "Find leads at companies showing high website buying intent",
     icon: TrendingUp,
@@ -157,31 +295,70 @@ const SIGNAL_TILES: Record<
 // Placeholder tiles for signal types we don't have data for yet — matches the
 // "Coming soon" cards on Artisan.co's own signals page.
 const COMING_SOON_SIGNALS: {
-  title: { en: string; es: string }
-  desc: { en: string; es: string }
+  title: Record<Locale, string>
+  desc: Record<Locale, string>
   icon: React.ComponentType<{ className?: string }>
 }[] = [
   {
-    title: { en: "Topic intent", es: "Intención por tema" },
+    title: {
+      en: "Topic intent",
+      es: "Intención por tema",
+      it: "Intent per argomento",
+      fr: "Intention thématique",
+      de: "Themen-Intent",
+      pt: "Intenção por tema",
+      pt_BR: "Intenção por tema",
+    },
     desc: {
       en: "Detect when a company researches topics relevant to your product.",
       es: "Detecta cuándo una empresa investiga temas relevantes para tu producto.",
+      it: "Rileva quando un'azienda ricerca argomenti rilevanti per il tuo prodotto.",
+      fr: "Détectez quand une entreprise recherche des sujets pertinents pour votre produit.",
+      de: "Erkenne, wenn ein Unternehmen nach Themen sucht, die für dein Produkt relevant sind.",
+      pt: "Descubra quando uma empresa pesquisa temas relevantes para o seu produto.",
+      pt_BR: "Descubra quando uma empresa pesquisa temas relevantes para o seu produto.",
     },
     icon: Tags,
   },
   {
-    title: { en: "Champion tracking", es: "Seguimiento de champions" },
+    title: {
+      en: "Champion tracking",
+      es: "Seguimiento de champions",
+      it: "Monitoraggio dei champion",
+      fr: "Suivi des champions",
+      de: "Champion-Tracking",
+      pt: "Acompanhamento de champions",
+      pt_BR: "Acompanhamento de champions",
+    },
     desc: {
       en: "Track champions and reach out when they land at a new company.",
       es: "Sigue a tus champions y contáctalos al llegar a una nueva empresa.",
+      it: "Tieni traccia dei champion e contattali quando arrivano in una nuova azienda.",
+      fr: "Suivez vos champions et contactez-les lorsqu'ils rejoignent une nouvelle entreprise.",
+      de: "Verfolge deine Champions und melde dich, wenn sie zu einem neuen Unternehmen wechseln.",
+      pt: "Acompanhe os seus champions e contacte-os quando chegarem a uma nova empresa.",
+      pt_BR: "Acompanhe seus champions e entre em contato quando eles chegarem a uma nova empresa.",
     },
     icon: Trophy,
   },
   {
-    title: { en: "Social post tracking", es: "Seguimiento en redes sociales" },
+    title: {
+      en: "Social post tracking",
+      es: "Seguimiento en redes sociales",
+      it: "Monitoraggio dei post social",
+      fr: "Suivi des publications sociales",
+      de: "Social-Media-Tracking",
+      pt: "Monitorização de publicações nas redes sociais",
+      pt_BR: "Monitoramento de publicações nas redes sociais",
+    },
     desc: {
       en: "Monitor social posts to catch high-intent prospects.",
       es: "Monitoriza publicaciones sociales para detectar prospectos de alta intención.",
+      it: "Monitora i post social per intercettare prospect ad alta intenzione d'acquisto.",
+      fr: "Surveillez les publications sociales pour repérer les prospects à forte intention d'achat.",
+      de: "Behalte Social-Media-Beiträge im Blick, um Prospects mit hoher Kaufabsicht zu erkennen.",
+      pt: "Monitorize publicações nas redes sociais para identificar prospects com alta intenção de compra.",
+      pt_BR: "Monitore publicações nas redes sociais para identificar prospects com alta intenção de compra.",
     },
     icon: Share2,
   },
@@ -469,14 +646,30 @@ export const HOME_MODULES: HomeModuleDef[] = [
   // drives CSS grid auto-placement in HomeModules.tsx, so keep this sequence.
   {
     id: "suggested-prospects",
-    title: { en: "Suggested prospects", es: "Prospectos sugeridos" },
+    title: {
+      en: "Suggested prospects",
+      es: "Prospectos sugeridos",
+      it: "Prospect suggeriti",
+      fr: "Prospects suggérés",
+      de: "Vorgeschlagene Prospects",
+      pt: "Prospects sugeridos",
+      pt_BR: "Prospects sugeridos",
+    },
     icon: Users,
     defaultOn: true,
     Component: SuggestedProspectsModule,
   },
   {
     id: "signals",
-    title: { en: "Signals", es: "Señales" },
+    title: {
+      en: "Signals",
+      es: "Señales",
+      it: "Segnali",
+      fr: "Signaux",
+      de: "Signale",
+      pt: "Sinais",
+      pt_BR: "Sinais",
+    },
     icon: Radar,
     defaultOn: true,
     rowSpan: 2,
@@ -484,42 +677,90 @@ export const HOME_MODULES: HomeModuleDef[] = [
   },
   {
     id: "suggested-companies",
-    title: { en: "Suggested companies", es: "Empresas sugeridas" },
+    title: {
+      en: "Suggested companies",
+      es: "Empresas sugeridas",
+      it: "Aziende suggerite",
+      fr: "Entreprises suggérées",
+      de: "Vorgeschlagene Unternehmen",
+      pt: "Empresas sugeridas",
+      pt_BR: "Empresas sugeridas",
+    },
     icon: Building2,
     defaultOn: true,
     Component: SuggestedCompaniesModule,
   },
   {
     id: "recommended",
-    title: { en: "Recommended searches", es: "Búsquedas recomendadas" },
+    title: {
+      en: "Recommended searches",
+      es: "Búsquedas recomendadas",
+      it: "Ricerche consigliate",
+      fr: "Recherches recommandées",
+      de: "Empfohlene Suchen",
+      pt: "Pesquisas recomendadas",
+      pt_BR: "Buscas recomendadas",
+    },
     icon: Sparkles,
     defaultOn: false,
     Component: RecommendedModule,
   },
   {
     id: "recent-searches",
-    title: { en: "Recent searches", es: "Búsquedas recientes" },
+    title: {
+      en: "Recent searches",
+      es: "Búsquedas recientes",
+      it: "Ricerche recenti",
+      fr: "Recherches récentes",
+      de: "Letzte Suchen",
+      pt: "Pesquisas recentes",
+      pt_BR: "Buscas recentes",
+    },
     icon: History,
     defaultOn: false,
     Component: RecentSearchesModule,
   },
   {
     id: "lists",
-    title: { en: "Your lists", es: "Tus listas" },
+    title: {
+      en: "Your lists",
+      es: "Tus listas",
+      it: "Le tue liste",
+      fr: "Vos listes",
+      de: "Deine Listen",
+      pt: "As suas listas",
+      pt_BR: "Suas listas",
+    },
     icon: FolderKanban,
     defaultOn: false,
     Component: ListsModule,
   },
   {
     id: "get-started",
-    title: { en: "Get started", es: "Empezar" },
+    title: {
+      en: "Get started",
+      es: "Empezar",
+      it: "Inizia",
+      fr: "Commencer",
+      de: "Loslegen",
+      pt: "Começar",
+      pt_BR: "Começar",
+    },
     icon: Rocket,
     defaultOn: false,
     Component: GetStartedModule,
   },
   {
     id: "recent-prospects",
-    title: { en: "Recent prospects", es: "Prospectos recientes" },
+    title: {
+      en: "Recent prospects",
+      es: "Prospectos recientes",
+      it: "Prospect recenti",
+      fr: "Prospects récents",
+      de: "Letzte Prospects",
+      pt: "Prospects recentes",
+      pt_BR: "Prospects recentes",
+    },
     icon: Users,
     defaultOn: false,
     Component: RecentProspectsModule,

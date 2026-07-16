@@ -45,6 +45,61 @@ const COPY = {
     moveUp: "Subir",
     moveDown: "Bajar",
   },
+  it: {
+    customize: "Personalizza",
+    heading: "Personalizza la tua homepage",
+    description:
+      "Scegli quali schede mostrare sotto la tua ricerca e in che ordine.",
+    reset: "Ripristina predefiniti",
+    empty: "La tua homepage è vuota — aggiungi qualche scheda per iniziare.",
+    done: "Fatto",
+    moveUp: "Sposta su",
+    moveDown: "Sposta giù",
+  },
+  fr: {
+    customize: "Personnaliser",
+    heading: "Personnalisez votre page d'accueil",
+    description:
+      "Choisissez les cartes à afficher sous votre recherche et dans quel ordre.",
+    reset: "Réinitialiser",
+    empty: "Votre page d'accueil est vide — ajoutez quelques cartes pour commencer.",
+    done: "Terminé",
+    moveUp: "Monter",
+    moveDown: "Descendre",
+  },
+  de: {
+    customize: "Anpassen",
+    heading: "Passe deine Startseite an",
+    description:
+      "Wähle aus, welche Karten unter deiner Suche angezeigt werden und in welcher Reihenfolge.",
+    reset: "Auf Standard zurücksetzen",
+    empty: "Deine Startseite ist leer — füge ein paar Karten hinzu, um loszulegen.",
+    done: "Fertig",
+    moveUp: "Nach oben",
+    moveDown: "Nach unten",
+  },
+  pt: {
+    customize: "Personalizar",
+    heading: "Personalize a sua página inicial",
+    description:
+      "Escolha que cartões mostrar abaixo da sua pesquisa e em que ordem.",
+    reset: "Repor predefinições",
+    empty: "A sua página inicial está vazia — adicione alguns cartões para começar.",
+    done: "Concluído",
+    moveUp: "Mover para cima",
+    moveDown: "Mover para baixo",
+  },
+  pt_BR: {
+    customize: "Personalizar",
+    heading: "Personalize sua página inicial",
+    description:
+      "Escolha quais cartões aparecem abaixo da sua busca e em que ordem.",
+    reset: "Redefinir para o padrão",
+    empty: "Sua página inicial está vazia — adicione alguns cartões para começar.",
+    done: "Concluído",
+    moveUp: "Mover para cima",
+    moveDown: "Mover para baixo",
+  },
 } as const
 
 const MODULE_BY_ID = new Map<string, HomeModuleDef>(

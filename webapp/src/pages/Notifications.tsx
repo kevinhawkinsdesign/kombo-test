@@ -28,6 +28,51 @@ const COPY = {
     caughtUpDesc:
       "Las nuevas respuestas, reuniones y actualizaciones de negocios aparecerán aquí.",
   },
+  it: {
+    title: "Notifiche",
+    unread: (count: number) => `${count} da leggere`,
+    caughtUp: "Sei in pari.",
+    markAllRead: "Segna tutto come letto",
+    caughtUpTitle: "Sei in pari",
+    caughtUpDesc:
+      "Le nuove risposte, riunioni e aggiornamenti delle trattative appariranno qui.",
+  },
+  fr: {
+    title: "Notifications",
+    unread: (count: number) => `${count} non lue${count > 1 ? "s" : ""}`,
+    caughtUp: "Vous êtes à jour.",
+    markAllRead: "Tout marquer comme lu",
+    caughtUpTitle: "Vous êtes à jour",
+    caughtUpDesc:
+      "Les nouvelles réponses, rendez-vous et mises à jour de transactions apparaîtront ici.",
+  },
+  de: {
+    title: "Benachrichtigungen",
+    unread: (count: number) => `${count} ungelesen`,
+    caughtUp: "Du bist auf dem Laufenden.",
+    markAllRead: "Alle als gelesen markieren",
+    caughtUpTitle: "Du bist auf dem Laufenden",
+    caughtUpDesc:
+      "Neue Antworten, Meetings und Deal-Updates erscheinen hier.",
+  },
+  pt: {
+    title: "Notificações",
+    unread: (count: number) => `${count} por ler`,
+    caughtUp: "Está em dia.",
+    markAllRead: "Marcar tudo como lido",
+    caughtUpTitle: "Está em dia",
+    caughtUpDesc:
+      "As novas respostas, reuniões e atualizações de negócios vão aparecer aqui.",
+  },
+  pt_BR: {
+    title: "Notificações",
+    unread: (count: number) => `${count} não lida${count > 1 ? "s" : ""}`,
+    caughtUp: "Você está em dia.",
+    markAllRead: "Marcar tudo como lido",
+    caughtUpTitle: "Você está em dia",
+    caughtUpDesc:
+      "Novas respostas, reuniões e atualizações de negócios vão aparecer aqui.",
+  },
 } as const
 
 export default function Notifications() {

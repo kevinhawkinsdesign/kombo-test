@@ -34,6 +34,46 @@ const COPY = {
     edit: "Editar",
     close: "Cerrar",
   },
+  it: {
+    closeDate: "Data di chiusura",
+    owner: "Proprietario",
+    contact: "Contatto",
+    winProbability: "Probabilità di chiusura",
+    edit: "Modifica",
+    close: "Chiudi",
+  },
+  fr: {
+    closeDate: "Date de clôture",
+    owner: "Propriétaire",
+    contact: "Contact",
+    winProbability: "Probabilité de gain",
+    edit: "Modifier",
+    close: "Fermer",
+  },
+  de: {
+    closeDate: "Abschlussdatum",
+    owner: "Owner",
+    contact: "Kontakt",
+    winProbability: "Gewinnwahrscheinlichkeit",
+    edit: "Bearbeiten",
+    close: "Schließen",
+  },
+  pt: {
+    closeDate: "Data de fecho",
+    owner: "Proprietário",
+    contact: "Contacto",
+    winProbability: "Probabilidade de fecho",
+    edit: "Editar",
+    close: "Fechar",
+  },
+  pt_BR: {
+    closeDate: "Data de fechamento",
+    owner: "Proprietário",
+    contact: "Contato",
+    winProbability: "Probabilidade de fechamento",
+    edit: "Editar",
+    close: "Fechar",
+  },
 } as const
 
 const STAGE_VARIANT: Record<

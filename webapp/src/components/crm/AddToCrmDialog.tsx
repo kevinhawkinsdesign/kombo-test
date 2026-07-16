@@ -41,6 +41,31 @@ const ASSIGN_COPY = {
     assignToHint: "Quién será el responsable de este registro en tu CRM.",
     crmDefaultOwner: "Responsable por defecto del CRM",
   },
+  it: {
+    assignTo: "Proprietario",
+    assignToHint: "Chi sarà il proprietario di questo record nel tuo CRM.",
+    crmDefaultOwner: "Proprietario predefinito del CRM",
+  },
+  fr: {
+    assignTo: "Propriétaire",
+    assignToHint: "Qui sera propriétaire de cet enregistrement dans votre CRM.",
+    crmDefaultOwner: "Propriétaire par défaut du CRM",
+  },
+  de: {
+    assignTo: "Owner",
+    assignToHint: "Wem dieser Datensatz in deinem CRM gehört.",
+    crmDefaultOwner: "Standard-Owner des CRM",
+  },
+  pt: {
+    assignTo: "Proprietário",
+    assignToHint: "Quem é o proprietário deste registo no seu CRM.",
+    crmDefaultOwner: "Proprietário padrão do CRM",
+  },
+  pt_BR: {
+    assignTo: "Proprietário",
+    assignToHint: "Quem é o proprietário deste registro no seu CRM.",
+    crmDefaultOwner: "Proprietário padrão do CRM",
+  },
 } as const
 
 interface AddToCrmDialogProps {

@@ -39,6 +39,56 @@ const COPY = {
     save: "Guardar plantilla",
     created: "Plantilla de secuencia creada",
   },
+  it: {
+    title: "Salva la sequenza come modello",
+    description: (n: number) =>
+      `Salva ${n === 1 ? "il passaggio attuale" : `i ${n} passaggi attuali`} — tempi e contenuto dei messaggi inclusi — così qualsiasi campagna può partire da lì.`,
+    nameLabel: "Nome del modello",
+    namePlaceholder: "es. Outbound enterprise — 5 tocchi",
+    cancel: "Annulla",
+    save: "Salva modello",
+    created: "Modello di sequenza creato",
+  },
+  fr: {
+    title: "Enregistrer la séquence comme modèle",
+    description: (n: number) =>
+      `Enregistre ${n === 1 ? "l'étape actuelle" : `les ${n} étapes actuelles`} — délais et contenu des messages inclus — pour que n'importe quelle campagne puisse en repartir.`,
+    nameLabel: "Nom du modèle",
+    namePlaceholder: "ex. Outbound enterprise — 5 touches",
+    cancel: "Annuler",
+    save: "Enregistrer le modèle",
+    created: "Modèle de séquence créé",
+  },
+  de: {
+    title: "Sequenz als Vorlage speichern",
+    description: (n: number) =>
+      `Speichert ${n === 1 ? "den aktuellen Schritt" : `die aktuellen ${n} Schritte`} — inklusive Wartezeiten und Nachrichteninhalt — damit jede Kampagne damit starten kann.`,
+    nameLabel: "Name der Vorlage",
+    namePlaceholder: "z. B. Enterprise-Outbound — 5 Touchpoints",
+    cancel: "Abbrechen",
+    save: "Vorlage speichern",
+    created: "Sequenzvorlage erstellt",
+  },
+  pt: {
+    title: "Guardar sequência como modelo",
+    description: (n: number) =>
+      `Guarda ${n === 1 ? "o passo atual" : `os ${n} passos atuais`} — com tempos e conteúdo das mensagens — para qualquer campanha poder começar a partir daí.`,
+    nameLabel: "Nome do modelo",
+    namePlaceholder: "ex. Outbound enterprise — 5 toques",
+    cancel: "Cancelar",
+    save: "Guardar modelo",
+    created: "Modelo de sequência criado",
+  },
+  pt_BR: {
+    title: "Salvar sequência como modelo",
+    description: (n: number) =>
+      `Salva ${n === 1 ? "a etapa atual" : `as ${n} etapas atuais`} — com tempos e conteúdo das mensagens — para que qualquer campanha possa começar a partir dela.`,
+    nameLabel: "Nome do modelo",
+    namePlaceholder: "ex.: Outbound enterprise — 5 toques",
+    cancel: "Cancelar",
+    save: "Salvar modelo",
+    created: "Modelo de sequência criado",
+  },
 } as const
 
 export function SaveSequenceTemplateDialog({
