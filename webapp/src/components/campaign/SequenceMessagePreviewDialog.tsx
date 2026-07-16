@@ -28,6 +28,7 @@ const COPY = {
     searchPlaceholder: "Search prospects…",
     empty: "No prospects found.",
     noAudience: "No prospects in this campaign yet — add some to preview real messages.",
+    noSubject: "(no subject)",
     dayLabel: (n: number) => (n === 0 ? "Day 0" : `Day ${n}`),
   },
   es: {
@@ -39,6 +40,7 @@ const COPY = {
     empty: "No se encontraron prospectos.",
     noAudience:
       "Aún no hay prospectos en esta campaña — añade algunos para ver mensajes reales.",
+    noSubject: "(sin asunto)",
     dayLabel: (n: number) => (n === 0 ? "Día 0" : `Día ${n}`),
   },
   it: {
@@ -50,6 +52,7 @@ const COPY = {
     empty: "Nessun prospect trovato.",
     noAudience:
       "Ancora nessun prospect in questa campagna — aggiungine qualcuno per vedere messaggi reali.",
+    noSubject: "(nessun oggetto)",
     dayLabel: (n: number) => (n === 0 ? "Giorno 0" : `Giorno ${n}`),
   },
   fr: {
@@ -61,6 +64,7 @@ const COPY = {
     empty: "Aucun prospect trouvé.",
     noAudience:
       "Pas encore de prospects dans cette campagne — ajoutez-en pour voir de vrais messages.",
+    noSubject: "(aucun objet)",
     dayLabel: (n: number) => (n === 0 ? "Jour 0" : `Jour ${n}`),
   },
   de: {
@@ -72,6 +76,7 @@ const COPY = {
     empty: "Keine Prospects gefunden.",
     noAudience:
       "Noch keine Prospects in dieser Kampagne — füge welche hinzu, um echte Nachrichten zu sehen.",
+    noSubject: "(kein Betreff)",
     dayLabel: (n: number) => (n === 0 ? "Tag 0" : `Tag ${n}`),
   },
   pt: {
@@ -83,6 +88,7 @@ const COPY = {
     empty: "Nenhum prospect encontrado.",
     noAudience:
       "Ainda não há prospects nesta campanha — adicione alguns para ver mensagens reais.",
+    noSubject: "(sem assunto)",
     dayLabel: (n: number) => (n === 0 ? "Dia 0" : `Dia ${n}`),
   },
   pt_BR: {
@@ -94,6 +100,7 @@ const COPY = {
     empty: "Nenhum prospect encontrado.",
     noAudience:
       "Ainda não há prospects nesta campanha — adicione alguns para ver mensagens reais.",
+    noSubject: "(sem assunto)",
     dayLabel: (n: number) => (n === 0 ? "Dia 0" : `Dia ${n}`),
   },
 } as const
@@ -113,12 +120,18 @@ export function SequenceMessagePreviewDialog({
   const c = COPY[locale]
 
   const [prospectId, setProspectId] = React.useState("")
+  const [activeStepId, setActiveStepId] = React.useState("")
+
+  const flatSteps = flattenCampaignSteps(steps)
 
   // Reset on open (render-time check, house pattern — never an effect).
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
-    if (open) setProspectId(prospects[0]?.id ?? "")
+    if (open) {
+      setProspectId(prospects[0]?.id ?? "")
+      setActiveStepId(flatSteps[0]?.id ?? "")
+    }
   }
 
   const prospect = prospects.find((p) => p.id === prospectId) ?? prospects[0]
@@ -127,11 +140,11 @@ export function SequenceMessagePreviewDialog({
     label: `${p.firstName} ${p.lastName}`,
     sublabel: `${p.title} @ ${p.company}`,
   }))
-  const flatSteps = flattenCampaignSteps(steps)
+  const activeStep = flatSteps.find((s) => s.id === activeStepId) ?? flatSteps[0]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
@@ -158,19 +171,28 @@ export function SequenceMessagePreviewDialog({
                 placeholder={c.pickPlaceholder}
                 searchPlaceholder={c.searchPlaceholder}
                 emptyText={c.empty}
-                className="w-full"
+                className="w-full sm:w-80"
               />
             </div>
 
-            {prospect && (
-              <div className="min-w-0 max-h-[60vh] space-y-3 overflow-y-auto">
-                {flatSteps.map((step) => {
-                  const meta = channelMeta(step.channel)
-                  const Icon = meta.Icon
-                  const data = prospectMergeData(prospect)
-                  return (
-                    <div key={step.id} className="space-y-1.5 rounded-lg border p-3">
-                      <div className="flex items-center gap-2 text-xs">
+            {prospect && activeStep && (
+              <div className="grid min-h-0 flex-1 grid-cols-[13rem_1fr] gap-4 overflow-hidden rounded-lg border">
+                {/* Step list — click a day to load it in the reading pane. */}
+                <div className="bg-muted/30 min-h-0 space-y-1 overflow-y-auto border-r p-2">
+                  {flatSteps.map((step) => {
+                    const meta = channelMeta(step.channel)
+                    const Icon = meta.Icon
+                    const isActive = step.id === activeStep.id
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => setActiveStepId(step.id)}
+                        className={cn(
+                          "flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
+                          isActive ? "bg-primary/10 text-primary" : "hover:bg-background"
+                        )}
+                      >
                         <span
                           className={cn(
                             "flex size-5 shrink-0 items-center justify-center rounded",
@@ -179,21 +201,58 @@ export function SequenceMessagePreviewDialog({
                         >
                           <Icon className="size-3" />
                         </span>
-                        <span className="text-muted-foreground font-medium">
-                          {c.dayLabel(step.delayDays)}
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-medium">
+                            {c.dayLabel(step.delayDays)}
+                          </span>
+                          <span className="text-muted-foreground block truncate">
+                            {stripHtml(step.subject || step.body) || c.noSubject}
+                          </span>
                         </span>
-                      </div>
-                      {step.subject && (
-                        <p className="text-sm font-medium">
-                          {mergeVarsHighlighted(stripHtml(step.subject), data)}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Reading pane — the selected message at full, comfortable size
+                    (no truncation), styled like an actual received message
+                    rather than a cramped summary card. */}
+                <div className="min-h-0 space-y-3 overflow-y-auto p-5">
+                  {(() => {
+                    const meta = channelMeta(activeStep.channel)
+                    const Icon = meta.Icon
+                    const data = prospectMergeData(prospect)
+                    return (
+                      <>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span
+                            className={cn(
+                              "flex size-6 shrink-0 items-center justify-center rounded-md",
+                              meta.tint
+                            )}
+                          >
+                            <Icon className="size-3.5" />
+                          </span>
+                          <span className="text-muted-foreground font-medium">
+                            {c.dayLabel(activeStep.delayDays)}
+                          </span>
+                          <span className="text-muted-foreground">·</span>
+                          <span className="text-muted-foreground">
+                            {prospect.firstName} {prospect.lastName} — {prospect.company}
+                          </span>
+                        </div>
+                        {activeStep.subject && (
+                          <p className="text-base font-semibold">
+                            {mergeVarsHighlighted(stripHtml(activeStep.subject), data)}
+                          </p>
+                        )}
+                        <p className="text-sm leading-relaxed whitespace-pre-line">
+                          {mergeVarsHighlighted(stripHtml(activeStep.body), data)}
                         </p>
-                      )}
-                      <p className="text-muted-foreground text-sm whitespace-pre-line">
-                        {mergeVarsHighlighted(stripHtml(step.body), data)}
-                      </p>
-                    </div>
-                  )
-                })}
+                      </>
+                    )
+                  })()}
+                </div>
               </div>
             )}
           </>
