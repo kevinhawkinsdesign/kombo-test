@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -49,14 +49,14 @@ import type { SequenceItem } from "@/lib/mock-sequences"
 
 const CHANNELS: Record<
   SequenceChannelType,
-  { icon: React.ComponentType<{ className?: string }>; tint: string; en: string; es: string }
+  { icon: React.ComponentType<{ className?: string }>; tint: string } & Record<Locale, string>
 > = {
-  email: { icon: Mail, tint: "bg-primary/15 text-primary", en: "Email", es: "Email" },
-  linkedin: { icon: LinkedinIcon, tint: "bg-[#0a66c2]/15 text-[#0a66c2]", en: "LinkedIn", es: "LinkedIn" },
-  call: { icon: Phone, tint: "bg-chart-4/15 text-chart-4", en: "Call", es: "Llamada" },
-  ai_call: { icon: Sparkles, tint: "bg-chart-5/15 text-chart-5", en: "AI call", es: "Llamada IA" },
-  whatsapp: { icon: MessageCircle, tint: "bg-chart-1/15 text-chart-1", en: "WhatsApp", es: "WhatsApp" },
-  wait: { icon: Clock, tint: "bg-muted text-muted-foreground", en: "Wait", es: "Espera" },
+  email: { icon: Mail, tint: "bg-primary/15 text-primary", en: "Email", es: "Email", it: "Email", fr: "E-mail", de: "E-Mail", pt: "Email", pt_BR: "Email" },
+  linkedin: { icon: LinkedinIcon, tint: "bg-[#0a66c2]/15 text-[#0a66c2]", en: "LinkedIn", es: "LinkedIn", it: "LinkedIn", fr: "LinkedIn", de: "LinkedIn", pt: "LinkedIn", pt_BR: "LinkedIn" },
+  call: { icon: Phone, tint: "bg-chart-4/15 text-chart-4", en: "Call", es: "Llamada", it: "Chiamata", fr: "Appel", de: "Anruf", pt: "Chamada", pt_BR: "Ligação" },
+  ai_call: { icon: Sparkles, tint: "bg-chart-5/15 text-chart-5", en: "AI call", es: "Llamada IA", it: "Chiamata IA", fr: "Appel IA", de: "KI-Anruf", pt: "Chamada IA", pt_BR: "Ligação IA" },
+  whatsapp: { icon: MessageCircle, tint: "bg-chart-1/15 text-chart-1", en: "WhatsApp", es: "WhatsApp", it: "WhatsApp", fr: "WhatsApp", de: "WhatsApp", pt: "WhatsApp", pt_BR: "WhatsApp" },
+  wait: { icon: Clock, tint: "bg-muted text-muted-foreground", en: "Wait", es: "Espera", it: "Attesa", fr: "Attente", de: "Wartezeit", pt: "Espera", pt_BR: "Espera" },
 }
 
 const COPY = {
@@ -147,6 +147,226 @@ const COPY = {
     colUsedBy: "Campañas",
     colReply: "Tasa de respuesta",
     colUpdated: "Actualizada",
+  },
+  it: {
+    title: "Sequenze",
+    description: "Cadenze multicanale riutilizzabili che le tue campagne eseguono.",
+    newSequence: "Nuova sequenza",
+    introTitle: "Crea le sequenze una volta, riusale ovunque",
+    introDescription:
+      "Progetta una cadenza multicanale in più passaggi — email, LinkedIn, chiamate, WhatsApp e persino chiamate IA — con attese e trigger tra i passaggi, poi collegala a qualsiasi campagna.",
+    introPoints: [
+      "Combina email, LinkedIn, chiamate e WhatsApp",
+      "Scandisci i passaggi con attese e trigger",
+      "Riusa una cadenza collaudata in più campagne",
+      "Monitora il tasso di risposta per sequenza",
+    ],
+    steps: (n: number) => `${n} ${n === 1 ? "passaggio" : "passaggi"}`,
+    usedBy: (n: number) => `${n} ${n === 1 ? "campagna" : "campagne"}`,
+    replyRate: "tasso di risposta",
+    updated: (d: string) => `Aggiornata ${d}`,
+    edit: "Modifica",
+    duplicate: "Duplica",
+    delete: "Elimina",
+    duplicated: "Sequenza duplicata",
+    deleted: "Sequenza eliminata",
+    deleteTitle: "Eliminare la sequenza?",
+    deleteDesc: (name: string) =>
+      `"${name}" verrà rimossa. Le campagne che già la usano conservano i loro passaggi.`,
+    deleteConfirm: "Elimina",
+    more: "Altre azioni",
+    search: "Cerca sequenze…",
+    viewCards: "Schede",
+    viewTable: "Tabella",
+    exportLabel: "Esporta",
+    exported: "Sequenze esportate in CSV",
+    noResults: "Nessuna sequenza corrisponde alla tua ricerca.",
+    sortRecent: "Aggiornate di recente",
+    sortName: "Nome (A–Z)",
+    sortReply: "Tasso di risposta",
+    sortUsage: "Più usate",
+    colName: "Sequenza",
+    colSteps: "Passaggi",
+    colFlow: "Canali",
+    colUsedBy: "Campagne",
+    colReply: "Tasso di risposta",
+    colUpdated: "Aggiornata",
+  },
+  fr: {
+    title: "Séquences",
+    description: "Des cadences multicanales réutilisables exécutées par vos campagnes.",
+    newSequence: "Nouvelle séquence",
+    introTitle: "Construisez vos séquences une fois, réutilisez-les partout",
+    introDescription:
+      "Concevez une cadence multicanale en plusieurs étapes — e-mail, LinkedIn, appels, WhatsApp et même appels IA — avec des attentes et des déclencheurs entre les étapes, puis associez-la à n'importe quelle campagne.",
+    introPoints: [
+      "Mélangez e-mail, LinkedIn, appels et WhatsApp",
+      "Rythmez les étapes avec des attentes et des déclencheurs",
+      "Réutilisez une cadence éprouvée sur plusieurs campagnes",
+      "Suivez le taux de réponse par séquence",
+    ],
+    steps: (n: number) => `${n} ${n === 1 ? "étape" : "étapes"}`,
+    usedBy: (n: number) => `${n} ${n === 1 ? "campagne" : "campagnes"}`,
+    replyRate: "taux de réponse",
+    updated: (d: string) => `Mise à jour ${d}`,
+    edit: "Modifier",
+    duplicate: "Dupliquer",
+    delete: "Supprimer",
+    duplicated: "Séquence dupliquée",
+    deleted: "Séquence supprimée",
+    deleteTitle: "Supprimer la séquence ?",
+    deleteDesc: (name: string) =>
+      `« ${name} » sera supprimée. Les campagnes qui l'utilisent déjà conservent leurs étapes.`,
+    deleteConfirm: "Supprimer",
+    more: "Plus d'actions",
+    search: "Rechercher des séquences…",
+    viewCards: "Cartes",
+    viewTable: "Tableau",
+    exportLabel: "Exporter",
+    exported: "Séquences exportées en CSV",
+    noResults: "Aucune séquence ne correspond à votre recherche.",
+    sortRecent: "Mises à jour récemment",
+    sortName: "Nom (A–Z)",
+    sortReply: "Taux de réponse",
+    sortUsage: "Les plus utilisées",
+    colName: "Séquence",
+    colSteps: "Étapes",
+    colFlow: "Canaux",
+    colUsedBy: "Campagnes",
+    colReply: "Taux de réponse",
+    colUpdated: "Mise à jour",
+  },
+  de: {
+    title: "Sequenzen",
+    description: "Wiederverwendbare Multichannel-Kadenzen, die deine Kampagnen ausführen.",
+    newSequence: "Neue Sequenz",
+    introTitle: "Sequenzen einmal bauen, überall wiederverwenden",
+    introDescription:
+      "Gestalte eine mehrstufige Multichannel-Kadenz — E-Mail, LinkedIn, Anrufe, WhatsApp, sogar KI-Anrufe — mit Wartezeiten und Triggern zwischen den Schritten, und hänge sie an jede beliebige Kampagne.",
+    introPoints: [
+      "Kombiniere E-Mail, LinkedIn, Anrufe & WhatsApp",
+      "Takte Schritte mit Wartezeiten und Triggern",
+      "Nutze eine bewährte Kadenz über mehrere Kampagnen",
+      "Verfolge die Antwortquote pro Sequenz",
+    ],
+    steps: (n: number) => `${n} ${n === 1 ? "Schritt" : "Schritte"}`,
+    usedBy: (n: number) => `${n} ${n === 1 ? "Kampagne" : "Kampagnen"}`,
+    replyRate: "Antwortquote",
+    updated: (d: string) => `Aktualisiert am ${d}`,
+    edit: "Bearbeiten",
+    duplicate: "Duplizieren",
+    delete: "Löschen",
+    duplicated: "Sequenz dupliziert",
+    deleted: "Sequenz gelöscht",
+    deleteTitle: "Sequenz löschen?",
+    deleteDesc: (name: string) =>
+      `„${name}“ wird entfernt. Kampagnen, die sie bereits nutzen, behalten ihre Schritte.`,
+    deleteConfirm: "Löschen",
+    more: "Weitere Aktionen",
+    search: "Sequenzen suchen…",
+    viewCards: "Karten",
+    viewTable: "Tabelle",
+    exportLabel: "Exportieren",
+    exported: "Sequenzen als CSV exportiert",
+    noResults: "Keine Sequenzen entsprechen deiner Suche.",
+    sortRecent: "Zuletzt aktualisiert",
+    sortName: "Name (A–Z)",
+    sortReply: "Antwortquote",
+    sortUsage: "Am häufigsten genutzt",
+    colName: "Sequenz",
+    colSteps: "Schritte",
+    colFlow: "Kanäle",
+    colUsedBy: "Kampagnen",
+    colReply: "Antwortquote",
+    colUpdated: "Aktualisiert",
+  },
+  pt: {
+    title: "Sequências",
+    description: "Cadências multicanal reutilizáveis que as suas campanhas executam.",
+    newSequence: "Nova sequência",
+    introTitle: "Crie sequências uma vez, reutilize em todo o lado",
+    introDescription:
+      "Desenhe uma cadência multicanal de vários passos — email, LinkedIn, chamadas, WhatsApp e até chamadas com IA — com esperas e acionadores entre passos, e associe-a a qualquer campanha.",
+    introPoints: [
+      "Combine email, LinkedIn, chamadas e WhatsApp",
+      "Programe passos com esperas e acionadores",
+      "Reutilize uma cadência comprovada em várias campanhas",
+      "Acompanhe a taxa de resposta por sequência",
+    ],
+    steps: (n: number) => `${n} ${n === 1 ? "passo" : "passos"}`,
+    usedBy: (n: number) => `${n} ${n === 1 ? "campanha" : "campanhas"}`,
+    replyRate: "taxa de resposta",
+    updated: (d: string) => `Atualizada ${d}`,
+    edit: "Editar",
+    duplicate: "Duplicar",
+    delete: "Eliminar",
+    duplicated: "Sequência duplicada",
+    deleted: "Sequência eliminada",
+    deleteTitle: "Eliminar sequência?",
+    deleteDesc: (name: string) =>
+      `"${name}" será removida. As campanhas que já a usam mantêm os seus passos.`,
+    deleteConfirm: "Eliminar",
+    more: "Mais ações",
+    search: "Pesquisar sequências…",
+    viewCards: "Cartões",
+    viewTable: "Tabela",
+    exportLabel: "Exportar",
+    exported: "Sequências exportadas para CSV",
+    noResults: "Nenhuma sequência corresponde à sua pesquisa.",
+    sortRecent: "Atualizadas recentemente",
+    sortName: "Nome (A–Z)",
+    sortReply: "Taxa de resposta",
+    sortUsage: "Mais usadas",
+    colName: "Sequência",
+    colSteps: "Passos",
+    colFlow: "Canais",
+    colUsedBy: "Campanhas",
+    colReply: "Taxa de resposta",
+    colUpdated: "Atualizada",
+  },
+  pt_BR: {
+    title: "Sequências",
+    description: "Cadências multicanal reutilizáveis que suas campanhas executam.",
+    newSequence: "Nova sequência",
+    introTitle: "Crie sequências uma vez, reutilize em todo lugar",
+    introDescription:
+      "Desenhe uma cadência multicanal de várias etapas — email, LinkedIn, ligações, WhatsApp e até ligações com IA — com esperas e gatilhos entre as etapas, e associe-a a qualquer campanha.",
+    introPoints: [
+      "Combine email, LinkedIn, ligações e WhatsApp",
+      "Programe etapas com esperas e gatilhos",
+      "Reutilize uma cadência comprovada em várias campanhas",
+      "Acompanhe a taxa de resposta por sequência",
+    ],
+    steps: (n: number) => `${n} ${n === 1 ? "etapa" : "etapas"}`,
+    usedBy: (n: number) => `${n} ${n === 1 ? "campanha" : "campanhas"}`,
+    replyRate: "taxa de resposta",
+    updated: (d: string) => `Atualizada ${d}`,
+    edit: "Editar",
+    duplicate: "Duplicar",
+    delete: "Excluir",
+    duplicated: "Sequência duplicada",
+    deleted: "Sequência excluída",
+    deleteTitle: "Excluir sequência?",
+    deleteDesc: (name: string) =>
+      `"${name}" será removida. As campanhas que já a usam mantêm suas etapas.`,
+    deleteConfirm: "Excluir",
+    more: "Mais ações",
+    search: "Buscar sequências…",
+    viewCards: "Cartões",
+    viewTable: "Tabela",
+    exportLabel: "Exportar",
+    exported: "Sequências exportadas para CSV",
+    noResults: "Nenhuma sequência corresponde à sua busca.",
+    sortRecent: "Atualizadas recentemente",
+    sortName: "Nome (A–Z)",
+    sortReply: "Taxa de resposta",
+    sortUsage: "Mais usadas",
+    colName: "Sequência",
+    colSteps: "Etapas",
+    colFlow: "Canais",
+    colUsedBy: "Campanhas",
+    colReply: "Taxa de resposta",
+    colUpdated: "Atualizada",
   },
 } as const
 
@@ -314,7 +534,7 @@ function SequenceCard({
 }: {
   seq: SequenceItem
   c: Copy
-  locale: "en" | "es"
+  locale: Locale
   onEdit: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -392,7 +612,7 @@ function ChannelFlow({
   locale,
 }: {
   steps: SequenceChannelType[]
-  locale: "en" | "es"
+  locale: Locale
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
@@ -428,7 +648,7 @@ function SequenceTable({
 }: {
   rows: SequenceItem[]
   c: Copy
-  locale: "en" | "es"
+  locale: Locale
   onOpen: () => void
   onDuplicate: (seq: SequenceItem) => void
   onDelete: (seq: SequenceItem) => void

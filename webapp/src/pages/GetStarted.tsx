@@ -315,6 +315,551 @@ const COPY = {
       },
     } as Record<SetupTaskId, { title: string; description: string }>,
   },
+  it: {
+    title: "Inizia",
+    description:
+      "Completa la configurazione del tuo spazio di lavoro per sfruttare al meglio Kombo.",
+    guidedTitle: "Nuovo qui? Fai la configurazione guidata",
+    guidedDesc:
+      "Un percorso di 2 minuti per personalizzare Kombo in base al tuo team, CRM e strumenti.",
+    guidedCta: "Inizia l'onboarding",
+    saved: "Salvato",
+    linkAdded: "Link aggiunto",
+    completeCount: (done: number, total: number) =>
+      `${done} di ${total} completati`,
+    allSet: "Tutto pronto 🎉",
+    exploreTitle: "Esplora Kombo",
+    exploreDesc: "Tutto quello che puoi fare — entra e prova una funzionalità.",
+    open: "Apri",
+    features: {
+      search: {
+        title: "Trova prospect",
+        description:
+          "Trova i tuoi clienti ideali con l'IA tra milioni di prospect e aziende.",
+      },
+      lists: {
+        title: "Liste e segmenti",
+        description:
+          "Raggruppa prospect e account in liste che puoi arricchire e iscrivere.",
+      },
+      enrich: {
+        title: "Arricchimento dati",
+        description: "Scopri email verificate e numeri diretti per qualsiasi contatto.",
+      },
+      campaigns: {
+        title: "Sequenze e campagne",
+        description:
+          "Lancia outreach multi-step via email e LinkedIn che si mette in pausa automaticamente alla risposta.",
+      },
+      inbox: {
+        title: "Posta in arrivo unificata",
+        description:
+          "Rispondi a ogni canale in un unico posto, con risposte redatte dall'IA.",
+      },
+      templates: {
+        title: "Modelli di messaggio",
+        description: "Salva i tuoi testi con le migliori performance e personalizzali su larga scala.",
+      },
+      deals: {
+        title: "Pipeline e trattative",
+        description: "Segui i prospect dall'interesse alla vittoria lungo le fasi di esito.",
+      },
+      coach: {
+        title: "Coaching delle chiamate",
+        description: "Valuta le chiamate e ricevi coaching pratico per chiudere più trattative.",
+      },
+      extension: {
+        title: "Estensione Chrome",
+        description: "Prospetta e arricchisci direttamente su LinkedIn e qualsiasi sito web.",
+      },
+      integrations: {
+        title: "CRM e integrazioni",
+        description: "Sincronizza in entrambe le direzioni con HubSpot, Salesforce e il tuo stack.",
+      },
+    } as Record<string, { title: string; description: string }>,
+    setupChecklist: "Lista di configurazione",
+    setupChecklistDesc: "Completa questi passaggi per sbloccare l'esperienza Kombo completa.",
+    roleGoals: "Il tuo ruolo e i tuoi obiettivi",
+    roleGoalsDesc: "Li usiamo per personalizzare le tue dashboard e i suggerimenti dell'IA.",
+    role: "Ruolo",
+    selectRole: "Seleziona il tuo ruolo",
+    goals: "Obiettivi",
+    goalsPlaceholder:
+      "es. Prenota 30 riunioni qualificate al mese, raddoppia la pipeline",
+    save: "Salva",
+    quickLinks: "Link rapidi",
+    quickLinksDesc: "Fissa gli strumenti e le risorse che usi più spesso.",
+    removeLink: (label: string) => `Rimuovi ${label}`,
+    label: "Etichetta",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://esempio.com",
+    addLink: "Aggiungi link",
+    linkedInConnected: "LinkedIn collegato",
+    connected: "Collegato",
+    connect: "Collega",
+    done: "Fatto",
+    inviteTeam: "Invita il team",
+    markDone: "Segna come fatto",
+    tasks: {
+      crm: {
+        title: "Collega il tuo CRM",
+        description: "Sincronizza prospect, attività e trattative in entrambe le direzioni.",
+      },
+      linkedin: {
+        title: "Collega LinkedIn",
+        description: "Arricchisci i profili e invia outreach da Kombo.",
+      },
+      team: {
+        title: "Invita il tuo team",
+        description: "Collabora sulla pipeline e condividi i modelli.",
+      },
+      profile: {
+        title: "Imposta il tuo ruolo e i tuoi obiettivi",
+        description: "Personalizza le dashboard e i suggerimenti dell'IA.",
+      },
+      links: {
+        title: "Aggiungi link rapidi",
+        description: "Fissa gli strumenti che usi ogni giorno.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
+  fr: {
+    title: "Premiers pas",
+    description:
+      "Terminez la configuration de votre espace de travail pour tirer le meilleur parti de Kombo.",
+    guidedTitle: "Nouveau ici ? Suivez la configuration guidée",
+    guidedDesc:
+      "Une visite guidée de 2 minutes pour adapter Kombo à votre équipe, votre CRM et vos outils.",
+    guidedCta: "Démarrer l'intégration",
+    saved: "Enregistré",
+    linkAdded: "Lien ajouté",
+    completeCount: (done: number, total: number) =>
+      `${done} sur ${total} terminés`,
+    allSet: "Tout est prêt 🎉",
+    exploreTitle: "Explorez Kombo",
+    exploreDesc: "Tout ce que vous pouvez faire — lancez-vous et essayez une fonctionnalité.",
+    open: "Ouvrir",
+    features: {
+      search: {
+        title: "Trouver des prospects",
+        description:
+          "Trouvez vos clients idéaux grâce à l'IA parmi des millions de prospects et d'entreprises.",
+      },
+      lists: {
+        title: "Listes et segments",
+        description:
+          "Regroupez prospects et comptes dans des listes que vous pouvez enrichir et inscrire.",
+      },
+      enrich: {
+        title: "Enrichissement de données",
+        description: "Révélez des emails vérifiés et des lignes directes pour tout contact.",
+      },
+      campaigns: {
+        title: "Séquences et campagnes",
+        description:
+          "Menez un outreach multi-étapes par email et LinkedIn qui se met en pause automatiquement dès une réponse.",
+      },
+      inbox: {
+        title: "Boîte de réception unifiée",
+        description:
+          "Répondez sur tous les canaux au même endroit, avec des réponses rédigées par IA.",
+      },
+      templates: {
+        title: "Modèles de messages",
+        description: "Enregistrez vos meilleurs textes et personnalisez-les à grande échelle.",
+      },
+      deals: {
+        title: "Pipeline et transactions",
+        description: "Suivez les prospects, de l'intérêt à la transaction gagnée, à travers les étapes.",
+      },
+      coach: {
+        title: "Coaching d'appels",
+        description: "Évaluez les appels et recevez un coaching concret pour conclure plus de transactions.",
+      },
+      extension: {
+        title: "Extension Chrome",
+        description: "Prospectez et enrichissez directement sur LinkedIn et sur n'importe quel site.",
+      },
+      integrations: {
+        title: "CRM et intégrations",
+        description: "Synchronisez dans les deux sens avec HubSpot, Salesforce et vos outils.",
+      },
+    } as Record<string, { title: string; description: string }>,
+    setupChecklist: "Liste de configuration",
+    setupChecklistDesc: "Cochez ces étapes pour débloquer toute l'expérience Kombo.",
+    roleGoals: "Votre rôle et vos objectifs",
+    roleGoalsDesc: "Nous les utilisons pour personnaliser vos tableaux de bord et les suggestions de l'IA.",
+    role: "Rôle",
+    selectRole: "Sélectionnez votre rôle",
+    goals: "Objectifs",
+    goalsPlaceholder:
+      "ex. Prendre 30 rendez-vous qualifiés par mois, doubler le pipeline",
+    save: "Enregistrer",
+    quickLinks: "Liens rapides",
+    quickLinksDesc: "Épinglez les outils et ressources que vous utilisez le plus.",
+    removeLink: (label: string) => `Supprimer ${label}`,
+    label: "Libellé",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://exemple.com",
+    addLink: "Ajouter un lien",
+    linkedInConnected: "LinkedIn connecté",
+    connected: "Connecté",
+    connect: "Connecter",
+    done: "Terminé",
+    inviteTeam: "Inviter l'équipe",
+    markDone: "Marquer comme terminé",
+    tasks: {
+      crm: {
+        title: "Connectez votre CRM",
+        description: "Synchronisez prospects, activités et transactions dans les deux sens.",
+      },
+      linkedin: {
+        title: "Connectez LinkedIn",
+        description: "Enrichissez les profils et envoyez des messages depuis Kombo.",
+      },
+      team: {
+        title: "Invitez votre équipe",
+        description: "Collaborez sur le pipeline et partagez des modèles.",
+      },
+      profile: {
+        title: "Définissez votre rôle et vos objectifs",
+        description: "Personnalisez les tableaux de bord et les recommandations de l'IA.",
+      },
+      links: {
+        title: "Ajoutez des liens rapides",
+        description: "Épinglez les outils que vous utilisez chaque jour.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
+  de: {
+    title: "Erste Schritte",
+    description:
+      "Richte deinen Workspace fertig ein, um das Beste aus Kombo herauszuholen.",
+    guidedTitle: "Neu hier? Starte die geführte Einrichtung",
+    guidedDesc:
+      "Eine 2-minütige Tour, um Kombo auf dein Team, CRM und deine Tools zuzuschneiden.",
+    guidedCta: "Onboarding starten",
+    saved: "Gespeichert",
+    linkAdded: "Link hinzugefügt",
+    completeCount: (done: number, total: number) =>
+      `${done} von ${total} erledigt`,
+    allSet: "Du bist startklar 🎉",
+    exploreTitle: "Kombo entdecken",
+    exploreDesc: "Alles, was du tun kannst — leg los und probiere eine Funktion aus.",
+    open: "Öffnen",
+    features: {
+      search: {
+        title: "Prospects finden",
+        description:
+          "Finde deine idealen Kunden mit KI unter Millionen von Prospects & Unternehmen.",
+      },
+      lists: {
+        title: "Listen & Segmente",
+        description:
+          "Gruppiere Prospects und Accounts in Listen, die du anreichern und einschreiben kannst.",
+      },
+      enrich: {
+        title: "Datenanreicherung",
+        description: "Decke verifizierte E-Mails und Durchwahlen für jeden Kontakt auf.",
+      },
+      campaigns: {
+        title: "Sequenzen & Kampagnen",
+        description:
+          "Führe mehrstufige Ansprache über E-Mail und LinkedIn durch, die bei einer Antwort automatisch pausiert.",
+      },
+      inbox: {
+        title: "Einheitlicher Posteingang",
+        description:
+          "Antworte auf jeden Kanal an einem Ort, mit KI-generierten Antwortentwürfen.",
+      },
+      templates: {
+        title: "Nachrichtenvorlagen",
+        description: "Speichere deine erfolgreichsten Texte und personalisiere sie im großen Maßstab.",
+      },
+      deals: {
+        title: "Pipeline & Deals",
+        description: "Verfolge Prospects über die Erfolgsphasen von interessiert bis gewonnen.",
+      },
+      coach: {
+        title: "Call-Coaching",
+        description: "Bewerte Anrufe und erhalte umsetzbares Coaching, um mehr Deals zu gewinnen.",
+      },
+      extension: {
+        title: "Chrome-Erweiterung",
+        description: "Prospecting und Anreicherung direkt auf LinkedIn und jeder Website.",
+      },
+      integrations: {
+        title: "CRM & Integrationen",
+        description: "Synchronisiere bidirektional mit HubSpot, Salesforce und deinem Stack.",
+      },
+    } as Record<string, { title: string; description: string }>,
+    setupChecklist: "Einrichtungs-Checkliste",
+    setupChecklistDesc: "Erledige diese Schritte, um die volle Kombo-Erfahrung freizuschalten.",
+    roleGoals: "Deine Rolle & Ziele",
+    roleGoalsDesc: "Wir nutzen das, um deine Dashboards und KI-Vorschläge anzupassen.",
+    role: "Rolle",
+    selectRole: "Wähle deine Rolle",
+    goals: "Ziele",
+    goalsPlaceholder:
+      "z. B. 30 qualifizierte Meetings/Monat buchen, Pipeline verdoppeln",
+    save: "Speichern",
+    quickLinks: "Schnellzugriffe",
+    quickLinksDesc: "Pinne die Tools und Ressourcen an, die du am häufigsten brauchst.",
+    removeLink: (label: string) => `${label} entfernen`,
+    label: "Bezeichnung",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://beispiel.com",
+    addLink: "Link hinzufügen",
+    linkedInConnected: "LinkedIn verbunden",
+    connected: "Verbunden",
+    connect: "Verbinden",
+    done: "Erledigt",
+    inviteTeam: "Team einladen",
+    markDone: "Als erledigt markieren",
+    tasks: {
+      crm: {
+        title: "Verbinde dein CRM",
+        description: "Synchronisiere Prospects, Aktivitäten und Deals bidirektional.",
+      },
+      linkedin: {
+        title: "Verbinde LinkedIn",
+        description: "Reichere Profile an und sende Ansprache direkt aus Kombo.",
+      },
+      team: {
+        title: "Lade dein Team ein",
+        description: "Arbeite gemeinsam an der Pipeline und teile Vorlagen.",
+      },
+      profile: {
+        title: "Lege deine Rolle & Ziele fest",
+        description: "Passe Dashboards und KI-Empfehlungen an.",
+      },
+      links: {
+        title: "Schnellzugriffe hinzufügen",
+        description: "Pinne die Tools an, die du täglich nutzt.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
+  pt: {
+    title: "Começar",
+    description:
+      "Termine de configurar o seu espaço de trabalho para tirar o máximo partido do Kombo.",
+    guidedTitle: "Novo por aqui? Faça a configuração guiada",
+    guidedDesc:
+      "Um percurso de 2 minutos para adaptar o Kombo à sua equipa, CRM e ferramentas.",
+    guidedCta: "Iniciar onboarding",
+    saved: "Guardado",
+    linkAdded: "Link adicionado",
+    completeCount: (done: number, total: number) =>
+      `${done} de ${total} concluídos`,
+    allSet: "Está tudo pronto 🎉",
+    exploreTitle: "Explore o Kombo",
+    exploreDesc: "Tudo o que pode fazer — entre e experimente uma funcionalidade.",
+    open: "Abrir",
+    features: {
+      search: {
+        title: "Encontrar prospects",
+        description:
+          "Encontre os seus clientes ideais com IA entre milhões de prospects e empresas.",
+      },
+      lists: {
+        title: "Listas e segmentos",
+        description:
+          "Agrupe prospects e contas em listas que pode enriquecer e inscrever.",
+      },
+      enrich: {
+        title: "Enriquecimento de dados",
+        description: "Revele emails verificados e telefones diretos de qualquer contacto.",
+      },
+      campaigns: {
+        title: "Sequências e campanhas",
+        description:
+          "Lance outreach em várias etapas por email e LinkedIn que pausa automaticamente ao receber resposta.",
+      },
+      inbox: {
+        title: "Caixa de entrada unificada",
+        description:
+          "Responda a todos os canais num só lugar, com respostas redigidas por IA.",
+      },
+      templates: {
+        title: "Modelos de mensagens",
+        description: "Guarde os seus textos com melhor desempenho e personalize-os em escala.",
+      },
+      deals: {
+        title: "Pipeline e negócios",
+        description: "Acompanhe os prospects desde o interesse até ao negócio ganho, ao longo das etapas.",
+      },
+      coach: {
+        title: "Coaching de chamadas",
+        description: "Avalie chamadas e receba coaching acionável para ganhar mais negócios.",
+      },
+      extension: {
+        title: "Extensão Chrome",
+        description: "Prospete e enriqueça diretamente no LinkedIn e em qualquer site.",
+      },
+      integrations: {
+        title: "CRM e integrações",
+        description: "Sincronize em ambos os sentidos com HubSpot, Salesforce e as suas ferramentas.",
+      },
+    } as Record<string, { title: string; description: string }>,
+    setupChecklist: "Lista de configuração",
+    setupChecklistDesc: "Conclua estes passos para desbloquear a experiência completa do Kombo.",
+    roleGoals: "O seu papel e objetivos",
+    roleGoalsDesc: "Usamos isto para personalizar os seus painéis e as sugestões de IA.",
+    role: "Função",
+    selectRole: "Selecione a sua função",
+    goals: "Objetivos",
+    goalsPlaceholder:
+      "ex. Marcar 30 reuniões qualificadas por mês, duplicar o pipeline",
+    save: "Guardar",
+    quickLinks: "Links rápidos",
+    quickLinksDesc: "Fixe as ferramentas e recursos que mais utiliza.",
+    removeLink: (label: string) => `Remover ${label}`,
+    label: "Etiqueta",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://exemplo.com",
+    addLink: "Adicionar link",
+    linkedInConnected: "LinkedIn conectado",
+    connected: "Conectado",
+    connect: "Conectar",
+    done: "Concluído",
+    inviteTeam: "Convidar equipa",
+    markDone: "Marcar como concluído",
+    tasks: {
+      crm: {
+        title: "Conecte o seu CRM",
+        description: "Sincronize prospects, atividades e negócios em ambos os sentidos.",
+      },
+      linkedin: {
+        title: "Conecte o LinkedIn",
+        description: "Enriqueça perfis e envie outreach a partir do Kombo.",
+      },
+      team: {
+        title: "Convide a sua equipa",
+        description: "Colabore no pipeline e partilhe modelos.",
+      },
+      profile: {
+        title: "Defina o seu papel e objetivos",
+        description: "Personalize os painéis e as recomendações de IA.",
+      },
+      links: {
+        title: "Adicione links rápidos",
+        description: "Fixe as ferramentas que usa todos os dias.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
+  pt_BR: {
+    title: "Começar",
+    description:
+      "Termine de configurar seu workspace para aproveitar ao máximo o Kombo.",
+    guidedTitle: "Novo por aqui? Faça a configuração guiada",
+    guidedDesc:
+      "Um tour de 2 minutos para adaptar o Kombo ao seu time, CRM e ferramentas.",
+    guidedCta: "Iniciar onboarding",
+    saved: "Salvo",
+    linkAdded: "Link adicionado",
+    completeCount: (done: number, total: number) =>
+      `${done} de ${total} concluídos`,
+    allSet: "Está tudo pronto 🎉",
+    exploreTitle: "Explore o Kombo",
+    exploreDesc: "Tudo o que você pode fazer — entre e experimente um recurso.",
+    open: "Abrir",
+    features: {
+      search: {
+        title: "Encontrar prospects",
+        description:
+          "Encontre seus clientes ideais com IA entre milhões de prospects e empresas.",
+      },
+      lists: {
+        title: "Listas e segmentos",
+        description:
+          "Agrupe prospects e contas em listas que você pode enriquecer e inscrever.",
+      },
+      enrich: {
+        title: "Enriquecimento de dados",
+        description: "Revele emails verificados e telefones diretos de qualquer contato.",
+      },
+      campaigns: {
+        title: "Sequências e campanhas",
+        description:
+          "Dispare outreach em várias etapas por email e LinkedIn que pausa automaticamente ao receber uma resposta.",
+      },
+      inbox: {
+        title: "Caixa de entrada unificada",
+        description:
+          "Responda a todos os canais em um só lugar, com respostas redigidas por IA.",
+      },
+      templates: {
+        title: "Modelos de mensagens",
+        description: "Salve seus textos de melhor desempenho e personalize-os em escala.",
+      },
+      deals: {
+        title: "Pipeline e negócios",
+        description: "Acompanhe os prospects do interesse até o negócio ganho, pelas etapas de resultado.",
+      },
+      coach: {
+        title: "Coaching de ligações",
+        description: "Avalie ligações e receba coaching prático para fechar mais negócios.",
+      },
+      extension: {
+        title: "Extensão Chrome",
+        description: "Prospecte e enriqueça direto no LinkedIn e em qualquer site.",
+      },
+      integrations: {
+        title: "CRM e integrações",
+        description: "Sincronize nos dois sentidos com HubSpot, Salesforce e seu stack.",
+      },
+    } as Record<string, { title: string; description: string }>,
+    setupChecklist: "Checklist de configuração",
+    setupChecklistDesc: "Complete estes passos para desbloquear toda a experiência do Kombo.",
+    roleGoals: "Seu papel e objetivos",
+    roleGoalsDesc: "Usamos isso para personalizar seus painéis e as sugestões de IA.",
+    role: "Função",
+    selectRole: "Selecione sua função",
+    goals: "Objetivos",
+    goalsPlaceholder:
+      "ex. Agendar 30 reuniões qualificadas por mês, dobrar o pipeline",
+    save: "Salvar",
+    quickLinks: "Links rápidos",
+    quickLinksDesc: "Fixe as ferramentas e recursos que você mais usa.",
+    removeLink: (label: string) => `Remover ${label}`,
+    label: "Etiqueta",
+    labelPlaceholder: "LinkedIn Sales Navigator",
+    url: "URL",
+    urlPlaceholder: "https://exemplo.com",
+    addLink: "Adicionar link",
+    linkedInConnected: "LinkedIn conectado",
+    connected: "Conectado",
+    connect: "Conectar",
+    done: "Concluído",
+    inviteTeam: "Convidar time",
+    markDone: "Marcar como concluído",
+    tasks: {
+      crm: {
+        title: "Conecte seu CRM",
+        description: "Sincronize prospects, atividades e negócios nos dois sentidos.",
+      },
+      linkedin: {
+        title: "Conecte o LinkedIn",
+        description: "Enriqueça perfis e envie outreach a partir do Kombo.",
+      },
+      team: {
+        title: "Convide seu time",
+        description: "Colabore no pipeline e compartilhe modelos.",
+      },
+      profile: {
+        title: "Defina seu papel e objetivos",
+        description: "Personalize os painéis e as recomendações de IA.",
+      },
+      links: {
+        title: "Adicione links rápidos",
+        description: "Fixe as ferramentas que você usa todos os dias.",
+      },
+    } as Record<SetupTaskId, { title: string; description: string }>,
+  },
 } as const
 
 export default function GetStarted() {

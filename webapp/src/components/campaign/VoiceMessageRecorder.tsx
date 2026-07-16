@@ -26,6 +26,51 @@ const COPY = {
     uploadError:
       "No se pudo leer ese archivo de audio — prueba con MP3, M4A, WAV u OGG.",
   },
+  it: {
+    record: "Registra messaggio vocale",
+    upload: "Carica file audio",
+    recording: "Registrazione",
+    stop: "Interrompi",
+    micDenied: "Accesso al microfono negato — consentilo nel browser per registrare.",
+    uploadError:
+      "Impossibile leggere quel file audio — prova con MP3, M4A, WAV o OGG.",
+  },
+  fr: {
+    record: "Enregistrer un message vocal",
+    upload: "Importer un fichier audio",
+    recording: "Enregistrement",
+    stop: "Arrêter",
+    micDenied: "Accès au micro refusé — autorisez-le dans votre navigateur pour enregistrer.",
+    uploadError:
+      "Impossible de lire ce fichier audio — essayez MP3, M4A, WAV ou OGG.",
+  },
+  de: {
+    record: "Sprachnachricht aufnehmen",
+    upload: "Audiodatei hochladen",
+    recording: "Aufnahme",
+    stop: "Stopp",
+    micDenied: "Mikrofonzugriff verweigert — erlaube ihn in deinem Browser, um aufzunehmen.",
+    uploadError:
+      "Diese Audiodatei konnte nicht gelesen werden — versuche MP3, M4A, WAV oder OGG.",
+  },
+  pt: {
+    record: "Gravar mensagem de voz",
+    upload: "Carregar ficheiro de áudio",
+    recording: "A gravar",
+    stop: "Parar",
+    micDenied: "Acesso ao microfone negado — permita-o no navegador para gravar.",
+    uploadError:
+      "Não foi possível ler esse ficheiro de áudio — tente MP3, M4A, WAV ou OGG.",
+  },
+  pt_BR: {
+    record: "Gravar mensagem de voz",
+    upload: "Enviar arquivo de áudio",
+    recording: "Gravando",
+    stop: "Parar",
+    micDenied: "Acesso ao microfone negado — permita no seu navegador para gravar.",
+    uploadError:
+      "Não foi possível ler esse arquivo de áudio — tente MP3, M4A, WAV ou OGG.",
+  },
 } as const
 
 // A real recorded voice note — getUserMedia + MediaRecorder capture, with

@@ -20,6 +20,41 @@ const COPY = {
     confirm: "Descartar y salir",
     cancel: "Quedarme en esta página",
   },
+  it: {
+    title: "Scartare le modifiche non salvate?",
+    description:
+      "Hai modifiche alla sequenza non ancora applicate. Se esci da questa pagina andranno perse.",
+    confirm: "Scarta ed esci",
+    cancel: "Resta in questa pagina",
+  },
+  fr: {
+    title: "Abandonner les modifications non enregistrées ?",
+    description:
+      "Vous avez des modifications de séquence qui n'ont pas encore été appliquées. Si vous quittez cette page, elles seront perdues.",
+    confirm: "Abandonner et quitter",
+    cancel: "Rester sur cette page",
+  },
+  de: {
+    title: "Nicht gespeicherte Änderungen verwerfen?",
+    description:
+      "Du hast Sequenz-Änderungen, die noch nicht übernommen wurden. Wenn du diese Seite verlässt, gehen sie verloren.",
+    confirm: "Verwerfen und verlassen",
+    cancel: "Auf dieser Seite bleiben",
+  },
+  pt: {
+    title: "Descartar as alterações não guardadas?",
+    description:
+      "Tem edições da sequência que ainda não foram aplicadas. Se sair desta página, elas serão perdidas.",
+    confirm: "Descartar e sair",
+    cancel: "Ficar nesta página",
+  },
+  pt_BR: {
+    title: "Descartar as alterações não salvas?",
+    description:
+      "Você tem edições da sequência que ainda não foram aplicadas. Se você sair desta página, elas serão perdidas.",
+    confirm: "Descartar e sair",
+    cancel: "Ficar nesta página",
+  },
 } as const
 
 // Mounted once in AppLayout — intercepts in-app link clicks (and warns on

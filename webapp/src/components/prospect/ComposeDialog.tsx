@@ -26,6 +26,11 @@ import type { Channel, Prospect } from "@/lib/types"
 const COPY = {
   en: { templates: "Templates" },
   es: { templates: "Plantillas" },
+  it: { templates: "Modelli" },
+  fr: { templates: "Modèles" },
+  de: { templates: "Vorlagen" },
+  pt: { templates: "Modelos" },
+  pt_BR: { templates: "Modelos" },
 } as const
 
 function draftFor(prospect: Prospect, channel: Channel): string {

@@ -43,6 +43,61 @@ const COPY = {
     cancel: "Cancelar",
     apply: "Aplicar",
   },
+  it: {
+    title: "Filtra conversazioni",
+    description: "Restringi l'elenco per campagna, esito o referente assegnato.",
+    campaignsGroup: "Campagne",
+    noCampaigns: "Ancora nessuna campagna.",
+    outcomesGroup: "Esiti",
+    teamGroup: "Referente",
+    clearAll: "Cancella tutto",
+    cancel: "Annulla",
+    apply: "Applica",
+  },
+  fr: {
+    title: "Filtrer les conversations",
+    description: "Affinez la liste par campagne, résultat ou responsable assigné.",
+    campaignsGroup: "Campagnes",
+    noCampaigns: "Aucune campagne pour le moment.",
+    outcomesGroup: "Résultats",
+    teamGroup: "Responsable",
+    clearAll: "Tout effacer",
+    cancel: "Annuler",
+    apply: "Appliquer",
+  },
+  de: {
+    title: "Unterhaltungen filtern",
+    description: "Grenze die Liste nach Kampagne, Ergebnis oder zugewiesenem Mitarbeiter ein.",
+    campaignsGroup: "Kampagnen",
+    noCampaigns: "Noch keine Kampagnen.",
+    outcomesGroup: "Ergebnisse",
+    teamGroup: "Owner",
+    clearAll: "Alles löschen",
+    cancel: "Abbrechen",
+    apply: "Anwenden",
+  },
+  pt: {
+    title: "Filtrar conversas",
+    description: "Reduz a lista por campanha, resultado ou responsável atribuído.",
+    campaignsGroup: "Campanhas",
+    noCampaigns: "Ainda não há campanhas.",
+    outcomesGroup: "Resultados",
+    teamGroup: "Responsável",
+    clearAll: "Limpar tudo",
+    cancel: "Cancelar",
+    apply: "Aplicar",
+  },
+  pt_BR: {
+    title: "Filtrar conversas",
+    description: "Reduza a lista por campanha, resultado ou responsável atribuído.",
+    campaignsGroup: "Campanhas",
+    noCampaigns: "Ainda não há campanhas.",
+    outcomesGroup: "Resultados",
+    teamGroup: "Responsável",
+    clearAll: "Limpar tudo",
+    cancel: "Cancelar",
+    apply: "Aplicar",
+  },
 } as const
 
 function nameInitials(name: string): string {
@@ -148,7 +203,7 @@ export function FilterConversationsDialog({
                     onCheckedChange={() => setOutcomes((s) => toggled(s, status))}
                   />
                   <span className={cn("size-2 shrink-0 rounded-full", meta.dot)} />
-                  <span className="truncate">{locale === "es" ? meta.es : meta.en}</span>
+                  <span className="truncate">{meta[locale]}</span>
                 </label>
               )
             })}

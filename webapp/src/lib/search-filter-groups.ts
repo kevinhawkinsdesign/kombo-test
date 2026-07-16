@@ -23,6 +23,20 @@ import {
   type AiQuery,
 } from "@/lib/mock-ai-search"
 import type { FilterSection } from "@/lib/search-facets"
+import type { Locale } from "@/lib/locale"
+
+type Loc = Record<Locale, string>
+function L(
+  en: string,
+  es: string,
+  it: string,
+  fr: string,
+  de: string,
+  pt: string,
+  pt_BR: string
+): Loc {
+  return { en, es, it, fr, de, pt, pt_BR }
+}
 
 // The single typed filter catalog shared by every search surface (the Search
 // page sidebar + modal and the Add-records dialog). Each entry writes into a
@@ -30,7 +44,7 @@ import type { FilterSection } from "@/lib/search-facets"
 // layered on top by the callers.
 export interface FilterGroupDef {
   key: keyof AiQuery // string[] fields only
-  label: { en: string; es: string }
+  label: Loc
   options: string[]
   scope?: AiEntity // undefined = both people and companies
   linkedinOnly?: boolean // shown only when the LinkedIn source is active
@@ -40,31 +54,31 @@ export interface FilterGroupDef {
 
 export const SEARCH_FILTER_GROUPS: FilterGroupDef[] = [
   /* ------------------------- Contact information ------------------------- */
-  { key: "titles", label: { en: "Titles", es: "Cargos" }, options: TITLE_OPTIONS, scope: "people", section: "contact", popular: true },
-  { key: "seniority", label: { en: "Seniority", es: "Antigüedad" }, options: SENIORITY_OPTIONS, scope: "people", section: "contact", popular: true },
-  { key: "departments", label: { en: "Departments", es: "Departamentos" }, options: DEPARTMENT_OPTIONS, scope: "people", section: "contact" },
-  { key: "regions", label: { en: "Regions", es: "Regiones" }, options: REGION_OPTIONS, section: "contact", popular: true },
+  { key: "titles", label: L("Titles", "Cargos", "Ruoli", "Postes", "Berufsbezeichnungen", "Cargos", "Cargos"), options: TITLE_OPTIONS, scope: "people", section: "contact", popular: true },
+  { key: "seniority", label: L("Seniority", "Antigüedad", "Anzianità", "Ancienneté", "Senioritätsstufe", "Senioridade", "Senioridade"), options: SENIORITY_OPTIONS, scope: "people", section: "contact", popular: true },
+  { key: "departments", label: L("Departments", "Departamentos", "Reparti", "Départements", "Abteilungen", "Departamentos", "Departamentos"), options: DEPARTMENT_OPTIONS, scope: "people", section: "contact" },
+  { key: "regions", label: L("Regions", "Regiones", "Regioni", "Régions", "Regionen", "Regiões", "Regiões"), options: REGION_OPTIONS, section: "contact", popular: true },
   // LinkedIn-only people facets (People search filters).
-  { key: "connections", label: { en: "Connections", es: "Conexiones" }, options: CONNECTION_OPTIONS, linkedinOnly: true, section: "contact" },
-  { key: "profileLanguages", label: { en: "Profile languages", es: "Idiomas del perfil" }, options: PROFILE_LANGUAGE_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
-  { key: "serviceCategories", label: { en: "Service categories", es: "Categorías de servicio" }, options: SERVICE_CATEGORY_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
-  { key: "schools", label: { en: "Schools", es: "Centros educativos" }, options: SCHOOL_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
-  { key: "currentCompanies", label: { en: "Current companies", es: "Empresas actuales" }, options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
-  { key: "pastCompanies", label: { en: "Past companies", es: "Empresas anteriores" }, options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
-  { key: "connectionsOf", label: { en: "Connections of", es: "Conexiones de" }, options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
-  { key: "followersOf", label: { en: "Followers of", es: "Seguidores de" }, options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "connections", label: L("Connections", "Conexiones", "Connessioni", "Relations", "Kontakte", "Contactos", "Conexões"), options: CONNECTION_OPTIONS, linkedinOnly: true, section: "contact" },
+  { key: "profileLanguages", label: L("Profile languages", "Idiomas del perfil", "Lingue del profilo", "Langues du profil", "Profilsprachen", "Idiomas do perfil", "Idiomas do perfil"), options: PROFILE_LANGUAGE_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "serviceCategories", label: L("Service categories", "Categorías de servicio", "Categorie di servizio", "Catégories de service", "Servicekategorien", "Categorias de serviço", "Categorias de serviço"), options: SERVICE_CATEGORY_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "schools", label: L("Schools", "Centros educativos", "Scuole", "Écoles", "Schulen", "Escolas", "Escolas"), options: SCHOOL_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "currentCompanies", label: L("Current companies", "Empresas actuales", "Aziende attuali", "Entreprises actuelles", "Aktuelle Unternehmen", "Empresas atuais", "Empresas atuais"), options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "pastCompanies", label: L("Past companies", "Empresas anteriores", "Aziende precedenti", "Entreprises précédentes", "Vorherige Unternehmen", "Empresas anteriores", "Empresas anteriores"), options: COMPANY_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "connectionsOf", label: L("Connections of", "Conexiones de", "Connessioni di", "Relations de", "Kontakte von", "Contactos de", "Conexões de"), options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
+  { key: "followersOf", label: L("Followers of", "Seguidores de", "Follower di", "Abonnés de", "Follower von", "Seguidores de", "Seguidores de"), options: PERSON_NAME_OPTIONS, linkedinOnly: true, scope: "people", section: "contact" },
 
   /* ------------------------- Company information ------------------------- */
-  { key: "industries", label: { en: "Industries", es: "Sectores" }, options: INDUSTRY_OPTIONS, section: "company", popular: true },
-  { key: "headcount", label: { en: "Headcount", es: "Plantilla" }, options: HEADCOUNT_OPTIONS, section: "company", popular: true },
-  { key: "revenue", label: { en: "Revenue", es: "Ingresos" }, options: REVENUE_OPTIONS, section: "company" },
-  { key: "founded", label: { en: "Founded", es: "Año de fundación" }, options: FOUNDED_OPTIONS, scope: "companies", section: "company" },
-  { key: "growth", label: { en: "Headcount growth", es: "Crecimiento de plantilla" }, options: GROWTH_OPTIONS, scope: "companies", section: "company" },
-  { key: "technologies", label: { en: "Technologies", es: "Tecnologías" }, options: TECH_OPTIONS, section: "company" },
-  { key: "jobListings", label: { en: "Job listings on LinkedIn", es: "Ofertas de empleo en LinkedIn" }, options: JOB_LISTING_OPTIONS, linkedinOnly: true, scope: "companies", section: "company" },
+  { key: "industries", label: L("Industries", "Sectores", "Settori", "Secteurs", "Branchen", "Setores", "Setores"), options: INDUSTRY_OPTIONS, section: "company", popular: true },
+  { key: "headcount", label: L("Headcount", "Plantilla", "Organico", "Effectif", "Mitarbeiterzahl", "Efetivo", "Headcount"), options: HEADCOUNT_OPTIONS, section: "company", popular: true },
+  { key: "revenue", label: L("Revenue", "Ingresos", "Fatturato", "Chiffre d'affaires", "Umsatz", "Receita", "Receita"), options: REVENUE_OPTIONS, section: "company" },
+  { key: "founded", label: L("Founded", "Año de fundación", "Anno di fondazione", "Année de fondation", "Gründungsjahr", "Ano de fundação", "Ano de fundação"), options: FOUNDED_OPTIONS, scope: "companies", section: "company" },
+  { key: "growth", label: L("Headcount growth", "Crecimiento de plantilla", "Crescita organico", "Croissance des effectifs", "Personalwachstum", "Crescimento do efetivo", "Crescimento de headcount"), options: GROWTH_OPTIONS, scope: "companies", section: "company" },
+  { key: "technologies", label: L("Technologies", "Tecnologías", "Tecnologie", "Technologies", "Technologien", "Tecnologias", "Tecnologias"), options: TECH_OPTIONS, section: "company" },
+  { key: "jobListings", label: L("Job listings on LinkedIn", "Ofertas de empleo en LinkedIn", "Offerte di lavoro su LinkedIn", "Offres d'emploi sur LinkedIn", "Stellenanzeigen auf LinkedIn", "Ofertas de emprego no LinkedIn", "Vagas de emprego no LinkedIn"), options: JOB_LISTING_OPTIONS, linkedinOnly: true, scope: "companies", section: "company" },
 
   /* -------------------------------- Intent ------------------------------- */
-  { key: "intent", label: { en: "Buyer intent", es: "Intención de compra" }, options: INTENT_OPTIONS, scope: "people", section: "intent" },
-  { key: "signals", label: { en: "Signals", es: "Señales" }, options: SIGNAL_OPTIONS, section: "intent", popular: true },
-  { key: "linkedin", label: { en: "Sales Nav", es: "Sales Nav" }, options: LINKEDIN_OPTIONS, linkedinOnly: true, scope: "people", section: "intent" },
+  { key: "intent", label: L("Buyer intent", "Intención de compra", "Intenzione d'acquisto", "Intention d'achat", "Kaufabsicht", "Intenção de compra", "Intenção de compra"), options: INTENT_OPTIONS, scope: "people", section: "intent" },
+  { key: "signals", label: L("Signals", "Señales", "Segnali", "Signaux", "Signale", "Sinais", "Sinais"), options: SIGNAL_OPTIONS, section: "intent", popular: true },
+  { key: "linkedin", label: L("Sales Nav", "Sales Nav", "Sales Nav", "Sales Nav", "Sales Nav", "Sales Nav", "Sales Nav"), options: LINKEDIN_OPTIONS, linkedinOnly: true, scope: "people", section: "intent" },
 ]

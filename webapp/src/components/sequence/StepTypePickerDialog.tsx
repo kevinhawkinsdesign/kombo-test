@@ -152,6 +152,286 @@ const COPY = {
       },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
+  it: {
+    title: "Aggiungi un passaggio",
+    description: "Scegli cosa succede dopo nella sequenza.",
+    cancel: "Annulla",
+    tabSteps: "Passaggi",
+    tabConditions: "Condizioni",
+    useTemplate: "Usa un modello",
+    usePrompt: "Usa un prompt",
+    orPickChannel: "Oppure scegli un canale",
+    groups: {
+      email: "Email",
+      linkedin: "LinkedIn",
+      messaging: "Telefono e messaggistica",
+      aiPowered: "Con IA",
+      other: "Altro",
+    } as Record<GroupKey, string>,
+    channels: {
+      email: { label: "Email", description: "Invia un'email personalizzata." },
+      whatsapp: { label: "WhatsApp", description: "Invia un messaggio WhatsApp." },
+      call: { label: "Chiamata", description: "Registra una chiamata da effettuare." },
+      ai_call: {
+        label: "Chiamata vocale IA — ElevenLabs",
+        description: "Effettua una chiamata vocale con IA agentica.",
+      },
+      linkedin_message: {
+        label: "Messaggio LinkedIn",
+        description: "Invia un messaggio di collegamento su LinkedIn.",
+      },
+      linkedin_dm: {
+        label: "Messaggio diretto LinkedIn",
+        description: "Invia un messaggio diretto su LinkedIn.",
+      },
+      linkedin_inmail: {
+        label: "InMail di LinkedIn",
+        description: "Invia un InMail su LinkedIn.",
+      },
+      manual: {
+        label: "Attività manuale",
+        description: "Crea un'attività manuale per il commerciale.",
+      },
+    } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "Ha risposto",
+        description: "Divide la sequenza a seconda che rispondano o no.",
+      },
+      open: {
+        label: "Ha aperto",
+        description: "Divide la sequenza a seconda che aprano il messaggio.",
+      },
+      click: {
+        label: "Ha cliccato un link",
+        description: "Divide la sequenza a seconda che clicchino un link.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
+  },
+  fr: {
+    title: "Ajouter une étape",
+    description: "Choisissez la suite de la séquence.",
+    cancel: "Annuler",
+    tabSteps: "Étapes",
+    tabConditions: "Conditions",
+    useTemplate: "Utiliser un modèle",
+    usePrompt: "Utiliser un prompt",
+    orPickChannel: "Ou choisissez un canal",
+    groups: {
+      email: "E-mail",
+      linkedin: "LinkedIn",
+      messaging: "Téléphone et messagerie",
+      aiPowered: "Avec IA",
+      other: "Autre",
+    } as Record<GroupKey, string>,
+    channels: {
+      email: { label: "E-mail", description: "Envoyez un e-mail personnalisé." },
+      whatsapp: { label: "WhatsApp", description: "Envoyez un message WhatsApp." },
+      call: { label: "Appel téléphonique", description: "Consignez un appel à passer." },
+      ai_call: {
+        label: "Appel vocal IA — ElevenLabs",
+        description: "Passez un appel vocal IA agentique.",
+      },
+      linkedin_message: {
+        label: "Message LinkedIn",
+        description: "Envoyez un message de connexion LinkedIn.",
+      },
+      linkedin_dm: {
+        label: "Message privé LinkedIn",
+        description: "Envoyez un message privé LinkedIn.",
+      },
+      linkedin_inmail: {
+        label: "InMail LinkedIn",
+        description: "Envoyez un InMail LinkedIn.",
+      },
+      manual: {
+        label: "Tâche manuelle",
+        description: "Créez une tâche manuelle pour le commercial.",
+      },
+    } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "A répondu",
+        description: "Scinde la séquence selon qu'ils répondent ou non.",
+      },
+      open: {
+        label: "A ouvert",
+        description: "Scinde la séquence selon qu'ils ouvrent le message ou non.",
+      },
+      click: {
+        label: "A cliqué sur un lien",
+        description: "Scinde la séquence selon qu'ils cliquent sur un lien ou non.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
+  },
+  de: {
+    title: "Schritt hinzufügen",
+    description: "Wähle, was als Nächstes in der Sequenz passiert.",
+    cancel: "Abbrechen",
+    tabSteps: "Schritte",
+    tabConditions: "Bedingungen",
+    useTemplate: "Vorlage verwenden",
+    usePrompt: "Prompt verwenden",
+    orPickChannel: "Oder wähle einen Kanal",
+    groups: {
+      email: "E-Mail",
+      linkedin: "LinkedIn",
+      messaging: "Telefon & Messaging",
+      aiPowered: "KI-gestützt",
+      other: "Sonstiges",
+    } as Record<GroupKey, string>,
+    channels: {
+      email: { label: "E-Mail", description: "Sende eine personalisierte E-Mail." },
+      whatsapp: { label: "WhatsApp", description: "Sende eine WhatsApp-Nachricht." },
+      call: { label: "Telefonanruf", description: "Erfasse einen zu führenden Anruf." },
+      ai_call: {
+        label: "KI-Sprachanruf — ElevenLabs",
+        description: "Führe einen agentischen KI-Sprachanruf durch.",
+      },
+      linkedin_message: {
+        label: "LinkedIn-Nachricht",
+        description: "Sende eine LinkedIn-Vernetzungsnachricht.",
+      },
+      linkedin_dm: {
+        label: "LinkedIn-Direktnachricht",
+        description: "Sende eine LinkedIn-Direktnachricht.",
+      },
+      linkedin_inmail: {
+        label: "LinkedIn InMail",
+        description: "Sende eine LinkedIn InMail.",
+      },
+      manual: {
+        label: "Manuelle Aufgabe",
+        description: "Erstelle eine manuelle Aufgabe für den Vertriebsmitarbeiter.",
+      },
+    } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "Geantwortet",
+        description: "Teilt die Sequenz danach, ob sie antworten.",
+      },
+      open: {
+        label: "Geöffnet",
+        description: "Teilt die Sequenz danach, ob sie die Nachricht öffnen.",
+      },
+      click: {
+        label: "Link geklickt",
+        description: "Teilt die Sequenz danach, ob sie auf einen Link klicken.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
+  },
+  pt: {
+    title: "Adicionar um passo",
+    description: "Escolha o que acontece a seguir na sequência.",
+    cancel: "Cancelar",
+    tabSteps: "Passos",
+    tabConditions: "Condições",
+    useTemplate: "Usar um modelo",
+    usePrompt: "Usar um prompt",
+    orPickChannel: "Ou escolha um canal",
+    groups: {
+      email: "Email",
+      linkedin: "LinkedIn",
+      messaging: "Telefone e mensagens",
+      aiPowered: "Com IA",
+      other: "Outro",
+    } as Record<GroupKey, string>,
+    channels: {
+      email: { label: "Email", description: "Envie um email personalizado." },
+      whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
+      call: { label: "Chamada", description: "Registe uma chamada a fazer." },
+      ai_call: {
+        label: "Chamada de voz IA — ElevenLabs",
+        description: "Faça uma chamada de voz com um agente de IA.",
+      },
+      linkedin_message: {
+        label: "Mensagem do LinkedIn",
+        description: "Envie uma mensagem de ligação no LinkedIn.",
+      },
+      linkedin_dm: {
+        label: "Mensagem direta do LinkedIn",
+        description: "Envie uma mensagem direta no LinkedIn.",
+      },
+      linkedin_inmail: {
+        label: "InMail do LinkedIn",
+        description: "Envie um InMail no LinkedIn.",
+      },
+      manual: {
+        label: "Tarefa manual",
+        description: "Crie uma tarefa manual para o comercial.",
+      },
+    } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "Respondeu",
+        description: "Divide a sequência consoante respondam ou não.",
+      },
+      open: {
+        label: "Abriu",
+        description: "Divide a sequência consoante abram a mensagem ou não.",
+      },
+      click: {
+        label: "Clicou num link",
+        description: "Divide a sequência consoante cliquem num link ou não.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
+  },
+  pt_BR: {
+    title: "Adicionar uma etapa",
+    description: "Escolha o que acontece em seguida na sequência.",
+    cancel: "Cancelar",
+    tabSteps: "Etapas",
+    tabConditions: "Condições",
+    useTemplate: "Usar um modelo",
+    usePrompt: "Usar um prompt",
+    orPickChannel: "Ou escolha um canal",
+    groups: {
+      email: "Email",
+      linkedin: "LinkedIn",
+      messaging: "Telefone e mensagens",
+      aiPowered: "Com IA",
+      other: "Outro",
+    } as Record<GroupKey, string>,
+    channels: {
+      email: { label: "Email", description: "Envie um email personalizado." },
+      whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
+      call: { label: "Ligação", description: "Registre uma ligação a fazer." },
+      ai_call: {
+        label: "Ligação de voz IA — ElevenLabs",
+        description: "Faça uma ligação de voz com um agente de IA.",
+      },
+      linkedin_message: {
+        label: "Mensagem do LinkedIn",
+        description: "Envie uma mensagem de conexão no LinkedIn.",
+      },
+      linkedin_dm: {
+        label: "Mensagem direta do LinkedIn",
+        description: "Envie uma mensagem direta no LinkedIn.",
+      },
+      linkedin_inmail: {
+        label: "InMail do LinkedIn",
+        description: "Envie um InMail no LinkedIn.",
+      },
+      manual: {
+        label: "Tarefa manual",
+        description: "Crie uma tarefa manual para o representante.",
+      },
+    } as Record<StepChannel, ChannelCardCopy>,
+    conditions: {
+      reply: {
+        label: "Respondeu",
+        description: "Divide a sequência conforme respondam ou não.",
+      },
+      open: {
+        label: "Abriu",
+        description: "Divide a sequência conforme abram a mensagem ou não.",
+      },
+      click: {
+        label: "Clicou em um link",
+        description: "Divide a sequência conforme cliquem em um link ou não.",
+      },
+    } as Record<ConditionKind, ConditionCardCopy>,
+  },
 } as const
 
 interface StepTypePickerDialogProps {

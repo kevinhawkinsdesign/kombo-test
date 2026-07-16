@@ -66,6 +66,36 @@ const ASSIGN_COPY = {
       "Los prospectos que entren en esta playlist se asignan a este compañero.",
     unassigned: "Sin asignar",
   },
+  it: {
+    assignTo: "Proprietario",
+    assignToHint:
+      "I prospect che entrano in questa playlist vengono assegnati a questo collega.",
+    unassigned: "Non assegnato",
+  },
+  fr: {
+    assignTo: "Propriétaire",
+    assignToHint:
+      "Les prospects qui rejoignent cette playlist sont assignés à ce coéquipier.",
+    unassigned: "Non assigné",
+  },
+  de: {
+    assignTo: "Owner",
+    assignToHint:
+      "Prospects, die dieser Playlist beitreten, werden diesem Teammitglied zugewiesen.",
+    unassigned: "Nicht zugewiesen",
+  },
+  pt: {
+    assignTo: "Proprietário",
+    assignToHint:
+      "Os prospects que entram nesta playlist são atribuídos a este colega.",
+    unassigned: "Não atribuído",
+  },
+  pt_BR: {
+    assignTo: "Proprietário",
+    assignToHint:
+      "Os prospects que entram nesta playlist são atribuídos a este colega.",
+    unassigned: "Não atribuído",
+  },
 } as const
 
 const FACETS: { key: keyof Omit<SavedSearchCriteria, "keywords">; label: string; options: string[] }[] = [

@@ -50,6 +50,101 @@ const COPY = {
       "Se pausa automáticamente en cuanto alguien responde",
     ],
   },
+  it: {
+    defaultName: "Multicanale — VP Sales",
+    untitled: "Senza titolo",
+    sequenceSaved: (name: string) => `Sequenza "${name}" salvata`,
+    backToSequences: "Torna alle sequenze",
+    sequenceName: "Nome della sequenza",
+    description:
+      "Progetta i tocchi, i trigger e le ramificazioni di questa sequenza.",
+    saveSequence: "Salva sequenza",
+    introTitle: "Crea sequenze in modo visuale",
+    introDescription:
+      "Trascina i passaggi per riordinarli, ramifica in base a ciò che fanno i prospect e distribuisci i tocchi in parallelo tra email, LinkedIn, WhatsApp e chiamate IA.",
+    introPoints: [
+      "Ordina i passaggi con il drag-and-drop",
+      "Attiva con un ritardo, apertura, clic, risposta o segnale dai dati",
+      "Esegui passaggi in parallelo o ramifica alla risposta",
+      "Si mette in pausa appena qualcuno risponde",
+    ],
+  },
+  fr: {
+    defaultName: "Multicanal — VP Sales",
+    untitled: "Sans titre",
+    sequenceSaved: (name: string) => `Séquence « ${name} » enregistrée`,
+    backToSequences: "Retour aux séquences",
+    sequenceName: "Nom de la séquence",
+    description:
+      "Concevez les touches, les déclencheurs et les branches de cette séquence.",
+    saveSequence: "Enregistrer la séquence",
+    introTitle: "Construisez vos séquences visuellement",
+    introDescription:
+      "Glissez les étapes pour les réordonner, créez des branches selon les actions des prospects et déployez des touches en parallèle sur l'e-mail, LinkedIn, WhatsApp et les appels IA.",
+    introPoints: [
+      "Réordonnez les étapes par glisser-déposer",
+      "Déclenchez sur un délai, une ouverture, un clic, une réponse ou un signal de données",
+      "Exécutez des étapes en parallèle ou branchez sur la réponse",
+      "Mise en pause automatique dès que quelqu'un répond",
+    ],
+  },
+  de: {
+    defaultName: "Multichannel — VP Sales",
+    untitled: "Ohne Titel",
+    sequenceSaved: (name: string) => `Sequenz „${name}“ gespeichert`,
+    backToSequences: "Zurück zu den Sequenzen",
+    sequenceName: "Name der Sequenz",
+    description:
+      "Gestalte die Touchpoints, Trigger und Verzweigungen dieser Sequenz.",
+    saveSequence: "Sequenz speichern",
+    introTitle: "Sequenzen visuell bauen",
+    introDescription:
+      "Ziehe Schritte zum Umsortieren, verzweige nach dem Verhalten der Prospects und fächere Touchpoints parallel über E-Mail, LinkedIn, WhatsApp und KI-Anrufe auf.",
+    introPoints: [
+      "Schritte per Drag-and-drop ordnen",
+      "Auslösen per Wartezeit, Öffnung, Klick, Antwort oder Datensignal",
+      "Schritte parallel ausführen oder bei Antwort verzweigen",
+      "Pausiert automatisch, sobald jemand antwortet",
+    ],
+  },
+  pt: {
+    defaultName: "Multicanal — VP de Vendas",
+    untitled: "Sem título",
+    sequenceSaved: (name: string) => `Sequência "${name}" guardada`,
+    backToSequences: "Voltar às sequências",
+    sequenceName: "Nome da sequência",
+    description:
+      "Desenhe os toques, os acionadores e as ramificações desta sequência.",
+    saveSequence: "Guardar sequência",
+    introTitle: "Crie sequências de forma visual",
+    introDescription:
+      "Arraste passos para reordenar, ramifique consoante o que os prospects fazem e distribua toques em paralelo por email, LinkedIn, WhatsApp e chamadas com IA.",
+    introPoints: [
+      "Ordene passos com arrastar e largar",
+      "Acione com um atraso, abertura, clique, resposta ou sinal de dados",
+      "Execute passos em paralelo ou ramifique na resposta",
+      "Pausa automaticamente assim que alguém responde",
+    ],
+  },
+  pt_BR: {
+    defaultName: "Multicanal — VP de Vendas",
+    untitled: "Sem título",
+    sequenceSaved: (name: string) => `Sequência "${name}" salva`,
+    backToSequences: "Voltar para sequências",
+    sequenceName: "Nome da sequência",
+    description:
+      "Desenhe os toques, os gatilhos e as ramificações desta sequência.",
+    saveSequence: "Salvar sequência",
+    introTitle: "Crie sequências de forma visual",
+    introDescription:
+      "Arraste etapas para reordenar, ramifique conforme o que os prospects fazem e distribua toques em paralelo por email, LinkedIn, WhatsApp e ligações com IA.",
+    introPoints: [
+      "Ordene etapas com arrastar e soltar",
+      "Acione com um atraso, abertura, clique, resposta ou sinal de dados",
+      "Execute etapas em paralelo ou ramifique na resposta",
+      "Pausa automaticamente assim que alguém responde",
+    ],
+  },
 } as const
 
 export default function SequenceBuilderPage() {

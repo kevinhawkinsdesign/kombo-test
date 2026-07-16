@@ -13,21 +13,26 @@ export interface MergeVariable {
   tag: string
   en: string
   es: string
+  it: string
+  fr: string
+  de: string
+  pt: string
+  pt_BR: string
 }
 
 // The tag set every merge-var picker in the app offers, kept in one place so
 // "insert a variable" reads the same everywhere it appears.
 export const MERGE_VARIABLES: MergeVariable[] = [
-  { tag: "first_name", en: "First name", es: "Nombre" },
-  { tag: "last_name", en: "Last name", es: "Apellido" },
-  { tag: "company", en: "Company", es: "Empresa" },
-  { tag: "title", en: "Job title", es: "Cargo" },
-  { tag: "industry", en: "Industry", es: "Sector" },
-  { tag: "city", en: "City", es: "Ciudad" },
-  { tag: "sender", en: "Sender", es: "Remitente" },
-  { tag: "sender_company", en: "Your company", es: "Tu empresa" },
-  { tag: "sender_title", en: "Your title", es: "Tu cargo" },
-  { tag: "calendar_link", en: "Booking link", es: "Enlace de reserva" },
+  { tag: "first_name", en: "First name", es: "Nombre", it: "Nome", fr: "Prénom", de: "Vorname", pt: "Nome", pt_BR: "Nome" },
+  { tag: "last_name", en: "Last name", es: "Apellido", it: "Cognome", fr: "Nom", de: "Nachname", pt: "Apelido", pt_BR: "Sobrenome" },
+  { tag: "company", en: "Company", es: "Empresa", it: "Azienda", fr: "Entreprise", de: "Unternehmen", pt: "Empresa", pt_BR: "Empresa" },
+  { tag: "title", en: "Job title", es: "Cargo", it: "Posizione", fr: "Intitulé de poste", de: "Jobtitel", pt: "Cargo", pt_BR: "Cargo" },
+  { tag: "industry", en: "Industry", es: "Sector", it: "Settore", fr: "Secteur", de: "Branche", pt: "Setor", pt_BR: "Setor" },
+  { tag: "city", en: "City", es: "Ciudad", it: "Città", fr: "Ville", de: "Stadt", pt: "Cidade", pt_BR: "Cidade" },
+  { tag: "sender", en: "Sender", es: "Remitente", it: "Mittente", fr: "Expéditeur", de: "Absender", pt: "Remetente", pt_BR: "Remetente" },
+  { tag: "sender_company", en: "Your company", es: "Tu empresa", it: "La tua azienda", fr: "Votre entreprise", de: "Dein Unternehmen", pt: "A sua empresa", pt_BR: "Sua empresa" },
+  { tag: "sender_title", en: "Your title", es: "Tu cargo", it: "La tua posizione", fr: "Votre poste", de: "Dein Jobtitel", pt: "O seu cargo", pt_BR: "Seu cargo" },
+  { tag: "calendar_link", en: "Booking link", es: "Enlace de reserva", it: "Link di prenotazione", fr: "Lien de réservation", de: "Buchungslink", pt: "Link de marcação", pt_BR: "Link de agendamento" },
 ]
 
 export function prospectMergeData(p: Prospect): Record<string, string> {
