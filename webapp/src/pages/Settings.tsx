@@ -69,12 +69,12 @@ import {
 import { useTheme } from "@/components/theme-provider"
 import { IcpManager } from "@/components/settings/IcpManager"
 import { ProductManager } from "@/components/settings/ProductManager"
+import { SalesMethodologyCard } from "@/components/settings/SalesMethodologyCard"
 import { useAuth } from "@/lib/auth"
 import { useView } from "@/lib/view-context"
 import { team, teams, type TeamMember } from "@/lib/team"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
-import { SALES_METHODOLOGIES } from "@/lib/mock-settings"
 import { integrations } from "@/lib/mock-data"
 import { mcpConnections, connectedToolCount } from "@/lib/mock-network"
 import { cn } from "@/lib/utils"
@@ -166,11 +166,6 @@ const COPY = {
       "The templates and playbook Kai draws from when drafting outreach.",
     manageTemplates: "Manage templates",
     openPlaybook: "Open playbook",
-    salesMethodology: "Sales methodology",
-    salesMethodologyDesc:
-      "Kai uses this to structure call prep and qualification.",
-    methodology: "Methodology",
-    methodologySaved: "Methodology saved",
     appearance: "Appearance",
     appearanceDesc: "Customize how Kombo looks on your device.",
     theme: "Theme",
@@ -317,11 +312,6 @@ const COPY = {
       "Las plantillas y la estrategia que Kai utiliza al redactar el outreach.",
     manageTemplates: "Gestionar plantillas",
     openPlaybook: "Abrir estrategia",
-    salesMethodology: "Metodología de ventas",
-    salesMethodologyDesc:
-      "Kai la usa para estructurar la preparación de llamadas y la cualificación.",
-    methodology: "Metodología",
-    methodologySaved: "Metodología guardada",
     appearance: "Apariencia",
     appearanceDesc: "Personaliza el aspecto de Kombo en tu dispositivo.",
     theme: "Tema",
@@ -470,11 +460,6 @@ const COPY = {
       "I modelli e la strategia che Kai utilizza quando redige l'outreach.",
     manageTemplates: "Gestisci modelli",
     openPlaybook: "Apri strategia",
-    salesMethodology: "Metodologia di vendita",
-    salesMethodologyDesc:
-      "Kai la usa per strutturare la preparazione delle chiamate e la qualificazione.",
-    methodology: "Metodologia",
-    methodologySaved: "Metodologia salvata",
     appearance: "Aspetto",
     appearanceDesc: "Personalizza l'aspetto di Kombo sul tuo dispositivo.",
     theme: "Tema",
@@ -623,11 +608,6 @@ const COPY = {
       "Les modèles et la stratégie que Kai utilise pour rédiger la prospection.",
     manageTemplates: "Gérer les modèles",
     openPlaybook: "Ouvrir la stratégie",
-    salesMethodology: "Méthodologie de vente",
-    salesMethodologyDesc:
-      "Kai l'utilise pour structurer la préparation des appels et la qualification.",
-    methodology: "Méthodologie",
-    methodologySaved: "Méthodologie enregistrée",
     appearance: "Apparence",
     appearanceDesc: "Personnalisez l'apparence de Kombo sur votre appareil.",
     theme: "Thème",
@@ -776,11 +756,6 @@ const COPY = {
       "Die Vorlagen und das Playbook, auf die Kai beim Verfassen von Outreach zurückgreift.",
     manageTemplates: "Vorlagen verwalten",
     openPlaybook: "Playbook öffnen",
-    salesMethodology: "Vertriebsmethodik",
-    salesMethodologyDesc:
-      "Kai nutzt sie, um Gesprächsvorbereitung und Qualifizierung zu strukturieren.",
-    methodology: "Methodik",
-    methodologySaved: "Methodik gespeichert",
     appearance: "Darstellung",
     appearanceDesc: "Passe an, wie Kombo auf deinem Gerät aussieht.",
     theme: "Design",
@@ -929,11 +904,6 @@ const COPY = {
       "Os modelos e a estratégia que o Kai utiliza ao redigir o outreach.",
     manageTemplates: "Gerir modelos",
     openPlaybook: "Abrir estratégia",
-    salesMethodology: "Metodologia de vendas",
-    salesMethodologyDesc:
-      "O Kai usa-a para estruturar a preparação de chamadas e a qualificação.",
-    methodology: "Metodologia",
-    methodologySaved: "Metodologia guardada",
     appearance: "Aspeto",
     appearanceDesc: "Personalize o aspeto do Kombo no seu dispositivo.",
     theme: "Tema",
@@ -1082,11 +1052,6 @@ const COPY = {
       "Os modelos e a estratégia que o Kai usa ao redigir o outreach.",
     manageTemplates: "Gerenciar modelos",
     openPlaybook: "Abrir estratégia",
-    salesMethodology: "Metodologia de vendas",
-    salesMethodologyDesc:
-      "O Kai a usa para estruturar a preparação de ligações e a qualificação.",
-    methodology: "Metodologia",
-    methodologySaved: "Metodologia salva",
     appearance: "Aparência",
     appearanceDesc: "Personalize a aparência do Kombo no seu dispositivo.",
     theme: "Tema",
@@ -1532,34 +1497,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.salesMethodology}</CardTitle>
-              <CardDescription>{c.salesMethodologyDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>{c.methodology}</Label>
-                <Select defaultValue="MEDDIC">
-                  <SelectTrigger className="w-full sm:w-72">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SALES_METHODOLOGIES.map((m) => (
-                      <SelectItem key={m} value={m}>
-                        {m}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end">
-                <Button onClick={() => toast.success(c.methodologySaved)}>
-                  {c.saveChanges}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <SalesMethodologyCard />
         </TabsContent>
 
         {/* BLACKLISTS */}
