@@ -20,12 +20,22 @@ import {
   Link2,
   Columns3,
   Download,
+  Bookmark,
 } from "lucide-react"
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { SavedSearchesControl } from "@/components/common/SavedSearchesControl"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +78,9 @@ import {
   searchCompanies,
   sortLeads,
   sortCompanies,
+  queryTitle,
+  useSavedSearches,
+  savedSearchStore,
   EMPTY_QUERY,
   type AiQuery,
   type AiLead,
@@ -90,6 +103,14 @@ const COPY = {
     search: "Search",
     import: "Import",
     cancel: "Cancel",
+    save: "Save",
+    saveThis: "Save this search",
+    saveSearchDesc:
+      "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
+    saveNameLabel: "Search name",
+    savedToast: "Search saved with its prompt history",
+    loadedToast: "Saved search loaded",
+    removedSaved: "Saved search removed",
     searchPeoplePlaceholder: "Search prospects — e.g. VPs of Sales at SaaS companies",
     searchCompanyPlaceholder: "Search companies — e.g. Series B fintechs hiring sales",
     run: "Search",
@@ -183,6 +204,14 @@ const COPY = {
     search: "Buscar",
     import: "Importar",
     cancel: "Cancelar",
+    save: "Guardar",
+    saveThis: "Guardar esta búsqueda",
+    saveSearchDesc:
+      "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
+    saveNameLabel: "Nombre de la búsqueda",
+    savedToast: "Búsqueda guardada con su historial de prompts",
+    loadedToast: "Búsqueda guardada cargada",
+    removedSaved: "Búsqueda guardada eliminada",
     searchPeoplePlaceholder: "Busca prospectos — p. ej. VPs de Ventas en empresas SaaS",
     searchCompanyPlaceholder: "Busca empresas — p. ej. fintechs Serie B contratando ventas",
     run: "Buscar",
@@ -277,6 +306,14 @@ const COPY = {
     search: "Cerca",
     import: "Importa",
     cancel: "Annulla",
+    save: "Salva",
+    saveThis: "Salva questa ricerca",
+    saveSearchDesc:
+      "Dalle un nome per ritrovarla facilmente — te ne suggeriamo uno in base al tuo prompt e ai filtri.",
+    saveNameLabel: "Nome della ricerca",
+    savedToast: "Ricerca salvata con la cronologia dei prompt",
+    loadedToast: "Ricerca salvata caricata",
+    removedSaved: "Ricerca salvata rimossa",
     searchPeoplePlaceholder: "Cerca prospect — es. VP Sales in aziende SaaS",
     searchCompanyPlaceholder: "Cerca aziende — es. fintech Serie B che assumono nelle vendite",
     run: "Cerca",
@@ -370,6 +407,14 @@ const COPY = {
     search: "Rechercher",
     import: "Importer",
     cancel: "Annuler",
+    save: "Enregistrer",
+    saveThis: "Enregistrer cette recherche",
+    saveSearchDesc:
+      "Donnez-lui un nom pour la retrouver facilement — nous en suggérons un basé sur votre prompt et vos filtres.",
+    saveNameLabel: "Nom de la recherche",
+    savedToast: "Recherche enregistrée avec son historique de prompts",
+    loadedToast: "Recherche enregistrée chargée",
+    removedSaved: "Recherche enregistrée supprimée",
     searchPeoplePlaceholder: "Rechercher des prospects — ex. VP Sales dans des entreprises SaaS",
     searchCompanyPlaceholder:
       "Rechercher des entreprises — ex. fintechs Série B qui recrutent dans la vente",
@@ -470,6 +515,14 @@ const COPY = {
     search: "Suchen",
     import: "Importieren",
     cancel: "Abbrechen",
+    save: "Speichern",
+    saveThis: "Diese Suche speichern",
+    saveSearchDesc:
+      "Gib ihr einen Namen, um sie wiederzufinden — wir haben schon einen anhand deines Prompts und deiner Filter vorgeschlagen.",
+    saveNameLabel: "Name der Suche",
+    savedToast: "Suche mit Prompt-Verlauf gespeichert",
+    loadedToast: "Gespeicherte Suche geladen",
+    removedSaved: "Gespeicherte Suche entfernt",
     searchPeoplePlaceholder: "Prospects suchen — z. B. VP Sales bei SaaS-Unternehmen",
     searchCompanyPlaceholder:
       "Unternehmen suchen — z. B. Fintechs der Serie B, die Vertrieb einstellen",
@@ -565,6 +618,14 @@ const COPY = {
     search: "Pesquisar",
     import: "Importar",
     cancel: "Cancelar",
+    save: "Guardar",
+    saveThis: "Guardar esta pesquisa",
+    saveSearchDesc:
+      "Dá-lhe um nome para a encontrares depois — sugerimos um com base no teu prompt e filtros.",
+    saveNameLabel: "Nome da pesquisa",
+    savedToast: "Pesquisa guardada com o histórico de prompts",
+    loadedToast: "Pesquisa guardada carregada",
+    removedSaved: "Pesquisa guardada removida",
     searchPeoplePlaceholder: "Pesquisa prospects — p. ex. VPs de Vendas em empresas SaaS",
     searchCompanyPlaceholder: "Pesquisa empresas — p. ex. fintechs Série B a contratar vendas",
     run: "Pesquisar",
@@ -661,6 +722,14 @@ const COPY = {
     search: "Buscar",
     import: "Importar",
     cancel: "Cancelar",
+    save: "Salvar",
+    saveThis: "Salvar esta pesquisa",
+    saveSearchDesc:
+      "Dê um nome para encontrá-la depois — sugerimos um com base no seu prompt e filtros.",
+    saveNameLabel: "Nome da pesquisa",
+    savedToast: "Pesquisa salva com o histórico de prompts",
+    loadedToast: "Pesquisa salva carregada",
+    removedSaved: "Pesquisa salva removida",
     searchPeoplePlaceholder: "Busque prospects — ex. VPs de Vendas em empresas SaaS",
     searchCompanyPlaceholder: "Busque empresas — ex. fintechs Série B contratando vendas",
     run: "Buscar",
@@ -828,6 +897,12 @@ export function AddRecordsDialog({
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const [saveDialogOpen, setSaveDialogOpen] = React.useState(false)
+  const [saveName, setSaveName] = React.useState("")
+
+  // Same saved-AI-search store the Search page reads/writes — a search built
+  // here should be reloadable from Search.tsx and vice versa.
+  const savedSearches = useSavedSearches()
 
   // Customizable result columns — the same shared registry + ColumnManager the
   // Search page uses, so the add-modal exposes the identical columns + picker.
@@ -850,6 +925,8 @@ export function AddRecordsDialog({
     setPerCompanyCap(null)
     setColumnsOpen(false)
     setConfirmOpen(false)
+    setSaveDialogOpen(false)
+    setSaveName("")
   }
   if (!open && wasOpen) setWasOpen(false)
 
@@ -880,6 +957,36 @@ export function AddRecordsDialog({
     setQuery((prev) => ({ ...interpretPrompt(input).query, facets: prev.facets }))
     setSelected(new Set())
     setPage(0)
+  }
+
+  // Save/reload flow mirrors Search.tsx's: name-before-save dialog, then the
+  // same savedSearchStore so a search built here shows up there too.
+  function openSaveDialog() {
+    setSaveName(queryTitle(query, entity))
+    setSaveDialogOpen(true)
+  }
+  function confirmSave() {
+    savedSearchStore.create({
+      name: saveName.trim() || queryTitle(query, entity),
+      entity,
+      query,
+      prompt: input,
+      messages: [],
+      resultCount: total,
+    })
+    toast.success(c.savedToast)
+    setSaveDialogOpen(false)
+  }
+  function loadSavedSearch(id: string) {
+    const s = savedSearches.find((x) => x.id === id)
+    if (!s) return
+    setEntity(s.entity)
+    setQuery(s.query)
+    setInput(s.prompt)
+    setSelected(new Set())
+    setPage(0)
+    setPerCompanyCap(null)
+    toast.success(c.loadedToast)
   }
   function handleImportFile() {
     toast.success(c.importingFile)
@@ -1071,6 +1178,12 @@ export function AddRecordsDialog({
   // here); capLeads is pure and cheap.
   const cappedLeads = capLeads(leads, entity === "people" ? perCompanyCap : null)
   const total = entity === "people" ? cappedLeads.length : companies.length
+  // A fixed entry point (allowEntityToggle false) only ever adds one entity —
+  // hide saved searches for the other one so loading a saved search can't
+  // silently switch what this modal is scoped to.
+  const relevantSavedSearches = allowEntityToggle
+    ? savedSearches
+    : savedSearches.filter((s) => s.entity === entity)
   const allIds =
     entity === "people"
       ? cappedLeads.map((l) => l.id)
@@ -1125,7 +1238,23 @@ export function AddRecordsDialog({
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton fullScreen>
+      <DialogContent
+        showCloseButton
+        fullScreen
+        // A nested Dialog (Columns/AddCostConfirm/save-search-name) portals to
+        // document.body just like this one, so by DOM containment a click
+        // inside it always reads as "outside" this dialog's content to
+        // Radix — without this it dismisses the whole Add modal (and the
+        // search/filters under it) instead of just the nested one. Pointer
+        // clicks landing inside another dialog-content are ignored; losing
+        // focus to the nested dialog isn't a "click outside" at all, so
+        // that path is ignored unconditionally.
+        onPointerDownOutside={(e) => {
+          const target = e.detail.originalEvent.target as Element | null
+          if (target?.closest('[data-slot="dialog-content"]')) e.preventDefault()
+        }}
+        onFocusOutside={(e) => e.preventDefault()}
+      >
         <>
         <header className="relative flex flex-wrap items-center gap-x-6 gap-y-3 border-b px-6 py-3 pr-14">
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
@@ -1343,6 +1472,24 @@ export function AddRecordsDialog({
                     <Columns3 className="size-4" />
                     <span className="hidden sm:inline">{c.columns}</span>
                   </Button>
+                  <Button
+                    variant="outline"
+                    className="h-10"
+                    onClick={openSaveDialog}
+                    disabled={total === 0}
+                    aria-label={c.saveThis}
+                  >
+                    <Bookmark className="size-4" />
+                    <span className="hidden sm:inline">{c.saveThis}</span>
+                  </Button>
+                  <SavedSearchesControl
+                    savedSearches={relevantSavedSearches}
+                    onLoad={loadSavedSearch}
+                    onRemove={(id) => {
+                      savedSearchStore.remove(id)
+                      toast.success(c.removedSaved)
+                    }}
+                  />
                 </div>
 
                 {/* Results toolbar: count, page/all selection, per-company cap */}
@@ -1495,6 +1642,39 @@ export function AddRecordsDialog({
       entity={entity}
       onConfirm={commitSelected}
     />
+
+    <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Bookmark className="text-primary size-5" />
+            {c.saveThis}
+          </DialogTitle>
+          <DialogDescription>{c.saveSearchDesc}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2">
+          <Label htmlFor="add-save-search-name">{c.saveNameLabel}</Label>
+          <Input
+            id="add-save-search-name"
+            autoFocus
+            value={saveName}
+            onChange={(e) => setSaveName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") confirmSave()
+            }}
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+            {c.cancel}
+          </Button>
+          <Button variant="volt" onClick={confirmSave}>
+            <Bookmark className="size-4" />
+            {c.save}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   )
 }

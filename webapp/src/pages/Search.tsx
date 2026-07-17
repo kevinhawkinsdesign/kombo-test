@@ -9,7 +9,6 @@ import {
   X,
   Loader2,
   Bookmark,
-  Trash2,
   Building2,
   Users,
   ArrowRight,
@@ -37,6 +36,7 @@ import {
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
 import { Page, PageHeading } from "@/components/layout/Page"
+import { SavedSearchesControl } from "@/components/common/SavedSearchesControl"
 import { useLocale, type Locale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -57,11 +57,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { DataTable, type TableSelection } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
@@ -89,7 +84,6 @@ import {
   isQueryEmpty,
   savedSearchStore,
   useSavedSearches,
-  type SavedAiSearch,
   REGION_OPTIONS,
   INDUSTRY_OPTIONS,
   sortLeads,
@@ -3253,10 +3247,9 @@ export default function Search() {
         description={c.description}
         action={
           <SavedSearchesControl
-            c={c}
             savedSearches={savedSearches}
-            onLoadSearch={loadSearch}
-            onRemoveSearch={(id) => {
+            onLoad={loadSearch}
+            onRemove={(id) => {
               savedSearchStore.remove(id)
               toast.success(c.removedSaved)
             }}
@@ -4914,100 +4907,6 @@ function CompanyPosterCard({
         {co.industry} · {co.region} · {co.headcount}
       </p>
     </button>
-  )
-}
-
-// Lives in the page header (always reachable, not just before a search
-// starts) — a Popover + filter Input + scrollable rows, the same "too many
-// to list plainly" shape as ListSwitcher and the Lists "+" picker, since an
-// enterprise account can accumulate hundreds of saved searches.
-function SavedSearchesControl({
-  c,
-  savedSearches,
-  onLoadSearch,
-  onRemoveSearch,
-}: {
-  c: Copy
-  savedSearches: SavedAiSearch[]
-  onLoadSearch: (id: string) => void
-  onRemoveSearch: (id: string) => void
-}) {
-  const [open, setOpen] = React.useState(false)
-  const [q, setQ] = React.useState("")
-
-  const query = q.trim().toLowerCase()
-  const filtered = query
-    ? savedSearches.filter((s) => s.name.toLowerCase().includes(query))
-    : savedSearches
-
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v)
-        if (!v) setQ("")
-      }}
-    >
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Bookmark className="size-4" />
-          {c.saved}
-          <ChevronDown className="text-muted-foreground size-3.5" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
-        <div className="border-b p-2">
-          <div className="relative">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
-            <Input
-              autoFocus
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={c.searchSaved}
-              className="h-8 pl-8 text-sm"
-            />
-          </div>
-        </div>
-        <div className="max-h-80 overflow-y-auto p-1">
-          {filtered.length === 0 ? (
-            <p className="text-muted-foreground px-2 py-6 text-center text-sm">
-              {savedSearches.length === 0 ? c.noSaved : c.noSavedMatch}
-            </p>
-          ) : (
-            filtered.map((s) => (
-              <div
-                key={s.id}
-                className="hover:bg-muted/60 group flex items-center gap-2 rounded-sm px-2 py-1.5"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onLoadSearch(s.id)
-                    setOpen(false)
-                    setQ("")
-                  }}
-                  className="min-w-0 flex-1 text-left"
-                >
-                  <p className="truncate text-sm font-medium">{s.name}</p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {s.entity === "people" ? c.people : c.companies} ·{" "}
-                    {s.resultCount}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  aria-label={c.removeSaved(s.name)}
-                  onClick={() => onRemoveSearch(s.id)}
-                  className="text-muted-foreground hover:text-destructive shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
   )
 }
 
