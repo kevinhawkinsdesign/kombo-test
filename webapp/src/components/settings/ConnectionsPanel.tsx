@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { RichTextEditor } from "@/components/common/RichTextEditor"
 import {
   Card,
   CardContent,
@@ -93,6 +94,11 @@ const COPY = {
     connOutreachDesc: "Explore the Outreach tools that Kombo connects with.",
     connWhatsapp: "Whatsapp",
     connEmail: "Email",
+    connEmailSignature: "Email signature",
+    connEmailSignatureDesc: "Appended to every email you send through Kombo.",
+    connEmailSignaturePlaceholder: "Type or paste your signature…",
+    discard: "Discard",
+    saved: "Saved",
     connCallSources: "Call sources",
     connCallSourcesDesc:
       "Connect the sources Kombo can pull call recordings from. Each source can be toggled independently.",
@@ -131,6 +137,12 @@ const COPY = {
       "Explora las herramientas de Outreach con las que conecta Kombo.",
     connWhatsapp: "Whatsapp",
     connEmail: "Email",
+    connEmailSignature: "Firma de correo",
+    connEmailSignatureDesc:
+      "Se añade a cada correo que envíes a través de Kombo.",
+    connEmailSignaturePlaceholder: "Escribe o pega tu firma…",
+    discard: "Descartar",
+    saved: "Guardado",
     connCallSources: "Fuentes de llamadas",
     connCallSourcesDesc:
       "Conecta las fuentes de las que Kombo puede extraer grabaciones de llamadas. Cada fuente se activa de forma independiente.",
@@ -168,6 +180,12 @@ const COPY = {
     connOutreachDesc: "Esplora gli strumenti di Outreach con cui si collega Kombo.",
     connWhatsapp: "Whatsapp",
     connEmail: "Email",
+    connEmailSignature: "Firma email",
+    connEmailSignatureDesc:
+      "Aggiunta a ogni email che invii tramite Kombo.",
+    connEmailSignaturePlaceholder: "Scrivi o incolla la tua firma…",
+    discard: "Scarta",
+    saved: "Salvato",
     connCallSources: "Fonti delle chiamate",
     connCallSourcesDesc:
       "Collega le fonti da cui Kombo può estrarre le registrazioni delle chiamate. Ogni fonte può essere attivata in modo indipendente.",
@@ -205,6 +223,12 @@ const COPY = {
     connOutreachDesc: "Découvrez les outils Outreach avec lesquels Kombo se connecte.",
     connWhatsapp: "Whatsapp",
     connEmail: "E-mail",
+    connEmailSignature: "Signature e-mail",
+    connEmailSignatureDesc:
+      "Ajoutée à chaque e-mail que vous envoyez via Kombo.",
+    connEmailSignaturePlaceholder: "Saisissez ou collez votre signature…",
+    discard: "Ignorer",
+    saved: "Enregistré",
     connCallSources: "Sources d'appels",
     connCallSourcesDesc:
       "Connectez les sources depuis lesquelles Kombo peut récupérer des enregistrements d'appels. Chaque source peut être activée indépendamment.",
@@ -242,6 +266,12 @@ const COPY = {
     connOutreachDesc: "Entdecke die Outreach-Tools, mit denen sich Kombo verbindet.",
     connWhatsapp: "Whatsapp",
     connEmail: "E-Mail",
+    connEmailSignature: "E-Mail-Signatur",
+    connEmailSignatureDesc:
+      "Wird an jede E-Mail angehängt, die du über Kombo versendest.",
+    connEmailSignaturePlaceholder: "Signatur eingeben oder einfügen…",
+    discard: "Verwerfen",
+    saved: "Gespeichert",
     connCallSources: "Anrufquellen",
     connCallSourcesDesc:
       "Verbinde die Quellen, aus denen Kombo Anrufaufzeichnungen abrufen kann. Jede Quelle lässt sich unabhängig ein- und ausschalten.",
@@ -279,6 +309,12 @@ const COPY = {
     connOutreachDesc: "Explore as ferramentas de Outreach com que o Kombo se conecta.",
     connWhatsapp: "Whatsapp",
     connEmail: "Email",
+    connEmailSignature: "Assinatura de email",
+    connEmailSignatureDesc:
+      "Adicionada a cada email que envia através do Kombo.",
+    connEmailSignaturePlaceholder: "Escreva ou cole a sua assinatura…",
+    discard: "Descartar",
+    saved: "Guardado",
     connCallSources: "Fontes de chamadas",
     connCallSourcesDesc:
       "Conecte as fontes de onde o Kombo pode obter gravações de chamadas. Cada fonte pode ser ativada de forma independente.",
@@ -316,6 +352,12 @@ const COPY = {
     connOutreachDesc: "Explore as ferramentas de Outreach que o Kombo conecta.",
     connWhatsapp: "Whatsapp",
     connEmail: "E-mail",
+    connEmailSignature: "Assinatura de e-mail",
+    connEmailSignatureDesc:
+      "Adicionada a cada e-mail que você envia pelo Kombo.",
+    connEmailSignaturePlaceholder: "Digite ou cole sua assinatura…",
+    discard: "Descartar",
+    saved: "Salvo",
     connCallSources: "Fontes de chamadas",
     connCallSourcesDesc:
       "Conecte as fontes de onde o Kombo pode extrair gravações de chamadas. Cada fonte pode ser ativada de forma independente.",
@@ -431,6 +473,28 @@ export function ConnectionsPanel() {
   const [crm, setCrm] = React.useState<string>("Hubspot")
   const [timeZone, setTimeZone] = React.useState<string>(TIME_ZONES[0])
 
+  // Email signature — draft vs. last-saved baseline, Discard/Save only show
+  // once dirty. "justSaved" briefly shows a "Saved" label, then clears.
+  const [lastSavedSignature, setLastSavedSignature] = React.useState("")
+  const [signatureDraft, setSignatureDraft] = React.useState("")
+  const [justSaved, setJustSaved] = React.useState(false)
+  const signatureDirty = signatureDraft !== lastSavedSignature
+
+  React.useEffect(() => {
+    if (!justSaved) return
+    const t = window.setTimeout(() => setJustSaved(false), 2000)
+    return () => window.clearTimeout(t)
+  }, [justSaved])
+
+  function handleSaveSignature() {
+    setLastSavedSignature(signatureDraft)
+    setJustSaved(true)
+  }
+
+  function handleDiscardSignature() {
+    setSignatureDraft(lastSavedSignature)
+  }
+
   return (
     <>
       {/* 1. Professional network */}
@@ -543,6 +607,48 @@ export function ConnectionsPanel() {
           checked={email}
           onChange={setEmail}
         />
+        {email && (
+          <div className="space-y-1.5 pl-11">
+            <p className="text-sm font-medium">{c.connEmailSignature}</p>
+            <p className="text-muted-foreground text-xs">
+              {c.connEmailSignatureDesc}
+            </p>
+            <RichTextEditor
+              value={signatureDraft}
+              onChange={setSignatureDraft}
+              ariaLabel={c.connEmailSignature}
+              placeholder={c.connEmailSignaturePlaceholder}
+              minHeight="min-h-24"
+            />
+            {(signatureDirty || justSaved) && (
+              <div className="flex items-center justify-end gap-2 pt-1">
+                {justSaved && !signatureDirty && (
+                  <span className="text-primary text-xs font-medium">
+                    {c.saved}
+                  </span>
+                )}
+                {signatureDirty && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDiscardSignature}
+                    >
+                      {c.discard}
+                    </Button>
+                    <Button
+                      variant="volt"
+                      size="sm"
+                      onClick={handleSaveSignature}
+                    >
+                      {c.save}
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </CollapsibleSection>
 
       {/* 4. Call sources */}
