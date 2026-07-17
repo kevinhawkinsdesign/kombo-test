@@ -48,6 +48,7 @@ import {
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { SequenceMessagePreviewDialog } from "@/components/campaign/SequenceMessagePreviewDialog"
+import { SequencePreviewPane } from "@/components/campaign/SequencePreviewPane"
 import {
   MERGE_VARIABLES,
   MERGE_VARIABLE_GROUPS,
@@ -281,6 +282,7 @@ const COPY = {
     meetings: "Meetings",
     tabOverview: "Overview",
     tabSequence: "Sequence",
+    tabPreview: "Preview",
     tabProspects: "Prospects",
     tabConversations: "Conversations",
     tabSettings: "Settings",
@@ -528,6 +530,7 @@ const COPY = {
     meetings: "Reuniones",
     tabOverview: "Resumen",
     tabSequence: "Secuencia",
+    tabPreview: "Vista previa",
     tabProspects: "Prospectos",
     tabConversations: "Conversaciones",
     tabSettings: "Configuración",
@@ -776,6 +779,7 @@ const COPY = {
     meetings: "Riunioni",
     tabOverview: "Panoramica",
     tabSequence: "Sequenza",
+    tabPreview: "Anteprima",
     tabProspects: "Prospect",
     tabConversations: "Conversazioni",
     tabSettings: "Impostazioni",
@@ -1023,6 +1027,7 @@ const COPY = {
     meetings: "Rendez-vous",
     tabOverview: "Aperçu",
     tabSequence: "Séquence",
+    tabPreview: "Aperçu",
     tabProspects: "Prospects",
     tabConversations: "Conversations",
     tabSettings: "Paramètres",
@@ -1271,6 +1276,7 @@ const COPY = {
     meetings: "Meetings",
     tabOverview: "Übersicht",
     tabSequence: "Sequenz",
+    tabPreview: "Vorschau",
     tabProspects: "Prospects",
     tabConversations: "Unterhaltungen",
     tabSettings: "Einstellungen",
@@ -1519,6 +1525,7 @@ const COPY = {
     meetings: "Reuniões",
     tabOverview: "Visão geral",
     tabSequence: "Sequência",
+    tabPreview: "Pré-visualização",
     tabProspects: "Prospects",
     tabConversations: "Conversas",
     tabSettings: "Definições",
@@ -1767,6 +1774,7 @@ const COPY = {
     meetings: "Reuniões",
     tabOverview: "Visão geral",
     tabSequence: "Sequência",
+    tabPreview: "Pré-visualização",
     tabProspects: "Prospects",
     tabConversations: "Conversas",
     tabSettings: "Configurações",
@@ -3008,6 +3016,7 @@ export default function CampaignDetail() {
         <TabsList>
           <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
           <TabsTrigger value="sequence">{c.tabSequence}</TabsTrigger>
+          <TabsTrigger value="preview">{c.tabPreview}</TabsTrigger>
           <TabsTrigger value="prospects">{c.tabProspects}</TabsTrigger>
           <TabsTrigger value="conversations">{c.tabConversations}</TabsTrigger>
           <TabsTrigger value="settings">{c.tabSettings}</TabsTrigger>
@@ -3841,6 +3850,20 @@ export default function CampaignDetail() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Preview — every step's actual text, personalized per lead. */}
+        <TabsContent value="preview" className="mt-4">
+          <SequencePreviewPane
+            steps={steps}
+            leads={prospectRows}
+            onEditStep={(stepId) => {
+              setTab("sequence")
+              setSelectedStepId(stepId)
+            }}
+            onGoToSequence={() => setTab("sequence")}
+            onGoToProspects={() => setTab("prospects")}
+          />
         </TabsContent>
 
         {/* Prospects */}
