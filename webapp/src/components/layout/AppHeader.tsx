@@ -230,7 +230,7 @@ export function AppHeader() {
               <User className="size-4" />
               {t("menu.profile")}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings?tab=billing")}>
+            <DropdownMenuItem onClick={() => navigate("/settings?tab=accountManagement")}>
               <CreditCard className="size-4" />
               {t("menu.billing")}
             </DropdownMenuItem>

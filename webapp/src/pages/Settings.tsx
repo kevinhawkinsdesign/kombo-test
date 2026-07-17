@@ -15,6 +15,9 @@ import {
   X,
   Users,
   Building2,
+  Mail,
+  Plug,
+  Sparkles,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -71,7 +74,17 @@ import { team, teams, type TeamMember } from "@/lib/team"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
 import { SALES_METHODOLOGIES } from "@/lib/mock-settings"
+import { integrations } from "@/lib/mock-data"
+import { mcpConnections, connectedToolCount } from "@/lib/mock-network"
 import { cn } from "@/lib/utils"
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+interface PendingInvite {
+  id: string
+  email: string
+  role: "employee" | "manager"
+}
 
 const THEME_OPTIONS = [
   { value: "light", icon: Sun },
@@ -85,7 +98,8 @@ const COPY = {
     description:
       "Manage your account, value proposition, and selling config.",
     tabAccount: "Account",
-    tabTeam: "Team",
+    tabAccountMgmt: "Account Management",
+    teamRosterTitle: "Team roster",
     teamDesc: "See and manage the reps in your organization.",
     teamRep: "Rep",
     teamEmail: "Email",
@@ -98,12 +112,31 @@ const COPY = {
     teamWholeOrg: "Whole organization",
     teamClientBadge: "Client",
     teamViewTeam: "View",
-    tabValue: "Value props",
-    tabSelling: "Selling",
+    teamMembersTitle: "Team Members",
+    teamMembersDesc: "Invite reps and manage their roles.",
+    inviteEmailPlaceholder: "colleague@company.com",
+    roleEmployee: "Employee",
+    roleManager: "Manager",
+    inviteStatus: "Status",
+    invitePending: "Pending",
+    resendInvite: "Resend invite",
+    removeInvite: (email: string) => `Remove ${email}`,
+    inviteSentTo: (email: string) => `Invite sent to ${email}`,
+    inviteResentTo: (email: string) => `Invite resent to ${email}`,
+    inviteRemovedToast: (email: string) => `${email} removed`,
+    noInvites: "No teammates invited yet — invite your first one above.",
+    tabValue: "Value Proposition",
+    tabSelling: "Selling Configuration",
+    tabConnections: "Connections",
+    connectionsDesc:
+      "Manage your CRM, professional network, outreach, and AI tool connections.",
+    connIntegrations: "Integrations",
+    connAiTools: "AI tool connections",
+    connectedCount: (n: number, total: number) => `${n} of ${total} connected`,
+    goToIntegrations: "Manage in Integrations",
     tabBlacklists: "Blacklists",
     tabPreferences: "Preferences",
     tabNotifications: "Notifications",
-    tabBilling: "Billing",
     profileDetails: "Profile details",
     profileDetailsDesc: "Update your personal information.",
     fullName: "Full name",
@@ -169,7 +202,6 @@ const COPY = {
     teamSeats: "Team seats",
     seatsUsed: (used: number, total: number) => `${used} of ${total} seats used`,
     inviteMember: "Invite member",
-    inviteSent: "Invite sent — coming soon",
     companyUsps: "Company USPs",
     companyUspsDesc: "Unique selling points Kai weaves into outreach.",
     removeUsp: "Remove USP",
@@ -215,7 +247,8 @@ const COPY = {
     description:
       "Gestiona tu cuenta, propuesta de valor y configuración de ventas.",
     tabAccount: "Cuenta",
-    tabTeam: "Equipo",
+    tabAccountMgmt: "Gestión de cuenta",
+    teamRosterTitle: "Vendedores del equipo",
     teamDesc: "Consulta y gestiona a los vendedores de tu organización.",
     teamRep: "Vendedor",
     teamEmail: "Email",
@@ -228,12 +261,31 @@ const COPY = {
     teamWholeOrg: "Toda la organización",
     teamClientBadge: "Cliente",
     teamViewTeam: "Ver",
+    teamMembersTitle: "Miembros del equipo",
+    teamMembersDesc: "Invita a representantes y gestiona sus roles.",
+    inviteEmailPlaceholder: "compañero@empresa.com",
+    roleEmployee: "Empleado",
+    roleManager: "Gerente",
+    inviteStatus: "Estado",
+    invitePending: "Pendiente",
+    resendInvite: "Reenviar invitación",
+    removeInvite: (email: string) => `Eliminar ${email}`,
+    inviteSentTo: (email: string) => `Invitación enviada a ${email}`,
+    inviteResentTo: (email: string) => `Invitación reenviada a ${email}`,
+    inviteRemovedToast: (email: string) => `${email} eliminado`,
+    noInvites: "Aún no has invitado a nadie — invita a tu primer compañero arriba.",
     tabValue: "Propuesta de valor",
-    tabSelling: "Ventas",
+    tabSelling: "Configuración de ventas",
+    tabConnections: "Conexiones",
+    connectionsDesc:
+      "Gestiona tu CRM, red profesional, outreach y conexiones de herramientas de IA.",
+    connIntegrations: "Integraciones",
+    connAiTools: "Conexiones de herramientas de IA",
+    connectedCount: (n: number, total: number) => `${n} de ${total} conectadas`,
+    goToIntegrations: "Gestionar en Integraciones",
     tabBlacklists: "Listas negras",
     tabPreferences: "Preferencias",
     tabNotifications: "Notificaciones",
-    tabBilling: "Facturación",
     profileDetails: "Datos del perfil",
     profileDetailsDesc: "Actualiza tu información personal.",
     fullName: "Nombre completo",
@@ -302,7 +354,6 @@ const COPY = {
     seatsUsed: (used: number, total: number) =>
       `${used} de ${total} asientos usados`,
     inviteMember: "Invitar miembro",
-    inviteSent: "Invitación enviada — próximamente",
     companyUsps: "Propuestas únicas de la empresa",
     companyUspsDesc:
       "Propuestas únicas de venta que Kai integra en el outreach.",
@@ -349,7 +400,8 @@ const COPY = {
     description:
       "Gestisci il tuo account, la proposta di valore e la configurazione di vendita.",
     tabAccount: "Account",
-    tabTeam: "Team",
+    tabAccountMgmt: "Gestione account",
+    teamRosterTitle: "Venditori del team",
     teamDesc: "Visualizza e gestisci i venditori della tua organizzazione.",
     teamRep: "Venditore",
     teamEmail: "Email",
@@ -362,12 +414,31 @@ const COPY = {
     teamWholeOrg: "Tutta l'organizzazione",
     teamClientBadge: "Cliente",
     teamViewTeam: "Visualizza",
+    teamMembersTitle: "Membri del team",
+    teamMembersDesc: "Invita venditori e gestisci i loro ruoli.",
+    inviteEmailPlaceholder: "collega@azienda.com",
+    roleEmployee: "Dipendente",
+    roleManager: "Manager",
+    inviteStatus: "Stato",
+    invitePending: "In attesa",
+    resendInvite: "Invia di nuovo",
+    removeInvite: (email: string) => `Rimuovi ${email}`,
+    inviteSentTo: (email: string) => `Invito inviato a ${email}`,
+    inviteResentTo: (email: string) => `Invito inviato di nuovo a ${email}`,
+    inviteRemovedToast: (email: string) => `${email} rimosso`,
+    noInvites: "Non hai ancora invitato nessuno — invita il primo collega qui sopra.",
     tabValue: "Proposta di valore",
-    tabSelling: "Vendite",
+    tabSelling: "Configurazione vendite",
+    tabConnections: "Connessioni",
+    connectionsDesc:
+      "Gestisci CRM, rete professionale, outreach e connessioni con strumenti IA.",
+    connIntegrations: "Integrazioni",
+    connAiTools: "Connessioni strumenti IA",
+    connectedCount: (n: number, total: number) => `${n} di ${total} connesse`,
+    goToIntegrations: "Gestisci in Integrazioni",
     tabBlacklists: "Liste nere",
     tabPreferences: "Preferenze",
     tabNotifications: "Notifiche",
-    tabBilling: "Fatturazione",
     profileDetails: "Dati del profilo",
     profileDetailsDesc: "Aggiorna le tue informazioni personali.",
     fullName: "Nome completo",
@@ -436,7 +507,6 @@ const COPY = {
     seatsUsed: (used: number, total: number) =>
       `${used} di ${total} postazioni utilizzate`,
     inviteMember: "Invita membro",
-    inviteSent: "Invito inviato — prossimamente",
     companyUsps: "Punti di forza dell'azienda",
     companyUspsDesc:
       "I punti di forza unici che Kai integra nell'outreach.",
@@ -483,7 +553,8 @@ const COPY = {
     description:
       "Gérez votre compte, votre proposition de valeur et votre configuration de vente.",
     tabAccount: "Compte",
-    tabTeam: "Équipe",
+    tabAccountMgmt: "Gestion du compte",
+    teamRosterTitle: "Commerciaux de l'équipe",
     teamDesc: "Consultez et gérez les commerciaux de votre organisation.",
     teamRep: "Commercial",
     teamEmail: "E-mail",
@@ -496,12 +567,31 @@ const COPY = {
     teamWholeOrg: "Toute l'organisation",
     teamClientBadge: "Client",
     teamViewTeam: "Voir",
+    teamMembersTitle: "Membres de l'équipe",
+    teamMembersDesc: "Invitez des commerciaux et gérez leurs rôles.",
+    inviteEmailPlaceholder: "collegue@entreprise.com",
+    roleEmployee: "Employé",
+    roleManager: "Manager",
+    inviteStatus: "Statut",
+    invitePending: "En attente",
+    resendInvite: "Renvoyer l'invitation",
+    removeInvite: (email: string) => `Retirer ${email}`,
+    inviteSentTo: (email: string) => `Invitation envoyée à ${email}`,
+    inviteResentTo: (email: string) => `Invitation renvoyée à ${email}`,
+    inviteRemovedToast: (email: string) => `${email} retiré`,
+    noInvites: "Aucun collègue invité pour le moment — invitez-en un ci-dessus.",
     tabValue: "Proposition de valeur",
-    tabSelling: "Vente",
+    tabSelling: "Configuration des ventes",
+    tabConnections: "Connexions",
+    connectionsDesc:
+      "Gérez votre CRM, réseau professionnel, outreach et connexions aux outils IA.",
+    connIntegrations: "Intégrations",
+    connAiTools: "Connexions aux outils IA",
+    connectedCount: (n: number, total: number) => `${n} sur ${total} connectées`,
+    goToIntegrations: "Gérer dans Intégrations",
     tabBlacklists: "Listes noires",
     tabPreferences: "Préférences",
     tabNotifications: "Notifications",
-    tabBilling: "Facturation",
     profileDetails: "Informations du profil",
     profileDetailsDesc: "Mettez à jour vos informations personnelles.",
     fullName: "Nom complet",
@@ -570,7 +660,6 @@ const COPY = {
     seatsUsed: (used: number, total: number) =>
       `${used} licences utilisées sur ${total}`,
     inviteMember: "Inviter un membre",
-    inviteSent: "Invitation envoyée — bientôt disponible",
     companyUsps: "Atouts uniques de l'entreprise",
     companyUspsDesc:
       "Les arguments de vente uniques que Kai intègre dans la prospection.",
@@ -617,7 +706,8 @@ const COPY = {
     description:
       "Verwalte dein Konto, dein Wertversprechen und deine Vertriebseinstellungen.",
     tabAccount: "Konto",
-    tabTeam: "Team",
+    tabAccountMgmt: "Kontoverwaltung",
+    teamRosterTitle: "Vertriebler-Übersicht",
     teamDesc: "Sieh dir die Vertriebler deiner Organisation an und verwalte sie.",
     teamRep: "Vertriebler",
     teamEmail: "E-Mail",
@@ -630,12 +720,31 @@ const COPY = {
     teamWholeOrg: "Gesamte Organisation",
     teamClientBadge: "Kunde",
     teamViewTeam: "Ansehen",
+    teamMembersTitle: "Teammitglieder",
+    teamMembersDesc: "Lade Vertriebler ein und verwalte ihre Rollen.",
+    inviteEmailPlaceholder: "kollege@unternehmen.com",
+    roleEmployee: "Mitarbeiter",
+    roleManager: "Manager",
+    inviteStatus: "Status",
+    invitePending: "Ausstehend",
+    resendInvite: "Einladung erneut senden",
+    removeInvite: (email: string) => `${email} entfernen`,
+    inviteSentTo: (email: string) => `Einladung gesendet an ${email}`,
+    inviteResentTo: (email: string) => `Einladung erneut gesendet an ${email}`,
+    inviteRemovedToast: (email: string) => `${email} entfernt`,
+    noInvites: "Noch niemand eingeladen — lade oben deinen ersten Kollegen ein.",
     tabValue: "Wertversprechen",
-    tabSelling: "Vertrieb",
+    tabSelling: "Vertriebskonfiguration",
+    tabConnections: "Verbindungen",
+    connectionsDesc:
+      "Verwalte dein CRM, professionelles Netzwerk, Outreach und KI-Tool-Verbindungen.",
+    connIntegrations: "Integrationen",
+    connAiTools: "KI-Tool-Verbindungen",
+    connectedCount: (n: number, total: number) => `${n} von ${total} verbunden`,
+    goToIntegrations: "In Integrationen verwalten",
     tabBlacklists: "Blacklists",
     tabPreferences: "Präferenzen",
     tabNotifications: "Benachrichtigungen",
-    tabBilling: "Abrechnung",
     profileDetails: "Profildaten",
     profileDetailsDesc: "Aktualisiere deine persönlichen Daten.",
     fullName: "Vollständiger Name",
@@ -704,7 +813,6 @@ const COPY = {
     seatsUsed: (used: number, total: number) =>
       `${used} von ${total} Plätzen belegt`,
     inviteMember: "Mitglied einladen",
-    inviteSent: "Einladung gesendet — bald verfügbar",
     companyUsps: "USPs des Unternehmens",
     companyUspsDesc:
       "Alleinstellungsmerkmale, die Kai in dein Outreach einbaut.",
@@ -751,7 +859,8 @@ const COPY = {
     description:
       "Faça a gestão da sua conta, proposta de valor e configuração de vendas.",
     tabAccount: "Conta",
-    tabTeam: "Equipa",
+    tabAccountMgmt: "Gestão da conta",
+    teamRosterTitle: "Comerciais da equipa",
     teamDesc: "Consulte e faça a gestão dos comerciais da sua organização.",
     teamRep: "Comercial",
     teamEmail: "Email",
@@ -764,12 +873,31 @@ const COPY = {
     teamWholeOrg: "Toda a organização",
     teamClientBadge: "Cliente",
     teamViewTeam: "Ver",
+    teamMembersTitle: "Membros da equipa",
+    teamMembersDesc: "Convide comerciais e faça a gestão das suas funções.",
+    inviteEmailPlaceholder: "colega@empresa.com",
+    roleEmployee: "Colaborador",
+    roleManager: "Gestor",
+    inviteStatus: "Estado",
+    invitePending: "Pendente",
+    resendInvite: "Reenviar convite",
+    removeInvite: (email: string) => `Remover ${email}`,
+    inviteSentTo: (email: string) => `Convite enviado para ${email}`,
+    inviteResentTo: (email: string) => `Convite reenviado para ${email}`,
+    inviteRemovedToast: (email: string) => `${email} removido`,
+    noInvites: "Ainda não convidou ninguém — convide o primeiro colega acima.",
     tabValue: "Proposta de valor",
-    tabSelling: "Vendas",
+    tabSelling: "Configuração de vendas",
+    tabConnections: "Ligações",
+    connectionsDesc:
+      "Faça a gestão do seu CRM, rede profissional, outreach e ligações a ferramentas de IA.",
+    connIntegrations: "Integrações",
+    connAiTools: "Ligações a ferramentas de IA",
+    connectedCount: (n: number, total: number) => `${n} de ${total} ligadas`,
+    goToIntegrations: "Gerir em Integrações",
     tabBlacklists: "Listas negras",
     tabPreferences: "Preferências",
     tabNotifications: "Notificações",
-    tabBilling: "Faturação",
     profileDetails: "Dados do perfil",
     profileDetailsDesc: "Atualize as suas informações pessoais.",
     fullName: "Nome completo",
@@ -838,7 +966,6 @@ const COPY = {
     seatsUsed: (used: number, total: number) =>
       `${used} de ${total} licenças usadas`,
     inviteMember: "Convidar membro",
-    inviteSent: "Convite enviado — brevemente",
     companyUsps: "Argumentos únicos da empresa",
     companyUspsDesc:
       "Argumentos de venda únicos que o Kai integra no outreach.",
@@ -885,7 +1012,8 @@ const COPY = {
     description:
       "Gerencie sua conta, proposta de valor e configuração de vendas.",
     tabAccount: "Conta",
-    tabTeam: "Time",
+    tabAccountMgmt: "Gestão da conta",
+    teamRosterTitle: "Vendedores do time",
     teamDesc: "Veja e gerencie os vendedores da sua organização.",
     teamRep: "Vendedor",
     teamEmail: "E-mail",
@@ -898,12 +1026,31 @@ const COPY = {
     teamWholeOrg: "Toda a organização",
     teamClientBadge: "Cliente",
     teamViewTeam: "Ver",
+    teamMembersTitle: "Membros do time",
+    teamMembersDesc: "Convide vendedores e gerencie suas funções.",
+    inviteEmailPlaceholder: "colega@empresa.com",
+    roleEmployee: "Colaborador",
+    roleManager: "Gerente",
+    inviteStatus: "Status",
+    invitePending: "Pendente",
+    resendInvite: "Reenviar convite",
+    removeInvite: (email: string) => `Remover ${email}`,
+    inviteSentTo: (email: string) => `Convite enviado para ${email}`,
+    inviteResentTo: (email: string) => `Convite reenviado para ${email}`,
+    inviteRemovedToast: (email: string) => `${email} removido`,
+    noInvites: "Você ainda não convidou ninguém — convide seu primeiro colega acima.",
     tabValue: "Proposta de valor",
-    tabSelling: "Vendas",
+    tabSelling: "Configuração de vendas",
+    tabConnections: "Conexões",
+    connectionsDesc:
+      "Gerencie seu CRM, rede profissional, outreach e conexões com ferramentas de IA.",
+    connIntegrations: "Integrações",
+    connAiTools: "Conexões com ferramentas de IA",
+    connectedCount: (n: number, total: number) => `${n} de ${total} conectadas`,
+    goToIntegrations: "Gerenciar em Integrações",
     tabBlacklists: "Listas negras",
     tabPreferences: "Preferências",
     tabNotifications: "Notificações",
-    tabBilling: "Faturamento",
     profileDetails: "Dados do perfil",
     profileDetailsDesc: "Atualize suas informações pessoais.",
     fullName: "Nome completo",
@@ -972,7 +1119,6 @@ const COPY = {
     seatsUsed: (used: number, total: number) =>
       `${used} de ${total} licenças usadas`,
     inviteMember: "Convidar membro",
-    inviteSent: "Convite enviado — em breve",
     companyUsps: "Diferenciais da empresa",
     companyUspsDesc:
       "Diferenciais de venda que o Kai integra no outreach.",
@@ -1023,14 +1169,44 @@ export default function Settings() {
   const { theme, setTheme } = useTheme()
   const { scope, impersonating, viewTeam, impersonate, viewAsTeam, exitImpersonation } =
     useView()
-  // URL-addressable tabs: /settings?tab=billing deep-links the Billing tab.
+  // URL-addressable tabs: /settings?tab=accountManagement deep-links a tab.
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get("tab") ?? "account"
+
+  const [invites, setInvites] = React.useState<PendingInvite[]>([])
+  const [inviteEmail, setInviteEmail] = React.useState("")
+  const [inviteRole, setInviteRole] = React.useState<PendingInvite["role"]>("employee")
 
   function viewAsRep(rep: TeamMember) {
     impersonate(rep.id)
     toast.success(c.teamViewingAs(rep.name))
   }
+
+  function sendInvite() {
+    if (!EMAIL_RE.test(inviteEmail)) return
+    setInvites((prev) => [
+      ...prev,
+      { id: `inv_${Date.now()}_${prev.length}`, email: inviteEmail, role: inviteRole },
+    ])
+    toast.success(c.inviteSentTo(inviteEmail))
+    setInviteEmail("")
+    setInviteRole("employee")
+  }
+
+  function resendInvite(invite: PendingInvite) {
+    toast.success(c.inviteResentTo(invite.email))
+  }
+
+  function removeInvite(invite: PendingInvite) {
+    setInvites((prev) => prev.filter((i) => i.id !== invite.id))
+    toast.success(c.inviteRemovedToast(invite.email))
+  }
+
+  function setInviteMemberRole(id: string, role: PendingInvite["role"]) {
+    setInvites((prev) => prev.map((i) => (i.id === id ? { ...i, role } : i)))
+  }
+
+  const connectedIntegrationsCount = integrations.filter((i) => i.connected).length
 
   return (
     <Page className="max-w-3xl">
@@ -1042,13 +1218,13 @@ export default function Settings() {
       >
         <TabsList className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-16 z-20 mb-4 h-auto flex-wrap backdrop-blur">
           <TabsTrigger value="account">{c.tabAccount}</TabsTrigger>
-          <TabsTrigger value="team">{c.tabTeam}</TabsTrigger>
+          <TabsTrigger value="accountManagement">{c.tabAccountMgmt}</TabsTrigger>
           <TabsTrigger value="value">{c.tabValue}</TabsTrigger>
           <TabsTrigger value="selling">{c.tabSelling}</TabsTrigger>
+          <TabsTrigger value="connections">{c.tabConnections}</TabsTrigger>
           <TabsTrigger value="blacklists">{c.tabBlacklists}</TabsTrigger>
           <TabsTrigger value="preferences">{c.tabPreferences}</TabsTrigger>
           <TabsTrigger value="notifications">{c.tabNotifications}</TabsTrigger>
-          <TabsTrigger value="billing">{c.tabBilling}</TabsTrigger>
         </TabsList>
 
         {/* ACCOUNT */}
@@ -1086,8 +1262,8 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        {/* TEAM */}
-        <TabsContent value="team" className="space-y-4">
+        {/* ACCOUNT MANAGEMENT */}
+        <TabsContent value="accountManagement" className="space-y-4">
           {(impersonating || viewTeam) && (
             <div className="bg-primary/10 flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
               <div className="flex items-center gap-2">
@@ -1150,7 +1326,7 @@ export default function Settings() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{c.tabTeam}</CardTitle>
+              <CardTitle className="text-base">{c.teamRosterTitle}</CardTitle>
               <CardDescription>{c.teamDesc}</CardDescription>
             </CardHeader>
             <CardContent className="px-0 pt-0">
@@ -1201,6 +1377,130 @@ export default function Settings() {
                   })}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.teamMembersTitle}</CardTitle>
+              <CardDescription>
+                {c.teamMembersDesc} {c.seatsUsed(team.length, team.length)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder={c.inviteEmailPlaceholder}
+                  className="sm:flex-1"
+                />
+                <Select
+                  value={inviteRole}
+                  onValueChange={(v) => setInviteRole(v as PendingInvite["role"])}
+                >
+                  <SelectTrigger className="sm:w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">{c.roleEmployee}</SelectItem>
+                    <SelectItem value="manager">{c.roleManager}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={sendInvite} disabled={!EMAIL_RE.test(inviteEmail)}>
+                  <Plus className="size-4" />
+                  {c.inviteMember}
+                </Button>
+              </div>
+
+              {invites.length === 0 ? (
+                <p className="text-muted-foreground text-sm">{c.noInvites}</p>
+              ) : (
+                <div className="space-y-1">
+                  {invites.map((invite) => (
+                    <div
+                      key={invite.id}
+                      className="hover:bg-muted/60 flex items-center gap-3 rounded-md px-2 py-2"
+                    >
+                      <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                        {invite.email}
+                      </p>
+                      <Badge variant="secondary" className="font-normal">
+                        {c.invitePending}
+                      </Badge>
+                      <Select
+                        value={invite.role}
+                        onValueChange={(v) =>
+                          setInviteMemberRole(invite.id, v as PendingInvite["role"])
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-32 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="employee">{c.roleEmployee}</SelectItem>
+                          <SelectItem value="manager">{c.roleManager}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={c.resendInvite}
+                        onClick={() => resendInvite(invite)}
+                      >
+                        <Mail className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={c.removeInvite(invite.email)}
+                        onClick={() => removeInvite(invite)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.currentPlan}</CardTitle>
+              <CardDescription>{c.currentPlanDesc(user?.plan)}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">{user?.plan}</p>
+                    <Badge variant="success" className="font-normal">
+                      {c.active}
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    {c.planFeatures}
+                  </p>
+                </div>
+                <p className="text-xl font-semibold">
+                  $99
+                  <span className="text-muted-foreground text-sm">
+                    {c.perMonth}
+                  </span>
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => toast.info(c.manageBilling)}
+                >
+                  {c.manageBilling}
+                </Button>
+                <Button onClick={() => toast.info(c.upgradeFlow)}>
+                  {c.upgradePlan}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1358,91 +1658,44 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        {/* BILLING */}
-        <TabsContent value="billing" className="space-y-4">
+        {/* CONNECTIONS */}
+        <TabsContent value="connections" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{c.currentPlan}</CardTitle>
-              <CardDescription>{c.currentPlanDesc(user?.plan)}</CardDescription>
+              <CardTitle className="text-base">{c.tabConnections}</CardTitle>
+              <CardDescription>{c.connectionsDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">{user?.plan}</p>
-                    <Badge variant="success" className="font-normal">
-                      {c.active}
-                    </Badge>
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    {c.planFeatures}
-                  </p>
-                </div>
-                <p className="text-xl font-semibold">
-                  $99
-                  <span className="text-muted-foreground text-sm">
-                    {c.perMonth}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center gap-3 rounded-lg border p-4">
+                  <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
+                    <Plug className="size-4" />
                   </span>
-                </p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => toast.info(c.manageBilling)}
-                >
-                  {c.manageBilling}
-                </Button>
-                <Button onClick={() => toast.info(c.upgradeFlow)}>
-                  {c.upgradePlan}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base">{c.teamSeats}</CardTitle>
-                <CardDescription>
-                  {c.seatsUsed(team.length, team.length)}
-                </CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toast.info(c.inviteSent)}
-              >
-                {c.inviteMember}
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              {team.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center gap-3 rounded-md px-2 py-2"
-                >
-                  <Avatar className="size-8">
-                    <AvatarFallback
-                      style={{ backgroundColor: member.avatarColor, color: "white" }}
-                      className="text-xs"
-                    >
-                      {initials(
-                        member.name.split(" ")[0],
-                        member.name.split(" ")[1]
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{member.name}</p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {member.email}
+                    <p className="truncate text-sm font-medium">{c.connIntegrations}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {c.connectedCount(connectedIntegrationsCount, integrations.length)}
                     </p>
                   </div>
-                  <Badge variant="secondary" className="font-normal">
-                    {member.role}
-                  </Badge>
                 </div>
-              ))}
+                <div className="flex items-center gap-3 rounded-lg border p-4">
+                  <span className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-md">
+                    <Sparkles className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{c.connAiTools}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {c.connectedCount(connectedToolCount, mcpConnections.length)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex justify-end">
+                <Button asChild>
+                  <Link to="/integrations">{c.goToIntegrations}</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
