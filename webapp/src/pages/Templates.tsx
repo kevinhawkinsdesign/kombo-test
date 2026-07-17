@@ -76,6 +76,11 @@ import { TemplateRecommendations } from "@/components/common/Recommendations"
 import { useLocale, type Locale } from "@/lib/locale"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate } from "@/lib/format"
+import {
+  MERGE_VARIABLE_GROUPS,
+  groupByMergeVarGroup,
+  type MergeVarGroupKey,
+} from "@/lib/merge-vars"
 import type { Channel, EmailTemplate } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -334,6 +339,7 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "template" : "templates"} deleted`,
     variablesTitle: "Variables",
     variablesSubtitle: "Click to insert, drag into the body, or copy.",
+    varGroups: { yourDetails: "Your Details", prospectInfo: "Prospect Info", prospectCompany: "Prospect Company", other: "Other" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Preview",
     previewSampleNote: "Sample data — your real merge fields fill in at send.",
@@ -456,6 +462,7 @@ const COPY = {
       `${n} ${n === 1 ? "plantilla eliminada" : "plantillas eliminadas"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
+    varGroups: { yourDetails: "Tus datos", prospectInfo: "Info del prospecto", prospectCompany: "Empresa del prospecto", other: "Otros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Vista previa",
     previewSampleNote: "Datos de ejemplo — tus campos reales se rellenan al enviar.",
@@ -575,6 +582,7 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "modello eliminato" : "modelli eliminati"}`,
     variablesTitle: "Variabili",
     variablesSubtitle: "Clicca per inserire, trascina nel corpo o copia.",
+    varGroups: { yourDetails: "I tuoi dati", prospectInfo: "Info sul prospect", prospectCompany: "Azienda del prospect", other: "Altro" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variabili",
     tabPreview: "Anteprima",
     previewSampleNote: "Dati di esempio — i tuoi campi reali verranno compilati all'invio.",
@@ -694,6 +702,7 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "modèle supprimé" : "modèles supprimés"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Cliquez pour insérer, glissez dans le corps ou copiez.",
+    varGroups: { yourDetails: "Vos informations", prospectInfo: "Infos du prospect", prospectCompany: "Entreprise du prospect", other: "Autre" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Aperçu",
     previewSampleNote: "Données d'exemple — vos champs réels seront complétés à l'envoi.",
@@ -812,6 +821,7 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "Vorlage" : "Vorlagen"} gelöscht`,
     variablesTitle: "Variablen",
     variablesSubtitle: "Klicke zum Einfügen, ziehe es in den Text oder kopiere es.",
+    varGroups: { yourDetails: "Deine Angaben", prospectInfo: "Prospect-Infos", prospectCompany: "Unternehmen des Prospects", other: "Sonstiges" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variablen",
     tabPreview: "Vorschau",
     previewSampleNote: "Beispieldaten — deine echten Felder werden beim Senden ausgefüllt.",
@@ -934,6 +944,7 @@ const COPY = {
       `${n} ${n === 1 ? "modelo eliminado" : "modelos eliminados"}`,
     variablesTitle: "Variáveis",
     variablesSubtitle: "Clique para inserir, arraste para o corpo ou copie.",
+    varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variáveis",
     tabPreview: "Pré-visualização",
     previewSampleNote: "Dados de exemplo — os seus campos reais são preenchidos no envio.",
@@ -1056,6 +1067,7 @@ const COPY = {
       `${n} ${n === 1 ? "modelo excluído" : "modelos excluídos"}`,
     variablesTitle: "Variáveis",
     variablesSubtitle: "Clique para inserir, arraste para o corpo ou copie.",
+    varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variáveis",
     tabPreview: "Pré-visualização",
     previewSampleNote: "Dados de exemplo — seus campos reais são preenchidos no envio.",
@@ -2299,39 +2311,46 @@ export default function Templates() {
                 </p>
               </div>
               <div className="flex-1 space-y-1 overflow-y-auto p-2">
-                {VARIABLES.map((v) => (
-                  <div
-                    key={v.tag}
-                    draggable
-                    onDragStart={(e) =>
-                      e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
-                    }
-                    className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
-                  >
-                    <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
-                    <button
-                      type="button"
-                      onClick={() => insertVariable(v.tag)}
-                      className="min-w-0 flex-1 text-left"
-                      title={v.def[locale]}
-                    >
-                      <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
-                      <span className="text-muted-foreground block truncate text-[11px]">
-                        {v.def[locale]}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => copyVariable(v.tag)}
-                      aria-label={c.copy}
-                      className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      {copiedTag === v.tag ? (
-                        <Check className="text-chart-1 size-3.5" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
-                    </button>
+                {groupByMergeVarGroup(VARIABLES, MERGE_VARIABLE_GROUPS).map((group) => (
+                  <div key={group.key}>
+                    <p className="text-muted-foreground px-2 pt-2 pb-1 text-[11px] font-semibold uppercase">
+                      {c.varGroups[group.key]}
+                    </p>
+                    {group.items.map((v) => (
+                      <div
+                        key={v.tag}
+                        draggable
+                        onDragStart={(e) =>
+                          e.dataTransfer.setData("text/plain", `{{${v.tag}}}`)
+                        }
+                        className="group hover:border-primary/40 hover:bg-background flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1.5 active:cursor-grabbing"
+                      >
+                        <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
+                        <button
+                          type="button"
+                          onClick={() => insertVariable(v.tag)}
+                          className="min-w-0 flex-1 text-left"
+                          title={v.def[locale]}
+                        >
+                          <span className="block truncate font-mono text-xs">{`{{${v.tag}}}`}</span>
+                          <span className="text-muted-foreground block truncate text-[11px]">
+                            {v.def[locale]}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => copyVariable(v.tag)}
+                          aria-label={c.copy}
+                          className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          {copiedTag === v.tag ? (
+                            <Check className="text-chart-1 size-3.5" />
+                          ) : (
+                            <Copy className="size-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>

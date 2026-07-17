@@ -117,6 +117,7 @@ import {
   LANG_LABEL,
 } from "@/lib/mock-translate"
 import { relativeTime, futureRelativeTime, formatDueAt, initials } from "@/lib/format"
+import { groupByMergeVarGroup } from "@/lib/merge-vars"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
 import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
@@ -266,6 +267,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Search variables…",
     varsEmpty: "No variables match your search.",
+    varGroups: {
+      yourDetails: "Your Details",
+      prospectInfo: "Prospect Info",
+      prospectCompany: "Prospect Company",
+      activity: "Activity",
+      other: "Other",
+    } as Record<string, string>,
     sendVia: () => `Send`,
     collapseList: "Collapse list",
     expandList: "Show list",
@@ -421,6 +429,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Buscar variables…",
     varsEmpty: "Ninguna variable coincide con tu búsqueda.",
+    varGroups: {
+      yourDetails: "Tus datos",
+      prospectInfo: "Info del prospecto",
+      prospectCompany: "Empresa del prospecto",
+      activity: "Actividad",
+      other: "Otros",
+    } as Record<string, string>,
     sendVia: () => `Enviar`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
@@ -576,6 +591,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Cerca variabili…",
     varsEmpty: "Nessuna variabile corrisponde alla tua ricerca.",
+    varGroups: {
+      yourDetails: "I tuoi dati",
+      prospectInfo: "Info sul prospect",
+      prospectCompany: "Azienda del prospect",
+      activity: "Attività",
+      other: "Altro",
+    } as Record<string, string>,
     sendVia: () => `Invia`,
     collapseList: "Nascondi elenco",
     expandList: "Mostra elenco",
@@ -731,6 +753,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Rechercher des variables…",
     varsEmpty: "Aucune variable ne correspond à votre recherche.",
+    varGroups: {
+      yourDetails: "Vos informations",
+      prospectInfo: "Infos du prospect",
+      prospectCompany: "Entreprise du prospect",
+      activity: "Activité",
+      other: "Autre",
+    } as Record<string, string>,
     sendVia: () => `Envoyer`,
     collapseList: "Masquer la liste",
     expandList: "Afficher la liste",
@@ -886,6 +915,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Variablen suchen…",
     varsEmpty: "Keine Variablen entsprechen deiner Suche.",
+    varGroups: {
+      yourDetails: "Deine Angaben",
+      prospectInfo: "Prospect-Infos",
+      prospectCompany: "Unternehmen des Prospects",
+      activity: "Aktivität",
+      other: "Sonstiges",
+    } as Record<string, string>,
     sendVia: () => `Senden`,
     collapseList: "Liste ausblenden",
     expandList: "Liste anzeigen",
@@ -1041,6 +1077,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Pesquisar variáveis…",
     varsEmpty: "Nenhuma variável corresponde à pesquisa.",
+    varGroups: {
+      yourDetails: "Os seus dados",
+      prospectInfo: "Informações do prospect",
+      prospectCompany: "Empresa do prospect",
+      activity: "Atividade",
+      other: "Outros",
+    } as Record<string, string>,
     sendVia: () => `Enviar`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
@@ -1196,6 +1239,13 @@ const COPY = {
     } as Record<string, string>,
     varsSearchPlaceholder: "Buscar variáveis…",
     varsEmpty: "Nenhuma variável corresponde à sua busca.",
+    varGroups: {
+      yourDetails: "Seus dados",
+      prospectInfo: "Informações do prospect",
+      prospectCompany: "Empresa do prospect",
+      activity: "Atividade",
+      other: "Outros",
+    } as Record<string, string>,
     sendVia: () => `Enviar`,
     collapseList: "Ocultar lista",
     expandList: "Mostrar lista",
@@ -1246,6 +1296,34 @@ type FolderLabelKey =
   | "scheduled"
   | "sent"
   | "archivedFolder"
+
+// The composer's personalization catalog is richer than the shared
+// lib/merge-vars.ts set (CRM/engagement fields like lead score, signals,
+// last activity have no equivalent there), so it gets its own grouping —
+// same "Your Details / Prospect Info / Prospect Company" taxonomy as the
+// Chrome extension, plus an "Activity" bucket for the fields that don't fit.
+type InboxVarGroupKey = "yourDetails" | "prospectInfo" | "prospectCompany" | "activity"
+
+const INBOX_VAR_GROUPS: { key: InboxVarGroupKey; tags: string[] }[] = [
+  { key: "yourDetails", tags: ["sender", "sender_full_name", "sender_email", "sender_role", "sender_company"] },
+  {
+    key: "prospectInfo",
+    tags: [
+      "first_name",
+      "last_name",
+      "full_name",
+      "title",
+      "seniority",
+      "department",
+      "location",
+      "email",
+      "phone",
+      "linkedin_url",
+    ],
+  },
+  { key: "prospectCompany", tags: ["company", "company_domain", "industry", "headcount", "revenue", "about"] },
+  { key: "activity", tags: ["signal_1", "signal_2", "score", "status", "tags", "last_activity", "added_at"] },
+]
 
 const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "inbox", key: "inbox", icon: InboxIcon },
@@ -3038,6 +3116,7 @@ function Composer({
           v.tag.toLowerCase().includes(varSearchQuery)
       )
     : vars
+  const varGroups = groupByMergeVarGroup(filteredVars, INBOX_VAR_GROUPS)
 
   function runGenerate(options?: DraftReplyOptions) {
     const next = seed + 1
@@ -3170,14 +3249,21 @@ function Composer({
             />
           </div>
           <div className="max-h-64 overflow-y-auto">
-            {filteredVars.map((v) => (
-              <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
-                <Braces className="text-primary size-3.5" />
-                <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
-                <span className="text-muted-foreground max-w-40 truncate text-[11px]">
-                  {v.value || `{{${v.tag}}}`}
-                </span>
-              </DropdownMenuItem>
+            {varGroups.map((group) => (
+              <div key={group.key}>
+                <DropdownMenuLabel className="text-muted-foreground text-[11px] font-semibold uppercase">
+                  {c.varGroups[group.key]}
+                </DropdownMenuLabel>
+                {group.items.map((v) => (
+                  <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
+                    <Braces className="text-primary size-3.5" />
+                    <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
+                    <span className="text-muted-foreground max-w-40 truncate text-[11px]">
+                      {v.value || `{{${v.tag}}}`}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </div>
             ))}
             {filteredVars.length === 0 && (
               <p className="text-muted-foreground px-2 py-3 text-center text-xs">

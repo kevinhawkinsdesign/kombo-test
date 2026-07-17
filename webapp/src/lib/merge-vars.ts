@@ -35,6 +35,41 @@ export const MERGE_VARIABLES: MergeVariable[] = [
   { tag: "calendar_link", en: "Booking link", es: "Enlace de reserva", it: "Link di prenotazione", fr: "Lien de réservation", de: "Buchungslink", pt: "Link de marcação", pt_BR: "Link de agendamento" },
 ]
 
+// The three groupings the Chrome extension already uses when listing merge
+// variables ("Your Details" / "Prospect Info" / "Prospect Company") — every
+// variable picker in the app should group tags the same way instead of
+// showing one long flat list.
+export type MergeVarGroupKey = "yourDetails" | "prospectInfo" | "prospectCompany"
+
+export const MERGE_VARIABLE_GROUPS: { key: MergeVarGroupKey; tags: string[] }[] = [
+  { key: "yourDetails", tags: ["sender", "sender_company", "sender_title", "calendar_link"] },
+  { key: "prospectInfo", tags: ["first_name", "last_name", "title", "city"] },
+  { key: "prospectCompany", tags: ["company", "industry"] },
+]
+
+// Buckets any tagged list (MergeVariable, or a page's own local variable
+// type) into the given groups, in group order, dropping empty groups — e.g.
+// after a search filter has removed every tag from a group. Any tag not
+// covered by the supplied groups (a page with a richer catalog than the
+// three shared ones) lands in a trailing "other" bucket instead of silently
+// disappearing.
+export function groupByMergeVarGroup<T extends { tag: string }, K extends string>(
+  items: T[],
+  groups: { key: K; tags: string[] }[]
+): { key: K | "other"; items: T[] }[] {
+  const matched = new Set<string>()
+  const grouped = groups
+    .map((g) => {
+      const groupItems = items.filter((i) => g.tags.includes(i.tag))
+      groupItems.forEach((i) => matched.add(i.tag))
+      return { key: g.key as K | "other", items: groupItems }
+    })
+    .filter((g) => g.items.length > 0)
+  const leftover = items.filter((i) => !matched.has(i.tag))
+  if (leftover.length > 0) grouped.push({ key: "other", items: leftover })
+  return grouped
+}
+
 export function prospectMergeData(p: Prospect): Record<string, string> {
   return {
     first_name: p.firstName,

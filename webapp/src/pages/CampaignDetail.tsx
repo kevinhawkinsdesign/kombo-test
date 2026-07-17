@@ -48,7 +48,12 @@ import {
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { SequenceMessagePreviewDialog } from "@/components/campaign/SequenceMessagePreviewDialog"
-import { MERGE_VARIABLES } from "@/lib/merge-vars"
+import {
+  MERGE_VARIABLES,
+  MERGE_VARIABLE_GROUPS,
+  groupByMergeVarGroup,
+  type MergeVarGroupKey,
+} from "@/lib/merge-vars"
 import { BackLink } from "@/components/common/BackLink"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
@@ -353,6 +358,7 @@ const COPY = {
     insertVariable: "+ Variables",
     varsSearchPlaceholder: "Search variables…",
     varsEmpty: "No variables match your search.",
+    varGroups: { yourDetails: "Your Details", prospectInfo: "Prospect Info", prospectCompany: "Prospect Company", other: "Other" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.en
       return acc
@@ -599,6 +605,7 @@ const COPY = {
     insertVariable: "+ Variables",
     varsSearchPlaceholder: "Buscar variables…",
     varsEmpty: "Ninguna variable coincide con tu búsqueda.",
+    varGroups: { yourDetails: "Tus datos", prospectInfo: "Info del prospecto", prospectCompany: "Empresa del prospecto", other: "Otros" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.es
       return acc
@@ -846,6 +853,7 @@ const COPY = {
     insertVariable: "+ Variabili",
     varsSearchPlaceholder: "Cerca variabili…",
     varsEmpty: "Nessuna variabile corrisponde alla tua ricerca.",
+    varGroups: { yourDetails: "I tuoi dati", prospectInfo: "Info sul prospect", prospectCompany: "Azienda del prospect", other: "Altro" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.it
       return acc
@@ -1092,6 +1100,7 @@ const COPY = {
     insertVariable: "+ Variables",
     varsSearchPlaceholder: "Rechercher des variables…",
     varsEmpty: "Aucune variable ne correspond à votre recherche.",
+    varGroups: { yourDetails: "Vos informations", prospectInfo: "Infos du prospect", prospectCompany: "Entreprise du prospect", other: "Autre" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.fr
       return acc
@@ -1339,6 +1348,7 @@ const COPY = {
     insertVariable: "+ Variablen",
     varsSearchPlaceholder: "Variablen suchen…",
     varsEmpty: "Keine Variablen entsprechen deiner Suche.",
+    varGroups: { yourDetails: "Deine Angaben", prospectInfo: "Prospect-Infos", prospectCompany: "Unternehmen des Prospects", other: "Sonstiges" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.de
       return acc
@@ -1586,6 +1596,7 @@ const COPY = {
     insertVariable: "+ Variáveis",
     varsSearchPlaceholder: "Pesquisar variáveis…",
     varsEmpty: "Nenhuma variável corresponde à pesquisa.",
+    varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.pt
       return acc
@@ -1833,6 +1844,7 @@ const COPY = {
     insertVariable: "+ Variáveis",
     varsSearchPlaceholder: "Buscar variáveis…",
     varsEmpty: "Nenhuma variável corresponde à sua busca.",
+    varGroups: { yourDetails: "Seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.pt_BR
       return acc
@@ -3239,6 +3251,7 @@ export default function CampaignDetail() {
                           v.tag.toLowerCase().includes(stepVarQuery)
                       )
                     : MERGE_VARIABLES
+                  const stepVarGroups = groupByMergeVarGroup(filteredStepVars, MERGE_VARIABLE_GROUPS)
                   const variablesMenu = (
                     <DropdownMenu onOpenChange={(open) => !open && setStepVarSearch("")}>
                       <DropdownMenuTrigger asChild>
@@ -3259,21 +3272,28 @@ export default function CampaignDetail() {
                           />
                         </div>
                         <div className="max-h-64 overflow-y-auto">
-                          {filteredStepVars.map((v) => (
-                            <DropdownMenuItem
-                              key={v.tag}
-                              // False positive: only reads the ref from this click,
-                              // same shape as Inbox.tsx's insertVar — the rule can't
-                              // trace refs through this panel's pre-existing IIFE.
-                              // eslint-disable-next-line react-hooks/refs
-                              onClick={() => insertStepVariable(v.tag, step, isAiCall)}
-                            >
-                              <Braces className="text-primary size-3.5" />
-                              <span className="flex-1">{c.variables[v.tag]}</span>
-                              <span className="text-muted-foreground font-mono text-[11px]">
-                                {`{{${v.tag}}}`}
-                              </span>
-                            </DropdownMenuItem>
+                          {stepVarGroups.map((group) => (
+                            <div key={group.key}>
+                              <DropdownMenuLabel className="text-muted-foreground text-[11px] font-semibold uppercase">
+                                {c.varGroups[group.key]}
+                              </DropdownMenuLabel>
+                              {group.items.map((v) => (
+                                <DropdownMenuItem
+                                  key={v.tag}
+                                  // False positive: only reads the ref from this click,
+                                  // same shape as Inbox.tsx's insertVar — the rule can't
+                                  // trace refs through this panel's pre-existing IIFE.
+                                  // eslint-disable-next-line react-hooks/refs
+                                  onClick={() => insertStepVariable(v.tag, step, isAiCall)}
+                                >
+                                  <Braces className="text-primary size-3.5" />
+                                  <span className="flex-1">{c.variables[v.tag]}</span>
+                                  <span className="text-muted-foreground font-mono text-[11px]">
+                                    {`{{${v.tag}}}`}
+                                  </span>
+                                </DropdownMenuItem>
+                              ))}
+                            </div>
                           ))}
                           {filteredStepVars.length === 0 && (
                             <p className="text-muted-foreground px-2 py-3 text-center text-xs">
