@@ -187,6 +187,7 @@ const COPY = {
     weeklyDigest: "Weekly digest",
     weeklyDigestDesc: "A Monday summary of team performance.",
     notificationsSaved: "Notification settings saved",
+    preferencesSaved: "Preferences saved",
     currentPlan: "Current plan",
     currentPlanDesc: (plan?: string) => `You are on the ${plan} plan.`,
     active: "Active",
@@ -333,6 +334,7 @@ const COPY = {
     weeklyDigest: "Resumen semanal",
     weeklyDigestDesc: "Un resumen de los lunes del rendimiento del equipo.",
     notificationsSaved: "Ajustes de notificaciones guardados",
+    preferencesSaved: "Preferencias guardadas",
     currentPlan: "Plan actual",
     currentPlanDesc: (plan?: string) => `Tienes el plan ${plan}.`,
     active: "Activo",
@@ -481,6 +483,7 @@ const COPY = {
     weeklyDigest: "Riepilogo settimanale",
     weeklyDigestDesc: "Un riepilogo del lunedì sulle prestazioni del team.",
     notificationsSaved: "Impostazioni delle notifiche salvate",
+    preferencesSaved: "Preferenze salvate",
     currentPlan: "Piano attuale",
     currentPlanDesc: (plan?: string) => `Hai il piano ${plan}.`,
     active: "Attivo",
@@ -629,6 +632,7 @@ const COPY = {
     weeklyDigest: "Résumé hebdomadaire",
     weeklyDigestDesc: "Un résumé le lundi des performances de l'équipe.",
     notificationsSaved: "Paramètres de notification enregistrés",
+    preferencesSaved: "Préférences enregistrées",
     currentPlan: "Plan actuel",
     currentPlanDesc: (plan?: string) => `Vous êtes sur le plan ${plan}.`,
     active: "Actif",
@@ -777,6 +781,7 @@ const COPY = {
     weeklyDigest: "Wöchentliche Zusammenfassung",
     weeklyDigestDesc: "Jeden Montag eine Zusammenfassung der Team-Performance.",
     notificationsSaved: "Benachrichtigungseinstellungen gespeichert",
+    preferencesSaved: "Präferenzen gespeichert",
     currentPlan: "Aktueller Plan",
     currentPlanDesc: (plan?: string) => `Du nutzt den Plan ${plan}.`,
     active: "Aktiv",
@@ -925,6 +930,7 @@ const COPY = {
     weeklyDigest: "Resumo semanal",
     weeklyDigestDesc: "Um resumo à segunda-feira do desempenho da equipa.",
     notificationsSaved: "Definições de notificações guardadas",
+    preferencesSaved: "Preferências guardadas",
     currentPlan: "Plano atual",
     currentPlanDesc: (plan?: string) => `Está no plano ${plan}.`,
     active: "Ativo",
@@ -1073,6 +1079,7 @@ const COPY = {
     weeklyDigest: "Resumo semanal",
     weeklyDigestDesc: "Um resumo às segundas do desempenho do time.",
     notificationsSaved: "Configurações de notificação salvas",
+    preferencesSaved: "Preferências salvas",
     currentPlan: "Plano atual",
     currentPlanDesc: (plan?: string) => `Você está no plano ${plan}.`,
     active: "Ativo",
@@ -1551,6 +1558,12 @@ export default function Settings() {
                 description={c.dailyDigestDesc}
                 defaultChecked
               />
+              <Separator />
+              <div className="flex justify-end">
+                <Button onClick={() => toast.success(c.preferencesSaved)}>
+                  {c.saveChanges}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
