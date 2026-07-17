@@ -325,7 +325,7 @@ export interface CampaignStep {
 }
 
 // What the fork's two tracks are conditioned on.
-export type ConditionKind = "reply" | "open" | "click"
+export type ConditionKind = "reply" | "open" | "click" | "accept" | "read"
 
 // The two fixed, mutually-exclusive arms of a condition. Which pair
 // applies is determined by the fork's `condition`.
@@ -336,6 +336,10 @@ export type StepTrackKind =
   | "not_opened"
   | "clicked"
   | "not_clicked"
+  | "accepted"
+  | "not_accepted"
+  | "read"
+  | "not_read"
 
 export interface StepTrack {
   id: string

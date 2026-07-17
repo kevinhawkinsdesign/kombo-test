@@ -369,6 +369,8 @@ const COPY = {
       reply: "Replied",
       open: "Opened",
       click: "Clicked a link",
+      accept: "Accepted connection",
+      read: "Read the message",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Forks on: ${name}`,
     removeCondition: "Remove condition",
@@ -617,6 +619,8 @@ const COPY = {
       reply: "Respondió",
       open: "Abrió",
       click: "Hizo clic en un enlace",
+      accept: "Aceptó la conexión",
+      read: "Leyó el mensaje",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca en: ${name}`,
     removeCondition: "Quitar condición",
@@ -866,6 +870,8 @@ const COPY = {
       reply: "Ha risposto",
       open: "Ha aperto",
       click: "Ha cliccato un link",
+      accept: "Ha accettato la connessione",
+      read: "Ha letto il messaggio",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Si dirama su: ${name}`,
     removeCondition: "Rimuovi condizione",
@@ -1114,6 +1120,8 @@ const COPY = {
       reply: "A répondu",
       open: "A ouvert",
       click: "A cliqué sur un lien",
+      accept: "A accepté la connexion",
+      read: "A lu le message",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Se divise sur : ${name}`,
     removeCondition: "Supprimer la condition",
@@ -1363,6 +1371,8 @@ const COPY = {
       reply: "Hat geantwortet",
       open: "Hat geöffnet",
       click: "Hat auf einen Link geklickt",
+      accept: "Hat die Verbindung angenommen",
+      read: "Hat die Nachricht gelesen",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Verzweigt bei: ${name}`,
     removeCondition: "Bedingung entfernen",
@@ -1612,6 +1622,8 @@ const COPY = {
       reply: "Respondeu",
       open: "Abriu",
       click: "Clicou numa ligação",
+      accept: "Aceitou a ligação",
+      read: "Leu a mensagem",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca em: ${name}`,
     removeCondition: "Remover condição",
@@ -1861,6 +1873,8 @@ const COPY = {
       reply: "Respondeu",
       open: "Abriu",
       click: "Clicou em um link",
+      accept: "Aceitou a conexão",
+      read: "Leu a mensagem",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca em: ${name}`,
     removeCondition: "Remover condição",
@@ -4215,6 +4229,9 @@ export default function CampaignDetail() {
         onSelect={handleStepTypeSelect}
         title={pendingParallelStep ? c.addParallelStepTitle : undefined}
         onSelectCondition={allowCondition ? handleConditionSelect : undefined}
+        conditionChannel={
+          conditionAnchorStep ? normalizeChannel(conditionAnchorStep.channel) : undefined
+        }
         onUseTemplate={
           isTrailingAdd ? () => setTemplatePickerOpen(true) : undefined
         }

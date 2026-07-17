@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Segmented } from "@/components/common/Segmented"
 import { useLocale } from "@/lib/locale"
-import { CHANNELS } from "@/lib/step-channels"
+import { CHANNELS, conditionAllowedForChannel } from "@/lib/step-channels"
 import { cn } from "@/lib/utils"
 import type { ConditionKind, StepChannel } from "@/lib/types"
 
@@ -32,7 +32,7 @@ const GROUPS: { key: GroupKey; channels: StepChannel[] }[] = [
   { key: "other", channels: ["manual"] },
 ]
 
-const CONDITIONS: ConditionKind[] = ["reply", "open", "click"]
+const CONDITIONS: ConditionKind[] = ["reply", "open", "click", "accept", "read"]
 
 interface ConditionCardCopy {
   label: string
@@ -94,6 +94,14 @@ const COPY = {
         label: "Clicked a link",
         description: "Splits the sequence based on whether they click a link.",
       },
+      accept: {
+        label: "Accepted connection",
+        description: "Splits the sequence based on whether they accept the connection.",
+      },
+      read: {
+        label: "Read the message",
+        description: "Splits the sequence based on whether they read the message.",
+      },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
   es: {
@@ -149,6 +157,14 @@ const COPY = {
       click: {
         label: "Hizo clic en un enlace",
         description: "Divide la secuencia según si hacen clic en un enlace.",
+      },
+      accept: {
+        label: "Aceptó la conexión",
+        description: "Divide la secuencia según si aceptan la conexión.",
+      },
+      read: {
+        label: "Leyó el mensaje",
+        description: "Divide la secuencia según si leen el mensaje.",
       },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
@@ -206,6 +222,14 @@ const COPY = {
         label: "Ha cliccato un link",
         description: "Divide la sequenza a seconda che clicchino un link.",
       },
+      accept: {
+        label: "Ha accettato la connessione",
+        description: "Divide la sequenza a seconda che accettino la connessione.",
+      },
+      read: {
+        label: "Ha letto il messaggio",
+        description: "Divide la sequenza a seconda che leggano il messaggio.",
+      },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
   fr: {
@@ -261,6 +285,14 @@ const COPY = {
       click: {
         label: "A cliqué sur un lien",
         description: "Scinde la séquence selon qu'ils cliquent sur un lien ou non.",
+      },
+      accept: {
+        label: "A accepté la connexion",
+        description: "Scinde la séquence selon qu'ils acceptent la connexion ou non.",
+      },
+      read: {
+        label: "A lu le message",
+        description: "Scinde la séquence selon qu'ils lisent le message ou non.",
       },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
@@ -318,6 +350,14 @@ const COPY = {
         label: "Link geklickt",
         description: "Teilt die Sequenz danach, ob sie auf einen Link klicken.",
       },
+      accept: {
+        label: "Verbindung angenommen",
+        description: "Teilt die Sequenz danach, ob sie die Verbindung annehmen.",
+      },
+      read: {
+        label: "Nachricht gelesen",
+        description: "Teilt die Sequenz danach, ob sie die Nachricht lesen.",
+      },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
   pt: {
@@ -373,6 +413,14 @@ const COPY = {
       click: {
         label: "Clicou num link",
         description: "Divide a sequência consoante cliquem num link ou não.",
+      },
+      accept: {
+        label: "Aceitou a ligação",
+        description: "Divide a sequência consoante aceitem a ligação ou não.",
+      },
+      read: {
+        label: "Leu a mensagem",
+        description: "Divide a sequência consoante leiam a mensagem ou não.",
       },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
@@ -430,6 +478,14 @@ const COPY = {
         label: "Clicou em um link",
         description: "Divide a sequência conforme cliquem em um link ou não.",
       },
+      accept: {
+        label: "Aceitou a conexão",
+        description: "Divide a sequência conforme aceitem a conexão ou não.",
+      },
+      read: {
+        label: "Leu a mensagem",
+        description: "Divide a sequência conforme leiam a mensagem ou não.",
+      },
     } as Record<ConditionKind, ConditionCardCopy>,
   },
 } as const
@@ -445,6 +501,11 @@ interface StepTypePickerDialogProps {
   // has parallel siblings) — conditions fork the sequence, which only
   // makes sense one level deep.
   onSelectCondition?: (condition: ConditionKind) => void
+  // The channel of the step this condition would anchor to — some
+  // conditions only make sense for certain channels (e.g. "Opened" only
+  // means something for an email step). Unused when onSelectCondition is
+  // omitted.
+  conditionChannel?: StepChannel
   // Quick-start shortcuts — only offered when the ghost that opened this
   // dialog is an append (not a mid-sequence insert or fork track), since
   // these always add to the end of the top-level sequence.
@@ -459,11 +520,15 @@ export function StepTypePickerDialog({
   title,
   description,
   onSelectCondition,
+  conditionChannel,
   onUseTemplate,
   onUsePrompt,
 }: StepTypePickerDialogProps) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const availableConditions = conditionChannel
+    ? CONDITIONS.filter((condition) => conditionAllowedForChannel(condition, conditionChannel))
+    : CONDITIONS
   const hasQuickActions = onUseTemplate || onUsePrompt
 
   const [tab, setTab] = React.useState<"steps" | "conditions">("steps")
@@ -496,7 +561,7 @@ export function StepTypePickerDialog({
 
         {tab === "conditions" && onSelectCondition ? (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {CONDITIONS.map((condition) => {
+            {availableConditions.map((condition) => {
               const card = c.conditions[condition]
               return (
                 <button
