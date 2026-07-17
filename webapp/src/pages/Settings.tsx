@@ -68,6 +68,7 @@ import {
 } from "@/lib/store"
 import { useTheme } from "@/components/theme-provider"
 import { IcpManager } from "@/components/settings/IcpManager"
+import { ProductManager } from "@/components/settings/ProductManager"
 import { useAuth } from "@/lib/auth"
 import { useView } from "@/lib/view-context"
 import { team, teams, type TeamMember } from "@/lib/team"
@@ -1508,6 +1509,8 @@ export default function Settings() {
         {/* VALUE PROPOSITION */}
         <TabsContent value="value" className="space-y-4">
           <IcpManager />
+
+          <ProductManager />
 
           <UspsCard />
         </TabsContent>

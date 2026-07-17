@@ -11,6 +11,11 @@ export interface Icp {
   industries: string[]
   headcount: string
   titles: string[]
+  // Who signs off on the deal vs. who shapes the decision without owning
+  // budget — distinct from `titles` (the roles the search targets) and
+  // scored separately since a champion isn't the same as a buyer.
+  decisionMakers: string[]
+  influencers: string[]
   seniority: string[]
   regions: string[]
   signals: string[]
@@ -25,6 +30,8 @@ const SEED: Icp[] = [
     industries: ["B2B SaaS", "Fintech", "Marketplace"],
     headcount: "1,001-5,000",
     titles: ["VP Sales", "CRO", "Head of RevOps"],
+    decisionMakers: ["CRO", "VP Sales"],
+    influencers: ["RevOps Manager", "Sales Enablement Lead"],
     seniority: ["VP", "C-Level"],
     regions: ["United States", "United Kingdom"],
     signals: ["Hiring sales roles", "Recent funding"],
@@ -37,10 +44,34 @@ const SEED: Icp[] = [
     industries: ["Software", "Professional Services"],
     headcount: "51-200",
     titles: ["Founder", "CEO", "Head of Growth"],
+    decisionMakers: ["Founder", "CEO"],
+    influencers: ["Head of Growth"],
     seniority: ["Founder", "C-Level"],
     regions: ["Spain", "United States"],
     signals: ["Website intent", "Expanding GTM team"],
   },
+]
+
+// Shared AI "get similar" suggestion pools for Decision Makers / Influencers
+// tag inputs — used by both the onboarding ICP-builder step and the
+// Settings > Value Proposition ICP manager, so a suggestion click behaves
+// the same wherever the field appears.
+export const DECISION_MAKER_SUGGESTIONS = [
+  "VP of Sales",
+  "Chief Revenue Officer",
+  "Head of RevOps",
+  "VP of Marketing",
+  "Chief Product Officer",
+  "Founder",
+  "CEO",
+]
+export const INFLUENCER_SUGGESTIONS = [
+  "Product Manager",
+  "Sales Manager",
+  "Marketing Manager",
+  "RevOps Manager",
+  "Engineering Manager",
+  "Customer Success Manager",
 ]
 
 const KEY = "kombo_icps_v1"

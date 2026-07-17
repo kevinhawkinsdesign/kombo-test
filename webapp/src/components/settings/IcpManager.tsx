@@ -29,7 +29,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
-import { useIcps, icpStore, type Icp } from "@/lib/mock-icps"
+import { TagInput } from "@/components/common/TagInput"
+import {
+  useIcps,
+  icpStore,
+  type Icp,
+  DECISION_MAKER_SUGGESTIONS,
+  INFLUENCER_SUGGESTIONS,
+} from "@/lib/mock-icps"
 import { cn } from "@/lib/utils"
 
 const COPY = {
@@ -46,6 +53,15 @@ const COPY = {
     industries: "Industries",
     headcount: "Company size",
     titles: "Target titles",
+    decisionMakers: "Decision Makers",
+    decisionMakersPlaceholder: "Add decision makers…",
+    findingSimilarDecisionMakers: "Finding similar decision makers…",
+    influencers: "Influencers",
+    influencersPlaceholder: "Add influencers…",
+    findingSimilarInfluencers: "Finding similar influencers…",
+    clearAll: (n: number) => `Clear all (${n})`,
+    removeValue: (v: string) => `Remove ${v}`,
+    viewMore: (n: number) => `View more (${n})`,
     seniority: "Seniority",
     regions: "Regions",
     signals: "Signals",
@@ -79,6 +95,15 @@ const COPY = {
     industries: "Sectores",
     headcount: "Tamaño de empresa",
     titles: "Cargos objetivo",
+    decisionMakers: "Responsables de decisión",
+    decisionMakersPlaceholder: "Añade responsables de decisión…",
+    findingSimilarDecisionMakers: "Buscando responsables de decisión similares…",
+    influencers: "Influenciadores",
+    influencersPlaceholder: "Añade influenciadores…",
+    findingSimilarInfluencers: "Buscando influenciadores similares…",
+    clearAll: (n: number) => `Borrar todo (${n})`,
+    removeValue: (v: string) => `Eliminar ${v}`,
+    viewMore: (n: number) => `Ver más (${n})`,
     seniority: "Antigüedad",
     regions: "Regiones",
     signals: "Señales",
@@ -112,6 +137,15 @@ const COPY = {
     industries: "Settori",
     headcount: "Dimensione azienda",
     titles: "Ruoli target",
+    decisionMakers: "Decisori",
+    decisionMakersPlaceholder: "Aggiungi decisori…",
+    findingSimilarDecisionMakers: "Ricerca di decisori simili…",
+    influencers: "Influencer",
+    influencersPlaceholder: "Aggiungi influencer…",
+    findingSimilarInfluencers: "Ricerca di influencer simili…",
+    clearAll: (n: number) => `Cancella tutto (${n})`,
+    removeValue: (v: string) => `Rimuovi ${v}`,
+    viewMore: (n: number) => `Mostra altri (${n})`,
     seniority: "Livello di seniority",
     regions: "Regioni",
     signals: "Segnali",
@@ -145,6 +179,15 @@ const COPY = {
     industries: "Secteurs",
     headcount: "Taille de l'entreprise",
     titles: "Postes cibles",
+    decisionMakers: "Décideurs",
+    decisionMakersPlaceholder: "Ajouter des décideurs…",
+    findingSimilarDecisionMakers: "Recherche de décideurs similaires…",
+    influencers: "Influenceurs",
+    influencersPlaceholder: "Ajouter des influenceurs…",
+    findingSimilarInfluencers: "Recherche d'influenceurs similaires…",
+    clearAll: (n: number) => `Tout effacer (${n})`,
+    removeValue: (v: string) => `Retirer ${v}`,
+    viewMore: (n: number) => `Voir plus (${n})`,
     seniority: "Ancienneté",
     regions: "Régions",
     signals: "Signaux",
@@ -178,6 +221,15 @@ const COPY = {
     industries: "Branchen",
     headcount: "Unternehmensgröße",
     titles: "Zielpositionen",
+    decisionMakers: "Entscheider",
+    decisionMakersPlaceholder: "Entscheider hinzufügen…",
+    findingSimilarDecisionMakers: "Ähnliche Entscheider werden gesucht…",
+    influencers: "Einflussnehmer",
+    influencersPlaceholder: "Einflussnehmer hinzufügen…",
+    findingSimilarInfluencers: "Ähnliche Einflussnehmer werden gesucht…",
+    clearAll: (n: number) => `Alle löschen (${n})`,
+    removeValue: (v: string) => `${v} entfernen`,
+    viewMore: (n: number) => `Mehr anzeigen (${n})`,
     seniority: "Senioritätslevel",
     regions: "Regionen",
     signals: "Signale",
@@ -211,6 +263,15 @@ const COPY = {
     industries: "Setores",
     headcount: "Dimensão da empresa",
     titles: "Cargos-alvo",
+    decisionMakers: "Decisores",
+    decisionMakersPlaceholder: "Adicionar decisores…",
+    findingSimilarDecisionMakers: "A procurar decisores semelhantes…",
+    influencers: "Influenciadores",
+    influencersPlaceholder: "Adicionar influenciadores…",
+    findingSimilarInfluencers: "A procurar influenciadores semelhantes…",
+    clearAll: (n: number) => `Limpar tudo (${n})`,
+    removeValue: (v: string) => `Remover ${v}`,
+    viewMore: (n: number) => `Ver mais (${n})`,
     seniority: "Senioridade",
     regions: "Regiões",
     signals: "Sinais",
@@ -244,6 +305,15 @@ const COPY = {
     industries: "Setores",
     headcount: "Tamanho da empresa",
     titles: "Cargos-alvo",
+    decisionMakers: "Tomadores de decisão",
+    decisionMakersPlaceholder: "Adicionar tomadores de decisão…",
+    findingSimilarDecisionMakers: "Buscando tomadores de decisão semelhantes…",
+    influencers: "Influenciadores",
+    influencersPlaceholder: "Adicionar influenciadores…",
+    findingSimilarInfluencers: "Buscando influenciadores semelhantes…",
+    clearAll: (n: number) => `Limpar tudo (${n})`,
+    removeValue: (v: string) => `Remover ${v}`,
+    viewMore: (n: number) => `Ver mais (${n})`,
     seniority: "Senioridade",
     regions: "Regiões",
     signals: "Sinais",
@@ -333,8 +403,14 @@ export function IcpManager() {
                 </div>
                 <dl className="mt-2 space-y-1.5">
                   <Detail label={c.titles} values={icp.titles} />
+                  <Detail
+                    label={c.decisionMakers}
+                    values={icp.decisionMakers}
+                  />
+                  <Detail label={c.influencers} values={icp.influencers} />
                   <Detail label={c.industries} values={icp.industries} />
                   <Detail label={c.headcount} values={[icp.headcount]} />
+                  <Detail label={c.seniority} values={icp.seniority} />
                   <Detail label={c.regions} values={icp.regions} />
                   <Detail label={c.signals} values={icp.signals} />
                 </dl>
@@ -442,6 +518,12 @@ function IcpFormDialog({
   const [name, setName] = React.useState(icp?.name ?? "")
   const [color, setColor] = React.useState(icp?.color ?? COLORS[0])
   const [titles, setTitles] = React.useState((icp?.titles ?? []).join(", "))
+  const [decisionMakers, setDecisionMakers] = React.useState<string[]>(
+    icp?.decisionMakers ?? []
+  )
+  const [influencers, setInfluencers] = React.useState<string[]>(
+    icp?.influencers ?? []
+  )
   const [industries, setIndustries] = React.useState(
     (icp?.industries ?? []).join(", ")
   )
@@ -469,6 +551,8 @@ function IcpFormDialog({
       name: trimmed,
       color,
       titles: toList(titles),
+      decisionMakers,
+      influencers,
       industries: toList(industries),
       headcount: headcount.trim(),
       seniority: toList(seniority),
@@ -526,6 +610,31 @@ function IcpFormDialog({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
+            <TagInput
+              label={c.decisionMakers}
+              placeholder={c.decisionMakersPlaceholder}
+              values={decisionMakers}
+              onChange={setDecisionMakers}
+              suggestions={DECISION_MAKER_SUGGESTIONS}
+              suggestingLabel={c.findingSimilarDecisionMakers}
+              clearAllLabel={c.clearAll}
+              removeLabel={c.removeValue}
+              viewMoreLabel={c.viewMore}
+            />
+            <TagInput
+              label={c.influencers}
+              placeholder={c.influencersPlaceholder}
+              values={influencers}
+              onChange={setInfluencers}
+              suggestions={INFLUENCER_SUGGESTIONS}
+              suggestingLabel={c.findingSimilarInfluencers}
+              clearAllLabel={c.clearAll}
+              removeLabel={c.removeValue}
+              viewMoreLabel={c.viewMore}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <Labelled id="icp-titles" label={c.titles} value={titles} onChange={setTitles} />
             <Labelled
               id="icp-industries"
@@ -564,7 +673,9 @@ function IcpFormDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {c.cancel}
           </Button>
-          <Button onClick={handleSave}>{c.save}</Button>
+          <Button variant="volt" onClick={handleSave}>
+            {c.save}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
