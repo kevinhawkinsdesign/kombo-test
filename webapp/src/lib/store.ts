@@ -283,6 +283,8 @@ export const CONDITION_TRACK_KINDS: Record<ConditionKind, [StepTrackKind, StepTr
   reply: ["reply", "no_reply"],
   open: ["opened", "not_opened"],
   click: ["clicked", "not_clicked"],
+  accept: ["accepted", "not_accepted"],
+  read: ["read", "not_read"],
 }
 function nowISO(): string {
   return new Date().toISOString()

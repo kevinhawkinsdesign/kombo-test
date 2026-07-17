@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
-import type { StepChannel } from "@/lib/types"
+import type { ConditionKind, StepChannel } from "@/lib/types"
 
 export interface ChannelMeta {
   tint: string
@@ -47,4 +47,26 @@ export function normalizeChannel(channel: string): StepChannel {
   if (channel === "sms") return "whatsapp"
   if (channel === "instagram") return "linkedin_message"
   return "email"
+}
+
+const LINKEDIN_CHANNELS: StepChannel[] = ["linkedin_message", "linkedin_dm", "linkedin_inmail"]
+
+// Which channels a condition makes sense for — e.g. "Opened" only means
+// something for an email step, while "Accepted connection" only means
+// something for a LinkedIn step. `null` means unrestricted (the existing
+// "Replied" condition predates this map and never had a channel fence).
+const CONDITION_CHANNELS: Record<ConditionKind, StepChannel[] | null> = {
+  reply: null,
+  open: ["email"],
+  click: ["email", "whatsapp", ...LINKEDIN_CHANNELS],
+  accept: LINKEDIN_CHANNELS,
+  read: ["email", "whatsapp", ...LINKEDIN_CHANNELS],
+}
+
+export function conditionAllowedForChannel(
+  condition: ConditionKind,
+  channel: StepChannel
+): boolean {
+  const allowed = CONDITION_CHANNELS[condition]
+  return allowed === null || allowed.includes(channel)
 }
