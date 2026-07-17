@@ -1,13 +1,13 @@
 // Data for settings parity with the Kombo extension + credit top-up packages.
 
 export const SALES_METHODOLOGIES = [
-  "MEDDIC",
-  "BANT",
   "SPIN Selling",
-  "Challenger Sale",
-  "Sandler",
-  "Solution Selling",
-  "Value Selling",
+  "MEDDIC",
+  "N.E.A.T. Selling™",
+  "AIDA",
+  "The Sandler System",
+  "BANT",
+  "SPICED",
 ] as const
 
 export interface BlacklistedCompany {
