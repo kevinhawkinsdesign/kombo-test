@@ -1149,8 +1149,8 @@ function OutreachPanel({
         </div>
       </div>
 
-      <AutomationStatusBox autoPauseOnReply={campaign.autoPauseOnReply ?? true} />
-      <div className="mt-3">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <AutomationStatusBox autoPauseOnReply={campaign.autoPauseOnReply ?? true} />
         <SequenceCostSummary steps={campaign.steps} />
       </div>
       <div className="mt-3">

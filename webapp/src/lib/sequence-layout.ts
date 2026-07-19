@@ -175,6 +175,17 @@ export function computeLayout(
 ): { nodes: SequenceNode[]; edges: Edge[] } {
   const nodes: SequenceNode[] = []
   const edges: Edge[] = []
+
+  // A brand-new sequence: nothing to lay out yet — just a single "+" ghost
+  // to start the sequence, so the canvas itself is the empty state instead
+  // of a separate card-with-buttons.
+  if (steps.length === 0) {
+    if (opts.interactive) {
+      nodes.push(addNode("add-first-step", 0, 0, { kind: "add" }))
+    }
+    return { nodes, edges }
+  }
+
   let depth = 0
   let pendingSources: string[] = []
 
