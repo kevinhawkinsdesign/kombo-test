@@ -16,8 +16,6 @@ import {
   Users,
   Building2,
   Mail,
-  Plug,
-  Sparkles,
 } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -75,8 +73,6 @@ import { useView } from "@/lib/view-context"
 import { team, teams, type TeamMember } from "@/lib/team"
 import { initials } from "@/lib/format"
 import { portraitFor } from "@/lib/avatars"
-import { integrations } from "@/lib/mock-data"
-import { mcpConnections, connectedToolCount } from "@/lib/mock-network"
 import { cn } from "@/lib/utils"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -128,16 +124,7 @@ const COPY = {
     noInvites: "No teammates invited yet — invite your first one above.",
     tabValue: "Value Proposition",
     tabSelling: "Selling Configuration",
-    tabConnections: "Connections",
-    connectionsDesc:
-      "Manage your CRM, professional network, outreach, and AI tool connections.",
-    connIntegrations: "Integrations",
-    connAiTools: "AI tool connections",
-    connectedCount: (n: number, total: number) => `${n} of ${total} connected`,
-    goToIntegrations: "Manage in Integrations",
     tabBlacklists: "Blacklists",
-    tabPreferences: "Preferences",
-    tabNotifications: "Notifications",
     profileDetails: "Profile details",
     profileDetailsDesc: "Update your personal information.",
     fullName: "Full name",
@@ -273,16 +260,7 @@ const COPY = {
     noInvites: "Aún no has invitado a nadie — invita a tu primer compañero arriba.",
     tabValue: "Propuesta de valor",
     tabSelling: "Configuración de ventas",
-    tabConnections: "Conexiones",
-    connectionsDesc:
-      "Gestiona tu CRM, red profesional, outreach y conexiones de herramientas de IA.",
-    connIntegrations: "Integraciones",
-    connAiTools: "Conexiones de herramientas de IA",
-    connectedCount: (n: number, total: number) => `${n} de ${total} conectadas`,
-    goToIntegrations: "Gestionar en Integraciones",
     tabBlacklists: "Listas negras",
-    tabPreferences: "Preferencias",
-    tabNotifications: "Notificaciones",
     profileDetails: "Datos del perfil",
     profileDetailsDesc: "Actualiza tu información personal.",
     fullName: "Nombre completo",
@@ -422,16 +400,7 @@ const COPY = {
     noInvites: "Non hai ancora invitato nessuno — invita il primo collega qui sopra.",
     tabValue: "Proposta di valore",
     tabSelling: "Configurazione vendite",
-    tabConnections: "Connessioni",
-    connectionsDesc:
-      "Gestisci CRM, rete professionale, outreach e connessioni con strumenti IA.",
-    connIntegrations: "Integrazioni",
-    connAiTools: "Connessioni strumenti IA",
-    connectedCount: (n: number, total: number) => `${n} di ${total} connesse`,
-    goToIntegrations: "Gestisci in Integrazioni",
     tabBlacklists: "Liste nere",
-    tabPreferences: "Preferenze",
-    tabNotifications: "Notifiche",
     profileDetails: "Dati del profilo",
     profileDetailsDesc: "Aggiorna le tue informazioni personali.",
     fullName: "Nome completo",
@@ -571,16 +540,7 @@ const COPY = {
     noInvites: "Aucun collègue invité pour le moment — invitez-en un ci-dessus.",
     tabValue: "Proposition de valeur",
     tabSelling: "Configuration des ventes",
-    tabConnections: "Connexions",
-    connectionsDesc:
-      "Gérez votre CRM, réseau professionnel, outreach et connexions aux outils IA.",
-    connIntegrations: "Intégrations",
-    connAiTools: "Connexions aux outils IA",
-    connectedCount: (n: number, total: number) => `${n} sur ${total} connectées`,
-    goToIntegrations: "Gérer dans Intégrations",
     tabBlacklists: "Listes noires",
-    tabPreferences: "Préférences",
-    tabNotifications: "Notifications",
     profileDetails: "Informations du profil",
     profileDetailsDesc: "Mettez à jour vos informations personnelles.",
     fullName: "Nom complet",
@@ -720,16 +680,7 @@ const COPY = {
     noInvites: "Noch niemand eingeladen — lade oben deinen ersten Kollegen ein.",
     tabValue: "Wertversprechen",
     tabSelling: "Vertriebskonfiguration",
-    tabConnections: "Verbindungen",
-    connectionsDesc:
-      "Verwalte dein CRM, professionelles Netzwerk, Outreach und KI-Tool-Verbindungen.",
-    connIntegrations: "Integrationen",
-    connAiTools: "KI-Tool-Verbindungen",
-    connectedCount: (n: number, total: number) => `${n} von ${total} verbunden`,
-    goToIntegrations: "In Integrationen verwalten",
     tabBlacklists: "Blacklists",
-    tabPreferences: "Präferenzen",
-    tabNotifications: "Benachrichtigungen",
     profileDetails: "Profildaten",
     profileDetailsDesc: "Aktualisiere deine persönlichen Daten.",
     fullName: "Vollständiger Name",
@@ -869,16 +820,7 @@ const COPY = {
     noInvites: "Ainda não convidou ninguém — convide o primeiro colega acima.",
     tabValue: "Proposta de valor",
     tabSelling: "Configuração de vendas",
-    tabConnections: "Ligações",
-    connectionsDesc:
-      "Faça a gestão do seu CRM, rede profissional, outreach e ligações a ferramentas de IA.",
-    connIntegrations: "Integrações",
-    connAiTools: "Ligações a ferramentas de IA",
-    connectedCount: (n: number, total: number) => `${n} de ${total} ligadas`,
-    goToIntegrations: "Gerir em Integrações",
     tabBlacklists: "Listas negras",
-    tabPreferences: "Preferências",
-    tabNotifications: "Notificações",
     profileDetails: "Dados do perfil",
     profileDetailsDesc: "Atualize as suas informações pessoais.",
     fullName: "Nome completo",
@@ -1018,16 +960,7 @@ const COPY = {
     noInvites: "Você ainda não convidou ninguém — convide seu primeiro colega acima.",
     tabValue: "Proposta de valor",
     tabSelling: "Configuração de vendas",
-    tabConnections: "Conexões",
-    connectionsDesc:
-      "Gerencie seu CRM, rede profissional, outreach e conexões com ferramentas de IA.",
-    connIntegrations: "Integrações",
-    connAiTools: "Conexões com ferramentas de IA",
-    connectedCount: (n: number, total: number) => `${n} de ${total} conectadas`,
-    goToIntegrations: "Gerenciar em Integrações",
     tabBlacklists: "Listas negras",
-    tabPreferences: "Preferências",
-    tabNotifications: "Notificações",
     profileDetails: "Dados do perfil",
     profileDetailsDesc: "Atualize suas informações pessoais.",
     fullName: "Nome completo",
@@ -1179,26 +1112,50 @@ export default function Settings() {
     setInvites((prev) => prev.map((i) => (i.id === id ? { ...i, role } : i)))
   }
 
-  const connectedIntegrationsCount = integrations.filter((i) => i.connected).length
-
   return (
-    <Page className="max-w-3xl">
+    <Page className="max-w-5xl">
       <PageHeading title={c.title} description={c.description} />
 
       <Tabs
         value={tab}
         onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
+        orientation="vertical"
+        className="flex-col items-stretch gap-6 md:flex-row md:items-start"
       >
-        <TabsList className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-16 z-20 mb-4 h-auto flex-wrap backdrop-blur">
-          <TabsTrigger value="account">{c.tabAccount}</TabsTrigger>
-          <TabsTrigger value="accountManagement">{c.tabAccountMgmt}</TabsTrigger>
-          <TabsTrigger value="value">{c.tabValue}</TabsTrigger>
-          <TabsTrigger value="selling">{c.tabSelling}</TabsTrigger>
-          <TabsTrigger value="connections">{c.tabConnections}</TabsTrigger>
-          <TabsTrigger value="blacklists">{c.tabBlacklists}</TabsTrigger>
-          <TabsTrigger value="preferences">{c.tabPreferences}</TabsTrigger>
-          <TabsTrigger value="notifications">{c.tabNotifications}</TabsTrigger>
+        <TabsList className="bg-transparent supports-[backdrop-filter]:bg-transparent sticky top-16 z-20 h-auto w-full shrink-0 flex-col items-stretch gap-1 rounded-none p-0 md:w-56">
+          <TabsTrigger
+            value="account"
+            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
+          >
+            {c.tabAccount}
+          </TabsTrigger>
+          <TabsTrigger
+            value="accountManagement"
+            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
+          >
+            {c.tabAccountMgmt}
+          </TabsTrigger>
+          <TabsTrigger
+            value="value"
+            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
+          >
+            {c.tabValue}
+          </TabsTrigger>
+          <TabsTrigger
+            value="selling"
+            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
+          >
+            {c.tabSelling}
+          </TabsTrigger>
+          <TabsTrigger
+            value="blacklists"
+            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
+          >
+            {c.tabBlacklists}
+          </TabsTrigger>
         </TabsList>
+
+        <div className="min-w-0 flex-1">
 
         {/* ACCOUNT */}
         <TabsContent value="account" className="space-y-4">
@@ -1228,6 +1185,98 @@ export default function Settings() {
               <Separator />
               <div className="flex justify-end">
                 <Button onClick={() => toast.success(c.uploadSaved)}>
+                  {c.saveChanges}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.appearance}</CardTitle>
+              <CardDescription>{c.appearanceDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <Label>{c.theme}</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {THEME_OPTIONS.map((opt) => {
+                    const Icon = opt.icon
+                    const active = theme === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => setTheme(opt.value)}
+                        className={cn(
+                          "relative flex flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors",
+                          active
+                            ? "border-primary bg-primary/5"
+                            : "hover:bg-muted/50"
+                        )}
+                      >
+                        {active && (
+                          <Check className="text-primary absolute top-2 right-2 size-4" />
+                        )}
+                        <Icon className="size-5" />
+                        {c.themeOptions[opt.value]}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <Separator />
+              <PreferenceRow
+                title={c.aiSuggestions}
+                description={c.aiSuggestionsDesc}
+                defaultChecked
+              />
+              <PreferenceRow
+                title={c.dailyDigest}
+                description={c.dailyDigestDesc}
+                defaultChecked
+              />
+              <Separator />
+              <div className="flex justify-end">
+                <Button onClick={() => toast.success(c.preferencesSaved)}>
+                  {c.saveChanges}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.notifications}</CardTitle>
+              <CardDescription>{c.notificationsDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <PreferenceRow
+                title={c.prospectReplies}
+                description={c.prospectRepliesDesc}
+                defaultChecked
+              />
+              <PreferenceRow
+                title={c.meetingsBooked}
+                description={c.meetingsBookedDesc}
+                defaultChecked
+              />
+              <PreferenceRow
+                title={c.dealStageChanges}
+                description={c.dealStageChangesDesc}
+                defaultChecked
+              />
+              <PreferenceRow
+                title={c.mentions}
+                description={c.mentionsDesc}
+                defaultChecked
+              />
+              <PreferenceRow
+                title={c.weeklyDigest}
+                description={c.weeklyDigestDesc}
+              />
+              <Separator />
+              <div className="flex justify-end">
+                <Button onClick={() => toast.success(c.notificationsSaved)}>
                   {c.saveChanges}
                 </Button>
               </div>
@@ -1511,148 +1560,7 @@ export default function Settings() {
         <TabsContent value="blacklists">
           <BlacklistCard />
         </TabsContent>
-
-        {/* PREFERENCES */}
-        <TabsContent value="preferences">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.appearance}</CardTitle>
-              <CardDescription>{c.appearanceDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label>{c.theme}</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {THEME_OPTIONS.map((opt) => {
-                    const Icon = opt.icon
-                    const active = theme === opt.value
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => setTheme(opt.value)}
-                        className={cn(
-                          "relative flex flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors",
-                          active
-                            ? "border-primary bg-primary/5"
-                            : "hover:bg-muted/50"
-                        )}
-                      >
-                        {active && (
-                          <Check className="text-primary absolute top-2 right-2 size-4" />
-                        )}
-                        <Icon className="size-5" />
-                        {c.themeOptions[opt.value]}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-              <Separator />
-              <PreferenceRow
-                title={c.aiSuggestions}
-                description={c.aiSuggestionsDesc}
-                defaultChecked
-              />
-              <PreferenceRow
-                title={c.dailyDigest}
-                description={c.dailyDigestDesc}
-                defaultChecked
-              />
-              <Separator />
-              <div className="flex justify-end">
-                <Button onClick={() => toast.success(c.preferencesSaved)}>
-                  {c.saveChanges}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* NOTIFICATIONS */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.notifications}</CardTitle>
-              <CardDescription>{c.notificationsDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <PreferenceRow
-                title={c.prospectReplies}
-                description={c.prospectRepliesDesc}
-                defaultChecked
-              />
-              <PreferenceRow
-                title={c.meetingsBooked}
-                description={c.meetingsBookedDesc}
-                defaultChecked
-              />
-              <PreferenceRow
-                title={c.dealStageChanges}
-                description={c.dealStageChangesDesc}
-                defaultChecked
-              />
-              <PreferenceRow
-                title={c.mentions}
-                description={c.mentionsDesc}
-                defaultChecked
-              />
-              <PreferenceRow
-                title={c.weeklyDigest}
-                description={c.weeklyDigestDesc}
-              />
-              <Separator />
-              <div className="flex justify-end">
-                <Button
-                  onClick={() => toast.success(c.notificationsSaved)}
-                >
-                  {c.saveChanges}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* CONNECTIONS */}
-        <TabsContent value="connections" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.tabConnections}</CardTitle>
-              <CardDescription>{c.connectionsDesc}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="flex items-center gap-3 rounded-lg border p-4">
-                  <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md">
-                    <Plug className="size-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{c.connIntegrations}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {c.connectedCount(connectedIntegrationsCount, integrations.length)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 rounded-lg border p-4">
-                  <span className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-md">
-                    <Sparkles className="size-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{c.connAiTools}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {c.connectedCount(connectedToolCount, mcpConnections.length)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex justify-end">
-                <Button asChild>
-                  <Link to="/integrations">{c.goToIntegrations}</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        </div>
       </Tabs>
     </Page>
   )
