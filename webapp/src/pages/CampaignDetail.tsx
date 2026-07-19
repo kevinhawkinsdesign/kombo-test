@@ -379,8 +379,6 @@ const COPY = {
     applyChanges: "Apply changes",
     sequenceApplied: "Sequence updated",
     discardChanges: "Discard changes",
-    noSteps: "No steps yet — add one to build the sequence.",
-    addStep: "Add step",
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
     previewMessages: "Preview messages",
@@ -629,8 +627,6 @@ const COPY = {
     applyChanges: "Aplicar cambios",
     sequenceApplied: "Secuencia actualizada",
     discardChanges: "Descartar cambios",
-    noSteps: "Aún no hay pasos — añade uno para construir la secuencia.",
-    addStep: "Añadir paso",
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
     previewMessages: "Vista previa de mensajes",
@@ -880,8 +876,6 @@ const COPY = {
     applyChanges: "Applica modifiche",
     sequenceApplied: "Sequenza aggiornata",
     discardChanges: "Annulla modifiche",
-    noSteps: "Ancora nessun passaggio — aggiungine uno per costruire la sequenza.",
-    addStep: "Aggiungi passaggio",
     copySequenceFrom: "Copia sequenza da…",
     saveAsTemplate: "Salva come modello",
     previewMessages: "Anteprima messaggi",
@@ -1130,8 +1124,6 @@ const COPY = {
     applyChanges: "Appliquer les modifications",
     sequenceApplied: "Séquence mise à jour",
     discardChanges: "Annuler les modifications",
-    noSteps: "Pas encore d'étapes — ajoutez-en une pour construire la séquence.",
-    addStep: "Ajouter une étape",
     copySequenceFrom: "Copier la séquence depuis…",
     saveAsTemplate: "Enregistrer comme modèle",
     previewMessages: "Aperçu des messages",
@@ -1381,8 +1373,6 @@ const COPY = {
     applyChanges: "Änderungen übernehmen",
     sequenceApplied: "Sequenz aktualisiert",
     discardChanges: "Änderungen verwerfen",
-    noSteps: "Noch keine Schritte — füge einen hinzu, um die Sequenz aufzubauen.",
-    addStep: "Schritt hinzufügen",
     copySequenceFrom: "Sequenz kopieren von…",
     saveAsTemplate: "Als Vorlage speichern",
     previewMessages: "Nachrichten in der Vorschau ansehen",
@@ -1632,8 +1622,6 @@ const COPY = {
     applyChanges: "Aplicar alterações",
     sequenceApplied: "Sequência atualizada",
     discardChanges: "Descartar alterações",
-    noSteps: "Ainda não há passos — adicione um para construir a sequência.",
-    addStep: "Adicionar passo",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Guardar como modelo",
     previewMessages: "Pré-visualizar mensagens",
@@ -1883,8 +1871,6 @@ const COPY = {
     applyChanges: "Aplicar alterações",
     sequenceApplied: "Sequência atualizada",
     discardChanges: "Descartar alterações",
-    noSteps: "Ainda não há etapas — adicione uma para construir a sequência.",
-    addStep: "Adicionar etapa",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Salvar como modelo",
     previewMessages: "Pré-visualizar mensagens",
@@ -3166,704 +3152,678 @@ export default function CampaignDetail() {
 
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
-          {draft.steps.length > 0 ? (
-            <>
-              <AutomationStatusBox
-                autoPauseOnReply={camp.autoPauseOnReply ?? true}
-                onToggle={(next) =>
-                  campaignStore.update(camp.id, { autoPauseOnReply: next })
-                }
+          <div className="grid gap-4 sm:grid-cols-2">
+            <AutomationStatusBox
+              autoPauseOnReply={camp.autoPauseOnReply ?? true}
+              onToggle={(next) =>
+                campaignStore.update(camp.id, { autoPauseOnReply: next })
+              }
+            />
+            <SequenceCostSummary steps={draft.steps} />
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPreviewOpen(true)}
+            >
+              <Eye className="size-4" />
+              {c.previewMessages}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCopySeqOpen(true)}
+            >
+              <Copy className="size-4" />
+              {c.copySequenceFrom}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSaveSeqOpen(true)}
+            >
+              <Bookmark className="size-4" />
+              {c.saveAsTemplate}
+            </Button>
+          </div>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+            <div className="min-w-0 flex-1 space-y-3">
+              <SequenceCanvas
+                steps={draft.steps}
+                mode="interactive"
+                selectedStepId={selectedStepId}
+                onSelectStep={setSelectedStepId}
+                onAddRequest={(ghost) => {
+                  setPendingGhost(ghost)
+                  setPendingParallelStep(null)
+                  setStepPickerOpen(true)
+                }}
+                onAddParallel={(step) => {
+                  setPendingParallelStep(step)
+                  setPendingGhost(null)
+                  setStepPickerOpen(true)
+                }}
+                onMoveStep={(id, target) => draft.moveStepToTarget(id, target)}
               />
-              <SequenceCostSummary steps={draft.steps} />
-              <div className="flex flex-wrap justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPreviewOpen(true)}
-                >
-                  <Eye className="size-4" />
-                  {c.previewMessages}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCopySeqOpen(true)}
-                >
-                  <Copy className="size-4" />
-                  {c.copySequenceFrom}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSaveSeqOpen(true)}
-                >
-                  <Bookmark className="size-4" />
-                  {c.saveAsTemplate}
-                </Button>
-              </div>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                <div className="min-w-0 flex-1 space-y-3">
-                  <SequenceCanvas
-                    steps={draft.steps}
-                    mode="interactive"
-                    selectedStepId={selectedStepId}
-                    onSelectStep={setSelectedStepId}
-                    onAddRequest={(ghost) => {
-                      setPendingGhost(ghost)
-                      setPendingParallelStep(null)
-                      setStepPickerOpen(true)
-                    }}
-                    onAddParallel={(step) => {
-                      setPendingParallelStep(step)
-                      setPendingGhost(null)
-                      setStepPickerOpen(true)
-                    }}
-                    onMoveStep={(id, target) => draft.moveStepToTarget(id, target)}
-                  />
-                </div>
+            </div>
 
-                {/* Detail panel — the selected step's full editor. Dismissible
-                    so the diagram can take the full width; clicking a step
-                    card reopens it via onSelectStep above. */}
-                {selectedStep && (() => {
-                  const step = selectedStep
-                  // Position within whichever list the step actually lives in
-                  // (top-level, a condition track, or a step's parallel
-                  // siblings) — what "move up/down" and "is first/last"
-                  // need. A separate flattened index (which walks tracks and
-                  // parallel siblings inline) drives the cosmetic stats
-                  // below so they still degrade sensibly for nested steps.
-                  const { list: stepList, index: i } = locateCampaignStep(
-                    draft.steps,
-                    step.id
+            {/* Detail panel — the selected step's full editor. Dismissible
+                so the diagram can take the full width; clicking a step
+                card reopens it via onSelectStep above. */}
+            {selectedStep && (() => {
+              const step = selectedStep
+              // Position within whichever list the step actually lives in
+              // (top-level, a condition track, or a step's parallel
+              // siblings) — what "move up/down" and "is first/last"
+              // need. A separate flattened index (which walks tracks and
+              // parallel siblings inline) drives the cosmetic stats
+              // below so they still degrade sensibly for nested steps.
+              const { list: stepList, index: i } = locateCampaignStep(
+                draft.steps,
+                step.id
+              )
+              const isParallelStep = draft.steps.some((s) =>
+                s.parallelSteps?.some((p) => p.id === step.id)
+              )
+              const flatIndex = flattenCampaignSteps(draft.steps).findIndex(
+                (s) => s.id === step.id
+              )
+              const meta = channelMeta(step.channel)
+              const isEmail = normalizeChannel(step.channel) === "email"
+              const isAiCall = normalizeChannel(step.channel) === "ai_call"
+              const isLinkedIn = ["linkedin_message", "linkedin_dm", "linkedin_inmail"].includes(
+                normalizeChannel(step.channel)
+              )
+              const isWhatsApp = normalizeChannel(step.channel) === "whatsapp"
+              const linkedinAction = step.linkedinAction ?? "message"
+              const whatsappAction = step.whatsappAction ?? "message"
+              const isVoiceMessage =
+                (isLinkedIn && linkedinAction === "voice_message") ||
+                (isWhatsApp && whatsappAction === "voice_message")
+              // Connect/Like Post/View Profile carry no message content —
+              // only "message" (the default) shows the subject/body editor.
+              // Voice Message gets its own recorder UI, handled separately.
+              const isLinkedInActionOnly =
+                isLinkedIn && linkedinAction !== "message" && linkedinAction !== "voice_message"
+              // Shared between the AI-call script's plain textarea (as a
+              // standalone control) and the RichTextEditor's toolbarEnd —
+              // same menu, same handler, different mount point. A search
+              // box + capped scroll height keep this usable once the
+              // merge-var catalog grows well past what fits on screen —
+              // same fix already shipped on Inbox.tsx's composer.
+              const stepVarQuery = stepVarSearch.trim().toLowerCase()
+              const filteredStepVars = stepVarQuery
+                ? MERGE_VARIABLES.filter(
+                    (v) =>
+                      c.variables[v.tag].toLowerCase().includes(stepVarQuery) ||
+                      v.tag.toLowerCase().includes(stepVarQuery)
                   )
-                  const isParallelStep = draft.steps.some((s) =>
-                    s.parallelSteps?.some((p) => p.id === step.id)
-                  )
-                  const flatIndex = flattenCampaignSteps(draft.steps).findIndex(
-                    (s) => s.id === step.id
-                  )
-                  const meta = channelMeta(step.channel)
-                  const isEmail = normalizeChannel(step.channel) === "email"
-                  const isAiCall = normalizeChannel(step.channel) === "ai_call"
-                  const isLinkedIn = ["linkedin_message", "linkedin_dm", "linkedin_inmail"].includes(
-                    normalizeChannel(step.channel)
-                  )
-                  const isWhatsApp = normalizeChannel(step.channel) === "whatsapp"
-                  const linkedinAction = step.linkedinAction ?? "message"
-                  const whatsappAction = step.whatsappAction ?? "message"
-                  const isVoiceMessage =
-                    (isLinkedIn && linkedinAction === "voice_message") ||
-                    (isWhatsApp && whatsappAction === "voice_message")
-                  // Connect/Like Post/View Profile carry no message content —
-                  // only "message" (the default) shows the subject/body editor.
-                  // Voice Message gets its own recorder UI, handled separately.
-                  const isLinkedInActionOnly =
-                    isLinkedIn && linkedinAction !== "message" && linkedinAction !== "voice_message"
-                  // Shared between the AI-call script's plain textarea (as a
-                  // standalone control) and the RichTextEditor's toolbarEnd —
-                  // same menu, same handler, different mount point. A search
-                  // box + capped scroll height keep this usable once the
-                  // merge-var catalog grows well past what fits on screen —
-                  // same fix already shipped on Inbox.tsx's composer.
-                  const stepVarQuery = stepVarSearch.trim().toLowerCase()
-                  const filteredStepVars = stepVarQuery
-                    ? MERGE_VARIABLES.filter(
-                        (v) =>
-                          c.variables[v.tag].toLowerCase().includes(stepVarQuery) ||
-                          v.tag.toLowerCase().includes(stepVarQuery)
-                      )
-                    : MERGE_VARIABLES
-                  const stepVarGroups = groupByMergeVarGroup(filteredStepVars, MERGE_VARIABLE_GROUPS)
-                  const variablesMenu = (
-                    <DropdownMenu onOpenChange={(open) => !open && setStepVarSearch("")}>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="text-muted-foreground">
-                          <Braces className="size-4" />
-                          {c.insertVariable}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuLabel>{c.insertVariable}</DropdownMenuLabel>
-                        <div className="px-2 pb-1.5" onClick={(e) => e.stopPropagation()}>
-                          <Input
-                            value={stepVarSearch}
-                            onChange={(e) => setStepVarSearch(e.target.value)}
-                            placeholder={c.varsSearchPlaceholder}
-                            className="h-8"
-                            autoFocus
-                          />
-                        </div>
-                        <div className="max-h-64 overflow-y-auto">
-                          {stepVarGroups.map((group) => (
-                            <div key={group.key}>
-                              <DropdownMenuLabel className="text-muted-foreground text-[11px] font-semibold uppercase">
-                                {c.varGroups[group.key]}
-                              </DropdownMenuLabel>
-                              {group.items.map((v) => (
-                                <DropdownMenuItem
-                                  key={v.tag}
-                                  // False positive: only reads the ref from this click,
-                                  // same shape as Inbox.tsx's insertVar — the rule can't
-                                  // trace refs through this panel's pre-existing IIFE.
-                                  // eslint-disable-next-line react-hooks/refs
-                                  onClick={() => insertStepVariable(v.tag, step, isAiCall)}
-                                >
-                                  <Braces className="text-primary size-3.5" />
-                                  <span className="flex-1">{c.variables[v.tag]}</span>
-                                  <span className="text-muted-foreground font-mono text-[11px]">
-                                    {`{{${v.tag}}}`}
-                                  </span>
-                                </DropdownMenuItem>
-                              ))}
-                            </div>
+                : MERGE_VARIABLES
+              const stepVarGroups = groupByMergeVarGroup(filteredStepVars, MERGE_VARIABLE_GROUPS)
+              const variablesMenu = (
+                <DropdownMenu onOpenChange={(open) => !open && setStepVarSearch("")}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      <Braces className="size-4" />
+                      {c.insertVariable}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    <DropdownMenuLabel>{c.insertVariable}</DropdownMenuLabel>
+                    <div className="px-2 pb-1.5" onClick={(e) => e.stopPropagation()}>
+                      <Input
+                        value={stepVarSearch}
+                        onChange={(e) => setStepVarSearch(e.target.value)}
+                        placeholder={c.varsSearchPlaceholder}
+                        className="h-8"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {stepVarGroups.map((group) => (
+                        <div key={group.key}>
+                          <DropdownMenuLabel className="text-muted-foreground text-[11px] font-semibold uppercase">
+                            {c.varGroups[group.key]}
+                          </DropdownMenuLabel>
+                          {group.items.map((v) => (
+                            <DropdownMenuItem
+                              key={v.tag}
+                              // False positive: only reads the ref from this click,
+                              // same shape as Inbox.tsx's insertVar — the rule can't
+                              // trace refs through this panel's pre-existing IIFE.
+                              // eslint-disable-next-line react-hooks/refs
+                              onClick={() => insertStepVariable(v.tag, step, isAiCall)}
+                            >
+                              <Braces className="text-primary size-3.5" />
+                              <span className="flex-1">{c.variables[v.tag]}</span>
+                              <span className="text-muted-foreground font-mono text-[11px]">
+                                {`{{${v.tag}}}`}
+                              </span>
+                            </DropdownMenuItem>
                           ))}
-                          {filteredStepVars.length === 0 && (
-                            <p className="text-muted-foreground px-2 py-3 text-center text-xs">
-                              {c.varsEmpty}
-                            </p>
-                          )}
                         </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )
-                  const sent = Math.max(
-                    0,
-                    campaign.enrolled -
-                      flatIndex * Math.round(campaign.enrolled * 0.12)
-                  )
-                  const opened = Math.round(sent * 0.62)
-                  const replied = Math.round(opened * 0.24)
-                  return (
-                    <Card className="w-full lg:w-[30rem] lg:shrink-0">
-                      <CardContent className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span
-                            className={cn(
-                              "flex size-8 shrink-0 items-center justify-center rounded-lg",
-                              meta.tint
-                            )}
+                      ))}
+                      {filteredStepVars.length === 0 && (
+                        <p className="text-muted-foreground px-2 py-3 text-center text-xs">
+                          {c.varsEmpty}
+                        </p>
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )
+              const sent = Math.max(
+                0,
+                campaign.enrolled -
+                  flatIndex * Math.round(campaign.enrolled * 0.12)
+              )
+              const opened = Math.round(sent * 0.62)
+              const replied = Math.round(opened * 0.24)
+              return (
+                <Card className="w-full lg:w-[30rem] lg:shrink-0">
+                  <CardContent className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span
+                        className={cn(
+                          "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                          meta.tint
+                        )}
+                      >
+                        <meta.Icon className="size-4" />
+                      </span>
+                      <Select
+                        value={normalizeChannel(step.channel)}
+                        onValueChange={(v) =>
+                          draft.updateStep(step.id, {
+                            channel: v as StepChannel,
+                            isManualTask: v === "manual",
+                          })
+                        }
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          className="w-[180px]"
+                          aria-label={c.stepChannelAria(i + 1)}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CHANNEL_GROUPS.map((group) => (
+                            <SelectGroup key={group.labelKey}>
+                              <SelectLabel>{c[group.labelKey]}</SelectLabel>
+                              {group.channels.map((channelKey) => (
+                                <SelectItem key={channelKey} value={channelKey}>
+                                  {c.channelLabel[channelKey]}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {isLinkedIn && (
+                        <Select
+                          value={step.linkedinAction ?? "message"}
+                          onValueChange={(v) =>
+                            draft.updateStep(step.id, {
+                              linkedinAction: v as LinkedInAction,
+                            })
+                          }
+                        >
+                          <SelectTrigger
+                            size="sm"
+                            className="w-[150px]"
+                            aria-label={c.linkedinActionAria(i + 1)}
                           >
-                            <meta.Icon className="size-4" />
-                          </span>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {LINKEDIN_ACTIONS.map((action) => {
+                              const ActionIcon = LINKEDIN_ACTION_ICON[action]
+                              return (
+                                <SelectItem key={action} value={action}>
+                                  <span className="flex items-center gap-2">
+                                    <ActionIcon className="size-3.5" />
+                                    {c.linkedinActionLabel[action]}
+                                  </span>
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {isWhatsApp && (
+                        <Select
+                          value={step.whatsappAction ?? "message"}
+                          onValueChange={(v) =>
+                            draft.updateStep(step.id, {
+                              whatsappAction: v as WhatsAppAction,
+                            })
+                          }
+                        >
+                          <SelectTrigger
+                            size="sm"
+                            className="w-[150px]"
+                            aria-label={c.linkedinActionAria(i + 1)}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {WHATSAPP_ACTIONS.map((action) => {
+                              const ActionIcon = LINKEDIN_ACTION_ICON[action]
+                              return (
+                                <SelectItem key={action} value={action}>
+                                  <span className="flex items-center gap-2">
+                                    <ActionIcon className="size-3.5" />
+                                    {c.linkedinActionLabel[action]}
+                                  </span>
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <div className="ml-auto flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={c.moveStepUp}
+                          disabled={i === 0}
+                          onClick={() => draft.moveStep(step.id, -1)}
+                        >
+                          <ArrowUp className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={c.moveStepDown}
+                          disabled={i === stepList.length - 1}
+                          onClick={() => draft.moveStep(step.id, 1)}
+                        >
+                          <ArrowDown className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={c.removeStep}
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            draft.removeStep(step.id)
+                            setSelectedStepId(undefined)
+                          }}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={c.closePanel}
+                          className="ml-1"
+                          onClick={() => setSelectedStepId(undefined)}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {isParallelStep ? (
+                      <p className="text-muted-foreground text-sm">
+                        {c.parallelStepNote}
+                      </p>
+                    ) : (
+                      <TimeDelayField
+                        key={step.id}
+                        step={step}
+                        onChange={(patch) => draft.updateStep(step.id, patch)}
+                      />
+                    )}
+
+                    {step.isManualTask && (
+                      <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
+                        <span className="text-muted-foreground min-w-0 flex-1 text-sm">
+                          {c.manualTaskAssignee}
+                        </span>
+                        <AssigneePicker
+                          className="w-56"
+                          value={step.assigneeId}
+                          onChange={(assigneeId) =>
+                            draft.updateStep(step.id, {
+                              assigneeId,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    {step.fork && (
+                      <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
+                        <GitFork className="text-muted-foreground size-4 shrink-0" />
+                        <p className="text-muted-foreground min-w-0 flex-1 text-sm">
+                          {c.conditionActiveLabel(c.conditionName[step.fork.condition])}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => draft.removeFork(step.id)}
+                        >
+                          {c.removeCondition}
+                        </Button>
+                      </div>
+                    )}
+
+                    {isVoiceMessage ? (
+                      <VoiceMessageRecorder
+                        recordingUrl={step.voiceRecordingUrl}
+                        durationSec={step.voiceDurationSec}
+                        onRecorded={(url, durationSec) =>
+                          draft.updateStep(step.id, {
+                            voiceRecordingUrl: url,
+                            voiceDurationSec: durationSec,
+                          })
+                        }
+                        onDelete={() =>
+                          draft.updateStep(step.id, {
+                            voiceRecordingUrl: undefined,
+                            voiceDurationSec: undefined,
+                          })
+                        }
+                      />
+                    ) : isLinkedInActionOnly ? (
+                      <p className="text-muted-foreground text-sm">
+                        {c.linkedinActionDescription[linkedinAction]}
+                      </p>
+                    ) : step.isManualTask ? (
+                      <>
+                        <Input
+                          value={step.subject ?? ""}
+                          placeholder={c.taskTitlePlaceholder}
+                          onChange={(e) =>
+                            draft.updateStep(step.id, {
+                              subject: e.target.value,
+                            })
+                          }
+                        />
+                        <Textarea
+                          value={step.body}
+                          placeholder={c.taskNotesPlaceholder}
+                          onChange={(e) =>
+                            draft.updateStep(step.id, {
+                              body: e.target.value,
+                            })
+                          }
+                          className="min-h-20"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">{c.taskStartTimeLabel}</Label>
+                            <Select
+                              value={String(step.taskStartTime ?? TASK_START_TIME_OPTIONS[0].value)}
+                              onValueChange={(v) =>
+                                draft.updateStep(step.id, {
+                                  taskStartTime: Number(v),
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {TASK_START_TIME_OPTIONS.map((opt) => (
+                                  <SelectItem key={opt.value} value={String(opt.value)}>
+                                    {opt.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">{c.taskReminderLabel}</Label>
+                            <Select
+                              value={String(step.taskReminderMinutes ?? TASK_REMINDER_OPTIONS[0].value)}
+                              onValueChange={(v) =>
+                                draft.updateStep(step.id, {
+                                  taskReminderMinutes: Number(v),
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {TASK_REMINDER_OPTIONS.map((opt) => (
+                                  <SelectItem key={opt.value} value={String(opt.value)}>
+                                    {opt.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </>
+                    ) : isAiCall ? (
+                      <>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">{c.aiVoiceLabel}</Label>
                           <Select
-                            value={normalizeChannel(step.channel)}
-                            onValueChange={(v) =>
+                            value={step.aiVoice ?? AI_VOICES[0]}
+                            onValueChange={(aiVoice) =>
                               draft.updateStep(step.id, {
-                                channel: v as StepChannel,
-                                isManualTask: v === "manual",
+                                aiVoice,
                               })
                             }
                           >
-                            <SelectTrigger
-                              size="sm"
-                              className="w-[180px]"
-                              aria-label={c.stepChannelAria(i + 1)}
-                            >
+                            <SelectTrigger className="w-48">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {CHANNEL_GROUPS.map((group) => (
-                                <SelectGroup key={group.labelKey}>
-                                  <SelectLabel>{c[group.labelKey]}</SelectLabel>
-                                  {group.channels.map((channelKey) => (
-                                    <SelectItem key={channelKey} value={channelKey}>
-                                      {c.channelLabel[channelKey]}
-                                    </SelectItem>
-                                  ))}
-                                </SelectGroup>
+                              {AI_VOICES.map((voice) => (
+                                <SelectItem key={voice} value={voice}>
+                                  {voice}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          {isLinkedIn && (
-                            <Select
-                              value={step.linkedinAction ?? "message"}
-                              onValueChange={(v) =>
-                                draft.updateStep(step.id, {
-                                  linkedinAction: v as LinkedInAction,
-                                })
-                              }
-                            >
-                              <SelectTrigger
-                                size="sm"
-                                className="w-[150px]"
-                                aria-label={c.linkedinActionAria(i + 1)}
-                              >
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {LINKEDIN_ACTIONS.map((action) => {
-                                  const ActionIcon = LINKEDIN_ACTION_ICON[action]
-                                  return (
-                                    <SelectItem key={action} value={action}>
-                                      <span className="flex items-center gap-2">
-                                        <ActionIcon className="size-3.5" />
-                                        {c.linkedinActionLabel[action]}
-                                      </span>
-                                    </SelectItem>
-                                  )
-                                })}
-                              </SelectContent>
-                            </Select>
-                          )}
-                          {isWhatsApp && (
-                            <Select
-                              value={step.whatsappAction ?? "message"}
-                              onValueChange={(v) =>
-                                draft.updateStep(step.id, {
-                                  whatsappAction: v as WhatsAppAction,
-                                })
-                              }
-                            >
-                              <SelectTrigger
-                                size="sm"
-                                className="w-[150px]"
-                                aria-label={c.linkedinActionAria(i + 1)}
-                              >
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {WHATSAPP_ACTIONS.map((action) => {
-                                  const ActionIcon = LINKEDIN_ACTION_ICON[action]
-                                  return (
-                                    <SelectItem key={action} value={action}>
-                                      <span className="flex items-center gap-2">
-                                        <ActionIcon className="size-3.5" />
-                                        {c.linkedinActionLabel[action]}
-                                      </span>
-                                    </SelectItem>
-                                  )
-                                })}
-                              </SelectContent>
-                            </Select>
-                          )}
-                          <div className="ml-auto flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={c.moveStepUp}
-                              disabled={i === 0}
-                              onClick={() => draft.moveStep(step.id, -1)}
-                            >
-                              <ArrowUp className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={c.moveStepDown}
-                              disabled={i === stepList.length - 1}
-                              onClick={() => draft.moveStep(step.id, 1)}
-                            >
-                              <ArrowDown className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={c.removeStep}
-                              className="text-muted-foreground hover:text-destructive"
-                              onClick={() => {
-                                draft.removeStep(step.id)
-                                setSelectedStepId(undefined)
-                              }}
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={c.closePanel}
-                              className="ml-1"
-                              onClick={() => setSelectedStepId(undefined)}
-                            >
-                              <X className="size-4" />
-                            </Button>
-                          </div>
                         </div>
-
-                        {isParallelStep ? (
-                          <p className="text-muted-foreground text-sm">
-                            {c.parallelStepNote}
-                          </p>
-                        ) : (
-                          <TimeDelayField
-                            key={step.id}
-                            step={step}
-                            onChange={(patch) => draft.updateStep(step.id, patch)}
-                          />
-                        )}
-
-                        {step.isManualTask && (
-                          <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
-                            <span className="text-muted-foreground min-w-0 flex-1 text-sm">
-                              {c.manualTaskAssignee}
-                            </span>
-                            <AssigneePicker
-                              className="w-56"
-                              value={step.assigneeId}
-                              onChange={(assigneeId) =>
-                                draft.updateStep(step.id, {
-                                  assigneeId,
-                                })
-                              }
-                            />
-                          </div>
-                        )}
-
-                        {step.fork && (
-                          <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
-                            <GitFork className="text-muted-foreground size-4 shrink-0" />
-                            <p className="text-muted-foreground min-w-0 flex-1 text-sm">
-                              {c.conditionActiveLabel(c.conditionName[step.fork.condition])}
-                            </p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => draft.removeFork(step.id)}
-                            >
-                              {c.removeCondition}
-                            </Button>
-                          </div>
-                        )}
-
-                        {isVoiceMessage ? (
-                          <VoiceMessageRecorder
-                            recordingUrl={step.voiceRecordingUrl}
-                            durationSec={step.voiceDurationSec}
-                            onRecorded={(url, durationSec) =>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">{c.aiCallAgentLabel}</Label>
+                          <Select
+                            value={step.aiCallAgentId ?? AI_CALL_AGENTS[0].id}
+                            onValueChange={(aiCallAgentId) =>
                               draft.updateStep(step.id, {
-                                voiceRecordingUrl: url,
-                                voiceDurationSec: durationSec,
+                                aiCallAgentId,
                               })
                             }
-                            onDelete={() =>
-                              draft.updateStep(step.id, {
-                                voiceRecordingUrl: undefined,
-                                voiceDurationSec: undefined,
-                              })
-                            }
-                          />
-                        ) : isLinkedInActionOnly ? (
-                          <p className="text-muted-foreground text-sm">
-                            {c.linkedinActionDescription[linkedinAction]}
-                          </p>
-                        ) : step.isManualTask ? (
-                          <>
-                            <Input
-                              value={step.subject ?? ""}
-                              placeholder={c.taskTitlePlaceholder}
-                              onChange={(e) =>
-                                draft.updateStep(step.id, {
-                                  subject: e.target.value,
-                                })
-                              }
-                            />
-                            <Textarea
-                              value={step.body}
-                              placeholder={c.taskNotesPlaceholder}
-                              onChange={(e) =>
-                                draft.updateStep(step.id, {
-                                  body: e.target.value,
-                                })
-                              }
-                              className="min-h-20"
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="space-y-1.5">
-                                <Label className="text-xs">{c.taskStartTimeLabel}</Label>
-                                <Select
-                                  value={String(step.taskStartTime ?? TASK_START_TIME_OPTIONS[0].value)}
-                                  onValueChange={(v) =>
-                                    draft.updateStep(step.id, {
-                                      taskStartTime: Number(v),
-                                    })
-                                  }
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {TASK_START_TIME_OPTIONS.map((opt) => (
-                                      <SelectItem key={opt.value} value={String(opt.value)}>
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs">{c.taskReminderLabel}</Label>
-                                <Select
-                                  value={String(step.taskReminderMinutes ?? TASK_REMINDER_OPTIONS[0].value)}
-                                  onValueChange={(v) =>
-                                    draft.updateStep(step.id, {
-                                      taskReminderMinutes: Number(v),
-                                    })
-                                  }
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {TASK_REMINDER_OPTIONS.map((opt) => (
-                                      <SelectItem key={opt.value} value={String(opt.value)}>
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                          </>
-                        ) : isAiCall ? (
-                          <>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs">{c.aiVoiceLabel}</Label>
-                              <Select
-                                value={step.aiVoice ?? AI_VOICES[0]}
-                                onValueChange={(aiVoice) =>
-                                  draft.updateStep(step.id, {
-                                    aiVoice,
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="w-48">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {AI_VOICES.map((voice) => (
-                                    <SelectItem key={voice} value={voice}>
-                                      {voice}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs">{c.aiCallAgentLabel}</Label>
-                              <Select
-                                value={step.aiCallAgentId ?? AI_CALL_AGENTS[0].id}
-                                onValueChange={(aiCallAgentId) =>
-                                  draft.updateStep(step.id, {
-                                    aiCallAgentId,
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {AI_CALL_AGENTS.map((agent) => (
-                                    <SelectItem key={agent.id} value={agent.id}>
-                                      {agent.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex justify-end">{variablesMenu}</div>
-                            <Textarea
-                              ref={aiScriptRef}
-                              value={step.body}
-                              placeholder={c.aiScriptPlaceholder}
-                              onChange={(e) =>
-                                draft.updateStep(step.id, {
-                                  body: e.target.value,
-                                })
-                              }
-                              className="min-h-64"
-                            />
-                            <Separator />
-                            <label className="flex items-center gap-2 text-sm">
-                              <Checkbox
-                                checked={step.aiCallRetryEnabled ?? false}
-                                onCheckedChange={(checked) =>
-                                  draft.updateStep(step.id, {
-                                    aiCallRetryEnabled: checked === true,
-                                    aiCallRetryCadence:
-                                      checked === true
-                                        ? (step.aiCallRetryCadence ?? "rapid")
-                                        : step.aiCallRetryCadence,
-                                  })
-                                }
-                              />
-                              {c.aiCallRetryLabel}
-                            </label>
-                            {step.aiCallRetryEnabled && (
-                              <div className="space-y-1.5">
-                                <div className="flex gap-2">
-                                  {(["rapid", "relaxed"] as const).map((cadence) => (
-                                    <Button
-                                      key={cadence}
-                                      type="button"
-                                      size="sm"
-                                      variant={
-                                        (step.aiCallRetryCadence ?? "rapid") === cadence
-                                          ? "default"
-                                          : "outline"
-                                      }
-                                      onClick={() =>
-                                        draft.updateStep(step.id, {
-                                          aiCallRetryCadence: cadence,
-                                        })
-                                      }
-                                    >
-                                      {c.aiCallCadence[cadence]}
-                                    </Button>
-                                  ))}
-                                </div>
-                                <p className="text-muted-foreground text-xs">
-                                  {c.aiCallRetryCadenceLabel(
-                                    AI_CALL_RETRY_DELAYS_MINUTES[
-                                      step.aiCallRetryCadence ?? "rapid"
-                                    ]
-                                      .map((m) =>
-                                        m < 60
-                                          ? `${m}m`
-                                          : m < 1440
-                                            ? `${Math.round(m / 60)}h`
-                                            : `${Math.round(m / 1440)}d`
-                                      )
-                                      .join(", ")
-                                  )}
-                                </p>
-                                <p className="text-muted-foreground text-xs">
-                                  {c.aiCallRetryFootnote}
-                                </p>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {isEmail && (
-                              <Input
-                                value={step.subject ?? ""}
-                                placeholder={c.subjectLine}
-                                onChange={(e) =>
-                                  draft.updateStep(step.id, {
-                                    subject: e.target.value,
-                                  })
-                                }
-                              />
-                            )}
-
-                            <RichTextEditor
-                              ref={stepBodyRef}
-                              value={plainToHtml(step.body)}
-                              placeholder={c.messageBody}
-                              ariaLabel={c.messageBody}
-                              onChange={(html) =>
-                                draft.updateStep(step.id, {
-                                  body: html,
-                                })
-                              }
-                              minHeight="min-h-64"
-                              toolbarEnd={
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-muted-foreground"
-                                    onClick={() => setStepTemplateOpen(true)}
-                                  >
-                                    <FileText className="size-4" />
-                                    {c.stepTemplates}
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-muted-foreground"
-                                    onClick={() => setStepPromptOpen(true)}
-                                  >
-                                    <Sparkles className="size-4" />
-                                    {c.stepAiPrompt}
-                                  </Button>
-                                  {variablesMenu}
-                                </>
-                              }
-                            />
-                          </>
-                        )}
-
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {AI_CALL_AGENTS.map((agent) => (
+                                <SelectItem key={agent.id} value={agent.id}>
+                                  {agent.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex justify-end">{variablesMenu}</div>
+                        <Textarea
+                          ref={aiScriptRef}
+                          value={step.body}
+                          placeholder={c.aiScriptPlaceholder}
+                          onChange={(e) =>
+                            draft.updateStep(step.id, {
+                              body: e.target.value,
+                            })
+                          }
+                          className="min-h-64"
+                        />
                         <Separator />
-
-                        {step.isManualTask ? (
-                          <p className="text-muted-foreground text-xs">
-                            {c.manualTaskFooter}
-                          </p>
-                        ) : isAiCall ? (
-                          <p className="text-muted-foreground text-xs">
-                            {c.aiCallFooter}
-                          </p>
-                        ) : (
-                          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                            <span className="text-muted-foreground">
-                              {c.sent}{" "}
-                              <span className="text-foreground font-medium tabular-nums">
-                                {sent}
-                              </span>
-                            </span>
-                            <span className="text-muted-foreground">
-                              {c.opened}{" "}
-                              <span className="text-foreground font-medium tabular-nums">
-                                {opened}
-                              </span>
-                            </span>
-                            <span className="text-muted-foreground">
-                              {c.replied}{" "}
-                              <span className="text-foreground font-medium tabular-nums">
-                                {replied}
-                              </span>
-                            </span>
+                        <label className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={step.aiCallRetryEnabled ?? false}
+                            onCheckedChange={(checked) =>
+                              draft.updateStep(step.id, {
+                                aiCallRetryEnabled: checked === true,
+                                aiCallRetryCadence:
+                                  checked === true
+                                    ? (step.aiCallRetryCadence ?? "rapid")
+                                    : step.aiCallRetryCadence,
+                              })
+                            }
+                          />
+                          {c.aiCallRetryLabel}
+                        </label>
+                        {step.aiCallRetryEnabled && (
+                          <div className="space-y-1.5">
+                            <div className="flex gap-2">
+                              {(["rapid", "relaxed"] as const).map((cadence) => (
+                                <Button
+                                  key={cadence}
+                                  type="button"
+                                  size="sm"
+                                  variant={
+                                    (step.aiCallRetryCadence ?? "rapid") === cadence
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    draft.updateStep(step.id, {
+                                      aiCallRetryCadence: cadence,
+                                    })
+                                  }
+                                >
+                                  {c.aiCallCadence[cadence]}
+                                </Button>
+                              ))}
+                            </div>
+                            <p className="text-muted-foreground text-xs">
+                              {c.aiCallRetryCadenceLabel(
+                                AI_CALL_RETRY_DELAYS_MINUTES[
+                                  step.aiCallRetryCadence ?? "rapid"
+                                ]
+                                  .map((m) =>
+                                    m < 60
+                                      ? `${m}m`
+                                      : m < 1440
+                                        ? `${Math.round(m / 60)}h`
+                                        : `${Math.round(m / 1440)}d`
+                                  )
+                                  .join(", ")
+                              )}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              {c.aiCallRetryFootnote}
+                            </p>
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
-                  )
-                })()}
-              </div>
+                      </>
+                    ) : (
+                      <>
+                        {isEmail && (
+                          <Input
+                            value={step.subject ?? ""}
+                            placeholder={c.subjectLine}
+                            onChange={(e) =>
+                              draft.updateStep(step.id, {
+                                subject: e.target.value,
+                              })
+                            }
+                          />
+                        )}
 
-              <div className="flex justify-end gap-2">
-                {draft.dirty && (
-                  <Button variant="ghost" onClick={draft.discard}>
-                    {c.discardChanges}
-                  </Button>
-                )}
-                <Button
-                  disabled={!draft.dirty}
-                  onClick={() => {
-                    draft.apply()
-                    toast.success(c.sequenceApplied)
-                  }}
-                >
-                  {c.applyChanges}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-muted-foreground text-sm">{c.noSteps}</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  <Button
-                    onClick={() => {
-                      setPendingGhost({ kind: "add" })
-                      setStepPickerOpen(true)
-                    }}
-                  >
-                    <Plus className="size-4" />
-                    {c.addStep}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setCopySeqOpen(true)}
-                  >
-                    <Copy className="size-4" />
-                    {c.copySequenceFrom}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                        <RichTextEditor
+                          ref={stepBodyRef}
+                          value={plainToHtml(step.body)}
+                          placeholder={c.messageBody}
+                          ariaLabel={c.messageBody}
+                          onChange={(html) =>
+                            draft.updateStep(step.id, {
+                              body: html,
+                            })
+                          }
+                          minHeight="min-h-64"
+                          toolbarEnd={
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground"
+                                onClick={() => setStepTemplateOpen(true)}
+                              >
+                                <FileText className="size-4" />
+                                {c.stepTemplates}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground"
+                                onClick={() => setStepPromptOpen(true)}
+                              >
+                                <Sparkles className="size-4" />
+                                {c.stepAiPrompt}
+                              </Button>
+                              {variablesMenu}
+                            </>
+                          }
+                        />
+                      </>
+                    )}
+
+                    <Separator />
+
+                    {step.isManualTask ? (
+                      <p className="text-muted-foreground text-xs">
+                        {c.manualTaskFooter}
+                      </p>
+                    ) : isAiCall ? (
+                      <p className="text-muted-foreground text-xs">
+                        {c.aiCallFooter}
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+                        <span className="text-muted-foreground">
+                          {c.sent}{" "}
+                          <span className="text-foreground font-medium tabular-nums">
+                            {sent}
+                          </span>
+                        </span>
+                        <span className="text-muted-foreground">
+                          {c.opened}{" "}
+                          <span className="text-foreground font-medium tabular-nums">
+                            {opened}
+                          </span>
+                        </span>
+                        <span className="text-muted-foreground">
+                          {c.replied}{" "}
+                          <span className="text-foreground font-medium tabular-nums">
+                            {replied}
+                          </span>
+                        </span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })()}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            {draft.dirty && (
+              <Button variant="ghost" onClick={draft.discard}>
+                {c.discardChanges}
+              </Button>
+            )}
+            <Button
+              disabled={!draft.dirty}
+              onClick={() => {
+                draft.apply()
+                toast.success(c.sequenceApplied)
+              }}
+            >
+              {c.applyChanges}
+            </Button>
+          </div>
         </TabsContent>
 
         {/* Preview — every step's actual text, personalized per lead. */}
