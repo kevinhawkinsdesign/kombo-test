@@ -151,7 +151,6 @@ const COPY = {
       "Logistics companies adopting AI tools in their stack",
       "E-commerce brands that just expanded into the US",
     ],
-    aiHint: "Natural-language search · AI-powered",
     urlsTab: "URLs",
     urlsIdleBtn: "Search by URLs",
     urlsPlaceholder: "acme.com, example.com — paste or type company URLs/domains",
@@ -457,7 +456,6 @@ const COPY = {
       "Empresas de logística que adoptan herramientas de IA",
       "Marcas de e-commerce recién expandidas a EE. UU.",
     ],
-    aiHint: "Búsqueda en lenguaje natural · impulsada por IA",
     urlsTab: "URLs",
     urlsIdleBtn: "Buscar por URLs",
     urlsPlaceholder: "acme.com, ejemplo.com — pega o escribe URLs/dominios de empresas",
@@ -763,7 +761,6 @@ const COPY = {
       "Aziende di logistica che adottano strumenti IA nel loro stack",
       "Brand e-commerce appena espansi negli USA",
     ],
-    aiHint: "Ricerca in linguaggio naturale · powered by AI",
     urlsTab: "URL",
     urlsIdleBtn: "Cerca per URL",
     urlsPlaceholder: "acme.com, esempio.com — incolla o digita URL/domini aziendali",
@@ -1069,7 +1066,6 @@ const COPY = {
       "Entreprises de logistique adoptant des outils IA dans leur stack",
       "Marques e-commerce qui viennent de se développer aux États-Unis",
     ],
-    aiHint: "Recherche en langage naturel · propulsée par l'IA",
     urlsTab: "URL",
     urlsIdleBtn: "Rechercher par URL",
     urlsPlaceholder: "acme.com, exemple.com — collez ou saisissez des URL/domaines d'entreprise",
@@ -1375,7 +1371,6 @@ const COPY = {
       "Logistikunternehmen, die KI-Tools in ihren Stack integrieren",
       "E-Commerce-Marken, die gerade in die USA expandiert sind",
     ],
-    aiHint: "Suche in natürlicher Sprache · KI-gestützt",
     urlsTab: "URLs",
     urlsIdleBtn: "Nach URLs suchen",
     urlsPlaceholder: "acme.com, beispiel.com — Unternehmens-URLs/Domains einfügen oder eingeben",
@@ -1681,7 +1676,6 @@ const COPY = {
       "Empresas de logística a adotar ferramentas de IA na sua stack",
       "Marcas de e-commerce recém-expandidas para os EUA",
     ],
-    aiHint: "Pesquisa em linguagem natural · com tecnologia de IA",
     urlsTab: "URLs",
     urlsIdleBtn: "Pesquisar por URLs",
     urlsPlaceholder: "acme.com, exemplo.com — cola ou escreve URLs/domínios de empresas",
@@ -1987,7 +1981,6 @@ const COPY = {
       "Empresas de logística adotando ferramentas de IA na sua stack",
       "Marcas de e-commerce recém-expandidas para os EUA",
     ],
-    aiHint: "Pesquisa em linguagem natural · com tecnologia de IA",
     urlsTab: "URLs",
     urlsIdleBtn: "Pesquisar por URLs",
     urlsPlaceholder: "acme.com, exemplo.com — cole ou digite URLs/domínios de empresas",
@@ -3304,9 +3297,9 @@ export default function Search() {
             aria-hidden
             className="from-primary/25 via-volt/20 to-primary/25 absolute -inset-1 rounded-2xl bg-gradient-to-r opacity-70 blur-md"
           />
-          <Card className="border-primary/30 shadow-primary/10 relative p-3 shadow-lg">
+          <Card className="border-primary/30 shadow-primary/10 from-primary/10 via-primary/5 relative bg-gradient-to-br to-transparent p-3 shadow-lg">
           <form
-            className="flex items-end gap-2"
+            className="flex items-start gap-2"
             onSubmit={(e) => {
               e.preventDefault()
               if (urlsMode) runUrlSearch()
@@ -3316,7 +3309,7 @@ export default function Search() {
             {urlsMode ? (
               <div className="flex-1 space-y-1">
                 <div
-                  className="border-input focus-within:ring-ring/50 flex min-h-12 flex-wrap items-center gap-1.5 rounded-md border bg-transparent p-2 focus-within:ring-2"
+                  className="border-input focus-within:ring-ring/50 bg-background flex min-h-12 flex-wrap items-center gap-1.5 rounded-md border p-2 focus-within:ring-2"
                   role="group"
                   aria-label={c.urlsFieldAria}
                 >
@@ -3391,7 +3384,8 @@ export default function Search() {
                       : c.inputPlaceholder
                   }
                   aria-label={c.srTitle}
-                  className="h-12 pr-9 pl-9"
+                  className="bg-background h-12 pr-9 pl-9"
+                  clearable={false}
                 />
                 {input.length > 0 && (
                   <button
@@ -3408,12 +3402,12 @@ export default function Search() {
                   </button>
                 )}
               </div>
-              <p className="text-muted-foreground px-1 text-xs">{c.aiHint}</p>
             </div>
             )}
             <Button
               type="submit"
               variant="volt"
+              className="h-12"
               disabled={
                 urlsMode
                   ? !urlSearchReady || thinking
