@@ -50,8 +50,8 @@ import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { SequenceMessagePreviewDialog } from "@/components/campaign/SequenceMessagePreviewDialog"
 import { SequencePreviewPane } from "@/components/campaign/SequencePreviewPane"
 import {
-  MERGE_VARIABLES,
-  MERGE_VARIABLE_GROUPS,
+  TEMPLATE_MERGE_VARIABLES,
+  TEMPLATE_MERGE_VARIABLE_GROUPS,
   groupByMergeVarGroup,
   type MergeVarGroupKey,
 } from "@/lib/merge-vars"
@@ -120,6 +120,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart } from "@/components/charts/Charts"
@@ -358,10 +359,12 @@ const COPY = {
     aiScriptPlaceholder: "Script / instructions for the AI agent",
     aiCallFooter: "This step places an agentic AI voice call using the script and voice above — it doesn't send automatically.",
     insertVariable: "+ Variables",
+    personalizedVariable: "Personalized variable",
+    personalizedVariablePlaceholder: "e.g. a friendly comment about their recent achievement",
     varsSearchPlaceholder: "Search variables…",
     varsEmpty: "No variables match your search.",
     varGroups: { yourDetails: "Your Details", prospectInfo: "Prospect Info", prospectCompany: "Prospect Company", other: "Other" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.en
       return acc
     }, {}),
@@ -606,10 +609,12 @@ const COPY = {
     aiScriptPlaceholder: "Guion / instrucciones para el agente de IA",
     aiCallFooter: "Este paso realiza una llamada de voz con IA agencial usando el guion y la voz de arriba — no se envía automáticamente.",
     insertVariable: "+ Variables",
+    personalizedVariable: "Variable personalizada",
+    personalizedVariablePlaceholder: "p. ej. un comentario amable sobre su logro reciente",
     varsSearchPlaceholder: "Buscar variables…",
     varsEmpty: "Ninguna variable coincide con tu búsqueda.",
     varGroups: { yourDetails: "Tus datos", prospectInfo: "Info del prospecto", prospectCompany: "Empresa del prospecto", other: "Otros" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.es
       return acc
     }, {}),
@@ -855,10 +860,12 @@ const COPY = {
     aiScriptPlaceholder: "Script / istruzioni per l'agente IA",
     aiCallFooter: "Questo passaggio effettua una chiamata vocale IA agentica usando lo script e la voce sopra — non viene inviato automaticamente.",
     insertVariable: "+ Variabili",
+    personalizedVariable: "Variabile personalizzata",
+    personalizedVariablePlaceholder: "es. un commento amichevole sul loro recente traguardo",
     varsSearchPlaceholder: "Cerca variabili…",
     varsEmpty: "Nessuna variabile corrisponde alla tua ricerca.",
     varGroups: { yourDetails: "I tuoi dati", prospectInfo: "Info sul prospect", prospectCompany: "Azienda del prospect", other: "Altro" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.it
       return acc
     }, {}),
@@ -1103,10 +1110,12 @@ const COPY = {
     aiScriptPlaceholder: "Script / instructions pour l'agent IA",
     aiCallFooter: "Cette étape passe un appel vocal IA agentique en utilisant le script et la voix ci-dessus — il n'est pas envoyé automatiquement.",
     insertVariable: "+ Variables",
+    personalizedVariable: "Variable personnalisée",
+    personalizedVariablePlaceholder: "ex. un commentaire sympathique sur leur récente réussite",
     varsSearchPlaceholder: "Rechercher des variables…",
     varsEmpty: "Aucune variable ne correspond à votre recherche.",
     varGroups: { yourDetails: "Vos informations", prospectInfo: "Infos du prospect", prospectCompany: "Entreprise du prospect", other: "Autre" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.fr
       return acc
     }, {}),
@@ -1352,10 +1361,12 @@ const COPY = {
     aiScriptPlaceholder: "Skript / Anweisungen für den KI-Agenten",
     aiCallFooter: "Dieser Schritt führt einen agentischen KI-Sprachanruf mit dem obigen Skript und der obigen Stimme durch — er wird nicht automatisch gesendet.",
     insertVariable: "+ Variablen",
+    personalizedVariable: "Personalisierte Variable",
+    personalizedVariablePlaceholder: "z. B. ein freundlicher Kommentar zu ihrem jüngsten Erfolg",
     varsSearchPlaceholder: "Variablen suchen…",
     varsEmpty: "Keine Variablen entsprechen deiner Suche.",
     varGroups: { yourDetails: "Deine Angaben", prospectInfo: "Prospect-Infos", prospectCompany: "Unternehmen des Prospects", other: "Sonstiges" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.de
       return acc
     }, {}),
@@ -1601,10 +1612,12 @@ const COPY = {
     aiScriptPlaceholder: "Guião / instruções para o agente de IA",
     aiCallFooter: "Este passo faz uma chamada de voz com IA agencial usando o guião e a voz acima — não é enviada automaticamente.",
     insertVariable: "+ Variáveis",
+    personalizedVariable: "Variável personalizada",
+    personalizedVariablePlaceholder: "ex. um comentário simpático sobre a conquista recente deles",
     varsSearchPlaceholder: "Pesquisar variáveis…",
     varsEmpty: "Nenhuma variável corresponde à pesquisa.",
     varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.pt
       return acc
     }, {}),
@@ -1850,10 +1863,12 @@ const COPY = {
     aiScriptPlaceholder: "Roteiro / instruções para o agente de IA",
     aiCallFooter: "Esta etapa faz uma ligação de voz com IA agêntica usando o roteiro e a voz acima — ela não é enviada automaticamente.",
     insertVariable: "+ Variáveis",
+    personalizedVariable: "Variável personalizada",
+    personalizedVariablePlaceholder: "ex. um comentário simpático sobre a conquista recente deles",
     varsSearchPlaceholder: "Buscar variáveis…",
     varsEmpty: "Nenhuma variável corresponde à sua busca.",
     varGroups: { yourDetails: "Seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
-    variables: MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
+    variables: TEMPLATE_MERGE_VARIABLES.reduce<Record<string, string>>((acc, v) => {
       acc[v.tag] = v.pt_BR
       return acc
     }, {}),
@@ -2127,6 +2142,11 @@ export default function CampaignDetail() {
   // filter-as-you-type pattern as Inbox.tsx's composer, needed now that the
   // merge-var catalog is large enough that a plain list scrolls off-screen.
   const [stepVarSearch, setStepVarSearch] = React.useState("")
+  // Free-text "personalized variable" — wraps whatever the author types in
+  // {{ }} as a placeholder for themself to fill in later, same as the
+  // extension's Add Variables modal. Not a real data field, so it's kept
+  // separate from the fixed MERGE_VARIABLES catalog above.
+  const [stepCustomVarText, setStepCustomVarText] = React.useState("")
   // Whichever of the step-detail panel's body fields is currently rendered
   // (RichTextEditor for email/LinkedIn/etc, a plain Textarea for the AI-call
   // script) — only one is ever mounted at a time, so a single pair of refs
@@ -3254,22 +3274,41 @@ export default function CampaignDetail() {
               // same fix already shipped on Inbox.tsx's composer.
               const stepVarQuery = stepVarSearch.trim().toLowerCase()
               const filteredStepVars = stepVarQuery
-                ? MERGE_VARIABLES.filter(
+                ? TEMPLATE_MERGE_VARIABLES.filter(
                     (v) =>
                       c.variables[v.tag].toLowerCase().includes(stepVarQuery) ||
                       v.tag.toLowerCase().includes(stepVarQuery)
                   )
-                : MERGE_VARIABLES
-              const stepVarGroups = groupByMergeVarGroup(filteredStepVars, MERGE_VARIABLE_GROUPS)
+                : TEMPLATE_MERGE_VARIABLES
+              const stepVarGroups = groupByMergeVarGroup(filteredStepVars, TEMPLATE_MERGE_VARIABLE_GROUPS)
+              // A free-text placeholder (wrapped in {{ }} verbatim, not a
+              // real data field) for the author to fill in by hand later —
+              // matches the extension's "Personalized Variable" field.
+              function insertCustomStepVar() {
+                const text = stepCustomVarText.trim()
+                if (!text) return
+                // Same false positive as the onClick below — only reads the
+                // ref from this handler, invoked via click/Enter, never render.
+                // eslint-disable-next-line react-hooks/refs
+                insertStepVariable(text, step, isAiCall)
+                setStepCustomVarText("")
+              }
               const variablesMenu = (
-                <DropdownMenu onOpenChange={(open) => !open && setStepVarSearch("")}>
+                <DropdownMenu
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setStepVarSearch("")
+                      setStepCustomVarText("")
+                    }
+                  }}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="text-muted-foreground">
                       <Braces className="size-4" />
                       {c.insertVariable}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuContent align="end" className="w-80">
                     <DropdownMenuLabel>{c.insertVariable}</DropdownMenuLabel>
                     <div className="px-2 pb-1.5" onClick={(e) => e.stopPropagation()}>
                       <Input
@@ -3289,15 +3328,11 @@ export default function CampaignDetail() {
                           {group.items.map((v) => (
                             <DropdownMenuItem
                               key={v.tag}
-                              // False positive: only reads the ref from this click,
-                              // same shape as Inbox.tsx's insertVar — the rule can't
-                              // trace refs through this panel's pre-existing IIFE.
-                              // eslint-disable-next-line react-hooks/refs
                               onClick={() => insertStepVariable(v.tag, step, isAiCall)}
                             >
-                              <Braces className="text-primary size-3.5" />
-                              <span className="flex-1">{c.variables[v.tag]}</span>
-                              <span className="text-muted-foreground font-mono text-[11px]">
+                              <Braces className="text-primary size-3.5 shrink-0" />
+                              <span className="min-w-0 flex-1 truncate">{c.variables[v.tag]}</span>
+                              <span className="text-muted-foreground max-w-24 shrink-0 truncate font-mono text-[11px]">
                                 {`{{${v.tag}}}`}
                               </span>
                             </DropdownMenuItem>
@@ -3309,6 +3344,33 @@ export default function CampaignDetail() {
                           {c.varsEmpty}
                         </p>
                       )}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-muted-foreground text-[11px] font-semibold uppercase">
+                      {c.personalizedVariable}
+                    </DropdownMenuLabel>
+                    <div
+                      className="flex items-center gap-1.5 px-2 pt-0.5 pb-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Input
+                        value={stepCustomVarText}
+                        onChange={(e) => setStepCustomVarText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") insertCustomStepVar()
+                        }}
+                        placeholder={c.personalizedVariablePlaceholder}
+                        className="h-8"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="h-8 shrink-0 px-2"
+                        disabled={!stepCustomVarText.trim()}
+                        onClick={insertCustomStepVar}
+                      >
+                        <Plus className="size-3.5" />
+                      </Button>
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>

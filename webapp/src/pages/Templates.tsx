@@ -77,7 +77,8 @@ import { useLocale, type Locale } from "@/lib/locale"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate } from "@/lib/format"
 import {
-  MERGE_VARIABLE_GROUPS,
+  TEMPLATE_MERGE_VARIABLES,
+  TEMPLATE_MERGE_VARIABLE_GROUPS,
   groupByMergeVarGroup,
   type MergeVarGroupKey,
 } from "@/lib/merge-vars"
@@ -88,7 +89,6 @@ const NEW_FOLDER = "__new_folder__"
 
 interface VariableDef {
   tag: string
-  label: Record<Locale, string>
   def: Record<Locale, string>
 }
 
@@ -105,122 +105,378 @@ function V(
   return { en, es, it, fr, de, pt, pt_BR }
 }
 
-const VARIABLES: VariableDef[] = [
-  {
-    tag: "first_name",
-    label: V("First name", "Nombre", "Nome", "Prénom", "Vorname", "Primeiro nome", "Primeiro nome"),
-    def: V(
-      "Recipient's first name",
-      "Nombre del destinatario",
-      "Nome del destinatario",
-      "Prénom du destinataire",
-      "Vorname des Empfängers",
-      "Primeiro nome do destinatário",
-      "Primeiro nome do destinatário"
-    ),
-  },
-  {
-    tag: "last_name",
-    label: V("Last name", "Apellido", "Cognome", "Nom de famille", "Nachname", "Apelido", "Sobrenome"),
-    def: V(
-      "Recipient's last name",
-      "Apellido del destinatario",
-      "Cognome del destinatario",
-      "Nom de famille du destinataire",
-      "Nachname des Empfängers",
-      "Apelido do destinatário",
-      "Sobrenome do destinatário"
-    ),
-  },
-  {
-    tag: "company",
-    label: V("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"),
-    def: V(
-      "Recipient's company",
-      "Empresa del destinatario",
-      "Azienda del destinatario",
-      "Entreprise du destinataire",
-      "Unternehmen des Empfängers",
-      "Empresa do destinatário",
-      "Empresa do destinatário"
-    ),
-  },
-  {
-    tag: "title",
-    label: V("Job title", "Cargo", "Ruolo", "Poste", "Berufsbezeichnung", "Cargo", "Cargo"),
-    def: V(
-      "Recipient's job title",
-      "Cargo del destinatario",
-      "Ruolo del destinatario",
-      "Poste du destinataire",
-      "Berufsbezeichnung des Empfängers",
-      "Cargo do destinatário",
-      "Cargo do destinatário"
-    ),
-  },
-  {
-    tag: "industry",
-    label: V("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"),
-    def: V(
-      "Recipient's industry",
-      "Sector del destinatario",
-      "Settore del destinatario",
-      "Secteur du destinataire",
-      "Branche des Empfängers",
-      "Setor do destinatário",
-      "Setor do destinatário"
-    ),
-  },
-  {
-    tag: "city",
-    label: V("City", "Ciudad", "Città", "Ville", "Stadt", "Cidade", "Cidade"),
-    def: V(
-      "Recipient's city",
-      "Ciudad del destinatario",
-      "Città del destinatario",
-      "Ville du destinataire",
-      "Stadt des Empfängers",
-      "Cidade do destinatário",
-      "Cidade do destinatário"
-    ),
-  },
-  {
-    tag: "sender",
-    label: V("Sender", "Remitente", "Mittente", "Expéditeur", "Absender", "Remetente", "Remetente"),
-    def: V("Your name", "Tu nombre", "Il tuo nome", "Votre nom", "Dein Name", "O seu nome", "Seu nome"),
-  },
-  {
-    tag: "sender_company",
-    label: V("Your company", "Tu empresa", "La tua azienda", "Votre entreprise", "Dein Unternehmen", "A sua empresa", "Sua empresa"),
-    def: V(
-      "Your company name",
-      "El nombre de tu empresa",
-      "Il nome della tua azienda",
-      "Le nom de votre entreprise",
-      "Der Name deines Unternehmens",
-      "O nome da sua empresa",
-      "O nome da sua empresa"
-    ),
-  },
-  {
-    tag: "sender_title",
-    label: V("Your title", "Tu cargo", "Il tuo ruolo", "Votre poste", "Deine Position", "O seu cargo", "Seu cargo"),
-    def: V("Your job title", "Tu cargo", "Il tuo ruolo", "Votre poste", "Deine Position", "O seu cargo", "Seu cargo"),
-  },
-  {
-    tag: "calendar_link",
-    label: V("Booking link", "Enlace de reserva", "Link di prenotazione", "Lien de réservation", "Buchungslink", "Link de marcação", "Link de agendamento"),
-    def: V(
-      "Your meeting booking link",
-      "Tu enlace para agendar",
-      "Il tuo link per prenotare un incontro",
-      "Votre lien de réservation de rendez-vous",
-      "Dein Buchungslink für Meetings",
-      "O seu link de marcação de reuniões",
-      "Seu link de agendamento de reuniões"
-    ),
-  },
-]
+// Helpful one-line description shown under each token in the sidebar. Every
+// tag TEMPLATE_MERGE_VARIABLES offers needs an entry here — see the fallback
+// in VARIABLES below if one's ever missing.
+const VARIABLE_DESCRIPTIONS: Record<string, Record<Locale, string>> = {
+  first_name: V(
+    "Recipient's first name",
+    "Nombre del destinatario",
+    "Nome del destinatario",
+    "Prénom du destinataire",
+    "Vorname des Empfängers",
+    "Primeiro nome do destinatário",
+    "Primeiro nome do destinatário"
+  ),
+  last_name: V(
+    "Recipient's last name",
+    "Apellido del destinatario",
+    "Cognome del destinatario",
+    "Nom de famille du destinataire",
+    "Nachname des Empfängers",
+    "Apelido do destinatário",
+    "Sobrenome do destinatário"
+  ),
+  full_name: V(
+    "Recipient's full name",
+    "Nombre completo del destinatario",
+    "Nome completo del destinatario",
+    "Nom complet du destinataire",
+    "Vollständiger Name des Empfängers",
+    "Nome completo do destinatário",
+    "Nome completo do destinatário"
+  ),
+  company: V(
+    "Recipient's company",
+    "Empresa del destinatario",
+    "Azienda del destinatario",
+    "Entreprise du destinataire",
+    "Unternehmen des Empfängers",
+    "Empresa do destinatário",
+    "Empresa do destinatário"
+  ),
+  title: V(
+    "Recipient's job title",
+    "Cargo del destinatario",
+    "Ruolo del destinatario",
+    "Poste du destinataire",
+    "Berufsbezeichnung des Empfängers",
+    "Cargo do destinatário",
+    "Cargo do destinatário"
+  ),
+  industry: V(
+    "Recipient's industry",
+    "Sector del destinatario",
+    "Settore del destinatario",
+    "Secteur du destinataire",
+    "Branche des Empfängers",
+    "Setor do destinatário",
+    "Setor do destinatário"
+  ),
+  city: V(
+    "Recipient's city",
+    "Ciudad del destinatario",
+    "Città del destinatario",
+    "Ville du destinataire",
+    "Stadt des Empfängers",
+    "Cidade do destinatário",
+    "Cidade do destinatário"
+  ),
+  province: V(
+    "Recipient's province",
+    "Provincia del destinatario",
+    "Provincia del destinatario",
+    "Province du destinataire",
+    "Provinz des Empfängers",
+    "Província do destinatário",
+    "Província do destinatário"
+  ),
+  region: V(
+    "Recipient's region",
+    "Región del destinatario",
+    "Regione del destinatario",
+    "Région du destinataire",
+    "Region des Empfängers",
+    "Região do destinatário",
+    "Região do destinatário"
+  ),
+  country: V(
+    "Recipient's country",
+    "País del destinatario",
+    "Paese del destinatario",
+    "Pays du destinataire",
+    "Land des Empfängers",
+    "País do destinatário",
+    "País do destinatário"
+  ),
+  icebreaker: V(
+    "AI-generated opening line for this recipient",
+    "Frase inicial generada por IA para este destinatario",
+    "Frase di apertura generata dall'IA per questo destinatario",
+    "Phrase d'ouverture générée par l'IA pour ce destinataire",
+    "KI-generierter Gesprächseinstieg für diesen Empfänger",
+    "Frase de abertura gerada por IA para este destinatário",
+    "Frase de abertura gerada por IA para este destinatário"
+  ),
+  pain_point: V(
+    "A likely pain point for this recipient",
+    "Un posible punto de dolor de este destinatario",
+    "Un probabile punto critico per questo destinatario",
+    "Un point de douleur probable pour ce destinataire",
+    "Ein wahrscheinlicher Schmerzpunkt für diesen Empfänger",
+    "Um provável ponto de dor deste destinatário",
+    "Um provável ponto de dor deste destinatário"
+  ),
+  linkedin_post: V(
+    "Recipient's recent LinkedIn post",
+    "Publicación reciente de LinkedIn del destinatario",
+    "Post recente di LinkedIn del destinatario",
+    "Publication LinkedIn récente du destinataire",
+    "Aktueller LinkedIn-Beitrag des Empfängers",
+    "Publicação recente no LinkedIn do destinatário",
+    "Post recente no LinkedIn do destinatário"
+  ),
+  seniority: V(
+    "Recipient's seniority level",
+    "Nivel de antigüedad del destinatario",
+    "Livello di seniority del destinatario",
+    "Niveau d'ancienneté du destinataire",
+    "Senioritätsstufe des Empfängers",
+    "Nível de senioridade do destinatário",
+    "Nível de senioridade do destinatário"
+  ),
+  department: V(
+    "Recipient's department",
+    "Departamento del destinatario",
+    "Reparto del destinatario",
+    "Département du destinataire",
+    "Abteilung des Empfängers",
+    "Departamento do destinatário",
+    "Departamento do destinatário"
+  ),
+  email: V(
+    "Recipient's email address",
+    "Correo electrónico del destinatario",
+    "Indirizzo email del destinatario",
+    "Adresse e-mail du destinataire",
+    "E-Mail-Adresse des Empfängers",
+    "Endereço de e-mail do destinatário",
+    "Endereço de e-mail do destinatário"
+  ),
+  phone: V(
+    "Recipient's phone number",
+    "Número de teléfono del destinatario",
+    "Numero di telefono del destinatario",
+    "Numéro de téléphone du destinataire",
+    "Telefonnummer des Empfängers",
+    "Número de telefone do destinatário",
+    "Número de telefone do destinatário"
+  ),
+  linkedin_url: V(
+    "Recipient's LinkedIn profile URL",
+    "URL del perfil de LinkedIn del destinatario",
+    "URL del profilo LinkedIn del destinatario",
+    "URL du profil LinkedIn du destinataire",
+    "LinkedIn-Profil-URL des Empfängers",
+    "URL do perfil de LinkedIn do destinatário",
+    "URL do perfil do LinkedIn do destinatário"
+  ),
+  founding_year: V(
+    "Year the recipient's company was founded",
+    "Año de fundación de la empresa del destinatario",
+    "Anno di fondazione dell'azienda del destinatario",
+    "Année de création de l'entreprise du destinataire",
+    "Gründungsjahr des Unternehmens des Empfängers",
+    "Ano de fundação da empresa do destinatário",
+    "Ano de fundação da empresa do destinatário"
+  ),
+  revenue: V(
+    "Recipient's company revenue",
+    "Ingresos de la empresa del destinatario",
+    "Fatturato dell'azienda del destinatario",
+    "Chiffre d'affaires de l'entreprise du destinataire",
+    "Umsatz des Unternehmens des Empfängers",
+    "Receita da empresa do destinatário",
+    "Receita da empresa do destinatário"
+  ),
+  top_traffic_country: V(
+    "Country driving the most traffic to their site",
+    "País que genera más tráfico a su sitio web",
+    "Paese che genera più traffico verso il loro sito",
+    "Pays générant le plus de trafic vers leur site",
+    "Land mit dem meisten Traffic auf ihrer Website",
+    "País que gera mais tráfego para o site deles",
+    "País que gera mais tráfego para o site deles"
+  ),
+  top_traffic_country_visits: V(
+    "Monthly visits from their top-traffic country",
+    "Visitas mensuales desde su país con más tráfico",
+    "Visite mensili dal loro paese con più traffico",
+    "Visites mensuelles depuis leur pays au trafic le plus élevé",
+    "Monatliche Besuche aus ihrem Top-Traffic-Land",
+    "Visitas mensais a partir do país com mais tráfego",
+    "Visitas mensais a partir do país com mais tráfego"
+  ),
+  job_openings: V(
+    "Number of open roles at their company",
+    "Número de vacantes en su empresa",
+    "Numero di posizioni aperte nella loro azienda",
+    "Nombre de postes ouverts dans leur entreprise",
+    "Anzahl offener Stellen im Unternehmen",
+    "Número de vagas em aberto na empresa deles",
+    "Número de vagas em aberto na empresa deles"
+  ),
+  open_job_title: V(
+    "A role their company is currently hiring for",
+    "Un puesto que su empresa está contratando actualmente",
+    "Una posizione che la loro azienda sta attualmente assumendo",
+    "Un poste que leur entreprise recrute actuellement",
+    "Eine Stelle, die das Unternehmen aktuell besetzt",
+    "Um cargo que a empresa deles está a contratar",
+    "Um cargo que a empresa deles está contratando"
+  ),
+  headcount: V(
+    "Recipient's company size",
+    "Tamaño de la empresa del destinatario",
+    "Dimensione dell'azienda del destinatario",
+    "Effectif de l'entreprise du destinataire",
+    "Unternehmensgröße des Empfängers",
+    "Dimensão da empresa do destinatário",
+    "Tamanho da empresa do destinatário"
+  ),
+  office_count: V(
+    "Number of offices their company has",
+    "Número de oficinas de su empresa",
+    "Numero di sedi della loro azienda",
+    "Nombre de bureaux de leur entreprise",
+    "Anzahl der Büros des Unternehmens",
+    "Número de escritórios da empresa deles",
+    "Número de escritórios da empresa deles"
+  ),
+  funding_amount: V(
+    "Amount raised in their most recent funding round",
+    "Monto recaudado en su última ronda de financiación",
+    "Importo raccolto nel loro ultimo round di finanziamento",
+    "Montant levé lors de leur dernier tour de financement",
+    "Betrag der letzten Finanzierungsrunde",
+    "Montante angariado na última ronda de financiamento",
+    "Valor captado na última rodada de investimento"
+  ),
+  latest_funding_date: V(
+    "Date of their most recent funding round",
+    "Fecha de su última ronda de financiación",
+    "Data del loro ultimo round di finanziamento",
+    "Date de leur dernier tour de financement",
+    "Datum der letzten Finanzierungsrunde",
+    "Data da última ronda de financiamento",
+    "Data da última rodada de investimento"
+  ),
+  latest_investor: V(
+    "Their most recent investor",
+    "Su inversor más reciente",
+    "Il loro investitore più recente",
+    "Leur investisseur le plus récent",
+    "Ihr jüngster Investor",
+    "O investidor mais recente deles",
+    "O investidor mais recente deles"
+  ),
+  company_news: V(
+    "A recent news item about their company",
+    "Una noticia reciente sobre su empresa",
+    "Una notizia recente sulla loro azienda",
+    "Une actualité récente sur leur entreprise",
+    "Eine aktuelle Nachricht über das Unternehmen",
+    "Uma notícia recente sobre a empresa deles",
+    "Uma notícia recente sobre a empresa deles"
+  ),
+  glassdoor_review: V(
+    "Their highest-rated Glassdoor review",
+    "Su reseña mejor valorada en Glassdoor",
+    "La loro recensione più apprezzata su Glassdoor",
+    "Leur avis Glassdoor le mieux noté",
+    "Ihre bestbewertete Glassdoor-Bewertung",
+    "A avaliação mais bem cotada deles no Glassdoor",
+    "A avaliação mais bem cotada deles no Glassdoor"
+  ),
+  company_domain: V(
+    "Recipient's company website domain",
+    "Dominio del sitio web de la empresa del destinatario",
+    "Dominio del sito web dell'azienda del destinatario",
+    "Domaine du site web de l'entreprise du destinataire",
+    "Website-Domain des Unternehmens",
+    "Domínio do site da empresa do destinatário",
+    "Domínio do site da empresa do destinatário"
+  ),
+  about: V(
+    "Short summary of the recipient",
+    "Breve resumen del destinatario",
+    "Breve descrizione del destinatario",
+    "Bref résumé du destinataire",
+    "Kurze Zusammenfassung des Empfängers",
+    "Breve resumo do destinatário",
+    "Breve resumo do destinatário"
+  ),
+  sender: V("Your name", "Tu nombre", "Il tuo nome", "Votre nom", "Dein Name", "O seu nome", "Seu nome"),
+  sender_first_name: V(
+    "Your first name",
+    "Tu nombre",
+    "Il tuo nome",
+    "Votre prénom",
+    "Dein Vorname",
+    "O seu primeiro nome",
+    "Seu primeiro nome"
+  ),
+  sender_full_name: V(
+    "Your full name",
+    "Tu nombre completo",
+    "Il tuo nome completo",
+    "Votre nom complet",
+    "Dein vollständiger Name",
+    "O seu nome completo",
+    "Seu nome completo"
+  ),
+  sender_email: V(
+    "Your email address",
+    "Tu dirección de correo electrónico",
+    "Il tuo indirizzo email",
+    "Votre adresse e-mail",
+    "Deine E-Mail-Adresse",
+    "O seu endereço de e-mail",
+    "Seu endereço de e-mail"
+  ),
+  sender_company: V(
+    "Your company name",
+    "El nombre de tu empresa",
+    "Il nome della tua azienda",
+    "Le nom de votre entreprise",
+    "Der Name deines Unternehmens",
+    "O nome da sua empresa",
+    "O nome da sua empresa"
+  ),
+  sender_title: V("Your job title", "Tu cargo", "Il tuo ruolo", "Votre poste", "Deine Position", "O seu cargo", "Seu cargo"),
+  calendar_link: V(
+    "Your meeting booking link",
+    "Tu enlace para agendar",
+    "Il tuo link per prenotare un incontro",
+    "Votre lien de réservation de rendez-vous",
+    "Dein Buchungslink für Meetings",
+    "O seu link de marcação de reuniões",
+    "Seu link de agendamento de reuniões"
+  ),
+  value_proposition: V(
+    "Your product's core value proposition",
+    "La propuesta de valor principal de tu producto",
+    "La proposta di valore principale del tuo prodotto",
+    "La proposition de valeur principale de votre produit",
+    "Das zentrale Wertversprechen deines Produkts",
+    "A proposta de valor principal do seu produto",
+    "A proposta de valor principal do seu produto"
+  ),
+  day_of_week: V(
+    "Today's day of the week",
+    "El día de la semana de hoy",
+    "Il giorno della settimana di oggi",
+    "Le jour de la semaine actuel",
+    "Der heutige Wochentag",
+    "O dia da semana de hoje",
+    "O dia da semana de hoje"
+  ),
+}
+
+const VARIABLES: VariableDef[] = TEMPLATE_MERGE_VARIABLES.map((mv) => ({
+  tag: mv.tag,
+  def: VARIABLE_DESCRIPTIONS[mv.tag] ?? V(mv.en, mv.es, mv.it, mv.fr, mv.de, mv.pt, mv.pt_BR),
+}))
 
 // Dummy merge data used to render the live preview as a recipient would see it.
 // Exported for reuse anywhere else that previews a template outside a single
@@ -228,14 +484,46 @@ const VARIABLES: VariableDef[] = [
 export const SAMPLE_DATA: Record<string, string> = {
   first_name: "Sarah",
   last_name: "Chen",
+  full_name: "Sarah Chen",
   company: "Acme Corp",
   title: "VP of Sales",
   industry: "SaaS",
   city: "San Francisco",
+  province: "California",
+  region: "West Coast",
+  country: "United States",
+  icebreaker: "Loved your talk on scaling revenue teams at SaaStr",
+  pain_point: "keeping SDR ramp time under 60 days",
+  linkedin_post: "5 lessons from doubling our pipeline in 2024",
+  seniority: "VP",
+  department: "Sales",
+  email: "sarah.chen@acmecorp.com",
+  phone: "+1 415-555-0182",
+  linkedin_url: "linkedin.com/in/sarahchen",
+  founding_year: "2015",
+  revenue: "$50M-$100M",
+  top_traffic_country: "United States",
+  top_traffic_country_visits: "1.2M",
+  job_openings: "12",
+  open_job_title: "Enterprise Account Executive",
+  headcount: "201-500",
+  office_count: "4",
+  funding_amount: "$40M",
+  latest_funding_date: "March 2024",
+  latest_investor: "Sequoia Capital",
+  company_news: "Acme Corp raised a $40M Series C",
+  glassdoor_review: "Great culture and strong leadership team",
+  company_domain: "acmecorp.com",
+  about: "Sarah leads the West Coast sales team, focused on mid-market expansion.",
   sender: "Alex Rivera",
+  sender_first_name: "Alex",
+  sender_full_name: "Alex Rivera",
+  sender_email: "alex@kombo.ai",
   sender_company: "Kombo",
   sender_title: "Account Executive",
   calendar_link: "cal.com/alex-rivera",
+  value_proposition: "Find best-fit prospects 3x faster with AI lead scoring.",
+  day_of_week: "Monday",
 }
 
 // Substitute {{tag}} with sample data; unknown tags are left literal so the
@@ -339,6 +627,8 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "template" : "templates"} deleted`,
     variablesTitle: "Variables",
     variablesSubtitle: "Click to insert, drag into the body, or copy.",
+    personalizedVariable: "Personalized variable",
+    personalizedVariablePlaceholder: "e.g. a friendly comment about their recent achievement",
     varGroups: { yourDetails: "Your Details", prospectInfo: "Prospect Info", prospectCompany: "Prospect Company", other: "Other" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Preview",
@@ -462,6 +752,8 @@ const COPY = {
       `${n} ${n === 1 ? "plantilla eliminada" : "plantillas eliminadas"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
+    personalizedVariable: "Variable personalizada",
+    personalizedVariablePlaceholder: "p. ej. un comentario amable sobre su logro reciente",
     varGroups: { yourDetails: "Tus datos", prospectInfo: "Info del prospecto", prospectCompany: "Empresa del prospecto", other: "Otros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Vista previa",
@@ -582,6 +874,8 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "modello eliminato" : "modelli eliminati"}`,
     variablesTitle: "Variabili",
     variablesSubtitle: "Clicca per inserire, trascina nel corpo o copia.",
+    personalizedVariable: "Variabile personalizzata",
+    personalizedVariablePlaceholder: "es. un commento amichevole sul loro recente traguardo",
     varGroups: { yourDetails: "I tuoi dati", prospectInfo: "Info sul prospect", prospectCompany: "Azienda del prospect", other: "Altro" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variabili",
     tabPreview: "Anteprima",
@@ -702,6 +996,8 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "modèle supprimé" : "modèles supprimés"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Cliquez pour insérer, glissez dans le corps ou copiez.",
+    personalizedVariable: "Variable personnalisée",
+    personalizedVariablePlaceholder: "ex. un commentaire sympathique sur leur récente réussite",
     varGroups: { yourDetails: "Vos informations", prospectInfo: "Infos du prospect", prospectCompany: "Entreprise du prospect", other: "Autre" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Aperçu",
@@ -821,6 +1117,8 @@ const COPY = {
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "Vorlage" : "Vorlagen"} gelöscht`,
     variablesTitle: "Variablen",
     variablesSubtitle: "Klicke zum Einfügen, ziehe es in den Text oder kopiere es.",
+    personalizedVariable: "Personalisierte Variable",
+    personalizedVariablePlaceholder: "z. B. ein freundlicher Kommentar zu ihrem jüngsten Erfolg",
     varGroups: { yourDetails: "Deine Angaben", prospectInfo: "Prospect-Infos", prospectCompany: "Unternehmen des Prospects", other: "Sonstiges" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variablen",
     tabPreview: "Vorschau",
@@ -944,6 +1242,8 @@ const COPY = {
       `${n} ${n === 1 ? "modelo eliminado" : "modelos eliminados"}`,
     variablesTitle: "Variáveis",
     variablesSubtitle: "Clique para inserir, arraste para o corpo ou copie.",
+    personalizedVariable: "Variável personalizada",
+    personalizedVariablePlaceholder: "ex. um comentário simpático sobre a conquista recente deles",
     varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variáveis",
     tabPreview: "Pré-visualização",
@@ -1067,6 +1367,8 @@ const COPY = {
       `${n} ${n === 1 ? "modelo excluído" : "modelos excluídos"}`,
     variablesTitle: "Variáveis",
     variablesSubtitle: "Clique para inserir, arraste para o corpo ou copie.",
+    personalizedVariable: "Variável personalizada",
+    personalizedVariablePlaceholder: "ex. um comentário simpático sobre a conquista recente deles",
     varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variáveis",
     tabPreview: "Pré-visualização",
@@ -1518,6 +1820,10 @@ export default function Templates() {
   const [body, setBody] = React.useState("")
   const [tags, setTags] = React.useState("")
   const [copiedTag, setCopiedTag] = React.useState<string | null>(null)
+  // Free-text "personalized variable" — wraps whatever the author types in
+  // {{ }} as a placeholder to fill in by hand later, matching the
+  // extension's Add Variables modal.
+  const [customVarText, setCustomVarText] = React.useState("")
 
   // AI generator (method 2: prompt → draft).
   const [aiOpen, setAiOpen] = React.useState(false)
@@ -1567,6 +1873,13 @@ export default function Templates() {
     navigator.clipboard?.writeText(text).catch(() => {})
     setCopiedTag(tag)
     window.setTimeout(() => setCopiedTag((cur) => (cur === tag ? null : cur)), 1200)
+  }
+
+  function insertCustomVariable() {
+    const text = customVarText.trim()
+    if (!text) return
+    insertVariable(text)
+    setCustomVarText("")
   }
 
   function openEditor(template: EmailTemplate | null, presetFolder?: string) {
@@ -2311,7 +2624,7 @@ export default function Templates() {
                 </p>
               </div>
               <div className="flex-1 space-y-1 overflow-y-auto p-2">
-                {groupByMergeVarGroup(VARIABLES, MERGE_VARIABLE_GROUPS).map((group) => (
+                {groupByMergeVarGroup(VARIABLES, TEMPLATE_MERGE_VARIABLE_GROUPS).map((group) => (
                   <div key={group.key}>
                     <p className="text-muted-foreground px-2 pt-2 pb-1 text-[11px] font-semibold uppercase">
                       {c.varGroups[group.key]}
@@ -2353,6 +2666,31 @@ export default function Templates() {
                     ))}
                   </div>
                 ))}
+              </div>
+              <div className="border-t p-2">
+                <p className="text-muted-foreground px-2 pt-1 pb-1 text-[11px] font-semibold uppercase">
+                  {c.personalizedVariable}
+                </p>
+                <div className="flex items-center gap-1.5 px-2 pb-1">
+                  <Input
+                    value={customVarText}
+                    onChange={(e) => setCustomVarText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") insertCustomVariable()
+                    }}
+                    placeholder={c.personalizedVariablePlaceholder}
+                    className="h-8"
+                  />
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 shrink-0 px-2"
+                    disabled={!customVarText.trim()}
+                    onClick={insertCustomVariable}
+                  >
+                    <Plus className="size-3.5" />
+                  </Button>
+                </div>
               </div>
             </div>
 

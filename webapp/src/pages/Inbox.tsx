@@ -24,6 +24,7 @@ import {
   ThumbsUp,
   Eye,
   Braces,
+  Plus,
   MousePointerClick,
   UserCheck,
   Tag,
@@ -117,7 +118,7 @@ import {
   LANG_LABEL,
 } from "@/lib/mock-translate"
 import { relativeTime, futureRelativeTime, formatDueAt, initials } from "@/lib/format"
-import { groupByMergeVarGroup } from "@/lib/merge-vars"
+import { groupByMergeVarGroup, MERGE_VARIABLES, MERGE_VARIABLE_GROUPS } from "@/lib/merge-vars"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
 import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
@@ -235,37 +236,9 @@ const COPY = {
     regenInstructionsPlaceholder: "e.g. mention our upcoming webinar…",
     regenCancel: "Cancel",
     regenerated: "Draft regenerated",
-    vars: {
-      first_name: "First name",
-      last_name: "Last name",
-      full_name: "Full name",
-      company: "Company",
-      company_domain: "Company domain",
-      title: "Job title",
-      seniority: "Seniority",
-      department: "Department",
-      location: "Location",
-      email: "Email",
-      phone: "Phone",
-      linkedin_url: "LinkedIn URL",
-      industry: "Industry",
-      headcount: "Company size",
-      revenue: "Revenue",
-      about: "About",
-      signal_1: "Top signal",
-      signal_2: "Second signal",
-      score: "Lead score",
-      status: "Status",
-      tags: "Tags",
-      last_activity: "Last activity",
-      added_at: "Added",
-      sender: "Your first name",
-      sender_full_name: "Your full name",
-      sender_email: "Your email",
-      sender_role: "Your role",
-      sender_company: "Your company",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Search variables…",
+    personalizedVariable: "Personalized variable",
+    personalizedVariablePlaceholder: "e.g. a friendly comment about their recent achievement",
     varsEmpty: "No variables match your search.",
     varGroups: {
       yourDetails: "Your Details",
@@ -397,37 +370,9 @@ const COPY = {
     regenInstructionsPlaceholder: "p. ej. menciona nuestro próximo webinar…",
     regenCancel: "Cancelar",
     regenerated: "Borrador regenerado",
-    vars: {
-      first_name: "Nombre",
-      last_name: "Apellido",
-      full_name: "Nombre completo",
-      company: "Empresa",
-      company_domain: "Dominio de la empresa",
-      title: "Cargo",
-      seniority: "Antigüedad",
-      department: "Departamento",
-      location: "Ubicación",
-      email: "Email",
-      phone: "Teléfono",
-      linkedin_url: "URL de LinkedIn",
-      industry: "Sector",
-      headcount: "Tamaño de la empresa",
-      revenue: "Ingresos",
-      about: "Descripción",
-      signal_1: "Señal principal",
-      signal_2: "Segunda señal",
-      score: "Puntuación del lead",
-      status: "Estado",
-      tags: "Etiquetas",
-      last_activity: "Última actividad",
-      added_at: "Añadido",
-      sender: "Tu nombre",
-      sender_full_name: "Tu nombre completo",
-      sender_email: "Tu email",
-      sender_role: "Tu rol",
-      sender_company: "Tu empresa",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Buscar variables…",
+    personalizedVariable: "Variable personalizada",
+    personalizedVariablePlaceholder: "p. ej. un comentario amable sobre su logro reciente",
     varsEmpty: "Ninguna variable coincide con tu búsqueda.",
     varGroups: {
       yourDetails: "Tus datos",
@@ -559,37 +504,9 @@ const COPY = {
     regenInstructionsPlaceholder: "es. menziona il nostro prossimo webinar…",
     regenCancel: "Annulla",
     regenerated: "Bozza rigenerata",
-    vars: {
-      first_name: "Nome",
-      last_name: "Cognome",
-      full_name: "Nome completo",
-      company: "Azienda",
-      company_domain: "Dominio dell'azienda",
-      title: "Ruolo",
-      seniority: "Seniority",
-      department: "Dipartimento",
-      location: "Località",
-      email: "Email",
-      phone: "Telefono",
-      linkedin_url: "URL LinkedIn",
-      industry: "Settore",
-      headcount: "Dimensioni dell'azienda",
-      revenue: "Fatturato",
-      about: "Descrizione",
-      signal_1: "Segnale principale",
-      signal_2: "Secondo segnale",
-      score: "Punteggio del lead",
-      status: "Stato",
-      tags: "Tag",
-      last_activity: "Ultima attività",
-      added_at: "Aggiunto",
-      sender: "Il tuo nome",
-      sender_full_name: "Il tuo nome completo",
-      sender_email: "La tua email",
-      sender_role: "Il tuo ruolo",
-      sender_company: "La tua azienda",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Cerca variabili…",
+    personalizedVariable: "Variabile personalizzata",
+    personalizedVariablePlaceholder: "es. un commento amichevole sul loro recente traguardo",
     varsEmpty: "Nessuna variabile corrisponde alla tua ricerca.",
     varGroups: {
       yourDetails: "I tuoi dati",
@@ -721,37 +638,9 @@ const COPY = {
     regenInstructionsPlaceholder: "ex. mentionnez notre prochain webinaire…",
     regenCancel: "Annuler",
     regenerated: "Brouillon régénéré",
-    vars: {
-      first_name: "Prénom",
-      last_name: "Nom",
-      full_name: "Nom complet",
-      company: "Entreprise",
-      company_domain: "Domaine de l'entreprise",
-      title: "Poste",
-      seniority: "Séniorité",
-      department: "Département",
-      location: "Localisation",
-      email: "E-mail",
-      phone: "Téléphone",
-      linkedin_url: "URL LinkedIn",
-      industry: "Secteur",
-      headcount: "Taille de l'entreprise",
-      revenue: "Chiffre d'affaires",
-      about: "À propos",
-      signal_1: "Signal principal",
-      signal_2: "Deuxième signal",
-      score: "Score du lead",
-      status: "Statut",
-      tags: "Étiquettes",
-      last_activity: "Dernière activité",
-      added_at: "Ajouté",
-      sender: "Votre prénom",
-      sender_full_name: "Votre nom complet",
-      sender_email: "Votre e-mail",
-      sender_role: "Votre rôle",
-      sender_company: "Votre entreprise",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Rechercher des variables…",
+    personalizedVariable: "Variable personnalisée",
+    personalizedVariablePlaceholder: "ex. un commentaire sympathique sur leur récente réussite",
     varsEmpty: "Aucune variable ne correspond à votre recherche.",
     varGroups: {
       yourDetails: "Vos informations",
@@ -883,37 +772,9 @@ const COPY = {
     regenInstructionsPlaceholder: "z. B. erwähne unser kommendes Webinar…",
     regenCancel: "Abbrechen",
     regenerated: "Entwurf neu generiert",
-    vars: {
-      first_name: "Vorname",
-      last_name: "Nachname",
-      full_name: "Vollständiger Name",
-      company: "Unternehmen",
-      company_domain: "Unternehmensdomain",
-      title: "Position",
-      seniority: "Seniorität",
-      department: "Abteilung",
-      location: "Standort",
-      email: "E-Mail",
-      phone: "Telefon",
-      linkedin_url: "LinkedIn-URL",
-      industry: "Branche",
-      headcount: "Unternehmensgröße",
-      revenue: "Umsatz",
-      about: "Über",
-      signal_1: "Top-Signal",
-      signal_2: "Zweites Signal",
-      score: "Lead-Score",
-      status: "Status",
-      tags: "Tags",
-      last_activity: "Letzte Aktivität",
-      added_at: "Hinzugefügt",
-      sender: "Dein Vorname",
-      sender_full_name: "Dein vollständiger Name",
-      sender_email: "Deine E-Mail",
-      sender_role: "Deine Rolle",
-      sender_company: "Dein Unternehmen",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Variablen suchen…",
+    personalizedVariable: "Personalisierte Variable",
+    personalizedVariablePlaceholder: "z. B. ein freundlicher Kommentar zu ihrem jüngsten Erfolg",
     varsEmpty: "Keine Variablen entsprechen deiner Suche.",
     varGroups: {
       yourDetails: "Deine Angaben",
@@ -1045,37 +906,9 @@ const COPY = {
     regenInstructionsPlaceholder: "p. ex. mencione o nosso próximo webinar…",
     regenCancel: "Cancelar",
     regenerated: "Rascunho regenerado",
-    vars: {
-      first_name: "Nome próprio",
-      last_name: "Apelido",
-      full_name: "Nome completo",
-      company: "Empresa",
-      company_domain: "Domínio da empresa",
-      title: "Cargo",
-      seniority: "Senioridade",
-      department: "Departamento",
-      location: "Localização",
-      email: "Email",
-      phone: "Telefone",
-      linkedin_url: "URL do LinkedIn",
-      industry: "Setor",
-      headcount: "Dimensão da empresa",
-      revenue: "Faturação",
-      about: "Sobre",
-      signal_1: "Sinal principal",
-      signal_2: "Segundo sinal",
-      score: "Pontuação do lead",
-      status: "Estado",
-      tags: "Etiquetas",
-      last_activity: "Última atividade",
-      added_at: "Adicionado",
-      sender: "O seu nome",
-      sender_full_name: "O seu nome completo",
-      sender_email: "O seu email",
-      sender_role: "A sua função",
-      sender_company: "A sua empresa",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Pesquisar variáveis…",
+    personalizedVariable: "Variável personalizada",
+    personalizedVariablePlaceholder: "ex. um comentário simpático sobre a conquista recente deles",
     varsEmpty: "Nenhuma variável corresponde à pesquisa.",
     varGroups: {
       yourDetails: "Os seus dados",
@@ -1207,37 +1040,9 @@ const COPY = {
     regenInstructionsPlaceholder: "ex.: mencione nosso próximo webinar…",
     regenCancel: "Cancelar",
     regenerated: "Rascunho gerado novamente",
-    vars: {
-      first_name: "Nome",
-      last_name: "Sobrenome",
-      full_name: "Nome completo",
-      company: "Empresa",
-      company_domain: "Domínio da empresa",
-      title: "Cargo",
-      seniority: "Senioridade",
-      department: "Departamento",
-      location: "Localização",
-      email: "E-mail",
-      phone: "Telefone",
-      linkedin_url: "URL do LinkedIn",
-      industry: "Setor",
-      headcount: "Tamanho da empresa",
-      revenue: "Faturamento",
-      about: "Sobre",
-      signal_1: "Sinal principal",
-      signal_2: "Segundo sinal",
-      score: "Pontuação do lead",
-      status: "Status",
-      tags: "Tags",
-      last_activity: "Última atividade",
-      added_at: "Adicionado",
-      sender: "Seu nome",
-      sender_full_name: "Seu nome completo",
-      sender_email: "Seu e-mail",
-      sender_role: "Sua função",
-      sender_company: "Sua empresa",
-    } as Record<string, string>,
     varsSearchPlaceholder: "Buscar variáveis…",
+    personalizedVariable: "Variável personalizada",
+    personalizedVariablePlaceholder: "ex. um comentário simpático sobre a conquista recente deles",
     varsEmpty: "Nenhuma variável corresponde à sua busca.",
     varGroups: {
       yourDetails: "Seus dados",
@@ -1297,33 +1102,6 @@ type FolderLabelKey =
   | "sent"
   | "archivedFolder"
 
-// The composer's personalization catalog is richer than the shared
-// lib/merge-vars.ts set (CRM/engagement fields like lead score, signals,
-// last activity have no equivalent there), so it gets its own grouping —
-// same "Your Details / Prospect Info / Prospect Company" taxonomy as the
-// Chrome extension, plus an "Activity" bucket for the fields that don't fit.
-type InboxVarGroupKey = "yourDetails" | "prospectInfo" | "prospectCompany" | "activity"
-
-const INBOX_VAR_GROUPS: { key: InboxVarGroupKey; tags: string[] }[] = [
-  { key: "yourDetails", tags: ["sender", "sender_full_name", "sender_email", "sender_role", "sender_company"] },
-  {
-    key: "prospectInfo",
-    tags: [
-      "first_name",
-      "last_name",
-      "full_name",
-      "title",
-      "seniority",
-      "department",
-      "location",
-      "email",
-      "phone",
-      "linkedin_url",
-    ],
-  },
-  { key: "prospectCompany", tags: ["company", "company_domain", "industry", "headcount", "revenue", "about"] },
-  { key: "activity", tags: ["signal_1", "signal_2", "score", "status", "tags", "last_activity", "added_at"] },
-]
 
 const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "inbox", key: "inbox", icon: InboxIcon },
@@ -3041,6 +2819,10 @@ function Composer({
   const [regenLang, setRegenLang] = React.useState<ChatLang>(recipientLang)
   const [regenInstructions, setRegenInstructions] = React.useState("")
   const [varSearch, setVarSearch] = React.useState("")
+  // Free-text "personalized variable" — wraps whatever's typed in {{ }} as a
+  // placeholder to fill in by hand later, matching the extension's Add
+  // Variables modal. Always inserted literally, never resolved like insertVar.
+  const [customVarText, setCustomVarText] = React.useState("")
   const taRef = React.useRef<RichTextEditorHandle>(null)
 
   // wasOpen reset pattern — seed every field back to its default each time
@@ -3081,7 +2863,7 @@ function Composer({
     { tag: "title", value: prospect.title },
     { tag: "seniority", value: prospect.seniority },
     { tag: "department", value: prospect.department },
-    { tag: "location", value: prospect.location },
+    { tag: "city", value: prospect.location },
     { tag: "email", value: prospect.email },
     { tag: "phone", value: prospect.phone ?? "" },
     { tag: "linkedin_url", value: prospect.linkedinUrl },
@@ -3096,10 +2878,11 @@ function Composer({
     { tag: "tags", value: prospect.tags.join(", ") },
     { tag: "last_activity", value: relativeTime(prospect.lastActivity) },
     { tag: "added_at", value: relativeTime(prospect.addedAt) },
-    { tag: "sender", value: firstName },
+    { tag: "sender", value: currentUser.name },
+    { tag: "sender_first_name", value: firstName },
     { tag: "sender_full_name", value: currentUser.name },
     { tag: "sender_email", value: currentUser.email },
-    { tag: "sender_role", value: currentUser.role },
+    { tag: "sender_title", value: currentUser.role },
     { tag: "sender_company", value: currentUser.company },
   ]
   const renderedReply = vars.reduce(
@@ -3108,15 +2891,16 @@ function Composer({
   )
   // Same variables as a tag→value map, for the template picker's live preview.
   const varsMap = Object.fromEntries(vars.map((v) => [v.tag, v.value]))
+  const mergeVarLabel = (tag: string) => MERGE_VARIABLES.find((mv) => mv.tag === tag)?.[locale] ?? tag
   const varSearchQuery = varSearch.trim().toLowerCase()
   const filteredVars = varSearchQuery
     ? vars.filter(
         (v) =>
-          (c.vars[v.tag] ?? v.tag).toLowerCase().includes(varSearchQuery) ||
+          mergeVarLabel(v.tag).toLowerCase().includes(varSearchQuery) ||
           v.tag.toLowerCase().includes(varSearchQuery)
       )
     : vars
-  const varGroups = groupByMergeVarGroup(filteredVars, INBOX_VAR_GROUPS)
+  const varGroups = groupByMergeVarGroup(filteredVars, MERGE_VARIABLE_GROUPS)
 
   function runGenerate(options?: DraftReplyOptions) {
     const next = seed + 1
@@ -3151,6 +2935,15 @@ function Composer({
   // back to the literal tag when this prospect has no value for the field.
   function insertVar(tag: string) {
     taRef.current?.insertText(varsMap[tag] || `{{${tag}}}`)
+  }
+
+  // Unlike insertVar, always inserts the raw typed text literally — it's a
+  // placeholder note for the sender to fill in by hand, not a data field.
+  function insertCustomVar() {
+    const text = customVarText.trim()
+    if (!text) return
+    taRef.current?.insertText(`{{${text}}}`)
+    setCustomVarText("")
   }
 
   // Insert the template body (merge variables intact) so the composer's
@@ -3230,14 +3023,21 @@ function Composer({
         <FileText className="size-4" />
         {c.templates}
       </Button>
-      <DropdownMenu>
+      <DropdownMenu
+        onOpenChange={(open) => {
+          if (!open) {
+            setVarSearch("")
+            setCustomVarText("")
+          }
+        }}
+      >
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="text-muted-foreground">
             <Braces className="size-4" />
             {c.personalize}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuContent align="end" className="w-80">
           <DropdownMenuLabel>{c.personalize}</DropdownMenuLabel>
           <div className="px-2 pb-1.5" onClick={(e) => e.stopPropagation()}>
             <Input
@@ -3256,9 +3056,9 @@ function Composer({
                 </DropdownMenuLabel>
                 {group.items.map((v) => (
                   <DropdownMenuItem key={v.tag} onClick={() => insertVar(v.tag)}>
-                    <Braces className="text-primary size-3.5" />
-                    <span className="flex-1">{c.vars[v.tag] ?? v.tag}</span>
-                    <span className="text-muted-foreground max-w-40 truncate text-[11px]">
+                    <Braces className="text-primary size-3.5 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate">{mergeVarLabel(v.tag)}</span>
+                    <span className="text-muted-foreground max-w-28 shrink-0 truncate text-[11px]">
                       {v.value || `{{${v.tag}}}`}
                     </span>
                   </DropdownMenuItem>
@@ -3270,6 +3070,30 @@ function Composer({
                 {c.varsEmpty}
               </p>
             )}
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-muted-foreground text-[11px] font-semibold uppercase">
+            {c.personalizedVariable}
+          </DropdownMenuLabel>
+          <div className="flex items-center gap-1.5 px-2 pt-0.5 pb-1.5" onClick={(e) => e.stopPropagation()}>
+            <Input
+              value={customVarText}
+              onChange={(e) => setCustomVarText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") insertCustomVar()
+              }}
+              placeholder={c.personalizedVariablePlaceholder}
+              className="h-8"
+            />
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 shrink-0 px-2"
+              disabled={!customVarText.trim()}
+              onClick={insertCustomVar}
+            >
+              <Plus className="size-3.5" />
+            </Button>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
