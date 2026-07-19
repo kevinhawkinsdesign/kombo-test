@@ -96,6 +96,7 @@ const COPY = {
       "Manage your account, value proposition, and selling config.",
     tabAccount: "Account",
     tabAccountMgmt: "Account Management",
+    tabBilling: "Billing",
     teamRosterTitle: "Team roster",
     teamDesc: "See and manage the reps in your organization.",
     teamRep: "Rep",
@@ -232,6 +233,7 @@ const COPY = {
       "Gestiona tu cuenta, propuesta de valor y configuración de ventas.",
     tabAccount: "Cuenta",
     tabAccountMgmt: "Gestión de cuenta",
+    tabBilling: "Facturación",
     teamRosterTitle: "Vendedores del equipo",
     teamDesc: "Consulta y gestiona a los vendedores de tu organización.",
     teamRep: "Vendedor",
@@ -372,6 +374,7 @@ const COPY = {
       "Gestisci il tuo account, la proposta di valore e la configurazione di vendita.",
     tabAccount: "Account",
     tabAccountMgmt: "Gestione account",
+    tabBilling: "Fatturazione",
     teamRosterTitle: "Venditori del team",
     teamDesc: "Visualizza e gestisci i venditori della tua organizzazione.",
     teamRep: "Venditore",
@@ -512,6 +515,7 @@ const COPY = {
       "Gérez votre compte, votre proposition de valeur et votre configuration de vente.",
     tabAccount: "Compte",
     tabAccountMgmt: "Gestion du compte",
+    tabBilling: "Facturation",
     teamRosterTitle: "Commerciaux de l'équipe",
     teamDesc: "Consultez et gérez les commerciaux de votre organisation.",
     teamRep: "Commercial",
@@ -652,6 +656,7 @@ const COPY = {
       "Verwalte dein Konto, dein Wertversprechen und deine Vertriebseinstellungen.",
     tabAccount: "Konto",
     tabAccountMgmt: "Kontoverwaltung",
+    tabBilling: "Abrechnung",
     teamRosterTitle: "Vertriebler-Übersicht",
     teamDesc: "Sieh dir die Vertriebler deiner Organisation an und verwalte sie.",
     teamRep: "Vertriebler",
@@ -792,6 +797,7 @@ const COPY = {
       "Faça a gestão da sua conta, proposta de valor e configuração de vendas.",
     tabAccount: "Conta",
     tabAccountMgmt: "Gestão da conta",
+    tabBilling: "Faturação",
     teamRosterTitle: "Comerciais da equipa",
     teamDesc: "Consulte e faça a gestão dos comerciais da sua organização.",
     teamRep: "Comercial",
@@ -932,6 +938,7 @@ const COPY = {
       "Gerencie sua conta, proposta de valor e configuração de vendas.",
     tabAccount: "Conta",
     tabAccountMgmt: "Gestão da conta",
+    tabBilling: "Faturamento",
     teamRosterTitle: "Vendedores do time",
     teamDesc: "Veja e gerencie os vendedores da sua organização.",
     teamRep: "Vendedor",
@@ -1113,7 +1120,7 @@ export default function Settings() {
   }
 
   return (
-    <Page className="max-w-5xl">
+    <Page>
       <PageHeading title={c.title} description={c.description} />
 
       <Tabs
@@ -1134,6 +1141,12 @@ export default function Settings() {
             className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
           >
             {c.tabAccountMgmt}
+          </TabsTrigger>
+          <TabsTrigger
+            value="billing"
+            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
+          >
+            {c.tabBilling}
           </TabsTrigger>
           <TabsTrigger
             value="value"
@@ -1486,7 +1499,10 @@ export default function Settings() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
 
+        {/* BILLING */}
+        <TabsContent value="billing" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{c.currentPlan}</CardTitle>
