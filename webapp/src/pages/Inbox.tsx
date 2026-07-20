@@ -52,6 +52,7 @@ import {
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { Segmented } from "@/components/common/Segmented"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -145,6 +146,12 @@ const COPY = {
     unread: "Unread",
     needs_reply: "Need to Reply",
     myTasks: "My Tasks",
+    tabReplies: "Replies",
+    tabTasks: "Tasks",
+    tabFollowups: "Follow-ups",
+    tabRepliesSubtitle: "They replied — needs your response.",
+    tabTasksSubtitle: "Open tasks assigned to you.",
+    tabFollowupsSubtitle: "They took an action — worth reaching out.",
     scheduled: "Scheduled",
     sent: "Sent",
     archivedFolder: "Archived",
@@ -280,6 +287,12 @@ const COPY = {
     unread: "Sin leer",
     needs_reply: "Por responder",
     myTasks: "Mis tareas",
+    tabReplies: "Respuestas",
+    tabTasks: "Tareas",
+    tabFollowups: "Seguimientos",
+    tabRepliesSubtitle: "Respondieron — necesita tu respuesta.",
+    tabTasksSubtitle: "Tareas abiertas asignadas a ti.",
+    tabFollowupsSubtitle: "Realizaron una acción — vale la pena contactarlos.",
     scheduled: "Programados",
     sent: "Enviados",
     archivedFolder: "Archivados",
@@ -414,6 +427,12 @@ const COPY = {
     unread: "Non lette",
     needs_reply: "Da rispondere",
     myTasks: "Le mie attività",
+    tabReplies: "Risposte",
+    tabTasks: "Attività",
+    tabFollowups: "Follow-up",
+    tabRepliesSubtitle: "Hanno risposto — richiede una tua risposta.",
+    tabTasksSubtitle: "Attività aperte assegnate a te.",
+    tabFollowupsSubtitle: "Hanno compiuto un'azione — vale la pena ricontattarli.",
     scheduled: "Programmate",
     sent: "Inviate",
     archivedFolder: "Archiviate",
@@ -548,6 +567,12 @@ const COPY = {
     unread: "Non lues",
     needs_reply: "À répondre",
     myTasks: "Mes tâches",
+    tabReplies: "Réponses",
+    tabTasks: "Tâches",
+    tabFollowups: "Relances",
+    tabRepliesSubtitle: "Ils ont répondu — nécessite votre réponse.",
+    tabTasksSubtitle: "Tâches ouvertes qui vous sont assignées.",
+    tabFollowupsSubtitle: "Ils ont effectué une action — cela vaut la peine de les recontacter.",
     scheduled: "Programmées",
     sent: "Envoyées",
     archivedFolder: "Archivées",
@@ -682,6 +707,12 @@ const COPY = {
     unread: "Ungelesen",
     needs_reply: "Zu beantworten",
     myTasks: "Meine Aufgaben",
+    tabReplies: "Antworten",
+    tabTasks: "Aufgaben",
+    tabFollowups: "Follow-ups",
+    tabRepliesSubtitle: "Sie haben geantwortet — erfordert deine Antwort.",
+    tabTasksSubtitle: "Offene Aufgaben, die dir zugewiesen sind.",
+    tabFollowupsSubtitle: "Sie haben eine Aktion durchgeführt — es lohnt sich, sie zu kontaktieren.",
     scheduled: "Geplant",
     sent: "Gesendet",
     archivedFolder: "Archiviert",
@@ -816,6 +847,12 @@ const COPY = {
     unread: "Por ler",
     needs_reply: "Por responder",
     myTasks: "As minhas tarefas",
+    tabReplies: "Respostas",
+    tabTasks: "Tarefas",
+    tabFollowups: "Acompanhamentos",
+    tabRepliesSubtitle: "Responderam — precisa da sua resposta.",
+    tabTasksSubtitle: "Tarefas em aberto atribuídas a si.",
+    tabFollowupsSubtitle: "Realizaram uma ação — vale a pena contactá-los.",
     scheduled: "Agendadas",
     sent: "Enviadas",
     archivedFolder: "Arquivadas",
@@ -950,6 +987,12 @@ const COPY = {
     unread: "Não lidas",
     needs_reply: "Para responder",
     myTasks: "Minhas tarefas",
+    tabReplies: "Respostas",
+    tabTasks: "Tarefas",
+    tabFollowups: "Follow-ups",
+    tabRepliesSubtitle: "Responderam — precisa da sua resposta.",
+    tabTasksSubtitle: "Tarefas em aberto atribuídas a você.",
+    tabFollowupsSubtitle: "Realizaram uma ação — vale a pena entrar em contato.",
     scheduled: "Agendadas",
     sent: "Enviadas",
     archivedFolder: "Arquivadas",
@@ -1088,6 +1131,7 @@ type Folder =
   | "unread"
   | "needs_reply"
   | "my_tasks"
+  | "follow_ups"
   | "scheduled"
   | "sent"
   | "archived"
@@ -1185,6 +1229,13 @@ function taskEventState(t: Task): TaskEventState {
 
 type View = { kind: "folder"; id: Folder } | { kind: "tag"; id: ConvStatus }
 
+// The quick-tab row above the list is a prominent shortcut into 3 specific
+// folder views, not a separate filter dimension — selecting one just sets
+// `view` like clicking the equivalent sidebar folder would, so "none" is
+// shown whenever the current view is something else entirely (a different
+// folder, or an outcome tag).
+type InboxQuickTab = "needs_reply" | "my_tasks" | "follow_ups" | "none"
+
 function lastMessage(conv: Conversation) {
   return conv.messages[conv.messages.length - 1]
 }
@@ -1204,6 +1255,16 @@ function hasReadyDraft(conv: Conversation): boolean {
 // looked yet) and from archiving (marks the thread as done/handled).
 function needsReply(conv: Conversation): boolean {
   return awaitingReply(conv) && conv.unread === 0 && !isScheduled(conv)
+}
+
+// Events that show the prospect took a trackable action without replying —
+// opened an email, clicked a link, viewed the profile, accepted a connection,
+// liked a post. Worth a manual nudge, distinct from "Replies" (they already
+// wrote back) and "Scheduled" (a follow-up is already queued).
+const FOLLOWUP_EVENT_KINDS: ConvEventKind[] = ["open", "click", "view", "connection", "like"]
+function hasFollowUpSignal(conv: Conversation): boolean {
+  if (awaitingReply(conv) || isScheduled(conv)) return false
+  return (conv.events ?? []).some((e) => FOLLOWUP_EVENT_KINDS.includes(e.kind))
 }
 
 // The inbox's offline EN<->ES demo translator (lib/mock-translate.ts) only
@@ -1420,6 +1481,8 @@ export default function Inbox() {
           return visible.filter(needsReply).length
         case "my_tasks":
           return myTaskRows.length
+        case "follow_ups":
+          return visible.filter(hasFollowUpSignal).length
         case "scheduled":
           return visible.filter(isScheduled).length
         case "sent":
@@ -1497,6 +1560,8 @@ export default function Inbox() {
           // This folder renders task rows directly (see the list-column
           // render below) rather than filtering conversations.
           return false
+        case "follow_ups":
+          return hasFollowUpSignal(conv)
         case "scheduled":
           return isScheduled(conv)
         case "sent":
@@ -1553,6 +1618,11 @@ export default function Inbox() {
   }, [conversations])
 
   const isMyTasksView = view.kind === "folder" && view.id === "my_tasks"
+  const quickTab: InboxQuickTab =
+    view.kind === "folder" &&
+    (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
+      ? view.id
+      : "none"
   const active = conversations.find((conv) => conv.id === activeId)
   // "My Tasks" doesn't read `list` for rendering (it renders task rows
   // instead), so a task's linked conversation is "in view" if it matches one
@@ -1634,7 +1704,9 @@ export default function Inbox() {
   const viewTitle =
     view.kind === "tag"
       ? STATUS_META[view.id][locale === "es" ? "es" : "en"]
-      : c[FOLDERS.find((f) => f.id === view.id)!.key]
+      : view.id === "follow_ups"
+        ? c.tabFollowups
+        : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive =
     channelFilter !== "all" ||
@@ -2014,6 +2086,29 @@ export default function Inbox() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
+
+          <div className="space-y-1.5">
+            <Segmented<InboxQuickTab>
+              value={quickTab}
+              onChange={(v) => {
+                if (v !== "none") setView({ kind: "folder", id: v })
+              }}
+              options={[
+                { v: "needs_reply", label: `${c.tabReplies} ${folderCount("needs_reply")}`, icon: Reply },
+                { v: "my_tasks", label: `${c.tabTasks} ${folderCount("my_tasks")}`, icon: ListTodo },
+                { v: "follow_ups", label: `${c.tabFollowups} ${folderCount("follow_ups")}`, icon: CornerUpRight },
+              ]}
+            />
+            {quickTab !== "none" && (
+              <p className="text-muted-foreground px-1 text-xs">
+                {quickTab === "needs_reply"
+                  ? c.tabRepliesSubtitle
+                  : quickTab === "my_tasks"
+                    ? c.tabTasksSubtitle
+                    : c.tabFollowupsSubtitle}
+              </p>
+            )}
           </div>
 
           <div className="relative">
