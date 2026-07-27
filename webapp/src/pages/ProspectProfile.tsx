@@ -97,7 +97,7 @@ import type { Prospect } from "@/lib/types"
 const COPY = {
   en: {
     prospectNotFound: "Prospect not found.",
-    backToSearch: "Back to search",
+    backToSearch: "All Prospects",
     message: "Message",
     addToList: "Add to list",
     edit: "Edit",
@@ -184,7 +184,7 @@ const COPY = {
   },
   es: {
     prospectNotFound: "Prospecto no encontrado.",
-    backToSearch: "Volver a la búsqueda",
+    backToSearch: "Todos los prospectos",
     message: "Mensaje",
     addToList: "Añadir a lista",
     edit: "Editar",
@@ -272,7 +272,7 @@ const COPY = {
   },
   it: {
     prospectNotFound: "Prospect non trovato.",
-    backToSearch: "Torna alla ricerca",
+    backToSearch: "Tutti i prospect",
     message: "Messaggio",
     addToList: "Aggiungi a lista",
     edit: "Modifica",
@@ -360,7 +360,7 @@ const COPY = {
   },
   fr: {
     prospectNotFound: "Prospect introuvable.",
-    backToSearch: "Retour à la recherche",
+    backToSearch: "Tous les prospects",
     message: "Message",
     addToList: "Ajouter à une liste",
     edit: "Modifier",
@@ -448,7 +448,7 @@ const COPY = {
   },
   de: {
     prospectNotFound: "Prospect nicht gefunden.",
-    backToSearch: "Zurück zur Suche",
+    backToSearch: "Alle Prospects",
     message: "Nachricht",
     addToList: "Zu Liste hinzufügen",
     edit: "Bearbeiten",
@@ -536,7 +536,7 @@ const COPY = {
   },
   pt: {
     prospectNotFound: "Prospect não encontrado.",
-    backToSearch: "Voltar à pesquisa",
+    backToSearch: "Todos os prospects",
     message: "Mensagem",
     addToList: "Adicionar a lista",
     edit: "Editar",
@@ -624,7 +624,7 @@ const COPY = {
   },
   pt_BR: {
     prospectNotFound: "Prospect não encontrado.",
-    backToSearch: "Voltar para a busca",
+    backToSearch: "Todos os prospects",
     message: "Mensagem",
     addToList: "Adicionar à lista",
     edit: "Editar",

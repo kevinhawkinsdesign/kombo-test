@@ -232,8 +232,7 @@ const COPY = {
       bounced: "Bounced",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Campaign not found.",
-    backToCampaigns: "Back to campaigns",
-    campaigns: "Campaigns",
+    campaigns: "All Campaigns",
     createdSteps: (date: string, steps: number) =>
       `Created ${date} · ${steps} steps`,
     pause: "Make inactive",
@@ -473,8 +472,7 @@ const COPY = {
       bounced: "Rebotado",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Campaña no encontrada.",
-    backToCampaigns: "Volver a campañas",
-    campaigns: "Campañas",
+    campaigns: "Todas las campañas",
     createdSteps: (date: string, steps: number) =>
       `Creada el ${date} · ${steps} pasos`,
     pause: "Desactivar",
@@ -714,8 +712,7 @@ const COPY = {
       bounced: "Rimbalzato",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Campagna non trovata.",
-    backToCampaigns: "Torna alle campagne",
-    campaigns: "Campagne",
+    campaigns: "Tutte le campagne",
     createdSteps: (date: string, steps: number) =>
       `Creata il ${date} · ${steps} passaggi`,
     pause: "Disattiva",
@@ -955,8 +952,7 @@ const COPY = {
       bounced: "Rejeté",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Campagne introuvable.",
-    backToCampaigns: "Retour aux campagnes",
-    campaigns: "Campagnes",
+    campaigns: "Toutes les campagnes",
     createdSteps: (date: string, steps: number) =>
       `Créée le ${date} · ${steps} étapes`,
     pause: "Désactiver",
@@ -1196,8 +1192,7 @@ const COPY = {
       bounced: "Unzustellbar",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Kampagne nicht gefunden.",
-    backToCampaigns: "Zurück zu den Kampagnen",
-    campaigns: "Kampagnen",
+    campaigns: "Alle Kampagnen",
     createdSteps: (date: string, steps: number) =>
       `Erstellt am ${date} · ${steps} Schritte`,
     pause: "Deaktivieren",
@@ -1437,8 +1432,7 @@ const COPY = {
       bounced: "Devolvido",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Campanha não encontrada.",
-    backToCampaigns: "Voltar às campanhas",
-    campaigns: "Campanhas",
+    campaigns: "Todas as campanhas",
     createdSteps: (date: string, steps: number) =>
       `Criada a ${date} · ${steps} passos`,
     pause: "Desativar",
@@ -1678,8 +1672,7 @@ const COPY = {
       bounced: "Retornado",
     } as Record<EnrollmentStatus, string>,
     campaignNotFound: "Campanha não encontrada.",
-    backToCampaigns: "Voltar para campanhas",
-    campaigns: "Campanhas",
+    campaigns: "Todas as campanhas",
     createdSteps: (date: string, steps: number) =>
       `Criada em ${date} · ${steps} etapas`,
     pause: "Desativar",
@@ -2124,7 +2117,7 @@ export default function CampaignDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.campaignNotFound}</p>
-        <BackLink to="/campaigns" label={c.backToCampaigns} variant="link" />
+        <BackLink to="/campaigns" label={c.campaigns} variant="link" />
       </Page>
     )
   }

@@ -119,7 +119,6 @@ const MOMENT_STYLES: Record<
 const COPY = {
   en: {
     recordingNotFound: "Recording not found.",
-    backToCoach: "Back to Call Coach",
     coach: "Call Coach",
     callScore: "Call score",
     reanalyzing: "Re-analyzing recording…",
@@ -258,7 +257,6 @@ const COPY = {
   },
   es: {
     recordingNotFound: "Grabación no encontrada.",
-    backToCoach: "Volver al Coach de llamadas",
     coach: "Coach de llamadas",
     callScore: "Puntuación",
     reanalyzing: "Reanalizando la grabación…",
@@ -397,7 +395,6 @@ const COPY = {
   },
   it: {
     recordingNotFound: "Registrazione non trovata.",
-    backToCoach: "Torna al Coach delle chiamate",
     coach: "Coach delle chiamate",
     callScore: "Punteggio",
     reanalyzing: "Rianalisi della registrazione…",
@@ -536,7 +533,6 @@ const COPY = {
   },
   fr: {
     recordingNotFound: "Enregistrement introuvable.",
-    backToCoach: "Retour au Coach d'appels",
     coach: "Coach d'appels",
     callScore: "Score",
     reanalyzing: "Nouvelle analyse de l'enregistrement…",
@@ -675,7 +671,6 @@ const COPY = {
   },
   de: {
     recordingNotFound: "Aufzeichnung nicht gefunden.",
-    backToCoach: "Zurück zum Call Coach",
     coach: "Call Coach",
     callScore: "Call-Score",
     reanalyzing: "Aufzeichnung wird neu analysiert…",
@@ -814,7 +809,6 @@ const COPY = {
   },
   pt: {
     recordingNotFound: "Gravação não encontrada.",
-    backToCoach: "Voltar ao Coach de chamadas",
     coach: "Coach de chamadas",
     callScore: "Pontuação",
     reanalyzing: "A reanalisar a gravação…",
@@ -953,7 +947,6 @@ const COPY = {
   },
   pt_BR: {
     recordingNotFound: "Gravação não encontrada.",
-    backToCoach: "Voltar ao Coach de ligações",
     coach: "Coach de ligações",
     callScore: "Pontuação",
     reanalyzing: "Reanalisando a gravação…",
@@ -1203,7 +1196,7 @@ export default function CoachRecordingDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.recordingNotFound}</p>
-        <BackLink to="/coach" label={c.backToCoach} variant="link" />
+        <BackLink to="/coach" label={c.coach} variant="link" />
       </Page>
     )
   }

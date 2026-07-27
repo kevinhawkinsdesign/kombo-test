@@ -75,8 +75,7 @@ import type { Account, Prospect, ProspectList } from "@/lib/types"
 const COPY = {
   en: {
     listNotFound: "List not found.",
-    backToLists: "Back to lists",
-    lists: "Lists",
+    lists: "All Lists",
     prospects: "prospects",
     edit: "Edit",
     deleteList: "Delete",
@@ -104,7 +103,7 @@ const COPY = {
     getStartedTitle: "Get started",
     getStartedDesc: "Add prospects to this list to begin working it.",
     getStartedDescCo: "Add companies to this list to begin working it.",
-    importCsv: "Import from CSV",
+    importCsv: "Import",
     prospectsHeading: "Prospects",
     addProspects: "Find prospects",
     columns: "Columns",
@@ -187,8 +186,7 @@ const COPY = {
   },
   es: {
     listNotFound: "Lista no encontrada.",
-    backToLists: "Volver a las listas",
-    lists: "Listas",
+    lists: "Todas las listas",
     prospects: "prospectos",
     edit: "Editar",
     deleteList: "Eliminar",
@@ -216,7 +214,7 @@ const COPY = {
     getStartedTitle: "Empieza aquí",
     getStartedDesc: "Añade prospectos a esta lista para empezar a trabajarla.",
     getStartedDescCo: "Añade empresas a esta lista para empezar a trabajarla.",
-    importCsv: "Importar desde CSV",
+    importCsv: "Importar",
     prospectsHeading: "Prospectos",
     addProspects: "Buscar prospectos",
     columns: "Columnas",
@@ -300,8 +298,7 @@ const COPY = {
   },
   it: {
     listNotFound: "Lista non trovata.",
-    backToLists: "Torna alle liste",
-    lists: "Liste",
+    lists: "Tutte le liste",
     prospects: "prospect",
     edit: "Modifica",
     deleteList: "Elimina",
@@ -329,7 +326,7 @@ const COPY = {
     getStartedTitle: "Inizia",
     getStartedDesc: "Aggiungi prospect a questa lista per iniziare a lavorarla.",
     getStartedDescCo: "Aggiungi aziende a questa lista per iniziare a lavorarla.",
-    importCsv: "Importa da CSV",
+    importCsv: "Importa",
     prospectsHeading: "Prospect",
     addProspects: "Trova prospect",
     columns: "Colonne",
@@ -412,8 +409,7 @@ const COPY = {
   },
   fr: {
     listNotFound: "Liste introuvable.",
-    backToLists: "Retour aux listes",
-    lists: "Listes",
+    lists: "Toutes les listes",
     prospects: "prospects",
     edit: "Modifier",
     deleteList: "Supprimer",
@@ -441,7 +437,7 @@ const COPY = {
     getStartedTitle: "Pour commencer",
     getStartedDesc: "Ajoutez des prospects à cette liste pour commencer à la travailler.",
     getStartedDescCo: "Ajoutez des entreprises à cette liste pour commencer à la travailler.",
-    importCsv: "Importer depuis un CSV",
+    importCsv: "Importer",
     prospectsHeading: "Prospects",
     addProspects: "Trouver des prospects",
     columns: "Colonnes",
@@ -524,8 +520,7 @@ const COPY = {
   },
   de: {
     listNotFound: "Liste nicht gefunden.",
-    backToLists: "Zurück zu den Listen",
-    lists: "Listen",
+    lists: "Alle Listen",
     prospects: "Prospects",
     edit: "Bearbeiten",
     deleteList: "Löschen",
@@ -553,7 +548,7 @@ const COPY = {
     getStartedTitle: "Los geht's",
     getStartedDesc: "Füge dieser Liste Prospects hinzu, um loszulegen.",
     getStartedDescCo: "Füge dieser Liste Unternehmen hinzu, um loszulegen.",
-    importCsv: "Aus CSV importieren",
+    importCsv: "Importieren",
     prospectsHeading: "Prospects",
     addProspects: "Prospects finden",
     columns: "Spalten",
@@ -636,8 +631,7 @@ const COPY = {
   },
   pt: {
     listNotFound: "Lista não encontrada.",
-    backToLists: "Voltar às listas",
-    lists: "Listas",
+    lists: "Todas as listas",
     prospects: "prospects",
     edit: "Editar",
     deleteList: "Eliminar",
@@ -665,7 +659,7 @@ const COPY = {
     getStartedTitle: "Começar",
     getStartedDesc: "Adicione prospects a esta lista para começar a trabalhá-la.",
     getStartedDescCo: "Adicione empresas a esta lista para começar a trabalhá-la.",
-    importCsv: "Importar de CSV",
+    importCsv: "Importar",
     prospectsHeading: "Prospects",
     addProspects: "Encontrar prospects",
     columns: "Colunas",
@@ -748,8 +742,7 @@ const COPY = {
   },
   pt_BR: {
     listNotFound: "Lista não encontrada.",
-    backToLists: "Voltar para as listas",
-    lists: "Listas",
+    lists: "Todas as listas",
     prospects: "prospects",
     edit: "Editar",
     deleteList: "Excluir",
@@ -777,7 +770,7 @@ const COPY = {
     getStartedTitle: "Começar",
     getStartedDesc: "Adicione prospects a esta lista para começar a trabalhá-la.",
     getStartedDescCo: "Adicione empresas a esta lista para começar a trabalhá-la.",
-    importCsv: "Importar de CSV",
+    importCsv: "Importar",
     prospectsHeading: "Prospects",
     addProspects: "Encontrar prospects",
     columns: "Colunas",
@@ -935,7 +928,7 @@ export default function ListDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.listNotFound}</p>
-        <BackLink to="/lists" label={c.backToLists} variant="link" />
+        <BackLink to="/lists" label={c.lists} variant="link" />
       </Page>
     )
   }
