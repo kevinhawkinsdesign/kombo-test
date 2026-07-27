@@ -36,7 +36,7 @@ const ENROLLMENT_VARIANT: Record<
 
 const COPY = {
   en: {
-    leadsHeading: "Leads",
+    leadsHeading: "Prospects",
     noProspects: "No prospects in this campaign yet — add some to preview real messages.",
     goToProspects: "Go to Prospects",
     noSteps: "No sequence steps yet — build your sequence to preview it here.",
@@ -54,7 +54,7 @@ const COPY = {
     } as Record<EnrollmentStatus, string>,
   },
   es: {
-    leadsHeading: "Leads",
+    leadsHeading: "Prospectos",
     noProspects: "Aún no hay prospectos en esta campaña — añade algunos para ver mensajes reales.",
     goToProspects: "Ir a Prospectos",
     noSteps: "Aún no hay pasos de secuencia — crea tu secuencia para verla previsualizada aquí.",
@@ -72,7 +72,7 @@ const COPY = {
     } as Record<EnrollmentStatus, string>,
   },
   it: {
-    leadsHeading: "Lead",
+    leadsHeading: "Prospect",
     noProspects: "Ancora nessun prospect in questa campagna — aggiungine qualcuno per vedere messaggi reali.",
     goToProspects: "Vai a Prospect",
     noSteps: "Ancora nessun passaggio nella sequenza — creala per vederne l'anteprima qui.",
@@ -90,7 +90,7 @@ const COPY = {
     } as Record<EnrollmentStatus, string>,
   },
   fr: {
-    leadsHeading: "Leads",
+    leadsHeading: "Prospects",
     noProspects: "Pas encore de prospects dans cette campagne — ajoutez-en pour voir de vrais messages.",
     goToProspects: "Aller aux Prospects",
     noSteps: "Pas encore d'étapes de séquence — créez votre séquence pour la prévisualiser ici.",
@@ -108,7 +108,7 @@ const COPY = {
     } as Record<EnrollmentStatus, string>,
   },
   de: {
-    leadsHeading: "Leads",
+    leadsHeading: "Prospects",
     noProspects: "Noch keine Prospects in dieser Kampagne — füge welche hinzu, um echte Nachrichten zu sehen.",
     goToProspects: "Zu Prospects",
     noSteps: "Noch keine Sequenzschritte — baue deine Sequenz, um sie hier als Vorschau zu sehen.",
@@ -126,7 +126,7 @@ const COPY = {
     } as Record<EnrollmentStatus, string>,
   },
   pt: {
-    leadsHeading: "Leads",
+    leadsHeading: "Prospects",
     noProspects: "Ainda não há prospects nesta campanha — adicione alguns para ver mensagens reais.",
     goToProspects: "Ir para Prospects",
     noSteps: "Ainda não há passos de sequência — crie a sua sequência para a pré-visualizar aqui.",
@@ -144,7 +144,7 @@ const COPY = {
     } as Record<EnrollmentStatus, string>,
   },
   pt_BR: {
-    leadsHeading: "Leads",
+    leadsHeading: "Prospects",
     noProspects: "Ainda não há prospects nesta campanha — adicione alguns para ver mensagens reais.",
     goToProspects: "Ir para Prospects",
     noSteps: "Ainda não há etapas de sequência — crie sua sequência para pré-visualizá-la aqui.",

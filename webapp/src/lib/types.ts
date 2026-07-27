@@ -270,6 +270,16 @@ export type LinkedInAction = "message" | "connect" | "like_post" | "view_profile
 // equivalent exists on that channel.
 export type WhatsAppAction = "message" | "voice_message"
 
+// What a single "Add a step" picker card represents — beyond the bare
+// channel, a LinkedIn/WhatsApp card also carries which action variant
+// (Connect, Voice Message, ...) it stands for, so picking it can seed a new
+// step with the right action already set instead of requiring a second edit.
+export interface StepTypeSelection {
+  channel: StepChannel
+  linkedinAction?: LinkedInAction
+  whatsappAction?: WhatsAppAction
+}
+
 export interface CampaignStep {
   id: string
   channel: StepChannel

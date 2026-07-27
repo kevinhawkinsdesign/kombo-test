@@ -24,7 +24,7 @@ import { stripHtml } from "@/lib/rich-text"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import type { CampaignStep, StepTrackKind } from "@/lib/types"
+import type { CampaignStep, LinkedInAction, StepTrackKind } from "@/lib/types"
 import type { MoveTarget } from "@/lib/sequence-draft"
 
 const COPY = {
@@ -36,9 +36,16 @@ const COPY = {
       ai_call: "AI Voice Call",
       linkedin_message: "LinkedIn message",
       linkedin_dm: "LinkedIn DM",
-      linkedin_inmail: "LinkedIn InMail",
+      linkedin_inmail: "LinkedIn Sales Navigator message",
       manual: "Manual task",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "LinkedIn connect",
+        view_profile: "LinkedIn view profile",
+        voice_message: "LinkedIn voice message",
+        like_post: "LinkedIn like post",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "WhatsApp voice message",
     sendImmediately: "Send immediately",
     waitDays: (n: number) => `Wait ${n} ${n === 1 ? "day" : "days"}`,
     manualTaskBadge: "Task",
@@ -67,9 +74,16 @@ const COPY = {
       ai_call: "Llamada de voz IA",
       linkedin_message: "Mensaje de LinkedIn",
       linkedin_dm: "Mensaje directo de LinkedIn",
-      linkedin_inmail: "InMail de LinkedIn",
+      linkedin_inmail: "Mensaje de Sales Navigator de LinkedIn",
       manual: "Tarea manual",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "Conectar en LinkedIn",
+        view_profile: "Ver perfil de LinkedIn",
+        voice_message: "Mensaje de voz de LinkedIn",
+        like_post: "Dar me gusta en LinkedIn",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "Mensaje de voz de WhatsApp",
     sendImmediately: "Enviar inmediatamente",
     waitDays: (n: number) => `Espera ${n} ${n === 1 ? "día" : "días"}`,
     manualTaskBadge: "Tarea",
@@ -98,9 +112,16 @@ const COPY = {
       ai_call: "Chiamata vocale IA",
       linkedin_message: "Messaggio LinkedIn",
       linkedin_dm: "Messaggio diretto LinkedIn",
-      linkedin_inmail: "InMail di LinkedIn",
+      linkedin_inmail: "Messaggio Sales Navigator di LinkedIn",
       manual: "Attività manuale",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "Connessione LinkedIn",
+        view_profile: "Visualizza profilo LinkedIn",
+        voice_message: "Messaggio vocale LinkedIn",
+        like_post: "Metti mi piace su LinkedIn",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "Messaggio vocale WhatsApp",
     sendImmediately: "Invia subito",
     waitDays: (n: number) => `Attendi ${n} ${n === 1 ? "giorno" : "giorni"}`,
     manualTaskBadge: "Attività",
@@ -129,9 +150,16 @@ const COPY = {
       ai_call: "Appel vocal IA",
       linkedin_message: "Message LinkedIn",
       linkedin_dm: "Message privé LinkedIn",
-      linkedin_inmail: "InMail LinkedIn",
+      linkedin_inmail: "Message Sales Navigator LinkedIn",
       manual: "Tâche manuelle",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "Connexion LinkedIn",
+        view_profile: "Voir le profil LinkedIn",
+        voice_message: "Message vocal LinkedIn",
+        like_post: "Aimer une publication LinkedIn",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "Message vocal WhatsApp",
     sendImmediately: "Envoyer immédiatement",
     waitDays: (n: number) => `Attendre ${n} ${n === 1 ? "jour" : "jours"}`,
     manualTaskBadge: "Tâche",
@@ -160,9 +188,16 @@ const COPY = {
       ai_call: "KI-Sprachanruf",
       linkedin_message: "LinkedIn-Nachricht",
       linkedin_dm: "LinkedIn-Direktnachricht",
-      linkedin_inmail: "LinkedIn InMail",
+      linkedin_inmail: "LinkedIn Sales Navigator-Nachricht",
       manual: "Manuelle Aufgabe",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "LinkedIn-Vernetzung",
+        view_profile: "LinkedIn-Profil ansehen",
+        voice_message: "LinkedIn-Sprachnachricht",
+        like_post: "LinkedIn-Beitrag liken",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "WhatsApp-Sprachnachricht",
     sendImmediately: "Sofort senden",
     waitDays: (n: number) => `${n} ${n === 1 ? "Tag" : "Tage"} warten`,
     manualTaskBadge: "Aufgabe",
@@ -191,9 +226,16 @@ const COPY = {
       ai_call: "Chamada de voz IA",
       linkedin_message: "Mensagem do LinkedIn",
       linkedin_dm: "Mensagem direta do LinkedIn",
-      linkedin_inmail: "InMail do LinkedIn",
+      linkedin_inmail: "Mensagem do Sales Navigator do LinkedIn",
       manual: "Tarefa manual",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "Ligação no LinkedIn",
+        view_profile: "Ver perfil do LinkedIn",
+        voice_message: "Mensagem de voz do LinkedIn",
+        like_post: "Gostar de publicação no LinkedIn",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "Mensagem de voz do WhatsApp",
     sendImmediately: "Enviar imediatamente",
     waitDays: (n: number) => `Esperar ${n} ${n === 1 ? "dia" : "dias"}`,
     manualTaskBadge: "Tarefa",
@@ -222,9 +264,16 @@ const COPY = {
       ai_call: "Ligação de voz IA",
       linkedin_message: "Mensagem do LinkedIn",
       linkedin_dm: "Mensagem direta do LinkedIn",
-      linkedin_inmail: "InMail do LinkedIn",
+      linkedin_inmail: "Mensagem do Sales Navigator do LinkedIn",
       manual: "Tarefa manual",
     } as Record<string, string>,
+      linkedinActionLabel: {
+        connect: "Conexão no LinkedIn",
+        view_profile: "Ver perfil do LinkedIn",
+        voice_message: "Mensagem de voz do LinkedIn",
+        like_post: "Curtir publicação no LinkedIn",
+      } as Partial<Record<LinkedInAction, string>>,
+      whatsappVoiceMessageLabel: "Mensagem de voz do WhatsApp",
     sendImmediately: "Enviar imediatamente",
     waitDays: (n: number) => `Aguardar ${n} ${n === 1 ? "dia" : "dias"}`,
     manualTaskBadge: "Tarefa",
@@ -262,6 +311,21 @@ interface StepNodeExtraData extends StepNodeData {
 // Handle, React Flow can't compute a connection point and silently drops
 // the edge (no line, no console error visible to the user).
 const HANDLE_CLASS = "invisible !size-0 !min-w-0 !border-0"
+
+// The plain channel label ("LinkedIn message") doesn't distinguish a
+// Connect/View Profile/Voice Message/Like Post step from a regular one —
+// they'd otherwise all render an identical card title. Falls back to the
+// channel label for the default "message" action (or no action at all).
+function stepTitle(c: (typeof COPY)[keyof typeof COPY], step: CampaignStep): string {
+  const channel = normalizeChannel(step.channel)
+  if (channel === "linkedin_message" && step.linkedinAction && step.linkedinAction !== "message") {
+    return c.linkedinActionLabel[step.linkedinAction] ?? c.channelLabel[channel]
+  }
+  if (channel === "whatsapp" && step.whatsappAction === "voice_message") {
+    return c.whatsappVoiceMessageLabel
+  }
+  return c.channelLabel[channel]
+}
 
 function StepCard({
   step,
@@ -308,7 +372,7 @@ function StepCard({
       </span>
       <div className="min-w-0 flex-1 space-y-1">
         <p className="truncate text-sm font-medium">
-          {c.channelLabel[normalizeChannel(step.channel)]}
+          {stepTitle(c, step)}
         </p>
         <p className="text-muted-foreground truncate text-xs">
           {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
