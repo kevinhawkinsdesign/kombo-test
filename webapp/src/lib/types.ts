@@ -80,6 +80,11 @@ export type SendMode = "once" | "continuous"
 // held for the owner to review manually (each new match creates a Task).
 export type ReviewMode = "auto_campaign" | "manual_review"
 
+// Where a dynamic list's inflow comes from: a live-linked saved search (its
+// criteria can change later and this list's inflow follows), or a snapshot
+// of an existing CRM list.
+export type ListSourceType = "saved_search" | "crm_list"
+
 export interface ProspectList {
   id: string
   name: string
@@ -92,17 +97,31 @@ export interface ProspectList {
   // Undefined kind reads as a people list so existing lists stay valid.
   kind?: "people" | "company"
   accountIds?: string[]
-  // Dynamic "playlist" automation. Static lists omit these; a dynamic list is
-  // fed by a saved search that keeps adding matching prospects over time.
+  // Dynamic automation. Static lists omit these; a dynamic list is fed by
+  // its source (see sourceType below), adding matching records over time.
   dynamic?: boolean
+  sourceType?: ListSourceType
+  // Live reference into savedSearchStore (lib/mock-ai-search.ts) when
+  // sourceType is "saved_search" — editing that saved search later changes
+  // this list's inflow, since it's a reference, not a copy.
+  savedSearchId?: string
+  // Reference into CRM_LISTS (lib/mock-depth.ts) when sourceType is "crm_list".
+  crmListId?: string
+  // Legacy embedded-criteria snapshot, written only by the now-removed
+  // PlaylistWizard. Kept so any pre-existing dynamic list from before the
+  // savedSearchId model still renders its audience chips.
   criteria?: SavedSearchCriteria
   enrichment?: EnrichmentMode
-  newPerWeek?: number // estimated inflow from the saved search
+  newPerWeek?: number // estimated inflow from the source
   campaignId?: string // campaign new prospects auto-enroll into
   sendMode?: SendMode
   // Undefined reads as "auto_campaign" so existing dynamic lists stay valid.
   reviewMode?: ReviewMode
   lastSyncedAt?: string
+  // Persistent "Link to CRM" state — once true, prospects/companies added
+  // to this list keep pushing to the connected CRM, not just a one-time export.
+  crmSynced?: boolean
+  crmSyncedAt?: string
   // Default owner stamped onto prospects that enter via this list (unless a
   // prospect already has an owner — this never overwrites one).
   assigneeId?: string
@@ -471,6 +490,10 @@ export interface Account {
   about: string
   signals: string[]
   keyExecutives: { name: string; title: string }[]
+  // Enrichment status — false when the company was sourced but not yet
+  // enriched. Undefined counts as enriched so existing seed accounts stay
+  // clean, mirroring Prospect.enriched.
+  enriched?: boolean
 }
 
 // Outcome-based pipeline stages — a top-of-funnel view of where each

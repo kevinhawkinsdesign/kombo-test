@@ -1028,6 +1028,14 @@ export const accountStore = {
       ),
     })
   },
+  enrich(ids: string[]): void {
+    const set = new Set(ids)
+    setState({
+      accounts: state.accounts.map((a) =>
+        set.has(a.id) ? { ...a, enriched: true } : a
+      ),
+    })
+  },
 }
 
 export const prospectStore = {
