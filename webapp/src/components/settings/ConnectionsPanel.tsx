@@ -7,7 +7,9 @@ import {
   Clock,
   Copy,
   Eye,
+  Headset,
   Mail,
+  Mic,
   MessageCircle,
   Server,
   Video,
@@ -103,6 +105,9 @@ const COPY = {
     connCallSourcesDesc:
       "Connect the sources Kombo can pull call recordings from. Each source can be toggled independently.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "CRM Connection",
     connCrmDesc:
       "Explore the CRMs that Kombo connects with. Please note, you can only connect one CRM at a time.",
@@ -147,6 +152,9 @@ const COPY = {
     connCallSourcesDesc:
       "Conecta las fuentes de las que Kombo puede extraer grabaciones de llamadas. Cada fuente se activa de forma independiente.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "Conexión de CRM",
     connCrmDesc:
       "Explora los CRMs con los que conecta Kombo. Ten en cuenta que solo puedes conectar un CRM a la vez.",
@@ -190,6 +198,9 @@ const COPY = {
     connCallSourcesDesc:
       "Collega le fonti da cui Kombo può estrarre le registrazioni delle chiamate. Ogni fonte può essere attivata in modo indipendente.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "Connessione CRM",
     connCrmDesc:
       "Esplora i CRM con cui si collega Kombo. Tieni presente che puoi collegare un solo CRM alla volta.",
@@ -233,6 +244,9 @@ const COPY = {
     connCallSourcesDesc:
       "Connectez les sources depuis lesquelles Kombo peut récupérer des enregistrements d'appels. Chaque source peut être activée indépendamment.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "Connexion CRM",
     connCrmDesc:
       "Découvrez les CRM avec lesquels Kombo se connecte. Notez que vous ne pouvez connecter qu'un seul CRM à la fois.",
@@ -276,6 +290,9 @@ const COPY = {
     connCallSourcesDesc:
       "Verbinde die Quellen, aus denen Kombo Anrufaufzeichnungen abrufen kann. Jede Quelle lässt sich unabhängig ein- und ausschalten.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "CRM-Verbindung",
     connCrmDesc:
       "Entdecke die CRMs, mit denen sich Kombo verbindet. Beachte, dass du jeweils nur ein CRM verbinden kannst.",
@@ -319,6 +336,9 @@ const COPY = {
     connCallSourcesDesc:
       "Conecte as fontes de onde o Kombo pode obter gravações de chamadas. Cada fonte pode ser ativada de forma independente.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "Conexão de CRM",
     connCrmDesc:
       "Explore os CRMs com que o Kombo se conecta. Tenha em atenção que só pode conectar um CRM de cada vez.",
@@ -362,6 +382,9 @@ const COPY = {
     connCallSourcesDesc:
       "Conecte as fontes de onde o Kombo pode extrair gravações de chamadas. Cada fonte pode ser ativada de forma independente.",
     connTeams: "Microsoft Teams",
+    connGoogleMeet: "Google Meet",
+    connZendesk: "Zendesk",
+    connGong: "Gong",
     connCrm: "Conexão de CRM",
     connCrmDesc:
       "Explore os CRMs que o Kombo conecta. Vale lembrar que você só pode conectar um CRM por vez.",
@@ -469,6 +492,10 @@ export function ConnectionsPanel() {
   const [whatsapp, setWhatsapp] = React.useState(true)
   const [email, setEmail] = React.useState(true)
   const [teams, setTeams] = React.useState(true)
+  const [googleMeet, setGoogleMeet] = React.useState(true)
+  const [zendesk, setZendesk] = React.useState(false)
+  const [gong, setGong] = React.useState(false)
+  const [whatsappCalls, setWhatsappCalls] = React.useState(false)
   // Single-select CRM (radio-like): turning one on turns the others off.
   const [crm, setCrm] = React.useState<string>("Hubspot")
   const [timeZone, setTimeZone] = React.useState<string>(TIME_ZONES[0])
@@ -662,6 +689,30 @@ export function ConnectionsPanel() {
           label={c.connTeams}
           checked={teams}
           onChange={setTeams}
+        />
+        <ConnectionToggleRow
+          icon={<Video className="size-5 text-[#00832d]" />}
+          label={c.connGoogleMeet}
+          checked={googleMeet}
+          onChange={setGoogleMeet}
+        />
+        <ConnectionToggleRow
+          icon={<MessageCircle className="size-5 text-emerald-600" />}
+          label={c.connWhatsapp}
+          checked={whatsappCalls}
+          onChange={setWhatsappCalls}
+        />
+        <ConnectionToggleRow
+          icon={<Mic className="size-5 text-[#7444d6]" />}
+          label={c.connGong}
+          checked={gong}
+          onChange={setGong}
+        />
+        <ConnectionToggleRow
+          icon={<Headset className="size-5 text-[#03363d]" />}
+          label={c.connZendesk}
+          checked={zendesk}
+          onChange={setZendesk}
         />
       </CollapsibleSection>
 
