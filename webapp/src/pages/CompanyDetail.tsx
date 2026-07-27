@@ -53,8 +53,7 @@ const COPY = {
     healthAtWatch: "At watch",
     healthAtRisk: "At risk",
     companyNotFound: "Company not found.",
-    backToCompanies: "Back to companies",
-    companies: "Companies",
+    companies: "All Companies",
     addToCrm: "Add to CRM",
     addContact: "Add prospect",
     findPeople: "Find prospects here",
@@ -87,8 +86,7 @@ const COPY = {
     healthAtWatch: "En observación",
     healthAtRisk: "En riesgo",
     companyNotFound: "Empresa no encontrada.",
-    backToCompanies: "Volver a empresas",
-    companies: "Empresas",
+    companies: "Todas las empresas",
     addToCrm: "Añadir al CRM",
     addContact: "Añadir prospecto",
     findPeople: "Buscar prospectos aquí",
@@ -121,8 +119,7 @@ const COPY = {
     healthAtWatch: "Da tenere d'occhio",
     healthAtRisk: "A rischio",
     companyNotFound: "Azienda non trovata.",
-    backToCompanies: "Torna alle aziende",
-    companies: "Aziende",
+    companies: "Tutte le aziende",
     addToCrm: "Aggiungi al CRM",
     addContact: "Aggiungi prospect",
     findPeople: "Trova prospect qui",
@@ -155,8 +152,7 @@ const COPY = {
     healthAtWatch: "Sous surveillance",
     healthAtRisk: "À risque",
     companyNotFound: "Entreprise introuvable.",
-    backToCompanies: "Retour aux entreprises",
-    companies: "Entreprises",
+    companies: "Toutes les entreprises",
     addToCrm: "Ajouter au CRM",
     addContact: "Ajouter un prospect",
     findPeople: "Trouver des prospects ici",
@@ -189,8 +185,7 @@ const COPY = {
     healthAtWatch: "Unter Beobachtung",
     healthAtRisk: "Gefährdet",
     companyNotFound: "Unternehmen nicht gefunden.",
-    backToCompanies: "Zurück zu Unternehmen",
-    companies: "Unternehmen",
+    companies: "Alle Unternehmen",
     addToCrm: "Zum CRM hinzufügen",
     addContact: "Prospect hinzufügen",
     findPeople: "Prospects hier finden",
@@ -223,8 +218,7 @@ const COPY = {
     healthAtWatch: "Em observação",
     healthAtRisk: "Em risco",
     companyNotFound: "Empresa não encontrada.",
-    backToCompanies: "Voltar às empresas",
-    companies: "Empresas",
+    companies: "Todas as empresas",
     addToCrm: "Adicionar ao CRM",
     addContact: "Adicionar prospect",
     findPeople: "Encontrar prospects aqui",
@@ -257,8 +251,7 @@ const COPY = {
     healthAtWatch: "Em observação",
     healthAtRisk: "Em risco",
     companyNotFound: "Empresa não encontrada.",
-    backToCompanies: "Voltar para empresas",
-    companies: "Empresas",
+    companies: "Todas as empresas",
     addToCrm: "Adicionar ao CRM",
     addContact: "Adicionar prospect",
     findPeople: "Encontrar prospects aqui",
@@ -332,7 +325,7 @@ export default function CompanyDetail() {
     return (
       <Page>
         <p className="text-muted-foreground">{c.companyNotFound}</p>
-        <BackLink to="/companies" label={c.backToCompanies} variant="link" />
+        <BackLink to="/companies" label={c.companies} variant="link" />
       </Page>
     )
   }
