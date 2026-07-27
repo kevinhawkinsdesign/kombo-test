@@ -135,9 +135,6 @@ const COPY = {
     searchBtn: "Search",
     clearQuery: "Clear search",
     srTitle: "Search",
-    idleTitle: "Search prospects and companies your way",
-    idleDesc:
-      "Describe your ideal prospect or company, or search by name, role, location, industry, and more — then narrow with advanced filters. From your results, enrich contacts, build a list, or launch a campaign.",
     idleSuggestedTitle: "Or try one of these",
     idleSuggestionsPeople: [
       "VPs of Sales at SaaS scale-ups in EMEA",
@@ -440,9 +437,6 @@ const COPY = {
     searchBtn: "Buscar",
     clearQuery: "Borrar búsqueda",
     srTitle: "Buscar",
-    idleTitle: "Busca prospectos y empresas a tu manera",
-    idleDesc:
-      "Describe a tu prospecto o empresa ideal, o busca por nombre, cargo, ubicación, sector y más — luego afina con filtros avanzados. Con los resultados, enriquece contactos, crea una lista o lanza una campaña.",
     idleSuggestedTitle: "O prueba una de estas",
     idleSuggestionsPeople: [
       "VPs de Ventas en scale-ups SaaS de EMEA",
@@ -745,9 +739,6 @@ const COPY = {
     searchBtn: "Cerca",
     clearQuery: "Cancella ricerca",
     srTitle: "Cerca",
-    idleTitle: "Cerca prospect e aziende a modo tuo",
-    idleDesc:
-      "Descrivi il tuo prospect o azienda ideale, oppure cerca per nome, ruolo, posizione, settore e altro — poi affina con i filtri avanzati. Dai risultati, arricchisci i contatti, crea una lista o lancia una campagna.",
     idleSuggestedTitle: "O prova una di queste",
     idleSuggestionsPeople: [
       "VP Sales in scale-up SaaS in EMEA",
@@ -1050,9 +1041,6 @@ const COPY = {
     searchBtn: "Rechercher",
     clearQuery: "Effacer la recherche",
     srTitle: "Recherche",
-    idleTitle: "Recherchez des prospects et des entreprises à votre façon",
-    idleDesc:
-      "Décrivez votre prospect ou entreprise idéal, ou effectuez une recherche par nom, poste, lieu, secteur et plus encore — puis affinez avec des filtres avancés. À partir de vos résultats, enrichissez des contacts, créez une liste ou lancez une campagne.",
     idleSuggestedTitle: "Ou essayez l'une de ces suggestions",
     idleSuggestionsPeople: [
       "VP Sales dans des scale-ups SaaS en EMEA",
@@ -1355,9 +1343,6 @@ const COPY = {
     searchBtn: "Suchen",
     clearQuery: "Suche löschen",
     srTitle: "Suche",
-    idleTitle: "Suche Prospects und Unternehmen auf deine Art",
-    idleDesc:
-      "Beschreibe deinen idealen Prospect oder dein ideales Unternehmen, oder suche nach Name, Rolle, Standort, Branche und mehr — und grenze dann mit erweiterten Filtern ein. Reichere aus deinen Ergebnissen Kontakte an, erstelle eine Liste oder starte eine Kampagne.",
     idleSuggestedTitle: "Oder probier eine dieser Optionen",
     idleSuggestionsPeople: [
       "VP Sales bei SaaS-Scale-ups in EMEA",
@@ -1660,9 +1645,6 @@ const COPY = {
     searchBtn: "Pesquisar",
     clearQuery: "Limpar pesquisa",
     srTitle: "Pesquisar",
-    idleTitle: "Pesquisa prospects e empresas à tua maneira",
-    idleDesc:
-      "Descreve o teu prospect ou empresa ideal, ou pesquisa por nome, cargo, localização, setor e mais — depois refina com filtros avançados. A partir dos resultados, enriquece contactos, cria uma lista ou lança uma campanha.",
     idleSuggestedTitle: "Ou experimenta uma destas",
     idleSuggestionsPeople: [
       "VPs de Vendas em scale-ups SaaS na EMEA",
@@ -1965,9 +1947,6 @@ const COPY = {
     searchBtn: "Pesquisar",
     clearQuery: "Limpar pesquisa",
     srTitle: "Pesquisar",
-    idleTitle: "Pesquise prospects e empresas do seu jeito",
-    idleDesc:
-      "Descreva seu prospect ou empresa ideal, ou pesquise por nome, cargo, localização, setor e mais — depois refine com filtros avançados. A partir dos resultados, enriqueça contatos, crie uma lista ou lance uma campanha.",
     idleSuggestedTitle: "Ou experimente uma destas",
     idleSuggestionsPeople: [
       "VPs de Vendas em scale-ups SaaS na EMEA",
@@ -4924,8 +4903,6 @@ function SearchIdleState({
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed px-4 py-16 text-center">
       <img src={kaiUrl} alt="" className="size-16" />
-      <p className="text-lg font-semibold">{c.idleTitle}</p>
-      <p className="text-muted-foreground max-w-md text-sm">{c.idleDesc}</p>
       {/* One-click curated prompts — swapped per entity tab; URL mode has its
           own pill input, so suggestions would mislead there. */}
       {!urlsMode && (

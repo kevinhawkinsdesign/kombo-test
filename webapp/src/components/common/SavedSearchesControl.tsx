@@ -82,10 +82,19 @@ export function SavedSearchesControl({
   savedSearches,
   onLoad,
   onRemove,
+  onSaveThis,
+  saveThisLabel,
+  saveThisDisabled,
 }: {
   savedSearches: SavedAiSearch[]
   onLoad: (id: string) => void
   onRemove: (id: string) => void
+  // When provided, this control merges with a "Save this search" action into
+  // one split button instead of rendering as a standalone dropdown — used
+  // wherever the two controls sit side by side (e.g. AddRecordsDialog).
+  onSaveThis?: () => void
+  saveThisLabel?: string
+  saveThisDisabled?: boolean
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -105,13 +114,39 @@ export function SavedSearchesControl({
         if (!v) setQ("")
       }}
     >
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Bookmark className="size-4" />
-          {c.saved}
-          <ChevronDown className="text-muted-foreground size-3.5" />
-        </Button>
-      </PopoverTrigger>
+      {onSaveThis ? (
+        <div className="inline-flex -space-x-px">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-r-none"
+            onClick={onSaveThis}
+            disabled={saveThisDisabled}
+            aria-label={saveThisLabel}
+          >
+            <Bookmark className="size-4" />
+            <span className="hidden sm:inline">{saveThisLabel}</span>
+          </Button>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-l-none px-2"
+              aria-label={c.saved}
+            >
+              <ChevronDown className="text-muted-foreground size-3.5" />
+            </Button>
+          </PopoverTrigger>
+        </div>
+      ) : (
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Bookmark className="size-4" />
+            {c.saved}
+            <ChevronDown className="text-muted-foreground size-3.5" />
+          </Button>
+        </PopoverTrigger>
+      )}
       <PopoverContent align="end" className="w-80 p-0">
         <div className="border-b p-2">
           <div className="relative">

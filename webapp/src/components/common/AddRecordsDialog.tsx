@@ -1472,16 +1472,6 @@ export function AddRecordsDialog({
                     <Columns3 className="size-4" />
                     <span className="hidden sm:inline">{c.columns}</span>
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="h-10"
-                    onClick={openSaveDialog}
-                    disabled={total === 0}
-                    aria-label={c.saveThis}
-                  >
-                    <Bookmark className="size-4" />
-                    <span className="hidden sm:inline">{c.saveThis}</span>
-                  </Button>
                   <SavedSearchesControl
                     savedSearches={relevantSavedSearches}
                     onLoad={loadSavedSearch}
@@ -1489,6 +1479,9 @@ export function AddRecordsDialog({
                       savedSearchStore.remove(id)
                       toast.success(c.removedSaved)
                     }}
+                    onSaveThis={openSaveDialog}
+                    saveThisLabel={c.save}
+                    saveThisDisabled={total === 0}
                   />
                 </div>
 
