@@ -1,5 +1,6 @@
 import type { Account, Prospect } from "./types"
 
+
 // What to reveal when enriching. The three are independent and non-overlapping:
 // "email" reveals only the verified email, "phone" only the direct dial, and
 // "profile" the ~30 firmographic/scoring data points (NOT email or phone). A
@@ -29,6 +30,14 @@ export const MAX_ENRICH_BATCH = 1000
 // freshly sourced contacts are created with enriched === false.
 export function isEnriched(prospect: Prospect): boolean {
   return prospect.enriched !== false
+}
+
+// Whether a contact still needs *any* reveal. False means fully enriched —
+// email, direct dial, and the ~30 data points are all present — so enrich
+// actions for this contact are a no-op and should be disabled.
+export function needsAnyEnrichScope(prospect: Prospect): boolean {
+  const scopes: EnrichScope[] = ["email", "phone", "profile"]
+  return scopes.some((s) => needsEnrichScope(prospect, s))
 }
 
 // Company enrichment is a single flat action, not a scope picker like

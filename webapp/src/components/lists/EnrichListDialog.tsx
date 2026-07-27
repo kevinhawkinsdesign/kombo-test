@@ -27,7 +27,8 @@ const COPY = {
   en: {
     title: "Enrich prospects",
     modeLabel: "Enrichment mode",
-    modeOnce: "Once on add",
+    modeOff: "No automation",
+    modeWarn: (n: number) => `Charges up to ${n} credits per prospect as new ones arrive.`,
     modeContinuous: "Continuously",
     description:
       "Reveal verified emails and direct dials, plus 30+ data points per prospect.",
@@ -58,7 +59,8 @@ const COPY = {
   es: {
     title: "Enriquecer prospectos",
     modeLabel: "Modo de enriquecimiento",
-    modeOnce: "Una vez al añadir",
+    modeOff: "Sin automatización",
+    modeWarn: (n: number) => `Cobra hasta ${n} créditos por prospecto a medida que llegan nuevos.`,
     modeContinuous: "De forma continua",
     description:
       "Revela correos verificados y teléfonos directos, además de más de 30 datos por prospecto.",
@@ -89,7 +91,8 @@ const COPY = {
   it: {
     title: "Arricchisci prospect",
     modeLabel: "Modalità di arricchimento",
-    modeOnce: "Una volta all'aggiunta",
+    modeOff: "Nessuna automazione",
+    modeWarn: (n: number) => `Addebita fino a ${n} crediti per prospect man mano che ne arrivano di nuovi.`,
     modeContinuous: "In continuo",
     description:
       "Rivela email verificate e numeri diretti, oltre a più di 30 dati per prospect.",
@@ -120,7 +123,8 @@ const COPY = {
   fr: {
     title: "Enrichir les prospects",
     modeLabel: "Mode d'enrichissement",
-    modeOnce: "Une fois à l'ajout",
+    modeOff: "Aucune automatisation",
+    modeWarn: (n: number) => `Facture jusqu'à ${n} crédits par prospect à mesure que de nouveaux arrivent.`,
     modeContinuous: "En continu",
     description:
       "Révélez des e-mails vérifiés et des lignes directes, ainsi que plus de 30 points de données par prospect.",
@@ -151,7 +155,8 @@ const COPY = {
   de: {
     title: "Prospects anreichern",
     modeLabel: "Anreicherungsmodus",
-    modeOnce: "Einmalig beim Hinzufügen",
+    modeOff: "Keine Automatisierung",
+    modeWarn: (n: number) => `Berechnet bis zu ${n} Credits pro Prospect, sobald neue hinzukommen.`,
     modeContinuous: "Fortlaufend",
     description:
       "Zeige verifizierte E-Mails und Durchwahlen sowie über 30 Datenpunkte pro Prospect an.",
@@ -183,7 +188,8 @@ const COPY = {
   pt: {
     title: "Enriquecer prospects",
     modeLabel: "Modo de enriquecimento",
-    modeOnce: "Uma vez ao adicionar",
+    modeOff: "Sem automação",
+    modeWarn: (n: number) => `Cobra até ${n} créditos por prospect à medida que chegam novos.`,
     modeContinuous: "Continuamente",
     description:
       "Revele emails verificados e contactos diretos, além de mais de 30 pontos de dados por prospect.",
@@ -214,7 +220,8 @@ const COPY = {
   pt_BR: {
     title: "Enriquecer prospects",
     modeLabel: "Modo de enriquecimento",
-    modeOnce: "Uma vez ao adicionar",
+    modeOff: "Sem automação",
+    modeWarn: (n: number) => `Cobra até ${n} créditos por prospect à medida que chegam novos.`,
     modeContinuous: "Continuamente",
     description:
       "Revele emails verificados e contatos diretos, além de mais de 30 pontos de dados por prospect.",
@@ -249,7 +256,7 @@ interface EnrichListDialogProps {
   onOpenChange: (open: boolean) => void
   // The contacts to consider for enrichment (a list's members or a selection).
   prospects: Prospect[]
-  // When set, shows a mode toggle (once on add / continuously) that writes
+  // When set, shows an automation toggle (off / continuously) that writes
   // straight to the list's own enrichment setting — used only when this
   // dialog is opened from a list's settings box, not from a bare selection.
   list?: ProspectList
@@ -351,11 +358,13 @@ export function EnrichListDialog({
               <div className="grid grid-cols-2 gap-2">
                 {(
                   [
-                    { value: "once" as const, label: c.modeOnce },
+                    { value: "off" as const, label: c.modeOff },
                     { value: "continuous" as const, label: c.modeContinuous },
                   ] as const
                 ).map((opt) => {
-                  const active = (list.enrichment ?? "once") === opt.value
+                  const active =
+                    (list.enrichment === "continuous" ? "continuous" : "off") ===
+                    opt.value
                   return (
                     <button
                       key={opt.value}
@@ -374,6 +383,12 @@ export function EnrichListDialog({
                   )
                 })}
               </div>
+              {list.enrichment === "continuous" && (
+                <p className="text-muted-foreground flex items-start gap-1.5 text-[11px]">
+                  <TriangleAlert className="text-chart-4 mt-0.5 size-3.5 shrink-0" />
+                  {c.modeWarn(ENRICH_COST.profile)}
+                </p>
+              )}
             </div>
           )}
 

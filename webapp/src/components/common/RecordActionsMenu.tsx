@@ -27,6 +27,7 @@ import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { blacklistStore } from "@/lib/store"
+import { needsAnyEnrichScope } from "@/lib/enrichment"
 import type { RecordKind } from "@/lib/crm-mapping"
 import type { Account, Prospect } from "@/lib/types"
 
@@ -197,7 +198,11 @@ export function RecordActionsMenu({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {kind === "person" && (
-            <DropdownMenuItem onClick={() => setDialog("enrich")}>
+            <DropdownMenuItem
+              // Nothing left to reveal — enriching again is a no-op.
+              disabled={!needsAnyEnrichScope(record as Prospect)}
+              onClick={() => setDialog("enrich")}
+            >
               <Layers className="size-4" />
               {c.enrich}
             </DropdownMenuItem>

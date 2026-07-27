@@ -443,7 +443,7 @@ export const prospectLists: ProspectList[] = [
       keywords: "Visited pricing page",
       signals: ["Website intent", "Pricing-page visit"],
     },
-    enrichment: "once",
+    enrichment: "off",
     newPerWeek: 8,
     campaignId: "cm_2",
     sendMode: "continuous",
