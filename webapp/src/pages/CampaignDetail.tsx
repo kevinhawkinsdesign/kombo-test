@@ -3394,35 +3394,6 @@ export default function CampaignDetail() {
                       >
                         <meta.Icon className="size-4" />
                       </span>
-                      <Select
-                        value={normalizeChannel(step.channel)}
-                        onValueChange={(v) =>
-                          draft.updateStep(step.id, {
-                            channel: v as StepChannel,
-                            isManualTask: v === "manual",
-                          })
-                        }
-                      >
-                        <SelectTrigger
-                          size="sm"
-                          className="w-[180px]"
-                          aria-label={c.stepChannelAria(i + 1)}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CHANNEL_GROUPS.map((group) => (
-                            <SelectGroup key={group.labelKey}>
-                              <SelectLabel>{c[group.labelKey]}</SelectLabel>
-                              {group.channels.map((channelKey) => (
-                                <SelectItem key={channelKey} value={channelKey}>
-                                  {c.channelLabel[channelKey]}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          ))}
-                        </SelectContent>
-                      </Select>
                       {isLinkedIn && (
                         <Select
                           value={step.linkedinAction ?? "message"}
@@ -3485,6 +3456,35 @@ export default function CampaignDetail() {
                           </SelectContent>
                         </Select>
                       )}
+                      <Select
+                        value={normalizeChannel(step.channel)}
+                        onValueChange={(v) =>
+                          draft.updateStep(step.id, {
+                            channel: v as StepChannel,
+                            isManualTask: v === "manual",
+                          })
+                        }
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          className="w-[180px]"
+                          aria-label={c.stepChannelAria(i + 1)}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CHANNEL_GROUPS.map((group) => (
+                            <SelectGroup key={group.labelKey}>
+                              <SelectLabel>{c[group.labelKey]}</SelectLabel>
+                              {group.channels.map((channelKey) => (
+                                <SelectItem key={channelKey} value={channelKey}>
+                                  {c.channelLabel[channelKey]}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <div className="ml-auto flex items-center gap-1">
                         <Button
                           variant="ghost"
