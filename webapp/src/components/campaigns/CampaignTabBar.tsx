@@ -183,7 +183,10 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
                 : "border-transparent px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
             )}
           >
-            <Link to={`/campaigns/${t.id}`} className="max-w-64 min-w-0 truncate">
+            <Link
+              to={`/campaigns/${t.id}`}
+              className={cn("min-w-0 truncate", active ? "max-w-64" : "max-w-40")}
+            >
               {t.name}
             </Link>
             {active &&
