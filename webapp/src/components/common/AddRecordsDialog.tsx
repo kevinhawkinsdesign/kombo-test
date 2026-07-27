@@ -1480,7 +1480,7 @@ export function AddRecordsDialog({
                       toast.success(c.removedSaved)
                     }}
                     onSaveThis={openSaveDialog}
-                    saveThisLabel={c.saveThis}
+                    saveThisLabel={c.save}
                     saveThisDisabled={total === 0}
                   />
                 </div>
