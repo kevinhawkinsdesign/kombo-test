@@ -1,5 +1,4 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Link2, Plus, X } from "lucide-react"
 
@@ -161,7 +160,6 @@ export function LinkListToCampaignDialog({
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const navigate = useNavigate()
   const campaigns = useCampaigns()
   const [pickCampaignId, setPickCampaignId] = React.useState("")
 
@@ -178,7 +176,6 @@ export function LinkListToCampaignDialog({
     campaignStore.attachList(pickCampaignId, list.id)
     toast.success(target ? c.linked(target.name) : c.link)
     onOpenChange(false)
-    navigate(`/campaigns/${pickCampaignId}`)
   }
 
   function createAndLink() {
@@ -186,7 +183,6 @@ export function LinkListToCampaignDialog({
     campaignStore.attachList(created.id, list.id)
     toast.success(c.linked(created.name))
     onOpenChange(false)
-    navigate(`/campaigns/${created.id}`)
   }
 
   const linkedCampaign = list.campaignId
