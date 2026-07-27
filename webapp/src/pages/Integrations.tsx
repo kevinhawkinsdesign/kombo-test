@@ -287,7 +287,12 @@ type Copy = (typeof COPY)[keyof typeof COPY]
 export default function Integrations() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const [items, setItems] = React.useState<Integration[]>(seed)
+  // CRMs (HubSpot, Salesforce, …) live in the "CRM Connection" section of
+  // ConnectionsPanel below instead — that's a single-select (only one CRM
+  // connected at a time), so they don't also belong in this generic grid.
+  const [items, setItems] = React.useState<Integration[]>(() =>
+    seed.filter((it) => it.category !== "crm")
+  )
   const [mcp, setMcp] = React.useState<McpConnection[]>(mcpConnections)
   const [view, setView] = React.useState<CollectionView>("cards")
 
