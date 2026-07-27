@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { Link2, Plus } from "lucide-react"
+import { Link2, Plus, X } from "lucide-react"
 
 import {
   Dialog,
@@ -33,6 +33,9 @@ const COPY = {
     linkedElsewhere: " (linked to another list)",
     linked: (name: string) => `Linked to ${name}`,
     cancel: "Cancel",
+    currentlyLinked: (name: string) => `Currently linked to ${name}`,
+    unlinkAction: "Unlink",
+    unlinked: "No longer linked to a campaign",
   },
   es: {
     title: "Vincular a campaña",
@@ -48,6 +51,9 @@ const COPY = {
     linkedElsewhere: " (vinculada a otra lista)",
     linked: (name: string) => `Vinculada a ${name}`,
     cancel: "Cancelar",
+    currentlyLinked: (name: string) => `Vinculada actualmente a ${name}`,
+    unlinkAction: "Desvincular",
+    unlinked: "Ya no está vinculada a una campaña",
   },
   it: {
     title: "Collega a una campagna",
@@ -63,6 +69,9 @@ const COPY = {
     linkedElsewhere: " (collegata a un'altra lista)",
     linked: (name: string) => `Collegata a ${name}`,
     cancel: "Annulla",
+    currentlyLinked: (name: string) => `Attualmente collegata a ${name}`,
+    unlinkAction: "Scollega",
+    unlinked: "Non più collegata a una campagna",
   },
   fr: {
     title: "Lier à une campagne",
@@ -78,6 +87,9 @@ const COPY = {
     linkedElsewhere: " (liée à une autre liste)",
     linked: (name: string) => `Liée à ${name}`,
     cancel: "Annuler",
+    currentlyLinked: (name: string) => `Actuellement liée à ${name}`,
+    unlinkAction: "Délier",
+    unlinked: "N'est plus liée à une campagne",
   },
   de: {
     title: "Mit Kampagne verknüpfen",
@@ -93,6 +105,9 @@ const COPY = {
     linkedElsewhere: " (mit einer anderen Liste verknüpft)",
     linked: (name: string) => `Mit ${name} verknüpft`,
     cancel: "Abbrechen",
+    currentlyLinked: (name: string) => `Aktuell mit ${name} verknüpft`,
+    unlinkAction: "Verknüpfung aufheben",
+    unlinked: "Nicht mehr mit einer Kampagne verknüpft",
   },
   pt: {
     title: "Associar a campanha",
@@ -108,6 +123,9 @@ const COPY = {
     linkedElsewhere: " (associada a outra lista)",
     linked: (name: string) => `Associada a ${name}`,
     cancel: "Cancelar",
+    currentlyLinked: (name: string) => `Atualmente associada a ${name}`,
+    unlinkAction: "Desassociar",
+    unlinked: "Já não está associada a uma campanha",
   },
   pt_BR: {
     title: "Vincular a campanha",
@@ -123,6 +141,9 @@ const COPY = {
     linkedElsewhere: " (vinculada a outra lista)",
     linked: (name: string) => `Vinculada a ${name}`,
     cancel: "Cancelar",
+    currentlyLinked: (name: string) => `Atualmente vinculada a ${name}`,
+    unlinkAction: "Desvincular",
+    unlinked: "Não está mais vinculada a uma campanha",
   },
 } as const
 
@@ -168,6 +189,17 @@ export function LinkListToCampaignDialog({
     navigate(`/campaigns/${created.id}`)
   }
 
+  const linkedCampaign = list.campaignId
+    ? campaigns.find((cm) => cm.id === list.campaignId)
+    : undefined
+
+  function unlink() {
+    if (!list.campaignId) return
+    campaignStore.detachList(list.campaignId)
+    toast.success(c.unlinked)
+    onOpenChange(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -178,6 +210,23 @@ export function LinkListToCampaignDialog({
           </DialogTitle>
           <DialogDescription>{c.desc(list.name)}</DialogDescription>
         </DialogHeader>
+
+        {linkedCampaign && (
+          <div className="bg-muted/40 flex items-center justify-between gap-2 rounded-lg border p-2.5 text-sm">
+            <span className="min-w-0 truncate">
+              {c.currentlyLinked(linkedCampaign.name)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive shrink-0"
+              onClick={unlink}
+            >
+              <X className="size-3.5" />
+              {c.unlinkAction}
+            </Button>
+          </div>
+        )}
 
         {campaigns.length > 0 && (
           <>

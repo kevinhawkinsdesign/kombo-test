@@ -1,0 +1,339 @@
+import * as React from "react"
+import { toast } from "sonner"
+import { Search, Database, X } from "lucide-react"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { SearchCombobox } from "@/components/common/SearchCombobox"
+import { useSavedSearches } from "@/lib/mock-ai-search"
+import { CRM_LISTS, CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
+import { listStore } from "@/lib/store"
+import { useLocale } from "@/lib/locale"
+import { cn } from "@/lib/utils"
+import type { ProspectList } from "@/lib/types"
+
+type Source = "saved_search" | "crm_list"
+
+const COPY = {
+  en: {
+    title: "Add source",
+    desc: (name: string) =>
+      `Link "${name}" to a source — matching records keep flowing in automatically.`,
+    savedSearch: "Saved search",
+    crmList: "CRM list",
+    pickSearch: "Choose a saved search…",
+    pickCrmList: "Choose a CRM list…",
+    noSearches: "No saved searches for this record type yet.",
+    noCrmLists: "No CRM lists for this record type.",
+    resultCount: (n: number) => `${n.toLocaleString()} results`,
+    current: (name: string) => `Currently linked to "${name}"`,
+    removeSource: "Remove source",
+    cancel: "Cancel",
+    link: "Link source",
+    linked: (name: string) => `Linked to "${name}"`,
+    removed: "Source removed — this list is no longer dynamic",
+  },
+  es: {
+    title: "Añadir fuente",
+    desc: (name: string) =>
+      `Vincula "${name}" a una fuente — los registros coincidentes seguirán llegando automáticamente.`,
+    savedSearch: "Búsqueda guardada",
+    crmList: "Lista del CRM",
+    pickSearch: "Elige una búsqueda guardada…",
+    pickCrmList: "Elige una lista del CRM…",
+    noSearches: "Aún no hay búsquedas guardadas para este tipo de registro.",
+    noCrmLists: "No hay listas del CRM para este tipo de registro.",
+    resultCount: (n: number) => `${n.toLocaleString()} resultados`,
+    current: (name: string) => `Vinculada actualmente a "${name}"`,
+    removeSource: "Quitar fuente",
+    cancel: "Cancelar",
+    link: "Vincular fuente",
+    linked: (name: string) => `Vinculada a "${name}"`,
+    removed: "Fuente eliminada — esta lista ya no es dinámica",
+  },
+  it: {
+    title: "Aggiungi fonte",
+    desc: (name: string) =>
+      `Collega "${name}" a una fonte — i record corrispondenti continueranno ad arrivare automaticamente.`,
+    savedSearch: "Ricerca salvata",
+    crmList: "Lista del CRM",
+    pickSearch: "Scegli una ricerca salvata…",
+    pickCrmList: "Scegli una lista del CRM…",
+    noSearches: "Ancora nessuna ricerca salvata per questo tipo di record.",
+    noCrmLists: "Nessuna lista del CRM per questo tipo di record.",
+    resultCount: (n: number) => `${n.toLocaleString()} risultati`,
+    current: (name: string) => `Attualmente collegata a "${name}"`,
+    removeSource: "Rimuovi fonte",
+    cancel: "Annulla",
+    link: "Collega fonte",
+    linked: (name: string) => `Collegata a "${name}"`,
+    removed: "Fonte rimossa — questa lista non è più dinamica",
+  },
+  fr: {
+    title: "Ajouter une source",
+    desc: (name: string) =>
+      `Liez « ${name} » à une source — les fiches correspondantes continueront d'arriver automatiquement.`,
+    savedSearch: "Recherche enregistrée",
+    crmList: "Liste du CRM",
+    pickSearch: "Choisissez une recherche enregistrée…",
+    pickCrmList: "Choisissez une liste du CRM…",
+    noSearches: "Aucune recherche enregistrée pour ce type de fiche.",
+    noCrmLists: "Aucune liste du CRM pour ce type de fiche.",
+    resultCount: (n: number) => `${n.toLocaleString()} résultats`,
+    current: (name: string) => `Actuellement liée à « ${name} »`,
+    removeSource: "Retirer la source",
+    cancel: "Annuler",
+    link: "Lier la source",
+    linked: (name: string) => `Liée à « ${name} »`,
+    removed: "Source retirée — cette liste n'est plus dynamique",
+  },
+  de: {
+    title: "Quelle hinzufügen",
+    desc: (name: string) =>
+      `Verknüpfe „${name}“ mit einer Quelle — passende Datensätze fließen weiterhin automatisch ein.`,
+    savedSearch: "Gespeicherte Suche",
+    crmList: "CRM-Liste",
+    pickSearch: "Wähle eine gespeicherte Suche…",
+    pickCrmList: "Wähle eine CRM-Liste…",
+    noSearches: "Noch keine gespeicherten Suchen für diesen Datensatztyp.",
+    noCrmLists: "Keine CRM-Listen für diesen Datensatztyp.",
+    resultCount: (n: number) => `${n.toLocaleString()} Ergebnisse`,
+    current: (name: string) => `Aktuell verknüpft mit „${name}“`,
+    removeSource: "Quelle entfernen",
+    cancel: "Abbrechen",
+    link: "Quelle verknüpfen",
+    linked: (name: string) => `Mit „${name}“ verknüpft`,
+    removed: "Quelle entfernt — diese Liste ist nicht mehr dynamisch",
+  },
+  pt: {
+    title: "Adicionar fonte",
+    desc: (name: string) =>
+      `Associe "${name}" a uma fonte — os registos correspondentes continuarão a chegar automaticamente.`,
+    savedSearch: "Pesquisa guardada",
+    crmList: "Lista do CRM",
+    pickSearch: "Escolha uma pesquisa guardada…",
+    pickCrmList: "Escolha uma lista do CRM…",
+    noSearches: "Ainda não há pesquisas guardadas para este tipo de registo.",
+    noCrmLists: "Não há listas do CRM para este tipo de registo.",
+    resultCount: (n: number) => `${n.toLocaleString()} resultados`,
+    current: (name: string) => `Atualmente associada a "${name}"`,
+    removeSource: "Remover fonte",
+    cancel: "Cancelar",
+    link: "Associar fonte",
+    linked: (name: string) => `Associada a "${name}"`,
+    removed: "Fonte removida — esta lista deixou de ser dinâmica",
+  },
+  pt_BR: {
+    title: "Adicionar fonte",
+    desc: (name: string) =>
+      `Vincule "${name}" a uma fonte — os registros correspondentes continuarão chegando automaticamente.`,
+    savedSearch: "Busca salva",
+    crmList: "Lista do CRM",
+    pickSearch: "Escolha uma busca salva…",
+    pickCrmList: "Escolha uma lista do CRM…",
+    noSearches: "Ainda não há buscas salvas para esse tipo de registro.",
+    noCrmLists: "Não há listas do CRM para esse tipo de registro.",
+    resultCount: (n: number) => `${n.toLocaleString()} resultados`,
+    current: (name: string) => `Atualmente vinculada a "${name}"`,
+    removeSource: "Remover fonte",
+    cancel: "Cancelar",
+    link: "Vincular fonte",
+    linked: (name: string) => `Vinculada a "${name}"`,
+    removed: "Fonte removida — esta lista não é mais dinâmica",
+  },
+} as const
+
+// Links a list to an existing saved search (a live reference — editing the
+// saved search later changes this list's inflow) or an existing CRM list
+// (a snapshot of what's in the CRM today). Picking from existing sources
+// only — this doesn't build new criteria from scratch.
+export function AddSourceDialog({
+  open,
+  onOpenChange,
+  list,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  list: ProspectList
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const savedSearches = useSavedSearches()
+  const [tab, setTab] = React.useState<Source>("saved_search")
+  const [pickId, setPickId] = React.useState("")
+
+  const wantEntity = list.kind === "company" ? "companies" : "people"
+  const matchingSearches = savedSearches.filter((s) => s.entity === wantEntity)
+  const matchingCrmLists = CRM_LISTS.filter((l) => l.kind === (list.kind ?? "people"))
+
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setTab(list.sourceType ?? "saved_search")
+      setPickId("")
+    }
+  }
+
+  const currentSearch = list.savedSearchId
+    ? savedSearches.find((s) => s.id === list.savedSearchId)
+    : undefined
+  const currentCrmList = list.crmListId
+    ? CRM_LISTS.find((l) => l.id === list.crmListId)
+    : undefined
+  const currentName = currentSearch?.name ?? currentCrmList?.name
+
+  function linkSource() {
+    if (!pickId) return
+    if (tab === "saved_search") {
+      const target = matchingSearches.find((s) => s.id === pickId)
+      if (!target) return
+      listStore.update(list.id, {
+        dynamic: true,
+        sourceType: "saved_search",
+        savedSearchId: pickId,
+        crmListId: undefined,
+        enrichment: list.enrichment ?? "once",
+        lastSyncedAt: new Date().toISOString(),
+      })
+      toast.success(c.linked(target.name))
+    } else {
+      const target = matchingCrmLists.find((l) => l.id === pickId)
+      if (!target) return
+      listStore.update(list.id, {
+        dynamic: true,
+        sourceType: "crm_list",
+        crmListId: pickId,
+        savedSearchId: undefined,
+        enrichment: list.enrichment ?? "once",
+        lastSyncedAt: new Date().toISOString(),
+      })
+      toast.success(c.linked(target.name))
+    }
+    onOpenChange(false)
+  }
+
+  function removeSource() {
+    listStore.update(list.id, {
+      dynamic: false,
+      sourceType: undefined,
+      savedSearchId: undefined,
+      crmListId: undefined,
+    })
+    toast.success(c.removed)
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Search className="text-primary size-5" />
+            {c.title}
+          </DialogTitle>
+          <DialogDescription>{c.desc(list.name)}</DialogDescription>
+        </DialogHeader>
+
+        {currentName && (
+          <div className="bg-muted/40 flex items-center justify-between gap-2 rounded-lg border p-2.5 text-sm">
+            <span className="min-w-0 truncate">{c.current(currentName)}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive shrink-0"
+              onClick={removeSource}
+            >
+              <X className="size-3.5" />
+              {c.removeSource}
+            </Button>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              { value: "saved_search" as const, label: c.savedSearch, icon: Search },
+              { value: "crm_list" as const, label: c.crmList, icon: Database },
+            ] as const
+          ).map((opt) => {
+            const Icon = opt.icon
+            const active = tab === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setTab(opt.value)
+                  setPickId("")
+                }}
+                aria-pressed={active}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 rounded-lg border p-2 text-sm font-medium transition-colors",
+                  active
+                    ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
+                    : "hover:bg-muted/60"
+                )}
+              >
+                <Icon className="size-4" />
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {tab === "saved_search" ? (
+          matchingSearches.length === 0 ? (
+            <p className="text-muted-foreground text-sm">{c.noSearches}</p>
+          ) : (
+            <SearchCombobox
+              value={pickId}
+              onChange={setPickId}
+              options={matchingSearches.map((s) => ({
+                value: s.id,
+                label: s.name,
+                sublabel: ` · ${c.resultCount(s.resultCount)}`,
+              }))}
+              placeholder={c.pickSearch}
+              searchPlaceholder={c.pickSearch}
+              emptyText={c.pickSearch}
+              className="w-full"
+            />
+          )
+        ) : matchingCrmLists.length === 0 ? (
+          <p className="text-muted-foreground text-sm">{c.noCrmLists}</p>
+        ) : (
+          <SearchCombobox
+            value={pickId}
+            onChange={setPickId}
+            options={matchingCrmLists.map((l) => ({
+              value: l.id,
+              label: `${CONNECTED_CRM_PROVIDER.name}: ${l.name}`,
+              sublabel: ` · ${c.resultCount(l.count)}`,
+            }))}
+            placeholder={c.pickCrmList}
+            searchPlaceholder={c.pickCrmList}
+            emptyText={c.pickCrmList}
+            className="w-full"
+          />
+        )}
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            {c.cancel}
+          </Button>
+          <Button variant="volt" onClick={linkSource} disabled={!pickId}>
+            {c.link}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
