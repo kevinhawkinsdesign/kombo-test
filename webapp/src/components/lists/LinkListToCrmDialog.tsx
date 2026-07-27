@@ -17,7 +17,7 @@ import type { ProspectList } from "@/lib/types"
 
 const COPY = {
   en: {
-    title: "Link to CRM",
+    title: "Sync to CRM",
     desc: (crm: string) =>
       `Keep this list synced with ${crm} — prospects/companies added later push automatically too, not just what's here today.`,
     synced: (crm: string, date: string) => `Synced with ${crm} since ${date}`,
@@ -29,7 +29,7 @@ const COPY = {
     unlinked: "No longer synced with the CRM",
   },
   es: {
-    title: "Vincular al CRM",
+    title: "Sincronizar con el CRM",
     desc: (crm: string) =>
       `Mantén esta lista sincronizada con ${crm} — los prospectos/empresas que se añadan después también se enviarán automáticamente, no solo los de ahora.`,
     synced: (crm: string, date: string) => `Sincronizada con ${crm} desde ${date}`,
@@ -41,7 +41,7 @@ const COPY = {
     unlinked: "Ya no está sincronizada con el CRM",
   },
   it: {
-    title: "Collega al CRM",
+    title: "Sincronizza con il CRM",
     desc: (crm: string) =>
       `Mantieni questa lista sincronizzata con ${crm} — anche i prospect/aziende aggiunti dopo verranno inviati automaticamente, non solo quelli di oggi.`,
     synced: (crm: string, date: string) => `Sincronizzata con ${crm} dal ${date}`,
@@ -53,7 +53,7 @@ const COPY = {
     unlinked: "Non più sincronizzata con il CRM",
   },
   fr: {
-    title: "Lier au CRM",
+    title: "Synchroniser avec le CRM",
     desc: (crm: string) =>
       `Gardez cette liste synchronisée avec ${crm} — les prospects/entreprises ajoutés plus tard seront aussi poussés automatiquement, pas seulement ceux d'aujourd'hui.`,
     synced: (crm: string, date: string) => `Synchronisée avec ${crm} depuis le ${date}`,
@@ -65,7 +65,7 @@ const COPY = {
     unlinked: "N'est plus synchronisée avec le CRM",
   },
   de: {
-    title: "Mit CRM verknüpfen",
+    title: "Mit CRM synchronisieren",
     desc: (crm: string) =>
       `Halte diese Liste mit ${crm} synchron — auch später hinzugefügte Prospects/Unternehmen werden automatisch übertragen, nicht nur die von heute.`,
     synced: (crm: string, date: string) => `Seit ${date} mit ${crm} synchronisiert`,
@@ -77,7 +77,7 @@ const COPY = {
     unlinked: "Nicht mehr mit dem CRM synchronisiert",
   },
   pt: {
-    title: "Associar ao CRM",
+    title: "Sincronizar com o CRM",
     desc: (crm: string) =>
       `Mantenha esta lista sincronizada com ${crm} — os prospects/empresas adicionados mais tarde também são enviados automaticamente, não só os de hoje.`,
     synced: (crm: string, date: string) => `Sincronizada com ${crm} desde ${date}`,
@@ -89,7 +89,7 @@ const COPY = {
     unlinked: "Já não está sincronizada com o CRM",
   },
   pt_BR: {
-    title: "Vincular ao CRM",
+    title: "Sincronizar com o CRM",
     desc: (crm: string) =>
       `Mantenha esta lista sincronizada com ${crm} — os prospects/empresas adicionados depois também são enviados automaticamente, não só os de hoje.`,
     synced: (crm: string, date: string) => `Sincronizada com ${crm} desde ${date}`,
