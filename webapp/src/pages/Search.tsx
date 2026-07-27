@@ -32,6 +32,7 @@ import {
   FolderPlus,
   Link2,
   Check,
+  Layers,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -369,6 +370,7 @@ const COPY = {
     hideInList: "Hide already in a list",
     hideInCrm: "Hide already in CRM",
     addRowToList: "Add to list",
+    enrichRow: "Enrich",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     srcFindPeople: "Find prospects",
@@ -671,6 +673,7 @@ const COPY = {
     hideInList: "Ocultar ya en una lista",
     hideInCrm: "Ocultar ya en el CRM",
     addRowToList: "Añadir a lista",
+    enrichRow: "Enriquecer",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Buscar prospectos",
@@ -973,6 +976,7 @@ const COPY = {
     hideInList: "Nascondi quelli già in una lista",
     hideInCrm: "Nascondi quelli già nel CRM",
     addRowToList: "Aggiungi a lista",
+    enrichRow: "Arricchisci",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} di ${total.toLocaleString()}`,
     srcFindPeople: "Trova prospect",
@@ -1275,6 +1279,7 @@ const COPY = {
     hideInList: "Masquer ceux déjà dans une liste",
     hideInCrm: "Masquer ceux déjà dans le CRM",
     addRowToList: "Ajouter à une liste",
+    enrichRow: "Enrichir",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} sur ${total.toLocaleString()}`,
     srcFindPeople: "Trouver des prospects",
@@ -1577,6 +1582,7 @@ const COPY = {
     hideInList: "Bereits gelistete ausblenden",
     hideInCrm: "Bereits im CRM ausblenden",
     addRowToList: "Zur Liste hinzufügen",
+    enrichRow: "Anreichern",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} von ${total.toLocaleString()}`,
     srcFindPeople: "Prospects finden",
@@ -1879,6 +1885,7 @@ const COPY = {
     hideInList: "Ocultar os que já estão numa lista",
     hideInCrm: "Ocultar os que já estão no CRM",
     addRowToList: "Adicionar a lista",
+    enrichRow: "Enriquecer",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Encontrar prospects",
@@ -2181,6 +2188,7 @@ const COPY = {
     hideInList: "Ocultar os que já estão em uma lista",
     hideInCrm: "Ocultar os que já estão no CRM",
     addRowToList: "Adicionar a lista",
+    enrichRow: "Enriquecer",
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Encontrar prospects",
@@ -3142,6 +3150,14 @@ export default function Search() {
     setSelected(new Set())
     setBulkEnrichOpen(true)
   }
+  // Per-row Enrich — same materialize-then-open-dialog flow as bulk enrich,
+  // just scoped to a single search-result row.
+  function enrichRow(lead: AiLead) {
+    const ids = materializeLeadsToIds([lead])
+    const rows = ids.flatMap((id) => getProspect(id) ?? [])
+    setEnrichRows(rows)
+    setBulkEnrichOpen(true)
+  }
   // Lookalikes are seeded from the first selected row — the same convention
   // as People/Companies (via applyLookalike, which resets the search state).
   function bulkLookalikes() {
@@ -3716,15 +3732,26 @@ export default function Search() {
               selection={leadSelection}
               empty={c.noResults}
               actions={(l) => (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  aria-label={c.addRowToList}
-                  onClick={() => addRowToList(materializeLeadsToIds([l]))}
-                >
-                  <FolderPlus className="size-4" />
-                </Button>
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.enrichRow}
+                    onClick={() => enrichRow(l)}
+                  >
+                    <Layers className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.addRowToList}
+                    onClick={() => addRowToList(materializeLeadsToIds([l]))}
+                  >
+                    <FolderPlus className="size-4" />
+                  </Button>
+                </div>
               )}
             />
           ) : (

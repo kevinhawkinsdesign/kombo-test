@@ -93,6 +93,7 @@ const COPY = {
     colScore: "Score",
     colStatus: "Status",
     removeFromListAction: "Remove from list",
+    enrichRow: "Enrich",
     removed: "Removed from list",
     removedCount: (n: number) => `${n} removed from list`,
     emptyState: "No prospects yet — add some to get started.",
@@ -187,6 +188,7 @@ const COPY = {
     colScore: "Puntuación",
     colStatus: "Estado",
     removeFromListAction: "Quitar de la lista",
+    enrichRow: "Enriquecer",
     removed: "Quitado de la lista",
     removedCount: (n: number) => `${n} quitados de la lista`,
     emptyState: "Aún no hay prospectos — añade algunos para empezar.",
@@ -282,6 +284,7 @@ const COPY = {
     colScore: "Punteggio",
     colStatus: "Stato",
     removeFromListAction: "Rimuovi dalla lista",
+    enrichRow: "Arricchisci",
     removed: "Rimosso dalla lista",
     removedCount: (n: number) => `${n} rimossi dalla lista`,
     emptyState: "Ancora nessun prospect — aggiungine alcuni per iniziare.",
@@ -376,6 +379,7 @@ const COPY = {
     colScore: "Score",
     colStatus: "Statut",
     removeFromListAction: "Retirer de la liste",
+    enrichRow: "Enrichir",
     removed: "Retiré de la liste",
     removedCount: (n: number) => `${n} retirés de la liste`,
     emptyState: "Aucun prospect pour le moment — ajoutez-en pour commencer.",
@@ -470,6 +474,7 @@ const COPY = {
     colScore: "Score",
     colStatus: "Status",
     removeFromListAction: "Aus der Liste entfernen",
+    enrichRow: "Anreichern",
     removed: "Aus der Liste entfernt",
     removedCount: (n: number) => `${n} aus der Liste entfernt`,
     emptyState: "Noch keine Prospects — füge welche hinzu, um loszulegen.",
@@ -564,6 +569,7 @@ const COPY = {
     colScore: "Pontuação",
     colStatus: "Estado",
     removeFromListAction: "Remover da lista",
+    enrichRow: "Enriquecer",
     removed: "Removido da lista",
     removedCount: (n: number) => `${n} removidos da lista`,
     emptyState: "Ainda não há prospects — adicione alguns para começar.",
@@ -658,6 +664,7 @@ const COPY = {
     colScore: "Pontuação",
     colStatus: "Status",
     removeFromListAction: "Remover da lista",
+    enrichRow: "Enriquecer",
     removed: "Removido da lista",
     removedCount: (n: number) => `${n} removidos da lista`,
     emptyState: "Ainda não há prospects — adicione alguns para começar.",
@@ -748,6 +755,10 @@ export default function ListDetail() {
   const [linkCampaignOpen, setLinkCampaignOpen] = React.useState(false)
   const [playlistOpen, setPlaylistOpen] = React.useState(false)
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+  // Per-row Enrich — a dedicated one-click action distinct from the "…"
+  // menu's own Enrich item, scoped to a single member rather than the
+  // current multi-select.
+  const [rowEnrichProspect, setRowEnrichProspect] = React.useState<Prospect | null>(null)
   const [bulkAddOpen, setBulkAddOpen] = React.useState(false)
   const [bulkMoveOpen, setBulkMoveOpen] = React.useState(false)
   const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
@@ -1060,19 +1071,30 @@ export default function ListDetail() {
             someSelected,
           }}
           actions={(p) => (
-            <RecordActionsMenu
-              kind="person"
-              record={p}
-              extra={{
-                label: c.removeFromListAction,
-                icon: <X className="size-4" />,
-                destructive: true,
-                onClick: () => {
-                  listStore.removeProspect(list.id, p.id)
-                  toast.success(c.removed)
-                },
-              }}
-            />
+            <div className="flex items-center justify-end gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={c.enrichRow}
+                onClick={() => setRowEnrichProspect(p)}
+              >
+                <Layers className="size-4" />
+              </Button>
+              <RecordActionsMenu
+                kind="person"
+                record={p}
+                extra={{
+                  label: c.removeFromListAction,
+                  icon: <X className="size-4" />,
+                  destructive: true,
+                  onClick: () => {
+                    listStore.removeProspect(list.id, p.id)
+                    toast.success(c.removed)
+                  },
+                }}
+              />
+            </div>
           )}
         />
       )}
@@ -1220,6 +1242,13 @@ export default function ListDetail() {
         open={bulkEnrichOpen}
         onOpenChange={setBulkEnrichOpen}
         prospects={selectedMembers}
+      />
+
+      {/* Per-row Enrich — scoped to whichever member's row action was clicked. */}
+      <EnrichListDialog
+        open={rowEnrichProspect !== null}
+        onOpenChange={(v) => !v && setRowEnrichProspect(null)}
+        prospects={rowEnrichProspect ? [rowEnrichProspect] : []}
       />
 
       <LinkListToCampaignDialog
