@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Mail, MessageCircle, PenLine, RefreshCw, Sparkles } from "lucide-react"
+import { ArrowLeft, Mail, MessageCircle, PenLine, RefreshCw, Sparkles } from "lucide-react"
 
 import {
   Dialog,
@@ -43,6 +43,7 @@ const COPY = {
     refresh: "New example",
     subject: "Subject",
     cancel: "Cancel",
+    back: "Back",
     insert: "Use this prompt",
     channels: {
       email: "Email",
@@ -68,6 +69,7 @@ const COPY = {
     refresh: "Otro ejemplo",
     subject: "Asunto",
     cancel: "Cancelar",
+    back: "Volver",
     insert: "Usar este prompt",
     channels: {
       email: "Email",
@@ -93,6 +95,7 @@ const COPY = {
     refresh: "Nuovo esempio",
     subject: "Oggetto",
     cancel: "Annulla",
+    back: "Indietro",
     insert: "Usa questo prompt",
     channels: {
       email: "Email",
@@ -118,6 +121,7 @@ const COPY = {
     refresh: "Nouvel exemple",
     subject: "Objet",
     cancel: "Annuler",
+    back: "Retour",
     insert: "Utiliser ce prompt",
     channels: {
       email: "Email",
@@ -143,6 +147,7 @@ const COPY = {
     refresh: "Neues Beispiel",
     subject: "Betreff",
     cancel: "Abbrechen",
+    back: "Zurück",
     insert: "Diesen Prompt verwenden",
     channels: {
       email: "Email",
@@ -168,6 +173,7 @@ const COPY = {
     refresh: "Novo exemplo",
     subject: "Assunto",
     cancel: "Cancelar",
+    back: "Voltar",
     insert: "Usar este prompt",
     channels: {
       email: "Email",
@@ -193,6 +199,7 @@ const COPY = {
     refresh: "Novo exemplo",
     subject: "Assunto",
     cancel: "Cancelar",
+    back: "Voltar",
     insert: "Usar este prompt",
     channels: {
       email: "Email",
@@ -233,10 +240,15 @@ export function PromptPickerDialog({
   open,
   onOpenChange,
   onInsert,
+  onBack,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   onInsert: (seed: PromptStepSeed) => void
+  // Shows a Back button that returns to the step-type picker this dialog was
+  // opened from — omitted when opened from the step editor's toolbar, where
+  // there's no step type to go back to.
+  onBack?: () => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -466,6 +478,12 @@ export function PromptPickerDialog({
         </div>
 
         <DialogFooter>
+          {onBack && (
+            <Button variant="ghost" className="mr-auto" onClick={onBack}>
+              <ArrowLeft className="size-4" />
+              {c.back}
+            </Button>
+          )}
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {c.cancel}
           </Button>

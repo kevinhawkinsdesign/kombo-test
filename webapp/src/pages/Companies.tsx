@@ -28,7 +28,8 @@ import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import { BulkCrmSyncDialog } from "@/components/common/BulkCrmSyncDialog"
+import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
+import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { downloadCsv } from "@/lib/csv"
 import {
@@ -61,7 +62,8 @@ const COPY = {
     title: "Companies",
     description:
       "Every company you've found — across searches, imports & lists. Select to enrich, export, or add to a list.",
-    exportedToast: (n: number) => `Exported ${n} to CSV`,
+    exportedToast: (n: number, format: string) => `Exported ${n} to ${format}`,
+    crmSyncedToast: (n: number, crm: string) => `Synced ${n} to ${crm}`,
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     addCompany: "Find companies",
@@ -108,7 +110,8 @@ const COPY = {
     title: "Empresas",
     description:
       "Todas las empresas que has encontrado — de búsquedas, importaciones y listas. Selecciona para enriquecer, exportar o añadir a una lista.",
-    exportedToast: (n: number) => `Exportadas ${n} a CSV`,
+    exportedToast: (n: number, format: string) => `Exportadas ${n} a ${format}`,
+    crmSyncedToast: (n: number, crm: string) => `Sincronizadas ${n} con ${crm}`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
     addCompany: "Buscar empresas",
@@ -155,7 +158,8 @@ const COPY = {
     title: "Aziende",
     description:
       "Tutte le aziende che hai trovato — da ricerche, importazioni e liste. Seleziona per arricchire, esportare o aggiungere a una lista.",
-    exportedToast: (n: number) => `Esportate ${n} in CSV`,
+    exportedToast: (n: number, format: string) => `Esportate ${n} in ${format}`,
+    crmSyncedToast: (n: number, crm: string) => `Sincronizzate ${n} con ${crm}`,
     enrichToast: (n: number) => `Arricchimento di ${n} ${n === 1 ? "azienda" : "aziende"}…`,
     lookalikeToast: (n: number) => `Ricerca di simili da ${n} selezionate…`,
     addCompany: "Trova aziende",
@@ -202,7 +206,8 @@ const COPY = {
     title: "Entreprises",
     description:
       "Toutes les entreprises que vous avez trouvées — recherches, imports et listes. Sélectionnez pour enrichir, exporter ou ajouter à une liste.",
-    exportedToast: (n: number) => `${n} exportées en CSV`,
+    exportedToast: (n: number, format: string) => `${n} exportées en ${format}`,
+    crmSyncedToast: (n: number, crm: string) => `${n} synchronisées avec ${crm}`,
     enrichToast: (n: number) => `Enrichissement de ${n} ${n === 1 ? "entreprise" : "entreprises"}…`,
     lookalikeToast: (n: number) => `Recherche de profils similaires à partir de ${n} sélectionnées…`,
     addCompany: "Trouver des entreprises",
@@ -249,7 +254,8 @@ const COPY = {
     title: "Unternehmen",
     description:
       "Alle Unternehmen, die du gefunden hast — aus Suchen, Importen & Listen. Wähle aus, um anzureichern, zu exportieren oder zu einer Liste hinzuzufügen.",
-    exportedToast: (n: number) => `${n} als CSV exportiert`,
+    exportedToast: (n: number, format: string) => `${n} als ${format} exportiert`,
+    crmSyncedToast: (n: number, crm: string) => `${n} mit ${crm} synchronisiert`,
     enrichToast: (n: number) => `Reichere ${n} Unternehmen an…`,
     lookalikeToast: (n: number) => `Suche Lookalikes aus ${n} ausgewählten…`,
     addCompany: "Unternehmen finden",
@@ -296,7 +302,8 @@ const COPY = {
     title: "Empresas",
     description:
       "Todas as empresas que encontrou — de pesquisas, importações e listas. Selecione para enriquecer, exportar ou adicionar a uma lista.",
-    exportedToast: (n: number) => `Exportadas ${n} para CSV`,
+    exportedToast: (n: number, format: string) => `Exportadas ${n} para ${format}`,
+    crmSyncedToast: (n: number, crm: string) => `Exportadas ${n} para ${crm}`,
     enrichToast: (n: number) => `A enriquecer ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `A procurar semelhantes a partir de ${n} selecionadas…`,
     addCompany: "Encontrar empresas",
@@ -343,7 +350,8 @@ const COPY = {
     title: "Empresas",
     description:
       "Todas as empresas que você encontrou — de buscas, importações e listas. Selecione para enriquecer, exportar ou adicionar a uma lista.",
-    exportedToast: (n: number) => `Exportadas ${n} para CSV`,
+    exportedToast: (n: number, format: string) => `Exportadas ${n} para ${format}`,
+    crmSyncedToast: (n: number, crm: string) => `Exportadas ${n} para ${crm}`,
     enrichToast: (n: number) => `Enriquecendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `Buscando semelhantes a partir de ${n} selecionadas…`,
     addCompany: "Encontrar empresas",
@@ -400,7 +408,7 @@ export default function Companies() {
   const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [bulkList, setBulkList] = React.useState(false)
-  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
+  const [exportOpen, setExportOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
@@ -451,9 +459,14 @@ export default function Companies() {
   // (e.g. by paging through and selecting page-by-page past the cap).
   const addIdsArr = [...selectedIds].slice(0, MAX_ENRICH_BATCH)
 
-  function exportSelected() {
+  function confirmExport(opts: { format: ExportFormat }) {
+    if (opts.format === "crm") {
+      toast.success(c.crmSyncedToast(selectedAccounts.length, CONNECTED_CRM_PROVIDER.name))
+      sel.clear()
+      return
+    }
     downloadCsv(
-      "companies.csv",
+      opts.format === "excel" ? "companies.xlsx" : "companies.csv",
       ["Company", "Industry", "Domain", "Tier", "Health", "Pipeline"],
       selectedAccounts.map((a) => [
         a.name,
@@ -464,7 +477,7 @@ export default function Companies() {
         a.pipeline,
       ])
     )
-    toast.success(c.exportedToast(selectedAccounts.length))
+    toast.success(c.exportedToast(selectedAccounts.length, opts.format === "excel" ? "Excel" : "CSV"))
   }
   // Lookalike is a kind of search — hand the seed to the Search page.
   function findLookalikes() {
@@ -630,10 +643,9 @@ export default function Companies() {
         count={selectedIds.size}
         capNote={overCap ? c.capNote(MAX_ENRICH_BATCH) : undefined}
         onClear={sel.clear}
-        onExport={exportSelected}
+        onExport={() => setExportOpen(true)}
         onEnrich={() => toast.success(c.enrichToast(selectedIds.size))}
         onAddToList={() => setBulkList(true)}
-        onAddToCrm={() => setBulkCrmOpen(true)}
         onLookalikes={findLookalikes}
         onFindContacts={() => setFindContactsOpen(true)}
       />
@@ -646,11 +658,11 @@ export default function Companies() {
         ids={addIdsArr}
       />
 
-      <BulkCrmSyncDialog
-        open={bulkCrmOpen}
-        onOpenChange={setBulkCrmOpen}
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
         count={selectedIds.size}
-        onDone={sel.clear}
+        onConfirm={confirmExport}
       />
 
       <ColumnManager

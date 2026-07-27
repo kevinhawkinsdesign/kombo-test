@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { useLocale } from "@/lib/locale"
 import { currentUser } from "@/lib/mock-data"
-import { listStore } from "@/lib/store"
+import { listStore, useLists } from "@/lib/store"
 import type { ProspectList } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -30,6 +30,7 @@ const ASSIGN_COPY = {
         ? "New companies entering this list are assigned to this teammate."
         : "New prospects entering this list are assigned to this teammate.",
     unassigned: "Unassigned",
+    newListName: (n: number) => `New list ${n}`,
   },
   es: {
     assignTo: "Responsable",
@@ -38,6 +39,7 @@ const ASSIGN_COPY = {
         ? "Las nuevas empresas que entren en esta lista se asignan a este compañero."
         : "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
     unassigned: "Sin asignar",
+    newListName: (n: number) => `Nueva lista ${n}`,
   },
   it: {
     assignTo: "Proprietario",
@@ -46,6 +48,7 @@ const ASSIGN_COPY = {
         ? "Le nuove aziende che entrano in questa lista vengono assegnate a questo collega."
         : "I nuovi prospect che entrano in questa lista vengono assegnati a questo collega.",
     unassigned: "Non assegnato",
+    newListName: (n: number) => `Nuova lista ${n}`,
   },
   fr: {
     assignTo: "Propriétaire",
@@ -54,6 +57,7 @@ const ASSIGN_COPY = {
         ? "Les nouvelles entreprises qui entrent dans cette liste sont attribuées à ce membre de l'équipe."
         : "Les nouveaux prospects qui entrent dans cette liste sont attribués à ce membre de l'équipe.",
     unassigned: "Non attribué",
+    newListName: (n: number) => `Nouvelle liste ${n}`,
   },
   de: {
     assignTo: "Owner",
@@ -62,6 +66,7 @@ const ASSIGN_COPY = {
         ? "Neue Unternehmen in dieser Liste werden diesem Teammitglied zugewiesen."
         : "Neue Prospects in dieser Liste werden diesem Teammitglied zugewiesen.",
     unassigned: "Nicht zugewiesen",
+    newListName: (n: number) => `Neue Liste ${n}`,
   },
   pt: {
     assignTo: "Proprietário",
@@ -70,6 +75,7 @@ const ASSIGN_COPY = {
         ? "As novas empresas que entram nesta lista são atribuídas a este membro da equipa."
         : "Os novos prospects que entram nesta lista são atribuídos a este membro da equipa.",
     unassigned: "Não atribuído",
+    newListName: (n: number) => `Nova lista ${n}`,
   },
   pt_BR: {
     assignTo: "Proprietário",
@@ -78,6 +84,7 @@ const ASSIGN_COPY = {
         ? "As novas empresas que entram nesta lista são atribuídas a este membro do time."
         : "Os novos prospects que entram nesta lista são atribuídos a este membro do time.",
     unassigned: "Não atribuído",
+    newListName: (n: number) => `Nova lista ${n}`,
   },
 } as const
 
@@ -104,6 +111,7 @@ export function ListFormDialog({
   const navigate = useNavigate()
   const { locale } = useLocale()
   const ac = ASSIGN_COPY[locale]
+  const lists = useLists()
   const [name, setName] = React.useState("")
   const [color, setColor] = React.useState<string>(PRESET_COLORS[0])
   const [kind, setKind] = React.useState<"people" | "company">("people")
@@ -118,7 +126,9 @@ export function ListFormDialog({
   if (open !== wasOpen) {
     setWasOpen(open)
     if (open) {
-      setName(list?.name ?? "")
+      // New lists get an auto-populated placeholder name (nothing seeds it
+      // for edit mode, which keeps the list's real name).
+      setName(list?.name ?? ac.newListName(lists.length + 1))
       setColor(list?.color ?? PRESET_COLORS[0])
       setKind(list?.kind ?? "people")
       // New lists default to you as owner; editing keeps whatever the list

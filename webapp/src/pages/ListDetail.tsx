@@ -36,8 +36,8 @@ import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
-import { BulkCrmSyncDialog } from "@/components/common/BulkCrmSyncDialog"
-import { ExportDialog } from "@/components/common/ExportDialog"
+import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
+import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { downloadCsv } from "@/lib/csv"
 import {
   PEOPLE_COLUMNS,
@@ -78,8 +78,9 @@ const COPY = {
     edit: "Edit",
     deleteList: "Delete list",
     export: "Export",
-    exported: "Exported to CSV",
-    exportedAndSent: (email: string) => `Exported to CSV and sent to ${email}`,
+    exported: (format: string) => `Exported to ${format}`,
+    exportedAndSent: (format: string, email: string) => `Exported to ${format} and sent to ${email}`,
+    crmSynced: (crm: string) => `Synced to ${crm}`,
     buildPlaylist: "Build a playlist",
     linkToCampaign: "Link to campaign",
     prospectsHeading: "Prospects",
@@ -173,8 +174,9 @@ const COPY = {
     edit: "Editar",
     deleteList: "Eliminar lista",
     export: "Exportar",
-    exported: "Exportado a CSV",
-    exportedAndSent: (email: string) => `Exportado a CSV y enviado a ${email}`,
+    exported: (format: string) => `Exportado a ${format}`,
+    exportedAndSent: (format: string, email: string) => `Exportado a ${format} y enviado a ${email}`,
+    crmSynced: (crm: string) => `Sincronizado con ${crm}`,
     buildPlaylist: "Crear playlist",
     linkToCampaign: "Vincular a campaña",
     prospectsHeading: "Prospectos",
@@ -269,8 +271,9 @@ const COPY = {
     edit: "Modifica",
     deleteList: "Elimina lista",
     export: "Esporta",
-    exported: "Esportato in CSV",
-    exportedAndSent: (email: string) => `Esportato in CSV e inviato a ${email}`,
+    exported: (format: string) => `Esportato in ${format}`,
+    exportedAndSent: (format: string, email: string) => `Esportato in ${format} e inviato a ${email}`,
+    crmSynced: (crm: string) => `Sincronizzato con ${crm}`,
     buildPlaylist: "Crea una playlist",
     linkToCampaign: "Collega a una campagna",
     prospectsHeading: "Prospect",
@@ -364,8 +367,9 @@ const COPY = {
     edit: "Modifier",
     deleteList: "Supprimer la liste",
     export: "Exporter",
-    exported: "Exporté au format CSV",
-    exportedAndSent: (email: string) => `Exporté au format CSV et envoyé à ${email}`,
+    exported: (format: string) => `Exporté au format ${format}`,
+    exportedAndSent: (format: string, email: string) => `Exporté au format ${format} et envoyé à ${email}`,
+    crmSynced: (crm: string) => `Synchronisé avec ${crm}`,
     buildPlaylist: "Créer une playlist",
     linkToCampaign: "Lier à une campagne",
     prospectsHeading: "Prospects",
@@ -459,8 +463,9 @@ const COPY = {
     edit: "Bearbeiten",
     deleteList: "Liste löschen",
     export: "Exportieren",
-    exported: "Als CSV exportiert",
-    exportedAndSent: (email: string) => `Als CSV exportiert und an ${email} gesendet`,
+    exported: (format: string) => `Als ${format} exportiert`,
+    exportedAndSent: (format: string, email: string) => `Als ${format} exportiert und an ${email} gesendet`,
+    crmSynced: (crm: string) => `Mit ${crm} synchronisiert`,
     buildPlaylist: "Playlist erstellen",
     linkToCampaign: "Mit Kampagne verknüpfen",
     prospectsHeading: "Prospects",
@@ -554,8 +559,9 @@ const COPY = {
     edit: "Editar",
     deleteList: "Eliminar lista",
     export: "Exportar",
-    exported: "Exportado para CSV",
-    exportedAndSent: (email: string) => `Exportado para CSV e enviado para ${email}`,
+    exported: (format: string) => `Exportado para ${format}`,
+    exportedAndSent: (format: string, email: string) => `Exportado para ${format} e enviado para ${email}`,
+    crmSynced: (crm: string) => `Sincronizado com ${crm}`,
     buildPlaylist: "Criar uma playlist",
     linkToCampaign: "Associar a uma campanha",
     prospectsHeading: "Prospects",
@@ -649,8 +655,9 @@ const COPY = {
     edit: "Editar",
     deleteList: "Excluir lista",
     export: "Exportar",
-    exported: "Exportado para CSV",
-    exportedAndSent: (email: string) => `Exportado para CSV e enviado para ${email}`,
+    exported: (format: string) => `Exportado para ${format}`,
+    exportedAndSent: (format: string, email: string) => `Exportado para ${format} e enviado para ${email}`,
+    crmSynced: (crm: string) => `Sincronizado com ${crm}`,
     buildPlaylist: "Criar uma playlist",
     linkToCampaign: "Vincular a uma campanha",
     prospectsHeading: "Prospects",
@@ -761,7 +768,6 @@ export default function ListDetail() {
   const [rowEnrichProspect, setRowEnrichProspect] = React.useState<Prospect | null>(null)
   const [bulkAddOpen, setBulkAddOpen] = React.useState(false)
   const [bulkMoveOpen, setBulkMoveOpen] = React.useState(false)
-  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
   const [exportOpen, setExportOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
@@ -833,16 +839,22 @@ export default function ListDetail() {
     toast.success(c.removedCount(selectedCount))
     sel.clear()
   }
-  function exportSelected(opts: { sendTo?: string } = {}) {
+  function confirmExport(opts: { format: ExportFormat; sendTo?: string }) {
+    if (opts.format === "crm") {
+      toast.success(c.crmSynced(CONNECTED_CRM_PROVIDER.name))
+      sel.clear()
+      return
+    }
+    const formatLabel = opts.format === "excel" ? "Excel" : "CSV"
     if (isCompany) {
       downloadCsv(
-        "companies.csv",
+        opts.format === "excel" ? "companies.xlsx" : "companies.csv",
         ["Company", "Industry", "Domain", "Tier"],
         selectedAccounts.map((a) => [a.name, a.industry, a.domain, a.tier])
       )
     } else {
       downloadCsv(
-        "people.csv",
+        opts.format === "excel" ? "people.xlsx" : "people.csv",
         ["Name", "Title", "Company", "Email", "Location"],
         selectedMembers.map((p) => [
           `${p.firstName} ${p.lastName}`,
@@ -853,7 +865,9 @@ export default function ListDetail() {
         ])
       )
     }
-    toast.success(opts.sendTo ? c.exportedAndSent(opts.sendTo) : c.exported)
+    toast.success(
+      opts.sendTo ? c.exportedAndSent(formatLabel, opts.sendTo) : c.exported(formatLabel)
+    )
     sel.clear()
   }
 
@@ -885,7 +899,7 @@ export default function ListDetail() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => toast.success(c.exported)}
+            onClick={() => toast.success(c.exported("CSV"))}
           >
             <Download className="size-4" />
             {c.export}
@@ -1106,7 +1120,6 @@ export default function ListDetail() {
         onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
         onAddToList={() => setBulkAddOpen(true)}
         onMoveToList={() => setBulkMoveOpen(true)}
-        onAddToCrm={() => setBulkCrmOpen(true)}
         extra={{
           label: c.removeFromListAction,
           icon: <X className="size-4" />,
@@ -1119,7 +1132,7 @@ export default function ListDetail() {
         open={exportOpen}
         onOpenChange={setExportOpen}
         count={selectedCount}
-        onConfirm={exportSelected}
+        onConfirm={confirmExport}
       />
 
       <BulkAddDialog
@@ -1142,13 +1155,6 @@ export default function ListDetail() {
         excludeListId={listId}
         moveFromListId={listId}
         skipCostConfirm
-        onDone={sel.clear}
-      />
-
-      <BulkCrmSyncDialog
-        open={bulkCrmOpen}
-        onOpenChange={setBulkCrmOpen}
-        count={selectedCount}
         onDone={sel.clear}
       />
 

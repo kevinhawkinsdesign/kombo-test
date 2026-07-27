@@ -3105,12 +3105,7 @@ export default function CampaignDetail() {
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <AutomationStatusBox
-              autoPauseOnReply={camp.autoPauseOnReply ?? true}
-              onToggle={(next) =>
-                campaignStore.update(camp.id, { autoPauseOnReply: next })
-              }
-            />
+            <AutomationStatusBox autoPauseOnReply={camp.autoPauseOnReply ?? true} />
             <SequenceCostSummary steps={draft.steps} />
           </div>
           <div className="flex flex-wrap justify-end gap-2">
@@ -4200,12 +4195,20 @@ export default function CampaignDetail() {
         onInsert={insertStepFromTemplate}
         vars={SAMPLE_DATA}
         locale={locale}
+        onBack={() => {
+          setTemplatePickerOpen(false)
+          setStepPickerOpen(true)
+        }}
       />
 
       <PromptPickerDialog
         open={promptPickerOpen}
         onOpenChange={setPromptPickerOpen}
         onInsert={insertStepFromPrompt}
+        onBack={() => {
+          setPromptPickerOpen(false)
+          setStepPickerOpen(true)
+        }}
       />
 
       {/* Same pickers, opened from the step editor's toolbar — these swap

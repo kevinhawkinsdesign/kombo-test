@@ -11,18 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { PerCompanyCap } from "@/components/common/PerCompanyCap"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { useLocale } from "@/lib/locale"
-import { CRM_PROVIDERS } from "@/lib/mock-depth"
-
-// The button shows this CRM's logo — the one a bulk push actually lands in
-// today. Falls back to the catalog's first entry if nothing is connected.
-const crmLogoProvider =
-  CRM_PROVIDERS.find((provider) => provider.connected) ?? CRM_PROVIDERS[0]
 
 const COPY = {
   en: {
@@ -31,7 +20,6 @@ const COPY = {
     enrich: "Enrich",
     addToList: "Add to list",
     moveToList: "Move to list",
-    addToCrm: "Add to CRM",
     lookalikes: "Find lookalikes",
     findContacts: "Find prospects",
     clear: "Clear",
@@ -44,7 +32,6 @@ const COPY = {
     enrich: "Enriquecer",
     addToList: "Añadir a lista",
     moveToList: "Mover a lista",
-    addToCrm: "Añadir al CRM",
     lookalikes: "Buscar similares",
     findContacts: "Buscar prospectos",
     clear: "Limpiar",
@@ -57,7 +44,6 @@ const COPY = {
     enrich: "Arricchisci",
     addToList: "Aggiungi a lista",
     moveToList: "Sposta in lista",
-    addToCrm: "Aggiungi al CRM",
     lookalikes: "Trova simili",
     findContacts: "Trova prospect",
     clear: "Cancella",
@@ -70,7 +56,6 @@ const COPY = {
     enrich: "Enrichir",
     addToList: "Ajouter à une liste",
     moveToList: "Déplacer vers une liste",
-    addToCrm: "Ajouter au CRM",
     lookalikes: "Trouver des similaires",
     findContacts: "Trouver des prospects",
     clear: "Effacer",
@@ -83,7 +68,6 @@ const COPY = {
     enrich: "Anreichern",
     addToList: "Zu Liste hinzufügen",
     moveToList: "In Liste verschieben",
-    addToCrm: "Zu CRM hinzufügen",
     lookalikes: "Ähnliche finden",
     findContacts: "Prospects finden",
     clear: "Leeren",
@@ -96,7 +80,6 @@ const COPY = {
     enrich: "Enriquecer",
     addToList: "Adicionar a lista",
     moveToList: "Mover para lista",
-    addToCrm: "Adicionar ao CRM",
     lookalikes: "Encontrar semelhantes",
     findContacts: "Encontrar prospects",
     clear: "Limpar",
@@ -109,7 +92,6 @@ const COPY = {
     enrich: "Enriquecer",
     addToList: "Adicionar à lista",
     moveToList: "Mover para lista",
-    addToCrm: "Adicionar ao CRM",
     lookalikes: "Encontrar parecidos",
     findContacts: "Encontrar prospects",
     clear: "Limpar",
@@ -143,7 +125,6 @@ export function BulkActionsBar({
   onEnrich,
   onAddToList,
   onMoveToList,
-  onAddToCrm,
   onLookalikes,
   onFindContacts,
   extra,
@@ -160,7 +141,6 @@ export function BulkActionsBar({
   onAddToList?: () => void
   // Moves the selection into another list, removing it from the current one.
   onMoveToList?: () => void
-  onAddToCrm?: () => void
   onLookalikes?: () => void
   // Companies only: find people at the selected accounts.
   onFindContacts?: () => void
@@ -213,26 +193,6 @@ export function BulkActionsBar({
           <FolderInput className="size-4" />
           {c.moveToList}
         </Button>
-      )}
-      {onAddToCrm && crmLogoProvider && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onAddToCrm}
-              aria-label={c.addToCrm}
-            >
-              <span
-                className="flex size-5 items-center justify-center rounded-sm text-[11px] font-semibold text-white"
-                style={{ backgroundColor: crmLogoProvider.logoColor }}
-              >
-                {crmLogoProvider.name.charAt(0)}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{c.addToCrm}</TooltipContent>
-        </Tooltip>
       )}
       {onFindContacts && (
         <Button variant="outline" size="sm" onClick={onFindContacts}>
