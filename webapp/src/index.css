@@ -201,6 +201,26 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* A slim, unobtrusive horizontal scrollbar for containers that should
+     stay scrollable (unlike .scrollbar-hide's carousels) — tab bars,
+     table wrappers. Vertical scroll is never wanted here, so it's clipped. */
+  .scrollbar-thin-x {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-thin-x::-webkit-scrollbar {
+    height: 6px;
+  }
+  .scrollbar-thin-x::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin-x::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
 }
 
 /* --- WCAG 2.2 AA --- */

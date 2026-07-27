@@ -170,7 +170,7 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
     : closedCampaigns
 
   return (
-    <div className="mb-6 flex items-end gap-0.5 overflow-x-auto border-b">
+    <div className="scrollbar-thin-x mb-6 flex items-end gap-0.5 border-b">
       {tabs.map((t) => {
         const active = t.id === currentId
         return (

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Download } from "lucide-react"
+import { Check, Download } from "lucide-react"
 
 import {
   Dialog,
@@ -12,16 +12,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { useLocale } from "@/lib/locale"
+import { cn } from "@/lib/utils"
 
 export type ExportFormat = "csv" | "excel" | "crm"
 
@@ -165,26 +159,44 @@ export function ExportDialog({
 
         <div className="space-y-2">
           <Label>{c.formatLabel}</Label>
-          <Select value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="csv">{c.csvOption}</SelectItem>
-              <SelectItem value="excel">{c.excelOption}</SelectItem>
-              <SelectItem value="crm">
-                <span className="flex items-center gap-1.5">
-                  <span
-                    className="flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] font-semibold text-white"
-                    style={{ backgroundColor: CONNECTED_CRM_PROVIDER.logoColor }}
-                  >
-                    {CONNECTED_CRM_PROVIDER.name.charAt(0)}
-                  </span>
-                  {CONNECTED_CRM_PROVIDER.name}
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { value: "csv" as const, label: c.csvOption },
+                { value: "excel" as const, label: c.excelOption },
+                { value: "crm" as const, label: CONNECTED_CRM_PROVIDER.name },
+              ] as const
+            ).map((opt) => {
+              const selected = format === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setFormat(opt.value)}
+                  aria-pressed={selected}
+                  className={cn(
+                    "relative flex items-center gap-1.5 rounded-lg border p-2.5 text-sm font-medium transition-colors",
+                    selected
+                      ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
+                      : "hover:bg-muted/60"
+                  )}
+                >
+                  {opt.value === "crm" && (
+                    <span
+                      className="flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] font-semibold text-white"
+                      style={{ backgroundColor: CONNECTED_CRM_PROVIDER.logoColor }}
+                    >
+                      {CONNECTED_CRM_PROVIDER.name.charAt(0)}
+                    </span>
+                  )}
+                  <span className="truncate">{opt.label}</span>
+                  {selected && (
+                    <Check className="text-primary ml-auto size-4 shrink-0" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {isCrm ? (
