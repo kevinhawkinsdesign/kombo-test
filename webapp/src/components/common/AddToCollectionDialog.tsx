@@ -25,6 +25,8 @@ const COPY = {
     searchLists: "Search lists…",
     searchCampaigns: "Search campaigns…",
     create: (q: string) => `Create "${q}"`,
+    createNewList: "Create a new list",
+    createNewCampaign: "Create a new campaign",
     noLists: "No lists match.",
     noCampaigns: "No campaigns match.",
     members: (n: number) => `${n} ${n === 1 ? "member" : "members"}`,
@@ -44,6 +46,8 @@ const COPY = {
     searchLists: "Buscar listas…",
     searchCampaigns: "Buscar campañas…",
     create: (q: string) => `Crear "${q}"`,
+    createNewList: "Crear una nueva lista",
+    createNewCampaign: "Crear una nueva campaña",
     noLists: "Ninguna lista coincide.",
     noCampaigns: "Ninguna campaña coincide.",
     members: (n: number) => `${n} ${n === 1 ? "miembro" : "miembros"}`,
@@ -63,6 +67,8 @@ const COPY = {
     searchLists: "Cerca liste…",
     searchCampaigns: "Cerca campagne…",
     create: (q: string) => `Crea "${q}"`,
+    createNewList: "Crea una nuova lista",
+    createNewCampaign: "Crea una nuova campagna",
     noLists: "Nessuna lista corrisponde.",
     noCampaigns: "Nessuna campagna corrisponde.",
     members: (n: number) => `${n} ${n === 1 ? "membro" : "membri"}`,
@@ -82,6 +88,8 @@ const COPY = {
     searchLists: "Rechercher des listes…",
     searchCampaigns: "Rechercher des campagnes…",
     create: (q: string) => `Créer "${q}"`,
+    createNewList: "Créer une nouvelle liste",
+    createNewCampaign: "Créer une nouvelle campagne",
     noLists: "Aucune liste ne correspond.",
     noCampaigns: "Aucune campagne ne correspond.",
     members: (n: number) => `${n} ${n === 1 ? "membre" : "membres"}`,
@@ -101,6 +109,8 @@ const COPY = {
     searchLists: "Listen durchsuchen…",
     searchCampaigns: "Kampagnen durchsuchen…",
     create: (q: string) => `"${q}" erstellen`,
+    createNewList: "Eine neue Liste erstellen",
+    createNewCampaign: "Eine neue Kampagne erstellen",
     noLists: "Keine passenden Listen.",
     noCampaigns: "Keine passenden Kampagnen.",
     members: (n: number) => `${n} ${n === 1 ? "Mitglied" : "Mitglieder"}`,
@@ -120,6 +130,8 @@ const COPY = {
     searchLists: "Pesquisar listas…",
     searchCampaigns: "Pesquisar campanhas…",
     create: (q: string) => `Criar "${q}"`,
+    createNewList: "Criar uma nova lista",
+    createNewCampaign: "Criar uma nova campanha",
     noLists: "Nenhuma lista corresponde.",
     noCampaigns: "Nenhuma campanha corresponde.",
     members: (n: number) => `${n} ${n === 1 ? "membro" : "membros"}`,
@@ -139,6 +151,8 @@ const COPY = {
     searchLists: "Buscar listas…",
     searchCampaigns: "Buscar campanhas…",
     create: (q: string) => `Criar "${q}"`,
+    createNewList: "Criar uma nova lista",
+    createNewCampaign: "Criar uma nova campanha",
     noLists: "Nenhuma lista corresponde.",
     noCampaigns: "Nenhuma campanha corresponde.",
     members: (n: number) => `${n} ${n === 1 ? "membro" : "membros"}`,
@@ -280,16 +294,21 @@ export function AddToCollectionDialog({
         </div>
 
         <div className="-mx-2 max-h-[50vh] overflow-y-auto px-2">
-          {q && !exactExists && (
+          {!exactExists && (
             <button
               type="button"
               onClick={createAndAdd}
-              className="text-primary hover:bg-accent flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm font-medium"
+              disabled={!q}
+              className="text-primary hover:bg-accent flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm font-medium disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent"
             >
               <span className="bg-primary/10 flex size-8 shrink-0 items-center justify-center rounded-md">
                 <Plus className="size-4" />
               </span>
-              {c.create(query.trim())}
+              {q
+                ? c.create(query.trim())
+                : mode === "list"
+                  ? c.createNewList
+                  : c.createNewCampaign}
             </button>
           )}
 
