@@ -16,11 +16,13 @@ const KEY = "kombo-release-mode"
 // in sync with the `isNew` flags on the nav config in AppSidebar.tsx.
 export const V2_ONLY_PATHS = [
   "/dashboard", // manager dashboard
+  "/workspaces",
   "/signals",
   "/intros",
   "/extension",
   "/sequences",
   "/sequence-builder",
+  "/deals",
 ] as const
 
 // Where v1 lands when the user hits a hidden route. Home ("/") — the
