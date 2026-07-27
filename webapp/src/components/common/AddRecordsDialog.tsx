@@ -1482,6 +1482,7 @@ export function AddRecordsDialog({
                     onSaveThis={openSaveDialog}
                     saveThisLabel={c.save}
                     saveThisDisabled={total === 0}
+                    buttonClassName="h-10"
                   />
                 </div>
 
