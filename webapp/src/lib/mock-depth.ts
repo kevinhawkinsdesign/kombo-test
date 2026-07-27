@@ -236,6 +236,12 @@ export const CRM_PROVIDERS: CrmProvider[] = [
   { id: "dynamics", name: "MS Dynamics", logoColor: "#002050", connected: false, objectName: "Contact" },
 ]
 
+// The single CRM connected today — this app only ever allows one active CRM
+// connection at a time, so a bulk/record push always targets this one
+// directly instead of asking the user to pick among the catalog above.
+export const CONNECTED_CRM_PROVIDER: CrmProvider =
+  CRM_PROVIDERS.find((p) => p.connected) ?? CRM_PROVIDERS[0]
+
 // --- Company growth metrics (headcount, departments, hiring) ---
 export interface AccountMetrics {
   headcount: number[] // 12 monthly points

@@ -117,6 +117,8 @@ import {
   type CatalogFilterDef,
 } from "@/components/common/FilterCatalog"
 import { downloadCsv } from "@/lib/csv"
+import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
+import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
@@ -308,7 +310,7 @@ const COPY = {
     bulkList: "Add to list",
     bulkExport: "Export",
     bulkCrm: "Add to CRM",
-    crmToast: (n: number) => `Sent ${n} to your CRM`,
+    crmSyncedToast: (n: number, crm: string) => `Synced ${n} to ${crm}`,
     noResults: "No results match your search or filters.",
     addFilter: "Add filter",
     filterTypeahead: "Search filters or describe them with AI…",
@@ -611,7 +613,7 @@ const COPY = {
     bulkList: "Añadir a lista",
     bulkExport: "Exportar",
     bulkCrm: "Añadir al CRM",
-    crmToast: (n: number) => `Enviados ${n} a tu CRM`,
+    crmSyncedToast: (n: number, crm: string) => `Sincronizados ${n} con ${crm}`,
     noResults: "Ningún resultado coincide con tu búsqueda o filtros.",
     addFilter: "Añadir filtro",
     filterTypeahead: "Busca filtros o descríbelos con IA…",
@@ -914,7 +916,7 @@ const COPY = {
     bulkList: "Aggiungi a lista",
     bulkExport: "Esporta",
     bulkCrm: "Aggiungi al CRM",
-    crmToast: (n: number) => `Inviati ${n} al tuo CRM`,
+    crmSyncedToast: (n: number, crm: string) => `Sincronizzati ${n} con ${crm}`,
     noResults: "Nessun risultato corrisponde alla tua ricerca o ai filtri.",
     addFilter: "Aggiungi filtro",
     filterTypeahead: "Cerca filtri o descrivili con l'IA…",
@@ -1217,7 +1219,7 @@ const COPY = {
     bulkList: "Ajouter à une liste",
     bulkExport: "Exporter",
     bulkCrm: "Ajouter au CRM",
-    crmToast: (n: number) => `${n} envoyé(s) vers votre CRM`,
+    crmSyncedToast: (n: number, crm: string) => `${n} synchronisés avec ${crm}`,
     noResults: "Aucun résultat ne correspond à votre recherche ou à vos filtres.",
     addFilter: "Ajouter un filtre",
     filterTypeahead: "Recherchez des filtres ou décrivez-les avec l'IA…",
@@ -1520,7 +1522,7 @@ const COPY = {
     bulkList: "Zur Liste hinzufügen",
     bulkExport: "Exportieren",
     bulkCrm: "Zum CRM hinzufügen",
-    crmToast: (n: number) => `${n} an dein CRM gesendet`,
+    crmSyncedToast: (n: number, crm: string) => `${n} mit ${crm} synchronisiert`,
     noResults: "Keine Ergebnisse passen zu deiner Suche oder deinen Filtern.",
     addFilter: "Filter hinzufügen",
     filterTypeahead: "Filter suchen oder mit KI beschreiben…",
@@ -1823,7 +1825,7 @@ const COPY = {
     bulkList: "Adicionar a lista",
     bulkExport: "Exportar",
     bulkCrm: "Adicionar ao CRM",
-    crmToast: (n: number) => `${n} enviados para o teu CRM`,
+    crmSyncedToast: (n: number, crm: string) => `${n} sincronizados com ${crm}`,
     noResults: "Nenhum resultado corresponde à tua pesquisa ou filtros.",
     addFilter: "Adicionar filtro",
     filterTypeahead: "Pesquisa filtros ou descreve-os com IA…",
@@ -2126,7 +2128,7 @@ const COPY = {
     bulkList: "Adicionar a lista",
     bulkExport: "Exportar",
     bulkCrm: "Adicionar ao CRM",
-    crmToast: (n: number) => `${n} enviados para o seu CRM`,
+    crmSyncedToast: (n: number, crm: string) => `${n} sincronizados com ${crm}`,
     noResults: "Nenhum resultado corresponde à sua pesquisa ou filtros.",
     addFilter: "Adicionar filtro",
     filterTypeahead: "Pesquise filtros ou descreva-os com IA…",
@@ -2506,6 +2508,7 @@ export default function Search() {
   // prospects first, then run through the standard enrich dialog.
   const [enrichRows, setEnrichRows] = React.useState<Prospect[]>([])
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+  const [exportOpen, setExportOpen] = React.useState(false)
   const [seed, setSeed] = React.useState<LookalikeSeed | null>(
     incomingSeed ?? (activeTab ? activeTab.seed : null)
   )
@@ -3106,11 +3109,18 @@ export default function Search() {
     setSelected(new Set())
     setBulkListOpen(true)
   }
-  function bulkExportSelected() {
+  function confirmExport(opts: { format: ExportFormat }) {
+    if (opts.format === "crm") {
+      const ids = materializeSelected()
+      if (ids.length === 0) return
+      setSelected(new Set())
+      toast.success(c.crmSyncedToast(ids.length, CONNECTED_CRM_PROVIDER.name))
+      return
+    }
     if (entity === "people") {
       const rows = leads.filter((l) => selected.has(l.id))
       downloadCsv(
-        "prospects.csv",
+        opts.format === "excel" ? "prospects.xlsx" : "prospects.csv",
         ["Name", "Title", "Company", "Region", "Fit"],
         rows.map((l) => [
           `${l.firstName} ${l.lastName}`,
@@ -3123,17 +3133,11 @@ export default function Search() {
     } else {
       const rows = companies.filter((co) => selected.has(co.id))
       downloadCsv(
-        "companies.csv",
+        opts.format === "excel" ? "companies.xlsx" : "companies.csv",
         ["Company", "Industry", "Region", "Headcount", "Fit"],
         rows.map((co) => [co.name, co.industry, co.region, co.headcount, co.fit])
       )
     }
-  }
-  function bulkAddToCrm() {
-    const ids = materializeSelected()
-    if (ids.length === 0) return
-    setSelected(new Set())
-    toast.success(c.crmToast(ids.length))
   }
   // Bulk enrich: people are materialized into real prospects and run through
   // the standard enrich dialog; companies mirror the Companies page's stub.
@@ -3793,10 +3797,9 @@ export default function Search() {
               entity === "people" ? setMaxPerCompany : undefined
             }
             onClear={() => setSelected(new Set())}
-            onExport={bulkExportSelected}
+            onExport={() => setExportOpen(true)}
             onEnrich={bulkEnrich}
             onAddToList={bulkAddToList}
-            onAddToCrm={bulkAddToCrm}
             onLookalikes={bulkLookalikes}
           />
             </>
@@ -3907,6 +3910,13 @@ export default function Search() {
         open={bulkEnrichOpen}
         onOpenChange={setBulkEnrichOpen}
         prospects={enrichRows}
+      />
+
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        count={selectedCount}
+        onConfirm={confirmExport}
       />
     </Page>
   )
@@ -4440,7 +4450,7 @@ function SearchEmptyState({
             variant="outline"
             size="sm"
             onClick={() => {
-              toast.success(c.crmToast(selectedCount))
+              toast.success(c.crmSyncedToast(selectedCount, CONNECTED_CRM_PROVIDER.name))
               setSelected(new Map())
             }}
           >
