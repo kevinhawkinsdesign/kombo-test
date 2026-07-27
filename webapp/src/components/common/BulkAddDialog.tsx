@@ -27,6 +27,8 @@ const COPY = {
     searchLists: "Search lists…",
     searchCampaigns: "Search campaigns…",
     create: (q: string) => `Create "${q}"`,
+    createNewList: "Create a new list",
+    createNewCampaign: "Create a new campaign",
     members: (n: number) => `${n} ${n === 1 ? "member" : "members"}`,
     enrolled: (n: number) => `${n} enrolled`,
     addedToList: (n: number, l: string) => `Added ${n} to ${l}`,
@@ -48,6 +50,8 @@ const COPY = {
     searchLists: "Buscar listas…",
     searchCampaigns: "Buscar campañas…",
     create: (q: string) => `Crear "${q}"`,
+    createNewList: "Crear una nueva lista",
+    createNewCampaign: "Crear una nueva campaña",
     members: (n: number) => `${n} ${n === 1 ? "miembro" : "miembros"}`,
     enrolled: (n: number) => `${n} inscritos`,
     addedToList: (n: number, l: string) => `Añadidos ${n} a ${l}`,
@@ -69,6 +73,8 @@ const COPY = {
     searchLists: "Cerca liste…",
     searchCampaigns: "Cerca campagne…",
     create: (q: string) => `Crea "${q}"`,
+    createNewList: "Crea una nuova lista",
+    createNewCampaign: "Crea una nuova campagna",
     members: (n: number) => `${n} ${n === 1 ? "membro" : "membri"}`,
     enrolled: (n: number) => `${n} iscritti`,
     addedToList: (n: number, l: string) => `Aggiunti ${n} a ${l}`,
@@ -90,6 +96,8 @@ const COPY = {
     searchLists: "Rechercher des listes…",
     searchCampaigns: "Rechercher des campagnes…",
     create: (q: string) => `Créer "${q}"`,
+    createNewList: "Créer une nouvelle liste",
+    createNewCampaign: "Créer une nouvelle campagne",
     members: (n: number) => `${n} ${n === 1 ? "membre" : "membres"}`,
     enrolled: (n: number) => `${n} inscrits`,
     addedToList: (n: number, l: string) => `${n} ajouté(s) à ${l}`,
@@ -111,6 +119,8 @@ const COPY = {
     searchLists: "Listen durchsuchen…",
     searchCampaigns: "Kampagnen durchsuchen…",
     create: (q: string) => `"${q}" erstellen`,
+    createNewList: "Eine neue Liste erstellen",
+    createNewCampaign: "Eine neue Kampagne erstellen",
     members: (n: number) => `${n} ${n === 1 ? "Mitglied" : "Mitglieder"}`,
     enrolled: (n: number) => `${n} angemeldet`,
     addedToList: (n: number, l: string) => `${n} zu ${l} hinzugefügt`,
@@ -132,6 +142,8 @@ const COPY = {
     searchLists: "Pesquisar listas…",
     searchCampaigns: "Pesquisar campanhas…",
     create: (q: string) => `Criar "${q}"`,
+    createNewList: "Criar uma nova lista",
+    createNewCampaign: "Criar uma nova campanha",
     members: (n: number) => `${n} ${n === 1 ? "membro" : "membros"}`,
     enrolled: (n: number) => `${n} inscritos`,
     addedToList: (n: number, l: string) => `${n} adicionados a ${l}`,
@@ -153,6 +165,8 @@ const COPY = {
     searchLists: "Buscar listas…",
     searchCampaigns: "Buscar campanhas…",
     create: (q: string) => `Criar "${q}"`,
+    createNewList: "Criar uma nova lista",
+    createNewCampaign: "Criar uma nova campanha",
     members: (n: number) => `${n} ${n === 1 ? "membro" : "membros"}`,
     enrolled: (n: number) => `${n} inscritos`,
     addedToList: (n: number, l: string) => `${n} adicionados a ${l}`,
@@ -375,16 +389,21 @@ export function BulkAddDialog({
         </div>
 
         <div className="-mx-2 max-h-[50vh] overflow-y-auto px-2">
-          {q && !exactExists && (
+          {!exactExists && (
             <button
               type="button"
               onClick={createAndAdd}
-              className="text-primary hover:bg-accent flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm font-medium"
+              disabled={!q}
+              className="text-primary hover:bg-accent flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm font-medium disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent"
             >
               <span className="bg-primary/10 flex size-8 shrink-0 items-center justify-center rounded-md">
                 <Plus className="size-4" />
               </span>
-              {c.create(query.trim())}
+              {q
+                ? c.create(query.trim())
+                : mode === "list"
+                  ? c.createNewList
+                  : c.createNewCampaign}
             </button>
           )}
 
