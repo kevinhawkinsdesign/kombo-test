@@ -15,8 +15,6 @@ import {
   UserPlus,
   X,
   Sparkles,
-  CheckCircle2,
-  Circle,
   Zap,
   Layers,
   AlertTriangle,
@@ -56,6 +54,8 @@ import {
   type MergeVarGroupKey,
 } from "@/lib/merge-vars"
 import { BackLink } from "@/components/common/BackLink"
+import { EmptyState } from "@/components/common/EmptyState"
+import kaiUrl from "@/assets/kai-pleased.png"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
 import { SaveSequenceTemplateDialog } from "@/components/campaign/SaveSequenceTemplateDialog"
@@ -395,15 +395,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "AI-powered",
     groupOther: "Other",
-    setupTitle: "Finish setting up this campaign",
-    setupDesc: "A campaign needs a sequence and prospects before it can run.",
     setupSequenceLabel: "Build your sequence",
     setupSequenceDesc: "Add the emails and steps this campaign will send.",
     setupSequenceCta: "Build sequence",
     setupProspectsLabel: "Add prospects",
     setupProspectsDesc: "Attach a list or enroll the prospects to contact.",
     setupProspectsCta: "Add prospects",
-    setupDone: "Done",
     thProspect: "Prospect",
     thTitleCompany: "Title / Company",
     thCurrentStep: "Current step",
@@ -418,7 +415,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} removed from campaign`,
     exportedCsv: "Exported to CSV",
     capNote: (max: number) => `Only ${max.toLocaleString()} can be enriched at a time.`,
-    noProspects: "No prospects or companies yet — add some to get started.",
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
     of: "of",
@@ -643,15 +639,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Con IA",
     groupOther: "Otro",
-    setupTitle: "Termina de configurar esta campaña",
-    setupDesc: "Una campaña necesita una secuencia y prospectos antes de ejecutarse.",
     setupSequenceLabel: "Crea tu secuencia",
     setupSequenceDesc: "Añade los correos y pasos que enviará esta campaña.",
     setupSequenceCta: "Crear secuencia",
     setupProspectsLabel: "Añade prospectos",
     setupProspectsDesc: "Vincula una lista o inscribe los prospectos a contactar.",
     setupProspectsCta: "Añadir prospectos",
-    setupDone: "Listo",
     thProspect: "Prospecto",
     thTitleCompany: "Cargo / Empresa",
     thCurrentStep: "Paso actual",
@@ -666,8 +659,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} eliminados de la campaña`,
     exportedCsv: "Exportado a CSV",
     capNote: (max: number) => `Solo se pueden enriquecer ${max.toLocaleString()} a la vez.`,
-    noProspects:
-      "Aún no hay prospectos ni empresas — añade algunos para empezar.",
     noReplies: "Aún no hay respuestas.",
     viewInInbox: "Ver en la bandeja",
     of: "de",
@@ -892,15 +883,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Basato su IA",
     groupOther: "Altro",
-    setupTitle: "Completa la configurazione di questa campagna",
-    setupDesc: "Una campagna ha bisogno di una sequenza e di prospect prima di poter partire.",
     setupSequenceLabel: "Crea la tua sequenza",
     setupSequenceDesc: "Aggiungi le email e i passaggi che questa campagna invierà.",
     setupSequenceCta: "Crea sequenza",
     setupProspectsLabel: "Aggiungi prospect",
     setupProspectsDesc: "Collega una lista o iscrivi i prospect da contattare.",
     setupProspectsCta: "Aggiungi prospect",
-    setupDone: "Fatto",
     thProspect: "Prospect",
     thTitleCompany: "Ruolo / Azienda",
     thCurrentStep: "Passaggio attuale",
@@ -915,7 +903,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} rimossi dalla campagna`,
     exportedCsv: "Esportato in CSV",
     capNote: (max: number) => `Si possono arricchire solo ${max.toLocaleString()} alla volta.`,
-    noProspects: "Ancora nessun prospect o azienda — aggiungine alcuni per iniziare.",
     noReplies: "Ancora nessuna risposta.",
     viewInInbox: "Vedi nella posta in arrivo",
     of: "di",
@@ -1140,15 +1127,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Propulsé par l'IA",
     groupOther: "Autre",
-    setupTitle: "Terminez la configuration de cette campagne",
-    setupDesc: "Une campagne a besoin d'une séquence et de prospects avant de pouvoir démarrer.",
     setupSequenceLabel: "Créez votre séquence",
     setupSequenceDesc: "Ajoutez les e-mails et étapes que cette campagne enverra.",
     setupSequenceCta: "Créer la séquence",
     setupProspectsLabel: "Ajoutez des prospects",
     setupProspectsDesc: "Liez une liste ou inscrivez les prospects à contacter.",
     setupProspectsCta: "Ajouter des prospects",
-    setupDone: "Terminé",
     thProspect: "Prospect",
     thTitleCompany: "Poste / Entreprise",
     thCurrentStep: "Étape actuelle",
@@ -1163,8 +1147,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} retirés de la campagne`,
     exportedCsv: "Exporté en CSV",
     capNote: (max: number) => `Seuls ${max.toLocaleString()} peuvent être enrichis à la fois.`,
-    noProspects:
-      "Pas encore de prospects ni d'entreprises — ajoutez-en pour commencer.",
     noReplies: "Pas encore de réponses.",
     viewInInbox: "Voir dans la boîte de réception",
     of: "sur",
@@ -1389,15 +1371,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "KI-gestützt",
     groupOther: "Sonstiges",
-    setupTitle: "Schließe die Einrichtung dieser Kampagne ab",
-    setupDesc: "Eine Kampagne braucht eine Sequenz und Prospects, bevor sie laufen kann.",
     setupSequenceLabel: "Erstelle deine Sequenz",
     setupSequenceDesc: "Füge die E-Mails und Schritte hinzu, die diese Kampagne senden wird.",
     setupSequenceCta: "Sequenz erstellen",
     setupProspectsLabel: "Prospects hinzufügen",
     setupProspectsDesc: "Verknüpfe eine Liste oder schreibe die zu kontaktierenden Prospects ein.",
     setupProspectsCta: "Prospects hinzufügen",
-    setupDone: "Erledigt",
     thProspect: "Prospect",
     thTitleCompany: "Position / Unternehmen",
     thCurrentStep: "Aktueller Schritt",
@@ -1412,8 +1391,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} aus der Kampagne entfernt`,
     exportedCsv: "Als CSV exportiert",
     capNote: (max: number) => `Es können jeweils nur ${max.toLocaleString()} angereichert werden.`,
-    noProspects:
-      "Noch keine Prospects oder Unternehmen — füge welche hinzu, um loszulegen.",
     noReplies: "Noch keine Antworten.",
     viewInInbox: "Im Posteingang ansehen",
     of: "von",
@@ -1638,15 +1615,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Com IA",
     groupOther: "Outro",
-    setupTitle: "Termine de configurar esta campanha",
-    setupDesc: "Uma campanha precisa de uma sequência e de prospects antes de poder ser executada.",
     setupSequenceLabel: "Crie a sua sequência",
     setupSequenceDesc: "Adicione os e-mails e passos que esta campanha vai enviar.",
     setupSequenceCta: "Criar sequência",
     setupProspectsLabel: "Adicione prospects",
     setupProspectsDesc: "Vincule uma lista ou inscreva os prospects a contactar.",
     setupProspectsCta: "Adicionar prospects",
-    setupDone: "Concluído",
     thProspect: "Prospect",
     thTitleCompany: "Cargo / Empresa",
     thCurrentStep: "Passo atual",
@@ -1661,8 +1635,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} removidos da campanha`,
     exportedCsv: "Exportado para CSV",
     capNote: (max: number) => `Só é possível enriquecer ${max.toLocaleString()} de cada vez.`,
-    noProspects:
-      "Ainda não há prospects nem empresas — adicione alguns para começar.",
     noReplies: "Ainda não há respostas.",
     viewInInbox: "Ver na caixa de entrada",
     of: "de",
@@ -1887,15 +1859,12 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Com IA",
     groupOther: "Outro",
-    setupTitle: "Termine de configurar esta campanha",
-    setupDesc: "Uma campanha precisa de uma sequência e prospects antes de poder rodar.",
     setupSequenceLabel: "Crie sua sequência",
     setupSequenceDesc: "Adicione os e-mails e etapas que esta campanha vai enviar.",
     setupSequenceCta: "Criar sequência",
     setupProspectsLabel: "Adicione prospects",
     setupProspectsDesc: "Vincule uma lista ou inscreva os prospects a contatar.",
     setupProspectsCta: "Adicionar prospects",
-    setupDone: "Concluído",
     thProspect: "Prospect",
     thTitleCompany: "Cargo / Empresa",
     thCurrentStep: "Etapa atual",
@@ -1910,8 +1879,6 @@ const COPY = {
     removedFromCampaignCount: (n: number) => `${n} removidos da campanha`,
     exportedCsv: "Exportado para CSV",
     capNote: (max: number) => `Só é possível enriquecer ${max.toLocaleString()} por vez.`,
-    noProspects:
-      "Ainda não há prospects ou empresas — adicione alguns para começar.",
     noReplies: "Ainda não há respostas.",
     viewInInbox: "Ver na caixa de entrada",
     of: "de",
@@ -2347,7 +2314,6 @@ export default function CampaignDetail() {
     }),
     { sent: 0, opened: 0, replied: 0, bounced: 0 }
   )
-
   const attachedList = campaign.listId
     ? lists.find((l) => l.id === campaign.listId)
     : undefined
@@ -2370,11 +2336,18 @@ export default function CampaignDetail() {
   // Guided setup: a campaign is ready once it has a sequence and a prospect
   // source (an attached list or manually-enrolled prospects).
   const hasSequence = steps.length > 0
+  // Live view of the draft (not yet-applied) sequence — used to gate the
+  // Sequence tab's own empty state, since a user can add a first step
+  // before clicking "Apply changes" (which is what hasSequence reflects).
+  const sequenceIsEmpty = draft.steps.length === 0
   const hasFeed = hasProspects || Boolean(attachedList)
   // A campaign that has been launched at least once — active, paused
   // mid-run, or finished. Only a "draft" (never launched) has nothing to
   // show yet.
   const hasPerformanceData = campaign.status !== "draft"
+  // Conversations only exist once messages have actually gone out — a
+  // launched campaign that hasn't sent anything yet has nothing to show here.
+  const hasConversations = hasPerformanceData && totals.sent > 0
   const setupComplete = hasSequence && hasFeed
 
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
@@ -3021,45 +2994,17 @@ export default function CampaignDetail() {
         </div>
       </div>
 
-      {/* Setup guidance lives above the tabs (not just Overview) since a
-          draft campaign — exactly who needs this most — has no Overview
-          tab yet and may be looking at Sequence or any other tab. */}
-      {!setupComplete && (
-        <Card className="border-primary/30 bg-primary/[0.03] mt-6">
-          <CardHeader>
-            <CardTitle className="text-base">{c.setupTitle}</CardTitle>
-            <CardDescription>{c.setupDesc}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <SetupStep
-              done={hasSequence}
-              label={c.setupSequenceLabel}
-              desc={c.setupSequenceDesc}
-              actionLabel={c.setupSequenceCta}
-              doneLabel={c.setupDone}
-              onAction={() => setTab("sequence")}
-            />
-            <SetupStep
-              done={hasFeed}
-              label={c.setupProspectsLabel}
-              desc={c.setupProspectsDesc}
-              actionLabel={c.setupProspectsCta}
-              doneLabel={c.setupDone}
-              onAction={() => setTab("prospects")}
-            />
-          </CardContent>
-        </Card>
-      )}
-
       <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList>
           {hasPerformanceData && (
             <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
           )}
           <TabsTrigger value="sequence">{c.tabSequence}</TabsTrigger>
-          <TabsTrigger value="preview">{c.tabPreview}</TabsTrigger>
           <TabsTrigger value="prospects">{c.tabProspects}</TabsTrigger>
-          <TabsTrigger value="conversations">{c.tabConversations}</TabsTrigger>
+          <TabsTrigger value="preview">{c.tabPreview}</TabsTrigger>
+          {hasConversations && (
+            <TabsTrigger value="conversations">{c.tabConversations}</TabsTrigger>
+          )}
           <TabsTrigger value="settings">{c.tabSettings}</TabsTrigger>
         </TabsList>
 
@@ -3156,6 +3101,26 @@ export default function CampaignDetail() {
 
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
+          {sequenceIsEmpty ? (
+            <EmptyState
+              icon={<img src={kaiUrl} alt="" className="size-16" />}
+              title={c.setupSequenceLabel}
+              description={c.setupSequenceDesc}
+            >
+              <Button
+                variant="volt"
+                onClick={() => {
+                  setPendingGhost({ kind: "add" })
+                  setPendingParallelStep(null)
+                  setStepPickerOpen(true)
+                }}
+              >
+                <Plus className="size-4" />
+                {c.setupSequenceCta}
+              </Button>
+            </EmptyState>
+          ) : (
+          <>
           <div className="grid gap-4 sm:grid-cols-2">
             <AutomationStatusBox
               autoPauseOnReply={camp.autoPauseOnReply ?? true}
@@ -3870,6 +3835,8 @@ export default function CampaignDetail() {
               {c.applyChanges}
             </Button>
           </div>
+          </>
+          )}
         </TabsContent>
 
         {/* Preview — every step's actual text, personalized per lead. */}
@@ -4006,22 +3973,23 @@ export default function CampaignDetail() {
               />
             </>
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-muted-foreground text-sm">
-                  {c.noProspects}
-                </p>
-                <Button variant="outline" onClick={() => setAddOpen(true)}>
-                  <UserPlus className="size-4" />
-                  {c.addProspects}
-                </Button>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={<img src={kaiUrl} alt="" className="size-16" />}
+              title={c.setupProspectsLabel}
+              description={c.setupProspectsDesc}
+            >
+              <Button variant="volt" onClick={() => setAddOpen(true)}>
+                <UserPlus className="size-4" />
+                {c.setupProspectsCta}
+              </Button>
+            </EmptyState>
           )}
         </TabsContent>
 
         {/* Conversations — a plain table (not cards) so it stays usable and
-            paginates cleanly at enterprise scale (1000+ replies). */}
+            paginates cleanly at enterprise scale (1000+ replies). Only once
+            the campaign has actually sent messages. */}
+        {hasConversations && (
         <TabsContent value="conversations" className="mt-4 space-y-3">
           {replies.length > 0 ? (
             (() => {
@@ -4196,6 +4164,7 @@ export default function CampaignDetail() {
             </Card>
           )}
         </TabsContent>
+        )}
 
         {/* Settings — Sending, Linked List, Automations. Also surfaced in
             Overview until the campaign has performance data (see above). */}
@@ -4473,53 +4442,6 @@ function TimeDelayField({
             <X className="size-4" />
           </Button>
         </div>
-      )}
-    </div>
-  )
-}
-
-// One row of the guided-setup checklist on the campaign Overview.
-function SetupStep({
-  done,
-  label,
-  desc,
-  actionLabel,
-  doneLabel,
-  onAction,
-}: {
-  done: boolean
-  label: string
-  desc: string
-  actionLabel: string
-  doneLabel: string
-  onAction: () => void
-}) {
-  return (
-    <div className="bg-background flex items-center gap-3 rounded-lg border px-3 py-2.5">
-      {done ? (
-        <CheckCircle2 className="text-chart-1 size-5 shrink-0" />
-      ) : (
-        <Circle className="text-muted-foreground size-5 shrink-0" />
-      )}
-      <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            "text-sm font-medium",
-            done && "text-muted-foreground"
-          )}
-        >
-          {label}
-        </p>
-        <p className="text-muted-foreground text-xs">{desc}</p>
-      </div>
-      {done ? (
-        <span className="text-chart-1 shrink-0 text-xs font-medium">
-          {doneLabel}
-        </span>
-      ) : (
-        <Button size="sm" onClick={onAction} className="shrink-0">
-          {actionLabel}
-        </Button>
       )}
     </div>
   )
