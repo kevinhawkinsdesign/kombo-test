@@ -33,7 +33,8 @@ const COPY = {
     noSearches: "No saved searches for this record type yet.",
     noCrmLists: "No CRM lists for this record type.",
     resultCount: (n: number) => `${n.toLocaleString()} results`,
-    current: (name: string) => `Currently linked to "${name}"`,
+    currentViaSearch: (name: string) => `Currently linked to saved search "${name}"`,
+    currentViaCrm: (name: string) => `Currently linked to CRM list "${name}"`,
     removeSource: "Remove source",
     cancel: "Cancel",
     link: "Link source",
@@ -51,7 +52,8 @@ const COPY = {
     noSearches: "Aún no hay búsquedas guardadas para este tipo de registro.",
     noCrmLists: "No hay listas del CRM para este tipo de registro.",
     resultCount: (n: number) => `${n.toLocaleString()} resultados`,
-    current: (name: string) => `Vinculada actualmente a "${name}"`,
+    currentViaSearch: (name: string) => `Actualmente vinculada a la búsqueda guardada "${name}"`,
+    currentViaCrm: (name: string) => `Actualmente vinculada a la lista del CRM "${name}"`,
     removeSource: "Quitar fuente",
     cancel: "Cancelar",
     link: "Vincular fuente",
@@ -69,7 +71,8 @@ const COPY = {
     noSearches: "Ancora nessuna ricerca salvata per questo tipo di record.",
     noCrmLists: "Nessuna lista del CRM per questo tipo di record.",
     resultCount: (n: number) => `${n.toLocaleString()} risultati`,
-    current: (name: string) => `Attualmente collegata a "${name}"`,
+    currentViaSearch: (name: string) => `Attualmente collegata alla ricerca salvata "${name}"`,
+    currentViaCrm: (name: string) => `Attualmente collegata alla lista del CRM "${name}"`,
     removeSource: "Rimuovi fonte",
     cancel: "Annulla",
     link: "Collega fonte",
@@ -87,7 +90,8 @@ const COPY = {
     noSearches: "Aucune recherche enregistrée pour ce type de fiche.",
     noCrmLists: "Aucune liste du CRM pour ce type de fiche.",
     resultCount: (n: number) => `${n.toLocaleString()} résultats`,
-    current: (name: string) => `Actuellement liée à « ${name} »`,
+    currentViaSearch: (name: string) => `Actuellement liée à la recherche enregistrée « ${name} »`,
+    currentViaCrm: (name: string) => `Actuellement liée à la liste du CRM « ${name} »`,
     removeSource: "Retirer la source",
     cancel: "Annuler",
     link: "Lier la source",
@@ -105,7 +109,8 @@ const COPY = {
     noSearches: "Noch keine gespeicherten Suchen für diesen Datensatztyp.",
     noCrmLists: "Keine CRM-Listen für diesen Datensatztyp.",
     resultCount: (n: number) => `${n.toLocaleString()} Ergebnisse`,
-    current: (name: string) => `Aktuell verknüpft mit „${name}“`,
+    currentViaSearch: (name: string) => `Aktuell mit der gespeicherten Suche „${name}“ verknüpft`,
+    currentViaCrm: (name: string) => `Aktuell mit der CRM-Liste „${name}“ verknüpft`,
     removeSource: "Quelle entfernen",
     cancel: "Abbrechen",
     link: "Quelle verknüpfen",
@@ -123,7 +128,8 @@ const COPY = {
     noSearches: "Ainda não há pesquisas guardadas para este tipo de registo.",
     noCrmLists: "Não há listas do CRM para este tipo de registo.",
     resultCount: (n: number) => `${n.toLocaleString()} resultados`,
-    current: (name: string) => `Atualmente associada a "${name}"`,
+    currentViaSearch: (name: string) => `Atualmente associada à pesquisa guardada "${name}"`,
+    currentViaCrm: (name: string) => `Atualmente associada à lista do CRM "${name}"`,
     removeSource: "Remover fonte",
     cancel: "Cancelar",
     link: "Associar fonte",
@@ -141,7 +147,8 @@ const COPY = {
     noSearches: "Ainda não há buscas salvas para esse tipo de registro.",
     noCrmLists: "Não há listas do CRM para esse tipo de registro.",
     resultCount: (n: number) => `${n.toLocaleString()} resultados`,
-    current: (name: string) => `Atualmente vinculada a "${name}"`,
+    currentViaSearch: (name: string) => `Atualmente vinculada à busca salva "${name}"`,
+    currentViaCrm: (name: string) => `Atualmente vinculada à lista do CRM "${name}"`,
     removeSource: "Remover fonte",
     cancel: "Cancelar",
     link: "Vincular fonte",
@@ -244,7 +251,9 @@ export function AddSourceDialog({
 
         {currentName && (
           <div className="bg-muted/40 flex items-center justify-between gap-2 rounded-lg border p-2.5 text-sm">
-            <span className="min-w-0 truncate">{c.current(currentName)}</span>
+            <span className="min-w-0 truncate">
+              {currentSearch ? c.currentViaSearch(currentName) : c.currentViaCrm(currentName)}
+            </span>
             <Button
               variant="ghost"
               size="sm"
