@@ -65,6 +65,7 @@ import { listTabsStore } from "@/lib/list-tabs"
 import { ListTabBar } from "@/components/lists/ListTabBar"
 import { isEnriched } from "@/lib/enrichment"
 import { usePagedSelection } from "@/lib/use-paged-selection"
+import { useTableSortFilter } from "@/lib/table-sort-filter"
 import { formatDate } from "@/lib/format"
 import type { Account, Prospect, ProspectList } from "@/lib/types"
 
@@ -784,8 +785,10 @@ export default function ListDetail() {
   const accountMembers: Account[] = list
     ? (list.accountIds ?? []).map(getAccount).filter((a): a is Account => Boolean(a))
     : []
+  const peopleTsf = useTableSortFilter(allPeopleColumns, members)
+  const companyTsf = useTableSortFilter(allCompanyColumns, accountMembers)
   const sel = usePagedSelection<Prospect | Account>(
-    isCompany ? accountMembers : members,
+    isCompany ? companyTsf.rows : peopleTsf.rows,
     (r) => r.id,
     list?.id
   )
@@ -987,7 +990,7 @@ export default function ListDetail() {
         onSelectAllCapped={sel.selectAllCapped}
         pageStart={sel.pageStart}
         pageEnd={sel.pageEnd}
-        total={isCompany ? accountMembers.length : members.length}
+        total={isCompany ? companyTsf.rows.length : peopleTsf.rows.length}
         page={sel.page}
         pageCount={sel.pageCount}
         onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
@@ -1027,6 +1030,11 @@ export default function ListDetail() {
               }}
             />
           )}
+          sort={companyTsf.sort}
+          onSortChange={companyTsf.setSort}
+          filters={companyTsf.filters}
+          onFilterChange={companyTsf.setFilter}
+          filterRows={accountMembers}
         />
       ) : (
         <DataTable
@@ -1039,6 +1047,11 @@ export default function ListDetail() {
           onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
           onRowClick={(p) => navigate(`/prospects/${p.id}`)}
           empty={c.emptyState}
+          sort={peopleTsf.sort}
+          onSortChange={peopleTsf.setSort}
+          filters={peopleTsf.filters}
+          onFilterChange={peopleTsf.setFilter}
+          filterRows={members}
           selection={{
             isSelected: (p) => selectedIds.has(p.id),
             toggle: sel.toggleRow,

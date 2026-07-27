@@ -46,6 +46,7 @@ import { useAccounts, accountStore, useLists } from "@/lib/store"
 import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
 import { usePagedSelection } from "@/lib/use-paged-selection"
+import { useTableSortFilter } from "@/lib/table-sort-filter"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Account, AccountTier } from "@/lib/types"
 
@@ -437,8 +438,9 @@ export default function Companies() {
     return matchesQuery && matchesTier && matchesList
   })
 
+  const tsf = useTableSortFilter(allColumns, results)
   const sel = usePagedSelection(
-    results,
+    tsf.rows,
     (a) => a.id,
     `${query}|${tier}|${listFilter}`,
     RESULTS_PER_PAGE
@@ -580,7 +582,7 @@ export default function Companies() {
         </p>
       )}
 
-      {results.length === 0 ? (
+      {tsf.rows.length === 0 ? (
         <EmptyState description={c.noMatch} />
       ) : (
         <>
@@ -592,7 +594,7 @@ export default function Companies() {
             onSelectAllCapped={sel.selectAllCapped}
             pageStart={sel.pageStart}
             pageEnd={sel.pageEnd}
-            total={results.length}
+            total={tsf.rows.length}
             page={sel.page}
             pageCount={sel.pageCount}
             onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
@@ -615,6 +617,11 @@ export default function Companies() {
               allSelected,
               someSelected,
             }}
+            sort={tsf.sort}
+            onSortChange={tsf.setSort}
+            filters={tsf.filters}
+            onFilterChange={tsf.setFilter}
+            filterRows={results}
           />
         </>
       )}
