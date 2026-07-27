@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Pencil } from "lucide-react"
+import { Clock, Pencil } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -250,22 +250,22 @@ export function SequencePreviewPane({
           for the selected lead, with a day-gap pill between consecutive
           messages (reuses the exact "Wait N days"/"Send immediately" copy
           the sequence canvas already uses for the same delayDays value). */}
-      <div className="min-h-0 space-y-3 overflow-y-auto p-5">
+      <div className="min-h-0 space-y-2 overflow-y-auto p-5">
         {flatSteps.map((step, i) => {
           const meta = channelMeta(step.channel)
           const Icon = meta.Icon
           return (
             <React.Fragment key={step.id}>
               {i > 0 && (
-                <div className="flex items-center gap-3">
-                  <div className="bg-border h-px flex-1" />
-                  <span className="text-muted-foreground text-xs whitespace-nowrap">
+                <div className="relative flex items-center justify-center py-0.5">
+                  <div className="bg-border absolute inset-x-0 top-1/2 h-px -translate-y-1/2" />
+                  <span className="bg-background text-muted-foreground relative z-10 flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs whitespace-nowrap">
+                    <Clock className="size-3" />
                     {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
                   </span>
-                  <div className="bg-border h-px flex-1" />
                 </div>
               )}
-              <div className="space-y-2 rounded-lg border p-4">
+              <div className="space-y-2 rounded-lg border p-3.5">
                 <div className="flex items-center gap-2">
                   <span className="bg-muted text-muted-foreground flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold">
                     {i + 1}
