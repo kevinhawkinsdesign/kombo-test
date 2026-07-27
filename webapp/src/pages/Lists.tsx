@@ -20,7 +20,6 @@ import {
 
 import { Page, PageHeading } from "@/components/layout/Page"
 import { useLocale } from "@/lib/locale"
-import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -68,21 +67,11 @@ const COPY = {
       "The home base for your prospects — and the engine that keeps them flowing.",
     importCsv: "Import",
     newList: "New list",
-    buildPlaylist: "Build a playlist",
-    introTitle: "Playlists: lists that fill, enrich, and reach out on their own",
-    introDescription:
-      "A playlist is a saved search that keeps adding matching prospects, enriches them, and auto-enrolls them into outreach — so your pipeline builds itself.",
-    introPoints: [
-      "Saved search drips in new matching prospects",
-      "Enrich once or keep data fresh continuously",
-      "Auto-enroll new prospects into a sequence",
-      "Or build a simple static list or CSV import",
-    ],
     openList: (name: string) => `Open ${name}`,
     listActions: "List actions",
     edit: "Edit",
     delete: "Delete",
-    live: "Live",
+    dynamicBadge: "Dynamic",
     synced: (date: string) => `Synced ${date}`,
     created: (date: string) => `Created ${date}`,
     deleteTitle: "Delete list?",
@@ -105,7 +94,7 @@ const COPY = {
     exportLabel: "Export",
     exported: "Lists exported to CSV",
     noResults: "No lists match your search.",
-    sortDefault: "Playlists first",
+    sortDefault: "Dynamic first",
     sortName: "Name (A–Z)",
     sortMembers: "Most members",
     sortRecent: "Newest",
@@ -131,21 +120,11 @@ const COPY = {
       "El centro de operaciones de tus prospectos — y el motor que mantiene el flujo.",
     importCsv: "Importar",
     newList: "Nueva lista",
-    buildPlaylist: "Crear playlist",
-    introTitle: "Playlists: listas que se llenan, enriquecen y contactan solas",
-    introDescription:
-      "Una playlist es una búsqueda guardada que sigue añadiendo prospectos que coinciden, los enriquece y los inscribe automáticamente en el contacto — para que tu pipeline se construya solo.",
-    introPoints: [
-      "La búsqueda guardada añade nuevos prospectos que coinciden",
-      "Enriquece una vez o mantén los datos actualizados de forma continua",
-      "Inscribe automáticamente a los nuevos prospectos en una secuencia",
-      "O crea una lista estática simple o importa un CSV",
-    ],
     openList: (name: string) => `Abrir ${name}`,
     listActions: "Acciones de la lista",
     edit: "Editar",
     delete: "Eliminar",
-    live: "En vivo",
+    dynamicBadge: "Dinámica",
     synced: (date: string) => `Sincronizada ${date}`,
     created: (date: string) => `Creada ${date}`,
     deleteTitle: "¿Eliminar lista?",
@@ -168,7 +147,7 @@ const COPY = {
     exportLabel: "Exportar",
     exported: "Listas exportadas a CSV",
     noResults: "Ninguna lista coincide con tu búsqueda.",
-    sortDefault: "Playlists primero",
+    sortDefault: "Dinámicas primero",
     sortName: "Nombre (A–Z)",
     sortMembers: "Más miembros",
     sortRecent: "Más recientes",
@@ -194,21 +173,11 @@ const COPY = {
       "La base operativa dei tuoi prospect — e il motore che li tiene in movimento.",
     importCsv: "Importa",
     newList: "Nuova lista",
-    buildPlaylist: "Crea una playlist",
-    introTitle: "Playlist: liste che si riempiono, si arricchiscono e contattano da sole",
-    introDescription:
-      "Una playlist è una ricerca salvata che continua ad aggiungere prospect corrispondenti, li arricchisce e li inserisce automaticamente nell'outreach — così la tua pipeline si costruisce da sola.",
-    introPoints: [
-      "La ricerca salvata aggiunge nuovi prospect corrispondenti",
-      "Arricchisci una volta o mantieni i dati sempre aggiornati",
-      "Inserisci automaticamente i nuovi prospect in una sequenza",
-      "Oppure crea una semplice lista statica o importa un CSV",
-    ],
     openList: (name: string) => `Apri ${name}`,
     listActions: "Azioni della lista",
     edit: "Modifica",
     delete: "Elimina",
-    live: "Live",
+    dynamicBadge: "Dinamica",
     synced: (date: string) => `Sincronizzata ${date}`,
     created: (date: string) => `Creata ${date}`,
     deleteTitle: "Eliminare la lista?",
@@ -231,7 +200,7 @@ const COPY = {
     exportLabel: "Esporta",
     exported: "Liste esportate in CSV",
     noResults: "Nessuna lista corrisponde alla tua ricerca.",
-    sortDefault: "Prima le playlist",
+    sortDefault: "Prima le dinamiche",
     sortName: "Nome (A–Z)",
     sortMembers: "Più membri",
     sortRecent: "Più recenti",
@@ -257,21 +226,11 @@ const COPY = {
       "Le camp de base de vos prospects — et le moteur qui les fait avancer.",
     importCsv: "Importer",
     newList: "Nouvelle liste",
-    buildPlaylist: "Créer une playlist",
-    introTitle: "Playlists : des listes qui se remplissent, s'enrichissent et prospectent toutes seules",
-    introDescription:
-      "Une playlist est une recherche enregistrée qui ajoute en continu les prospects correspondants, les enrichit et les inscrit automatiquement dans la prospection — votre pipeline se construit tout seul.",
-    introPoints: [
-      "La recherche enregistrée ajoute les nouveaux prospects correspondants",
-      "Enrichissez une fois ou gardez les données à jour en continu",
-      "Inscrivez automatiquement les nouveaux prospects dans une séquence",
-      "Ou créez une simple liste statique ou importez un CSV",
-    ],
     openList: (name: string) => `Ouvrir ${name}`,
     listActions: "Actions de la liste",
     edit: "Modifier",
     delete: "Supprimer",
-    live: "En direct",
+    dynamicBadge: "Dynamique",
     synced: (date: string) => `Synchronisée ${date}`,
     created: (date: string) => `Créée ${date}`,
     deleteTitle: "Supprimer la liste ?",
@@ -294,7 +253,7 @@ const COPY = {
     exportLabel: "Exporter",
     exported: "Listes exportées en CSV",
     noResults: "Aucune liste ne correspond à votre recherche.",
-    sortDefault: "Playlists d'abord",
+    sortDefault: "Dynamiques d'abord",
     sortName: "Nom (A–Z)",
     sortMembers: "Plus de membres",
     sortRecent: "Plus récentes",
@@ -320,21 +279,11 @@ const COPY = {
       "Die Homebase für deine Prospects — und der Motor, der sie in Bewegung hält.",
     importCsv: "Importieren",
     newList: "Neue Liste",
-    buildPlaylist: "Playlist erstellen",
-    introTitle: "Playlists: Listen, die sich von selbst füllen, anreichern und Kontakt aufnehmen",
-    introDescription:
-      "Eine Playlist ist eine gespeicherte Suche, die laufend passende Prospects hinzufügt, sie anreichert und automatisch ins Outreach aufnimmt — deine Pipeline baut sich von selbst auf.",
-    introPoints: [
-      "Die gespeicherte Suche fügt laufend neue passende Prospects hinzu",
-      "Einmal anreichern oder Daten kontinuierlich aktuell halten",
-      "Neue Prospects automatisch in eine Sequenz aufnehmen",
-      "Oder baue eine einfache statische Liste oder importiere ein CSV",
-    ],
     openList: (name: string) => `${name} öffnen`,
     listActions: "Listenaktionen",
     edit: "Bearbeiten",
     delete: "Löschen",
-    live: "Live",
+    dynamicBadge: "Dynamisch",
     synced: (date: string) => `Synchronisiert ${date}`,
     created: (date: string) => `Erstellt ${date}`,
     deleteTitle: "Liste löschen?",
@@ -357,7 +306,7 @@ const COPY = {
     exportLabel: "Exportieren",
     exported: "Listen als CSV exportiert",
     noResults: "Keine Listen entsprechen deiner Suche.",
-    sortDefault: "Playlists zuerst",
+    sortDefault: "Dynamische zuerst",
     sortName: "Name (A–Z)",
     sortMembers: "Meiste Mitglieder",
     sortRecent: "Neueste",
@@ -383,21 +332,11 @@ const COPY = {
       "A base de operações dos seus prospects — e o motor que os mantém a fluir.",
     importCsv: "Importar",
     newList: "Nova lista",
-    buildPlaylist: "Criar playlist",
-    introTitle: "Playlists: listas que se preenchem, enriquecem e contactam sozinhas",
-    introDescription:
-      "Uma playlist é uma pesquisa guardada que continua a adicionar prospects correspondentes, enriquece-os e inscreve-os automaticamente na prospeção — para que o seu pipeline se construa sozinho.",
-    introPoints: [
-      "A pesquisa guardada adiciona novos prospects correspondentes",
-      "Enriqueça uma vez ou mantenha os dados sempre atualizados",
-      "Inscreva automaticamente os novos prospects numa sequência",
-      "Ou crie uma lista estática simples ou importe um CSV",
-    ],
     openList: (name: string) => `Abrir ${name}`,
     listActions: "Ações da lista",
     edit: "Editar",
     delete: "Eliminar",
-    live: "Em direto",
+    dynamicBadge: "Dinâmica",
     synced: (date: string) => `Sincronizada ${date}`,
     created: (date: string) => `Criada ${date}`,
     deleteTitle: "Eliminar lista?",
@@ -420,7 +359,7 @@ const COPY = {
     exportLabel: "Exportar",
     exported: "Listas exportadas para CSV",
     noResults: "Nenhuma lista corresponde à sua pesquisa.",
-    sortDefault: "Playlists primeiro",
+    sortDefault: "Dinâmicas primeiro",
     sortName: "Nome (A–Z)",
     sortMembers: "Mais membros",
     sortRecent: "Mais recentes",
@@ -446,21 +385,11 @@ const COPY = {
       "A base de operações dos seus prospects — e o motor que os mantém fluindo.",
     importCsv: "Importar",
     newList: "Nova lista",
-    buildPlaylist: "Criar playlist",
-    introTitle: "Playlists: listas que se preenchem, enriquecem e entram em contato sozinhas",
-    introDescription:
-      "Uma playlist é uma busca salva que continua adicionando prospects correspondentes, os enriquece e os inscreve automaticamente na prospecção — para que seu pipeline se construa sozinho.",
-    introPoints: [
-      "A busca salva adiciona novos prospects correspondentes",
-      "Enriqueça uma vez ou mantenha os dados sempre atualizados",
-      "Inscreva automaticamente os novos prospects em uma sequência",
-      "Ou crie uma lista estática simples ou importe um CSV",
-    ],
     openList: (name: string) => `Abrir ${name}`,
     listActions: "Ações da lista",
     edit: "Editar",
     delete: "Excluir",
-    live: "Ao vivo",
+    dynamicBadge: "Dinâmica",
     synced: (date: string) => `Sincronizada ${date}`,
     created: (date: string) => `Criada ${date}`,
     deleteTitle: "Excluir lista?",
@@ -483,7 +412,7 @@ const COPY = {
     exportLabel: "Exportar",
     exported: "Listas exportadas para CSV",
     noResults: "Nenhuma lista corresponde à sua busca.",
-    sortDefault: "Playlists primeiro",
+    sortDefault: "Dinâmicas primeiro",
     sortName: "Nome (A–Z)",
     sortMembers: "Mais membros",
     sortRecent: "Mais recentes",
@@ -594,7 +523,7 @@ export default function Lists() {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
         default:
-          // Dynamic "playlists" lead — they're the flagship way to work.
+          // Dynamic lists lead — they're the flagship way to work.
           return Number(Boolean(b.dynamic)) - Number(Boolean(a.dynamic))
       }
     })
@@ -668,21 +597,6 @@ export default function Lists() {
             </Button>
           </div>
         }
-      />
-
-      <FeatureIntro
-        featureKey="lists"
-        icon={Sparkles}
-        title={c.introTitle}
-        description={c.introDescription}
-        points={[...c.introPoints]}
-        action={
-          <Button size="sm" onClick={openCreate}>
-            <Plus className="size-4" />
-            {c.newList}
-          </Button>
-        }
-        className="mb-6"
       />
 
       <CollectionToolbar
@@ -855,7 +769,7 @@ export default function Lists() {
                           <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
                           <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
                         </span>
-                        {c.live}
+                        {c.dynamicBadge}
                       </Badge>
                     )}
                     <Badge variant="outline" className="gap-1 font-normal">
@@ -1050,7 +964,7 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
                 <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
                 <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
               </span>
-              {cc.live}
+              {cc.dynamicBadge}
             </Badge>
           )}
         </div>
