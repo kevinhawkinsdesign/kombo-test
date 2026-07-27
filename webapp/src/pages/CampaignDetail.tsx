@@ -45,7 +45,6 @@ import {
   type PromptStepSeed,
 } from "@/components/templates/PromptPickerDialog"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
-import { SequenceMessagePreviewDialog } from "@/components/campaign/SequenceMessagePreviewDialog"
 import { SequencePreviewPane } from "@/components/campaign/SequencePreviewPane"
 import {
   TEMPLATE_MERGE_VARIABLES,
@@ -384,7 +383,6 @@ const COPY = {
     discardChanges: "Discard changes",
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
-    previewMessages: "Preview messages",
     stepTemplates: "Templates",
     stepAiPrompt: "AI prompt",
     suggestedNext: (label: string) => `Suggested next: ${label}`,
@@ -626,7 +624,6 @@ const COPY = {
     discardChanges: "Descartar cambios",
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
-    previewMessages: "Vista previa de mensajes",
     stepTemplates: "Plantillas",
     stepAiPrompt: "Prompt de IA",
     suggestedNext: (label: string) => `Sugerencia: ${label}`,
@@ -868,7 +865,6 @@ const COPY = {
     discardChanges: "Annulla modifiche",
     copySequenceFrom: "Copia sequenza da…",
     saveAsTemplate: "Salva come modello",
-    previewMessages: "Anteprima messaggi",
     stepTemplates: "Modelli",
     stepAiPrompt: "Prompt IA",
     suggestedNext: (label: string) => `Suggerito: ${label}`,
@@ -1110,7 +1106,6 @@ const COPY = {
     discardChanges: "Annuler les modifications",
     copySequenceFrom: "Copier la séquence depuis…",
     saveAsTemplate: "Enregistrer comme modèle",
-    previewMessages: "Aperçu des messages",
     stepTemplates: "Modèles",
     stepAiPrompt: "Prompt IA",
     suggestedNext: (label: string) => `Suggestion suivante : ${label}`,
@@ -1352,7 +1347,6 @@ const COPY = {
     discardChanges: "Änderungen verwerfen",
     copySequenceFrom: "Sequenz kopieren von…",
     saveAsTemplate: "Als Vorlage speichern",
-    previewMessages: "Nachrichten in der Vorschau ansehen",
     stepTemplates: "Vorlagen",
     stepAiPrompt: "KI-Prompt",
     suggestedNext: (label: string) => `Vorschlag für Nächstes: ${label}`,
@@ -1594,7 +1588,6 @@ const COPY = {
     discardChanges: "Descartar alterações",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Guardar como modelo",
-    previewMessages: "Pré-visualizar mensagens",
     stepTemplates: "Modelos",
     stepAiPrompt: "Prompt de IA",
     suggestedNext: (label: string) => `Sugestão seguinte: ${label}`,
@@ -1836,7 +1829,6 @@ const COPY = {
     discardChanges: "Descartar alterações",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Salvar como modelo",
-    previewMessages: "Pré-visualizar mensagens",
     stepTemplates: "Modelos",
     stepAiPrompt: "Prompt de IA",
     suggestedNext: (label: string) => `Sugestão de próximo: ${label}`,
@@ -2081,7 +2073,6 @@ export default function CampaignDetail() {
   const [stepPromptOpen, setStepPromptOpen] = React.useState(false)
   const [copySeqOpen, setCopySeqOpen] = React.useState(false)
   const [saveSeqOpen, setSaveSeqOpen] = React.useState(false)
-  const [previewOpen, setPreviewOpen] = React.useState(false)
   // Search box inside the step editor's variables popup — same
   // filter-as-you-type pattern as Inbox.tsx's composer, needed now that the
   // merge-var catalog is large enough that a plain list scrolls off-screen.
@@ -2375,12 +2366,6 @@ export default function CampaignDetail() {
       manual: true,
     })),
   ]
-
-  // Real enrolled prospects, for previewing actual resolved message copy
-  // (as opposed to the fixed sample recipients used elsewhere).
-  const audienceProspects = prospectRows
-    .map((r) => r.prospect)
-    .filter((p): p is Prospect => Boolean(p))
 
   // Bulk selection spans the manually-added rows only; stale ids (already
   // removed) drop out at compute time. Paginated like every other
@@ -3109,14 +3094,6 @@ export default function CampaignDetail() {
             <SequenceCostSummary steps={draft.steps} />
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPreviewOpen(true)}
-            >
-              <Eye className="size-4" />
-              {c.previewMessages}
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -4239,13 +4216,6 @@ export default function CampaignDetail() {
         open={saveSeqOpen}
         onOpenChange={setSaveSeqOpen}
         steps={draft.steps}
-      />
-
-      <SequenceMessagePreviewDialog
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        steps={draft.steps}
-        prospects={audienceProspects}
       />
 
       <ColumnManager
