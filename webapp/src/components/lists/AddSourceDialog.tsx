@@ -200,7 +200,7 @@ export function AddSourceDialog({
         sourceType: "saved_search",
         savedSearchId: pickId,
         crmListId: undefined,
-        enrichment: list.enrichment ?? "once",
+        enrichment: list.enrichment ?? "off",
         lastSyncedAt: new Date().toISOString(),
       })
       toast.success(c.linked(target.name))
@@ -212,7 +212,7 @@ export function AddSourceDialog({
         sourceType: "crm_list",
         crmListId: pickId,
         savedSearchId: undefined,
-        enrichment: list.enrichment ?? "once",
+        enrichment: list.enrichment ?? "off",
         lastSyncedAt: new Date().toISOString(),
       })
       toast.success(c.linked(target.name))

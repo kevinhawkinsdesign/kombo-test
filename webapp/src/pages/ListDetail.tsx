@@ -9,10 +9,8 @@ import {
   Copy,
   X,
   Plus,
-  Zap,
   Search,
   Layers,
-  Pause,
   Columns3,
   ShieldCheck,
   TriangleAlert,
@@ -63,10 +61,15 @@ import { useSavedSearches } from "@/lib/mock-ai-search"
 import { useLists, listStore, prospectStore, accountStore } from "@/lib/store"
 import { listTabsStore } from "@/lib/list-tabs"
 import { ListTabBar } from "@/components/lists/ListTabBar"
-import { isEnriched } from "@/lib/enrichment"
+import {
+  isEnriched,
+  isCompanyEnriched,
+  needsAnyEnrichScope,
+} from "@/lib/enrichment"
 import { usePagedSelection } from "@/lib/use-paged-selection"
 import { useTableSortFilter } from "@/lib/table-sort-filter"
 import { formatDate } from "@/lib/format"
+import { cn } from "@/lib/utils"
 import type { Account, Prospect, ProspectList } from "@/lib/types"
 
 const COPY = {
@@ -86,7 +89,17 @@ const COPY = {
     copySuffix: "(copy)",
     duplicated: (name: string) => `"${name}" created`,
     addSource: "Add source",
-    linkToCrm: "Link to CRM",
+    rename: "Rename",
+    labelSource: "Source",
+    labelEnrich: "Enrichment",
+    labelCrm: "CRM",
+    labelCampaign: "Outreach",
+    notSet: "Not set",
+    notLinked: "Not linked",
+    noAutomation: "No automation",
+    allEnrichedShort: "All enriched",
+    needEnrichShort: (n: number) => `${n} to enrich`,
+    linkToCrm: "Sync to CRM",
     crmLinked: (crm: string) => `Synced with ${crm}`,
     getStartedTitle: "Get started",
     getStartedDesc: "Add prospects to this list to begin working it.",
@@ -113,8 +126,6 @@ const COPY = {
     deleteConfirm: "Delete",
     listDeleted: "List deleted",
     dynamicBadge: "Dynamic",
-    pauseInflow: "Pause inflow",
-    inflowPaused: "Inflow paused — no new prospects will be added",
     audience: "Prospects",
     allProspects: "All prospects",
     enrichment: "Enrichment",
@@ -190,7 +201,17 @@ const COPY = {
     copySuffix: "(copia)",
     duplicated: (name: string) => `«${name}» creada`,
     addSource: "Añadir fuente",
-    linkToCrm: "Vincular al CRM",
+    rename: "Renombrar",
+    labelSource: "Fuente",
+    labelEnrich: "Enriquecimiento",
+    labelCrm: "CRM",
+    labelCampaign: "Contacto",
+    notSet: "Sin definir",
+    notLinked: "Sin vincular",
+    noAutomation: "Sin automatización",
+    allEnrichedShort: "Todo enriquecido",
+    needEnrichShort: (n: number) => `${n} por enriquecer`,
+    linkToCrm: "Sincronizar con el CRM",
     crmLinked: (crm: string) => `Sincronizada con ${crm}`,
     getStartedTitle: "Empieza aquí",
     getStartedDesc: "Añade prospectos a esta lista para empezar a trabajarla.",
@@ -217,8 +238,6 @@ const COPY = {
     deleteConfirm: "Eliminar",
     listDeleted: "Lista eliminada",
     dynamicBadge: "Dinámica",
-    pauseInflow: "Pausar entrada",
-    inflowPaused: "Entrada pausada — no se añadirán nuevos prospectos",
     audience: "Prospectos",
     allProspects: "Todos los prospectos",
     enrichment: "Enriquecimiento",
@@ -295,7 +314,17 @@ const COPY = {
     copySuffix: "(copia)",
     duplicated: (name: string) => `"${name}" creata`,
     addSource: "Aggiungi fonte",
-    linkToCrm: "Collega al CRM",
+    rename: "Rinomina",
+    labelSource: "Fonte",
+    labelEnrich: "Arricchimento",
+    labelCrm: "CRM",
+    labelCampaign: "Contatto",
+    notSet: "Non impostata",
+    notLinked: "Non collegato",
+    noAutomation: "Nessuna automazione",
+    allEnrichedShort: "Tutto arricchito",
+    needEnrichShort: (n: number) => `${n} da arricchire`,
+    linkToCrm: "Sincronizza con il CRM",
     crmLinked: (crm: string) => `Sincronizzata con ${crm}`,
     getStartedTitle: "Inizia",
     getStartedDesc: "Aggiungi prospect a questa lista per iniziare a lavorarla.",
@@ -322,8 +351,6 @@ const COPY = {
     deleteConfirm: "Elimina",
     listDeleted: "Lista eliminata",
     dynamicBadge: "Dinamica",
-    pauseInflow: "Metti in pausa l'ingresso",
-    inflowPaused: "Ingresso in pausa — non verranno aggiunti nuovi prospect",
     audience: "Prospect",
     allProspects: "Tutti i prospect",
     enrichment: "Arricchimento",
@@ -399,7 +426,17 @@ const COPY = {
     copySuffix: "(copie)",
     duplicated: (name: string) => `« ${name} » créée`,
     addSource: "Ajouter une source",
-    linkToCrm: "Lier au CRM",
+    rename: "Renommer",
+    labelSource: "Source",
+    labelEnrich: "Enrichissement",
+    labelCrm: "CRM",
+    labelCampaign: "Prospection",
+    notSet: "Non définie",
+    notLinked: "Non lié",
+    noAutomation: "Aucune automatisation",
+    allEnrichedShort: "Tout enrichi",
+    needEnrichShort: (n: number) => `${n} à enrichir`,
+    linkToCrm: "Synchroniser avec le CRM",
     crmLinked: (crm: string) => `Synchronisée avec ${crm}`,
     getStartedTitle: "Pour commencer",
     getStartedDesc: "Ajoutez des prospects à cette liste pour commencer à la travailler.",
@@ -426,8 +463,6 @@ const COPY = {
     deleteConfirm: "Supprimer",
     listDeleted: "Liste supprimée",
     dynamicBadge: "Dynamique",
-    pauseInflow: "Mettre en pause l'arrivée",
-    inflowPaused: "Arrivée en pause — aucun nouveau prospect ne sera ajouté",
     audience: "Prospects",
     allProspects: "Tous les prospects",
     enrichment: "Enrichissement",
@@ -503,7 +538,17 @@ const COPY = {
     copySuffix: "(Kopie)",
     duplicated: (name: string) => `„${name}“ erstellt`,
     addSource: "Quelle hinzufügen",
-    linkToCrm: "Mit CRM verknüpfen",
+    rename: "Umbenennen",
+    labelSource: "Quelle",
+    labelEnrich: "Anreicherung",
+    labelCrm: "CRM",
+    labelCampaign: "Outreach",
+    notSet: "Nicht gesetzt",
+    notLinked: "Nicht verknüpft",
+    noAutomation: "Keine Automatisierung",
+    allEnrichedShort: "Alle angereichert",
+    needEnrichShort: (n: number) => `${n} anzureichern`,
+    linkToCrm: "Mit CRM synchronisieren",
     crmLinked: (crm: string) => `Synchronisiert mit ${crm}`,
     getStartedTitle: "Los geht's",
     getStartedDesc: "Füge dieser Liste Prospects hinzu, um loszulegen.",
@@ -530,8 +575,6 @@ const COPY = {
     deleteConfirm: "Löschen",
     listDeleted: "Liste gelöscht",
     dynamicBadge: "Dynamisch",
-    pauseInflow: "Zufluss pausieren",
-    inflowPaused: "Zufluss pausiert — es werden keine neuen Prospects hinzugefügt",
     audience: "Prospects",
     allProspects: "Alle Prospects",
     enrichment: "Anreicherung",
@@ -607,7 +650,17 @@ const COPY = {
     copySuffix: "(cópia)",
     duplicated: (name: string) => `"${name}" criada`,
     addSource: "Adicionar fonte",
-    linkToCrm: "Associar ao CRM",
+    rename: "Renomear",
+    labelSource: "Fonte",
+    labelEnrich: "Enriquecimento",
+    labelCrm: "CRM",
+    labelCampaign: "Contacto",
+    notSet: "Por definir",
+    notLinked: "Não associado",
+    noAutomation: "Sem automação",
+    allEnrichedShort: "Tudo enriquecido",
+    needEnrichShort: (n: number) => `${n} a enriquecer`,
+    linkToCrm: "Sincronizar com o CRM",
     crmLinked: (crm: string) => `Sincronizada com ${crm}`,
     getStartedTitle: "Começar",
     getStartedDesc: "Adicione prospects a esta lista para começar a trabalhá-la.",
@@ -634,8 +687,6 @@ const COPY = {
     deleteConfirm: "Eliminar",
     listDeleted: "Lista eliminada",
     dynamicBadge: "Dinâmica",
-    pauseInflow: "Pausar entrada",
-    inflowPaused: "Entrada pausada — não serão adicionados novos prospects",
     audience: "Prospects",
     allProspects: "Todos os prospects",
     enrichment: "Enriquecimento",
@@ -711,7 +762,17 @@ const COPY = {
     copySuffix: "(cópia)",
     duplicated: (name: string) => `"${name}" criada`,
     addSource: "Adicionar fonte",
-    linkToCrm: "Vincular ao CRM",
+    rename: "Renomear",
+    labelSource: "Fonte",
+    labelEnrich: "Enriquecimento",
+    labelCrm: "CRM",
+    labelCampaign: "Contacto",
+    notSet: "Por definir",
+    notLinked: "Não associado",
+    noAutomation: "Sem automação",
+    allEnrichedShort: "Tudo enriquecido",
+    needEnrichShort: (n: number) => `${n} a enriquecer`,
+    linkToCrm: "Sincronizar com o CRM",
     crmLinked: (crm: string) => `Sincronizada com ${crm}`,
     getStartedTitle: "Começar",
     getStartedDesc: "Adicione prospects a esta lista para começar a trabalhá-la.",
@@ -738,8 +799,6 @@ const COPY = {
     deleteConfirm: "Excluir",
     listDeleted: "Lista excluída",
     dynamicBadge: "Dinâmica",
-    pauseInflow: "Pausar entrada",
-    inflowPaused: "Entrada pausada — nenhum novo prospect será adicionado",
     audience: "Prospects",
     allProspects: "Todos os prospects",
     enrichment: "Enriquecimento",
@@ -884,6 +943,10 @@ export default function ListDetail() {
   const memberCount = isCompany ? accountMembers.length : members.length
   const pending = members.filter((p) => !isEnriched(p))
   const enrichedCount = members.length - pending.length
+  // Fully-enriched records are excluded — re-enriching them is a no-op.
+  const pendingEnrichCount = isCompany
+    ? accountMembers.filter((a) => !isCompanyEnriched(a)).length
+    : members.filter(needsAnyEnrichScope).length
 
   const selectedMembers = members.filter((p) => selectedIds.has(p.id))
   const selectedAccounts = accountMembers.filter((a) => selectedIds.has(a.id))
@@ -941,8 +1004,8 @@ export default function ListDetail() {
       <ListSettingsBox
         list={list}
         isCompany={isCompany}
-        memberCount={memberCount}
-        onEdit={() => setEditOpen(true)}
+        pendingEnrichCount={pendingEnrichCount}
+        onRename={() => setEditOpen(true)}
         onDuplicate={() => {
           const created = listStore.create({
             name: `${list.name} ${c.copySuffix}`,
@@ -1163,6 +1226,8 @@ export default function ListDetail() {
                     size="icon"
                     className="size-8"
                     aria-label={c.enrichRow}
+                    // Nothing left to reveal — enriching again is a no-op.
+                    disabled={!needsAnyEnrichScope(p)}
                     onClick={() => setRowEnrichProspect(p)}
                   >
                     <Layers className="size-4" />
@@ -1368,8 +1433,8 @@ export default function ListDetail() {
 function ListSettingsBox({
   list,
   isCompany,
-  memberCount,
-  onEdit,
+  pendingEnrichCount,
+  onRename,
   onDuplicate,
   onDelete,
   onAddSource,
@@ -1379,8 +1444,10 @@ function ListSettingsBox({
 }: {
   list: ProspectList
   isCompany: boolean
-  memberCount: number
-  onEdit: () => void
+  // Records still missing data. Already-enriched ones are excluded, so a
+  // fully-enriched list reads "All enriched" instead of offering a no-op.
+  pendingEnrichCount: number
+  onRename: () => void
   onDuplicate: () => void
   onDelete: () => void
   onAddSource: () => void
@@ -1400,37 +1467,31 @@ function ListSettingsBox({
     ? CRM_LISTS.find((l) => l.id === list.crmListId)
     : undefined
 
-  const audienceLabel = linkedSearch?.name ?? linkedCrmList?.name
+  const sourceLabel = linkedSearch?.name ?? linkedCrmList?.name
 
-  const summaryParts: string[] = []
-  if (audienceLabel) summaryParts.push(audienceLabel)
-  if (list.dynamic) {
-    summaryParts.push(
-      list.enrichment === "continuous" ? c.keptFresh : c.enrichedOnAdd
-    )
-    if (!isCompany) {
-      summaryParts.push(
-        list.reviewMode === "manual_review"
-          ? c.reviewManually
-          : campaign
-            ? `${campaign.name} — ${list.sendMode === "continuous" ? c.autoEnrolls : c.oneTimeSend}`
-            : c.noSequence
-      )
-    }
-    if (list.crmSynced) summaryParts.push(c.crmLinked(CONNECTED_CRM_PROVIDER.name))
-  }
+  // Inflow stats sit with the source that produces them, not in a separate
+  // summary strip at the bottom of the card.
+  const sourceHint = [
+    typeof list.newPerWeek === "number" ? c.newPerWeek(list.newPerWeek) : null,
+    list.lastSyncedAt ? c.lastSynced(formatDate(list.lastSyncedAt)) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ")
+
+  const enrichOn = list.enrichment === "continuous"
+  const campaignHint = campaign
+    ? list.reviewMode === "manual_review"
+      ? c.reviewManually
+      : list.sendMode === "continuous"
+        ? c.autoEnrolls
+        : c.oneTimeSend
+    : undefined
 
   return (
     <Card className="mb-6 gap-0 overflow-hidden p-0">
-      <div className="flex flex-wrap items-center gap-2 border-b p-4">
-        <span
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: list.color }}
-        />
-        <span className="font-medium">{list.name}</span>
-        <Button variant="ghost" size="icon" className="size-7" onClick={onEdit}>
-          <Pencil className="size-3.5" />
-        </Button>
+      {/* The tab strip above already names the list, so this header carries
+          status and record-level actions only. */}
+      <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2">
         {list.dynamic && (
           <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
             <span className="relative flex size-1.5">
@@ -1441,6 +1502,10 @@ function ListSettingsBox({
           </Badge>
         )}
         <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onRename}>
+            <Pencil className="size-4" />
+            {c.rename}
+          </Button>
           <Button variant="ghost" size="sm" onClick={onDuplicate}>
             <Copy className="size-4" />
             {c.duplicateList}
@@ -1457,75 +1522,113 @@ function ListSettingsBox({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4">
-        <Button
-          variant={list.dynamic ? "secondary" : "outline"}
+      <div className="grid gap-2 p-3 sm:grid-cols-2 lg:grid-cols-4">
+        <SettingCard
+          icon={<Search className="size-3.5" />}
+          label={c.labelSource}
+          value={sourceLabel ?? c.notSet}
+          hint={sourceLabel ? sourceHint : undefined}
+          isSet={Boolean(sourceLabel)}
           onClick={onAddSource}
-        >
-          <Search className="size-4" />
-          {c.addSource}
-        </Button>
-        <Button variant="outline" onClick={onEnrich}>
-          <Layers className="size-4" />
-          {c.enrichContacts(memberCount)}
-        </Button>
-        <Button
-          variant={list.crmSynced ? "secondary" : "outline"}
+        />
+        <SettingCard
+          icon={<Layers className="size-3.5" />}
+          label={c.labelEnrich}
+          value={enrichOn ? c.keptFresh : c.noAutomation}
+          hint={
+            pendingEnrichCount > 0
+              ? c.needEnrichShort(pendingEnrichCount)
+              : c.allEnrichedShort
+          }
+          isSet={enrichOn}
+          onClick={onEnrich}
+        />
+        <SettingCard
+          icon={
+            <span
+              className="flex size-3.5 shrink-0 items-center justify-center rounded-[3px] text-[8px] font-semibold text-white"
+              style={{ backgroundColor: CONNECTED_CRM_PROVIDER.logoColor }}
+            >
+              {CONNECTED_CRM_PROVIDER.name.charAt(0)}
+            </span>
+          }
+          label={c.labelCrm}
+          value={
+            list.crmSynced
+              ? c.crmLinked(CONNECTED_CRM_PROVIDER.name)
+              : c.notLinked
+          }
+          hint={
+            list.crmSynced && list.crmSyncedAt
+              ? c.lastSynced(formatDate(list.crmSyncedAt))
+              : undefined
+          }
+          isSet={Boolean(list.crmSynced)}
           onClick={onLinkToCrm}
-        >
-          <span
-            className="flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] font-semibold text-white"
-            style={{ backgroundColor: CONNECTED_CRM_PROVIDER.logoColor }}
-          >
-            {CONNECTED_CRM_PROVIDER.name.charAt(0)}
-          </span>
-          {c.linkToCrm}
-        </Button>
+        />
+        {/* Company lists have no outreach — campaigns send to people. */}
         {!isCompany && (
-          <Button variant={campaign ? "secondary" : "outline"} onClick={onLinkToCampaign}>
-            <Link2 className="size-4" />
-            {c.linkToCampaign}
-          </Button>
+          <SettingCard
+            icon={<Link2 className="size-3.5" />}
+            label={c.labelCampaign}
+            value={campaign ? campaign.name : c.notLinked}
+            hint={campaignHint}
+            isSet={Boolean(campaign)}
+            onClick={onLinkToCampaign}
+          />
         )}
       </div>
-
-      {summaryParts.length > 0 && (
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t px-4 py-2.5 text-xs">
-          {summaryParts.map((part, i) => (
-            <React.Fragment key={i}>
-              {i > 0 && <span>·</span>}
-              <span>{part}</span>
-            </React.Fragment>
-          ))}
-          {typeof list.newPerWeek === "number" && (
-            <>
-              <span>·</span>
-              <span className="text-foreground flex items-center gap-1 font-medium">
-                <Zap className="text-chart-4 size-3.5" />
-                {c.newPerWeek(list.newPerWeek)}
-              </span>
-            </>
-          )}
-          {list.lastSyncedAt && (
-            <>
-              <span>·</span>
-              <span>{c.lastSynced(formatDate(list.lastSyncedAt))}</span>
-            </>
-          )}
-          {list.dynamic && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto h-6 px-2"
-              onClick={() => toast(c.inflowPaused)}
-            >
-              <Pause className="size-3.5" />
-              {c.pauseInflow}
-            </Button>
-          )}
-        </div>
-      )}
     </Card>
+  )
+}
+
+// One list setting, showing its current value inline rather than deferring
+// to a shared summary line. Unset settings read as dashed placeholders so
+// what's still unconfigured is obvious at a glance.
+function SettingCard({
+  icon,
+  label,
+  value,
+  hint,
+  isSet,
+  onClick,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  hint?: string
+  isSet: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex min-w-0 flex-col gap-0.5 rounded-lg border p-3 text-left transition-colors",
+        isSet
+          ? "border-primary/40 bg-primary/[0.03] hover:bg-primary/[0.06]"
+          : "hover:bg-muted/60 border-dashed"
+      )}
+    >
+      <span className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+        {icon}
+        {label}
+      </span>
+      <span
+        className={cn(
+          "truncate text-sm font-medium",
+          !isSet && "text-muted-foreground font-normal"
+        )}
+      >
+        {value}
+      </span>
+      {hint && (
+        <span className="text-muted-foreground truncate text-[11px]">
+          {hint}
+        </span>
+      )}
+    </button>
   )
 }
 

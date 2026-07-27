@@ -1,5 +1,5 @@
 import { toast } from "sonner"
-import { Layers, Check } from "lucide-react"
+import { Layers, Check, TriangleAlert } from "lucide-react"
 
 import {
   Dialog,
@@ -21,7 +21,8 @@ const COPY = {
   en: {
     title: "Enrich companies",
     modeLabel: "Enrichment mode",
-    modeOnce: "Once on add",
+    modeOff: "No automation",
+    modeWarn: (n: number) => `Charges ${n} credits per company as new ones arrive.`,
     modeContinuous: "Continuously",
     description:
       "Pulls in everything available for each company — contact info, recent investment or hiring activity, and more.",
@@ -41,7 +42,8 @@ const COPY = {
   es: {
     title: "Enriquecer empresas",
     modeLabel: "Modo de enriquecimiento",
-    modeOnce: "Una vez al añadir",
+    modeOff: "Sin automatización",
+    modeWarn: (n: number) => `Cobra ${n} créditos por empresa a medida que llegan nuevas.`,
     modeContinuous: "De forma continua",
     description:
       "Obtiene todo lo disponible por empresa — datos de contacto, inversión reciente o actividad de contratación, y más.",
@@ -61,7 +63,8 @@ const COPY = {
   it: {
     title: "Arricchisci aziende",
     modeLabel: "Modalità di arricchimento",
-    modeOnce: "Una volta all'aggiunta",
+    modeOff: "Nessuna automazione",
+    modeWarn: (n: number) => `Addebita ${n} crediti per azienda man mano che ne arrivano di nuove.`,
     modeContinuous: "In continuo",
     description:
       "Recupera tutto ciò che è disponibile per ogni azienda — contatti, investimenti recenti o attività di assunzione, e altro.",
@@ -81,7 +84,8 @@ const COPY = {
   fr: {
     title: "Enrichir les entreprises",
     modeLabel: "Mode d'enrichissement",
-    modeOnce: "Une fois à l'ajout",
+    modeOff: "Aucune automatisation",
+    modeWarn: (n: number) => `Facture ${n} crédits par entreprise à mesure que de nouvelles arrivent.`,
     modeContinuous: "En continu",
     description:
       "Récupère tout ce qui est disponible par entreprise — coordonnées, investissement ou recrutement récent, et plus.",
@@ -101,7 +105,8 @@ const COPY = {
   de: {
     title: "Unternehmen anreichern",
     modeLabel: "Anreicherungsmodus",
-    modeOnce: "Einmalig beim Hinzufügen",
+    modeOff: "Keine Automatisierung",
+    modeWarn: (n: number) => `Berechnet ${n} Credits pro Unternehmen, sobald neue hinzukommen.`,
     modeContinuous: "Fortlaufend",
     description:
       "Holt alles Verfügbare pro Unternehmen — Kontaktdaten, aktuelle Investitionen oder Einstellungsaktivität und mehr.",
@@ -121,7 +126,8 @@ const COPY = {
   pt: {
     title: "Enriquecer empresas",
     modeLabel: "Modo de enriquecimento",
-    modeOnce: "Uma vez ao adicionar",
+    modeOff: "Sem automação",
+    modeWarn: (n: number) => `Cobra ${n} créditos por empresa à medida que chegam novas.`,
     modeContinuous: "Continuamente",
     description:
       "Obtém tudo o que está disponível por empresa — dados de contacto, investimento recente ou atividade de contratação, e mais.",
@@ -141,7 +147,8 @@ const COPY = {
   pt_BR: {
     title: "Enriquecer empresas",
     modeLabel: "Modo de enriquecimento",
-    modeOnce: "Uma vez ao adicionar",
+    modeOff: "Sem automação",
+    modeWarn: (n: number) => `Cobra ${n} créditos por empresa à medida que chegam novas.`,
     modeContinuous: "Continuamente",
     description:
       "Traz tudo o que está disponível por empresa — dados de contato, investimento recente ou atividade de contratação, e mais.",
@@ -169,7 +176,7 @@ export function CompanyEnrichDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
   accounts: Account[]
-  // When set, shows a mode toggle (once on add / continuously) that writes
+  // When set, shows an automation toggle (off / continuously) that writes
   // straight to the list's own enrichment setting — used only when this
   // dialog is opened from a list's settings box.
   list?: ProspectList
@@ -217,11 +224,13 @@ export function CompanyEnrichDialog({
             <div className="grid grid-cols-2 gap-2">
               {(
                 [
-                  { value: "once" as const, label: c.modeOnce },
+                  { value: "off" as const, label: c.modeOff },
                   { value: "continuous" as const, label: c.modeContinuous },
                 ] as const
               ).map((opt) => {
-                const active = (list.enrichment ?? "once") === opt.value
+                const active =
+                    (list.enrichment === "continuous" ? "continuous" : "off") ===
+                    opt.value
                 return (
                   <button
                     key={opt.value}
@@ -240,6 +249,12 @@ export function CompanyEnrichDialog({
                 )
               })}
             </div>
+            {list.enrichment === "continuous" && (
+              <p className="text-muted-foreground flex items-start gap-1.5 text-[11px]">
+                <TriangleAlert className="text-chart-4 mt-0.5 size-3.5 shrink-0" />
+                {c.modeWarn(COMPANY_ENRICH_COST)}
+              </p>
+            )}
           </div>
         )}
 

@@ -74,7 +74,11 @@ export interface SavedSearchCriteria {
   signals: string[]
 }
 
-export type EnrichmentMode = "once" | "continuous"
+// List-level enrichment *automation*. Enriching once is a manual action on
+// the records themselves (the Enrich button), not an automation — so the
+// only settings are "no automation" and "keep enriching as records arrive".
+// Any legacy value that isn't "continuous" reads as off.
+export type EnrichmentMode = "off" | "continuous"
 export type SendMode = "once" | "continuous"
 // How a dynamic list routes its new matches: straight into a campaign, or
 // held for the owner to review manually (each new match creates a Task).
