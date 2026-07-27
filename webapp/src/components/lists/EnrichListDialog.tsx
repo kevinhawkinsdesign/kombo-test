@@ -19,13 +19,16 @@ import {
   needsEnrichScope,
   type EnrichScope,
 } from "@/lib/enrichment"
-import { prospectStore } from "@/lib/store"
+import { prospectStore, listStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
-import type { Prospect } from "@/lib/types"
+import type { EnrichmentMode, Prospect, ProspectList } from "@/lib/types"
 
 const COPY = {
   en: {
     title: "Enrich prospects",
+    modeLabel: "Enrichment mode",
+    modeOnce: "Once on add",
+    modeContinuous: "Continuously",
     description:
       "Reveal verified emails and direct dials, plus 30+ data points per prospect.",
     chooseScope: "What do you want to reveal? Pick any combination.",
@@ -54,6 +57,9 @@ const COPY = {
   },
   es: {
     title: "Enriquecer prospectos",
+    modeLabel: "Modo de enriquecimiento",
+    modeOnce: "Una vez al añadir",
+    modeContinuous: "De forma continua",
     description:
       "Revela correos verificados y teléfonos directos, además de más de 30 datos por prospecto.",
     chooseScope: "¿Qué quieres revelar? Elige cualquier combinación.",
@@ -82,6 +88,9 @@ const COPY = {
   },
   it: {
     title: "Arricchisci prospect",
+    modeLabel: "Modalità di arricchimento",
+    modeOnce: "Una volta all'aggiunta",
+    modeContinuous: "In continuo",
     description:
       "Rivela email verificate e numeri diretti, oltre a più di 30 dati per prospect.",
     chooseScope: "Cosa vuoi rivelare? Scegli qualsiasi combinazione.",
@@ -110,6 +119,9 @@ const COPY = {
   },
   fr: {
     title: "Enrichir les prospects",
+    modeLabel: "Mode d'enrichissement",
+    modeOnce: "Une fois à l'ajout",
+    modeContinuous: "En continu",
     description:
       "Révélez des e-mails vérifiés et des lignes directes, ainsi que plus de 30 points de données par prospect.",
     chooseScope: "Que voulez-vous révéler ? Choisissez n'importe quelle combinaison.",
@@ -138,6 +150,9 @@ const COPY = {
   },
   de: {
     title: "Prospects anreichern",
+    modeLabel: "Anreicherungsmodus",
+    modeOnce: "Einmalig beim Hinzufügen",
+    modeContinuous: "Fortlaufend",
     description:
       "Zeige verifizierte E-Mails und Durchwahlen sowie über 30 Datenpunkte pro Prospect an.",
     chooseScope: "Was möchtest du aufdecken? Wähle eine beliebige Kombination.",
@@ -167,6 +182,9 @@ const COPY = {
   },
   pt: {
     title: "Enriquecer prospects",
+    modeLabel: "Modo de enriquecimento",
+    modeOnce: "Uma vez ao adicionar",
+    modeContinuous: "Continuamente",
     description:
       "Revele emails verificados e contactos diretos, além de mais de 30 pontos de dados por prospect.",
     chooseScope: "O que quer revelar? Escolha qualquer combinação.",
@@ -195,6 +213,9 @@ const COPY = {
   },
   pt_BR: {
     title: "Enriquecer prospects",
+    modeLabel: "Modo de enriquecimento",
+    modeOnce: "Uma vez ao adicionar",
+    modeContinuous: "Continuamente",
     description:
       "Revele emails verificados e contatos diretos, além de mais de 30 pontos de dados por prospect.",
     chooseScope: "O que você quer revelar? Escolha qualquer combinação.",
@@ -228,6 +249,10 @@ interface EnrichListDialogProps {
   onOpenChange: (open: boolean) => void
   // The contacts to consider for enrichment (a list's members or a selection).
   prospects: Prospect[]
+  // When set, shows a mode toggle (once on add / continuously) that writes
+  // straight to the list's own enrichment setting — used only when this
+  // dialog is opened from a list's settings box, not from a bare selection.
+  list?: ProspectList
 }
 
 const ALL_SCOPES: EnrichScope[] = ["email", "phone", "profile"]
@@ -236,6 +261,7 @@ export function EnrichListDialog({
   open,
   onOpenChange,
   prospects,
+  list,
 }: EnrichListDialogProps) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -244,6 +270,10 @@ export function EnrichListDialog({
   const [selected, setSelected] = React.useState<Set<EnrichScope>>(
     () => new Set(ALL_SCOPES)
   )
+
+  function setMode(mode: EnrichmentMode) {
+    if (list) listStore.update(list.id, { enrichment: mode })
+  }
 
   const scopeOptions: {
     value: EnrichScope
@@ -313,6 +343,40 @@ export function EnrichListDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {list && (
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-xs font-medium">
+                {c.modeLabel}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { value: "once" as const, label: c.modeOnce },
+                    { value: "continuous" as const, label: c.modeContinuous },
+                  ] as const
+                ).map((opt) => {
+                  const active = (list.enrichment ?? "once") === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setMode(opt.value)}
+                      aria-pressed={active}
+                      className={cn(
+                        "rounded-lg border p-2 text-sm font-medium transition-colors",
+                        active
+                          ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
+                          : "hover:bg-muted/60"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Scope selector — multi-select, any combination. */}
           <div className="space-y-2">
             <p className="text-muted-foreground text-xs font-medium">

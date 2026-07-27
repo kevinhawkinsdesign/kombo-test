@@ -242,6 +242,22 @@ export const CRM_PROVIDERS: CrmProvider[] = [
 export const CONNECTED_CRM_PROVIDER: CrmProvider =
   CRM_PROVIDERS.find((p) => p.connected) ?? CRM_PROVIDERS[0]
 
+// Lists that already exist on the connected CRM side — an "Add Source" can
+// point a Kombo list at one of these instead of a saved search.
+export interface CrmList {
+  id: string
+  name: string
+  kind: "people" | "company"
+  count: number
+}
+
+export const CRM_LISTS: CrmList[] = [
+  { id: "crmlist_1", name: "Marketing Qualified Leads", kind: "people", count: 412 },
+  { id: "crmlist_2", name: "Newsletter Subscribers", kind: "people", count: 1204 },
+  { id: "crmlist_3", name: "Q3 Target Accounts", kind: "company", count: 86 },
+  { id: "crmlist_4", name: "Churned Customers — Win Back", kind: "company", count: 53 },
+]
+
 // --- Company growth metrics (headcount, departments, hiring) ---
 export interface AccountMetrics {
   headcount: number[] // 12 monthly points

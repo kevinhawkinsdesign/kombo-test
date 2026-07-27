@@ -1,26 +1,23 @@
 import * as React from "react"
-import { Link, useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
-  Send,
   Link2,
   Download,
   Pencil,
   Trash2,
+  Copy,
   X,
   Plus,
-  Sparkles,
-  RefreshCw,
   Zap,
   Search,
-  Database,
   Layers,
   Pause,
   Columns3,
   ShieldCheck,
   TriangleAlert,
   UserSearch,
-  ListTodo,
+  FolderOpen,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -37,7 +34,7 @@ import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
 import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
-import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
+import { CONNECTED_CRM_PROVIDER, CRM_LISTS } from "@/lib/mock-depth"
 import { downloadCsv } from "@/lib/csv"
 import {
   PEOPLE_COLUMNS,
@@ -54,12 +51,15 @@ import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
 import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { LinkListToCampaignDialog } from "@/components/lists/LinkListToCampaignDialog"
+import { LinkListToCrmDialog } from "@/components/lists/LinkListToCrmDialog"
+import { AddSourceDialog } from "@/components/lists/AddSourceDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
+import { CompanyEnrichDialog } from "@/components/lists/CompanyEnrichDialog"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
-import { PlaylistWizard } from "@/components/playlist/PlaylistWizard"
+import { useSavedSearches } from "@/lib/mock-ai-search"
 import { useLists, listStore, prospectStore, accountStore } from "@/lib/store"
 import { listTabsStore } from "@/lib/list-tabs"
 import { ListTabBar } from "@/components/lists/ListTabBar"
@@ -76,13 +76,22 @@ const COPY = {
     lists: "Lists",
     prospects: "prospects",
     edit: "Edit",
-    deleteList: "Delete list",
+    deleteList: "Delete",
     export: "Export",
     exported: (format: string) => `Exported to ${format}`,
     exportedAndSent: (format: string, email: string) => `Exported to ${format} and sent to ${email}`,
     crmSynced: (crm: string) => `Synced to ${crm}`,
-    buildPlaylist: "Build a playlist",
     linkToCampaign: "Link to campaign",
+    duplicateList: "Duplicate",
+    copySuffix: "(copy)",
+    duplicated: (name: string) => `"${name}" created`,
+    addSource: "Add source",
+    linkToCrm: "Link to CRM",
+    crmLinked: (crm: string) => `Synced with ${crm}`,
+    getStartedTitle: "Get started",
+    getStartedDesc: "Add prospects to this list to begin working it.",
+    getStartedDescCo: "Add companies to this list to begin working it.",
+    importCsv: "Import from CSV",
     prospectsHeading: "Prospects",
     addProspects: "Find prospects",
     columns: "Columns",
@@ -103,8 +112,7 @@ const COPY = {
       `"${name}" will be permanently removed. Prospects stay in your workspace.`,
     deleteConfirm: "Delete",
     listDeleted: "List deleted",
-    dynamicPlaylist: "Dynamic playlist",
-    live: "Live",
+    dynamicBadge: "Dynamic",
     pauseInflow: "Pause inflow",
     inflowPaused: "Inflow paused — no new prospects will be added",
     audience: "Prospects",
@@ -172,13 +180,22 @@ const COPY = {
     lists: "Listas",
     prospects: "prospectos",
     edit: "Editar",
-    deleteList: "Eliminar lista",
+    deleteList: "Eliminar",
     export: "Exportar",
     exported: (format: string) => `Exportado a ${format}`,
     exportedAndSent: (format: string, email: string) => `Exportado a ${format} y enviado a ${email}`,
     crmSynced: (crm: string) => `Sincronizado con ${crm}`,
-    buildPlaylist: "Crear playlist",
     linkToCampaign: "Vincular a campaña",
+    duplicateList: "Duplicar",
+    copySuffix: "(copia)",
+    duplicated: (name: string) => `«${name}» creada`,
+    addSource: "Añadir fuente",
+    linkToCrm: "Vincular al CRM",
+    crmLinked: (crm: string) => `Sincronizada con ${crm}`,
+    getStartedTitle: "Empieza aquí",
+    getStartedDesc: "Añade prospectos a esta lista para empezar a trabajarla.",
+    getStartedDescCo: "Añade empresas a esta lista para empezar a trabajarla.",
+    importCsv: "Importar desde CSV",
     prospectsHeading: "Prospectos",
     addProspects: "Buscar prospectos",
     columns: "Columnas",
@@ -199,8 +216,7 @@ const COPY = {
       `"${name}" se eliminará de forma permanente. Los prospectos permanecen en tu espacio de trabajo.`,
     deleteConfirm: "Eliminar",
     listDeleted: "Lista eliminada",
-    dynamicPlaylist: "Playlist dinámica",
-    live: "En vivo",
+    dynamicBadge: "Dinámica",
     pauseInflow: "Pausar entrada",
     inflowPaused: "Entrada pausada — no se añadirán nuevos prospectos",
     audience: "Prospectos",
@@ -269,13 +285,22 @@ const COPY = {
     lists: "Liste",
     prospects: "prospect",
     edit: "Modifica",
-    deleteList: "Elimina lista",
+    deleteList: "Elimina",
     export: "Esporta",
     exported: (format: string) => `Esportato in ${format}`,
     exportedAndSent: (format: string, email: string) => `Esportato in ${format} e inviato a ${email}`,
     crmSynced: (crm: string) => `Sincronizzato con ${crm}`,
-    buildPlaylist: "Crea una playlist",
     linkToCampaign: "Collega a una campagna",
+    duplicateList: "Duplica",
+    copySuffix: "(copia)",
+    duplicated: (name: string) => `"${name}" creata`,
+    addSource: "Aggiungi fonte",
+    linkToCrm: "Collega al CRM",
+    crmLinked: (crm: string) => `Sincronizzata con ${crm}`,
+    getStartedTitle: "Inizia",
+    getStartedDesc: "Aggiungi prospect a questa lista per iniziare a lavorarla.",
+    getStartedDescCo: "Aggiungi aziende a questa lista per iniziare a lavorarla.",
+    importCsv: "Importa da CSV",
     prospectsHeading: "Prospect",
     addProspects: "Trova prospect",
     columns: "Colonne",
@@ -296,8 +321,7 @@ const COPY = {
       `"${name}" verrà eliminata definitivamente. I prospect restano nel tuo spazio di lavoro.`,
     deleteConfirm: "Elimina",
     listDeleted: "Lista eliminata",
-    dynamicPlaylist: "Playlist dinamica",
-    live: "Live",
+    dynamicBadge: "Dinamica",
     pauseInflow: "Metti in pausa l'ingresso",
     inflowPaused: "Ingresso in pausa — non verranno aggiunti nuovi prospect",
     audience: "Prospect",
@@ -365,13 +389,22 @@ const COPY = {
     lists: "Listes",
     prospects: "prospects",
     edit: "Modifier",
-    deleteList: "Supprimer la liste",
+    deleteList: "Supprimer",
     export: "Exporter",
     exported: (format: string) => `Exporté au format ${format}`,
     exportedAndSent: (format: string, email: string) => `Exporté au format ${format} et envoyé à ${email}`,
     crmSynced: (crm: string) => `Synchronisé avec ${crm}`,
-    buildPlaylist: "Créer une playlist",
     linkToCampaign: "Lier à une campagne",
+    duplicateList: "Dupliquer",
+    copySuffix: "(copie)",
+    duplicated: (name: string) => `« ${name} » créée`,
+    addSource: "Ajouter une source",
+    linkToCrm: "Lier au CRM",
+    crmLinked: (crm: string) => `Synchronisée avec ${crm}`,
+    getStartedTitle: "Pour commencer",
+    getStartedDesc: "Ajoutez des prospects à cette liste pour commencer à la travailler.",
+    getStartedDescCo: "Ajoutez des entreprises à cette liste pour commencer à la travailler.",
+    importCsv: "Importer depuis un CSV",
     prospectsHeading: "Prospects",
     addProspects: "Trouver des prospects",
     columns: "Colonnes",
@@ -392,8 +425,7 @@ const COPY = {
       `« ${name} » sera définitivement supprimée. Les prospects restent dans votre espace de travail.`,
     deleteConfirm: "Supprimer",
     listDeleted: "Liste supprimée",
-    dynamicPlaylist: "Playlist dynamique",
-    live: "En direct",
+    dynamicBadge: "Dynamique",
     pauseInflow: "Mettre en pause l'arrivée",
     inflowPaused: "Arrivée en pause — aucun nouveau prospect ne sera ajouté",
     audience: "Prospects",
@@ -461,13 +493,22 @@ const COPY = {
     lists: "Listen",
     prospects: "Prospects",
     edit: "Bearbeiten",
-    deleteList: "Liste löschen",
+    deleteList: "Löschen",
     export: "Exportieren",
     exported: (format: string) => `Als ${format} exportiert`,
     exportedAndSent: (format: string, email: string) => `Als ${format} exportiert und an ${email} gesendet`,
     crmSynced: (crm: string) => `Mit ${crm} synchronisiert`,
-    buildPlaylist: "Playlist erstellen",
     linkToCampaign: "Mit Kampagne verknüpfen",
+    duplicateList: "Duplizieren",
+    copySuffix: "(Kopie)",
+    duplicated: (name: string) => `„${name}“ erstellt`,
+    addSource: "Quelle hinzufügen",
+    linkToCrm: "Mit CRM verknüpfen",
+    crmLinked: (crm: string) => `Synchronisiert mit ${crm}`,
+    getStartedTitle: "Los geht's",
+    getStartedDesc: "Füge dieser Liste Prospects hinzu, um loszulegen.",
+    getStartedDescCo: "Füge dieser Liste Unternehmen hinzu, um loszulegen.",
+    importCsv: "Aus CSV importieren",
     prospectsHeading: "Prospects",
     addProspects: "Prospects finden",
     columns: "Spalten",
@@ -488,8 +529,7 @@ const COPY = {
       `„${name}" wird dauerhaft entfernt. Prospects bleiben in deinem Workspace erhalten.`,
     deleteConfirm: "Löschen",
     listDeleted: "Liste gelöscht",
-    dynamicPlaylist: "Dynamische Playlist",
-    live: "Live",
+    dynamicBadge: "Dynamisch",
     pauseInflow: "Zufluss pausieren",
     inflowPaused: "Zufluss pausiert — es werden keine neuen Prospects hinzugefügt",
     audience: "Prospects",
@@ -557,13 +597,22 @@ const COPY = {
     lists: "Listas",
     prospects: "prospects",
     edit: "Editar",
-    deleteList: "Eliminar lista",
+    deleteList: "Eliminar",
     export: "Exportar",
     exported: (format: string) => `Exportado para ${format}`,
     exportedAndSent: (format: string, email: string) => `Exportado para ${format} e enviado para ${email}`,
     crmSynced: (crm: string) => `Sincronizado com ${crm}`,
-    buildPlaylist: "Criar uma playlist",
     linkToCampaign: "Associar a uma campanha",
+    duplicateList: "Duplicar",
+    copySuffix: "(cópia)",
+    duplicated: (name: string) => `"${name}" criada`,
+    addSource: "Adicionar fonte",
+    linkToCrm: "Associar ao CRM",
+    crmLinked: (crm: string) => `Sincronizada com ${crm}`,
+    getStartedTitle: "Começar",
+    getStartedDesc: "Adicione prospects a esta lista para começar a trabalhá-la.",
+    getStartedDescCo: "Adicione empresas a esta lista para começar a trabalhá-la.",
+    importCsv: "Importar de CSV",
     prospectsHeading: "Prospects",
     addProspects: "Encontrar prospects",
     columns: "Colunas",
@@ -584,8 +633,7 @@ const COPY = {
       `"${name}" será removida permanentemente. Os prospects permanecem no seu espaço de trabalho.`,
     deleteConfirm: "Eliminar",
     listDeleted: "Lista eliminada",
-    dynamicPlaylist: "Playlist dinâmica",
-    live: "Em direto",
+    dynamicBadge: "Dinâmica",
     pauseInflow: "Pausar entrada",
     inflowPaused: "Entrada pausada — não serão adicionados novos prospects",
     audience: "Prospects",
@@ -653,13 +701,22 @@ const COPY = {
     lists: "Listas",
     prospects: "prospects",
     edit: "Editar",
-    deleteList: "Excluir lista",
+    deleteList: "Excluir",
     export: "Exportar",
     exported: (format: string) => `Exportado para ${format}`,
     exportedAndSent: (format: string, email: string) => `Exportado para ${format} e enviado para ${email}`,
     crmSynced: (crm: string) => `Sincronizado com ${crm}`,
-    buildPlaylist: "Criar uma playlist",
     linkToCampaign: "Vincular a uma campanha",
+    duplicateList: "Duplicar",
+    copySuffix: "(cópia)",
+    duplicated: (name: string) => `"${name}" criada`,
+    addSource: "Adicionar fonte",
+    linkToCrm: "Vincular ao CRM",
+    crmLinked: (crm: string) => `Sincronizada com ${crm}`,
+    getStartedTitle: "Começar",
+    getStartedDesc: "Adicione prospects a esta lista para começar a trabalhá-la.",
+    getStartedDescCo: "Adicione empresas a esta lista para começar a trabalhá-la.",
+    importCsv: "Importar de CSV",
     prospectsHeading: "Prospects",
     addProspects: "Encontrar prospects",
     columns: "Colunas",
@@ -680,8 +737,7 @@ const COPY = {
       `"${name}" será removida permanentemente. Os prospects permanecem no seu espaço de trabalho.`,
     deleteConfirm: "Excluir",
     listDeleted: "Lista excluída",
-    dynamicPlaylist: "Playlist dinâmica",
-    live: "Ao vivo",
+    dynamicBadge: "Dinâmica",
     pauseInflow: "Pausar entrada",
     inflowPaused: "Entrada pausada — nenhum novo prospect será adicionado",
     audience: "Prospects",
@@ -756,11 +812,16 @@ export default function ListDetail() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
+  // Which of AddRecordsDialog's own tabs to land on — the empty-state's
+  // "Import from CSV" shortcut jumps straight to Import instead of Search.
+  const [addInitialMode, setAddInitialMode] = React.useState<"search" | "import">("search")
   const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [enrichOpen, setEnrichOpen] = React.useState(false)
   const [linkCampaignOpen, setLinkCampaignOpen] = React.useState(false)
-  const [playlistOpen, setPlaylistOpen] = React.useState(false)
+  const [addSourceOpen, setAddSourceOpen] = React.useState(false)
+  const [linkCrmOpen, setLinkCrmOpen] = React.useState(false)
+  const [companyEnrichOpen, setCompanyEnrichOpen] = React.useState(false)
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
   // Per-row Enrich — a dedicated one-click action distinct from the "…"
   // menu's own Enrich item, scoped to a single member rather than the
@@ -877,51 +938,33 @@ export default function ListDetail() {
 
       <ListTabBar currentId={list.id} />
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-muted-foreground text-sm">{list.description}</p>
-          <p className="text-muted-foreground text-xs">
-            {memberCount} {isCompany ? c.companies : c.prospects}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setEditOpen(true)}>
-            <Pencil className="size-4" />
-            {c.edit}
-          </Button>
-          <Button
-            variant="outline"
-            className="text-destructive hover:text-destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <Trash2 className="size-4" />
-            {c.deleteList}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => toast.success(c.exported("CSV"))}
-          >
-            <Download className="size-4" />
-            {c.export}
-          </Button>
-          {!list.dynamic && (
-            <Button variant="outline" onClick={() => setPlaylistOpen(true)}>
-              <Sparkles className="size-4" />
-              {c.buildPlaylist}
-            </Button>
-          )}
-          {!isCompany && (
-            <Button variant="volt" onClick={() => setLinkCampaignOpen(true)}>
-              <Link2 className="size-4" />
-              {c.linkToCampaign}
-            </Button>
-          )}
-        </div>
-      </div>
+      <ListSettingsBox
+        list={list}
+        isCompany={isCompany}
+        memberCount={memberCount}
+        onEdit={() => setEditOpen(true)}
+        onDuplicate={() => {
+          const created = listStore.create({
+            name: `${list.name} ${c.copySuffix}`,
+            description: list.description,
+            color: list.color,
+            kind: list.kind,
+            source: list.source,
+            assigneeId: list.assigneeId,
+          })
+          toast.success(c.duplicated(created.name))
+          navigate(`/lists/${created.id}`)
+        }}
+        onDelete={() => setDeleteOpen(true)}
+        onAddSource={() => setAddSourceOpen(true)}
+        onEnrich={() =>
+          isCompany ? setCompanyEnrichOpen(true) : setEnrichOpen(true)
+        }
+        onLinkToCrm={() => setLinkCrmOpen(true)}
+        onLinkToCampaign={() => setLinkCampaignOpen(true)}
+      />
 
-      {list.dynamic && <DynamicPlaylistPanel list={list} />}
-
-      {!isCompany && members.length > 0 && (
+      {!isCompany && members.length > 0 && list.enrichment !== "continuous" && (
         <Card
           className={`mb-6 flex flex-row flex-wrap items-center gap-3 p-4 ${
             pending.length > 0 ? "border-chart-4/40 bg-chart-4/[0.05]" : ""
@@ -960,173 +1003,204 @@ export default function ListDetail() {
         </Card>
       )}
 
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">
-          {isCompany ? c.companiesHeading : c.prospectsHeading}
-        </h3>
-        <div className="flex items-center gap-2">
-          <TableViews
-            tableKey={isCompany ? "list-accounts" : "list-prospects"}
-            prefs={isCompany ? accountColumnPrefs : columnPrefs}
-          />
-          <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
-            <Columns3 className="size-4" />
-            <span className="hidden sm:inline">{c.columns}</span>
-          </Button>
-          <Button
-            variant={tableEditing ? "secondary" : "outline"}
-            size="sm"
-            onClick={() => setTableEditing((v) => !v)}
-          >
-            <Pencil className="size-4" />
-            <span className="hidden sm:inline">
-              {tableEditing ? c.editDone : c.editTable}
-            </span>
-          </Button>
-          {isCompany && accountMembers.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFindContactsOpen(true)}
-            >
-              <UserSearch className="size-4" />
-              {c.findContacts}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus className="size-4" />
-            {isCompany ? c.addCompanies : c.addProspects}
-          </Button>
-        </div>
-      </div>
-
-      {tableEditing && (
-        <p className="text-primary mb-3 flex items-center gap-1 text-xs">
-          <Pencil className="size-3" />
-          {c.editingHint}
-        </p>
-      )}
-
-      <SelectionControls
-        allSelected={allSelected}
-        onTogglePage={sel.togglePage}
-        selectedCount={selectedIds.size}
-        selectableCount={sel.selectableCount}
-        onSelectAllCapped={sel.selectAllCapped}
-        pageStart={sel.pageStart}
-        pageEnd={sel.pageEnd}
-        total={isCompany ? companyTsf.rows.length : peopleTsf.rows.length}
-        page={sel.page}
-        pageCount={sel.pageCount}
-        onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
-        onNextPage={() => sel.setPage(Math.min(sel.pageCount - 1, sel.page + 1))}
-      />
-
-      {isCompany ? (
-        <DataTable
-          columns={allCompanyColumns}
-          visible={accountColumnPrefs.visible}
-          rows={sel.pagedItems as Account[]}
-          rowKey={(a) => a.id}
-          locale={locale}
-          editing={tableEditing}
-          onUpdate={(a, patch) => accountStore.update(a.id, patch)}
-          onRowClick={(a) => navigate(`/companies/${a.id}`)}
-          empty={c.emptyStateCo}
-          selection={{
-            isSelected: (a) => selectedIds.has(a.id),
-            toggle: sel.toggleRow,
-            toggleAll: sel.togglePage,
-            allSelected,
-            someSelected,
+      {memberCount === 0 ? (
+        <GetStartedPanel
+          isCompany={isCompany}
+          onFind={() => {
+            setAddInitialMode("search")
+            setAddOpen(true)
           }}
-          actions={(a) => (
-            <RecordActionsMenu
-              kind="company"
-              record={a}
-              extra={{
-                label: c.removeFromListAction,
-                icon: <X className="size-4" />,
-                destructive: true,
-                onClick: () => {
-                  listStore.removeAccount(list.id, a.id)
-                  toast.success(c.removed)
-                },
-              }}
-            />
-          )}
-          sort={companyTsf.sort}
-          onSortChange={companyTsf.setSort}
-          filters={companyTsf.filters}
-          onFilterChange={companyTsf.setFilter}
-          filterRows={accountMembers}
+          onImport={() => {
+            setAddInitialMode("import")
+            setAddOpen(true)
+          }}
         />
       ) : (
-        <DataTable
-          columns={allPeopleColumns}
-          visible={columnPrefs.visible}
-          rows={sel.pagedItems as Prospect[]}
-          rowKey={(p) => p.id}
-          locale={locale}
-          editing={tableEditing}
-          onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
-          onRowClick={(p) => navigate(`/prospects/${p.id}`)}
-          empty={c.emptyState}
-          sort={peopleTsf.sort}
-          onSortChange={peopleTsf.setSort}
-          filters={peopleTsf.filters}
-          onFilterChange={peopleTsf.setFilter}
-          filterRows={members}
-          selection={{
-            isSelected: (p) => selectedIds.has(p.id),
-            toggle: sel.toggleRow,
-            toggleAll: sel.togglePage,
-            allSelected,
-            someSelected,
-          }}
-          actions={(p) => (
-            <div className="flex items-center justify-end gap-1">
+        <>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">
+              {isCompany ? c.companiesHeading : c.prospectsHeading}
+            </h3>
+            <div className="flex items-center gap-2">
               <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                aria-label={c.enrichRow}
-                onClick={() => setRowEnrichProspect(p)}
+                variant="outline"
+                size="sm"
+                onClick={() => toast.success(c.exported("CSV"))}
               >
-                <Layers className="size-4" />
+                <Download className="size-4" />
+                <span className="hidden sm:inline">{c.export}</span>
               </Button>
-              <RecordActionsMenu
-                kind="person"
-                record={p}
-                extra={{
-                  label: c.removeFromListAction,
-                  icon: <X className="size-4" />,
-                  destructive: true,
-                  onClick: () => {
-                    listStore.removeProspect(list.id, p.id)
-                    toast.success(c.removed)
-                  },
-                }}
+              <TableViews
+                tableKey={isCompany ? "list-accounts" : "list-prospects"}
+                prefs={isCompany ? accountColumnPrefs : columnPrefs}
               />
+              <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
+                <Columns3 className="size-4" />
+                <span className="hidden sm:inline">{c.columns}</span>
+              </Button>
+              <Button
+                variant={tableEditing ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => setTableEditing((v) => !v)}
+              >
+                <Pencil className="size-4" />
+                <span className="hidden sm:inline">
+                  {tableEditing ? c.editDone : c.editTable}
+                </span>
+              </Button>
+              {isCompany && accountMembers.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFindContactsOpen(true)}
+                >
+                  <UserSearch className="size-4" />
+                  {c.findContacts}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setAddInitialMode("search")
+                  setAddOpen(true)
+                }}
+              >
+                <Plus className="size-4" />
+                {isCompany ? c.addCompanies : c.addProspects}
+              </Button>
             </div>
-          )}
-        />
-      )}
+          </div>
 
-      <BulkActionsBar
-        count={selectedCount}
-        onClear={sel.clear}
-        onExport={() => setExportOpen(true)}
-        onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
-        onAddToList={() => setBulkAddOpen(true)}
-        onMoveToList={() => setBulkMoveOpen(true)}
-        extra={{
-          label: c.removeFromListAction,
-          icon: <X className="size-4" />,
-          destructive: true,
-          onClick: removeSelected,
-        }}
-      />
+          {tableEditing && (
+            <p className="text-primary mb-3 flex items-center gap-1 text-xs">
+              <Pencil className="size-3" />
+              {c.editingHint}
+            </p>
+          )}
+
+          <SelectionControls
+            allSelected={allSelected}
+            onTogglePage={sel.togglePage}
+            selectedCount={selectedIds.size}
+            selectableCount={sel.selectableCount}
+            onSelectAllCapped={sel.selectAllCapped}
+            pageStart={sel.pageStart}
+            pageEnd={sel.pageEnd}
+            total={isCompany ? companyTsf.rows.length : peopleTsf.rows.length}
+            page={sel.page}
+            pageCount={sel.pageCount}
+            onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
+            onNextPage={() => sel.setPage(Math.min(sel.pageCount - 1, sel.page + 1))}
+          />
+
+          {isCompany ? (
+            <DataTable
+              columns={allCompanyColumns}
+              visible={accountColumnPrefs.visible}
+              rows={sel.pagedItems as Account[]}
+              rowKey={(a) => a.id}
+              locale={locale}
+              editing={tableEditing}
+              onUpdate={(a, patch) => accountStore.update(a.id, patch)}
+              onRowClick={(a) => navigate(`/companies/${a.id}`)}
+              empty={c.emptyStateCo}
+              selection={{
+                isSelected: (a) => selectedIds.has(a.id),
+                toggle: sel.toggleRow,
+                toggleAll: sel.togglePage,
+                allSelected,
+                someSelected,
+              }}
+              actions={(a) => (
+                <RecordActionsMenu
+                  kind="company"
+                  record={a}
+                  extra={{
+                    label: c.removeFromListAction,
+                    icon: <X className="size-4" />,
+                    destructive: true,
+                    onClick: () => {
+                      listStore.removeAccount(list.id, a.id)
+                      toast.success(c.removed)
+                    },
+                  }}
+                />
+              )}
+              sort={companyTsf.sort}
+              onSortChange={companyTsf.setSort}
+              filters={companyTsf.filters}
+              onFilterChange={companyTsf.setFilter}
+              filterRows={accountMembers}
+            />
+          ) : (
+            <DataTable
+              columns={allPeopleColumns}
+              visible={columnPrefs.visible}
+              rows={sel.pagedItems as Prospect[]}
+              rowKey={(p) => p.id}
+              locale={locale}
+              editing={tableEditing}
+              onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
+              onRowClick={(p) => navigate(`/prospects/${p.id}`)}
+              empty={c.emptyState}
+              sort={peopleTsf.sort}
+              onSortChange={peopleTsf.setSort}
+              filters={peopleTsf.filters}
+              onFilterChange={peopleTsf.setFilter}
+              filterRows={members}
+              selection={{
+                isSelected: (p) => selectedIds.has(p.id),
+                toggle: sel.toggleRow,
+                toggleAll: sel.togglePage,
+                allSelected,
+                someSelected,
+              }}
+              actions={(p) => (
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.enrichRow}
+                    onClick={() => setRowEnrichProspect(p)}
+                  >
+                    <Layers className="size-4" />
+                  </Button>
+                  <RecordActionsMenu
+                    kind="person"
+                    record={p}
+                    extra={{
+                      label: c.removeFromListAction,
+                      icon: <X className="size-4" />,
+                      destructive: true,
+                      onClick: () => {
+                        listStore.removeProspect(list.id, p.id)
+                        toast.success(c.removed)
+                      },
+                    }}
+                  />
+                </div>
+              )}
+            />
+          )}
+
+          <BulkActionsBar
+            count={selectedCount}
+            onClear={sel.clear}
+            onExport={() => setExportOpen(true)}
+            onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
+            onAddToList={() => setBulkAddOpen(true)}
+            onMoveToList={() => setBulkMoveOpen(true)}
+            extra={{
+              label: c.removeFromListAction,
+              icon: <X className="size-4" />,
+              destructive: true,
+              onClick: removeSelected,
+            }}
+          />
+        </>
+      )}
 
       <ExportDialog
         open={exportOpen}
@@ -1205,7 +1279,17 @@ export default function ListDetail() {
 
       <ListFormDialog open={editOpen} onOpenChange={setEditOpen} list={list} />
 
-      <PlaylistWizard open={playlistOpen} onOpenChange={setPlaylistOpen} />
+      <AddSourceDialog
+        open={addSourceOpen}
+        onOpenChange={setAddSourceOpen}
+        list={list}
+      />
+
+      <LinkListToCrmDialog
+        open={linkCrmOpen}
+        onOpenChange={setLinkCrmOpen}
+        list={list}
+      />
 
       <ConfirmDialog
         open={deleteOpen}
@@ -1226,6 +1310,7 @@ export default function ListDetail() {
         onOpenChange={setAddOpen}
         kind={isCompany ? "company" : "contact"}
         listId={list.id}
+        initialMode={addInitialMode}
       />
 
       {isCompany && (
@@ -1241,6 +1326,15 @@ export default function ListDetail() {
         open={enrichOpen}
         onOpenChange={setEnrichOpen}
         prospects={members}
+        list={list}
+      />
+
+      {/* Company enrich — the settings box's "Enrich" action for company lists. */}
+      <CompanyEnrichDialog
+        open={companyEnrichOpen}
+        onOpenChange={setCompanyEnrichOpen}
+        accounts={accountMembers}
+        list={list}
       />
 
       {/* Bulk enrich — scoped to the selected members only. */}
@@ -1266,130 +1360,210 @@ export default function ListDetail() {
   )
 }
 
-function DynamicPlaylistPanel({ list }: { list: ProspectList }) {
+// The list's settings box — identity (name/duplicate/delete) plus the four
+// primary automations that make a list "dynamic": Add Source, Enrich, Link
+// to CRM, Link to Campaign. Always rendered, not just for dynamic lists —
+// picking a source from here is what makes a static list dynamic in the
+// first place.
+function ListSettingsBox({
+  list,
+  isCompany,
+  memberCount,
+  onEdit,
+  onDuplicate,
+  onDelete,
+  onAddSource,
+  onEnrich,
+  onLinkToCrm,
+  onLinkToCampaign,
+}: {
+  list: ProspectList
+  isCompany: boolean
+  memberCount: number
+  onEdit: () => void
+  onDuplicate: () => void
+  onDelete: () => void
+  onAddSource: () => void
+  onEnrich: () => void
+  onLinkToCrm: () => void
+  onLinkToCampaign: () => void
+}) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const savedSearches = useSavedSearches()
   const campaign = list.campaignId ? getCampaign(list.campaignId) : undefined
-  const criteriaChips = list.criteria
-    ? [
-        ...list.criteria.titles,
-        ...list.criteria.seniority,
-        ...list.criteria.industries,
-        ...list.criteria.headcount,
-        ...list.criteria.locations,
-        ...list.criteria.signals,
-      ]
-    : []
-  const shown = criteriaChips.slice(0, 6)
-  const extra = criteriaChips.length - shown.length
+
+  const linkedSearch = list.savedSearchId
+    ? savedSearches.find((s) => s.id === list.savedSearchId)
+    : undefined
+  const linkedCrmList = list.crmListId
+    ? CRM_LISTS.find((l) => l.id === list.crmListId)
+    : undefined
+
+  const audienceLabel = linkedSearch?.name ?? linkedCrmList?.name
+
+  const summaryParts: string[] = []
+  if (audienceLabel) summaryParts.push(audienceLabel)
+  if (list.dynamic) {
+    summaryParts.push(
+      list.enrichment === "continuous" ? c.keptFresh : c.enrichedOnAdd
+    )
+    if (!isCompany) {
+      summaryParts.push(
+        list.reviewMode === "manual_review"
+          ? c.reviewManually
+          : campaign
+            ? `${campaign.name} — ${list.sendMode === "continuous" ? c.autoEnrolls : c.oneTimeSend}`
+            : c.noSequence
+      )
+    }
+    if (list.crmSynced) summaryParts.push(c.crmLinked(CONNECTED_CRM_PROVIDER.name))
+  }
 
   return (
-    <Card className="border-primary/20 from-primary/[0.04] to-card mb-6 gap-0 overflow-hidden bg-gradient-to-br p-0">
+    <Card className="mb-6 gap-0 overflow-hidden p-0">
       <div className="flex flex-wrap items-center gap-2 border-b p-4">
-        <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
-          <Sparkles className="size-4" />
-        </span>
-        <span className="font-medium">{c.dynamicPlaylist}</span>
-        <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
-          <span className="relative flex size-1.5">
-            <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
-            <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
-          </span>
-          {c.live}
-        </Badge>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="ml-auto"
-          onClick={() => toast(c.inflowPaused)}
-        >
-          <Pause className="size-4" />
-          {c.pauseInflow}
+        <span
+          className="size-2.5 shrink-0 rounded-full"
+          style={{ backgroundColor: list.color }}
+        />
+        <span className="font-medium">{list.name}</span>
+        <Button variant="ghost" size="icon" className="size-7" onClick={onEdit}>
+          <Pencil className="size-3.5" />
         </Button>
+        {list.dynamic && (
+          <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+            <span className="relative flex size-1.5">
+              <span className="bg-chart-1 absolute inline-flex size-full animate-ping rounded-full opacity-60" />
+              <span className="bg-chart-1 relative inline-flex size-1.5 rounded-full" />
+            </span>
+            {c.dynamicBadge}
+          </Badge>
+        )}
+        <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onDuplicate}>
+            <Copy className="size-4" />
+            {c.duplicateList}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="size-4" />
+            {c.deleteList}
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 p-4 sm:grid-cols-3">
-        <div className="space-y-2">
-          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-            <Search className="size-3.5" />
-            {c.audience}
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {shown.map((chip) => (
-              <Badge key={chip} variant="secondary" className="font-normal">
-                {chip}
-              </Badge>
-            ))}
-            {extra > 0 && (
-              <Badge variant="outline" className="font-normal">
-                +{extra}
-              </Badge>
-            )}
-            {shown.length === 0 && (
-              <span className="text-muted-foreground text-sm">
-                {list.criteria?.keywords || c.allProspects}
-              </span>
-            )}
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4">
+        <Button
+          variant={list.dynamic ? "secondary" : "outline"}
+          onClick={onAddSource}
+        >
+          <Search className="size-4" />
+          {c.addSource}
+        </Button>
+        <Button variant="outline" onClick={onEnrich}>
+          <Layers className="size-4" />
+          {c.enrichContacts(memberCount)}
+        </Button>
+        <Button
+          variant={list.crmSynced ? "secondary" : "outline"}
+          onClick={onLinkToCrm}
+        >
+          <span
+            className="flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] font-semibold text-white"
+            style={{ backgroundColor: CONNECTED_CRM_PROVIDER.logoColor }}
+          >
+            {CONNECTED_CRM_PROVIDER.name.charAt(0)}
+          </span>
+          {c.linkToCrm}
+        </Button>
+        {!isCompany && (
+          <Button variant={campaign ? "secondary" : "outline"} onClick={onLinkToCampaign}>
+            <Link2 className="size-4" />
+            {c.linkToCampaign}
+          </Button>
+        )}
+      </div>
 
-        <div className="space-y-2">
-          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-            <Database className="size-3.5" />
-            {c.enrichment}
-          </p>
-          <p className="flex items-center gap-1.5 text-sm font-medium">
-            <RefreshCw className="text-primary size-3.5" />
-            {list.enrichment === "continuous" ? c.keptFresh : c.enrichedOnAdd}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-            <Send className="size-3.5" />
-            {c.outreach}
-          </p>
-          {list.reviewMode === "manual_review" ? (
-            <p className="text-sm">
-              <span className="flex items-center gap-1.5 font-medium">
-                <ListTodo className="text-primary size-3.5" />
-                {c.reviewManually}
+      {summaryParts.length > 0 && (
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t px-4 py-2.5 text-xs">
+          {summaryParts.map((part, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <span>·</span>}
+              <span>{part}</span>
+            </React.Fragment>
+          ))}
+          {typeof list.newPerWeek === "number" && (
+            <>
+              <span>·</span>
+              <span className="text-foreground flex items-center gap-1 font-medium">
+                <Zap className="text-chart-4 size-3.5" />
+                {c.newPerWeek(list.newPerWeek)}
               </span>
-              <span className="text-muted-foreground block text-xs">
-                {c.reviewManuallyDesc}
-              </span>
-            </p>
-          ) : campaign ? (
-            <p className="text-sm">
-              <Link
-                to={`/campaigns/${campaign.id}`}
-                className="font-medium hover:underline"
-              >
-                {campaign.name}
-              </Link>
-              <span className="text-muted-foreground block text-xs">
-                {list.sendMode === "continuous" ? c.autoEnrolls : c.oneTimeSend}
-              </span>
-            </p>
-          ) : (
-            <p className="text-muted-foreground text-sm">{c.noSequence}</p>
+            </>
+          )}
+          {list.lastSyncedAt && (
+            <>
+              <span>·</span>
+              <span>{c.lastSynced(formatDate(list.lastSyncedAt))}</span>
+            </>
+          )}
+          {list.dynamic && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto h-6 px-2"
+              onClick={() => toast(c.inflowPaused)}
+            >
+              <Pause className="size-3.5" />
+              {c.pauseInflow}
+            </Button>
           )}
         </div>
-      </div>
+      )}
+    </Card>
+  )
+}
 
-      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 border-t px-4 py-2.5 text-xs">
-        {typeof list.newPerWeek === "number" && (
-          <span className="text-foreground flex items-center gap-1 font-medium">
-            <Zap className="text-chart-4 size-3.5" />
-            {c.newPerWeek(list.newPerWeek)}
-          </span>
-        )}
-        {list.lastSyncedAt && (
-          <>
-            <span>·</span>
-            <span>{c.lastSynced(formatDate(list.lastSyncedAt))}</span>
-          </>
-        )}
+// Empty-list state — nothing to view, filter, or edit yet, so the table
+// toolbar (Export/Views/Columns/Edit) and the table itself stay hidden
+// until there's something in the list.
+function GetStartedPanel({
+  isCompany,
+  onFind,
+  onImport,
+}: {
+  isCompany: boolean
+  onFind: () => void
+  onImport: () => void
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+
+  return (
+    <Card className="flex flex-col items-center gap-4 border-dashed py-12 text-center">
+      <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+        <FolderOpen className="size-5" />
+      </span>
+      <div className="space-y-1">
+        <p className="font-medium">{c.getStartedTitle}</p>
+        <p className="text-muted-foreground text-sm">
+          {isCompany ? c.getStartedDescCo : c.getStartedDesc}
+        </p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button variant="volt" onClick={onFind}>
+          <Plus className="size-4" />
+          {isCompany ? c.addCompanies : c.addProspects}
+        </Button>
+        <Button variant="outline" onClick={onImport}>
+          <Download className="size-4" />
+          {c.importCsv}
+        </Button>
       </div>
     </Card>
   )

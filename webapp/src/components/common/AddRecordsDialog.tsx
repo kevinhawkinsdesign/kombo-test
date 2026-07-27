@@ -864,6 +864,7 @@ export function AddRecordsDialog({
   listId,
   scopeCompanies,
   allowEntityToggle = false,
+  initialMode = "search",
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -880,6 +881,10 @@ export function AddRecordsDialog({
   // entry point (Home's "Find prospects & companies" quick action, and the
   // sidebar's "Search" nav item).
   allowEntityToggle?: boolean
+  // Which of the dialog's own internal tabs to land on when it opens —
+  // lets a caller (e.g. an empty list's "Import from CSV" shortcut) skip
+  // straight to the Import tab instead of the default Search tab.
+  initialMode?: Mode
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -915,7 +920,7 @@ export function AddRecordsDialog({
     setWasOpen(true)
     // Scoping to companies means we're finding their people.
     setEntity(scoped ? "people" : entityFromKind(kind))
-    setMode("search")
+    setMode(initialMode)
     setInput("")
     setQuery({ ...EMPTY_QUERY })
     setSortKey("fit")

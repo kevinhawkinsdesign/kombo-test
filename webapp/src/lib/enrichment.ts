@@ -1,4 +1,4 @@
-import type { Prospect } from "./types"
+import type { Account, Prospect } from "./types"
 
 // What to reveal when enriching. The three are independent and non-overlapping:
 // "email" reveals only the verified email, "phone" only the direct dial, and
@@ -29,6 +29,15 @@ export const MAX_ENRICH_BATCH = 1000
 // freshly sourced contacts are created with enriched === false.
 export function isEnriched(prospect: Prospect): boolean {
   return prospect.enriched !== false
+}
+
+// Company enrichment is a single flat action, not a scope picker like
+// prospects — it pulls whatever is available (contact info, recent
+// investment/hiring activity, etc.) in one pass.
+export const COMPANY_ENRICH_COST = 2
+
+export function isCompanyEnriched(account: Account): boolean {
+  return account.enriched !== false
 }
 
 // Whether a contact still needs the given enrichment scope. Email and phone are
