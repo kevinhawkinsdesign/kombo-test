@@ -62,6 +62,15 @@ export interface ColumnDef<T> {
     update: (patch: Partial<T>) => void,
     locale: Locale
   ) => React.ReactNode
+  // Plain sortable/filterable value backing this column. Omitted entirely on
+  // columns with no single well-defined value (multi-value chip lists like
+  // Technologies/Signals/Tags) — those simply render with no sort/filter
+  // affordance in the header.
+  getValue?: (row: T) => string | number | boolean | null | undefined
+  // "enum" shows a checklist of the distinct values present in the current
+  // rows; "text" (the default when getValue is set) shows a contains filter.
+  // Ignored when getValue is omitted.
+  filterType?: "enum" | "text"
 }
 
 export interface ColGroup {
@@ -81,6 +90,17 @@ function pickFrom<T>(id: string, salt: string, pool: T[]): T {
 }
 function numFrom(id: string, salt: string, min: number, max: number): number {
   return min + (hash(id + salt) % (max - min + 1))
+}
+
+// Sortable numeric value from a formatted range string ("500-1000",
+// "$50M-$100M", "5000+") — the low end, with K/M/B suffixes expanded. Used so
+// range-bucketed columns sort numerically instead of lexicographically
+// (which would put "1000-5000" before "200-500").
+function parseRangeStart(s: string): number {
+  const m = s.match(/([\d.]+)\s*([kmbKMB]?)/)
+  if (!m) return 0
+  const mult = { k: 1e3, m: 1e6, b: 1e9 }[m[2].toLowerCase()] ?? 1
+  return parseFloat(m[1]) * mult
 }
 
 /* ------------------------------ render helpers --------------------------- */
@@ -197,7 +217,14 @@ function mockText(
   salt: string,
   pool: string[]
 ): ColumnDef<Account> {
-  return { id, label, group, render: (a) => mut(pickFrom(a.id, salt, pool)) }
+  return {
+    id,
+    label,
+    group,
+    render: (a) => mut(pickFrom(a.id, salt, pool)),
+    getValue: (a) => pickFrom(a.id, salt, pool),
+    filterType: "enum",
+  }
 }
 function mockNum(
   id: string,
@@ -214,6 +241,7 @@ function mockNum(
     group,
     align: "right",
     render: (a) => fmt(numFrom(a.id, salt, min, max)),
+    getValue: (a) => numFrom(a.id, salt, min, max),
   }
 }
 
@@ -225,6 +253,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     group: "firmo",
     pinned: true,
     minWidth: "200px",
+    getValue: (a) => a.name,
     render: (a) => (
       <div className="flex items-center gap-3">
         <span
@@ -273,6 +302,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"),
     group: "firmo",
     default: true,
+    getValue: (a) => a.industry,
     render: (a) => mut(a.industry),
     edit: (a, update) => (
       <Input
@@ -289,6 +319,8 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     label: L("Tier", "Segmento", "Livello", "Catégorie", "Segment", "Segmento", "Segmento"),
     group: "firmo",
     default: true,
+    getValue: (a) => a.tier,
+    filterType: "enum",
     render: (a) => (
       <Badge variant="secondary" className="font-normal">
         {a.tier}
@@ -315,6 +347,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     group: "firmo",
     default: true,
     align: "right",
+    getValue: (a) => parseRangeStart(a.employees),
     render: (a) => num(a.employees),
     edit: (a, update) => (
       <Input
@@ -330,13 +363,14 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     id: "revenue",
     label: L("Annual revenue", "Ingresos anuales", "Fatturato annuo", "Chiffre d'affaires annuel", "Jahresumsatz", "Receita anual", "Receita anual"),
     group: "firmo",
+    getValue: (a) => parseRangeStart(a.revenue),
     render: (a) => mut(a.revenue),
   },
   mockText("companyType", L("Company type", "Tipo de empresa", "Tipo di azienda", "Type d'entreprise", "Unternehmenstyp", "Tipo de empresa", "Tipo de empresa"), "firmo", "ctype", COMPANY_TYPES),
   mockNum("founded", L("Founded", "Fundación", "Fondazione", "Fondation", "Gründung", "Fundação", "Fundação"), "firmo", "fnd", 1996, 2021),
-  { id: "hq", label: L("HQ location", "Sede", "Sede centrale", "Siège social", "Hauptsitz", "Sede", "Sede"), group: "firmo", render: (a) => mut(a.location) },
+  { id: "hq", label: L("HQ location", "Sede", "Sede centrale", "Siège social", "Hauptsitz", "Sede", "Sede"), group: "firmo", getValue: (a) => a.location, render: (a) => mut(a.location) },
   mockText("hqRegion", L("HQ region", "Región sede", "Regione sede", "Région du siège", "Region des Hauptsitzes", "Região da sede", "Região da sede"), "firmo", "rgn", REGIONS),
-  { id: "domain", label: L("Website", "Sitio web", "Sito web", "Site web", "Website", "Sítio web", "Site"), group: "firmo", render: (a) => mut(a.domain) },
+  { id: "domain", label: L("Website", "Sitio web", "Sito web", "Site web", "Website", "Sítio web", "Site"), group: "firmo", getValue: (a) => a.domain, render: (a) => mut(a.domain) },
   mockText("fortune", L("Fortune rank", "Ranking Fortune", "Classifica Fortune", "Classement Fortune", "Fortune-Ranking", "Classificação Fortune", "Ranking Fortune"), "firmo", "ftn", FORTUNE),
 
   // Growth & signals
@@ -353,6 +387,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     id: "intent",
     label: L("Buyer intent", "Intención de compra", "Intenzione d'acquisto", "Intention d'achat", "Kaufabsicht", "Intenção de compra", "Intenção de compra"),
     group: "growth",
+    getValue: (a) => numFrom(a.id, "int", 35, 98),
     render: (a) => scoreChip(numFrom(a.id, "int", 35, 98)),
   },
   mockNum("growthRate", L("YoY growth", "Crec. interanual", "Crescita annua", "Croissance annuelle", "Wachstum ggü. Vorjahr", "Cresc. anual", "Cresc. anual"), "growth", "yoy", -8, 60, (n) => pct(n)),
@@ -363,23 +398,27 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     label: L("Health", "Salud", "Salute", "Santé", "Zustand", "Saúde", "Saúde"),
     group: "crm",
     default: true,
+    getValue: (a) => a.healthScore,
     render: (a) => scoreChip(a.healthScore),
   },
-  { id: "openDeals", label: L("Open deals", "Negocios abiertos", "Trattative aperte", "Transactions ouvertes", "Offene Deals", "Negócios em aberto", "Negócios em aberto"), group: "crm", align: "right", render: (a) => num(a.openDeals) },
+  { id: "openDeals", label: L("Open deals", "Negocios abiertos", "Trattative aperte", "Transactions ouvertes", "Offene Deals", "Negócios em aberto", "Negócios em aberto"), group: "crm", align: "right", getValue: (a) => a.openDeals, render: (a) => num(a.openDeals) },
   {
     id: "pipeline",
     label: L("Pipeline", "Pipeline", "Pipeline", "Pipeline", "Pipeline", "Pipeline", "Pipeline"),
     group: "crm",
     default: true,
     align: "right",
+    getValue: (a) => a.pipeline,
     render: (a) => <span className="text-sm font-medium tabular-nums">{money(a.pipeline)}</span>,
   },
-  { id: "contacts", label: L("Prospects", "Prospectos", "Prospect", "Prospects", "Prospects", "Prospects", "Prospects"), group: "crm", align: "right", render: (a) => num(a.contacts) },
+  { id: "contacts", label: L("Prospects", "Prospectos", "Prospect", "Prospects", "Prospects", "Prospects", "Prospects"), group: "crm", align: "right", getValue: (a) => a.contacts, render: (a) => num(a.contacts) },
   {
     id: "owner",
     label: L("Owner", "Responsable", "Proprietario", "Propriétaire", "Owner", "Proprietário", "Proprietário"),
     group: "crm",
     default: true,
+    getValue: (a) => getRep(a.ownerId)?.name ?? "",
+    filterType: "enum",
     render: (a, locale) => {
       const owner = getRep(a.ownerId)
       if (!owner)
@@ -409,6 +448,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     id: "lastActivity",
     label: L("Last activity", "Última actividad", "Ultima attività", "Dernière activité", "Letzte Aktivität", "Última atividade", "Última atividade"),
     group: "crm",
+    getValue: (a) => a.lastActivity,
     render: (a, locale) =>
       mut(
         new Date(a.lastActivity).toLocaleDateString(
@@ -421,6 +461,8 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     id: "inCRM",
     label: L("In CRM", "En CRM", "Nel CRM", "Dans le CRM", "Im CRM", "No CRM", "No CRM"),
     group: "crm",
+    getValue: (a) => hash(a.id + "crm") % 3 !== 0,
+    filterType: "enum",
     render: (a, locale) => yesNo(hash(a.id + "crm") % 3 !== 0, locale),
   },
   mockText("accountList", L("Account list", "Lista de cuentas", "Elenco account", "Liste de comptes", "Kontoliste", "Lista de contas", "Lista de contas"), "crm", "lst", LISTS),
@@ -445,6 +487,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     label: L("About", "Descripción", "Descrizione", "Description", "Beschreibung", "Descrição", "Descrição"),
     group: "meta",
     minWidth: "220px",
+    getValue: (a) => a.about,
     render: (a) => (
       <span className="text-muted-foreground line-clamp-1 max-w-[260px] text-sm">
         {a.about}
@@ -512,7 +555,14 @@ function pTxt(
   salt: string,
   pool: string[]
 ): ColumnDef<Prospect> {
-  return { id, label, group, render: (p) => mut(pickFrom(p.id, salt, pool)) }
+  return {
+    id,
+    label,
+    group,
+    render: (p) => mut(pickFrom(p.id, salt, pool)),
+    getValue: (p) => pickFrom(p.id, salt, pool),
+    filterType: "enum",
+  }
 }
 function pNum(
   id: string,
@@ -529,6 +579,7 @@ function pNum(
     group,
     align: "right",
     render: (p) => fmt(numFrom(p.id, salt, min, max)),
+    getValue: (p) => numFrom(p.id, salt, min, max),
   }
 }
 function pBool(id: string, label: Loc, group: string, salt: string): ColumnDef<Prospect> {
@@ -537,6 +588,8 @@ function pBool(id: string, label: Loc, group: string, salt: string): ColumnDef<P
     label,
     group,
     render: (p, locale) => yesNo(hash(p.id + salt) % 5 < 2, locale),
+    getValue: (p) => hash(p.id + salt) % 5 < 2,
+    filterType: "enum",
   }
 }
 
@@ -547,6 +600,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
     group: "role",
     pinned: true,
     minWidth: "200px",
+    getValue: (p) => `${p.firstName} ${p.lastName}`,
     render: (p) => (
       <div className="flex items-center gap-3">
         <ProspectAvatar prospect={p} />
@@ -568,11 +622,11 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   },
 
   // Role
-  { id: "title", label: L("Job title", "Cargo", "Ruolo", "Poste", "Berufsbezeichnung", "Cargo", "Cargo"), group: "role", render: (p) => mut(p.title) },
-  { id: "seniority", label: L("Seniority", "Antigüedad", "Anzianità", "Ancienneté", "Senioritätsstufe", "Senioridade", "Senioridade"), group: "role", render: (p) => (
+  { id: "title", label: L("Job title", "Cargo", "Ruolo", "Poste", "Berufsbezeichnung", "Cargo", "Cargo"), group: "role", getValue: (p) => p.title, render: (p) => mut(p.title) },
+  { id: "seniority", label: L("Seniority", "Antigüedad", "Anzianità", "Ancienneté", "Senioritätsstufe", "Senioridade", "Senioridade"), group: "role", getValue: (p) => p.seniority, filterType: "enum", render: (p) => (
     <Badge variant="secondary" className="font-normal">{p.seniority}</Badge>
   ) },
-  { id: "department", label: L("Department", "Departamento", "Reparto", "Département", "Abteilung", "Departamento", "Departamento"), group: "role", render: (p) => mut(p.department) },
+  { id: "department", label: L("Department", "Departamento", "Reparto", "Département", "Abteilung", "Departamento", "Departamento"), group: "role", getValue: (p) => p.department, filterType: "enum", render: (p) => mut(p.department) },
   pTxt("function", L("Function", "Función", "Funzione", "Fonction", "Funktion", "Função", "Função"), "role", "fn", FUNCTIONS),
   pTxt("mgmtLevel", L("Management level", "Nivel directivo", "Livello dirigenziale", "Niveau hiérarchique", "Führungsebene", "Nível de gestão", "Nível de gestão"), "role", "ml", MGMT),
   pNum("yearsInRole", L("Years in role", "Años en el puesto", "Anni nel ruolo", "Années dans le poste", "Jahre in der Rolle", "Anos na função", "Anos na função"), "role", "yir", 0, 9),
@@ -582,7 +636,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   pTxt("pastTitle", L("Past title", "Cargo anterior", "Ruolo precedente", "Poste précédent", "Vorherige Position", "Cargo anterior", "Cargo anterior"), "role", "pti", ["Account Executive", "Sales Manager", "BDR Lead", "Consultant"]),
 
   // Company
-  { id: "company", label: L("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"), group: "company", default: true, render: (p) => (
+  { id: "company", label: L("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"), group: "company", default: true, getValue: (p) => p.company, render: (p) => (
     <div className="min-w-0">
       <TruncatedText label={p.company}>
         <p className="truncate font-medium">{p.company}</p>
@@ -592,26 +646,28 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
       </TruncatedText>
     </div>
   ) },
-  { id: "companyDomain", label: L("Company domain", "Dominio", "Dominio", "Domaine", "Domain", "Domínio", "Domínio"), group: "company", render: (p) => mut(p.companyDomain) },
-  { id: "industry", label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"), group: "company", render: (p) => mut(p.industry) },
-  { id: "headcount", label: L("Company size", "Tamaño empresa", "Dimensione azienda", "Taille de l'entreprise", "Unternehmensgröße", "Dimensão da empresa", "Tamanho da empresa"), group: "company", render: (p) => mut(p.headcount) },
-  { id: "revenue", label: L("Company revenue", "Ingresos empresa", "Fatturato azienda", "Chiffre d'affaires de l'entreprise", "Unternehmensumsatz", "Receita da empresa", "Receita da empresa"), group: "company", render: (p) => mut(p.revenue) },
+  { id: "companyDomain", label: L("Company domain", "Dominio", "Dominio", "Domaine", "Domain", "Domínio", "Domínio"), group: "company", getValue: (p) => p.companyDomain, render: (p) => mut(p.companyDomain) },
+  { id: "industry", label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"), group: "company", getValue: (p) => p.industry, render: (p) => mut(p.industry) },
+  { id: "headcount", label: L("Company size", "Tamaño empresa", "Dimensione azienda", "Taille de l'entreprise", "Unternehmensgröße", "Dimensão da empresa", "Tamanho da empresa"), group: "company", getValue: (p) => parseRangeStart(p.headcount), render: (p) => mut(p.headcount) },
+  { id: "revenue", label: L("Company revenue", "Ingresos empresa", "Fatturato azienda", "Chiffre d'affaires de l'entreprise", "Unternehmensumsatz", "Receita da empresa", "Receita da empresa"), group: "company", getValue: (p) => parseRangeStart(p.revenue), render: (p) => mut(p.revenue) },
   pTxt("companyType", L("Company type", "Tipo de empresa", "Tipo di azienda", "Type d'entreprise", "Unternehmenstyp", "Tipo de empresa", "Tipo de empresa"), "company", "pct", COMPANY_TYPES),
   pTxt("companyRegion", L("Company region", "Región empresa", "Regione azienda", "Région de l'entreprise", "Unternehmensregion", "Região da empresa", "Região da empresa"), "company", "prg", REGIONS),
 
   // Contact
-  { id: "email", label: L("Email", "Email", "Email", "E-mail", "E-Mail", "Email", "E-mail"), group: "contact", render: (p) => mut(p.email || "—") },
+  { id: "email", label: L("Email", "Email", "Email", "E-mail", "E-Mail", "Email", "E-mail"), group: "contact", getValue: (p) => p.email || "", render: (p) => mut(p.email || "—") },
   {
     id: "emailStatus",
     label: L("Email status", "Estado del email", "Stato email", "Statut de l'e-mail", "E-Mail-Status", "Estado do email", "Status do e-mail"),
     group: "contact",
+    getValue: (p) => EMAIL_STATUS[hash(p.id + "es") % EMAIL_STATUS.length].en,
+    filterType: "enum",
     render: (p, locale) => {
       const s = EMAIL_STATUS[hash(p.id + "es") % EMAIL_STATUS.length]
       return <Badge variant={s.variant} className="font-normal">{s[locale]}</Badge>
     },
   },
-  { id: "phone", label: L("Phone", "Teléfono", "Telefono", "Téléphone", "Telefon", "Telefone", "Telefone"), group: "contact", render: (p) => mut(p.phone || "—") },
-  { id: "location", label: L("Location", "Ubicación", "Posizione", "Lieu", "Standort", "Localização", "Localização"), group: "contact", render: (p) => mut(p.location) },
+  { id: "phone", label: L("Phone", "Teléfono", "Telefono", "Téléphone", "Telefon", "Telefone", "Telefone"), group: "contact", getValue: (p) => p.phone || "", render: (p) => mut(p.phone || "—") },
+  { id: "location", label: L("Location", "Ubicación", "Posizione", "Lieu", "Standort", "Localização", "Localização"), group: "contact", getValue: (p) => p.location, render: (p) => mut(p.location) },
   pTxt("connectionDegree", L("Connection", "Conexión", "Connessione", "Connexion", "Verbindung", "Ligação", "Conexão"), "contact", "cd", DEGREES),
   pNum("mutualConnections", L("Mutual connections", "Conexiones en común", "Connessioni in comune", "Relations en commun", "Gemeinsame Kontakte", "Contactos em comum", "Conexões em comum"), "contact", "mc", 0, 24),
   pNum("followers", L("Followers", "Seguidores", "Follower", "Abonnés", "Follower", "Seguidores", "Seguidores"), "contact", "pf", 120, 38000, (n) => num(n.toLocaleString())),
@@ -619,15 +675,16 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   pTxt("language", L("Language", "Idioma", "Lingua", "Langue", "Sprache", "Idioma", "Idioma"), "contact", "plng", LANGS),
 
   // Engagement & signals
-  { id: "score", label: L("Score", "Puntuación", "Punteggio", "Score", "Score", "Pontuação", "Pontuação"), group: "engage", default: true, render: (p) => <ScoreBadge score={p.score} /> },
-  { id: "status", label: L("Status", "Estado", "Stato", "Statut", "Status", "Estado", "Status"), group: "engage", default: true, render: (p) => <StatusBadge status={p.status} /> },
-  { id: "source", label: L("Source", "Origen", "Origine", "Source", "Quelle", "Origem", "Origem"), group: "engage", default: true, render: (p, locale) => <SourceBadge source={prospectSource(p)} locale={locale} /> },
+  { id: "score", label: L("Score", "Puntuación", "Punteggio", "Score", "Score", "Pontuação", "Pontuação"), group: "engage", default: true, getValue: (p) => p.score, render: (p) => <ScoreBadge score={p.score} /> },
+  { id: "status", label: L("Status", "Estado", "Stato", "Statut", "Status", "Estado", "Status"), group: "engage", default: true, getValue: (p) => p.status ?? "", filterType: "enum", render: (p) => <StatusBadge status={p.status} /> },
+  { id: "source", label: L("Source", "Origen", "Origine", "Source", "Quelle", "Origem", "Origem"), group: "engage", default: true, getValue: (p) => prospectSource(p), filterType: "enum", render: (p, locale) => <SourceBadge source={prospectSource(p)} locale={locale} /> },
   { id: "tags", label: L("Tags", "Etiquetas", "Tag", "Tags", "Tags", "Etiquetas", "Tags"), group: "engage", minWidth: "140px", render: (p) => chips(p.tags) },
   { id: "signals", label: L("Signals", "Señales", "Segnali", "Signaux", "Signale", "Sinais", "Sinais"), group: "engage", minWidth: "160px", render: (p) => chips(p.signals) },
   {
     id: "lastActivity",
     label: L("Last activity", "Última actividad", "Ultima attività", "Dernière activité", "Letzte Aktivität", "Última atividade", "Última atividade"),
     group: "engage",
+    getValue: (p) => p.lastActivity,
     render: (p, locale) =>
       mut(
         new Date(p.lastActivity).toLocaleDateString(INTL_LOCALE[locale], {
@@ -640,6 +697,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
     id: "addedAt",
     label: L("Added", "Añadido", "Aggiunto", "Ajouté", "Hinzugefügt", "Adicionado", "Adicionado"),
     group: "engage",
+    getValue: (p) => p.addedAt,
     render: (p, locale) =>
       mut(
         new Date(p.addedAt).toLocaleDateString(INTL_LOCALE[locale], {
@@ -654,7 +712,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   pBool("viewedProfile", L("Viewed your profile", "Vio tu perfil", "Ha visto il tuo profilo", "A consulté votre profil", "Hat dein Profil angesehen", "Viu o seu perfil", "Viu seu perfil"), "engage", "vp"),
   pBool("inCRM", L("In CRM", "En CRM", "Nel CRM", "Dans le CRM", "Im CRM", "No CRM", "No CRM"), "engage", "icr"),
   pTxt("persona", L("Persona", "Persona", "Persona", "Persona", "Persona", "Persona", "Persona"), "engage", "pp", PERSONAS_P),
-  { id: "intent", label: L("Buyer intent", "Intención", "Intenzione", "Intention", "Absicht", "Intenção", "Intenção"), group: "engage", render: (p) => scoreChip(numFrom(p.id, "pint", 30, 97)) },
+  { id: "intent", label: L("Buyer intent", "Intención", "Intenzione", "Intention", "Absicht", "Intenção", "Intenção"), group: "engage", getValue: (p) => numFrom(p.id, "pint", 30, 97), render: (p) => scoreChip(numFrom(p.id, "pint", 30, 97)) },
 
   // Background
   pTxt("school", L("School", "Universidad", "Università", "École", "Hochschule", "Universidade", "Universidade"), "background", "sch", SCHOOLS),
@@ -708,6 +766,12 @@ export function aiColumnToDef<T extends { id: string }>(
     label: L(col.label, col.label, col.label, col.label, col.label, col.label, col.label),
     group: AI_COLUMN_GROUP.id,
     minWidth: "150px",
+    getValue: (row) => {
+      if (col.output === "score") return numFrom(row.id, col.id, 30, 99)
+      if (col.output === "yesno") return hash(row.id + col.id) % 5 < 3
+      return textValue(row.id)
+    },
+    filterType: col.output === "text" ? "text" : "enum",
     render: (row, locale) => {
       if (col.output === "score") return scoreChip(numFrom(row.id, col.id, 30, 99))
       if (col.output === "yesno") return yesNo(hash(row.id + col.id) % 5 < 3, locale)
