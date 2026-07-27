@@ -86,6 +86,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
@@ -273,6 +276,13 @@ const COPY = {
     sentScheduled: "Scheduled reply sent",
     scheduleCancelled: "Scheduled reply cancelled",
     sendLater: "Send later",
+    snooze: "Snooze",
+    unsnooze: "Remove snooze",
+    snoozedFolder: "Snoozed",
+    snoozedToast: (d: string) => `Snoozed until ${d}`,
+    unsnoozedToast: "Removed from Snoozed",
+    snoozeTitle: "Snooze until…",
+    snoozeUntilLabel: "Until",
     scheduleSend: "Schedule send",
     inOneHour: "In 1 hour",
     tomorrowMorning: "Tomorrow, 8:00 AM",
@@ -415,6 +425,13 @@ const COPY = {
     sentScheduled: "Respuesta programada enviada",
     scheduleCancelled: "Respuesta programada cancelada",
     sendLater: "Enviar más tarde",
+    snooze: "Posponer",
+    unsnooze: "Quitar posposición",
+    snoozedFolder: "Pospuestos",
+    snoozedToast: (d: string) => `Pospuesto hasta ${d}`,
+    unsnoozedToast: "Quitado de Pospuestos",
+    snoozeTitle: "Posponer hasta…",
+    snoozeUntilLabel: "Hasta",
     scheduleSend: "Programar envío",
     inOneHour: "En 1 hora",
     tomorrowMorning: "Mañana, 8:00",
@@ -557,6 +574,13 @@ const COPY = {
     sentScheduled: "Risposta programmata inviata",
     scheduleCancelled: "Risposta programmata annullata",
     sendLater: "Invia più tardi",
+    snooze: "Rimanda",
+    unsnooze: "Rimuovi rinvio",
+    snoozedFolder: "Rimandati",
+    snoozedToast: (d: string) => `Rimandato fino al ${d}`,
+    unsnoozedToast: "Rimosso da Rimandati",
+    snoozeTitle: "Rimanda fino a…",
+    snoozeUntilLabel: "Fino a",
     scheduleSend: "Programma invio",
     inOneHour: "Tra 1 ora",
     tomorrowMorning: "Domani, 8:00",
@@ -699,6 +723,13 @@ const COPY = {
     sentScheduled: "Réponse programmée envoyée",
     scheduleCancelled: "Réponse programmée annulée",
     sendLater: "Envoyer plus tard",
+    snooze: "Reporter",
+    unsnooze: "Annuler le report",
+    snoozedFolder: "Reportés",
+    snoozedToast: (d: string) => `Reporté jusqu'au ${d}`,
+    unsnoozedToast: "Retiré de Reportés",
+    snoozeTitle: "Reporter jusqu'à…",
+    snoozeUntilLabel: "Jusqu'à",
     scheduleSend: "Programmer l'envoi",
     inOneHour: "Dans 1 heure",
     tomorrowMorning: "Demain, 8h00",
@@ -841,6 +872,13 @@ const COPY = {
     sentScheduled: "Geplante Antwort gesendet",
     scheduleCancelled: "Geplante Antwort abgebrochen",
     sendLater: "Später senden",
+    snooze: "Zurückstellen",
+    unsnooze: "Zurückstellung aufheben",
+    snoozedFolder: "Zurückgestellt",
+    snoozedToast: (d: string) => `Zurückgestellt bis ${d}`,
+    unsnoozedToast: "Aus „Zurückgestellt“ entfernt",
+    snoozeTitle: "Zurückstellen bis…",
+    snoozeUntilLabel: "Bis",
     scheduleSend: "Senden planen",
     inOneHour: "In 1 Stunde",
     tomorrowMorning: "Morgen, 8:00 Uhr",
@@ -983,6 +1021,13 @@ const COPY = {
     sentScheduled: "Resposta agendada enviada",
     scheduleCancelled: "Resposta agendada cancelada",
     sendLater: "Enviar mais tarde",
+    snooze: "Adiar",
+    unsnooze: "Remover adiamento",
+    snoozedFolder: "Adiados",
+    snoozedToast: (d: string) => `Adiado até ${d}`,
+    unsnoozedToast: "Removido de Adiados",
+    snoozeTitle: "Adiar até…",
+    snoozeUntilLabel: "Até",
     scheduleSend: "Agendar envio",
     inOneHour: "Daqui a 1 hora",
     tomorrowMorning: "Amanhã, 8:00",
@@ -1125,6 +1170,13 @@ const COPY = {
     sentScheduled: "Resposta agendada enviada",
     scheduleCancelled: "Resposta agendada cancelada",
     sendLater: "Enviar mais tarde",
+    snooze: "Adiar",
+    unsnooze: "Remover adiamento",
+    snoozedFolder: "Adiados",
+    snoozedToast: (d: string) => `Adiado até ${d}`,
+    unsnoozedToast: "Removido de Adiados",
+    snoozeTitle: "Adiar até…",
+    snoozeUntilLabel: "Até",
     scheduleSend: "Agendar envio",
     inOneHour: "Em 1 hora",
     tomorrowMorning: "Amanhã, 8:00",
@@ -1150,6 +1202,7 @@ type Folder =
   | "my_tasks"
   | "follow_ups"
   | "scheduled"
+  | "snoozed"
   | "sent"
   | "archived"
 
@@ -1160,6 +1213,7 @@ type FolderLabelKey =
   | "needs_reply"
   | "myTasks"
   | "scheduled"
+  | "snoozedFolder"
   | "sent"
   | "archivedFolder"
 
@@ -1170,6 +1224,7 @@ const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "unread", key: "unread", icon: MailOpen },
   { id: "needs_reply", key: "needs_reply", icon: Reply },
   { id: "scheduled", key: "scheduled", icon: CalendarClock },
+  { id: "snoozed", key: "snoozedFolder", icon: AlarmClock },
   { id: "sent", key: "sent", icon: Send },
   { id: "my_tasks", key: "myTasks", icon: ListTodo },
   { id: "archived", key: "archivedFolder", icon: Archive },
@@ -1268,6 +1323,9 @@ function isScheduled(conv: Conversation): boolean {
 function isFutureTimestamp(iso: string): boolean {
   return new Date(iso).getTime() > Date.now()
 }
+function isSnoozed(conv: Conversation): boolean {
+  return Boolean(conv.snoozedUntil && isFutureTimestamp(conv.snoozedUntil))
+}
 function awaitingReply(conv: Conversation): boolean {
   return lastMessage(conv)?.direction === "inbound"
 }
@@ -1277,7 +1335,7 @@ function hasReadyDraft(conv: Conversation): boolean {
 // Read, but the ball is still in our court — distinct from "Unread" (haven't
 // looked yet) and from archiving (marks the thread as done/handled).
 function needsReply(conv: Conversation): boolean {
-  return awaitingReply(conv) && conv.unread === 0 && !isScheduled(conv)
+  return awaitingReply(conv) && conv.unread === 0 && !isScheduled(conv) && !isSnoozed(conv)
 }
 
 // Events that show the prospect took a trackable action without replying —
@@ -1286,7 +1344,7 @@ function needsReply(conv: Conversation): boolean {
 // wrote back) and "Scheduled" (a follow-up is already queued).
 const FOLLOWUP_EVENT_KINDS: ConvEventKind[] = ["open", "click", "view", "connection", "like"]
 function hasFollowUpSignal(conv: Conversation): boolean {
-  if (awaitingReply(conv) || isScheduled(conv)) return false
+  if (awaitingReply(conv) || isScheduled(conv) || isSnoozed(conv)) return false
   return (conv.events ?? []).some((e) => FOLLOWUP_EVENT_KINDS.includes(e.kind))
 }
 
@@ -1466,6 +1524,13 @@ export default function Inbox() {
   // a context panel's job is to be glanceable while triaging, not to hide
   // chrome for reading one thread.
   const [profileOpen, setProfileOpen] = React.useState(true)
+  const [snoozeDialogOpen, setSnoozeDialogOpen] = React.useState(false)
+  const [snoozeCustomValue, setSnoozeCustomValue] = React.useState("")
+  const [snoozeDialogWasOpen, setSnoozeDialogWasOpen] = React.useState(snoozeDialogOpen)
+  if (snoozeDialogOpen !== snoozeDialogWasOpen) {
+    setSnoozeDialogWasOpen(snoozeDialogOpen)
+    if (snoozeDialogOpen) setSnoozeCustomValue("")
+  }
 
   const visible = conversations.filter((conv) => !conv.archived)
 
@@ -1496,7 +1561,7 @@ export default function Inbox() {
     (id: Folder): number => {
       switch (id) {
         case "inbox":
-          return visible.filter((x) => !isScheduled(x)).length
+          return visible.filter((x) => !isScheduled(x) && !isSnoozed(x)).length
         case "drafts":
           return visible.filter(hasReadyDraft).length
         case "unread":
@@ -1509,6 +1574,8 @@ export default function Inbox() {
           return visible.filter(hasFollowUpSignal).length
         case "scheduled":
           return visible.filter(isScheduled).length
+        case "snoozed":
+          return visible.filter(isSnoozed).length
         case "sent":
           return visible.filter((x) => lastMessage(x)?.direction === "outbound").length
         case "archived":
@@ -1574,7 +1641,7 @@ export default function Inbox() {
       if (view.kind === "approvals") return false
       switch (view.id) {
         case "inbox":
-          return !isScheduled(conv)
+          return !isScheduled(conv) && !isSnoozed(conv)
         case "drafts":
           return hasReadyDraft(conv)
         case "unread":
@@ -1589,6 +1656,8 @@ export default function Inbox() {
           return hasFollowUpSignal(conv)
         case "scheduled":
           return isScheduled(conv)
+        case "snoozed":
+          return isSnoozed(conv)
         case "sent":
           return lastMessage(conv)?.direction === "outbound"
         case "archived":
@@ -1752,6 +1821,15 @@ export default function Inbox() {
     if (selectedIds.size > 0) setSelectedIds(new Set())
   }
 
+  function snoozeConversation(id: string, untilISO: string) {
+    conversationStore.snooze(id, untilISO)
+    toast.success(c.snoozedToast(formatWhen(untilISO)))
+    setSnoozeDialogOpen(false)
+  }
+  function confirmCustomSnooze() {
+    if (!effectiveActive || !snoozeCustomValue) return
+    snoozeConversation(effectiveActive.id, new Date(snoozeCustomValue).toISOString())
+  }
   function toggleSelectRow(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev)
@@ -2648,6 +2726,51 @@ export default function Inbox() {
                     {c.archive}
                   </DropdownMenuItem>
                 )}
+                {isSnoozed(effectiveActive) ? (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      conversationStore.unsnooze(effectiveActive.id)
+                      toast.success(c.unsnoozedToast)
+                    }}
+                  >
+                    <AlarmClock className="size-4" />
+                    {c.unsnooze}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <AlarmClock className="size-4" />
+                      {c.snooze}
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem
+                        onClick={() => snoozeConversation(effectiveActive.id, snoozeUntilISO(1))}
+                      >
+                        <Clock className="size-4" />
+                        {c.inOneHour}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => snoozeConversation(effectiveActive.id, morningISO(1))}
+                      >
+                        <CalendarClock className="size-4" />
+                        {c.tomorrowMorning}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          snoozeConversation(effectiveActive.id, nextMondayMorningISO())
+                        }
+                      >
+                        <CalendarClock className="size-4" />
+                        {c.mondayMorning}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setSnoozeDialogOpen(true)}>
+                        <CalendarClock className="size-4" />
+                        {c.pickDateTime}
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                )}
                 <DropdownMenuItem variant="destructive" onClick={() => setToDelete(effectiveActive.id)}>
                   <Trash2 className="size-4" />
                   {c.delete}
@@ -2926,6 +3049,32 @@ export default function Inbox() {
         filters={advancedFilters}
         onApply={setAdvancedFilters}
       />
+
+      <Dialog open={snoozeDialogOpen} onOpenChange={setSnoozeDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{c.snoozeTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="snooze-when">{c.snoozeUntilLabel}</Label>
+            <Input
+              id="snooze-when"
+              type="datetime-local"
+              value={snoozeCustomValue}
+              min={toLocalInputValue(new Date())}
+              onChange={(e) => setSnoozeCustomValue(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSnoozeDialogOpen(false)}>
+              {c.cancelSchedule}
+            </Button>
+            <Button variant="volt" onClick={confirmCustomSnooze} disabled={!snoozeCustomValue}>
+              {c.snooze}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
