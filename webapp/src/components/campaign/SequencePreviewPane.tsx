@@ -3,7 +3,9 @@ import { Pencil } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/common/EmptyState"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
+import kaiUrl from "@/assets/kai-pleased.png"
 import { useLocale } from "@/lib/locale"
 import { flattenCampaignSteps } from "@/lib/store"
 import { channelMeta } from "@/lib/step-channels"
@@ -183,23 +185,27 @@ export function SequencePreviewPane({
 
   if (leads.length === 0) {
     return (
-      <div className="text-muted-foreground space-y-3 rounded-lg border py-12 text-center text-sm">
-        <p>{c.noProspects}</p>
-        <Button variant="outline" size="sm" onClick={onGoToProspects}>
+      <EmptyState
+        icon={<img src={kaiUrl} alt="" className="size-16" />}
+        description={c.noProspects}
+      >
+        <Button variant="volt" size="sm" onClick={onGoToProspects}>
           {c.goToProspects}
         </Button>
-      </div>
+      </EmptyState>
     )
   }
 
   if (flatSteps.length === 0) {
     return (
-      <div className="text-muted-foreground space-y-3 rounded-lg border py-12 text-center text-sm">
-        <p>{c.noSteps}</p>
-        <Button variant="outline" size="sm" onClick={onGoToSequence}>
+      <EmptyState
+        icon={<img src={kaiUrl} alt="" className="size-16" />}
+        description={c.noSteps}
+      >
+        <Button variant="volt" size="sm" onClick={onGoToSequence}>
           {c.goToSequence}
         </Button>
-      </div>
+      </EmptyState>
     )
   }
 
