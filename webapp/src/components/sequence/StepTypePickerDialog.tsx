@@ -1,5 +1,16 @@
 import * as React from "react"
-import { FileText, Sparkles, ListChecks, GitFork, UserPlus, Eye, Mic, ThumbsUp } from "lucide-react"
+import {
+  FileText,
+  Sparkles,
+  ListChecks,
+  GitFork,
+  UserPlus,
+  Eye,
+  Mic,
+  ThumbsUp,
+  MessageSquare,
+  Send,
+} from "lucide-react"
 
 import {
   Dialog,
@@ -52,26 +63,30 @@ const STEP_TYPES: {
   channel: StepChannel
   linkedinAction?: LinkedInAction
   whatsappAction?: WhatsAppAction
+  // Only set for entries the action-icon map below can't cover (Sales
+  // Navigator is its own channel, not a linkedinAction variant).
+  icon?: React.ComponentType<{ className?: string }>
 }[] = [
   { key: "email", channel: "email" },
-  { key: "linkedin_message", channel: "linkedin_message" },
+  { key: "linkedin_message", channel: "linkedin_message", linkedinAction: "message" },
   { key: "linkedin_connect", channel: "linkedin_message", linkedinAction: "connect" },
   { key: "linkedin_view_profile", channel: "linkedin_message", linkedinAction: "view_profile" },
   { key: "linkedin_voice_message", channel: "linkedin_message", linkedinAction: "voice_message" },
   { key: "linkedin_like_post", channel: "linkedin_message", linkedinAction: "like_post" },
-  { key: "linkedin_inmail", channel: "linkedin_inmail" },
-  { key: "whatsapp", channel: "whatsapp" },
+  { key: "linkedin_inmail", channel: "linkedin_inmail", icon: Send },
+  { key: "whatsapp", channel: "whatsapp", whatsappAction: "message" },
   { key: "whatsapp_voice_message", channel: "whatsapp", whatsappAction: "voice_message" },
   { key: "call", channel: "call" },
   { key: "ai_call", channel: "ai_call" },
   { key: "manual", channel: "manual" },
 ]
 
-// Distinguishes the LinkedIn/WhatsApp action-variant cards from each other —
-// otherwise every LinkedIn entry would show the same brand glyph. Matches
-// the icon vocabulary CampaignDetail.tsx's step editor already uses for
-// these same actions.
+// Distinguishes every LinkedIn/WhatsApp action-variant card from the others
+// so no two cards look identical — matches the icon vocabulary
+// CampaignDetail.tsx's step editor already uses for these same actions
+// (LINKEDIN_ACTION_ICON), reused here rather than inventing a second one.
 const ACTION_ICON: Partial<Record<LinkedInAction | WhatsAppAction, React.ComponentType<{ className?: string }>>> = {
+  message: MessageSquare,
   connect: UserPlus,
   view_profile: Eye,
   voice_message: Mic,
@@ -574,7 +589,7 @@ export function StepTypePickerDialog({
                 {STEP_TYPES.map((type) => {
                   const meta = CHANNELS[type.channel]
                   const actionKey = type.linkedinAction ?? type.whatsappAction
-                  const Icon = (actionKey && ACTION_ICON[actionKey]) || meta.Icon
+                  const Icon = type.icon || (actionKey && ACTION_ICON[actionKey]) || meta.Icon
                   const card = c.channels[type.key]
                   return (
                     <button
