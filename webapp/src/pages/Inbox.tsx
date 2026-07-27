@@ -49,6 +49,7 @@ import {
   Pause,
   Square,
   ListFilter,
+  ShieldCheck,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -123,6 +124,8 @@ import { groupByMergeVarGroup, MERGE_VARIABLES, MERGE_VARIABLE_GROUPS } from "@/
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
 import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
+import { useApprovals } from "@/lib/mock-approvals"
+import { ApprovalsPanel } from "@/components/automations/ApprovalsPanel"
 import { ProspectSummaryPanel } from "@/components/common/ProspectSummaryPanel"
 import type {
   Channel,
@@ -146,6 +149,7 @@ const COPY = {
     unread: "Unread",
     needs_reply: "Need to Reply",
     myTasks: "My Tasks",
+    awaitingApproval: "Awaiting approval",
     tabAll: "All",
     tabReplies: "Replies",
     tabTasks: "Tasks",
@@ -288,6 +292,7 @@ const COPY = {
     unread: "Sin leer",
     needs_reply: "Por responder",
     myTasks: "Mis tareas",
+    awaitingApproval: "Esperando aprobación",
     tabAll: "Todo",
     tabReplies: "Respuestas",
     tabTasks: "Tareas",
@@ -429,6 +434,7 @@ const COPY = {
     unread: "Non lette",
     needs_reply: "Da rispondere",
     myTasks: "Le mie attività",
+    awaitingApproval: "In attesa di approvazione",
     tabAll: "Tutti",
     tabReplies: "Risposte",
     tabTasks: "Attività",
@@ -570,6 +576,7 @@ const COPY = {
     unread: "Non lues",
     needs_reply: "À répondre",
     myTasks: "Mes tâches",
+    awaitingApproval: "En attente d'approbation",
     tabAll: "Tous",
     tabReplies: "Réponses",
     tabTasks: "Tâches",
@@ -711,6 +718,7 @@ const COPY = {
     unread: "Ungelesen",
     needs_reply: "Zu beantworten",
     myTasks: "Meine Aufgaben",
+    awaitingApproval: "Wartet auf Genehmigung",
     tabAll: "Alle",
     tabReplies: "Antworten",
     tabTasks: "Aufgaben",
@@ -852,6 +860,7 @@ const COPY = {
     unread: "Por ler",
     needs_reply: "Por responder",
     myTasks: "As minhas tarefas",
+    awaitingApproval: "A aguardar aprovação",
     tabAll: "Tudo",
     tabReplies: "Respostas",
     tabTasks: "Tarefas",
@@ -993,6 +1002,7 @@ const COPY = {
     unread: "Não lidas",
     needs_reply: "Para responder",
     myTasks: "Minhas tarefas",
+    awaitingApproval: "Aguardando aprovação",
     tabAll: "Tudo",
     tabReplies: "Respostas",
     tabTasks: "Tarefas",
@@ -1234,7 +1244,13 @@ function taskEventState(t: Task): TaskEventState {
   return dueInMs < 2 * 24 * 3600 * 1000 ? "reminder" : "todo"
 }
 
-type View = { kind: "folder"; id: Folder } | { kind: "tag"; id: ConvStatus }
+type View =
+  | { kind: "folder"; id: Folder }
+  | { kind: "tag"; id: ConvStatus }
+  // The Tasks tab's "Awaiting approval" sub-view — reuses the Automations
+  // approvals queue wholesale rather than filtering conversations, so it
+  // replaces the list+reading-pane layout instead of feeding into `list`.
+  | { kind: "approvals" }
 
 // The quick-tab row above the list is a prominent shortcut into 3 specific
 // folder views plus an "All" catch-all, not a separate filter dimension —
@@ -1422,6 +1438,7 @@ export default function Inbox() {
   const conversations = useConversations()
   const tasks = useTasks()
   const campaigns = useCampaigns()
+  const pendingApprovalsCount = useApprovals().filter((a) => a.status === "pending").length
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
   const [activeId, setActiveId] = React.useState<string | undefined>()
@@ -1554,6 +1571,7 @@ export default function Inbox() {
         : visible
     const inView = source.filter((conv) => {
       if (view.kind === "tag") return conv.status === view.id
+      if (view.kind === "approvals") return false
       switch (view.id) {
         case "inbox":
           return !isScheduled(conv)
@@ -1625,9 +1643,11 @@ export default function Inbox() {
   }, [conversations])
 
   const isMyTasksView = view.kind === "folder" && view.id === "my_tasks"
-  const quickTab: InboxQuickTab =
-    view.kind === "folder" &&
-    (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
+  const isApprovalsView = view.kind === "approvals"
+  const quickTab: InboxQuickTab = isApprovalsView
+    ? "my_tasks"
+    : view.kind === "folder" &&
+        (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
       ? view.id
       : "all"
   const active = conversations.find((conv) => conv.id === activeId)
@@ -1711,9 +1731,11 @@ export default function Inbox() {
   const viewTitle =
     view.kind === "tag"
       ? STATUS_META[view.id][locale === "es" ? "es" : "en"]
-      : view.id === "follow_ups"
-        ? c.tabFollowups
-        : c[FOLDERS.find((f) => f.id === view.id)!.key]
+      : view.kind === "approvals"
+        ? c.awaitingApproval
+        : view.id === "follow_ups"
+          ? c.tabFollowups
+          : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive =
     channelFilter !== "all" ||
@@ -1723,7 +1745,7 @@ export default function Inbox() {
     countConversationFilters(advancedFilters) > 0
 
   // Selection doesn't carry over when the user switches folders/outcomes.
-  const viewSig = `${view.kind}:${view.id}`
+  const viewSig = view.kind === "approvals" ? "approvals" : `${view.kind}:${view.id}`
   const [selSig, setSelSig] = React.useState(viewSig)
   if (viewSig !== selSig) {
     setSelSig(viewSig)
@@ -1927,6 +1949,28 @@ export default function Inbox() {
                 )}
                 <div className="bg-border my-1.5 h-px" />
                 {folderButton(myTasksFolder, "w-full")}
+                <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
+                  <button
+                    type="button"
+                    onClick={() => setView({ kind: "approvals" })}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                      isApprovalsView
+                        ? "bg-muted font-medium text-foreground"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    )}
+                  >
+                    <ShieldCheck className="size-4 shrink-0" />
+                    <span className="flex-1 truncate text-left">
+                      {c.awaitingApproval}
+                    </span>
+                    {pendingApprovalsCount > 0 && (
+                      <span className="text-muted-foreground text-[11px] tabular-nums">
+                        {pendingApprovalsCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
               </>
             )
           })()}
@@ -1981,6 +2025,12 @@ export default function Inbox() {
         </div>
       </aside>
 
+      {isApprovalsView ? (
+        <div className="flex-1 overflow-y-auto">
+          <ApprovalsPanel />
+        </div>
+      ) : (
+        <>
       {/* List column */}
       <div
         className={cn(
@@ -2833,6 +2883,8 @@ export default function Inbox() {
         >
           <ProspectSummaryPanel prospect={activeProspect} locale={locale} />
         </div>
+      )}
+        </>
       )}
 
       <ConfirmDialog
