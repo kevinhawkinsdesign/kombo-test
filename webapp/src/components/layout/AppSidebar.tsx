@@ -20,7 +20,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ChevronDown,
-  Telescope,
   Megaphone,
   TrendingUp,
   Settings2,
@@ -93,21 +92,16 @@ const primary: NavItem[] = [
     icon: Inbox,
     badge: unread ? String(unread) : undefined,
   },
+  // Previously grouped under a collapsible "Find" section — promoted to
+  // top-level rows since they're core, frequently-used destinations.
+  { to: "/companies", labelKey: "nav.companies", icon: Building2 },
+  { to: "/people", labelKey: "nav.people", icon: Users },
+  { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
+  { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },
 ]
 
 // Collapsible groups keep the rail short — most pages live one click away.
 const groups: NavGroup[] = [
-  {
-    key: "prospecting",
-    labelKey: "nav.prospecting",
-    icon: Telescope,
-    items: [
-      { to: "/companies", labelKey: "nav.companies", icon: Building2 },
-      { to: "/people", labelKey: "nav.people", icon: Users },
-      { to: "/lists", labelKey: "nav.lists", icon: FolderKanban },
-      { to: "/extension", labelKey: "nav.extension", icon: Puzzle, isNew: true },
-    ],
-  },
   {
     key: "outreach",
     labelKey: "nav.engage",

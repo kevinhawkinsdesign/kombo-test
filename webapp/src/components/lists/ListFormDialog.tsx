@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { useLocale } from "@/lib/locale"
+import { currentUser } from "@/lib/mock-data"
 import { listStore } from "@/lib/store"
 import type { ProspectList } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -25,44 +25,58 @@ import { cn } from "@/lib/utils"
 const ASSIGN_COPY = {
   en: {
     assignTo: "Owner",
-    assignToHint:
-      "New prospects entering this list are assigned to this teammate.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "New companies entering this list are assigned to this teammate."
+        : "New prospects entering this list are assigned to this teammate.",
     unassigned: "Unassigned",
   },
   es: {
     assignTo: "Responsable",
-    assignToHint:
-      "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "Las nuevas empresas que entren en esta lista se asignan a este compañero."
+        : "Los nuevos prospectos que entren en esta lista se asignan a este compañero.",
     unassigned: "Sin asignar",
   },
   it: {
     assignTo: "Proprietario",
-    assignToHint:
-      "I nuovi prospect che entrano in questa lista vengono assegnati a questo collega.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "Le nuove aziende che entrano in questa lista vengono assegnate a questo collega."
+        : "I nuovi prospect che entrano in questa lista vengono assegnati a questo collega.",
     unassigned: "Non assegnato",
   },
   fr: {
     assignTo: "Propriétaire",
-    assignToHint:
-      "Les nouveaux prospects qui entrent dans cette liste sont attribués à ce membre de l'équipe.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "Les nouvelles entreprises qui entrent dans cette liste sont attribuées à ce membre de l'équipe."
+        : "Les nouveaux prospects qui entrent dans cette liste sont attribués à ce membre de l'équipe.",
     unassigned: "Non attribué",
   },
   de: {
     assignTo: "Owner",
-    assignToHint:
-      "Neue Prospects in dieser Liste werden diesem Teammitglied zugewiesen.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "Neue Unternehmen in dieser Liste werden diesem Teammitglied zugewiesen."
+        : "Neue Prospects in dieser Liste werden diesem Teammitglied zugewiesen.",
     unassigned: "Nicht zugewiesen",
   },
   pt: {
     assignTo: "Proprietário",
-    assignToHint:
-      "Os novos prospects que entram nesta lista são atribuídos a este membro da equipa.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "As novas empresas que entram nesta lista são atribuídas a este membro da equipa."
+        : "Os novos prospects que entram nesta lista são atribuídos a este membro da equipa.",
     unassigned: "Não atribuído",
   },
   pt_BR: {
     assignTo: "Proprietário",
-    assignToHint:
-      "Os novos prospects que entram nesta lista são atribuídos a este membro do time.",
+    assignToHint: (kind: "people" | "company") =>
+      kind === "company"
+        ? "As novas empresas que entram nesta lista são atribuídas a este membro do time."
+        : "Os novos prospects que entram nesta lista são atribuídos a este membro do time.",
     unassigned: "Não atribuído",
   },
 } as const
@@ -91,7 +105,6 @@ export function ListFormDialog({
   const { locale } = useLocale()
   const ac = ASSIGN_COPY[locale]
   const [name, setName] = React.useState("")
-  const [description, setDescription] = React.useState("")
   const [color, setColor] = React.useState<string>(PRESET_COLORS[0])
   const [kind, setKind] = React.useState<"people" | "company">("people")
   const [assigneeId, setAssigneeId] = React.useState<string | undefined>(
@@ -106,10 +119,11 @@ export function ListFormDialog({
     setWasOpen(open)
     if (open) {
       setName(list?.name ?? "")
-      setDescription(list?.description ?? "")
       setColor(list?.color ?? PRESET_COLORS[0])
       setKind(list?.kind ?? "people")
-      setAssigneeId(list?.assigneeId)
+      // New lists default to you as owner; editing keeps whatever the list
+      // already has (including explicitly unassigned).
+      setAssigneeId(list ? list.assigneeId : currentUser.id)
     }
   }
 
@@ -122,7 +136,6 @@ export function ListFormDialog({
     if (list) {
       listStore.update(list.id, {
         name: trimmedName,
-        description: description.trim(),
         color,
         assigneeId,
       })
@@ -130,7 +143,7 @@ export function ListFormDialog({
     } else {
       const created = listStore.create({
         name: trimmedName,
-        description: description.trim(),
+        description: "",
         color,
         kind,
         assigneeId,
@@ -200,27 +213,17 @@ export function ListFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="list-description">Description</Label>
-            <Textarea
-              id="list-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="What this list is for…"
+            <Label htmlFor="list-assignee">{ac.assignTo}</Label>
+            <AssigneePicker
+              id="list-assignee"
+              value={assigneeId}
+              onChange={setAssigneeId}
+              unassignedLabel={ac.unassigned}
             />
+            <p className="text-muted-foreground text-xs">
+              {ac.assignToHint(kind)}
+            </p>
           </div>
-
-          {kind === "people" && (
-            <div className="space-y-2">
-              <Label htmlFor="list-assignee">{ac.assignTo}</Label>
-              <AssigneePicker
-                id="list-assignee"
-                value={assigneeId}
-                onChange={setAssigneeId}
-                unassignedLabel={ac.unassigned}
-              />
-              <p className="text-muted-foreground text-xs">{ac.assignToHint}</p>
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label>Color</Label>
