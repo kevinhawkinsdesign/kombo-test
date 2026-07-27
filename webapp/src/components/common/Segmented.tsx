@@ -13,7 +13,7 @@ export function Segmented<T extends string>({
   onChange,
   className,
 }: {
-  options: { v: T; label: string; icon: React.ComponentType<{ className?: string }> }[]
+  options: { v: T; label: string; icon?: React.ComponentType<{ className?: string }> }[]
   value: T
   onChange: (v: T) => void
   className?: string
@@ -35,7 +35,7 @@ export function Segmented<T extends string>({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon className="size-3.5" />
+            {Icon && <Icon className="size-3.5" />}
             {o.label}
           </button>
         )

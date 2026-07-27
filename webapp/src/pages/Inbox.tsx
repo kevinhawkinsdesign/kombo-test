@@ -146,6 +146,7 @@ const COPY = {
     unread: "Unread",
     needs_reply: "Need to Reply",
     myTasks: "My Tasks",
+    tabAll: "All",
     tabReplies: "Replies",
     tabTasks: "Tasks",
     tabFollowups: "Follow-ups",
@@ -287,6 +288,7 @@ const COPY = {
     unread: "Sin leer",
     needs_reply: "Por responder",
     myTasks: "Mis tareas",
+    tabAll: "Todo",
     tabReplies: "Respuestas",
     tabTasks: "Tareas",
     tabFollowups: "Seguimientos",
@@ -427,6 +429,7 @@ const COPY = {
     unread: "Non lette",
     needs_reply: "Da rispondere",
     myTasks: "Le mie attività",
+    tabAll: "Tutti",
     tabReplies: "Risposte",
     tabTasks: "Attività",
     tabFollowups: "Follow-up",
@@ -567,6 +570,7 @@ const COPY = {
     unread: "Non lues",
     needs_reply: "À répondre",
     myTasks: "Mes tâches",
+    tabAll: "Tous",
     tabReplies: "Réponses",
     tabTasks: "Tâches",
     tabFollowups: "Relances",
@@ -707,6 +711,7 @@ const COPY = {
     unread: "Ungelesen",
     needs_reply: "Zu beantworten",
     myTasks: "Meine Aufgaben",
+    tabAll: "Alle",
     tabReplies: "Antworten",
     tabTasks: "Aufgaben",
     tabFollowups: "Follow-ups",
@@ -847,6 +852,7 @@ const COPY = {
     unread: "Por ler",
     needs_reply: "Por responder",
     myTasks: "As minhas tarefas",
+    tabAll: "Tudo",
     tabReplies: "Respostas",
     tabTasks: "Tarefas",
     tabFollowups: "Acompanhamentos",
@@ -987,6 +993,7 @@ const COPY = {
     unread: "Não lidas",
     needs_reply: "Para responder",
     myTasks: "Minhas tarefas",
+    tabAll: "Tudo",
     tabReplies: "Respostas",
     tabTasks: "Tarefas",
     tabFollowups: "Follow-ups",
@@ -1230,11 +1237,11 @@ function taskEventState(t: Task): TaskEventState {
 type View = { kind: "folder"; id: Folder } | { kind: "tag"; id: ConvStatus }
 
 // The quick-tab row above the list is a prominent shortcut into 3 specific
-// folder views, not a separate filter dimension — selecting one just sets
-// `view` like clicking the equivalent sidebar folder would, so "none" is
-// shown whenever the current view is something else entirely (a different
-// folder, or an outcome tag).
-type InboxQuickTab = "needs_reply" | "my_tasks" | "follow_ups" | "none"
+// folder views plus an "All" catch-all, not a separate filter dimension —
+// selecting one just sets `view` like clicking the equivalent sidebar folder
+// would, so "all" is shown whenever the current view is something else
+// entirely (a different folder, or an outcome tag).
+type InboxQuickTab = "all" | "needs_reply" | "my_tasks" | "follow_ups"
 
 function lastMessage(conv: Conversation) {
   return conv.messages[conv.messages.length - 1]
@@ -1622,7 +1629,7 @@ export default function Inbox() {
     view.kind === "folder" &&
     (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
       ? view.id
-      : "none"
+      : "all"
   const active = conversations.find((conv) => conv.id === activeId)
   // "My Tasks" doesn't read `list` for rendering (it renders task rows
   // instead), so a task's linked conversation is "in view" if it matches one
@@ -2091,16 +2098,17 @@ export default function Inbox() {
           <div className="space-y-1.5">
             <Segmented<InboxQuickTab>
               value={quickTab}
-              onChange={(v) => {
-                if (v !== "none") setView({ kind: "folder", id: v })
-              }}
+              onChange={(v) =>
+                setView({ kind: "folder", id: v === "all" ? "inbox" : v })
+              }
               options={[
-                { v: "needs_reply", label: `${c.tabReplies} ${folderCount("needs_reply")}`, icon: Reply },
-                { v: "my_tasks", label: `${c.tabTasks} ${folderCount("my_tasks")}`, icon: ListTodo },
-                { v: "follow_ups", label: `${c.tabFollowups} ${folderCount("follow_ups")}`, icon: CornerUpRight },
+                { v: "all", label: c.tabAll },
+                { v: "needs_reply", label: `${c.tabReplies} ${folderCount("needs_reply")}` },
+                { v: "my_tasks", label: `${c.tabTasks} ${folderCount("my_tasks")}` },
+                { v: "follow_ups", label: `${c.tabFollowups} ${folderCount("follow_ups")}` },
               ]}
             />
-            {quickTab !== "none" && (
+            {quickTab !== "all" && (
               <p className="text-muted-foreground px-1 text-xs">
                 {quickTab === "needs_reply"
                   ? c.tabRepliesSubtitle
