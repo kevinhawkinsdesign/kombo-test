@@ -3105,12 +3105,7 @@ export default function CampaignDetail() {
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <AutomationStatusBox
-              autoPauseOnReply={camp.autoPauseOnReply ?? true}
-              onToggle={(next) =>
-                campaignStore.update(camp.id, { autoPauseOnReply: next })
-              }
-            />
+            <AutomationStatusBox autoPauseOnReply={camp.autoPauseOnReply ?? true} />
             <SequenceCostSummary steps={draft.steps} />
           </div>
           <div className="flex flex-wrap justify-end gap-2">
