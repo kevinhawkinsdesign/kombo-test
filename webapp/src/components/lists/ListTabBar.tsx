@@ -111,7 +111,7 @@ export function ListTabBar({ currentId }: { currentId: string }) {
     : closedLists
 
   return (
-    <div className="mb-4 flex items-end gap-0.5 overflow-x-auto border-b">
+    <div className="scrollbar-thin-x mb-4 flex items-end gap-0.5 border-b">
       {tabs.map((t) => {
         const active = t.id === currentId
         return (

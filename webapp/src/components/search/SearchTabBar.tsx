@@ -59,7 +59,7 @@ export function SearchTabBar({
   const c = COPY[locale]
 
   return (
-    <div className="mb-4 flex items-end gap-0.5 overflow-x-auto border-b">
+    <div className="scrollbar-thin-x mb-4 flex items-end gap-0.5 border-b">
       {tabs.map((t) => {
         const active = t.id === activeId
         return (
