@@ -50,6 +50,7 @@ import {
   Square,
   ListFilter,
   ShieldCheck,
+  Folder as FolderIcon,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -129,6 +130,7 @@ import { useLocale, type Locale } from "@/lib/locale"
 import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
 import { useApprovals } from "@/lib/mock-approvals"
 import { ApprovalsPanel } from "@/components/automations/ApprovalsPanel"
+import { useCustomFolders, customFolderStore } from "@/lib/inbox-folders"
 import { ProspectSummaryPanel } from "@/components/common/ProspectSummaryPanel"
 import type {
   Channel,
@@ -283,6 +285,17 @@ const COPY = {
     unsnoozedToast: "Removed from Snoozed",
     snoozeTitle: "Snooze until…",
     snoozeUntilLabel: "Until",
+    folders: "Folders",
+    newFolder: "New folder",
+    newFolderPlaceholder: "e.g. VIP prospects",
+    folderNameLabel: "Name",
+    create: "Create",
+    folderCreated: "Folder created",
+    deleteFolder: (name: string) => `Delete ${name}`,
+    folderDeleted: "Folder deleted",
+    addToFolder: "Add to folder",
+    removeFromFolder: "Remove from folder",
+    noFolders: "No folders yet",
     scheduleSend: "Schedule send",
     inOneHour: "In 1 hour",
     tomorrowMorning: "Tomorrow, 8:00 AM",
@@ -432,6 +445,17 @@ const COPY = {
     unsnoozedToast: "Quitado de Pospuestos",
     snoozeTitle: "Posponer hasta…",
     snoozeUntilLabel: "Hasta",
+    folders: "Carpetas",
+    newFolder: "Nueva carpeta",
+    newFolderPlaceholder: "p. ej. Prospectos VIP",
+    folderNameLabel: "Nombre",
+    create: "Crear",
+    folderCreated: "Carpeta creada",
+    deleteFolder: (name: string) => `Eliminar ${name}`,
+    folderDeleted: "Carpeta eliminada",
+    addToFolder: "Añadir a carpeta",
+    removeFromFolder: "Quitar de la carpeta",
+    noFolders: "Aún no hay carpetas",
     scheduleSend: "Programar envío",
     inOneHour: "En 1 hora",
     tomorrowMorning: "Mañana, 8:00",
@@ -581,6 +605,17 @@ const COPY = {
     unsnoozedToast: "Rimosso da Rimandati",
     snoozeTitle: "Rimanda fino a…",
     snoozeUntilLabel: "Fino a",
+    folders: "Cartelle",
+    newFolder: "Nuova cartella",
+    newFolderPlaceholder: "es. Prospect VIP",
+    folderNameLabel: "Nome",
+    create: "Crea",
+    folderCreated: "Cartella creata",
+    deleteFolder: (name: string) => `Elimina ${name}`,
+    folderDeleted: "Cartella eliminata",
+    addToFolder: "Aggiungi a cartella",
+    removeFromFolder: "Rimuovi dalla cartella",
+    noFolders: "Ancora nessuna cartella",
     scheduleSend: "Programma invio",
     inOneHour: "Tra 1 ora",
     tomorrowMorning: "Domani, 8:00",
@@ -730,6 +765,17 @@ const COPY = {
     unsnoozedToast: "Retiré de Reportés",
     snoozeTitle: "Reporter jusqu'à…",
     snoozeUntilLabel: "Jusqu'à",
+    folders: "Dossiers",
+    newFolder: "Nouveau dossier",
+    newFolderPlaceholder: "ex. Prospects VIP",
+    folderNameLabel: "Nom",
+    create: "Créer",
+    folderCreated: "Dossier créé",
+    deleteFolder: (name: string) => `Supprimer ${name}`,
+    folderDeleted: "Dossier supprimé",
+    addToFolder: "Ajouter au dossier",
+    removeFromFolder: "Retirer du dossier",
+    noFolders: "Aucun dossier pour le moment",
     scheduleSend: "Programmer l'envoi",
     inOneHour: "Dans 1 heure",
     tomorrowMorning: "Demain, 8h00",
@@ -879,6 +925,17 @@ const COPY = {
     unsnoozedToast: "Aus „Zurückgestellt“ entfernt",
     snoozeTitle: "Zurückstellen bis…",
     snoozeUntilLabel: "Bis",
+    folders: "Ordner",
+    newFolder: "Neuer Ordner",
+    newFolderPlaceholder: "z. B. VIP-Prospects",
+    folderNameLabel: "Name",
+    create: "Erstellen",
+    folderCreated: "Ordner erstellt",
+    deleteFolder: (name: string) => `${name} löschen`,
+    folderDeleted: "Ordner gelöscht",
+    addToFolder: "Zu Ordner hinzufügen",
+    removeFromFolder: "Aus Ordner entfernen",
+    noFolders: "Noch keine Ordner",
     scheduleSend: "Senden planen",
     inOneHour: "In 1 Stunde",
     tomorrowMorning: "Morgen, 8:00 Uhr",
@@ -1028,6 +1085,17 @@ const COPY = {
     unsnoozedToast: "Removido de Adiados",
     snoozeTitle: "Adiar até…",
     snoozeUntilLabel: "Até",
+    folders: "Pastas",
+    newFolder: "Nova pasta",
+    newFolderPlaceholder: "p. ex. Prospects VIP",
+    folderNameLabel: "Nome",
+    create: "Criar",
+    folderCreated: "Pasta criada",
+    deleteFolder: (name: string) => `Eliminar ${name}`,
+    folderDeleted: "Pasta eliminada",
+    addToFolder: "Adicionar à pasta",
+    removeFromFolder: "Remover da pasta",
+    noFolders: "Ainda não há pastas",
     scheduleSend: "Agendar envio",
     inOneHour: "Daqui a 1 hora",
     tomorrowMorning: "Amanhã, 8:00",
@@ -1177,6 +1245,17 @@ const COPY = {
     unsnoozedToast: "Removido de Adiados",
     snoozeTitle: "Adiar até…",
     snoozeUntilLabel: "Até",
+    folders: "Pastas",
+    newFolder: "Nova pasta",
+    newFolderPlaceholder: "ex. Prospects VIP",
+    folderNameLabel: "Nome",
+    create: "Criar",
+    folderCreated: "Pasta criada",
+    deleteFolder: (name: string) => `Excluir ${name}`,
+    folderDeleted: "Pasta excluída",
+    addToFolder: "Adicionar à pasta",
+    removeFromFolder: "Remover da pasta",
+    noFolders: "Ainda não há pastas",
     scheduleSend: "Agendar envio",
     inOneHour: "Em 1 hora",
     tomorrowMorning: "Amanhã, 8:00",
@@ -1306,6 +1385,8 @@ type View =
   // approvals queue wholesale rather than filtering conversations, so it
   // replaces the list+reading-pane layout instead of feeding into `list`.
   | { kind: "approvals" }
+  // A user-created manual folder — id references a CustomFolder.
+  | { kind: "custom"; id: string }
 
 // The quick-tab row above the list is a prominent shortcut into 3 specific
 // folder views plus an "All" catch-all, not a separate filter dimension —
@@ -1497,6 +1578,7 @@ export default function Inbox() {
   const tasks = useTasks()
   const campaigns = useCampaigns()
   const pendingApprovalsCount = useApprovals().filter((a) => a.status === "pending").length
+  const customFolders = useCustomFolders()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
   const [activeId, setActiveId] = React.useState<string | undefined>()
@@ -1530,6 +1612,18 @@ export default function Inbox() {
   if (snoozeDialogOpen !== snoozeDialogWasOpen) {
     setSnoozeDialogWasOpen(snoozeDialogOpen)
     if (snoozeDialogOpen) setSnoozeCustomValue("")
+  }
+  const [newFolderOpen, setNewFolderOpen] = React.useState(false)
+  const [newFolderName, setNewFolderName] = React.useState("")
+  // Set only when the dialog was opened from a conversation's "Add to
+  // folder" menu, so the new folder picks that conversation up immediately.
+  const [newFolderForConvId, setNewFolderForConvId] = React.useState<string | undefined>(
+    undefined
+  )
+  const [newFolderWasOpen, setNewFolderWasOpen] = React.useState(newFolderOpen)
+  if (newFolderOpen !== newFolderWasOpen) {
+    setNewFolderWasOpen(newFolderOpen)
+    if (newFolderOpen) setNewFolderName("")
   }
 
   const visible = conversations.filter((conv) => !conv.archived)
@@ -1639,6 +1733,11 @@ export default function Inbox() {
     const inView = source.filter((conv) => {
       if (view.kind === "tag") return conv.status === view.id
       if (view.kind === "approvals") return false
+      if (view.kind === "custom") {
+        return (
+          customFolders.find((f) => f.id === view.id)?.conversationIds.includes(conv.id) ?? false
+        )
+      }
       switch (view.id) {
         case "inbox":
           return !isScheduled(conv) && !isSnoozed(conv)
@@ -1693,6 +1792,7 @@ export default function Inbox() {
     visible,
     conversations,
     view,
+    customFolders,
     channelFilter,
     unreadOnly,
     countryFilter,
@@ -1802,9 +1902,11 @@ export default function Inbox() {
       ? STATUS_META[view.id][locale === "es" ? "es" : "en"]
       : view.kind === "approvals"
         ? c.awaitingApproval
-        : view.id === "follow_ups"
-          ? c.tabFollowups
-          : c[FOLDERS.find((f) => f.id === view.id)!.key]
+        : view.kind === "custom"
+          ? (customFolders.find((f) => f.id === view.id)?.name ?? c.folders)
+          : view.id === "follow_ups"
+            ? c.tabFollowups
+            : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive =
     channelFilter !== "all" ||
@@ -1829,6 +1931,18 @@ export default function Inbox() {
   function confirmCustomSnooze() {
     if (!effectiveActive || !snoozeCustomValue) return
     snoozeConversation(effectiveActive.id, new Date(snoozeCustomValue).toISOString())
+  }
+  function openNewFolder(forConvId?: string) {
+    setNewFolderForConvId(forConvId)
+    setNewFolderOpen(true)
+  }
+  function confirmNewFolder() {
+    const name = newFolderName.trim()
+    if (!name) return
+    const created = customFolderStore.create(name)
+    if (newFolderForConvId) customFolderStore.addConversation(created.id, newFolderForConvId)
+    toast.success(c.folderCreated)
+    setNewFolderOpen(false)
   }
   function toggleSelectRow(id: string) {
     setSelectedIds((prev) => {
@@ -2053,6 +2167,67 @@ export default function Inbox() {
             )
           })()}
         </nav>
+
+        <div className="px-3 pb-2">
+          <div className="flex items-center justify-between gap-1 px-2.5 pt-2 pb-1.5">
+            <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+              {c.folders}
+            </span>
+            <button
+              type="button"
+              onClick={() => openNewFolder()}
+              aria-label={c.newFolder}
+              title={c.newFolder}
+              className="text-muted-foreground hover:bg-muted/60 hover:text-foreground rounded-md p-1"
+            >
+              <Plus className="size-3.5" />
+            </button>
+          </div>
+          {customFolders.length === 0 ? (
+            <p className="text-muted-foreground px-2.5 text-xs">{c.noFolders}</p>
+          ) : (
+            <div className="space-y-0.5">
+              {customFolders.map((folder) => {
+                const activeFolder = view.kind === "custom" && view.id === folder.id
+                const count = visible.filter((x) => folder.conversationIds.includes(x.id)).length
+                return (
+                  <div key={folder.id} className="group flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setView({ kind: "custom", id: folder.id })}
+                      className={cn(
+                        "flex flex-1 items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                        activeFolder
+                          ? "bg-muted font-medium text-foreground"
+                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      )}
+                    >
+                      <FolderIcon className="size-4 shrink-0" />
+                      <span className="flex-1 truncate text-left">{folder.name}</span>
+                      {count > 0 && (
+                        <span className="text-muted-foreground text-[11px] tabular-nums">
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={c.deleteFolder(folder.name)}
+                      onClick={() => {
+                        if (activeFolder) setView({ kind: "folder", id: "inbox" })
+                        customFolderStore.remove(folder.id)
+                        toast.success(c.folderDeleted)
+                      }}
+                      className="text-muted-foreground hover:text-destructive shrink-0 rounded-md p-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="px-3 pb-4">
           <button
@@ -2771,6 +2946,40 @@ export default function Inbox() {
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                 )}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <FolderIcon className="size-4" />
+                    {c.addToFolder}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {customFolders.length === 0 ? (
+                      <DropdownMenuItem disabled>{c.noFolders}</DropdownMenuItem>
+                    ) : (
+                      customFolders.map((folder) => {
+                        const inFolder = folder.conversationIds.includes(effectiveActive.id)
+                        return (
+                          <DropdownMenuItem
+                            key={folder.id}
+                            onClick={() =>
+                              inFolder
+                                ? customFolderStore.removeConversation(folder.id, effectiveActive.id)
+                                : customFolderStore.addConversation(folder.id, effectiveActive.id)
+                            }
+                          >
+                            <FolderIcon className="size-4" />
+                            <span className="flex-1 truncate">{folder.name}</span>
+                            {inFolder && <Check className="size-4" />}
+                          </DropdownMenuItem>
+                        )
+                      })
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => openNewFolder(effectiveActive.id)}>
+                      <Plus className="size-4" />
+                      {c.newFolder}
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuItem variant="destructive" onClick={() => setToDelete(effectiveActive.id)}>
                   <Trash2 className="size-4" />
                   {c.delete}
@@ -3071,6 +3280,32 @@ export default function Inbox() {
             </Button>
             <Button variant="volt" onClick={confirmCustomSnooze} disabled={!snoozeCustomValue}>
               {c.snooze}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{c.newFolder}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="new-folder-name">{c.folderNameLabel}</Label>
+            <Input
+              id="new-folder-name"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder={c.newFolderPlaceholder}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNewFolderOpen(false)}>
+              {c.cancelSchedule}
+            </Button>
+            <Button variant="volt" onClick={confirmNewFolder} disabled={!newFolderName.trim()}>
+              {c.create}
             </Button>
           </DialogFooter>
         </DialogContent>
