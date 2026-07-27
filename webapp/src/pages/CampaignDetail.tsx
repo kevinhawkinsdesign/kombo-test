@@ -4200,12 +4200,20 @@ export default function CampaignDetail() {
         onInsert={insertStepFromTemplate}
         vars={SAMPLE_DATA}
         locale={locale}
+        onBack={() => {
+          setTemplatePickerOpen(false)
+          setStepPickerOpen(true)
+        }}
       />
 
       <PromptPickerDialog
         open={promptPickerOpen}
         onOpenChange={setPromptPickerOpen}
         onInsert={insertStepFromPrompt}
+        onBack={() => {
+          setPromptPickerOpen(false)
+          setStepPickerOpen(true)
+        }}
       />
 
       {/* Same pickers, opened from the step editor's toolbar — these swap

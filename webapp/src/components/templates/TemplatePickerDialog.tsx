@@ -5,6 +5,7 @@ import {
   MessageCircle,
   FileText,
   Check,
+  ArrowLeft,
 } from "lucide-react"
 
 import {
@@ -39,6 +40,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% reply`,
     previewNote: "Personalized for this recipient — variables are filled in.",
     cancel: "Cancel",
+    back: "Back",
     insert: "Insert template",
   },
   es: {
@@ -56,6 +58,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% respuesta`,
     previewNote: "Personalizada para este destinatario — las variables se rellenan.",
     cancel: "Cancelar",
+    back: "Volver",
     insert: "Insertar plantilla",
   },
   it: {
@@ -73,6 +76,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% risposte`,
     previewNote: "Personalizzato per questo destinatario — le variabili sono compilate.",
     cancel: "Annulla",
+    back: "Indietro",
     insert: "Inserisci modello",
   },
   fr: {
@@ -90,6 +94,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% de réponses`,
     previewNote: "Personnalisé pour ce destinataire — les variables sont renseignées.",
     cancel: "Annuler",
+    back: "Retour",
     insert: "Insérer le modèle",
   },
   de: {
@@ -107,6 +112,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% Antwortquote`,
     previewNote: "Personalisiert für diesen Empfänger — Variablen sind ausgefüllt.",
     cancel: "Abbrechen",
+    back: "Zurück",
     insert: "Vorlage einfügen",
   },
   pt: {
@@ -124,6 +130,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% de resposta`,
     previewNote: "Personalizado para este destinatário — as variáveis estão preenchidas.",
     cancel: "Cancelar",
+    back: "Voltar",
     insert: "Inserir modelo",
   },
   pt_BR: {
@@ -141,6 +148,7 @@ const COPY = {
     replyLabel: (rate: number) => `${rate}% de resposta`,
     previewNote: "Personalizado para este destinatário — as variáveis estão preenchidas.",
     cancel: "Cancelar",
+    back: "Voltar",
     insert: "Inserir modelo",
   },
 } as const
@@ -182,6 +190,10 @@ interface TemplatePickerDialogProps {
   /** When set, the list defaults to this channel (with a toggle to show all). */
   channel?: Channel
   locale: Locale
+  /** When set, shows a Back button that returns to the step-type picker this
+   * dialog was opened from — omitted when opened from the step editor's
+   * toolbar, where there's no step type to go back to. */
+  onBack?: () => void
 }
 
 export function TemplatePickerDialog({
@@ -192,6 +204,7 @@ export function TemplatePickerDialog({
   recipientName,
   channel,
   locale,
+  onBack,
 }: TemplatePickerDialogProps) {
   const c = COPY[locale]
   const templates = useTemplates()
@@ -421,6 +434,12 @@ export function TemplatePickerDialog({
         </div>
 
         <div className="flex items-center justify-end gap-2 border-t p-4">
+          {onBack && (
+            <Button variant="ghost" className="mr-auto" onClick={onBack}>
+              <ArrowLeft className="size-4" />
+              {c.back}
+            </Button>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {c.cancel}
           </Button>
