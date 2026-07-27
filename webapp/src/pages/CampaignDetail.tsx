@@ -397,9 +397,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "AI-powered",
     groupOther: "Other",
-    setupSequenceLabel: "Build your sequence",
-    setupSequenceDesc: "Add the emails and steps this campaign will send.",
-    setupSequenceCta: "Build sequence",
     setupProspectsLabel: "Add prospects",
     setupProspectsDesc: "Attach a list or enroll the prospects to contact.",
     setupProspectsCta: "Add prospects",
@@ -642,9 +639,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Con IA",
     groupOther: "Otro",
-    setupSequenceLabel: "Crea tu secuencia",
-    setupSequenceDesc: "Añade los correos y pasos que enviará esta campaña.",
-    setupSequenceCta: "Crear secuencia",
     setupProspectsLabel: "Añade prospectos",
     setupProspectsDesc: "Vincula una lista o inscribe los prospectos a contactar.",
     setupProspectsCta: "Añadir prospectos",
@@ -887,9 +881,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Basato su IA",
     groupOther: "Altro",
-    setupSequenceLabel: "Crea la tua sequenza",
-    setupSequenceDesc: "Aggiungi le email e i passaggi che questa campagna invierà.",
-    setupSequenceCta: "Crea sequenza",
     setupProspectsLabel: "Aggiungi prospect",
     setupProspectsDesc: "Collega una lista o iscrivi i prospect da contattare.",
     setupProspectsCta: "Aggiungi prospect",
@@ -1132,9 +1123,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Propulsé par l'IA",
     groupOther: "Autre",
-    setupSequenceLabel: "Créez votre séquence",
-    setupSequenceDesc: "Ajoutez les e-mails et étapes que cette campagne enverra.",
-    setupSequenceCta: "Créer la séquence",
     setupProspectsLabel: "Ajoutez des prospects",
     setupProspectsDesc: "Liez une liste ou inscrivez les prospects à contacter.",
     setupProspectsCta: "Ajouter des prospects",
@@ -1377,9 +1365,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "KI-gestützt",
     groupOther: "Sonstiges",
-    setupSequenceLabel: "Erstelle deine Sequenz",
-    setupSequenceDesc: "Füge die E-Mails und Schritte hinzu, die diese Kampagne senden wird.",
-    setupSequenceCta: "Sequenz erstellen",
     setupProspectsLabel: "Prospects hinzufügen",
     setupProspectsDesc: "Verknüpfe eine Liste oder schreibe die zu kontaktierenden Prospects ein.",
     setupProspectsCta: "Prospects hinzufügen",
@@ -1622,9 +1607,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Com IA",
     groupOther: "Outro",
-    setupSequenceLabel: "Crie a sua sequência",
-    setupSequenceDesc: "Adicione os e-mails e passos que esta campanha vai enviar.",
-    setupSequenceCta: "Criar sequência",
     setupProspectsLabel: "Adicione prospects",
     setupProspectsDesc: "Vincule uma lista ou inscreva os prospects a contactar.",
     setupProspectsCta: "Adicionar prospects",
@@ -1867,9 +1849,6 @@ const COPY = {
     groupLinkedin: "LinkedIn",
     groupAiPowered: "Com IA",
     groupOther: "Outro",
-    setupSequenceLabel: "Crie sua sequência",
-    setupSequenceDesc: "Adicione os e-mails e etapas que esta campanha vai enviar.",
-    setupSequenceCta: "Criar sequência",
     setupProspectsLabel: "Adicione prospects",
     setupProspectsDesc: "Vincule uma lista ou inscreva os prospects a contatar.",
     setupProspectsCta: "Adicionar prospects",
@@ -2364,10 +2343,6 @@ export default function CampaignDetail() {
   // Guided setup: a campaign is ready once it has a sequence and a prospect
   // source (an attached list or manually-enrolled prospects).
   const hasSequence = steps.length > 0
-  // Live view of the draft (not yet-applied) sequence — used to gate the
-  // Sequence tab's own empty state, since a user can add a first step
-  // before clicking "Apply changes" (which is what hasSequence reflects).
-  const sequenceIsEmpty = draft.steps.length === 0
   const hasFeed = hasProspects || Boolean(attachedList)
   // A campaign that has been launched at least once — active, paused
   // mid-run, or finished. Only a "draft" (never launched) has nothing to
@@ -3129,26 +3104,6 @@ export default function CampaignDetail() {
 
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
-          {sequenceIsEmpty ? (
-            <EmptyState
-              icon={<img src={kaiUrl} alt="" className="size-16" />}
-              title={c.setupSequenceLabel}
-              description={c.setupSequenceDesc}
-            >
-              <Button
-                variant="volt"
-                onClick={() => {
-                  setPendingGhost({ kind: "add" })
-                  setPendingParallelStep(null)
-                  setStepPickerOpen(true)
-                }}
-              >
-                <Plus className="size-4" />
-                {c.setupSequenceCta}
-              </Button>
-            </EmptyState>
-          ) : (
-          <>
           <div className="grid gap-4 sm:grid-cols-2">
             <AutomationStatusBox
               autoPauseOnReply={camp.autoPauseOnReply ?? true}
@@ -3863,8 +3818,6 @@ export default function CampaignDetail() {
               {c.applyChanges}
             </Button>
           </div>
-          </>
-          )}
         </TabsContent>
 
         {/* Preview — every step's actual text, personalized per lead. */}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useLocale } from "@/lib/locale"
+import { cn } from "@/lib/utils"
 import type { SavedAiSearch } from "@/lib/mock-ai-search"
 
 const COPY = {
@@ -85,6 +86,7 @@ export function SavedSearchesControl({
   onSaveThis,
   saveThisLabel,
   saveThisDisabled,
+  buttonClassName,
 }: {
   savedSearches: SavedAiSearch[]
   onLoad: (id: string) => void
@@ -95,6 +97,10 @@ export function SavedSearchesControl({
   onSaveThis?: () => void
   saveThisLabel?: string
   saveThisDisabled?: boolean
+  // Lets a caller match this control's height to neighboring toolbar buttons
+  // (e.g. "h-10" in AddRecordsDialog's results toolbar) without changing the
+  // default size used where it stands alone (the Search page header).
+  buttonClassName?: string
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -119,7 +125,7 @@ export function SavedSearchesControl({
           <Button
             variant="outline"
             size="sm"
-            className="rounded-r-none"
+            className={cn("rounded-r-none", buttonClassName)}
             onClick={onSaveThis}
             disabled={saveThisDisabled}
             aria-label={saveThisLabel}
@@ -131,7 +137,7 @@ export function SavedSearchesControl({
             <Button
               variant="outline"
               size="sm"
-              className="rounded-l-none px-2"
+              className={cn("rounded-l-none px-2", buttonClassName)}
               aria-label={c.saved}
             >
               <ChevronDown className="text-muted-foreground size-3.5" />
@@ -140,7 +146,7 @@ export function SavedSearchesControl({
         </div>
       ) : (
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className={buttonClassName}>
             <Bookmark className="size-4" />
             {c.saved}
             <ChevronDown className="text-muted-foreground size-3.5" />
