@@ -308,8 +308,6 @@ const COPY = {
     attach: "Link",
     noListsToAttach: "No lists available to link yet.",
     summary: "Summary",
-    statsInactiveNote:
-      "Performance stats appear once this campaign is active.",
     sent: "Sent",
     opened: "Opened",
     replied: "Replied",
@@ -558,8 +556,6 @@ const COPY = {
     attach: "Vincular",
     noListsToAttach: "Aún no hay listas disponibles para vincular.",
     summary: "Resumen",
-    statsInactiveNote:
-      "Las estadísticas de rendimiento aparecen cuando la campaña está activa.",
     sent: "Enviados",
     opened: "Aperturas",
     replied: "Respuestas",
@@ -809,8 +805,6 @@ const COPY = {
     attach: "Collega",
     noListsToAttach: "Ancora nessuna lista disponibile da collegare.",
     summary: "Riepilogo",
-    statsInactiveNote:
-      "Le statistiche di rendimento appaiono quando la campagna è attiva.",
     sent: "Inviati",
     opened: "Aperture",
     replied: "Risposte",
@@ -1059,8 +1053,6 @@ const COPY = {
     attach: "Lier",
     noListsToAttach: "Aucune liste disponible à lier pour l'instant.",
     summary: "Résumé",
-    statsInactiveNote:
-      "Les statistiques de performance apparaissent une fois la campagne active.",
     sent: "Envoyés",
     opened: "Ouvertures",
     replied: "Réponses",
@@ -1310,8 +1302,6 @@ const COPY = {
     attach: "Verknüpfen",
     noListsToAttach: "Noch keine Listen zum Verknüpfen verfügbar.",
     summary: "Zusammenfassung",
-    statsInactiveNote:
-      "Leistungsstatistiken erscheinen, sobald diese Kampagne aktiv ist.",
     sent: "Gesendet",
     opened: "Geöffnet",
     replied: "Beantwortet",
@@ -1561,8 +1551,6 @@ const COPY = {
     attach: "Vincular",
     noListsToAttach: "Ainda não há listas disponíveis para vincular.",
     summary: "Resumo",
-    statsInactiveNote:
-      "As estatísticas de desempenho aparecem quando a campanha estiver ativa.",
     sent: "Enviados",
     opened: "Aberturas",
     replied: "Respostas",
@@ -1812,8 +1800,6 @@ const COPY = {
     attach: "Vincular",
     noListsToAttach: "Ainda não há listas disponíveis para vincular.",
     summary: "Resumo",
-    statsInactiveNote:
-      "As estatísticas de desempenho aparecem quando a campanha estiver ativa.",
     sent: "Enviados",
     opened: "Aberturas",
     replied: "Respostas",
@@ -2115,7 +2101,11 @@ export default function CampaignDetail() {
   const [addOpen, setAddOpen] = React.useState(false)
   const [findContactsOpen, setFindContactsOpen] = React.useState(false)
   const [attachListId, setAttachListId] = React.useState("")
-  const [tab, setTab] = React.useState("overview")
+  // Draft campaigns (never launched) have nothing to show on Overview yet —
+  // land on Sequence instead, since that's what a new campaign needs first.
+  const [tab, setTab] = React.useState(
+    campaign?.status === "draft" ? "sequence" : "overview"
+  )
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
   const [scheduleOpen, setScheduleOpen] = React.useState(false)
   const [scheduleValue, setScheduleValue] = React.useState("")
@@ -2381,8 +2371,10 @@ export default function CampaignDetail() {
   // source (an attached list or manually-enrolled prospects).
   const hasSequence = steps.length > 0
   const hasFeed = hasProspects || Boolean(attachedList)
-  const hasPerformanceData =
-    campaign.status === "active" || campaign.status === "completed"
+  // A campaign that has been launched at least once — active, paused
+  // mid-run, or finished. Only a "draft" (never launched) has nothing to
+  // show yet.
+  const hasPerformanceData = campaign.status !== "draft"
   const setupComplete = hasSequence && hasFeed
 
   // Ids already enrolled (mock + manual) — excluded from the add dialog.
@@ -2679,10 +2671,7 @@ export default function CampaignDetail() {
     }, 1800)
   }
 
-  // Sending, Linked List, and Automations — canonically the Settings tab,
-  // but also surfaced in Overview while the campaign has no performance
-  // data yet (not yet active/completed), so a brand-new campaign doesn't
-  // hide its own setup behind an extra tab click.
+  // Sending, Linked List, and Automations — lives only on the Settings tab.
   const campaignSettingsSection = (
     <>
       {/* Sending — account + language, locked once active/ended */}
@@ -3032,9 +3021,41 @@ export default function CampaignDetail() {
         </div>
       </div>
 
+      {/* Setup guidance lives above the tabs (not just Overview) since a
+          draft campaign — exactly who needs this most — has no Overview
+          tab yet and may be looking at Sequence or any other tab. */}
+      {!setupComplete && (
+        <Card className="border-primary/30 bg-primary/[0.03] mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">{c.setupTitle}</CardTitle>
+            <CardDescription>{c.setupDesc}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <SetupStep
+              done={hasSequence}
+              label={c.setupSequenceLabel}
+              desc={c.setupSequenceDesc}
+              actionLabel={c.setupSequenceCta}
+              doneLabel={c.setupDone}
+              onAction={() => setTab("sequence")}
+            />
+            <SetupStep
+              done={hasFeed}
+              label={c.setupProspectsLabel}
+              desc={c.setupProspectsDesc}
+              actionLabel={c.setupProspectsCta}
+              doneLabel={c.setupDone}
+              onAction={() => setTab("prospects")}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList>
-          <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
+          {hasPerformanceData && (
+            <TabsTrigger value="overview">{c.tabOverview}</TabsTrigger>
+          )}
           <TabsTrigger value="sequence">{c.tabSequence}</TabsTrigger>
           <TabsTrigger value="preview">{c.tabPreview}</TabsTrigger>
           <TabsTrigger value="prospects">{c.tabProspects}</TabsTrigger>
@@ -3042,35 +3063,9 @@ export default function CampaignDetail() {
           <TabsTrigger value="settings">{c.tabSettings}</TabsTrigger>
         </TabsList>
 
-        {/* Overview */}
+        {/* Overview — only once the campaign has run at least once */}
+        {hasPerformanceData && (
         <TabsContent value="overview" className="mt-4 space-y-4">
-          {!setupComplete && (
-            <Card className="border-primary/30 bg-primary/[0.03]">
-              <CardHeader>
-                <CardTitle className="text-base">{c.setupTitle}</CardTitle>
-                <CardDescription>{c.setupDesc}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <SetupStep
-                  done={hasSequence}
-                  label={c.setupSequenceLabel}
-                  desc={c.setupSequenceDesc}
-                  actionLabel={c.setupSequenceCta}
-                  doneLabel={c.setupDone}
-                  onAction={() => setTab("sequence")}
-                />
-                <SetupStep
-                  done={hasFeed}
-                  label={c.setupProspectsLabel}
-                  desc={c.setupProspectsDesc}
-                  actionLabel={c.setupProspectsCta}
-                  doneLabel={c.setupDone}
-                  onAction={() => setTab("prospects")}
-                />
-              </CardContent>
-            </Card>
-          )}
-
           {/* Merged at-a-glance stats — enrollment/funnel KPIs and the daily
               sent/opened/replied/bounced totals used to live in two separate
               places (a strip above the tabs, and a "Summary" card down here);
@@ -3080,62 +3075,56 @@ export default function CampaignDetail() {
               <CardTitle className="text-base">{c.summary}</CardTitle>
             </CardHeader>
             <CardContent>
-              {hasPerformanceData ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {campaign.enrolled}
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.enrolled}</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {totals.sent}
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.sent}</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {totals.opened}
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.opened}</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {openRate}%
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.openRate}</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {totals.replied}
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.replied}</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {replyRate}%
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.replyRate}</p>
-                  </div>
-                  <div>
-                    <p className="text-destructive text-lg font-semibold tabular-nums">
-                      {totals.bounced}
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.bounced}</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold tabular-nums">
-                      {campaign.meetings}
-                    </p>
-                    <p className="text-muted-foreground text-xs">{c.meetings}</p>
-                  </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {campaign.enrolled}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.enrolled}</p>
                 </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  {c.statsInactiveNote}
-                </p>
-              )}
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {totals.sent}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.sent}</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {totals.opened}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.opened}</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {openRate}%
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.openRate}</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {totals.replied}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.replied}</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {replyRate}%
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.replyRate}</p>
+                </div>
+                <div>
+                  <p className="text-destructive text-lg font-semibold tabular-nums">
+                    {totals.bounced}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.bounced}</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold tabular-nums">
+                    {campaign.meetings}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{c.meetings}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -3145,11 +3134,7 @@ export default function CampaignDetail() {
               <CardDescription>{c.dailyPerformanceDesc}</CardDescription>
             </CardHeader>
             <CardContent>
-              {!hasPerformanceData ? (
-                <p className="text-muted-foreground text-sm">
-                  {c.statsInactiveNote}
-                </p>
-              ) : daily.length > 0 ? (
+              {daily.length > 0 ? (
                 <div className="h-72">
                   <CampaignDailyChart
                     labels={daily.map((d) => shortDay(d.date))}
@@ -3166,9 +3151,8 @@ export default function CampaignDetail() {
               )}
             </CardContent>
           </Card>
-
-          {!hasPerformanceData && campaignSettingsSection}
         </TabsContent>
+        )}
 
         {/* Sequence */}
         <TabsContent value="sequence" className="mt-4 space-y-4">
