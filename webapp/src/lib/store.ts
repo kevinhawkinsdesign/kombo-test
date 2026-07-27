@@ -1155,6 +1155,12 @@ export const conversationStore = {
   unschedule(id: string): void {
     patchConversation(id, (c) => ({ ...c, scheduledAt: null }))
   },
+  snooze(id: string, untilISO: string): void {
+    patchConversation(id, (c) => ({ ...c, snoozedUntil: untilISO }))
+  },
+  unsnooze(id: string): void {
+    patchConversation(id, (c) => ({ ...c, snoozedUntil: null }))
+  },
   setDraft(id: string, body: string | undefined): void {
     patchConversation(id, (c) => ({ ...c, aiDraft: body }))
   },

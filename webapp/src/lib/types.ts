@@ -239,6 +239,7 @@ export interface Conversation {
   status?: ConvStatus // auto-tagged intent
   aiDraft?: string // Kai's suggested reply, ready to send
   scheduledAt?: string | null // ISO date; a reply queued to send later
+  snoozedUntil?: string | null // ISO date; hidden from folders until this time
   events?: ConvEvent[] // activity timeline interleaved with messages
   // When true, an inbound reply on this thread auto-populates aiDraft via the
   // same draftReply() generator the composer's "Kai draft" uses — the rep
