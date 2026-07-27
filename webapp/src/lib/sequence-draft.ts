@@ -7,7 +7,12 @@
 import * as React from "react"
 
 import { campaignStore, uid, updateStepTree, AI_VOICES, CONDITION_TRACK_KINDS } from "@/lib/store"
-import type { CampaignStep, ConditionKind, StepChannel } from "@/lib/types"
+import type { CampaignStep, ConditionKind, StepChannel, StepTypeSelection } from "@/lib/types"
+
+// The action-variant fields a freshly-created step can be seeded with —
+// everything in StepTypeSelection except the channel itself, which every
+// creation method below already takes as its own argument.
+type StepExtra = Pick<StepTypeSelection, "linkedinAction" | "whatsappAction">
 
 // Where a dragged step should land: a sequential slot (top-level, or one of
 // a fork's tracks — same shape the "add" ghosts already carry) or as a new
@@ -19,8 +24,8 @@ export type MoveTarget =
 export interface SequenceDraftApi {
   steps: CampaignStep[]
   dirty: boolean
-  addStep(channel: StepChannel): void
-  insertStep(at: number, channel: StepChannel): void
+  addStep(channel: StepChannel, extra?: StepExtra): void
+  insertStep(at: number, channel: StepChannel, extra?: StepExtra): void
   addStepFromTemplate(data: { channel: StepChannel; subject?: string; body: string }): CampaignStep
   updateStep(stepId: string, patch: Partial<CampaignStep>): void
   removeStep(stepId: string): void
@@ -28,20 +33,28 @@ export interface SequenceDraftApi {
   moveStepToTarget(stepId: string, target: MoveTarget): void
   addCondition(stepId: string, condition: ConditionKind): void
   removeFork(stepId: string): void
-  addForkStep(stepId: string, trackId: string, channel: StepChannel): void
-  addParallelStep(stepId: string, channel: StepChannel): void
+  addForkStep(stepId: string, trackId: string, channel: StepChannel, extra?: StepExtra): void
+  addParallelStep(stepId: string, channel: StepChannel, extra?: StepExtra): void
+  // Inserts a LinkedIn Connect step, forked into "accepted"/"not accepted"
+  // tracks, with the originally-picked step placed on the accepted side —
+  // the connection-requiring LinkedIn actions (message/voice message) can't
+  // run before the prospect has accepted, so the step picker routes those
+  // selections through here instead of a plain addStep/insertStep.
+  addConnectGatedStep(selection: StepTypeSelection, afterStepId?: string): void
   replaceSteps(steps: CampaignStep[]): void
   apply(): void
   discard(): void
 }
 
-function newStep(channel: StepChannel, delayDays: number): CampaignStep {
+function newStep(channel: StepChannel, delayDays: number, extra?: StepExtra): CampaignStep {
   return {
     id: uid("s"),
     channel,
     delayDays,
     subject: "",
     body: "",
+    ...(extra?.linkedinAction ? { linkedinAction: extra.linkedinAction } : {}),
+    ...(extra?.whatsappAction ? { whatsappAction: extra.whatsappAction } : {}),
     ...(channel === "manual" ? { isManualTask: true } : {}),
     ...(channel === "ai_call" ? { aiVoice: AI_VOICES[0] } : {}),
   }
@@ -113,12 +126,12 @@ export function useSequenceDraft(
   return {
     steps: state.draft,
     dirty: state.draft !== state.baseline,
-    addStep(channel) {
-      setDraft([...state.draft, newStep(channel, state.draft.length === 0 ? 0 : 3)])
+    addStep(channel, extra) {
+      setDraft([...state.draft, newStep(channel, state.draft.length === 0 ? 0 : 3, extra)])
     },
-    insertStep(at, channel) {
+    insertStep(at, channel, extra) {
       const next = [...state.draft]
-      next.splice(at, 0, newStep(channel, at === 0 ? 0 : 3))
+      next.splice(at, 0, newStep(channel, at === 0 ? 0 : 3, extra))
       setDraft(next)
     },
     addStepFromTemplate(data) {
@@ -237,12 +250,12 @@ export function useSequenceDraft(
         )
       )
     },
-    addForkStep(stepId, trackId, channel) {
+    addForkStep(stepId, trackId, channel, extra) {
       setDraft(
         updateStepTree(state.draft, stepId, (list, i) =>
           list.map((s, idx) => {
             if (idx !== i || !s.fork) return s
-            const step = newStep(channel, 3)
+            const step = newStep(channel, 3, extra)
             return {
               ...s,
               fork: {
@@ -256,16 +269,40 @@ export function useSequenceDraft(
         )
       )
     },
-    addParallelStep(stepId, channel) {
+    addParallelStep(stepId, channel, extra) {
       setDraft(
         updateStepTree(state.draft, stepId, (list, i) =>
           list.map((s, idx) =>
             idx === i
-              ? { ...s, parallelSteps: [...(s.parallelSteps ?? []), newStep(channel, 0)] }
+              ? { ...s, parallelSteps: [...(s.parallelSteps ?? []), newStep(channel, 0, extra)] }
               : s
           )
         )
       )
+    },
+    addConnectGatedStep(selection, afterStepId) {
+      const isFirst = state.draft.length === 0 && !afterStepId
+      const connectStep = newStep("linkedin_message", isFirst ? 0 : 3, { linkedinAction: "connect" })
+      const target = newStep(selection.channel, 3, {
+        linkedinAction: selection.linkedinAction,
+        whatsappAction: selection.whatsappAction,
+      })
+      const [metKind, notMetKind] = CONDITION_TRACK_KINDS.accept
+      connectStep.fork = {
+        condition: "accept",
+        tracks: [
+          { id: uid("trk"), kind: metKind, steps: [target] },
+          { id: uid("trk"), kind: notMetKind, steps: [] },
+        ],
+      }
+      if (afterStepId) {
+        const idx = state.draft.findIndex((s) => s.id === afterStepId)
+        const next = [...state.draft]
+        next.splice(idx + 1, 0, connectStep)
+        setDraft(next)
+      } else {
+        setDraft([...state.draft, connectStep])
+      }
     },
     replaceSteps(steps) {
       setDraft(steps)

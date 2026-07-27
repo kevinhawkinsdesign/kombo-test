@@ -180,6 +180,7 @@ import type {
   CampaignStep,
   LinkedInAction,
   WhatsAppAction,
+  StepTypeSelection,
 } from "@/lib/types"
 
 const LINKEDIN_ACTIONS: LinkedInAction[] = [
@@ -215,7 +216,7 @@ const COPY = {
       ai_call: "AI Voice Call",
       linkedin_message: "LinkedIn message",
       linkedin_dm: "LinkedIn DM",
-      linkedin_inmail: "LinkedIn InMail",
+      linkedin_inmail: "LinkedIn Sales Navigator message",
       manual: "Manual task",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -379,6 +380,7 @@ const COPY = {
     addParallelStepTitle: "Add a parallel step",
     applyChanges: "Apply changes",
     sequenceApplied: "Sequence updated",
+    connectStepAutoAdded: "Added a LinkedIn connect step first, since this step requires an accepted connection.",
     discardChanges: "Discard changes",
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
@@ -459,7 +461,7 @@ const COPY = {
       ai_call: "Llamada de voz IA",
       linkedin_message: "Mensaje de LinkedIn",
       linkedin_dm: "Mensaje directo de LinkedIn",
-      linkedin_inmail: "InMail de LinkedIn",
+      linkedin_inmail: "Mensaje de Sales Navigator de LinkedIn",
       manual: "Tarea manual",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -623,6 +625,7 @@ const COPY = {
     addParallelStepTitle: "Añadir un paso paralelo",
     applyChanges: "Aplicar cambios",
     sequenceApplied: "Secuencia actualizada",
+    connectStepAutoAdded: "Se añadió primero un paso de conexión de LinkedIn, ya que este paso requiere una conexión aceptada.",
     discardChanges: "Descartar cambios",
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
@@ -703,7 +706,7 @@ const COPY = {
       ai_call: "Chiamata vocale IA",
       linkedin_message: "Messaggio LinkedIn",
       linkedin_dm: "Messaggio diretto di LinkedIn",
-      linkedin_inmail: "InMail di LinkedIn",
+      linkedin_inmail: "Messaggio Sales Navigator di LinkedIn",
       manual: "Attività manuale",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -867,6 +870,7 @@ const COPY = {
     addParallelStepTitle: "Aggiungi un passaggio parallelo",
     applyChanges: "Applica modifiche",
     sequenceApplied: "Sequenza aggiornata",
+    connectStepAutoAdded: "È stato aggiunto prima un passaggio di connessione LinkedIn, poiché questo passaggio richiede una connessione accettata.",
     discardChanges: "Annulla modifiche",
     copySequenceFrom: "Copia sequenza da…",
     saveAsTemplate: "Salva come modello",
@@ -947,7 +951,7 @@ const COPY = {
       ai_call: "Appel vocal IA",
       linkedin_message: "Message LinkedIn",
       linkedin_dm: "Message direct LinkedIn",
-      linkedin_inmail: "InMail LinkedIn",
+      linkedin_inmail: "Message Sales Navigator LinkedIn",
       manual: "Tâche manuelle",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -1111,6 +1115,7 @@ const COPY = {
     addParallelStepTitle: "Ajouter une étape parallèle",
     applyChanges: "Appliquer les modifications",
     sequenceApplied: "Séquence mise à jour",
+    connectStepAutoAdded: "Une étape de connexion LinkedIn a été ajoutée en premier, car cette étape nécessite une connexion acceptée.",
     discardChanges: "Annuler les modifications",
     copySequenceFrom: "Copier la séquence depuis…",
     saveAsTemplate: "Enregistrer comme modèle",
@@ -1191,7 +1196,7 @@ const COPY = {
       ai_call: "KI-Sprachanruf",
       linkedin_message: "LinkedIn-Nachricht",
       linkedin_dm: "LinkedIn-Direktnachricht",
-      linkedin_inmail: "LinkedIn InMail",
+      linkedin_inmail: "LinkedIn Sales Navigator-Nachricht",
       manual: "Manuelle Aufgabe",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -1355,6 +1360,7 @@ const COPY = {
     addParallelStepTitle: "Parallelen Schritt hinzufügen",
     applyChanges: "Änderungen übernehmen",
     sequenceApplied: "Sequenz aktualisiert",
+    connectStepAutoAdded: "Zuerst wurde ein LinkedIn-Vernetzungsschritt hinzugefügt, da dieser Schritt eine angenommene Vernetzung erfordert.",
     discardChanges: "Änderungen verwerfen",
     copySequenceFrom: "Sequenz kopieren von…",
     saveAsTemplate: "Als Vorlage speichern",
@@ -1435,7 +1441,7 @@ const COPY = {
       ai_call: "Chamada de voz IA",
       linkedin_message: "Mensagem do LinkedIn",
       linkedin_dm: "Mensagem direta do LinkedIn",
-      linkedin_inmail: "InMail do LinkedIn",
+      linkedin_inmail: "Mensagem do Sales Navigator do LinkedIn",
       manual: "Tarefa manual",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -1599,6 +1605,7 @@ const COPY = {
     addParallelStepTitle: "Adicionar um passo paralelo",
     applyChanges: "Aplicar alterações",
     sequenceApplied: "Sequência atualizada",
+    connectStepAutoAdded: "Foi adicionado primeiro um passo de ligação no LinkedIn, uma vez que este passo requer uma ligação aceite.",
     discardChanges: "Descartar alterações",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Guardar como modelo",
@@ -1679,7 +1686,7 @@ const COPY = {
       ai_call: "Chamada de voz IA",
       linkedin_message: "Mensagem do LinkedIn",
       linkedin_dm: "Mensagem direta do LinkedIn",
-      linkedin_inmail: "InMail do LinkedIn",
+      linkedin_inmail: "Mensagem do Sales Navigator do LinkedIn",
       manual: "Tarefa manual",
     } as Record<StepChannel, string>,
     statusLabel: {
@@ -1843,6 +1850,7 @@ const COPY = {
     addParallelStepTitle: "Adicionar uma etapa paralela",
     applyChanges: "Aplicar alterações",
     sequenceApplied: "Sequência atualizada",
+    connectStepAutoAdded: "Foi adicionada primeiro uma etapa de conexão no LinkedIn, já que esta etapa exige uma conexão aceita.",
     discardChanges: "Descartar alterações",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Salvar como modelo",
@@ -2253,12 +2261,29 @@ export default function CampaignDetail() {
     })
   }
 
-  // Routes a channel picked in the step-type modal to whichever action
-  // triggered it — a parallel add, a fork track, a top-level insert, or a
-  // brand-new append. All draft-only until Apply Changes.
-  function handleStepTypeSelect(channel: StepChannel) {
+  // A LinkedIn message/voice message can't actually reach someone who isn't
+  // a connection yet — Connect/View Profile/Like Post/Sales Navigator don't
+  // have that restriction (Sales Navigator messages work precisely because
+  // they don't require a connection).
+  function requiresLinkedInConnection(selection: StepTypeSelection): boolean {
+    return (
+      selection.channel === "linkedin_message" &&
+      (selection.linkedinAction === undefined ||
+        selection.linkedinAction === "message" ||
+        selection.linkedinAction === "voice_message")
+    )
+  }
+
+  // Routes a step type picked in the modal to whichever action triggered
+  // it — a parallel add, a fork track, a top-level insert, or a brand-new
+  // append. A top-level pick that requires a connection first is routed
+  // through addConnectGatedStep instead, which inserts a Connect step and
+  // an accepted/not-accepted branch rather than the plain step. All
+  // draft-only until Apply Changes.
+  function handleStepTypeSelect(selection: StepTypeSelection) {
+    const { channel, linkedinAction, whatsappAction } = selection
     if (pendingParallelStep) {
-      draft.addParallelStep(pendingParallelStep.id, channel)
+      draft.addParallelStep(pendingParallelStep.id, channel, { linkedinAction, whatsappAction })
       setPendingParallelStep(null)
       setSelectedStepId(undefined)
       return
@@ -2266,12 +2291,15 @@ export default function CampaignDetail() {
     const ghost = pendingGhost
     if (!ghost) return
     if (ghost.trackId && ghost.forkStepId) {
-      draft.addForkStep(ghost.forkStepId, ghost.trackId, channel)
+      draft.addForkStep(ghost.forkStepId, ghost.trackId, channel, { linkedinAction, whatsappAction })
+    } else if (requiresLinkedInConnection(selection)) {
+      draft.addConnectGatedStep(selection, ghost.afterStepId)
+      toast.info(c.connectStepAutoAdded)
     } else if (ghost.afterStepId) {
       const idx = draft.steps.findIndex((s) => s.id === ghost.afterStepId)
-      draft.insertStep(idx + 1, channel)
+      draft.insertStep(idx + 1, channel, { linkedinAction, whatsappAction })
     } else {
-      draft.addStep(channel)
+      draft.addStep(channel, { linkedinAction, whatsappAction })
     }
     setSelectedStepId(undefined)
     setPendingGhost(null)
@@ -4462,7 +4490,7 @@ const CHANNEL_GROUPS: {
   { labelKey: "groupMessaging", channels: ["whatsapp", "call"] },
   {
     labelKey: "groupLinkedin",
-    channels: ["linkedin_message"],
+    channels: ["linkedin_message", "linkedin_inmail"],
   },
   // Agentic, AI-driven steps — a distinct mechanism from a human `call`,
   // so it gets its own group rather than joining groupMessaging.

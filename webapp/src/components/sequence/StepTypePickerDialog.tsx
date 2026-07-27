@@ -1,5 +1,5 @@
 import * as React from "react"
-import { FileText, Sparkles, ListChecks, GitFork } from "lucide-react"
+import { FileText, Sparkles, ListChecks, GitFork, UserPlus, Eye, Mic, ThumbsUp } from "lucide-react"
 
 import {
   Dialog,
@@ -15,22 +15,68 @@ import { Segmented } from "@/components/common/Segmented"
 import { useLocale } from "@/lib/locale"
 import { CHANNELS, conditionAllowedForChannel } from "@/lib/step-channels"
 import { cn } from "@/lib/utils"
-import type { ConditionKind, StepChannel } from "@/lib/types"
+import type {
+  ConditionKind,
+  LinkedInAction,
+  StepChannel,
+  StepTypeSelection,
+  WhatsAppAction,
+} from "@/lib/types"
 
 interface ChannelCardCopy {
   label: string
   description: string
 }
 
-type GroupKey = "email" | "linkedin" | "messaging" | "aiPowered" | "other"
+// Every pickable step type, flattened — no category grouping — so adding a
+// step never requires scrolling through collapsed sections. Several entries
+// share a StepChannel but differ by linkedinAction/whatsappAction (e.g.
+// LinkedIn message vs. LinkedIn connect), which is why this is its own list
+// rather than one card per StepChannel.
+type StepTypeKey =
+  | "email"
+  | "linkedin_message"
+  | "linkedin_connect"
+  | "linkedin_view_profile"
+  | "linkedin_voice_message"
+  | "linkedin_like_post"
+  | "linkedin_inmail"
+  | "whatsapp"
+  | "whatsapp_voice_message"
+  | "call"
+  | "ai_call"
+  | "manual"
 
-const GROUPS: { key: GroupKey; channels: StepChannel[] }[] = [
-  { key: "email", channels: ["email"] },
-  { key: "linkedin", channels: ["linkedin_message"] },
-  { key: "messaging", channels: ["whatsapp", "call"] },
-  { key: "aiPowered", channels: ["ai_call"] },
-  { key: "other", channels: ["manual"] },
+const STEP_TYPES: {
+  key: StepTypeKey
+  channel: StepChannel
+  linkedinAction?: LinkedInAction
+  whatsappAction?: WhatsAppAction
+}[] = [
+  { key: "email", channel: "email" },
+  { key: "linkedin_message", channel: "linkedin_message" },
+  { key: "linkedin_connect", channel: "linkedin_message", linkedinAction: "connect" },
+  { key: "linkedin_view_profile", channel: "linkedin_message", linkedinAction: "view_profile" },
+  { key: "linkedin_voice_message", channel: "linkedin_message", linkedinAction: "voice_message" },
+  { key: "linkedin_like_post", channel: "linkedin_message", linkedinAction: "like_post" },
+  { key: "linkedin_inmail", channel: "linkedin_inmail" },
+  { key: "whatsapp", channel: "whatsapp" },
+  { key: "whatsapp_voice_message", channel: "whatsapp", whatsappAction: "voice_message" },
+  { key: "call", channel: "call" },
+  { key: "ai_call", channel: "ai_call" },
+  { key: "manual", channel: "manual" },
 ]
+
+// Distinguishes the LinkedIn/WhatsApp action-variant cards from each other —
+// otherwise every LinkedIn entry would show the same brand glyph. Matches
+// the icon vocabulary CampaignDetail.tsx's step editor already uses for
+// these same actions.
+const ACTION_ICON: Partial<Record<LinkedInAction | WhatsAppAction, React.ComponentType<{ className?: string }>>> = {
+  connect: UserPlus,
+  view_profile: Eye,
+  voice_message: Mic,
+  like_post: ThumbsUp,
+}
 
 const CONDITIONS: ConditionKind[] = ["reply", "open", "click", "accept", "read"]
 
@@ -49,38 +95,23 @@ const COPY = {
     useTemplate: "Use a template",
     usePrompt: "Use a prompt",
     orPickChannel: "Or pick a channel",
-    groups: {
-      email: "Email",
-      linkedin: "LinkedIn",
-      messaging: "Phone & Messaging",
-      aiPowered: "AI-powered",
-      other: "Other",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "Email", description: "Send a personalized email." },
-      whatsapp: { label: "WhatsApp", description: "Send a WhatsApp message." },
-      call: { label: "Phone call", description: "Log a phone call to place." },
-      ai_call: {
-        label: "AI Voice Call",
-        description: "Place an agentic AI voice call.",
-      },
-      linkedin_message: {
-        label: "LinkedIn message",
-        description: "Send a LinkedIn connection message.",
-      },
-      linkedin_dm: {
-        label: "LinkedIn DM",
-        description: "Send a LinkedIn direct message.",
-      },
+      linkedin_message: { label: "LinkedIn message", description: "Send a personalized LinkedIn message." },
+      linkedin_connect: { label: "LinkedIn connect", description: "Send a LinkedIn connection request." },
+      linkedin_view_profile: { label: "LinkedIn view profile", description: "Visit their LinkedIn profile." },
+      linkedin_voice_message: { label: "LinkedIn voice message", description: "Send a LinkedIn voice message." },
+      linkedin_like_post: { label: "LinkedIn like post", description: "Like their latest LinkedIn post." },
       linkedin_inmail: {
-        label: "LinkedIn InMail",
-        description: "Send a LinkedIn InMail.",
+        label: "LinkedIn Sales Navigator message",
+        description: "Send a Sales Navigator message — works even without a connection.",
       },
-      manual: {
-        label: "Manual task",
-        description: "Create a manual task for the rep.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Send a WhatsApp message." },
+      whatsapp_voice_message: { label: "WhatsApp voice message", description: "Send a WhatsApp voice message." },
+      call: { label: "Phone call", description: "Log a phone call to place." },
+      ai_call: { label: "AI Voice Call", description: "Place an agentic AI voice call." },
+      manual: { label: "Manual task", description: "Create a manual task for the rep." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "Replied",
@@ -113,38 +144,23 @@ const COPY = {
     usePrompt: "Usar un prompt",
     orPickChannel: "O elige un canal",
     cancel: "Cancelar",
-    groups: {
-      email: "Correo",
-      linkedin: "LinkedIn",
-      messaging: "Teléfono y mensajería",
-      aiPowered: "Con IA",
-      other: "Otro",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "Correo", description: "Envía un correo personalizado." },
-      whatsapp: { label: "WhatsApp", description: "Envía un mensaje de WhatsApp." },
-      call: { label: "Llamada", description: "Registra una llamada telefónica pendiente." },
-      ai_call: {
-        label: "Llamada de voz IA",
-        description: "Realiza una llamada de voz con IA agente.",
-      },
-      linkedin_message: {
-        label: "Mensaje de LinkedIn",
-        description: "Envía un mensaje de conexión de LinkedIn.",
-      },
-      linkedin_dm: {
-        label: "Mensaje directo de LinkedIn",
-        description: "Envía un mensaje directo de LinkedIn.",
-      },
+      linkedin_message: { label: "Mensaje de LinkedIn", description: "Envía un mensaje personalizado de LinkedIn." },
+      linkedin_connect: { label: "Conectar en LinkedIn", description: "Envía una solicitud de conexión de LinkedIn." },
+      linkedin_view_profile: { label: "Ver perfil de LinkedIn", description: "Visita su perfil de LinkedIn." },
+      linkedin_voice_message: { label: "Mensaje de voz de LinkedIn", description: "Envía un mensaje de voz de LinkedIn." },
+      linkedin_like_post: { label: "Dar me gusta en LinkedIn", description: "Dale me gusta a su última publicación de LinkedIn." },
       linkedin_inmail: {
-        label: "InMail de LinkedIn",
-        description: "Envía un InMail de LinkedIn.",
+        label: "Mensaje de Sales Navigator",
+        description: "Envía un mensaje de Sales Navigator — funciona incluso sin estar conectados.",
       },
-      manual: {
-        label: "Tarea manual",
-        description: "Crea una tarea manual para el representante.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Envía un mensaje de WhatsApp." },
+      whatsapp_voice_message: { label: "Mensaje de voz de WhatsApp", description: "Envía un mensaje de voz de WhatsApp." },
+      call: { label: "Llamada", description: "Registra una llamada telefónica pendiente." },
+      ai_call: { label: "Llamada de voz IA", description: "Realiza una llamada de voz con IA agente." },
+      manual: { label: "Tarea manual", description: "Crea una tarea manual para el representante." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "Respondió",
@@ -177,38 +193,23 @@ const COPY = {
     useTemplate: "Usa un modello",
     usePrompt: "Usa un prompt",
     orPickChannel: "Oppure scegli un canale",
-    groups: {
-      email: "Email",
-      linkedin: "LinkedIn",
-      messaging: "Telefono e messaggistica",
-      aiPowered: "Con IA",
-      other: "Altro",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "Email", description: "Invia un'email personalizzata." },
-      whatsapp: { label: "WhatsApp", description: "Invia un messaggio WhatsApp." },
-      call: { label: "Chiamata", description: "Registra una chiamata da effettuare." },
-      ai_call: {
-        label: "Chiamata vocale IA",
-        description: "Effettua una chiamata vocale con IA agentica.",
-      },
-      linkedin_message: {
-        label: "Messaggio LinkedIn",
-        description: "Invia un messaggio di collegamento su LinkedIn.",
-      },
-      linkedin_dm: {
-        label: "Messaggio diretto LinkedIn",
-        description: "Invia un messaggio diretto su LinkedIn.",
-      },
+      linkedin_message: { label: "Messaggio LinkedIn", description: "Invia un messaggio LinkedIn personalizzato." },
+      linkedin_connect: { label: "Connessione LinkedIn", description: "Invia una richiesta di connessione LinkedIn." },
+      linkedin_view_profile: { label: "Visualizza profilo LinkedIn", description: "Visita il suo profilo LinkedIn." },
+      linkedin_voice_message: { label: "Messaggio vocale LinkedIn", description: "Invia un messaggio vocale LinkedIn." },
+      linkedin_like_post: { label: "Metti mi piace su LinkedIn", description: "Metti mi piace al suo ultimo post LinkedIn." },
       linkedin_inmail: {
-        label: "InMail di LinkedIn",
-        description: "Invia un InMail su LinkedIn.",
+        label: "Messaggio Sales Navigator",
+        description: "Invia un messaggio Sales Navigator — funziona anche senza essere connessi.",
       },
-      manual: {
-        label: "Attività manuale",
-        description: "Crea un'attività manuale per il commerciale.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Invia un messaggio WhatsApp." },
+      whatsapp_voice_message: { label: "Messaggio vocale WhatsApp", description: "Invia un messaggio vocale WhatsApp." },
+      call: { label: "Chiamata", description: "Registra una chiamata da effettuare." },
+      ai_call: { label: "Chiamata vocale IA", description: "Effettua una chiamata vocale con IA agentica." },
+      manual: { label: "Attività manuale", description: "Crea un'attività manuale per il commerciale." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "Ha risposto",
@@ -241,38 +242,23 @@ const COPY = {
     useTemplate: "Utiliser un modèle",
     usePrompt: "Utiliser un prompt",
     orPickChannel: "Ou choisissez un canal",
-    groups: {
-      email: "E-mail",
-      linkedin: "LinkedIn",
-      messaging: "Téléphone et messagerie",
-      aiPowered: "Avec IA",
-      other: "Autre",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "E-mail", description: "Envoyez un e-mail personnalisé." },
-      whatsapp: { label: "WhatsApp", description: "Envoyez un message WhatsApp." },
-      call: { label: "Appel téléphonique", description: "Consignez un appel à passer." },
-      ai_call: {
-        label: "Appel vocal IA",
-        description: "Passez un appel vocal IA agentique.",
-      },
-      linkedin_message: {
-        label: "Message LinkedIn",
-        description: "Envoyez un message de connexion LinkedIn.",
-      },
-      linkedin_dm: {
-        label: "Message privé LinkedIn",
-        description: "Envoyez un message privé LinkedIn.",
-      },
+      linkedin_message: { label: "Message LinkedIn", description: "Envoyez un message LinkedIn personnalisé." },
+      linkedin_connect: { label: "Connexion LinkedIn", description: "Envoyez une demande de connexion LinkedIn." },
+      linkedin_view_profile: { label: "Voir le profil LinkedIn", description: "Consultez son profil LinkedIn." },
+      linkedin_voice_message: { label: "Message vocal LinkedIn", description: "Envoyez un message vocal LinkedIn." },
+      linkedin_like_post: { label: "Aimer une publication LinkedIn", description: "Aimez sa dernière publication LinkedIn." },
       linkedin_inmail: {
-        label: "InMail LinkedIn",
-        description: "Envoyez un InMail LinkedIn.",
+        label: "Message Sales Navigator",
+        description: "Envoyez un message Sales Navigator — fonctionne même sans être connectés.",
       },
-      manual: {
-        label: "Tâche manuelle",
-        description: "Créez une tâche manuelle pour le commercial.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Envoyez un message WhatsApp." },
+      whatsapp_voice_message: { label: "Message vocal WhatsApp", description: "Envoyez un message vocal WhatsApp." },
+      call: { label: "Appel téléphonique", description: "Consignez un appel à passer." },
+      ai_call: { label: "Appel vocal IA", description: "Passez un appel vocal IA agentique." },
+      manual: { label: "Tâche manuelle", description: "Créez une tâche manuelle pour le commercial." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "A répondu",
@@ -305,38 +291,23 @@ const COPY = {
     useTemplate: "Vorlage verwenden",
     usePrompt: "Prompt verwenden",
     orPickChannel: "Oder wähle einen Kanal",
-    groups: {
-      email: "E-Mail",
-      linkedin: "LinkedIn",
-      messaging: "Telefon & Messaging",
-      aiPowered: "KI-gestützt",
-      other: "Sonstiges",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "E-Mail", description: "Sende eine personalisierte E-Mail." },
-      whatsapp: { label: "WhatsApp", description: "Sende eine WhatsApp-Nachricht." },
-      call: { label: "Telefonanruf", description: "Erfasse einen zu führenden Anruf." },
-      ai_call: {
-        label: "KI-Sprachanruf",
-        description: "Führe einen agentischen KI-Sprachanruf durch.",
-      },
-      linkedin_message: {
-        label: "LinkedIn-Nachricht",
-        description: "Sende eine LinkedIn-Vernetzungsnachricht.",
-      },
-      linkedin_dm: {
-        label: "LinkedIn-Direktnachricht",
-        description: "Sende eine LinkedIn-Direktnachricht.",
-      },
+      linkedin_message: { label: "LinkedIn-Nachricht", description: "Sende eine personalisierte LinkedIn-Nachricht." },
+      linkedin_connect: { label: "LinkedIn-Vernetzung", description: "Sende eine LinkedIn-Vernetzungsanfrage." },
+      linkedin_view_profile: { label: "LinkedIn-Profil ansehen", description: "Besuche das LinkedIn-Profil." },
+      linkedin_voice_message: { label: "LinkedIn-Sprachnachricht", description: "Sende eine LinkedIn-Sprachnachricht." },
+      linkedin_like_post: { label: "LinkedIn-Beitrag liken", description: "Like den neuesten LinkedIn-Beitrag." },
       linkedin_inmail: {
-        label: "LinkedIn InMail",
-        description: "Sende eine LinkedIn InMail.",
+        label: "Sales Navigator-Nachricht",
+        description: "Sende eine Sales Navigator-Nachricht — funktioniert auch ohne Vernetzung.",
       },
-      manual: {
-        label: "Manuelle Aufgabe",
-        description: "Erstelle eine manuelle Aufgabe für den Vertriebsmitarbeiter.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Sende eine WhatsApp-Nachricht." },
+      whatsapp_voice_message: { label: "WhatsApp-Sprachnachricht", description: "Sende eine WhatsApp-Sprachnachricht." },
+      call: { label: "Telefonanruf", description: "Erfasse einen zu führenden Anruf." },
+      ai_call: { label: "KI-Sprachanruf", description: "Führe einen agentischen KI-Sprachanruf durch." },
+      manual: { label: "Manuelle Aufgabe", description: "Erstelle eine manuelle Aufgabe für den Vertriebsmitarbeiter." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "Geantwortet",
@@ -369,38 +340,23 @@ const COPY = {
     useTemplate: "Usar um modelo",
     usePrompt: "Usar um prompt",
     orPickChannel: "Ou escolha um canal",
-    groups: {
-      email: "Email",
-      linkedin: "LinkedIn",
-      messaging: "Telefone e mensagens",
-      aiPowered: "Com IA",
-      other: "Outro",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "Email", description: "Envie um email personalizado." },
-      whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
-      call: { label: "Chamada", description: "Registe uma chamada a fazer." },
-      ai_call: {
-        label: "Chamada de voz IA",
-        description: "Faça uma chamada de voz com um agente de IA.",
-      },
-      linkedin_message: {
-        label: "Mensagem do LinkedIn",
-        description: "Envie uma mensagem de ligação no LinkedIn.",
-      },
-      linkedin_dm: {
-        label: "Mensagem direta do LinkedIn",
-        description: "Envie uma mensagem direta no LinkedIn.",
-      },
+      linkedin_message: { label: "Mensagem do LinkedIn", description: "Envie uma mensagem personalizada no LinkedIn." },
+      linkedin_connect: { label: "Ligação no LinkedIn", description: "Envie um pedido de ligação no LinkedIn." },
+      linkedin_view_profile: { label: "Ver perfil do LinkedIn", description: "Visite o perfil no LinkedIn." },
+      linkedin_voice_message: { label: "Mensagem de voz do LinkedIn", description: "Envie uma mensagem de voz no LinkedIn." },
+      linkedin_like_post: { label: "Gostar de publicação no LinkedIn", description: "Goste da publicação mais recente no LinkedIn." },
       linkedin_inmail: {
-        label: "InMail do LinkedIn",
-        description: "Envie um InMail no LinkedIn.",
+        label: "Mensagem do Sales Navigator",
+        description: "Envie uma mensagem do Sales Navigator — funciona mesmo sem ligação.",
       },
-      manual: {
-        label: "Tarefa manual",
-        description: "Crie uma tarefa manual para o comercial.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
+      whatsapp_voice_message: { label: "Mensagem de voz do WhatsApp", description: "Envie uma mensagem de voz no WhatsApp." },
+      call: { label: "Chamada", description: "Registe uma chamada a fazer." },
+      ai_call: { label: "Chamada de voz IA", description: "Faça uma chamada de voz com um agente de IA." },
+      manual: { label: "Tarefa manual", description: "Crie uma tarefa manual para o comercial." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "Respondeu",
@@ -433,38 +389,23 @@ const COPY = {
     useTemplate: "Usar um modelo",
     usePrompt: "Usar um prompt",
     orPickChannel: "Ou escolha um canal",
-    groups: {
-      email: "Email",
-      linkedin: "LinkedIn",
-      messaging: "Telefone e mensagens",
-      aiPowered: "Com IA",
-      other: "Outro",
-    } as Record<GroupKey, string>,
     channels: {
       email: { label: "Email", description: "Envie um email personalizado." },
-      whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
-      call: { label: "Ligação", description: "Registre uma ligação a fazer." },
-      ai_call: {
-        label: "Ligação de voz IA",
-        description: "Faça uma ligação de voz com um agente de IA.",
-      },
-      linkedin_message: {
-        label: "Mensagem do LinkedIn",
-        description: "Envie uma mensagem de conexão no LinkedIn.",
-      },
-      linkedin_dm: {
-        label: "Mensagem direta do LinkedIn",
-        description: "Envie uma mensagem direta no LinkedIn.",
-      },
+      linkedin_message: { label: "Mensagem do LinkedIn", description: "Envie uma mensagem personalizada no LinkedIn." },
+      linkedin_connect: { label: "Conexão no LinkedIn", description: "Envie um pedido de conexão no LinkedIn." },
+      linkedin_view_profile: { label: "Ver perfil do LinkedIn", description: "Visite o perfil no LinkedIn." },
+      linkedin_voice_message: { label: "Mensagem de voz do LinkedIn", description: "Envie uma mensagem de voz no LinkedIn." },
+      linkedin_like_post: { label: "Curtir publicação no LinkedIn", description: "Curta a publicação mais recente no LinkedIn." },
       linkedin_inmail: {
-        label: "InMail do LinkedIn",
-        description: "Envie um InMail no LinkedIn.",
+        label: "Mensagem do Sales Navigator",
+        description: "Envie uma mensagem do Sales Navigator — funciona mesmo sem conexão.",
       },
-      manual: {
-        label: "Tarefa manual",
-        description: "Crie uma tarefa manual para o representante.",
-      },
-    } as Record<StepChannel, ChannelCardCopy>,
+      whatsapp: { label: "WhatsApp", description: "Envie uma mensagem de WhatsApp." },
+      whatsapp_voice_message: { label: "Mensagem de voz do WhatsApp", description: "Envie uma mensagem de voz no WhatsApp." },
+      call: { label: "Ligação", description: "Registre uma ligação a fazer." },
+      ai_call: { label: "Ligação de voz IA", description: "Faça uma ligação de voz com um agente de IA." },
+      manual: { label: "Tarefa manual", description: "Crie uma tarefa manual para o representante." },
+    } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
       reply: {
         label: "Respondeu",
@@ -493,7 +434,7 @@ const COPY = {
 interface StepTypePickerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (channel: StepChannel) => void
+  onSelect: (selection: StepTypeSelection) => void
   title?: string
   description?: string
   // Only offered when the ghost that opened this dialog is a top-level
@@ -540,7 +481,7 @@ export function StepTypePickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title ?? c.title}</DialogTitle>
           <DialogDescription>{description ?? c.description}</DialogDescription>
@@ -628,47 +569,45 @@ export function StepTypePickerDialog({
               </div>
             )}
 
-            <div className="max-h-[60vh] space-y-5 overflow-y-auto pr-1">
-              {GROUPS.map((group) => (
-                <div key={group.key} className="space-y-2">
-                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    {c.groups[group.key]}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {group.channels.map((channel) => {
-                      const meta = CHANNELS[channel]
-                      const Icon = meta.Icon
-                      const card = c.channels[channel]
-                      return (
-                        <button
-                          key={channel}
-                          type="button"
-                          onClick={() => {
-                            onSelect(channel)
-                            onOpenChange(false)
-                          }}
-                          className="hover:border-primary/40 hover:bg-muted/30 flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors"
-                        >
-                          <span
-                            className={cn(
-                              "flex size-8 items-center justify-center rounded-md",
-                              meta.tint
-                            )}
-                          >
-                            <Icon className="size-4" />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-sm font-medium">{card.label}</span>
-                            <span className="text-muted-foreground block text-xs">
-                              {card.description}
-                            </span>
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
+            <div className="max-h-[65vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                {STEP_TYPES.map((type) => {
+                  const meta = CHANNELS[type.channel]
+                  const actionKey = type.linkedinAction ?? type.whatsappAction
+                  const Icon = (actionKey && ACTION_ICON[actionKey]) || meta.Icon
+                  const card = c.channels[type.key]
+                  return (
+                    <button
+                      key={type.key}
+                      type="button"
+                      onClick={() => {
+                        onSelect({
+                          channel: type.channel,
+                          linkedinAction: type.linkedinAction,
+                          whatsappAction: type.whatsappAction,
+                        })
+                        onOpenChange(false)
+                      }}
+                      className="hover:border-primary/40 hover:bg-muted/30 flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors"
+                    >
+                      <span
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-md",
+                          meta.tint
+                        )}
+                      >
+                        <Icon className="size-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium">{card.label}</span>
+                        <span className="text-muted-foreground block text-xs">
+                          {card.description}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </>
         )}
