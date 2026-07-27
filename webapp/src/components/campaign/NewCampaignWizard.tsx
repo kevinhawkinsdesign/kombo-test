@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { CopySequenceDialog } from "@/components/campaign/CopySequenceDialog"
 import { useLocale } from "@/lib/locale"
-import { campaignStore } from "@/lib/store"
+import { campaignStore, useCampaigns } from "@/lib/store"
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
 import { generateSequenceFromPrompt } from "@/lib/prompt-templates"
 import { channelMeta } from "@/lib/step-channels"
@@ -272,6 +272,7 @@ function NewCampaignWizard({
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
+  const campaigns = useCampaigns()
 
   const [mode, setMode] = React.useState<Mode>("manual")
   const [name, setName] = React.useState("")
@@ -291,7 +292,9 @@ function NewCampaignWizard({
     setWasOpen(open)
     if (open) {
       setMode("manual")
-      setName("")
+      // Auto-populated placeholder name — nameTouched stays false so typing
+      // or picking a duplicate source both still overwrite it freely.
+      setName(`${c.title} ${campaigns.length + 1}`)
       setNameTouched(false)
       setGoal("")
       setCopySeqOpen(false)
