@@ -120,7 +120,7 @@ const MOMENT_STYLES: Record<
 const COPY = {
   en: {
     recordingNotFound: "Recording not found.",
-    coach: "Call Coach",
+    coach: "All Calls",
     callScore: "Call score",
     reanalyzing: "Re-analyzing recording…",
     reanalyze: "Re-analyze",
@@ -263,7 +263,7 @@ const COPY = {
   },
   es: {
     recordingNotFound: "Grabación no encontrada.",
-    coach: "Coach de llamadas",
+    coach: "Todas las llamadas",
     callScore: "Puntuación",
     reanalyzing: "Reanalizando la grabación…",
     reanalyze: "Reanalizar",
@@ -406,7 +406,7 @@ const COPY = {
   },
   it: {
     recordingNotFound: "Registrazione non trovata.",
-    coach: "Coach delle chiamate",
+    coach: "Tutte le chiamate",
     callScore: "Punteggio",
     reanalyzing: "Rianalisi della registrazione…",
     reanalyze: "Rianalizza",
@@ -549,7 +549,7 @@ const COPY = {
   },
   fr: {
     recordingNotFound: "Enregistrement introuvable.",
-    coach: "Coach d'appels",
+    coach: "Tous les appels",
     callScore: "Score",
     reanalyzing: "Nouvelle analyse de l'enregistrement…",
     reanalyze: "Relancer l'analyse",
@@ -692,7 +692,7 @@ const COPY = {
   },
   de: {
     recordingNotFound: "Aufzeichnung nicht gefunden.",
-    coach: "Call Coach",
+    coach: "Alle Anrufe",
     callScore: "Call-Score",
     reanalyzing: "Aufzeichnung wird neu analysiert…",
     reanalyze: "Neu analysieren",
@@ -835,7 +835,7 @@ const COPY = {
   },
   pt: {
     recordingNotFound: "Gravação não encontrada.",
-    coach: "Coach de chamadas",
+    coach: "Todas as chamadas",
     callScore: "Pontuação",
     reanalyzing: "A reanalisar a gravação…",
     reanalyze: "Reanalisar",
@@ -978,7 +978,7 @@ const COPY = {
   },
   pt_BR: {
     recordingNotFound: "Gravação não encontrada.",
-    coach: "Coach de ligações",
+    coach: "Todas as ligações",
     callScore: "Pontuação",
     reanalyzing: "Reanalisando a gravação…",
     reanalyze: "Reanalisar",
