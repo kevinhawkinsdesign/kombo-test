@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   Columns3,
+  Download,
   Mail,
   MoreHorizontal,
   Pencil,
@@ -157,6 +158,7 @@ const COPY = {
     viewTable: "Table",
     exportLabel: "Export",
     exported: "Deals exported to CSV",
+    exportedOne: "Deal exported to CSV",
     noResults: "No deals match your search.",
     sortValue: "Highest value",
     sortClose: "Closing soonest",
@@ -245,6 +247,7 @@ const COPY = {
     viewTable: "Tabla",
     exportLabel: "Exportar",
     exported: "Negocios exportados a CSV",
+    exportedOne: "Negocio exportado a CSV",
     noResults: "Ningún negocio coincide con tu búsqueda.",
     sortValue: "Mayor valor",
     sortClose: "Cierre más próximo",
@@ -333,6 +336,7 @@ const COPY = {
     viewTable: "Tabella",
     exportLabel: "Esporta",
     exported: "Trattative esportate in CSV",
+    exportedOne: "Trattativa esportata in CSV",
     noResults: "Nessuna trattativa corrisponde alla tua ricerca.",
     sortValue: "Valore più alto",
     sortClose: "Chiusura più vicina",
@@ -421,6 +425,7 @@ const COPY = {
     viewTable: "Tableau",
     exportLabel: "Exporter",
     exported: "Transactions exportées en CSV",
+    exportedOne: "Transaction exportée en CSV",
     noResults: "Aucune transaction ne correspond à votre recherche.",
     sortValue: "Valeur la plus élevée",
     sortClose: "Clôture la plus proche",
@@ -509,6 +514,7 @@ const COPY = {
     viewTable: "Tabelle",
     exportLabel: "Exportieren",
     exported: "Deals als CSV exportiert",
+    exportedOne: "Deal als CSV exportiert",
     noResults: "Keine Deals entsprechen deiner Suche.",
     sortValue: "Höchster Wert",
     sortClose: "Nächster Abschluss",
@@ -597,6 +603,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Negócios exportados para CSV",
+    exportedOne: "Negócio exportado para CSV",
     noResults: "Nenhum negócio corresponde à sua pesquisa.",
     sortValue: "Maior valor",
     sortClose: "Fecho mais próximo",
@@ -685,6 +692,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Negócios exportados para CSV",
+    exportedOne: "Negócio exportado para CSV",
     noResults: "Nenhum negócio corresponde à sua busca.",
     sortValue: "Maior valor",
     sortClose: "Fechamento mais próximo",
@@ -736,11 +744,13 @@ function DealCard({
   onOpen,
   onEdit,
   onDelete,
+  onExport,
 }: {
   deal: Deal
   onOpen: (deal: Deal) => void
   onEdit: (deal: Deal) => void
   onDelete: (deal: Deal) => void
+  onExport: (deal: Deal) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -805,6 +815,11 @@ function DealCard({
                 {c.stages[stage.key]}
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => onExport(deal)}>
+              <Download />
+              {c.exportLabel}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
@@ -1000,6 +1015,24 @@ export default function Deals() {
       ])
     )
     toast.success(c.exported)
+  }
+
+  // The per-row "…" menu's Export item — same CSV shape as the bulk export,
+  // just for a single deal.
+  function exportOne(deal: Deal) {
+    downloadCsv(
+      "deal.csv",
+      [c.colName, c.colAccount, c.colStage, c.colValue, c.colProbability, c.colClose],
+      [[
+        deal.name,
+        getAccount(deal.accountId)?.name ?? "",
+        c.stages[deal.stage],
+        deal.value,
+        `${deal.probability}%`,
+        formatDate(deal.closeDate),
+      ]]
+    )
+    toast.success(c.exportedOne)
   }
 
   const rowIds = React.useMemo(() => tableDeals.map((d) => d.id), [tableDeals])
@@ -1257,6 +1290,11 @@ export default function Deals() {
                       </DropdownMenuItem>
                     ))}
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => exportOne(deal)}>
+                      <Download />
+                      {c.exportLabel}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       variant="destructive"
                       onSelect={() => setDeletingDeal(deal)}
@@ -1352,6 +1390,7 @@ export default function Deals() {
                           onOpen={openDetail}
                           onEdit={openEdit}
                           onDelete={setDeletingDeal}
+                          onExport={exportOne}
                         />
                       ))
                     )}
@@ -1657,6 +1696,7 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     group: "deal",
     pinned: true,
     minWidth: "200px",
+    getValue: (deal) => deal.name,
     render: (deal) => (
       <div>
         <p className="font-medium">{deal.name}</p>
@@ -1677,6 +1717,7 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     },
     group: "deal",
     default: true,
+    getValue: (deal) => getAccount(deal.accountId)?.name ?? "",
     render: (deal) => (
       <span className="text-muted-foreground text-sm">
         {getAccount(deal.accountId)?.name ?? "—"}
@@ -1696,6 +1737,8 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     },
     group: "deal",
     default: true,
+    getValue: (deal) => deal.stage,
+    filterType: "enum",
     render: (deal, locale) => (
       <Badge variant={STAGE_VARIANT[deal.stage]} className="font-normal">
         {COPY[locale].stages[deal.stage]}
@@ -1716,6 +1759,7 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     group: "deal",
     default: true,
     align: "right",
+    getValue: (deal) => deal.value,
     render: (deal) => (
       <span className="font-medium tabular-nums">{money(deal.value)}</span>
     ),
@@ -1734,6 +1778,7 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     group: "deal",
     default: true,
     align: "right",
+    getValue: (deal) => deal.probability,
     render: (deal) => (
       <span className="tabular-nums">{deal.probability}%</span>
     ),
@@ -1752,6 +1797,7 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     group: "deal",
     default: true,
     align: "right",
+    getValue: (deal) => deal.closeDate,
     render: (deal) => (
       <span className="text-muted-foreground text-xs whitespace-nowrap">
         {formatDate(deal.closeDate)}
@@ -1771,6 +1817,8 @@ const DEAL_COLUMNS: ColumnDef<Deal>[] = [
     },
     group: "deal",
     default: true,
+    getValue: (deal) => getRep(deal.ownerId)?.name ?? "",
+    filterType: "enum",
     render: (deal) => <OwnerAvatar ownerId={deal.ownerId} />,
   },
 ]
