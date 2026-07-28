@@ -167,6 +167,7 @@ import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
+import { LOCALES, LOCALE_FLAG, LOCALE_LABEL } from "@/lib/locale-meta"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type {
   CampaignStatus,
@@ -223,8 +224,6 @@ const COPY = {
     ended: (name: string) => `${name} ended`,
     account: "Account",
     language: "Language",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Sending",
     sendingSettingsDesc:
       "Choose which account this campaign sends from and in what language.",
@@ -447,8 +446,6 @@ const COPY = {
     ended: (name: string) => `${name} finalizada`,
     account: "Cuenta",
     language: "Idioma",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envío",
     sendingSettingsDesc:
       "Elige desde qué cuenta se envía esta campaña y en qué idioma.",
@@ -671,8 +668,6 @@ const COPY = {
     ended: (name: string) => `${name} terminata`,
     account: "Account",
     language: "Lingua",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Invio",
     sendingSettingsDesc:
       "Scegli da quale account viene inviata questa campagna e in quale lingua.",
@@ -895,8 +890,6 @@ const COPY = {
     ended: (name: string) => `${name} terminée`,
     account: "Compte",
     language: "Langue",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envoi",
     sendingSettingsDesc:
       "Choisissez depuis quel compte cette campagne envoie et dans quelle langue.",
@@ -1119,8 +1112,6 @@ const COPY = {
     ended: (name: string) => `${name} beendet`,
     account: "Konto",
     language: "Sprache",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Versand",
     sendingSettingsDesc:
       "Wähle, von welchem Konto diese Kampagne sendet und in welcher Sprache.",
@@ -1343,8 +1334,6 @@ const COPY = {
     ended: (name: string) => `${name} terminada`,
     account: "Conta",
     language: "Idioma",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envio",
     sendingSettingsDesc:
       "Escolha a partir de que conta esta campanha envia e em que idioma.",
@@ -1567,8 +1556,6 @@ const COPY = {
     ended: (name: string) => `${name} encerrada`,
     account: "Conta",
     language: "Idioma",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envio",
     sendingSettingsDesc:
       "Escolha de qual conta esta campanha envia e em qual idioma.",
@@ -2479,7 +2466,7 @@ export default function CampaignDetail() {
   const accountId = camp.senderAccountId ?? currentUser.id
   const accountName = camp.senderAccount ?? currentUser.name
   const language: Locale = camp.language ?? "en"
-  const langLabel = language === "es" ? c.spanish : c.english
+  const langLabel = `${LOCALE_FLAG[language]} ${LOCALE_LABEL[language]}`
 
   function saveSender(next: {
     senderAccountId: string
@@ -2649,8 +2636,11 @@ export default function CampaignDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="en">{c.english}</SelectItem>
-                    <SelectItem value="es">{c.spanish}</SelectItem>
+                    {LOCALES.map((code) => (
+                      <SelectItem key={code} value={code}>
+                        {LOCALE_FLAG[code]} {LOCALE_LABEL[code]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               ) : (
