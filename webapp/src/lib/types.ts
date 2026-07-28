@@ -507,13 +507,6 @@ export interface CoachRecording {
   score: number
   talkRatio: number // % rep talked
   sentiment: "positive" | "neutral" | "negative"
-  // A short narrative paragraph summarizing the call — backs the Summary
-  // tab's Overview section. Undefined until the recording has been
-  // through AI summarization (see `summarized`).
-  overview?: string
-  // Whether the recording has completed AI summarization. Undefined/false
-  // recordings show a "not summarized yet" state instead of an overview.
-  summarized?: boolean
   highlights: string[]
   nextSteps: string[]
   // Where the call happened. LinkedIn calls can't embed their recording — the
