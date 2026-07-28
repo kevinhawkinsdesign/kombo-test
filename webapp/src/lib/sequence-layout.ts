@@ -11,7 +11,7 @@
 // they render inside the same node as their anchor step, since they're
 // concurrent with it rather than a fork of the sequence.
 
-import type { Edge, Node } from "@xyflow/react"
+import { MarkerType, type Edge, type Node } from "@xyflow/react"
 
 import type { CampaignStep, StepTrackKind } from "@/lib/types"
 import { normalizeChannel } from "@/lib/step-channels"
@@ -31,10 +31,48 @@ export const LANE_WIDTH = 320
 // same row-unit scale as ROW_HEIGHT.
 const GHOST_TRAILING_GAP = 0.2
 
+// A track is either the "condition met" (Yes) or "condition not met" (No)
+// arm of a fork. Met arms deviate into their own lane and render green;
+// not-met arms stay on the default centered spine and render red.
+export function isPositiveTrack(kind: StepTrackKind): boolean {
+  return (
+    kind === "reply" ||
+    kind === "opened" ||
+    kind === "clicked" ||
+    kind === "accepted" ||
+    kind === "read"
+  )
+}
+
+// Every edge is an arrow, so direction of travel is explicit. A fork's two
+// arms are color-coded — green for the met (Yes) arm, red for not-met —
+// while ordinary sequential edges stay neutral. `elbow` is set only for
+// edges that actually change lanes; same-lane edges stay perfectly
+// straight.
+function edgeStyle(
+  trackKind: StepTrackKind | undefined,
+  elbow: boolean
+): Pick<Edge, "type" | "style" | "markerEnd"> {
+  const color = trackKind
+    ? isPositiveTrack(trackKind)
+      ? "var(--color-chart-1)"
+      : "var(--color-destructive)"
+    : "var(--color-muted-foreground)"
+  return {
+    type: elbow ? "smoothstep" : "straight",
+    style: { stroke: color, strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
+  }
+}
+
 export interface StepNodeData extends Record<string, unknown> {
   kind: "step"
   step: CampaignStep
+  // Set only on a track's first step — the pill marking which arm this is.
   trackLabel?: StepTrackKind
+  // True for every step inside a condition track (not just the first) —
+  // the "can't add parallel siblings here" gate.
+  inTrack?: boolean
 }
 
 export interface AddNodeData extends Record<string, unknown> {
@@ -92,17 +130,26 @@ function layoutTrack(
   let depth = startDepth
   let prevId: string | undefined
   steps.forEach((step) => {
-    nodes.push(stepNode(step, depth, lane, { trackLabel }))
+    // The condition pill marks the branch point, so only the arm's FIRST
+    // node carries it — repeating it on every later step in the same track
+    // just restates what the reader already knows. `inTrack` keeps the
+    // "this step lives inside a condition track" signal for every member.
+    nodes.push(
+      stepNode(step, depth, lane, {
+        inTrack: true,
+        ...(prevId ? {} : { trackLabel }),
+      })
+    )
     const source = prevId ?? forkStepId
-    // Only the edge straight off the fork anchor actually changes lanes
-    // (anchor sits at the fork's own lane, this step at the track's offset
-    // one) — give it an elbow instead of a diagonal. Every edge after that
-    // is already same-lane, so it stays a plain straight line.
+    // Only the first edge off the fork anchor can change lanes (and only
+    // for a "met" arm, which is the one that deviates) — give that one an
+    // elbow. Everything after is same-lane, so it stays perfectly straight.
+    const changesLane = !prevId && isPositiveTrack(trackLabel)
     edges.push({
       id: `${source}->${step.id}`,
       source,
       target: step.id,
-      ...(prevId ? {} : { type: "smoothstep" }),
+      ...edgeStyle(prevId ? undefined : trackLabel, changesLane),
     })
     prevId = step.id
     depth += 1
@@ -124,10 +171,15 @@ function layoutTrack(
       const ghostId = `add-after-${lastStep.id}`
       const ghostDepth = depth - 0.5
       nodes.push(
-        addNode(ghostId, ghostDepth, lane, { kind: "add", afterStepId: lastStep.id, trackLabel })
+        addNode(ghostId, ghostDepth, lane, { kind: "add", afterStepId: lastStep.id })
       )
       for (const src of nested.rejoinSources) {
-        edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId, type: "smoothstep" })
+        edges.push({
+          id: `${src}->${ghostId}`,
+          source: src,
+          target: ghostId,
+          ...edgeStyle(undefined, true),
+        })
       }
       depth = ghostDepth + GHOST_TRAILING_GAP
     }
@@ -139,23 +191,26 @@ function layoutTrack(
     const source = prevId ?? forkStepId
     // Sit halfway below the last real step in the track, so the "+" reads
     // as living on the connector line rather than owning its own row.
+    // The pill only belongs at the arm's start — an empty track's ghost IS
+    // that start; once the track has steps, the first step carries it.
     nodes.push(
       addNode(ghostId, depth - 0.5, lane, {
         kind: "add",
         trackId,
         forkStepId,
         afterStepId: prevId,
-        trackLabel,
+        ...(prevId ? {} : { trackLabel }),
       })
     )
-    // Only diagonal (lane-changing) when the track is still empty, so the
-    // ghost hangs directly off the fork anchor rather than off a same-lane
-    // step of its own.
+    // Only changes lanes when the track is still empty AND it's the arm
+    // that deviates — otherwise the ghost is already on the same lane as
+    // whatever feeds it.
+    const changesLane = !prevId && isPositiveTrack(trackLabel)
     edges.push({
       id: `${source}->${ghostId}`,
       source,
       target: ghostId,
-      ...(prevId ? {} : { type: "smoothstep" }),
+      ...edgeStyle(prevId ? undefined : trackLabel, changesLane),
     })
   }
   return { nodes, edges, endDepth: depth, rejoinSources: prevId ? [prevId] : [] }
@@ -170,10 +225,13 @@ interface StepLayout {
   rejoinSources: string[]
 }
 
-// Lays out a single step's own fork: two tracks, each starting at `lane -
-// spread` / `lane + spread`. Shared by the top-level loop (spread = 1, the
-// original ±1-lane-width behavior) and by `layoutTrack` recursing into a
-// nested LinkedIn-connect fork (spread halved each level).
+// Lays out a single step's own fork. The "condition not met" arm — no
+// reply, connection not accepted — stays on the parent's own lane, because
+// that's what most prospects do: the unbroken vertical spine down the
+// middle of the canvas is the default path. Only the "met" arm (Yes /
+// Connected) deviates sideways, so a deviation always reads as "something
+// happened here." `spread` halves per nesting level so a nested fork's own
+// deviation can't collide with an outer branch.
 function layoutFork(
   step: CampaignStep,
   depth: number,
@@ -184,7 +242,9 @@ function layoutFork(
   const fork = step.fork!
   const nodes: SequenceNode[] = []
   const edges: Edge[] = []
-  const lanes: [number, number] = [lane - spread, lane + spread]
+  const lanes = fork.tracks.map((t) =>
+    isPositiveTrack(t.kind) ? lane + spread : lane
+  )
   let maxRejoinDepth = depth + 1
   // An empty track (right after adding a condition, before either arm has a
   // step yet) contributes no rejoin source at all — falling back to the
@@ -262,7 +322,12 @@ export function computeLayout(
     edges.push(...result.edges)
 
     for (const src of pendingSources) {
-      edges.push({ id: `${src}->${step.id}`, source: src, target: step.id })
+      edges.push({
+        id: `${src}->${step.id}`,
+        source: src,
+        target: step.id,
+        ...edgeStyle(undefined, false),
+      })
     }
 
     depth = result.nextDepth
@@ -302,10 +367,11 @@ export function computeLayout(
           id: `${src}->${ghostId}`,
           source: src,
           target: ghostId,
-          // Rejoin sources sit at offset lanes only when this step forked —
-          // an unforked step's single rejoin source (itself) is already at
-          // lane 0, same as the ghost, so it stays a plain straight line.
-          ...(step.fork ? { type: "smoothstep" } : {}),
+          // Only a forked step can have a rejoin source on a deviated lane
+          // (its "met" arm). The default arm and any unforked step are
+          // already on the ghost's own lane, where an elbow renders as a
+          // straight line anyway.
+          ...edgeStyle(undefined, Boolean(step.fork)),
         })
       }
       pendingSources = [ghostId]
