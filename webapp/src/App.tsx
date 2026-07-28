@@ -27,6 +27,7 @@ import Playbook from "@/pages/Playbook"
 import Deals from "@/pages/Deals"
 import Coach from "@/pages/Coach"
 import CoachRecordingDetail from "@/pages/CoachRecordingDetail"
+import CallAnalytics from "@/pages/CallAnalytics"
 import Team from "@/pages/Team"
 import Referral from "@/pages/Referral"
 import Usage from "@/pages/Usage"
@@ -106,6 +107,7 @@ function App() {
         />
         <Route path="/coach" element={<Coach />} />
         <Route path="/coach/:id" element={<CoachRecordingDetail />} />
+        <Route path="/call-analytics" element={<CallAnalytics />} />
         <Route path="/team" element={<Team />} />
         <Route path="/referrals" element={<Referral />} />
         <Route path="/usage" element={<Usage />} />
