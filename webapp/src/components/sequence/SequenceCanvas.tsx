@@ -1,13 +1,10 @@
 import * as React from "react"
 import {
   ReactFlow,
-  ReactFlowProvider,
   Background,
   Controls,
   Handle,
   Position,
-  useReactFlow,
-  type Node,
   type NodeProps,
   type NodeTypes,
 } from "@xyflow/react"
@@ -19,15 +16,18 @@ import {
   Clock,
   Copy,
   ListTodo,
+  Lock,
   MoreHorizontal,
+  Pencil,
   Plus,
   Split,
   Trash2,
 } from "lucide-react"
 
-import { channelMeta, normalizeChannel } from "@/lib/step-channels"
+import { channelMeta, missingIntegrationFor, normalizeChannel } from "@/lib/step-channels"
 import {
   computeLayout,
+  isPositiveTrack,
   type AddNodeData,
   type StepNodeData,
 } from "@/lib/sequence-layout"
@@ -43,7 +43,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { CampaignStep, LinkedInAction, StepTrackKind } from "@/lib/types"
-import type { MoveTarget } from "@/lib/sequence-draft"
 
 const COPY = {
   en: {
@@ -88,6 +87,9 @@ const COPY = {
     moveStepDown: "Move down",
     duplicateStep: "Duplicate",
     deleteStep: "Delete",
+    editStep: "Edit step",
+    lockedBadge: "Locked",
+    lockedReason: (name: string) => `Connect ${name} before this step can run.`,
   },
   es: {
     channelLabel: {
@@ -131,6 +133,9 @@ const COPY = {
     moveStepDown: "Mover abajo",
     duplicateStep: "Duplicar",
     deleteStep: "Eliminar",
+    editStep: "Editar paso",
+    lockedBadge: "Bloqueado",
+    lockedReason: (name: string) => `Conecta ${name} para que este paso pueda ejecutarse.`,
   },
   it: {
     channelLabel: {
@@ -174,6 +179,9 @@ const COPY = {
     moveStepDown: "Sposta giù",
     duplicateStep: "Duplica",
     deleteStep: "Elimina",
+    editStep: "Modifica passaggio",
+    lockedBadge: "Bloccato",
+    lockedReason: (name: string) => `Collega ${name} prima che questo passaggio possa essere eseguito.`,
   },
   fr: {
     channelLabel: {
@@ -217,6 +225,9 @@ const COPY = {
     moveStepDown: "Descendre",
     duplicateStep: "Dupliquer",
     deleteStep: "Supprimer",
+    editStep: "Modifier l'étape",
+    lockedBadge: "Verrouillé",
+    lockedReason: (name: string) => `Connectez ${name} pour que cette étape puisse s'exécuter.`,
   },
   de: {
     channelLabel: {
@@ -260,6 +271,9 @@ const COPY = {
     moveStepDown: "Nach unten verschieben",
     duplicateStep: "Duplizieren",
     deleteStep: "Löschen",
+    editStep: "Schritt bearbeiten",
+    lockedBadge: "Gesperrt",
+    lockedReason: (name: string) => `Verbinde ${name}, damit dieser Schritt ausgeführt werden kann.`,
   },
   pt: {
     channelLabel: {
@@ -303,6 +317,9 @@ const COPY = {
     moveStepDown: "Mover para baixo",
     duplicateStep: "Duplicar",
     deleteStep: "Eliminar",
+    editStep: "Editar passo",
+    lockedBadge: "Bloqueado",
+    lockedReason: (name: string) => `Ligue o ${name} para que este passo possa ser executado.`,
   },
   pt_BR: {
     channelLabel: {
@@ -346,6 +363,9 @@ const COPY = {
     moveStepDown: "Mover para baixo",
     duplicateStep: "Duplicar",
     deleteStep: "Excluir",
+    editStep: "Editar etapa",
+    lockedBadge: "Bloqueado",
+    lockedReason: (name: string) => `Conecte o ${name} para que esta etapa possa ser executada.`,
   },
 } as const
 
@@ -354,9 +374,6 @@ interface StepNodeExtraData extends StepNodeData {
   interactive: boolean
   onClick?: (step: CampaignStep) => void
   onAddParallel?: (step: CampaignStep) => void
-  // True while a dragged step is currently hovering this node as a
-  // candidate parallel-attach target.
-  isDropTarget?: boolean
   // Cosmetic only — every card shows the same campaign-level sender, since
   // there's no per-step sending identity in the data model. Undefined hides
   // the avatar entirely rather than showing a placeholder.
@@ -374,14 +391,6 @@ interface StepNodeExtraData extends StepNodeData {
 // Handle, React Flow can't compute a connection point and silently drops
 // the edge (no line, no console error visible to the user).
 const HANDLE_CLASS = "invisible !size-0 !min-w-0 !border-0"
-
-// A track is either the "condition met" or "condition not met" arm of a
-// fork — met arms get the same positive (green) treatment as this app's
-// other reply-rate-style indicators (text-chart-1), not-met arms the same
-// negative treatment as its destructive/error indicators.
-function isPositiveTrack(kind: StepTrackKind): boolean {
-  return kind === "reply" || kind === "opened" || kind === "clicked" || kind === "accepted" || kind === "read"
-}
 
 function initialsOf(label: string): string {
   const parts = label.trim().split(/\s+/)
@@ -407,7 +416,6 @@ function StepCard({
   step,
   selected,
   interactive,
-  isDropTarget,
   senderLabel,
   onClick,
   onMove,
@@ -417,7 +425,6 @@ function StepCard({
   step: CampaignStep
   selected: boolean
   interactive: boolean
-  isDropTarget?: boolean
   senderLabel?: string
   onClick?: (step: CampaignStep) => void
   onMove?: (step: CampaignStep, dir: -1 | 1) => void
@@ -431,6 +438,10 @@ function StepCard({
     ? stripHtml(step.subject ?? "").trim().length === 0
     : stripHtml(step.body).trim().length === 0
   const hasMenu = interactive && (onMove || onDuplicate || onDelete)
+  // A step whose sending provider isn't connected yet can't run at all —
+  // surfaced as a "locked" badge rather than the ordinary "needs content"
+  // one, since the fix is connecting an integration, not writing copy.
+  const missingIntegration = missingIntegrationFor(step.channel)
 
   return (
     // A real <button> here would make the "..." trigger below a nested
@@ -449,13 +460,11 @@ function StepCard({
       }}
       style={{ width: 240 }}
       className={cn(
-        "bg-card flex shrink-0 flex-col overflow-hidden rounded-xl border text-left shadow-sm transition-colors",
-        interactive && "cursor-pointer",
-        isDropTarget
-          ? "border-primary bg-primary/10 ring-primary/30 ring-2"
-          : selected
-            ? "border-primary bg-primary/[0.04]"
-            : interactive && "hover:bg-muted/40"
+        "bg-card flex shrink-0 flex-col overflow-hidden rounded-xl border text-left shadow-sm transition-all",
+        interactive && "cursor-pointer hover:-translate-y-0.5 hover:shadow-md",
+        selected
+          ? "border-primary ring-primary/25 shadow-md ring-2"
+          : interactive && "hover:border-primary/40"
       )}
     >
       {/* Timing header — its own row, separate from the step content below,
@@ -466,6 +475,32 @@ function StepCard({
           <Clock className="size-3 shrink-0" />
           {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
         </span>
+        {interactive && onClick && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label={c.editStep}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onClick(step)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onClick(step)
+                  }
+                }}
+                className="text-muted-foreground hover:text-foreground hover:bg-background ml-auto flex size-6 shrink-0 items-center justify-center rounded-md transition-colors"
+              >
+                <Pencil className="size-3" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{c.editStep}</TooltipContent>
+          </Tooltip>
+        )}
         {hasMenu && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -529,7 +564,7 @@ function StepCard({
           <p className="truncate text-sm font-medium">
             {stepTitle(c, step)}
           </p>
-          {(step.isManualTask || needsAction) && (
+          {(step.isManualTask || needsAction || missingIntegration) && (
             <div className="flex flex-wrap gap-1">
               {step.isManualTask && (
                 <span className="bg-secondary text-secondary-foreground flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
@@ -537,11 +572,23 @@ function StepCard({
                   {c.manualTaskBadge}
                 </span>
               )}
-              {needsAction && (
-                <span className="bg-destructive/15 text-destructive flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
-                  <AlertTriangle className="size-3" />
-                  {c.actionNeeded}
-                </span>
+              {missingIntegration ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="bg-chart-4/15 text-chart-4 flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
+                      <Lock className="size-3" />
+                      {c.lockedBadge}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{c.lockedReason(missingIntegration)}</TooltipContent>
+                </Tooltip>
+              ) : (
+                needsAction && (
+                  <span className="bg-destructive/15 text-destructive flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
+                    <AlertTriangle className="size-3" />
+                    {c.actionNeeded}
+                  </span>
+                )
               )}
             </div>
           )}
@@ -586,8 +633,8 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
     interactive,
     onClick,
     trackLabel,
+    inTrack,
     onAddParallel,
-    isDropTarget,
     senderLabel,
     onMoveStepDirection,
     onDuplicateStep,
@@ -597,9 +644,8 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   // A step is either a fork anchor or parallel-able, never both — keeps the
   // canvas geometry simple (no lane collisions between a wide parallel
   // cluster and fork-track lanes on the same row). Only top-level steps
-  // qualify — a step inside a condition track already carries a
-  // `trackLabel`, which doubles as that signal.
-  const canAddParallel = interactive && !step.fork && !trackLabel
+  // qualify, so anything inside a condition track is out.
+  const canAddParallel = interactive && !step.fork && !inTrack
   const hasParallel = parallelSteps.length > 0
   // Every node in this diagram — plain steps, parallel groups, and the "+"
   // ghosts — shares the same lane x position (its wrapper's left edge), so
@@ -628,7 +674,6 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
         step={step}
         selected={step.id === selectedStepId}
         interactive={interactive}
-        isDropTarget={isDropTarget}
         senderLabel={senderLabel}
         onClick={onClick}
         onMove={onMoveStepDirection}
@@ -641,7 +686,6 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
           step={p}
           selected={p.id === selectedStepId}
           interactive={interactive}
-          isDropTarget={isDropTarget}
           senderLabel={senderLabel}
           onClick={onClick}
           onMove={onMoveStepDirection}
@@ -721,7 +765,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
 function AddNodeComponent({
   data,
 }: NodeProps & {
-  data: AddNodeData & { onClick?: (ghost: AddNodeData) => void; isDropTarget?: boolean }
+  data: AddNodeData & { onClick?: (ghost: AddNodeData) => void }
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -735,12 +779,7 @@ function AddNodeComponent({
           type="button"
           onClick={() => data.onClick?.(data)}
           aria-label={c.addStep}
-          className={cn(
-            "flex size-7 items-center justify-center rounded-full border-2 transition-colors",
-            data.isDropTarget
-              ? "border-primary bg-primary/10 text-primary scale-125"
-              : "border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background"
-          )}
+          className="border-muted-foreground/40 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 bg-background flex size-7 items-center justify-center rounded-full border-2 transition-colors" 
         >
           <Plus className="size-4" />
         </button>
@@ -762,7 +801,6 @@ interface SequenceCanvasProps {
   onSelectStep?: (stepId: string) => void
   onAddRequest?: (ghost: AddNodeData) => void
   onAddParallel?: (step: CampaignStep) => void
-  onMoveStep?: (stepId: string, target: MoveTarget) => void
   className?: string
   // Cosmetic only — shown as a small avatar on every step card. There's no
   // per-step sending identity in the data model, so this is typically the
@@ -776,25 +814,13 @@ interface SequenceCanvasProps {
   onDeleteStep?: (stepId: string) => void
 }
 
-export function SequenceCanvas(props: SequenceCanvasProps) {
-  // useReactFlow (for drag-and-drop hit-testing) only works inside a
-  // ReactFlowProvider — the canvas owns its own here since nothing else on
-  // the page needs the instance.
-  return (
-    <ReactFlowProvider>
-      <SequenceCanvasInner {...props} />
-    </ReactFlowProvider>
-  )
-}
-
-function SequenceCanvasInner({
+export function SequenceCanvas({
   steps,
   mode,
   selectedStepId,
   onSelectStep,
   onAddRequest,
   onAddParallel,
-  onMoveStep,
   className,
   senderLabel,
   onMoveStepDirection,
@@ -802,8 +828,6 @@ function SequenceCanvasInner({
   onDeleteStep,
 }: SequenceCanvasProps) {
   const interactive = mode === "interactive"
-  const { getIntersectingNodes } = useReactFlow()
-  const [dragTargetId, setDragTargetId] = React.useState<string | null>(null)
 
   const { nodes, edges } = React.useMemo(() => {
     const layout = computeLayout(steps, { interactive })
@@ -860,83 +884,33 @@ function SequenceCanvasInner({
     onDeleteStep,
   ])
 
-  // A separate highlight pass so dragging doesn't force the layout memo
-  // above (and the whole node/edge tree) to recompute on every pointer move.
-  const displayNodes = React.useMemo(
-    () => nodes.map((n) => ({ ...n, data: { ...n.data, isDropTarget: n.id === dragTargetId } })),
-    [nodes, dragTargetId]
-  )
-
-  // Kanban-style "highlight the nearest valid slot": positions are always
-  // computed from the step tree (never persisted), so a drop just mutates
-  // the tree and the next render snaps every node — including the one just
-  // dragged — back into its correct computed position.
-  const dragCandidate = React.useCallback(
-    (node: Node) => {
-      if (node.type !== "step") return null
-      return getIntersectingNodes(node, true).find((n) => n.id !== node.id) ?? null
-    },
-    [getIntersectingNodes]
-  )
-
-  const handleNodeDrag = React.useCallback(
-    (_event: MouseEvent | TouchEvent, node: Node) => {
-      setDragTargetId(dragCandidate(node)?.id ?? null)
-    },
-    [dragCandidate]
-  )
-
-  const handleNodeDragStop = React.useCallback(
-    (_event: MouseEvent | TouchEvent, node: Node) => {
-      const target = dragCandidate(node)
-      setDragTargetId(null)
-      if (!target || !onMoveStep) return
-      const draggedStepId = (node.data as StepNodeData).step.id
-      if (target.type === "add") {
-        const addData = target.data as AddNodeData
-        onMoveStep(draggedStepId, {
-          kind: "sequence",
-          trackId: addData.trackId,
-          forkStepId: addData.forkStepId,
-          afterStepId: addData.afterStepId,
-        })
-      } else if (target.type === "step") {
-        const targetStep = target.data as StepNodeData
-        // Only a top-level, non-forked step is a valid parallel anchor —
-        // keeps a step either forked or parallel-able, never both.
-        if (
-          !targetStep.trackLabel &&
-          !targetStep.step.fork &&
-          targetStep.step.id !== draggedStepId
-        ) {
-          onMoveStep(draggedStepId, { kind: "parallel", anchorStepId: targetStep.step.id })
-        }
-      }
-    },
-    [dragCandidate, onMoveStep]
-  )
-
   return (
-    <div className={cn("bg-muted/20 h-[600px] w-full rounded-xl border", className)}>
+    <div
+      className={cn(
+        "from-muted/40 to-background h-[600px] w-full rounded-xl border bg-gradient-to-b",
+        className
+      )}
+    >
+      {/* Nothing on this canvas is draggable — positions are always computed
+          from the step tree, and letting a user drag a node or re-route an
+          edge would only produce tangled visuals the layout would snap back
+          anyway. Reordering happens through each card's "..." menu. */}
       <ReactFlow
-        nodes={displayNodes}
+        nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        nodesDraggable={false}
         nodesConnectable={false}
+        edgesFocusable={false}
+        // Still selectable — React Flow drops pointer events entirely on a
+        // node that is neither draggable, connectable, nor selectable,
+        // which would make the cards' own buttons unclickable. Selection
+        // has no visual side effect here and nothing listens for it.
         elementsSelectable={interactive}
-        onNodeDrag={handleNodeDrag}
-        onNodeDragStop={handleNodeDragStop}
         panOnScroll
         proOptions={{ hideAttribution: true }}
         fitView
         fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
-        defaultEdgeOptions={{
-          // Straight, not smoothstep — a direct line is always the shortest
-          // path between two nodes; smoothstep's right-angle routing added
-          // unnecessary jogs even between same-lane nodes.
-          type: "straight",
-          style: { stroke: "var(--color-muted-foreground)", strokeWidth: 2 },
-        }}
       >
         <Background gap={24} size={1} />
         <Controls position="bottom-left" showInteractive={false} />

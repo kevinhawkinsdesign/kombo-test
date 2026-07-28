@@ -2850,10 +2850,6 @@ export default function CampaignDetail() {
             <Pencil className="size-4" />
             {c.edit}
           </Button>
-          <Button variant="outline" onClick={() => setAddOpen(true)}>
-            <UserPlus className="size-4" />
-            {c.addProspects}
-          </Button>
           {/* End is the destructive, irreversible opposite of Activate — only
               offered once the campaign has been started (active or inactive). */}
           {campaign.status === "active" && (
@@ -3015,7 +3011,6 @@ export default function CampaignDetail() {
                   setPendingGhost(null)
                   setStepPickerOpen(true)
                 }}
-                onMoveStep={(id, target) => draft.moveStepToTarget(id, target)}
                 senderLabel={campaign.senderAccount}
                 onMoveStepDirection={(id, dir) => draft.moveStep(id, dir)}
                 onDuplicateStep={(id) => draft.duplicateStep(id)}
@@ -3180,7 +3175,10 @@ export default function CampaignDetail() {
               return (
                 <Card className="w-full lg:w-[30rem] lg:shrink-0">
                   <CardContent className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
+                    {/* One row, never wrapping: the select yields (truncating
+                        its label) before the action buttons ever get pushed
+                        to a second line. */}
+                    <div className="flex items-center gap-2">
                       <span
                         className={cn(
                           "flex size-8 shrink-0 items-center justify-center rounded-lg",
@@ -3208,7 +3206,7 @@ export default function CampaignDetail() {
                       >
                         <SelectTrigger
                           size="sm"
-                          className="w-[220px]"
+                          className="min-w-0 flex-1"
                           aria-label={c.stepChannelAria(i + 1)}
                         >
                           <SelectValue />
@@ -3230,12 +3228,13 @@ export default function CampaignDetail() {
                           })}
                         </SelectContent>
                       </Select>
-                      <div className="ml-auto flex items-center gap-1">
+                      <div className="flex shrink-0 items-center gap-0.5">
                         <Button
                           variant="ghost"
                           size="icon"
                           aria-label={c.moveStepUp}
                           disabled={i === 0}
+                          className="size-8"
                           onClick={() => draft.moveStep(step.id, -1)}
                         >
                           <ArrowUp className="size-4" />
@@ -3245,6 +3244,7 @@ export default function CampaignDetail() {
                           size="icon"
                           aria-label={c.moveStepDown}
                           disabled={i === stepList.length - 1}
+                          className="size-8"
                           onClick={() => draft.moveStep(step.id, 1)}
                         >
                           <ArrowDown className="size-4" />
@@ -3253,7 +3253,7 @@ export default function CampaignDetail() {
                           variant="ghost"
                           size="icon"
                           aria-label={c.removeStep}
-                          className="text-muted-foreground hover:text-destructive"
+                          className="text-muted-foreground hover:text-destructive size-8"
                           onClick={() => {
                             draft.removeStep(step.id)
                             setSelectedStepId(undefined)
@@ -3265,7 +3265,7 @@ export default function CampaignDetail() {
                           variant="ghost"
                           size="icon"
                           aria-label={c.closePanel}
-                          className="ml-1"
+                          className="size-8"
                           onClick={() => setSelectedStepId(undefined)}
                         >
                           <X className="size-4" />
@@ -4232,38 +4232,40 @@ function TimeDelayField({
       />
       {step.delayDays > 0 && (
         <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            min={1}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value)
-              if (e.target.value !== "") commit(e.target.value)
-            }}
-            onBlur={() => commit(text)}
-            // The field already has its own explicit clear button (below,
-            // resets to "Send immediately") — the shared Input's built-in
-            // clear (×) would render inside this narrow box and crowd out
-            // the digits, which is why the value looked like it wasn't
-            // showing.
-            clearable={false}
-            className="h-8 w-20 tabular-nums"
-          />
+          {/* The clear (×) lives INSIDE the input box, like every other
+              clearable field — but it can't be the shared Input's built-in
+              clear, because that one can't tell "clearing to retype a
+              number" apart from "reset to Send immediately." A hand-placed
+              button keeps the distinct reset semantics. */}
+          <div className="relative">
+            <Input
+              type="number"
+              min={1}
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value)
+                if (e.target.value !== "") commit(e.target.value)
+              }}
+              onBlur={() => commit(text)}
+              clearable={false}
+              className="h-8 w-24 pr-7 tabular-nums"
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={c.clearDelay}
+              onClick={() => {
+                setText("")
+                onChange({ delayDays: 0 })
+              }}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted absolute top-1/2 right-1 flex size-6 -translate-y-1/2 items-center justify-center rounded-md transition-colors"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
           <span className="text-muted-foreground text-sm">
             {c.daysBeforeSending}
           </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={c.clearDelay}
-            onClick={() => {
-              setText("")
-              onChange({ delayDays: 0 })
-            }}
-          >
-            <X className="size-4" />
-          </Button>
         </div>
       )}
     </div>

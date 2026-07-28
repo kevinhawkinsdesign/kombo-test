@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { integrations } from "@/lib/mock-data"
 import type { Locale } from "@/lib/locale"
 import type {
   ConditionKind,
@@ -81,6 +82,28 @@ export function conditionAllowedForChannel(
 ): boolean {
   const allowed = CONDITION_CHANNELS[condition]
   return allowed === null || allowed.includes(channel)
+}
+
+// Which integration a channel can't run without — an email step needs a
+// connected sending provider, a LinkedIn step needs the LinkedIn account,
+// etc. Channels absent from this map (calls, manual tasks) need nothing.
+// Matched by `Integration.name`.
+const REQUIRED_INTEGRATION: Partial<Record<StepChannel, string>> = {
+  email: "Gmail",
+  whatsapp: "WhatsApp",
+  linkedin_message: "LinkedIn",
+  linkedin_dm: "LinkedIn",
+  linkedin_inmail: "LinkedIn",
+}
+
+// The name of the integration this step needs but doesn't have connected,
+// or undefined when the step is good to run. Drives the "locked" badge on
+// the sequence canvas: a step whose provider isn't connected can't send.
+export function missingIntegrationFor(channel: string): string | undefined {
+  const required = REQUIRED_INTEGRATION[normalizeChannel(channel)]
+  if (!required) return undefined
+  const match = integrations.find((i) => i.name === required)
+  return match?.connected ? undefined : required
 }
 
 export type StepTypeKey =
