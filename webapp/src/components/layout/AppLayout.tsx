@@ -1,7 +1,8 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom"
+import { Navigate, useLocation } from "react-router-dom"
 
 import { AppSidebar, MobileBottomNav } from "@/components/layout/AppSidebar"
 import { AppHeader } from "@/components/layout/AppHeader"
+import { RouteTransition } from "@/components/layout/RouteTransition"
 import { ProspectSearch } from "@/components/layout/ProspectSearch"
 import { UpdateBanner } from "@/components/layout/UpdateBanner"
 import { UnsavedChangesGuard } from "@/components/layout/UnsavedChangesGuard"
@@ -37,7 +38,7 @@ export function AppLayout() {
           ) : blockedInV2 ? (
             <Navigate to={V2_HOME} replace />
           ) : (
-            <Outlet />
+            <RouteTransition />
           )}
         </main>
       </div>
