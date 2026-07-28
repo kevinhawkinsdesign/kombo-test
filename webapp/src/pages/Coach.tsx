@@ -57,6 +57,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { DataTable } from "@/components/common/DataTable"
@@ -77,7 +84,7 @@ import {
   type CoachSkill,
 } from "@/lib/mock-coach-team"
 import { deals } from "@/lib/mock-extra"
-import { team } from "@/lib/team"
+import { team, teams, teamMembers } from "@/lib/team"
 import { formatDate } from "@/lib/format"
 import { downloadCsv } from "@/lib/csv"
 import { cn } from "@/lib/utils"
@@ -96,6 +103,10 @@ const COACH_VIDEO_SOURCES: CoachVideoSource[] = [
   "whatsapp",
   "linkedin",
 ]
+
+// Sentinel value for the Team select's "no team picked" state — mirrors the
+// ALL-value pattern used by other single-select filters in the app.
+const ALL_TEAMS = "all"
 
 function toggled<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set)
@@ -188,6 +199,8 @@ const COPY = {
     filterProspectPosition: "Prospect position",
     filterProspectCompany: "Prospect company",
     filterDeal: "Deal",
+    filterTeam: "Team",
+    filterAllTeams: "All teams",
     filterSalesRep: "Sales rep",
     filterSource: "Source",
     source: {
@@ -298,6 +311,8 @@ const COPY = {
     filterProspectPosition: "Cargo del prospecto",
     filterProspectCompany: "Empresa del prospecto",
     filterDeal: "Negocio",
+    filterTeam: "Equipo",
+    filterAllTeams: "Todos los equipos",
     filterSalesRep: "Representante de ventas",
     filterSource: "Origen",
     source: {
@@ -408,6 +423,8 @@ const COPY = {
     filterProspectPosition: "Ruolo del prospect",
     filterProspectCompany: "Azienda del prospect",
     filterDeal: "Trattativa",
+    filterTeam: "Team",
+    filterAllTeams: "Tutti i team",
     filterSalesRep: "Rappresentante di vendita",
     filterSource: "Origine",
     source: {
@@ -518,6 +535,8 @@ const COPY = {
     filterProspectPosition: "Poste du prospect",
     filterProspectCompany: "Entreprise du prospect",
     filterDeal: "Transaction",
+    filterTeam: "Équipe",
+    filterAllTeams: "Toutes les équipes",
     filterSalesRep: "Commercial",
     filterSource: "Source",
     source: {
@@ -628,6 +647,8 @@ const COPY = {
     filterProspectPosition: "Position des Prospects",
     filterProspectCompany: "Unternehmen des Prospects",
     filterDeal: "Deal",
+    filterTeam: "Team",
+    filterAllTeams: "Alle Teams",
     filterSalesRep: "Vertriebsmitarbeiter",
     filterSource: "Quelle",
     source: {
@@ -738,6 +759,8 @@ const COPY = {
     filterProspectPosition: "Cargo do prospect",
     filterProspectCompany: "Empresa do prospect",
     filterDeal: "Negócio",
+    filterTeam: "Equipa",
+    filterAllTeams: "Todas as equipas",
     filterSalesRep: "Representante de vendas",
     filterSource: "Origem",
     source: {
@@ -848,6 +871,8 @@ const COPY = {
     filterProspectPosition: "Cargo do prospect",
     filterProspectCompany: "Empresa do prospect",
     filterDeal: "Negócio",
+    filterTeam: "Time",
+    filterAllTeams: "Todos os times",
     filterSalesRep: "Representante de vendas",
     filterSource: "Origem",
     source: {
@@ -1071,6 +1096,7 @@ export default function Coach() {
   const [prospectPositionFilter, setProspectPositionFilter] = React.useState("")
   const [prospectCompanyFilter, setProspectCompanyFilter] = React.useState("")
   const [dealIds, setDealIds] = React.useState<Set<string>>(new Set())
+  const [teamId, setTeamId] = React.useState<string>(ALL_TEAMS)
   const [salesRepIds, setSalesRepIds] = React.useState<Set<string>>(new Set())
   const [sources, setSources] = React.useState<Set<CoachVideoSource>>(new Set())
   const filtersActive = Boolean(
@@ -1080,6 +1106,7 @@ export default function Coach() {
       prospectPositionFilter ||
       prospectCompanyFilter ||
       dealIds.size ||
+      teamId !== ALL_TEAMS ||
       salesRepIds.size ||
       sources.size
   )
@@ -1089,6 +1116,10 @@ export default function Coach() {
     const nameQ = prospectNameFilter.trim().toLowerCase()
     const positionQ = prospectPositionFilter.trim().toLowerCase()
     const companyQ = prospectCompanyFilter.trim().toLowerCase()
+    const teamMemberIds =
+      teamId === ALL_TEAMS
+        ? null
+        : new Set(teamMembers(teamId).map((m) => m.id))
     const filtered = liveRecordings.filter((r) => {
       const matchesQuery =
         !q ||
@@ -1103,6 +1134,9 @@ export default function Coach() {
         !positionQ || (r.prospectPosition ?? "").toLowerCase().includes(positionQ)
       const matchesCompany = !companyQ || r.company.toLowerCase().includes(companyQ)
       const matchesDeal = dealIds.size === 0 || (r.dealId ? dealIds.has(r.dealId) : false)
+      const matchesTeam =
+        teamId === ALL_TEAMS ||
+        (r.salesRepId ? (teamMemberIds?.has(r.salesRepId) ?? false) : false)
       const matchesRep =
         salesRepIds.size === 0 || (r.salesRepId ? salesRepIds.has(r.salesRepId) : false)
       const matchesSource =
@@ -1115,6 +1149,7 @@ export default function Coach() {
         matchesPosition &&
         matchesCompany &&
         matchesDeal &&
+        matchesTeam &&
         matchesRep &&
         matchesSource
       )
@@ -1141,6 +1176,7 @@ export default function Coach() {
     prospectPositionFilter,
     prospectCompanyFilter,
     dealIds,
+    teamId,
     salesRepIds,
     sources,
   ])
@@ -1168,6 +1204,7 @@ export default function Coach() {
     prospectPositionFilter,
     prospectCompanyFilter,
     Array.from(dealIds).sort().join(","),
+    teamId,
     Array.from(salesRepIds).sort().join(","),
     Array.from(sources).sort().join(","),
     tsf.sort?.columnId,
@@ -1372,6 +1409,7 @@ export default function Coach() {
         dateFrom={dateFrom}
         dateTo={dateTo}
         dealIds={dealIds}
+        teamId={teamId}
         salesRepIds={salesRepIds}
         sources={sources}
         onApply={(next) => {
@@ -1381,6 +1419,7 @@ export default function Coach() {
           setDateFrom(next.dateFrom)
           setDateTo(next.dateTo)
           setDealIds(next.dealIds)
+          setTeamId(next.teamId)
           setSalesRepIds(next.salesRepIds)
           setSources(next.sources)
         }}
@@ -1396,6 +1435,7 @@ interface CoachFilterValues {
   dateFrom: string
   dateTo: string
   dealIds: Set<string>
+  teamId: string
   salesRepIds: Set<string>
   sources: Set<CoachVideoSource>
 }
@@ -1409,6 +1449,7 @@ function CoachFilterDialog({
   dateFrom,
   dateTo,
   dealIds,
+  teamId,
   salesRepIds,
   sources,
   onApply,
@@ -1426,6 +1467,7 @@ function CoachFilterDialog({
   const [from, setFrom] = React.useState(dateFrom)
   const [to, setTo] = React.useState(dateTo)
   const [deals_, setDeals_] = React.useState(dealIds)
+  const [teamSel, setTeamSel] = React.useState(teamId)
   const [reps, setReps] = React.useState(salesRepIds)
   const [srcs, setSrcs] = React.useState(sources)
 
@@ -1440,8 +1482,21 @@ function CoachFilterDialog({
       setFrom(dateFrom)
       setTo(dateTo)
       setDeals_(new Set(dealIds))
+      setTeamSel(teamId)
       setReps(new Set(salesRepIds))
       setSrcs(new Set(sources))
+    }
+  }
+
+  // The Sales Rep checklist is narrowed to the selected team's members —
+  // picking a team restricts, rather than filters on top of, the rep list.
+  const repOptions = teamSel === ALL_TEAMS ? team : teamMembers(teamSel)
+
+  function handleTeamChange(nextTeamId: string) {
+    setTeamSel(nextTeamId)
+    if (nextTeamId !== ALL_TEAMS) {
+      const allowed = new Set(teamMembers(nextTeamId).map((m) => m.id))
+      setReps((s) => new Set(Array.from(s).filter((id) => allowed.has(id))))
     }
   }
 
@@ -1452,6 +1507,7 @@ function CoachFilterDialog({
     (from ? 1 : 0) +
     (to ? 1 : 0) +
     deals_.size +
+    (teamSel !== ALL_TEAMS ? 1 : 0) +
     reps.size +
     srcs.size
 
@@ -1463,6 +1519,7 @@ function CoachFilterDialog({
       dateFrom: from,
       dateTo: to,
       dealIds: deals_,
+      teamId: teamSel,
       salesRepIds: reps,
       sources: srcs,
     })
@@ -1550,10 +1607,27 @@ function CoachFilterDialog({
           </div>
 
           <div className="space-y-1.5">
+            <Label htmlFor="coach-filter-team">{c.filterTeam}</Label>
+            <Select value={teamSel} onValueChange={handleTeamChange}>
+              <SelectTrigger id="coach-filter-team" className="w-full">
+                <SelectValue placeholder={c.filterAllTeams} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_TEAMS}>{c.filterAllTeams}</SelectItem>
+                {teams.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
             <p className="text-muted-foreground px-1 text-xs font-medium">
               {c.filterSalesRep}
             </p>
-            {team.map((m) => (
+            {repOptions.map((m) => (
               <label
                 key={m.id}
                 className="hover:bg-muted/60 flex items-center gap-2 rounded-md px-1.5 py-1 text-sm"
@@ -1595,6 +1669,7 @@ function CoachFilterDialog({
               setFrom("")
               setTo("")
               setDeals_(new Set())
+              setTeamSel(ALL_TEAMS)
               setReps(new Set())
               setSrcs(new Set())
             }}
