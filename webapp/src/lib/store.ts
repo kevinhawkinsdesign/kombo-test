@@ -10,6 +10,7 @@ import {
   setLiveLists,
   setLiveCampaigns,
   recentActivity as seedActivity,
+  coachRecordings as seedCoachRecordings,
 } from "./mock-data"
 import {
   deals as seedDeals,
@@ -38,6 +39,7 @@ import type {
   Message,
   ChatLang,
   ConvStatus,
+  CoachRecording,
 } from "./types"
 import type { Locale } from "./locale"
 import type { EnrichScope } from "./enrichment"
@@ -146,6 +148,7 @@ interface StoreState {
   // Companies KomboAI must never surface in search results or campaigns.
   blacklist: BlacklistedCompany[]
   convSeedVersion?: number
+  coachRecordings: CoachRecording[]
 }
 
 const KEY = "kombo_store_v1"
@@ -167,6 +170,7 @@ function seed(): StoreState {
     conversations: seedConversations,
     blacklist: seedBlacklist,
     convSeedVersion: CONV_SEED_VERSION,
+    coachRecordings: seedCoachRecordings,
   }
 }
 
@@ -227,6 +231,7 @@ function load(): StoreState {
           : parsed.conversations ?? base.conversations,
         blacklist: parsed.blacklist ?? base.blacklist,
         convSeedVersion: CONV_SEED_VERSION,
+        coachRecordings: parsed.coachRecordings ?? base.coachRecordings,
       }
     }
   } catch {
@@ -332,6 +337,9 @@ export function useConversations(): Conversation[] {
 }
 export function useBlacklist(): BlacklistedCompany[] {
   return useSlice((s) => s.blacklist)
+}
+export function useCoachRecordings(): CoachRecording[] {
+  return useSlice((s) => s.coachRecordings)
 }
 
 // Build a fast-lookup Set of lowercased company names + domains. Used to
@@ -534,6 +542,26 @@ export const taskStore = {
         metadata: { taskId: task.id, taskType: task.type },
       })
     }
+  },
+}
+
+// Mock AI processing for Call Coach recordings: flips summarized/analyzed to
+// true for the given ids. Only ever turns a flag on — never unsets one an
+// earlier run already set — and no-ops if neither action is requested.
+export const coachRecordingStore = {
+  process(ids: string[], opts: { summarize: boolean; analyze: boolean }): void {
+    if (!opts.summarize && !opts.analyze) return
+    const set = new Set(ids)
+    setState({
+      coachRecordings: state.coachRecordings.map((r) => {
+        if (!set.has(r.id)) return r
+        return {
+          ...r,
+          summarized: opts.summarize ? true : r.summarized,
+          analyzed: opts.analyze ? true : r.analyzed,
+        }
+      }),
+    })
   },
 }
 

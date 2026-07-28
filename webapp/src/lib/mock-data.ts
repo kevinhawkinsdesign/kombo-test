@@ -1162,6 +1162,7 @@ export const coachRecordings: CoachRecording[] = [
     summarized: false,
     analyzed: false,
     prospectPosition: "Sales Director",
+    dealId: "deal_6",
     salesRepId: "rep_2",
   },
   {
