@@ -230,7 +230,12 @@ const SAMPLE_RECIPIENTS = prospects.slice(0, 5)
 export interface PromptStepSeed {
   channel: StepChannel
   subject?: string
+  // A sample rendering, for previews only — never what the author edits.
   body: string
+  // The instruction itself. This is the durable, editable thing: the step
+  // stores it so the author can refine the prompt later instead of being
+  // left with one frozen example of its output.
+  prompt: string
   promptName: string
 }
 
@@ -241,6 +246,7 @@ export function PromptPickerDialog({
   onOpenChange,
   onInsert,
   onBack,
+  initialPrompt,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -249,6 +255,10 @@ export function PromptPickerDialog({
   // opened from — omitted when opened from the step editor's toolbar, where
   // there's no step type to go back to.
   onBack?: () => void
+  // The prompt the caller already has (a step being re-edited). Seeds the
+  // custom-prompt field so refining an existing prompt doesn't mean
+  // retyping it from scratch.
+  initialPrompt?: string
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -266,8 +276,10 @@ export function PromptPickerDialog({
   if (open !== wasOpen) {
     setWasOpen(open)
     if (open) {
-      setSelectedId(saved[0]?.id ?? CUSTOM)
-      setCustomText("")
+      // Re-editing an existing prompt lands on the custom field, pre-filled
+      // — otherwise the author would have to retype what they already wrote.
+      setSelectedId(initialPrompt ? CUSTOM : (saved[0]?.id ?? CUSTOM))
+      setCustomText(initialPrompt ?? "")
       setCustomChannel("email")
       setExample(0)
     }
@@ -309,6 +321,7 @@ export function PromptPickerDialog({
       channel: stepChannel,
       subject: stepChannel === "email" ? generated.subject : undefined,
       body: generated.body,
+      prompt: promptText,
       promptName,
     })
     onOpenChange(false)

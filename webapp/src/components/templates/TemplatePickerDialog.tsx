@@ -1,4 +1,5 @@
 import * as React from "react"
+import type { ReactNode } from "react"
 import {
   Mail,
   Search as SearchIcon,
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { useTemplates } from "@/lib/store"
 import { cn } from "@/lib/utils"
+import { mergeVarsHighlighted, mergeVarsRaw } from "@/lib/merge-vars-highlight"
 import type { Locale } from "@/lib/locale"
 import type { Channel, EmailTemplate } from "@/lib/types"
 
@@ -170,12 +172,15 @@ function ChannelIcon({
   }
 }
 
-// Substitute {{tag}} with the recipient's resolved value. Unknown tags are left
-// literal so a typo'd variable is still visible in the preview.
-function renderWithVars(text: string, vars: Record<string, string>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (whole, tag: string) =>
-    Object.prototype.hasOwnProperty.call(vars, tag) ? vars[tag] : whole
-  )
+// With a real recipient (Inbox/Compose) the preview substitutes their
+// resolved values, highlighted; without one (sequence builder, Templates)
+// it shows the raw {{tags}} in purple — inventing a sample person there
+// would read as if a real message already exists.
+function renderPreview(
+  text: string,
+  vars: Record<string, string> | undefined
+): ReactNode[] {
+  return vars ? mergeVarsHighlighted(text, vars) : mergeVarsRaw(text)
 }
 
 interface TemplatePickerDialogProps {
@@ -183,8 +188,9 @@ interface TemplatePickerDialogProps {
   onOpenChange: (open: boolean) => void
   /** Called with the chosen template; the caller decides how to insert it. */
   onInsert: (template: EmailTemplate) => void
-  /** Resolved recipient + sender values used to render the live preview. */
-  vars: Record<string, string>
+  /** Resolved recipient + sender values for the live preview. Omit when
+   * there's no real recipient — the preview then shows raw {{tags}}. */
+  vars?: Record<string, string>
   /** Recipient name shown in the email-style preview header. */
   recipientName?: string
   /** When set, the list defaults to this channel (with a toggle to show all). */
@@ -401,12 +407,12 @@ export function TemplatePickerDialog({
                               {c.subjectLabel}
                             </span>
                             <span className="font-medium">
-                              {renderWithVars(selected.subject, vars) || "—"}
+                              {renderPreview(selected.subject, vars)}
                             </span>
                           </div>
                         </div>
                         <div className="text-foreground/90 p-4 text-sm leading-relaxed whitespace-pre-wrap">
-                          {renderWithVars(selected.body, vars)}
+                          {renderPreview(selected.body, vars)}
                         </div>
                       </div>
                     ) : (
@@ -415,7 +421,7 @@ export function TemplatePickerDialog({
                           {(recipientName ?? "?").slice(0, 1).toUpperCase()}
                         </span>
                         <div className="bg-background max-w-full rounded-2xl rounded-tl-sm border p-4 text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
-                          {renderWithVars(selected.body, vars)}
+                          {renderPreview(selected.body, vars)}
                         </div>
                       </div>
                     )}

@@ -19,7 +19,12 @@ export interface SequenceDraftApi {
   dirty: boolean
   addStep(channel: StepChannel, extra?: StepExtra): void
   insertStep(at: number, channel: StepChannel, extra?: StepExtra): void
-  addStepFromTemplate(data: { channel: StepChannel; subject?: string; body: string }): CampaignStep
+  addStepFromTemplate(data: {
+    channel: StepChannel
+    subject?: string
+    body: string
+    aiPrompt?: string
+  }): CampaignStep
   updateStep(stepId: string, patch: Partial<CampaignStep>): void
   removeStep(stepId: string): void
   // Inserts a copy of the step (and, recursively, its own fork tracks /
@@ -122,6 +127,10 @@ export function useSequenceDraft(
         delayDays: state.draft.length === 0 ? 0 : 3,
         subject: data.subject ?? "",
         body: data.body,
+        // Carried in here rather than via a follow-up updateStep — two
+        // setDraft calls in one handler both close over the same stale
+        // state.draft, so the second would silently clobber the first.
+        ...(data.aiPrompt ? { aiPrompt: data.aiPrompt } : {}),
       }
       setDraft([...state.draft, step])
       return step

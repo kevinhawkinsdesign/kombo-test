@@ -330,6 +330,11 @@ export interface CampaignStep {
   // Minutes before the task's start time to surface a reminder; 0 reads as
   // "no reminder." Undefined reads as 0.
   taskReminderMinutes?: number
+  // When set, this step doesn't send a fixed message — the AI writes a
+  // unique one per recipient from this instruction. The prompt itself is
+  // what the author edits and what the step editor shows; `body` holds only
+  // a sample rendering for previews, and is regenerated, never authored.
+  aiPrompt?: string
   // The ElevenLabs voice used for an `ai_call` step; `body` doubles as the
   // call script/instructions given to the agent.
   aiVoice?: string
