@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   ArrowUp,
@@ -127,6 +127,8 @@ import { DataTable } from "@/components/common/DataTable"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkAddToCrmDialog } from "@/components/common/BulkAddToCrmDialog"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
 import { downloadCsv } from "@/lib/csv"
@@ -153,6 +155,7 @@ import {
   useAccounts,
   campaignStore,
   listStore,
+  prospectStore,
   findCampaignStep,
   locateCampaignStep,
   flattenCampaignSteps,
@@ -163,7 +166,7 @@ import {
   TASK_REMINDER_OPTIONS,
 } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
-import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
+import { campaignDailyStats, campaignEnrollments, CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
@@ -376,6 +379,7 @@ const COPY = {
     removedFromCampaign: "Removed from campaign",
     removedFromCampaignCount: (n: number) => `${n} removed from campaign`,
     exportedCsv: "Exported to CSV",
+    crmSynced: (crm: string) => `Synced to ${crm}`,
     capNote: (max: number) => `Only ${max.toLocaleString()} can be enriched at a time.`,
     noReplies: "No replies yet.",
     viewInInbox: "View in inbox",
@@ -598,6 +602,7 @@ const COPY = {
     removedFromCampaign: "Eliminado de la campaña",
     removedFromCampaignCount: (n: number) => `${n} eliminados de la campaña`,
     exportedCsv: "Exportado a CSV",
+    crmSynced: (crm: string) => `Sincronizado con ${crm}`,
     capNote: (max: number) => `Solo se pueden enriquecer ${max.toLocaleString()} a la vez.`,
     noReplies: "Aún no hay respuestas.",
     viewInInbox: "Ver en la bandeja",
@@ -820,6 +825,7 @@ const COPY = {
     removedFromCampaign: "Rimosso dalla campagna",
     removedFromCampaignCount: (n: number) => `${n} rimossi dalla campagna`,
     exportedCsv: "Esportato in CSV",
+    crmSynced: (crm: string) => `Sincronizzato con ${crm}`,
     capNote: (max: number) => `Si possono arricchire solo ${max.toLocaleString()} alla volta.`,
     noReplies: "Ancora nessuna risposta.",
     viewInInbox: "Vedi nella posta in arrivo",
@@ -1042,6 +1048,7 @@ const COPY = {
     removedFromCampaign: "Retiré de la campagne",
     removedFromCampaignCount: (n: number) => `${n} retirés de la campagne`,
     exportedCsv: "Exporté en CSV",
+    crmSynced: (crm: string) => `Synchronisé avec ${crm}`,
     capNote: (max: number) => `Seuls ${max.toLocaleString()} peuvent être enrichis à la fois.`,
     noReplies: "Pas encore de réponses.",
     viewInInbox: "Voir dans la boîte de réception",
@@ -1264,6 +1271,7 @@ const COPY = {
     removedFromCampaign: "Aus Kampagne entfernt",
     removedFromCampaignCount: (n: number) => `${n} aus der Kampagne entfernt`,
     exportedCsv: "Als CSV exportiert",
+    crmSynced: (crm: string) => `Mit ${crm} synchronisiert`,
     capNote: (max: number) => `Es können jeweils nur ${max.toLocaleString()} angereichert werden.`,
     noReplies: "Noch keine Antworten.",
     viewInInbox: "Im Posteingang ansehen",
@@ -1486,6 +1494,7 @@ const COPY = {
     removedFromCampaign: "Removido da campanha",
     removedFromCampaignCount: (n: number) => `${n} removidos da campanha`,
     exportedCsv: "Exportado para CSV",
+    crmSynced: (crm: string) => `Sincronizado com ${crm}`,
     capNote: (max: number) => `Só é possível enriquecer ${max.toLocaleString()} de cada vez.`,
     noReplies: "Ainda não há respostas.",
     viewInInbox: "Ver na caixa de entrada",
@@ -1708,6 +1717,7 @@ const COPY = {
     removedFromCampaign: "Removido da campanha",
     removedFromCampaignCount: (n: number) => `${n} removidos da campanha`,
     exportedCsv: "Exportado para CSV",
+    crmSynced: (crm: string) => `Sincronizado com ${crm}`,
     capNote: (max: number) => `Só é possível enriquecer ${max.toLocaleString()} por vez.`,
     noReplies: "Ainda não há respostas.",
     viewInInbox: "Ver na caixa de entrada",
@@ -2099,6 +2109,7 @@ export default function CampaignDetail() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const { id } = useParams()
+  const navigate = useNavigate()
   const campaigns = useCampaigns()
   const lists = useLists()
   const linkableLists = lists.filter((l) => l.kind !== "company")
@@ -2165,6 +2176,8 @@ export default function CampaignDetail() {
     PROSPECT_COL_DEFAULT_IDS
   )
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+  const [bulkListOpen, setBulkListOpen] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
   const [selectedRowIds, setSelectedRowIds] = React.useState<Set<string>>(
     new Set()
   )
@@ -2565,6 +2578,38 @@ export default function CampaignDetail() {
     setSelectedRowIds(new Set())
   }
   const selectedProspects = selectedRows.flatMap((r) => r.prospect ?? [])
+  // Lookalike is a kind of search — hand the seed to the Search page, same
+  // pattern as Companies.tsx/People.tsx, seeded from the first selected row.
+  function findLookalikes() {
+    const p = selectedProspects[0]
+    if (!p) return
+    navigate("/search", {
+      state: {
+        lookalikeSeed: {
+          id: p.id,
+          kind: "person",
+          name: `${p.firstName} ${p.lastName}`,
+          sub: `${p.title} @ ${p.company}`,
+          industry: p.industry,
+          region: "",
+          headcount: p.headcount,
+        },
+      },
+    })
+  }
+  // Mirrors the row menu's "Add to CRM" — this app only ever has one
+  // connected CRM, so there's nothing to pick, just an owner to confirm.
+  // Same never-overwrite rule as the row-level wizard: only fills in an
+  // owner where one isn't already set.
+  function confirmBulkCrm(ownerId: string | undefined) {
+    if (ownerId) {
+      selectedProspects.forEach((p) => {
+        if (!p.ownerId) prospectStore.update(p.id, { ownerId })
+      })
+    }
+    toast.success(c.crmSynced(CONNECTED_CRM_PROVIDER.name))
+    setSelectedRowIds(new Set())
+  }
   const prospectColumns: ColumnDef<CampaignProspectRow>[] = [
     {
       id: "prospect",
@@ -4105,6 +4150,9 @@ export default function CampaignDetail() {
                 onClear={() => setSelectedRowIds(new Set())}
                 onExport={exportSelectedProspects}
                 onEnrich={() => setBulkEnrichOpen(true)}
+                onAddToList={() => setBulkListOpen(true)}
+                onLookalikes={findLookalikes}
+                onAddToCrm={() => setBulkCrmOpen(true)}
                 extra={{
                   label: c.removeFromCampaignAction,
                   icon: <X className="size-4" />,
@@ -4117,6 +4165,23 @@ export default function CampaignDetail() {
                 open={bulkEnrichOpen}
                 onOpenChange={setBulkEnrichOpen}
                 prospects={selectedProspects}
+              />
+
+              <BulkAddDialog
+                open={bulkListOpen}
+                onOpenChange={setBulkListOpen}
+                mode="list"
+                recordKind="person"
+                ids={selectedProspects.map((p) => p.id)}
+                skipCostConfirm
+                onDone={() => setSelectedRowIds(new Set())}
+              />
+
+              <BulkAddToCrmDialog
+                open={bulkCrmOpen}
+                onOpenChange={setBulkCrmOpen}
+                count={selectedProspects.length}
+                onConfirm={confirmBulkCrm}
               />
             </>
           ) : (

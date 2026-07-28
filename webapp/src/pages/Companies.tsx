@@ -28,6 +28,7 @@ import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkAddToCrmDialog } from "@/components/common/BulkAddToCrmDialog"
 import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
 import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
@@ -43,7 +44,7 @@ import {
 import { useAiColumns, aiColumnStore } from "@/lib/ai-columns"
 import { AddAiColumnDialog } from "@/components/common/AddAiColumnDialog"
 import { EmptyState } from "@/components/common/EmptyState"
-import { useAccounts, accountStore, useLists } from "@/lib/store"
+import { useAccounts, accountStore, useLists, blacklistStore } from "@/lib/store"
 import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
 import { usePagedSelection } from "@/lib/use-paged-selection"
@@ -64,6 +65,7 @@ const COPY = {
       "Every company you've found — across searches, imports & lists. Select to enrich, export, or add to a list.",
     exportedToast: (n: number, format: string) => `Exported ${n} to ${format}`,
     crmSyncedToast: (n: number, crm: string) => `Synced ${n} to ${crm}`,
+    blacklistedToast: (n: number) => `${n} ${n === 1 ? "company" : "companies"} added to blacklist`,
     enrichToast: (n: number) => `Enriching ${n} ${n === 1 ? "company" : "companies"}…`,
     lookalikeToast: (n: number) => `Finding lookalikes from ${n} selected…`,
     addCompany: "Find companies",
@@ -112,6 +114,7 @@ const COPY = {
       "Todas las empresas que has encontrado — de búsquedas, importaciones y listas. Selecciona para enriquecer, exportar o añadir a una lista.",
     exportedToast: (n: number, format: string) => `Exportadas ${n} a ${format}`,
     crmSyncedToast: (n: number, crm: string) => `Sincronizadas ${n} con ${crm}`,
+    blacklistedToast: (n: number) => `${n} ${n === 1 ? "empresa añadida" : "empresas añadidas"} a la lista negra`,
     enrichToast: (n: number) => `Enriqueciendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `Buscando similares de ${n} seleccionadas…`,
     addCompany: "Buscar empresas",
@@ -160,6 +163,7 @@ const COPY = {
       "Tutte le aziende che hai trovato — da ricerche, importazioni e liste. Seleziona per arricchire, esportare o aggiungere a una lista.",
     exportedToast: (n: number, format: string) => `Esportate ${n} in ${format}`,
     crmSyncedToast: (n: number, crm: string) => `Sincronizzate ${n} con ${crm}`,
+    blacklistedToast: (n: number) => `${n} ${n === 1 ? "azienda aggiunta" : "aziende aggiunte"} alla blacklist`,
     enrichToast: (n: number) => `Arricchimento di ${n} ${n === 1 ? "azienda" : "aziende"}…`,
     lookalikeToast: (n: number) => `Ricerca di simili da ${n} selezionate…`,
     addCompany: "Trova aziende",
@@ -208,6 +212,7 @@ const COPY = {
       "Toutes les entreprises que vous avez trouvées — recherches, imports et listes. Sélectionnez pour enrichir, exporter ou ajouter à une liste.",
     exportedToast: (n: number, format: string) => `${n} exportées en ${format}`,
     crmSyncedToast: (n: number, crm: string) => `${n} synchronisées avec ${crm}`,
+    blacklistedToast: (n: number) => `${n} ${n === 1 ? "entreprise ajoutée" : "entreprises ajoutées"} à la liste noire`,
     enrichToast: (n: number) => `Enrichissement de ${n} ${n === 1 ? "entreprise" : "entreprises"}…`,
     lookalikeToast: (n: number) => `Recherche de profils similaires à partir de ${n} sélectionnées…`,
     addCompany: "Trouver des entreprises",
@@ -256,6 +261,7 @@ const COPY = {
       "Alle Unternehmen, die du gefunden hast — aus Suchen, Importen & Listen. Wähle aus, um anzureichern, zu exportieren oder zu einer Liste hinzuzufügen.",
     exportedToast: (n: number, format: string) => `${n} als ${format} exportiert`,
     crmSyncedToast: (n: number, crm: string) => `${n} mit ${crm} synchronisiert`,
+    blacklistedToast: (n: number) => `${n} Unternehmen zur Blacklist hinzugefügt`,
     enrichToast: (n: number) => `Reichere ${n} Unternehmen an…`,
     lookalikeToast: (n: number) => `Suche Lookalikes aus ${n} ausgewählten…`,
     addCompany: "Unternehmen finden",
@@ -304,6 +310,7 @@ const COPY = {
       "Todas as empresas que encontrou — de pesquisas, importações e listas. Selecione para enriquecer, exportar ou adicionar a uma lista.",
     exportedToast: (n: number, format: string) => `Exportadas ${n} para ${format}`,
     crmSyncedToast: (n: number, crm: string) => `Exportadas ${n} para ${crm}`,
+    blacklistedToast: (n: number) => `${n} ${n === 1 ? "empresa adicionada" : "empresas adicionadas"} à lista negra`,
     enrichToast: (n: number) => `A enriquecer ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `A procurar semelhantes a partir de ${n} selecionadas…`,
     addCompany: "Encontrar empresas",
@@ -352,6 +359,7 @@ const COPY = {
       "Todas as empresas que você encontrou — de buscas, importações e listas. Selecione para enriquecer, exportar ou adicionar a uma lista.",
     exportedToast: (n: number, format: string) => `Exportadas ${n} para ${format}`,
     crmSyncedToast: (n: number, crm: string) => `Exportadas ${n} para ${crm}`,
+    blacklistedToast: (n: number) => `${n} ${n === 1 ? "empresa adicionada" : "empresas adicionadas"} à lista negra`,
     enrichToast: (n: number) => `Enriquecendo ${n} ${n === 1 ? "empresa" : "empresas"}…`,
     lookalikeToast: (n: number) => `Buscando semelhantes a partir de ${n} selecionadas…`,
     addCompany: "Encontrar empresas",
@@ -411,6 +419,7 @@ export default function Companies() {
   const [exportOpen, setExportOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [findContactsOpen, setFindContactsOpen] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("companies", COMPANY_DEFAULT_IDS)
 
@@ -489,6 +498,28 @@ export default function Companies() {
       ])
     )
     toast.success(c.exportedToast(selectedAccounts.length, opts.format === "excel" ? "Excel" : "CSV"))
+  }
+  // Mirrors the row menu's "Add to CRM" — this app only ever has one
+  // connected CRM, so there's nothing to pick, just an owner to confirm.
+  // Same never-overwrite rule as the row-level wizard: only fills in an
+  // owner where one isn't already set.
+  function confirmBulkCrm(ownerId: string | undefined) {
+    if (ownerId) {
+      selectedAccounts.forEach((a) => {
+        if (!a.ownerId) accountStore.update(a.id, { ownerId })
+      })
+    }
+    toast.success(c.crmSyncedToast(selectedAccounts.length, CONNECTED_CRM_PROVIDER.name))
+    sel.clear()
+  }
+  // Mirrors the row menu's "Add to blacklist" — de-duped by name, same as
+  // the single-record version.
+  function addSelectedToBlacklist() {
+    blacklistStore.addMany(
+      selectedAccounts.map((a) => ({ name: a.name, domain: a.domain, reason: "Manual" }))
+    )
+    toast.success(c.blacklistedToast(selectedAccounts.length))
+    sel.clear()
   }
   // Lookalike is a kind of search — hand the seed to the Search page.
   function findLookalikes() {
@@ -661,6 +692,8 @@ export default function Companies() {
         onAddToList={() => setBulkList(true)}
         onLookalikes={findLookalikes}
         onFindContacts={() => setFindContactsOpen(true)}
+        onAddToCrm={() => setBulkCrmOpen(true)}
+        onAddToBlacklist={addSelectedToBlacklist}
       />
 
       <BulkAddDialog
@@ -669,6 +702,13 @@ export default function Companies() {
         mode="list"
         recordKind="company"
         ids={addIdsArr}
+      />
+
+      <BulkAddToCrmDialog
+        open={bulkCrmOpen}
+        onOpenChange={setBulkCrmOpen}
+        count={selectedIds.size}
+        onConfirm={confirmBulkCrm}
       />
 
       <ExportDialog
