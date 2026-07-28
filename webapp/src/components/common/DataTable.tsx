@@ -507,7 +507,24 @@ export function DataTable<T>({
                 {shown.map((col) => (
                   <TableCell
                     key={col.id}
-                    className={cn(col.align === "right" && "text-right")}
+                    // `max-w-0 w-full` is the standard trick for constraining
+                    // a table-layout:auto cell: width:100% tells the column-
+                    // width algorithm this cell can flex, and max-width:0
+                    // deprioritizes its own content when the browser sizes
+                    // the column (the real width still comes from the header
+                    // label or `col.minWidth`) — without it, long text,
+                    // badges, avatar+name rows, or action buttons render at
+                    // their natural width and visually bleed into the next
+                    // cell instead of being constrained by the column.
+                    // `truncate` then clips whatever ends up wider than the
+                    // resolved column width. This mirrors the `min-w-0` +
+                    // `truncate` pattern individual renders (pinned "name"
+                    // columns, "company") already assume a bounded parent
+                    // provides.
+                    className={cn(
+                      "max-w-0 w-full truncate",
+                      col.align === "right" && "text-right"
+                    )}
                   >
                     {cell(col, row)}
                   </TableCell>

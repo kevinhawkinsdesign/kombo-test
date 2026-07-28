@@ -22,7 +22,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} credits = ≈ ${credits.toLocaleString()} credits`,
     estimateCompanies: "Free to save · 0 credits",
-    note: "Credits are only spent when you save — enrichment is charged separately.",
+    notePeople: "Credits are only spent when you save — enrichment is charged separately.",
+    noteCompanies: "No credits are spent here — enrichment is charged separately, whenever you run it.",
     cancel: "Cancel",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} credits`,
     confirmCompanies: (n: number) => `Add ${n.toLocaleString()}`,
@@ -34,7 +35,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} créditos = ≈ ${credits.toLocaleString()} créditos`,
     estimateCompanies: "Guardar es gratis · 0 créditos",
-    note: "Los créditos solo se gastan al guardar — el enriquecimiento se cobra aparte.",
+    notePeople: "Los créditos solo se gastan al guardar — el enriquecimiento se cobra aparte.",
+    noteCompanies: "Aquí no se gasta ningún crédito — el enriquecimiento se cobra aparte, cuando lo ejecutes.",
     cancel: "Cancelar",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
     confirmCompanies: (n: number) => `Añadir ${n.toLocaleString()}`,
@@ -46,7 +48,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} crediti = ≈ ${credits.toLocaleString()} crediti`,
     estimateCompanies: "Salvataggio gratuito · 0 crediti",
-    note: "I crediti si spendono solo al salvataggio — l'arricchimento viene addebitato separatamente.",
+    notePeople: "I crediti si spendono solo al salvataggio — l'arricchimento viene addebitato separatamente.",
+    noteCompanies: "Qui non si spende alcun credito — l'arricchimento viene addebitato separatamente, quando lo esegui.",
     cancel: "Annulla",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} crediti`,
     confirmCompanies: (n: number) => `Aggiungi ${n.toLocaleString()}`,
@@ -58,7 +61,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} crédits = ≈ ${credits.toLocaleString()} crédits`,
     estimateCompanies: "Gratuit à enregistrer · 0 crédit",
-    note: "Les crédits ne sont dépensés qu'à l'enregistrement — l'enrichissement est facturé séparément.",
+    notePeople: "Les crédits ne sont dépensés qu'à l'enregistrement — l'enrichissement est facturé séparément.",
+    noteCompanies: "Aucun crédit n'est dépensé ici — l'enrichissement est facturé séparément, lorsque vous l'exécutez.",
     cancel: "Annuler",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} crédits`,
     confirmCompanies: (n: number) => `Ajouter ${n.toLocaleString()}`,
@@ -70,7 +74,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} Credits = ≈ ${credits.toLocaleString()} Credits`,
     estimateCompanies: "Kostenlos zu speichern · 0 Credits",
-    note: "Credits werden nur beim Speichern verbraucht — die Anreicherung wird separat berechnet.",
+    notePeople: "Credits werden nur beim Speichern verbraucht — die Anreicherung wird separat berechnet.",
+    noteCompanies: "Hier werden keine Credits verbraucht — die Anreicherung wird separat berechnet, sobald du sie ausführst.",
     cancel: "Abbrechen",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} Credits`,
     confirmCompanies: (n: number) => `${n.toLocaleString()} hinzufügen`,
@@ -82,7 +87,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} créditos = ≈ ${credits.toLocaleString()} créditos`,
     estimateCompanies: "Guardar é gratuito · 0 créditos",
-    note: "Os créditos só são gastos ao guardar — o enriquecimento é cobrado à parte.",
+    notePeople: "Os créditos só são gastos ao guardar — o enriquecimento é cobrado à parte.",
+    noteCompanies: "Aqui não é gasto nenhum crédito — o enriquecimento é cobrado à parte, sempre que o executares.",
     cancel: "Cancelar",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
     confirmCompanies: (n: number) => `Adicionar ${n.toLocaleString()}`,
@@ -94,7 +100,8 @@ const COPY = {
     estimatePeople: (n: number, credits: number) =>
       `${n.toLocaleString()} × ${SAVE_COST.prospect} créditos = ≈ ${credits.toLocaleString()} créditos`,
     estimateCompanies: "Salvar é grátis · 0 créditos",
-    note: "Os créditos só são gastos ao salvar — o enriquecimento é cobrado separadamente.",
+    notePeople: "Os créditos só são gastos ao salvar — o enriquecimento é cobrado separadamente.",
+    noteCompanies: "Nenhum crédito é gasto aqui — o enriquecimento é cobrado separadamente, sempre que você o executar.",
     cancel: "Cancelar",
     confirmPeople: (credits: number) => `≈ ${credits.toLocaleString()} créditos`,
     confirmCompanies: (n: number) => `Adicionar ${n.toLocaleString()}`,
@@ -165,7 +172,9 @@ export function AddCostConfirm({
             <p className="text-sm font-medium tabular-nums">
               {isPeople ? c.estimatePeople(count, credits) : c.estimateCompanies}
             </p>
-            <p className="text-muted-foreground mt-0.5 text-xs">{c.note}</p>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {isPeople ? c.notePeople : c.noteCompanies}
+            </p>
           </div>
         </div>
 

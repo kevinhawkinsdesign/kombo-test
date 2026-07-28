@@ -41,6 +41,7 @@ import type {
 } from "./types"
 import type { Locale } from "./locale"
 import type { EnrichScope } from "./enrichment"
+import { isCompanyEnriched, needsEnrichScope } from "./enrichment"
 import {
   blacklistedCompanies as seedBlacklist,
   type BlacklistedCompany,
@@ -388,7 +389,8 @@ export const listStore = {
   addProspects(id: string, ids: string[]): void {
     // A list's default owner is stamped onto incoming prospects that don't
     // already have one — it never overwrites an existing owner.
-    const assigneeId = state.lists.find((l) => l.id === id)?.assigneeId
+    const list = state.lists.find((l) => l.id === id)
+    const assigneeId = list?.assigneeId
     setState({
       lists: state.lists.map((l) =>
         l.id === id
@@ -405,6 +407,16 @@ export const listStore = {
           }
         : {}),
     })
+    // "Kept fresh continuously" lists auto-run the same profile enrichment
+    // the per-row Enrich action performs, for whichever incoming prospects
+    // still need it — never re-enriching ones that already have it.
+    if (list?.enrichment === "continuous") {
+      const toEnrich = ids.filter((pid) => {
+        const p = state.prospects.find((x) => x.id === pid)
+        return p && needsEnrichScope(p, "profile")
+      })
+      if (toEnrich.length > 0) prospectStore.enrich(toEnrich, "profile")
+    }
   },
   removeProspect(id: string, prospectId: string): void {
     setState({
@@ -416,6 +428,7 @@ export const listStore = {
     })
   },
   addAccounts(id: string, ids: string[]): void {
+    const list = state.lists.find((l) => l.id === id)
     setState({
       lists: state.lists.map((l) =>
         l.id === id
@@ -428,6 +441,16 @@ export const listStore = {
           : l
       ),
     })
+    // Same auto-enrich as addProspects, reusing accountStore.enrich — a
+    // "Kept fresh continuously" list enriches incoming companies that
+    // aren't already enriched, same as the per-row Enrich action.
+    if (list?.enrichment === "continuous") {
+      const toEnrich = ids.filter((aid) => {
+        const a = state.accounts.find((x) => x.id === aid)
+        return a && !isCompanyEnriched(a)
+      })
+      if (toEnrich.length > 0) accountStore.enrich(toEnrich)
+    }
   },
   removeAccount(id: string, accountId: string): void {
     setState({

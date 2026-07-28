@@ -16,6 +16,7 @@ import {
   Building2,
   ListTodo,
   Columns3,
+  Download,
 } from "lucide-react"
 
 import { Page, PageHeading } from "@/components/layout/Page"
@@ -43,7 +44,7 @@ import { ListFormDialog } from "@/components/lists/ListFormDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
-import { getProspect } from "@/lib/mock-data"
+import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
 import { useLists, listStore } from "@/lib/store"
 import { downloadCsv } from "@/lib/csv"
@@ -102,6 +103,7 @@ const COPY = {
     colType: "Type",
     colSource: "Source",
     colMembers: "Members",
+    colOutcome: "Outcome",
     colCreated: "Created",
     columns: "Columns",
   },
@@ -155,6 +157,7 @@ const COPY = {
     colType: "Tipo",
     colSource: "Origen",
     colMembers: "Miembros",
+    colOutcome: "Resultado",
     colCreated: "Creada",
     columns: "Columnas",
   },
@@ -208,6 +211,7 @@ const COPY = {
     colType: "Tipo",
     colSource: "Origine",
     colMembers: "Membri",
+    colOutcome: "Risultato",
     colCreated: "Creata",
     columns: "Colonne",
   },
@@ -261,6 +265,7 @@ const COPY = {
     colType: "Type",
     colSource: "Source",
     colMembers: "Membres",
+    colOutcome: "Résultat",
     colCreated: "Créée",
     columns: "Colonnes",
   },
@@ -314,6 +319,7 @@ const COPY = {
     colType: "Typ",
     colSource: "Quelle",
     colMembers: "Mitglieder",
+    colOutcome: "Ergebnis",
     colCreated: "Erstellt",
     columns: "Spalten",
   },
@@ -367,6 +373,7 @@ const COPY = {
     colType: "Tipo",
     colSource: "Origem",
     colMembers: "Membros",
+    colOutcome: "Resultado",
     colCreated: "Criada",
     columns: "Colunas",
   },
@@ -420,6 +427,7 @@ const COPY = {
     colType: "Tipo",
     colSource: "Origem",
     colMembers: "Membros",
+    colOutcome: "Resultado",
     colCreated: "Criada",
     columns: "Colunas",
   },
@@ -549,6 +557,15 @@ export default function Lists() {
     toast.success(c.exported)
   }
 
+  function exportOne(list: ProspectList) {
+    downloadCsv(
+      "kombo-lists.csv",
+      [c.colName, c.colType, c.colSource, c.colMembers, c.colCreated],
+      listsToRows([list])
+    )
+    toast.success(c.exported)
+  }
+
   // Bulk selection — same DataTable selection pattern used elsewhere (Templates.tsx).
   const rowIds = sortedLists.map((l) => l.id)
   const allSelected =
@@ -663,6 +680,10 @@ export default function Lists() {
                   <Pencil className="size-4" />
                   {c.edit}
                 </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => exportOne(list)}>
+                  <Download className="size-4" />
+                  {c.exportLabel}
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onSelect={() => setDeletingList(list)}
@@ -734,6 +755,10 @@ export default function Lists() {
                   >
                     <Pencil className="size-4" />
                     {c.edit}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => exportOne(list)}>
+                    <Download className="size-4" />
+                    {c.exportLabel}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
@@ -907,6 +932,17 @@ export default function Lists() {
 const memberCountOfList = (l: ProspectList) =>
   l.kind === "company" ? (l.accountIds?.length ?? 0) : l.prospectIds.length
 
+// Outcome = the reply rate of the campaign this list feeds, the same metric
+// Campaigns.tsx surfaces per-campaign — a static list isn't itself "sent," so
+// its result is only as meaningful as the campaign attached to it. Lists with
+// no linked campaign (or one that hasn't enrolled anyone yet) have no result
+// to show yet.
+function outcomeReplyRateOf(l: ProspectList): number | null {
+  const campaign = l.campaignId ? getCampaign(l.campaignId) : undefined
+  if (!campaign || !campaign.enrolled) return null
+  return Math.round((campaign.replied / campaign.enrolled) * 100)
+}
+
 const LIST_COL_GROUPS: ColGroup[] = [
   {
     id: "list",
@@ -921,7 +957,7 @@ const LIST_COL_GROUPS: ColGroup[] = [
     },
   },
 ]
-const LIST_COL_DEFAULT_IDS = ["type", "source", "members", "created"]
+const LIST_COL_DEFAULT_IDS = ["type", "source", "members", "outcome", "created"]
 
 const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
   {
@@ -938,6 +974,7 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     group: "list",
     pinned: true,
     minWidth: "220px",
+    getValue: (l) => l.name,
     render: (l, locale) => {
       const cc = COPY[locale]
       const isCompany = l.kind === "company"
@@ -984,6 +1021,10 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     },
     group: "list",
     default: true,
+    // Filter checklist shows the English label (matches the emailStatus
+    // convention in lib/table-columns.tsx) rather than a raw internal key.
+    getValue: (l) => (l.kind === "company" ? COPY.en.companyList : COPY.en.peopleList),
+    filterType: "enum",
     render: (l, locale) => {
       const cc = COPY[locale]
       const isCompany = l.kind === "company"
@@ -1012,6 +1053,15 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     },
     group: "list",
     default: true,
+    // Filter checklist shows the English label, same convention as "type".
+    getValue: (l) =>
+      ({
+        linkedin: COPY.en.sourceLinkedin,
+        salesnav: COPY.en.sourceSalesnav,
+        csv: COPY.en.sourceCsv,
+        search: COPY.en.sourceSearch,
+      })[l.source],
+    filterType: "enum",
     render: (l, locale) => {
       const cc = COPY[locale]
       const sourceLabels: Record<string, string> = {
@@ -1041,7 +1091,34 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     group: "list",
     default: true,
     align: "right",
+    getValue: (l) => memberCountOfList(l),
     render: (l) => <span className="tabular-nums">{memberCountOfList(l)}</span>,
+  },
+  {
+    id: "outcome",
+    label: {
+      en: COPY.en.colOutcome,
+      es: COPY.es.colOutcome,
+      it: COPY.it.colOutcome,
+      fr: COPY.fr.colOutcome,
+      de: COPY.de.colOutcome,
+      pt: COPY.pt.colOutcome,
+      pt_BR: COPY.pt_BR.colOutcome,
+    },
+    group: "list",
+    default: true,
+    align: "right",
+    getValue: (l) => outcomeReplyRateOf(l),
+    render: (l) => {
+      const rate = outcomeReplyRateOf(l)
+      // Same plain right-aligned rendering as the reply-rate cells in the
+      // Deals rep table; static lists with no linked campaign show "—".
+      return rate === null ? (
+        <span className="text-muted-foreground text-sm">—</span>
+      ) : (
+        <span className="tabular-nums">{rate}%</span>
+      )
+    },
   },
   {
     id: "created",
@@ -1057,6 +1134,7 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     group: "list",
     default: true,
     align: "right",
+    getValue: (l) => l.createdAt,
     render: (l) => (
       <span className="text-muted-foreground text-xs whitespace-nowrap">
         {formatDate(l.createdAt)}

@@ -373,6 +373,9 @@ const COPY = {
     hideInCrm: "Hide already in CRM",
     addRowToList: "Add to list",
     enrichRow: "Enrich",
+    findLookalikesRow: "Find lookalikes",
+    exportRow: "Export",
+    exportedToast: (n: number, format: string) => `Exported ${n} to ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
     srcFindPeople: "Find prospects",
@@ -676,6 +679,9 @@ const COPY = {
     hideInCrm: "Ocultar ya en el CRM",
     addRowToList: "Añadir a lista",
     enrichRow: "Enriquecer",
+    findLookalikesRow: "Buscar similares",
+    exportRow: "Exportar",
+    exportedToast: (n: number, format: string) => `Exportados ${n} a ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Buscar prospectos",
@@ -979,6 +985,9 @@ const COPY = {
     hideInCrm: "Nascondi quelli già nel CRM",
     addRowToList: "Aggiungi a lista",
     enrichRow: "Arricchisci",
+    findLookalikesRow: "Trova simili",
+    exportRow: "Esporta",
+    exportedToast: (n: number, format: string) => `Esportati ${n} in ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} di ${total.toLocaleString()}`,
     srcFindPeople: "Trova prospect",
@@ -1282,6 +1291,9 @@ const COPY = {
     hideInCrm: "Masquer ceux déjà dans le CRM",
     addRowToList: "Ajouter à une liste",
     enrichRow: "Enrichir",
+    findLookalikesRow: "Trouver des profils similaires",
+    exportRow: "Exporter",
+    exportedToast: (n: number, format: string) => `${n} exportés en ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} sur ${total.toLocaleString()}`,
     srcFindPeople: "Trouver des prospects",
@@ -1585,6 +1597,9 @@ const COPY = {
     hideInCrm: "Bereits im CRM ausblenden",
     addRowToList: "Zur Liste hinzufügen",
     enrichRow: "Anreichern",
+    findLookalikesRow: "Ähnliche finden",
+    exportRow: "Exportieren",
+    exportedToast: (n: number, format: string) => `${n} als ${format} exportiert`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} von ${total.toLocaleString()}`,
     srcFindPeople: "Prospects finden",
@@ -1888,6 +1903,9 @@ const COPY = {
     hideInCrm: "Ocultar os que já estão no CRM",
     addRowToList: "Adicionar a lista",
     enrichRow: "Enriquecer",
+    findLookalikesRow: "Encontrar semelhantes",
+    exportRow: "Exportar",
+    exportedToast: (n: number, format: string) => `Exportados ${n} para ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Encontrar prospects",
@@ -2191,6 +2209,9 @@ const COPY = {
     hideInCrm: "Ocultar os que já estão no CRM",
     addRowToList: "Adicionar a lista",
     enrichRow: "Enriquecer",
+    findLookalikesRow: "Encontrar similares",
+    exportRow: "Exportar",
+    exportedToast: (n: number, format: string) => `Exportados ${n} para ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
     srcFindPeople: "Encontrar prospects",
@@ -2623,9 +2644,14 @@ export default function Search() {
 
   // Pagination — so "select page" imports a controlled batch instead of every
   // matching result. Reset to the first page whenever the result set changes.
+  // The signature must cover every input that can change `shownCount`
+  // (whatever narrows `leads`/`companies`) — hideInList/hideInCrm toggle those
+  // client-side filters without changing `query`, so they belong here too;
+  // leaving them out let the page index survive a toggle that shrank the
+  // result set out from under it.
   const [page, setPage] = React.useState(0)
   const pageCount = Math.max(1, Math.ceil(shownCount / RESULTS_PER_PAGE))
-  const resultSig = `${entity}|${sortKey}|${seed?.id ?? ""}|${JSON.stringify(query)}`
+  const resultSig = `${entity}|${sortKey}|${seed?.id ?? ""}|${hideInList}|${hideInCrm}|${JSON.stringify(query)}`
   const [pageSig, setPageSig] = React.useState(resultSig)
   if (resultSig !== pageSig) {
     setPageSig(resultSig)
@@ -3161,6 +3187,61 @@ export default function Search() {
     const rows = ids.flatMap((id) => getProspect(id) ?? [])
     setEnrichRows(rows)
     setBulkEnrichOpen(true)
+  }
+  // Company enrich is a stub here too (mirrors bulkEnrich's company branch) —
+  // search-result companies aren't materialized into the account store, so
+  // there's nothing for a real CompanyEnrichDialog to act on yet.
+  function enrichCompanyRow() {
+    toast.success(c.enrichCompaniesToast(1))
+  }
+  // Per-row Export — same CSV shape as the bulk export (confirmExport),
+  // just for a single search-result row and no format picker, matching the
+  // People/Companies per-row export convention.
+  function exportLeadRow(l: AiLead) {
+    downloadCsv(
+      "prospect.csv",
+      ["Name", "Title", "Company", "Region", "Fit"],
+      [[`${l.firstName} ${l.lastName}`, l.title, l.company, l.region, l.fit]]
+    )
+    toast.success(c.exportedToast(1, "CSV"))
+  }
+  function exportCompanyRow(co: AiCompany) {
+    downloadCsv(
+      "company.csv",
+      ["Company", "Industry", "Region", "Headcount", "Fit"],
+      [[co.name, co.industry, co.region, co.headcount, co.fit]]
+    )
+    toast.success(c.exportedToast(1, "CSV"))
+  }
+  // Per-row Find lookalikes — same seed shape as bulkLookalikes, just scoped
+  // to a single search-result row instead of the current selection.
+  function lookalikeFromLeadRow(l: AiLead) {
+    applyLookalike(
+      {
+        id: l.id,
+        kind: "person",
+        name: `${l.firstName} ${l.lastName}`,
+        sub: `${l.title} @ ${l.company}`,
+        industry: l.industry,
+        region: l.region,
+        headcount: l.headcount,
+      },
+      { ...EMPTY_QUERY }
+    )
+  }
+  function lookalikeFromCompanyRow(co: AiCompany) {
+    applyLookalike(
+      {
+        id: co.id,
+        kind: "company",
+        name: co.name,
+        sub: `${co.industry} · ${co.region}`,
+        industry: co.industry,
+        region: co.region,
+        headcount: co.headcount,
+      },
+      { ...EMPTY_QUERY }
+    )
   }
   // Lookalikes are seeded from the first selected row — the same convention
   // as People/Companies (via applyLookalike, which resets the search state).
@@ -3750,10 +3831,28 @@ export default function Search() {
                     variant="ghost"
                     size="icon"
                     className="size-8"
+                    aria-label={c.findLookalikesRow}
+                    onClick={() => lookalikeFromLeadRow(l)}
+                  >
+                    <ScanSearch className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
                     aria-label={c.addRowToList}
                     onClick={() => addRowToList(materializeLeadsToIds([l]))}
                   >
                     <FolderPlus className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.exportRow}
+                    onClick={() => exportLeadRow(l)}
+                  >
+                    <Download className="size-4" />
                   </Button>
                 </div>
               )}
@@ -3768,15 +3867,44 @@ export default function Search() {
               selection={companySelection}
               empty={c.noResults}
               actions={(co) => (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  aria-label={c.addRowToList}
-                  onClick={() => addRowToList(materializeCompaniesToIds([co]))}
-                >
-                  <FolderPlus className="size-4" />
-                </Button>
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.enrichRow}
+                    onClick={enrichCompanyRow}
+                  >
+                    <Layers className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.findLookalikesRow}
+                    onClick={() => lookalikeFromCompanyRow(co)}
+                  >
+                    <ScanSearch className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.addRowToList}
+                    onClick={() => addRowToList(materializeCompaniesToIds([co]))}
+                  >
+                    <FolderPlus className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.exportRow}
+                    onClick={() => exportCompanyRow(co)}
+                  >
+                    <Download className="size-4" />
+                  </Button>
+                </div>
               )}
             />
           )}

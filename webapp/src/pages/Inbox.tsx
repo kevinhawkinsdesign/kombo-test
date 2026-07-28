@@ -109,6 +109,7 @@ import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { getRep, assigneeName } from "@/lib/team"
 import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
+import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
 import { campaignEnrollments } from "@/lib/mock-depth"
 import {
@@ -1579,8 +1580,19 @@ export default function Inbox() {
   const campaigns = useCampaigns()
   const pendingApprovalsCount = useApprovals().filter((a) => a.status === "pending").length
   const customFolders = useCustomFolders()
+  const { isV1 } = useReleaseMode()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
+  // "Awaiting approval" (the AI-drafted-message approvals queue) is v2 only —
+  // if the release toggle flips to v1 while it's open, fall back to Inbox
+  // rather than leaving the view stuck on a now-hidden entry point.
+  const [wasV1, setWasV1] = React.useState(isV1)
+  if (isV1 !== wasV1) {
+    setWasV1(isV1)
+    if (isV1 && view.kind === "approvals") {
+      setView({ kind: "folder", id: "inbox" })
+    }
+  }
   const [activeId, setActiveId] = React.useState<string | undefined>()
   const [showThreadMobile, setShowThreadMobile] = React.useState(false)
   const [shownTranslations, setShownTranslations] = React.useState<Set<string>>(new Set())
@@ -2141,28 +2153,32 @@ export default function Inbox() {
                 )}
                 <div className="bg-border my-1.5 h-px" />
                 {folderButton(myTasksFolder, "w-full")}
-                <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
-                  <button
-                    type="button"
-                    onClick={() => setView({ kind: "approvals" })}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                      isApprovalsView
-                        ? "bg-muted font-medium text-foreground"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    )}
-                  >
-                    <ShieldCheck className="size-4 shrink-0" />
-                    <span className="flex-1 truncate text-left">
-                      {c.awaitingApproval}
-                    </span>
-                    {pendingApprovalsCount > 0 && (
-                      <span className="text-muted-foreground text-[11px] tabular-nums">
-                        {pendingApprovalsCount}
+                {/* Awaiting approval = the AI-drafted-message approvals queue,
+                    a v2-only surface (no AI automations in the v1 extension scope). */}
+                {!isV1 && (
+                  <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
+                    <button
+                      type="button"
+                      onClick={() => setView({ kind: "approvals" })}
+                      className={cn(
+                        "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                        isApprovalsView
+                          ? "bg-muted font-medium text-foreground"
+                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      )}
+                    >
+                      <ShieldCheck className="size-4 shrink-0" />
+                      <span className="flex-1 truncate text-left">
+                        {c.awaitingApproval}
                       </span>
-                    )}
-                  </button>
-                </div>
+                      {pendingApprovalsCount > 0 && (
+                        <span className="text-muted-foreground text-[11px] tabular-nums">
+                          {pendingApprovalsCount}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                )}
               </>
             )
           })()}

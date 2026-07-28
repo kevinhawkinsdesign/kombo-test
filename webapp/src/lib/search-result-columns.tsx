@@ -72,6 +72,17 @@ function mutedCell(value: React.ReactNode) {
   return <span className="text-muted-foreground text-sm">{value}</span>
 }
 
+// Sortable numeric value from a formatted range string ("500-1000",
+// "$50M-$100M", "5000+") — the low end, with K/M/B suffixes expanded. Mirrors
+// the identically-named helper in lib/table-columns.tsx (kept local here so
+// this file's exports don't grow a new cross-registry dependency).
+function parseRangeStart(s: string): number {
+  const m = s.match(/([\d.]+)\s*([kmbKMB]?)/)
+  if (!m) return 0
+  const mult = { k: 1e3, m: 1e6, b: 1e9 }[m[2].toLowerCase()] ?? 1
+  return parseFloat(m[1]) * mult
+}
+
 const REVEAL_COPY: Record<
   Locale,
   {
@@ -285,6 +296,7 @@ export const LEAD_RESULT_COLUMNS: ColumnDef<AiLead>[] = [
     pinned: true,
     minWidth: "16rem",
     label: L("Prospect", "Prospecto", "Prospect", "Prospect", "Prospect", "Prospect", "Prospect"),
+    getValue: (l) => `${l.firstName} ${l.lastName}`,
     render: (l) => (
       <div className="flex items-center gap-3">
         <Avatar className="size-8">
@@ -309,11 +321,12 @@ export const LEAD_RESULT_COLUMNS: ColumnDef<AiLead>[] = [
       </div>
     ),
   },
-  { id: "fit", group: "identity", label: L("Fit", "Encaje", "Idoneità", "Adéquation", "Eignung", "Adequação", "Adequação"), render: (l) => <ScoreBadge score={l.fit} title="AI fit score" /> },
+  { id: "fit", group: "identity", label: L("Fit", "Encaje", "Idoneità", "Adéquation", "Eignung", "Adequação", "Adequação"), getValue: (l) => l.fit, render: (l) => <ScoreBadge score={l.fit} title="AI fit score" /> },
   {
     id: "company",
     group: "company",
     label: L("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"),
+    getValue: (l) => l.company,
     render: (l) => (
       <div>
         <p className="font-medium">{l.company}</p>
@@ -323,15 +336,15 @@ export const LEAD_RESULT_COLUMNS: ColumnDef<AiLead>[] = [
       </div>
     ),
   },
-  { id: "seniority", group: "identity", label: L("Seniority", "Antigüedad", "Anzianità", "Ancienneté", "Senioritätsstufe", "Senioridade", "Senioridade"), render: (l) => mutedCell(l.seniority) },
-  { id: "department", group: "identity", label: L("Department", "Departamento", "Reparto", "Département", "Abteilung", "Departamento", "Departamento"), render: (l) => mutedCell(l.department) },
-  { id: "region", group: "company", label: L("Region", "Región", "Regione", "Région", "Region", "Região", "Região"), render: (l) => mutedCell(l.region) },
-  { id: "industry", group: "company", label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"), render: (l) => mutedCell(l.industry) },
-  { id: "headcount", group: "company", label: L("Size", "Tamaño", "Dimensione", "Taille", "Größe", "Dimensão", "Tamanho"), render: (l) => mutedCell(l.headcount) },
-  { id: "revenue", group: "company", label: L("Revenue", "Ingresos", "Fatturato", "Chiffre d'affaires", "Umsatz", "Receita", "Receita"), render: (l) => mutedCell(l.revenue) },
-  { id: "email", group: "engagement", label: L("Email", "Email", "Email", "E-mail", "E-Mail", "Email", "E-mail"), render: (l, locale) => <EmailCell lead={l} locale={locale} /> },
-  { id: "phone", group: "engagement", label: L("Phone", "Teléfono", "Telefono", "Téléphone", "Telefon", "Telefone", "Telefone"), render: (l, locale) => <PhoneCell lead={l} locale={locale} /> },
-  { id: "crm", group: "engagement", label: L("CRM", "CRM", "CRM", "CRM", "CRM", "CRM", "CRM"), render: (l, locale) => <CrmBadge inCrm={l.inCrm} locale={locale} /> },
+  { id: "seniority", group: "identity", label: L("Seniority", "Antigüedad", "Anzianità", "Ancienneté", "Senioritätsstufe", "Senioridade", "Senioridade"), getValue: (l) => l.seniority, filterType: "enum", render: (l) => mutedCell(l.seniority) },
+  { id: "department", group: "identity", label: L("Department", "Departamento", "Reparto", "Département", "Abteilung", "Departamento", "Departamento"), getValue: (l) => l.department, filterType: "enum", render: (l) => mutedCell(l.department) },
+  { id: "region", group: "company", label: L("Region", "Región", "Regione", "Région", "Region", "Região", "Região"), getValue: (l) => l.region, filterType: "enum", render: (l) => mutedCell(l.region) },
+  { id: "industry", group: "company", label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"), getValue: (l) => l.industry, filterType: "enum", render: (l) => mutedCell(l.industry) },
+  { id: "headcount", group: "company", label: L("Size", "Tamaño", "Dimensione", "Taille", "Größe", "Dimensão", "Tamanho"), getValue: (l) => parseRangeStart(l.headcount), render: (l) => mutedCell(l.headcount) },
+  { id: "revenue", group: "company", label: L("Revenue", "Ingresos", "Fatturato", "Chiffre d'affaires", "Umsatz", "Receita", "Receita"), getValue: (l) => parseRangeStart(l.revenue), render: (l) => mutedCell(l.revenue) },
+  { id: "email", group: "engagement", label: L("Email", "Email", "Email", "E-mail", "E-Mail", "Email", "E-mail"), getValue: (l) => l.emailStatus, filterType: "enum", render: (l, locale) => <EmailCell lead={l} locale={locale} /> },
+  { id: "phone", group: "engagement", label: L("Phone", "Teléfono", "Telefono", "Téléphone", "Telefon", "Telefone", "Telefone"), getValue: (l) => l.phoneStatus, filterType: "enum", render: (l, locale) => <PhoneCell lead={l} locale={locale} /> },
+  { id: "crm", group: "engagement", label: L("CRM", "CRM", "CRM", "CRM", "CRM", "CRM", "CRM"), getValue: (l) => l.inCrm, filterType: "enum", render: (l, locale) => <CrmBadge inCrm={l.inCrm} locale={locale} /> },
   {
     id: "signals",
     group: "engagement",
@@ -355,6 +368,7 @@ export const COMPANY_RESULT_COLUMNS: ColumnDef<AiCompany>[] = [
     pinned: true,
     minWidth: "16rem",
     label: L("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"),
+    getValue: (co) => co.name,
     render: (co) => (
       <div className="flex items-center gap-3">
         <span
@@ -374,22 +388,23 @@ export const COMPANY_RESULT_COLUMNS: ColumnDef<AiCompany>[] = [
       </div>
     ),
   },
-  { id: "fit", group: "company", label: L("Fit", "Encaje", "Idoneità", "Adéquation", "Eignung", "Adequação", "Adequação"), render: (co) => <ScoreBadge score={co.fit} title="AI fit score" /> },
-  { id: "industry", group: "firmographics", label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"), render: (co) => mutedCell(co.industry) },
-  { id: "headcount", group: "firmographics", label: L("Size", "Tamaño", "Dimensione", "Taille", "Größe", "Dimensão", "Tamanho"), render: (co) => mutedCell(co.headcount) },
-  { id: "region", group: "firmographics", label: L("Region", "Región", "Regione", "Région", "Region", "Região", "Região"), render: (co) => mutedCell(co.region) },
-  { id: "revenue", group: "firmographics", label: L("Revenue", "Ingresos", "Fatturato", "Chiffre d'affaires", "Umsatz", "Receita", "Receita"), render: (co) => mutedCell(co.revenue) },
+  { id: "fit", group: "company", label: L("Fit", "Encaje", "Idoneità", "Adéquation", "Eignung", "Adequação", "Adequação"), getValue: (co) => co.fit, render: (co) => <ScoreBadge score={co.fit} title="AI fit score" /> },
+  { id: "industry", group: "firmographics", label: L("Industry", "Sector", "Settore", "Secteur", "Branche", "Setor", "Setor"), getValue: (co) => co.industry, filterType: "enum", render: (co) => mutedCell(co.industry) },
+  { id: "headcount", group: "firmographics", label: L("Size", "Tamaño", "Dimensione", "Taille", "Größe", "Dimensão", "Tamanho"), getValue: (co) => co.headcountNum, render: (co) => mutedCell(co.headcount) },
+  { id: "region", group: "firmographics", label: L("Region", "Región", "Regione", "Région", "Region", "Região", "Região"), getValue: (co) => co.region, filterType: "enum", render: (co) => mutedCell(co.region) },
+  { id: "revenue", group: "firmographics", label: L("Revenue", "Ingresos", "Fatturato", "Chiffre d'affaires", "Umsatz", "Receita", "Receita"), getValue: (co) => parseRangeStart(co.revenue), render: (co) => mutedCell(co.revenue) },
   {
     id: "roles",
     group: "firmographics",
     label: L("Open roles", "Vacantes", "Posizioni aperte", "Postes ouverts", "Offene Stellen", "Vagas abertas", "Vagas abertas"),
+    getValue: (co) => co.openRoles,
     render: (co) => (
       <Badge variant="secondary" className="tabular-nums">
         {co.openRoles}
       </Badge>
     ),
   },
-  { id: "crm", group: "firmographics", label: L("CRM", "CRM", "CRM", "CRM", "CRM", "CRM", "CRM"), render: (co, locale) => <CrmBadge inCrm={co.inCrm} locale={locale} /> },
+  { id: "crm", group: "firmographics", label: L("CRM", "CRM", "CRM", "CRM", "CRM", "CRM", "CRM"), getValue: (co) => co.inCrm, filterType: "enum", render: (co, locale) => <CrmBadge inCrm={co.inCrm} locale={locale} /> },
   {
     id: "signals",
     group: "signals",
