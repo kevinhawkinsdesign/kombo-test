@@ -9,17 +9,11 @@ import {
   Smile,
   Meh,
   Frown,
-  TrendingUp,
-  MessageCircleQuestion,
-  Clock,
-  Timer,
   ListChecks,
   CheckCircle2,
   Circle,
-  GraduationCap,
   Users,
   Brain,
-  Star,
   ThumbsUp,
   ThumbsDown,
   Search,
@@ -37,6 +31,7 @@ import {
   Mic,
   MessageCircle,
   Phone,
+  ChevronDown,
 } from "lucide-react"
 
 import { useLocale, type Locale } from "@/lib/locale"
@@ -53,15 +48,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
 import { TabSkeleton } from "@/components/common/ContentSkeleton"
 import { useSkeletonTransition } from "@/lib/use-skeleton-transition"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
-import { CallScorecard } from "@/components/coach/CoachScorecard"
-import { CallQaPanel } from "@/components/coach/CallQaPanel"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import {
   Select,
@@ -85,6 +77,7 @@ import {
 import { coachRecordings, currentUser } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import { recordingDetails } from "@/lib/mock-depth"
+import { coachTeam, coachTeamAvg } from "@/lib/mock-coach-team"
 import { CALL_TYPES, CALL_TYPE_META } from "@/lib/call-types"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
@@ -95,6 +88,7 @@ import type {
   CallType,
   CoachSpeaker,
   CoachUtterance,
+  CoachScoreMetric,
 } from "@/lib/types"
 
 const SENTIMENT = {
@@ -106,28 +100,6 @@ const SENTIMENT = {
 // No real per-item priority data exists yet — cycles a deterministic
 // high/medium/low so the Next Steps list reads as prioritized.
 const ACTION_ITEM_PRIORITIES = ["high", "medium", "low"] as const
-
-const MOMENT_STYLES: Record<
-  KeyMoment["type"],
-  { dot: string; badge: string }
-> = {
-  positive: {
-    dot: "bg-chart-1",
-    badge: "bg-chart-1/15 text-chart-1",
-  },
-  risk: {
-    dot: "bg-destructive",
-    badge: "bg-destructive/15 text-destructive",
-  },
-  action: {
-    dot: "bg-primary",
-    badge: "bg-primary/15 text-primary",
-  },
-  question: {
-    dot: "bg-chart-4",
-    badge: "bg-chart-4/15 text-chart-4",
-  },
-}
 
 const COPY = {
   en: {
@@ -149,7 +121,18 @@ const COPY = {
     analysisUpdated: "Analysis updated",
     staleAnalysis: (t: string) =>
       `This analysis was generated with the “${t}” type — re-analyze to refresh it.`,
-    analysisFocus: "Analysis focus",
+    callScoreBreakdown: "Call score breakdown",
+    callReview: "Call review",
+    yourAverage: "Your average",
+    teamAverage: "Team average",
+    whatWentWell: "What went well",
+    whatCanImprove: "What can be improved",
+    noAnalysisTitle: "No analysis yet",
+    noAnalysisDesc:
+      "Analyze this call to see its call score, a scored breakdown, and review feedback.",
+    analyzeThisCall: "Analyze this call",
+    expand: "Expand",
+    collapse: "Collapse",
     notesAdded: "Notes added to CRM",
     addNotesToCrm: "Add notes to CRM",
     pause: "Pause",
@@ -220,28 +203,12 @@ const COPY = {
     transcriptSpeakingTime: "Speaking time",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Jump to ${speaker} at ${time}`,
-    notableQuotes: "Notable quotes",
-    topicJumpHint: "Click a topic to find it in the transcript",
     transcript: "Transcript",
-    keyMoments: "Key moments",
     participants: "Participants",
     noTranscript: "No transcript available for this recording.",
-    noKeyMoments: "No key moments captured.",
     you: "You",
     prospect: "Prospect",
     talkTime: "talk time",
-    callAnalysis: "Call analysis",
-    talkRatio: "Talk ratio",
-    talkRatioHintLabel: "What is talk ratio?",
-    talkRatioHint:
-      "The share of the call you (the rep) spoke versus the prospect. Lower is usually better — let them talk.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `You ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Talk ratio is high — aim for under 50%.",
-    questionsAsked: "Questions asked",
-    longestMonologue: "Longest monologue",
-    avgResponseTime: "Avg response time",
-    topicsDiscussed: "Topics discussed",
     objections: "Objections",
     actionItems: "Next steps",
     markNotDone: "Mark as not done",
@@ -249,12 +216,7 @@ const COPY = {
     completed: (label: string) => `Completed: ${label}`,
     tasksCreated: "Tasks created",
     createTasks: "Create tasks",
-    coachingTips: "Coaching tips",
     personalityRead: "Personality read",
-    rateThisAnalysis: "Rate this analysis",
-    rateStar: (n: number) => `Rate ${n} star${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Thanks for the feedback",
-    wasHelpful: "Was this helpful?",
     helpful: "Helpful",
     notHelpful: "Not helpful",
     gladHelped: "Glad it helped",
@@ -265,12 +227,6 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negative",
     },
-    moments: {
-      positive: "Positive",
-      risk: "Risk",
-      action: "Action",
-      question: "Question",
-    } as Record<KeyMoment["type"], string>,
   },
   es: {
     recordingNotFound: "Grabación no encontrada.",
@@ -291,7 +247,18 @@ const COPY = {
     analysisUpdated: "Análisis actualizado",
     staleAnalysis: (t: string) =>
       `Este análisis se generó con el tipo «${t}» — reanaliza para actualizarlo.`,
-    analysisFocus: "Enfoque del análisis",
+    callScoreBreakdown: "Desglose de la puntuación",
+    callReview: "Revisión de la llamada",
+    yourAverage: "Tu media",
+    teamAverage: "Media del equipo",
+    whatWentWell: "Qué salió bien",
+    whatCanImprove: "Qué se puede mejorar",
+    noAnalysisTitle: "Sin análisis todavía",
+    noAnalysisDesc:
+      "Analiza esta llamada para ver su puntuación, un desglose detallado y comentarios de revisión.",
+    analyzeThisCall: "Analizar esta llamada",
+    expand: "Ampliar",
+    collapse: "Contraer",
     notesAdded: "Notas añadidas al CRM",
     addNotesToCrm: "Añadir notas al CRM",
     pause: "Pausar",
@@ -362,28 +329,12 @@ const COPY = {
     transcriptSpeakingTime: "Tiempo de conversación",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Saltar a ${speaker} en ${time}`,
-    notableQuotes: "Frases destacadas",
-    topicJumpHint: "Toca un tema para encontrarlo en la transcripción",
     transcript: "Transcripción",
-    keyMoments: "Momentos clave",
     participants: "Participantes",
     noTranscript: "No hay transcripción disponible para esta grabación.",
-    noKeyMoments: "No se capturaron momentos clave.",
     you: "Tú",
     prospect: "Prospecto",
     talkTime: "tiempo hablando",
-    callAnalysis: "Análisis de la llamada",
-    talkRatio: "Ratio de conversación",
-    talkRatioHintLabel: "¿Qué es el ratio de conversación?",
-    talkRatioHint:
-      "La proporción de la llamada en la que hablaste tú (el representante) frente al prospecto. Cuanto más bajo, mejor: deja que hablen.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Tú ${rep}% / Prospecto ${prospect}%`,
-    talkRatioHigh: "El ratio de conversación es alto: apunta a menos del 50 %.",
-    questionsAsked: "Preguntas realizadas",
-    longestMonologue: "Monólogo más largo",
-    avgResponseTime: "Tiempo medio de respuesta",
-    topicsDiscussed: "Temas tratados",
     objections: "Objeciones",
     actionItems: "Próximos pasos",
     markNotDone: "Marcar como pendiente",
@@ -391,12 +342,7 @@ const COPY = {
     completed: (label: string) => `Completada: ${label}`,
     tasksCreated: "Tareas creadas",
     createTasks: "Crear tareas",
-    coachingTips: "Consejos de coaching",
     personalityRead: "Análisis de personalidad",
-    rateThisAnalysis: "Valora este análisis",
-    rateStar: (n: number) => `Valorar con ${n} estrella${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Gracias por tu opinión",
-    wasHelpful: "¿Te resultó útil?",
     helpful: "Útil",
     notHelpful: "No útil",
     gladHelped: "Nos alegra que te ayudara",
@@ -407,12 +353,6 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Riesgo",
-      action: "Acción",
-      question: "Pregunta",
-    } as Record<KeyMoment["type"], string>,
   },
   it: {
     recordingNotFound: "Registrazione non trovata.",
@@ -433,7 +373,18 @@ const COPY = {
     analysisUpdated: "Analisi aggiornata",
     staleAnalysis: (t: string) =>
       `Questa analisi è stata generata con il tipo «${t}» — rianalizza per aggiornarla.`,
-    analysisFocus: "Focus dell'analisi",
+    callScoreBreakdown: "Dettaglio del punteggio",
+    callReview: "Revisione della chiamata",
+    yourAverage: "La tua media",
+    teamAverage: "Media del team",
+    whatWentWell: "Cosa è andato bene",
+    whatCanImprove: "Cosa si può migliorare",
+    noAnalysisTitle: "Nessuna analisi ancora",
+    noAnalysisDesc:
+      "Analizza questa chiamata per vedere il punteggio, un dettaglio per categoria e un riepilogo di revisione.",
+    analyzeThisCall: "Analizza questa chiamata",
+    expand: "Espandi",
+    collapse: "Comprimi",
     notesAdded: "Note aggiunte al CRM",
     addNotesToCrm: "Aggiungi note al CRM",
     pause: "Pausa",
@@ -504,28 +455,12 @@ const COPY = {
     transcriptSpeakingTime: "Tempo di parola",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Vai a ${speaker} a ${time}`,
-    notableQuotes: "Citazioni rilevanti",
-    topicJumpHint: "Clicca un argomento per trovarlo nella trascrizione",
     transcript: "Trascrizione",
-    keyMoments: "Momenti chiave",
     participants: "Partecipanti",
     noTranscript: "Nessuna trascrizione disponibile per questa registrazione.",
-    noKeyMoments: "Nessun momento chiave rilevato.",
     you: "Tu",
     prospect: "Prospect",
     talkTime: "di tempo di parola",
-    callAnalysis: "Analisi della chiamata",
-    talkRatio: "Rapporto di conversazione",
-    talkRatioHintLabel: "Cos'è il rapporto di conversazione?",
-    talkRatioHint:
-      "La quota della chiamata in cui hai parlato tu (il venditore) rispetto al prospect. Più basso è, meglio è — lascialo parlare.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Tu ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Il rapporto di conversazione è alto — punta a meno del 50%.",
-    questionsAsked: "Domande poste",
-    longestMonologue: "Monologo più lungo",
-    avgResponseTime: "Tempo medio di risposta",
-    topicsDiscussed: "Argomenti trattati",
     objections: "Obiezioni",
     actionItems: "Prossimi passi",
     markNotDone: "Segna come da fare",
@@ -533,12 +468,7 @@ const COPY = {
     completed: (label: string) => `Completato: ${label}`,
     tasksCreated: "Attività create",
     createTasks: "Crea attività",
-    coachingTips: "Consigli di coaching",
     personalityRead: "Profilo di personalità",
-    rateThisAnalysis: "Valuta questa analisi",
-    rateStar: (n: number) => `Valuta con ${n} stell${n > 1 ? "e" : "a"}`,
-    thanksFeedback: "Grazie per il feedback",
-    wasHelpful: "Ti è stato utile?",
     helpful: "Utile",
     notHelpful: "Non utile",
     gladHelped: "Felici che ti sia servito",
@@ -549,12 +479,6 @@ const COPY = {
       neutral: "Neutro",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Rischio",
-      action: "Azione",
-      question: "Domanda",
-    } as Record<KeyMoment["type"], string>,
   },
   fr: {
     recordingNotFound: "Enregistrement introuvable.",
@@ -575,7 +499,18 @@ const COPY = {
     analysisUpdated: "Analyse mise à jour",
     staleAnalysis: (t: string) =>
       `Cette analyse a été générée avec le type « ${t} » — relancez l'analyse pour l'actualiser.`,
-    analysisFocus: "Axes d'analyse",
+    callScoreBreakdown: "Détail du score",
+    callReview: "Bilan de l'appel",
+    yourAverage: "Votre moyenne",
+    teamAverage: "Moyenne de l'équipe",
+    whatWentWell: "Ce qui s'est bien passé",
+    whatCanImprove: "Ce qui peut être amélioré",
+    noAnalysisTitle: "Pas encore d'analyse",
+    noAnalysisDesc:
+      "Analysez cet appel pour obtenir son score, un détail par catégorie et un bilan.",
+    analyzeThisCall: "Analyser cet appel",
+    expand: "Développer",
+    collapse: "Réduire",
     notesAdded: "Notes ajoutées au CRM",
     addNotesToCrm: "Ajouter les notes au CRM",
     pause: "Pause",
@@ -646,28 +581,12 @@ const COPY = {
     transcriptSpeakingTime: "Temps de parole",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Aller à ${speaker} à ${time}`,
-    notableQuotes: "Citations marquantes",
-    topicJumpHint: "Cliquez sur un sujet pour le retrouver dans la transcription",
     transcript: "Transcription",
-    keyMoments: "Moments clés",
     participants: "Participants",
     noTranscript: "Aucune transcription disponible pour cet enregistrement.",
-    noKeyMoments: "Aucun moment clé capturé.",
     you: "Vous",
     prospect: "Prospect",
     talkTime: "de temps de parole",
-    callAnalysis: "Analyse de l'appel",
-    talkRatio: "Ratio de parole",
-    talkRatioHintLabel: "Qu'est-ce que le ratio de parole ?",
-    talkRatioHint:
-      "La part de l'appel pendant laquelle vous (le commercial) avez parlé par rapport au prospect. Plus c'est bas, mieux c'est — laissez-le parler.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Vous ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Le ratio de parole est élevé — visez moins de 50 %.",
-    questionsAsked: "Questions posées",
-    longestMonologue: "Monologue le plus long",
-    avgResponseTime: "Temps de réponse moyen",
-    topicsDiscussed: "Sujets abordés",
     objections: "Objections",
     actionItems: "Prochaines étapes",
     markNotDone: "Marquer comme à faire",
@@ -675,12 +594,7 @@ const COPY = {
     completed: (label: string) => `Terminé : ${label}`,
     tasksCreated: "Tâches créées",
     createTasks: "Créer les tâches",
-    coachingTips: "Conseils de coaching",
     personalityRead: "Profil de personnalité",
-    rateThisAnalysis: "Notez cette analyse",
-    rateStar: (n: number) => `Noter ${n} étoile${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Merci pour votre retour",
-    wasHelpful: "Cela vous a-t-il été utile ?",
     helpful: "Utile",
     notHelpful: "Pas utile",
     gladHelped: "Ravi que cela vous ait aidé",
@@ -691,12 +605,6 @@ const COPY = {
       neutral: "Neutre",
       negative: "Négatif",
     },
-    moments: {
-      positive: "Positif",
-      risk: "Risque",
-      action: "Action",
-      question: "Question",
-    } as Record<KeyMoment["type"], string>,
   },
   de: {
     recordingNotFound: "Aufzeichnung nicht gefunden.",
@@ -717,7 +625,18 @@ const COPY = {
     analysisUpdated: "Analyse aktualisiert",
     staleAnalysis: (t: string) =>
       `Diese Analyse wurde mit dem Typ „${t}“ erstellt — analysiere neu, um sie zu aktualisieren.`,
-    analysisFocus: "Analyse-Fokus",
+    callScoreBreakdown: "Score-Aufschlüsselung",
+    callReview: "Call-Review",
+    yourAverage: "Dein Durchschnitt",
+    teamAverage: "Team-Durchschnitt",
+    whatWentWell: "Was gut lief",
+    whatCanImprove: "Was verbessert werden kann",
+    noAnalysisTitle: "Noch keine Analyse",
+    noAnalysisDesc:
+      "Analysiere diesen Call, um Score, Aufschlüsselung und Review-Feedback zu sehen.",
+    analyzeThisCall: "Call analysieren",
+    expand: "Erweitern",
+    collapse: "Einklappen",
     notesAdded: "Notizen zum CRM hinzugefügt",
     addNotesToCrm: "Notizen zum CRM hinzufügen",
     pause: "Pause",
@@ -788,28 +707,12 @@ const COPY = {
     transcriptSpeakingTime: "Redezeit",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Zu ${speaker} bei ${time} springen`,
-    notableQuotes: "Markante Zitate",
-    topicJumpHint: "Klicke auf ein Thema, um es im Transkript zu finden",
     transcript: "Transkript",
-    keyMoments: "Schlüsselmomente",
     participants: "Teilnehmer",
     noTranscript: "Für diese Aufzeichnung ist kein Transkript verfügbar.",
-    noKeyMoments: "Keine Schlüsselmomente erfasst.",
     you: "Du",
     prospect: "Prospect",
     talkTime: "Redezeit",
-    callAnalysis: "Call-Analyse",
-    talkRatio: "Redeanteil",
-    talkRatioHintLabel: "Was ist der Redeanteil?",
-    talkRatioHint:
-      "Der Anteil des Calls, in dem du (der Rep) gesprochen hast, im Vergleich zum Prospect. Niedriger ist meist besser — lass ihn reden.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Du ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Der Redeanteil ist hoch — ziele auf unter 50 %.",
-    questionsAsked: "Gestellte Fragen",
-    longestMonologue: "Längster Monolog",
-    avgResponseTime: "Ø Antwortzeit",
-    topicsDiscussed: "Besprochene Themen",
     objections: "Einwände",
     actionItems: "Nächste Schritte",
     markNotDone: "Als offen markieren",
@@ -817,12 +720,7 @@ const COPY = {
     completed: (label: string) => `Erledigt: ${label}`,
     tasksCreated: "Aufgaben erstellt",
     createTasks: "Aufgaben erstellen",
-    coachingTips: "Coaching-Tipps",
     personalityRead: "Persönlichkeitsprofil",
-    rateThisAnalysis: "Bewerte diese Analyse",
-    rateStar: (n: number) => `Mit ${n} Stern${n > 1 ? "en" : ""} bewerten`,
-    thanksFeedback: "Danke für dein Feedback",
-    wasHelpful: "War das hilfreich?",
     helpful: "Hilfreich",
     notHelpful: "Nicht hilfreich",
     gladHelped: "Schön, dass es geholfen hat",
@@ -833,12 +731,6 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negativ",
     },
-    moments: {
-      positive: "Positiv",
-      risk: "Risiko",
-      action: "Aktion",
-      question: "Frage",
-    } as Record<KeyMoment["type"], string>,
   },
   pt: {
     recordingNotFound: "Gravação não encontrada.",
@@ -859,7 +751,18 @@ const COPY = {
     analysisUpdated: "Análise atualizada",
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo «${t}» — reanalise para a atualizar.`,
-    analysisFocus: "Foco da análise",
+    callScoreBreakdown: "Detalhe da pontuação",
+    callReview: "Revisão da chamada",
+    yourAverage: "A sua média",
+    teamAverage: "Média da equipa",
+    whatWentWell: "O que correu bem",
+    whatCanImprove: "O que pode ser melhorado",
+    noAnalysisTitle: "Ainda sem análise",
+    noAnalysisDesc:
+      "Analise esta chamada para ver a pontuação, um detalhe por categoria e feedback de revisão.",
+    analyzeThisCall: "Analisar esta chamada",
+    expand: "Expandir",
+    collapse: "Reduzir",
     notesAdded: "Notas adicionadas ao CRM",
     addNotesToCrm: "Adicionar notas ao CRM",
     pause: "Pausar",
@@ -930,28 +833,12 @@ const COPY = {
     transcriptSpeakingTime: "Tempo de conversa",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Saltar para ${speaker} em ${time}`,
-    notableQuotes: "Citações relevantes",
-    topicJumpHint: "Clique num tema para o encontrar na transcrição",
     transcript: "Transcrição",
-    keyMoments: "Momentos-chave",
     participants: "Participantes",
     noTranscript: "Não há transcrição disponível para esta gravação.",
-    noKeyMoments: "Não foram capturados momentos-chave.",
     you: "Você",
     prospect: "Prospect",
     talkTime: "do tempo de fala",
-    callAnalysis: "Análise da chamada",
-    talkRatio: "Rácio de conversa",
-    talkRatioHintLabel: "O que é o rácio de conversa?",
-    talkRatioHint:
-      "A parte da chamada em que você (o comercial) falou face ao prospect. Quanto mais baixo, melhor — deixe-o falar.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Você ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "O rácio de conversa está alto — aponte para menos de 50%.",
-    questionsAsked: "Perguntas feitas",
-    longestMonologue: "Monólogo mais longo",
-    avgResponseTime: "Tempo médio de resposta",
-    topicsDiscussed: "Temas abordados",
     objections: "Objeções",
     actionItems: "Próximos passos",
     markNotDone: "Marcar como pendente",
@@ -959,12 +846,7 @@ const COPY = {
     completed: (label: string) => `Concluído: ${label}`,
     tasksCreated: "Tarefas criadas",
     createTasks: "Criar tarefas",
-    coachingTips: "Dicas de coaching",
     personalityRead: "Perfil de personalidade",
-    rateThisAnalysis: "Avalie esta análise",
-    rateStar: (n: number) => `Avaliar com ${n} estrela${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Obrigado pelo feedback",
-    wasHelpful: "Isto foi útil?",
     helpful: "Útil",
     notHelpful: "Não útil",
     gladHelped: "Ainda bem que ajudou",
@@ -975,12 +857,6 @@ const COPY = {
       neutral: "Neutro",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Risco",
-      action: "Ação",
-      question: "Pergunta",
-    } as Record<KeyMoment["type"], string>,
   },
   pt_BR: {
     recordingNotFound: "Gravação não encontrada.",
@@ -1001,7 +877,18 @@ const COPY = {
     analysisUpdated: "Análise atualizada",
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo “${t}” — reanalise para atualizá-la.`,
-    analysisFocus: "Foco da análise",
+    callScoreBreakdown: "Detalhamento da pontuação",
+    callReview: "Revisão da ligação",
+    yourAverage: "Sua média",
+    teamAverage: "Média do time",
+    whatWentWell: "O que foi bem",
+    whatCanImprove: "O que pode melhorar",
+    noAnalysisTitle: "Ainda sem análise",
+    noAnalysisDesc:
+      "Analise esta ligação para ver a pontuação, um detalhamento por categoria e feedback de revisão.",
+    analyzeThisCall: "Analisar esta ligação",
+    expand: "Expandir",
+    collapse: "Recolher",
     notesAdded: "Notas adicionadas ao CRM",
     addNotesToCrm: "Adicionar notas ao CRM",
     pause: "Pausar",
@@ -1072,28 +959,12 @@ const COPY = {
     transcriptSpeakingTime: "Tempo de fala",
     transcriptSeekAria: (speaker: string, time: string) =>
       `Pular para ${speaker} em ${time}`,
-    notableQuotes: "Citações relevantes",
-    topicJumpHint: "Clique em um tópico para encontrá-lo na transcrição",
     transcript: "Transcrição",
-    keyMoments: "Momentos-chave",
     participants: "Participantes",
     noTranscript: "Nenhuma transcrição disponível para esta gravação.",
-    noKeyMoments: "Nenhum momento-chave capturado.",
     you: "Você",
     prospect: "Prospect",
     talkTime: "do tempo de fala",
-    callAnalysis: "Análise da ligação",
-    talkRatio: "Proporção de fala",
-    talkRatioHintLabel: "O que é a proporção de fala?",
-    talkRatioHint:
-      "A parte da ligação em que você (o representante) falou em comparação com o prospect. Quanto mais baixo, melhor — deixe o prospect falar.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Você ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "A proporção de fala está alta — mire em menos de 50%.",
-    questionsAsked: "Perguntas feitas",
-    longestMonologue: "Monólogo mais longo",
-    avgResponseTime: "Tempo médio de resposta",
-    topicsDiscussed: "Tópicos discutidos",
     objections: "Objeções",
     actionItems: "Próximos passos",
     markNotDone: "Marcar como pendente",
@@ -1101,12 +972,7 @@ const COPY = {
     completed: (label: string) => `Concluído: ${label}`,
     tasksCreated: "Tarefas criadas",
     createTasks: "Criar tarefas",
-    coachingTips: "Dicas de coaching",
     personalityRead: "Perfil de personalidade",
-    rateThisAnalysis: "Avalie esta análise",
-    rateStar: (n: number) => `Avaliar com ${n} estrela${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Obrigado pelo feedback",
-    wasHelpful: "Isso foi útil?",
     helpful: "Útil",
     notHelpful: "Não útil",
     gladHelped: "Que bom que ajudou",
@@ -1117,12 +983,6 @@ const COPY = {
       neutral: "Neutro",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Risco",
-      action: "Ação",
-      question: "Pergunta",
-    } as Record<KeyMoment["type"], string>,
   },
 } as const
 
@@ -1402,8 +1262,6 @@ export default function CoachRecordingDetail() {
     setIsPlaying((p) => !p)
   }
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
-  const [rating, setRating] = React.useState(0)
-  const [helpful, setHelpful] = React.useState<boolean | null>(null)
   const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
 
   if (!rec) {
@@ -1417,10 +1275,11 @@ export default function CoachRecordingDetail() {
 
   const sentiment = SENTIMENT[rec.sentiment]
   const SentimentIcon = sentiment.icon
-  const repRatio = rec.talkRatio
-  const prospectRatio = 100 - rec.talkRatio
   const scorecard = getScorecard(rec.id)
-  const quotes = scorecard.sections.filter((s) => s.quote)
+  // The rep who took this call, for the Call Score hero's "your average"
+  // comparison — this page treats the rep on the call as "you" throughout
+  // (see the Participants tab), regardless of which teammate it actually was.
+  const repAvgScore = coachTeam.find((r) => r.repId === rec.salesRepId)?.avgScore
 
   // The player stage: undefined mediaKind reads as "video" for back-compat
   // with any recording that predates this field.
@@ -1478,13 +1337,6 @@ export default function CoachRecordingDetail() {
       if (next[index]) toast.success(c.completed(label))
       return next
     })
-  }
-
-  // "See parts of conversations on specific topics" — jump the transcript to a
-  // topic keyword and switch to the tab where the transcript lives.
-  const jumpToTopic = (label: string) => {
-    setTranscriptQuery(label)
-    setTab("transcript")
   }
 
   const participantsCard = analysis?.participants &&
@@ -1546,78 +1398,6 @@ export default function CoachRecordingDetail() {
         </CardContent>
       </Card>
     )
-
-  const callMetricsCard = (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{c.callAnalysis}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="size-3.5" />
-              {c.talkRatio}
-              <InfoHint label={c.talkRatioHintLabel}>{c.talkRatioHint}</InfoHint>
-            </span>
-            <span className="font-medium tabular-nums">
-              {c.talkRatioSplit(repRatio, prospectRatio)}
-            </span>
-          </div>
-          <div className="bg-muted flex h-6 w-full overflow-hidden rounded-md">
-            <div
-              className="bg-primary h-full transition-all"
-              style={{ width: `${repRatio}%` }}
-            />
-            <div
-              className="bg-muted h-full transition-all"
-              style={{ width: `${prospectRatio}%` }}
-            />
-          </div>
-          {repRatio > 55 && (
-            <p className="text-muted-foreground mt-1 text-xs">
-              {c.talkRatioHigh}
-            </p>
-          )}
-        </div>
-
-        {analysis && (
-          <>
-            <Separator />
-            <div className="space-y-2.5 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <MessageCircleQuestion className="size-4" />
-                  {c.questionsAsked}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {analysis.questionsAsked}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Clock className="size-4" />
-                  {c.longestMonologue}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {analysis.longestMonologueMin} {c.min}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Timer className="size-4" />
-                  {c.avgResponseTime}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {analysis.patience}s
-                </span>
-              </div>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  )
 
   // Sourced from `rec.nextSteps` (a stable property of the recording) rather
   // than `analysis.actionItems` (which regenerates per re-analysis) — Next
@@ -1974,212 +1754,85 @@ export default function CoachRecordingDetail() {
         ) : (
         <>
         <TabsContent value="analysis">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
-              {/* What this call type's analysis scores — changes with the type. */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-1.5 text-base">
-                    <Sparkles className="text-primary size-4" />
-                    {c.analysisFocus} · {CALL_TYPE_META[analyzedType].label[locale]}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-1.5">
-                  {CALL_TYPE_META[analyzedType].focus[locale].map((f) => (
-                    <Badge key={f} variant="secondary" className="font-normal">
-                      {f}
-                    </Badge>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <CallScorecard scorecard={scorecard} />
-
-              {/* Notable quotes — verbatim, tagged by section */}
-              {quotes.length > 0 && (
+          {rec.analyzed && rec.scoreBreakdown && rec.scoreBreakdown.length > 0 ? (
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="space-y-6 lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">{c.notableQuotes}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {quotes.map((s) => (
-                      <blockquote
-                        key={s.label}
-                        className="border-muted-foreground/30 border-l-2 pl-3"
-                      >
-                        <p className="text-sm italic">“{s.quote}”</p>
-                        <p className="text-muted-foreground mt-1 text-xs">
-                          {s.label}
-                        </p>
-                      </blockquote>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-
-              {analysis && analysis.keyMoments.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">{c.keyMoments}</CardTitle>
+                    <CardTitle className="text-base">{c.callScore}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ol className="space-y-3">
-                      {analysis.keyMoments.map((moment, i) => {
-                        const style = MOMENT_STYLES[moment.type]
-                        return (
-                          <li
-                            key={`${moment.time}-${i}`}
-                            className="flex items-start gap-3"
-                          >
-                            <span className="text-muted-foreground mt-0.5 w-12 shrink-0 font-mono text-xs tabular-nums">
-                              {moment.time}
-                            </span>
-                            <span
-                              className={cn(
-                                "mt-1.5 size-2 shrink-0 rounded-full",
-                                style.dot
-                              )}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm">{moment.label}</p>
-                              <span
-                                className={cn(
-                                  "mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
-                                  style.badge
-                                )}
-                              >
-                                {c.moments[moment.type]}
-                              </span>
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ol>
+                    <div className="grid grid-cols-3 gap-4">
+                      <ScoreStat label={c.callScore} score={rec.score} />
+                      {repAvgScore !== undefined && (
+                        <ScoreStat label={c.yourAverage} score={repAvgScore} />
+                      )}
+                      <ScoreStat
+                        label={c.teamAverage}
+                        score={coachTeamAvg.score}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Ask precise questions about this call */}
-              <CallQaPanel recordingId={rec.id} />
-            </div>
-
-            <div className="space-y-6">
-              {callMetricsCard}
-
-              {/* Drill into specific topics — jumps the transcript */}
-              {analysis && analysis.topics.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">
-                      {c.topicsDiscussed}
+                      {c.callScoreBreakdown}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2.5">
-                    <p className="text-muted-foreground text-xs">
-                      {c.topicJumpHint}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {analysis.topics.map((topic) => (
-                        <button
-                          key={topic.label}
-                          type="button"
-                          onClick={() => jumpToTopic(topic.label)}
-                          className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors"
-                        >
-                          {topic.label}
-                          <span className="text-muted-foreground tabular-nums">
-                            {topic.pct}%
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {analysis && analysis.coachingTips.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <GraduationCap className="text-primary size-4" />
-                      {c.coachingTips}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {analysis.coachingTips.map((tip) => (
-                      <div
-                        key={tip}
-                        className="bg-primary/10 text-primary rounded px-3 py-2 text-sm font-medium"
-                      >
-                        {tip}
-                      </div>
+                  <CardContent className="space-y-3">
+                    {rec.scoreBreakdown.map((metric) => (
+                      <ScoreBreakdownRow key={metric.label} metric={metric} c={c} />
                     ))}
                   </CardContent>
                 </Card>
-              )}
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => {
-                          setRating(n)
-                          toast.success(c.thanksFeedback)
-                        }}
-                        aria-label={c.rateStar(n)}
-                      >
-                        <Star
-                          className={cn(
-                            "size-6 transition-colors",
-                            n <= rating
-                              ? "fill-chart-4 text-chart-4"
-                              : "text-muted-foreground/40"
-                          )}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-sm">
-                      {c.wasHelpful}
-                    </span>
-                    <div className="flex gap-1">
-                      <Button
-                        variant={helpful === true ? "default" : "outline"}
-                        size="icon"
-                        className="size-8"
-                        aria-label={c.helpful}
-                        onClick={() => {
-                          setHelpful(true)
-                          toast.success(c.gladHelped)
-                        }}
-                      >
-                        <ThumbsUp className="size-4" />
-                      </Button>
-                      <Button
-                        variant={helpful === false ? "default" : "outline"}
-                        size="icon"
-                        className="size-8"
-                        aria-label={c.notHelpful}
-                        onClick={() => {
-                          setHelpful(false)
-                          toast.info(c.willImprove)
-                        }}
-                      >
-                        <ThumbsDown className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                {rec.review && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">{c.callReview}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ReviewCallout
+                        icon={ThumbsUp}
+                        label={c.whatWentWell}
+                        text={rec.review.positiveFeedback}
+                        tone="good"
+                      />
+                      <ReviewCallout
+                        icon={ThumbsDown}
+                        label={c.whatCanImprove}
+                        text={rec.review.thingsToImprove}
+                        tone="improve"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <EmptyState
+              icon={<Sparkles className="size-8" />}
+              title={c.noAnalysisTitle}
+              description={c.noAnalysisDesc}
+            >
+              <Button
+                variant="volt"
+                onClick={() => runReanalysis(callType)}
+                disabled={analyzing}
+              >
+                {analyzing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {c.analyzeThisCall}
+              </Button>
+            </EmptyState>
+          )}
         </TabsContent>
 
         <TabsContent value="summary">
@@ -2414,6 +2067,128 @@ export default function CoachRecordingDetail() {
         </DialogContent>
       </Dialog>
     </Page>
+  )
+}
+
+// A single score in the Call Score hero — the call's own score, or one of
+// the comparison averages — using the same pill styling as the score badge
+// in the page header.
+function ScoreStat({ label, score }: { label: string; score: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1.5 rounded-lg border py-3 text-center">
+      <span
+        className={cn(
+          "rounded-full px-3 py-1 text-lg font-semibold tabular-nums",
+          scorePillClass(score)
+        )}
+      >
+        {score}
+      </span>
+      <span className="text-muted-foreground text-xs">{label}</span>
+    </div>
+  )
+}
+
+// One row of the Call Score Breakdown — a scored metric category with an
+// optional summary and, when present, expandable sub-metrics.
+function ScoreBreakdownRow({
+  metric,
+  c,
+}: {
+  metric: CoachScoreMetric
+  c: Copy
+}) {
+  const [open, setOpen] = React.useState(false)
+  const subMetrics = metric.subMetrics ?? []
+
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{metric.label}</p>
+          {metric.metricSummary && (
+            <p className="text-muted-foreground mt-1 text-xs">
+              {metric.metricSummary}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span
+            className={cn(
+              "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
+              scorePillClass(metric.metricScore)
+            )}
+          >
+            {metric.metricScore}
+          </span>
+          {subMetrics.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? c.collapse : c.expand}
+            >
+              <ChevronDown
+                className={cn("size-4 transition-transform", open && "rotate-180")}
+              />
+            </Button>
+          )}
+        </div>
+      </div>
+      {subMetrics.length > 0 && open && (
+        <div className="mt-3 space-y-1.5 border-t pt-3">
+          {subMetrics.map((sub) => (
+            <div
+              key={sub.label}
+              className="flex items-center justify-between text-sm"
+            >
+              <span className="text-muted-foreground">{sub.label}</span>
+              <span
+                className={cn(
+                  "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
+                  scorePillClass(sub.score)
+                )}
+              >
+                {sub.score}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// A "What went well" / "What can be improved" callout in Call Review.
+function ReviewCallout({
+  icon: Icon,
+  label,
+  text,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  text: string
+  tone: "good" | "improve"
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border p-3",
+        tone === "good"
+          ? "border-chart-1/30 bg-chart-1/5"
+          : "border-chart-4/30 bg-chart-4/5"
+      )}
+    >
+      <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+        <Icon
+          className={cn("size-4", tone === "good" ? "text-chart-1" : "text-chart-4")}
+        />
+        {label}
+      </div>
+      <p className="text-muted-foreground text-sm">{text}</p>
+    </div>
   )
 }
 
