@@ -201,6 +201,16 @@ export function computeLayout(
     depth = result.nextDepth
 
     if (opts.interactive) {
+      // A fork whose both tracks are still empty (just added the condition,
+      // no step in either arm yet) has no rejoin source at all — the two
+      // tracks' own empty-track ghosts are already the only "+" affordances
+      // that make sense here. Adding a third ghost below the fork with
+      // nothing feeding into it reads as an unattached, floating "+".
+      if (step.fork && result.rejoinSources.length === 0) {
+        pendingSources = []
+        return
+      }
+
       // "Add Step" ghost — sits right after this step (and its tracks),
       // doubling as the "insert here" affordance and, for the last step,
       // the trailing "append" button. Positioned halfway between this step
@@ -212,7 +222,15 @@ export function computeLayout(
       const ghostId = `add-after-${step.id}`
       const ghostOffset = step.parallelSteps?.length ? 0.1 : 0.5
       const ghostDepth = depth - ghostOffset
-      nodes.push(addNode(ghostId, ghostDepth, 0, { kind: "add", afterStepId: step.id }))
+      // Continuing past an unforked step implicitly means the prospect
+      // hasn't replied (a reply auto-pauses the campaign before it would
+      // ever reach here) — label the ordinary connector "No Reply" so that's
+      // explicit. A fork's own tracks carry their own condition labels
+      // instead, so skip it there.
+      const trackLabel: StepTrackKind | undefined = step.fork ? undefined : "no_reply"
+      nodes.push(
+        addNode(ghostId, ghostDepth, 0, { kind: "add", afterStepId: step.id, trackLabel })
+      )
       for (const src of result.rejoinSources) {
         edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
       }

@@ -28,7 +28,13 @@ interface ChannelCardCopy {
   description: string
 }
 
-const CONDITIONS: ConditionKind[] = ["reply", "open", "click", "accept", "read"]
+// "reply" is deliberately not offered here: a reply auto-pauses the
+// campaign (see the Sequence tab's "Auto-pauses the moment a prospect
+// replies" setting), so there's no "if they reply, keep going" track to
+// build — the ordinary unforked connector between two steps already means
+// "no reply yet," labeled as such in SequenceCanvas.
+type PickableCondition = Exclude<ConditionKind, "reply">
+const CONDITIONS: PickableCondition[] = ["open", "click", "accept", "read"]
 
 interface ConditionCardCopy {
   label: string
@@ -62,10 +68,6 @@ const COPY = {
       manual: { description: "Create a manual task for the rep." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "Replied",
-        description: "Splits the sequence based on whether they reply.",
-      },
       open: {
         label: "Opened",
         description: "Splits the sequence based on whether they open the message.",
@@ -82,7 +84,7 @@ const COPY = {
         label: "Read the message",
         description: "Splits the sequence based on whether they read the message.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
   es: {
     title: "Añadir un paso",
@@ -110,10 +112,6 @@ const COPY = {
       manual: { description: "Crea una tarea manual para el representante." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "Respondió",
-        description: "Divide la secuencia según si responden.",
-      },
       open: {
         label: "Abrió",
         description: "Divide la secuencia según si abren el mensaje.",
@@ -130,7 +128,7 @@ const COPY = {
         label: "Leyó el mensaje",
         description: "Divide la secuencia según si leen el mensaje.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
   it: {
     title: "Aggiungi un passaggio",
@@ -158,10 +156,6 @@ const COPY = {
       manual: { description: "Crea un'attività manuale per il commerciale." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "Ha risposto",
-        description: "Divide la sequenza a seconda che rispondano o no.",
-      },
       open: {
         label: "Ha aperto",
         description: "Divide la sequenza a seconda che aprano il messaggio.",
@@ -178,7 +172,7 @@ const COPY = {
         label: "Ha letto il messaggio",
         description: "Divide la sequenza a seconda che leggano il messaggio.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
   fr: {
     title: "Ajouter une étape",
@@ -206,10 +200,6 @@ const COPY = {
       manual: { description: "Créez une tâche manuelle pour le commercial." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "A répondu",
-        description: "Scinde la séquence selon qu'ils répondent ou non.",
-      },
       open: {
         label: "A ouvert",
         description: "Scinde la séquence selon qu'ils ouvrent le message ou non.",
@@ -226,7 +216,7 @@ const COPY = {
         label: "A lu le message",
         description: "Scinde la séquence selon qu'ils lisent le message ou non.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
   de: {
     title: "Schritt hinzufügen",
@@ -254,10 +244,6 @@ const COPY = {
       manual: { description: "Erstelle eine manuelle Aufgabe für den Vertriebsmitarbeiter." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "Geantwortet",
-        description: "Teilt die Sequenz danach, ob sie antworten.",
-      },
       open: {
         label: "Geöffnet",
         description: "Teilt die Sequenz danach, ob sie die Nachricht öffnen.",
@@ -274,7 +260,7 @@ const COPY = {
         label: "Nachricht gelesen",
         description: "Teilt die Sequenz danach, ob sie die Nachricht lesen.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
   pt: {
     title: "Adicionar um passo",
@@ -302,10 +288,6 @@ const COPY = {
       manual: { description: "Crie uma tarefa manual para o comercial." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "Respondeu",
-        description: "Divide a sequência consoante respondam ou não.",
-      },
       open: {
         label: "Abriu",
         description: "Divide a sequência consoante abram a mensagem ou não.",
@@ -322,7 +304,7 @@ const COPY = {
         label: "Leu a mensagem",
         description: "Divide a sequência consoante leiam a mensagem ou não.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
   pt_BR: {
     title: "Adicionar uma etapa",
@@ -350,10 +332,6 @@ const COPY = {
       manual: { description: "Crie uma tarefa manual para o representante." },
     } as Record<StepTypeKey, ChannelCardCopy>,
     conditions: {
-      reply: {
-        label: "Respondeu",
-        description: "Divide a sequência conforme respondam ou não.",
-      },
       open: {
         label: "Abriu",
         description: "Divide a sequência conforme abram a mensagem ou não.",
@@ -370,7 +348,7 @@ const COPY = {
         label: "Leu a mensagem",
         description: "Divide a sequência conforme leiam a mensagem ou não.",
       },
-    } as Record<ConditionKind, ConditionCardCopy>,
+    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
   },
 } as const
 
