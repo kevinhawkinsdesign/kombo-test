@@ -34,6 +34,7 @@ import {
 } from "@/lib/sequence-layout"
 import { stripHtml } from "@/lib/rich-text"
 import { useLocale } from "@/lib/locale"
+import { useReleaseMode } from "@/lib/release-mode"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
@@ -651,6 +652,7 @@ function TrackLabelPill({ kind }: { kind: StepTrackKind }) {
 function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const { isV1 } = useReleaseMode()
   const {
     step,
     selectedStepId,
@@ -668,8 +670,11 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   // A step is either a fork anchor or parallel-able, never both — keeps the
   // canvas geometry simple (no lane collisions between a wide parallel
   // cluster and fork-track lanes on the same row). Only top-level steps
-  // qualify, so anything inside a condition track is out.
-  const canAddParallel = interactive && !step.fork && !inTrack
+  // qualify, so anything inside a condition track is out. Parallel steps are
+  // v2-only (see lib/release-mode.ts) — the add affordance is hidden in v1,
+  // matching the hide-the-button precedent used elsewhere (e.g.
+  // WorkspaceDetail.tsx's `{!isV1 && <Button>Run</Button>}`).
+  const canAddParallel = interactive && !step.fork && !inTrack && !isV1
   const hasParallel = parallelSteps.length > 0
   // Every node in this diagram — plain steps, parallel groups, and the "+"
   // ghosts — shares the same lane x position (its wrapper's left edge), so
