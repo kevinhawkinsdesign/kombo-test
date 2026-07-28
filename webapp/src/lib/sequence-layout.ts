@@ -44,14 +44,19 @@ export function isPositiveTrack(kind: StepTrackKind): boolean {
   )
 }
 
-// Every edge is an arrow, so direction of travel is explicit. A fork's two
-// arms are color-coded — green for the met (Yes) arm, red for not-met —
-// while ordinary sequential edges stay neutral. `elbow` is set only for
-// edges that actually change lanes; same-lane edges stay perfectly
-// straight.
+// Every edge is smoothstep — same-lane edges render as a plain straight
+// line anyway, so a single type keeps every turn a consistent right angle
+// instead of mixing diagonals with elbows. A fork's two arms are
+// color-coded (green for the met/Yes arm, red for not-met); ordinary
+// sequential edges stay neutral.
+//
+// `toGhost` marks an edge landing on a "+" insertion affordance rather than
+// a real step. Those get NO arrowhead: the "+" sits ON the connector line,
+// so the line has to read as continuing through it — an arrow there would
+// wrongly read as "the sequence ends here."
 function edgeStyle(
   trackKind: StepTrackKind | undefined,
-  elbow: boolean
+  toGhost: boolean
 ): Pick<Edge, "type" | "style" | "markerEnd"> {
   const color = trackKind
     ? isPositiveTrack(trackKind)
@@ -59,9 +64,11 @@ function edgeStyle(
       : "var(--color-destructive)"
     : "var(--color-muted-foreground)"
   return {
-    type: elbow ? "smoothstep" : "straight",
+    type: "smoothstep",
     style: { stroke: color, strokeWidth: 2 },
-    markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
+    ...(toGhost
+      ? {}
+      : { markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 } }),
   }
 }
 
@@ -141,15 +148,13 @@ function layoutTrack(
       })
     )
     const source = prevId ?? forkStepId
-    // Only the first edge off the fork anchor can change lanes (and only
-    // for a "met" arm, which is the one that deviates) — give that one an
-    // elbow. Everything after is same-lane, so it stays perfectly straight.
-    const changesLane = !prevId && isPositiveTrack(trackLabel)
+    // Only the first edge off the fork anchor carries the arm's color — the
+    // rest of the track is an ordinary sequential run.
     edges.push({
       id: `${source}->${step.id}`,
       source,
       target: step.id,
-      ...edgeStyle(prevId ? undefined : trackLabel, changesLane),
+      ...edgeStyle(prevId ? undefined : trackLabel, false),
     })
     prevId = step.id
     depth += 1
@@ -202,16 +207,17 @@ function layoutTrack(
         ...(prevId ? {} : { trackLabel }),
       })
     )
-    // Only changes lanes when the track is still empty AND it's the arm
-    // that deviates — otherwise the ghost is already on the same lane as
-    // whatever feeds it.
-    const changesLane = !prevId && isPositiveTrack(trackLabel)
     edges.push({
       id: `${source}->${ghostId}`,
       source,
       target: ghostId,
-      ...edgeStyle(prevId ? undefined : trackLabel, changesLane),
+      ...edgeStyle(prevId ? undefined : trackLabel, true),
     })
+    // Reserve the row the ghost occupies. Without this the fork's own merge
+    // ghost lands at the exact same coordinates as the DEFAULT arm's
+    // trailing ghost (both sit on the parent lane now that the not-met arm
+    // stays centered), stacking two "+" buttons on top of each other.
+    depth += 0.5
   }
   return { nodes, edges, endDepth: depth, rejoinSources: prevId ? [prevId] : [] }
 }
@@ -367,11 +373,7 @@ export function computeLayout(
           id: `${src}->${ghostId}`,
           source: src,
           target: ghostId,
-          // Only a forked step can have a rejoin source on a deviated lane
-          // (its "met" arm). The default arm and any unforked step are
-          // already on the ghost's own lane, where an elbow renders as a
-          // straight line anyway.
-          ...edgeStyle(undefined, Boolean(step.fork)),
+          ...edgeStyle(undefined, true),
         })
       }
       pendingSources = [ghostId]
