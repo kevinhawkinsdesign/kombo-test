@@ -9,6 +9,9 @@ export interface CustomFolder {
   id: string
   name: string
   conversationIds: string[]
+  // Tasks are members of a folder the same way conversations are — added/
+  // removed by hand via the same "Add to folder" menu, now on task rows too.
+  taskIds: string[]
   createdAt: string
 }
 
@@ -17,7 +20,13 @@ const KEY = "kombo_inbox_folders_v1"
 function load(): CustomFolder[] {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as CustomFolder[]
+    // Folders saved before `taskIds` existed won't have it — default to []
+    // rather than crashing on the missing array.
+    if (raw)
+      return (JSON.parse(raw) as CustomFolder[]).map((f) => ({
+        ...f,
+        taskIds: f.taskIds ?? [],
+      }))
   } catch {
     /* ignore malformed storage */
   }
@@ -48,6 +57,7 @@ export const customFolderStore = {
       id: uid(),
       name,
       conversationIds: [],
+      taskIds: [],
       createdAt: new Date().toISOString(),
     }
     state = [...state, folder]
@@ -71,6 +81,20 @@ export const customFolderStore = {
       f.id === id
         ? { ...f, conversationIds: f.conversationIds.filter((c) => c !== conversationId) }
         : f
+    )
+    emit()
+  },
+  addTask(id: string, taskId: string): void {
+    state = state.map((f) =>
+      f.id === id && !f.taskIds.includes(taskId)
+        ? { ...f, taskIds: [...f.taskIds, taskId] }
+        : f
+    )
+    emit()
+  },
+  removeTask(id: string, taskId: string): void {
+    state = state.map((f) =>
+      f.id === id ? { ...f, taskIds: f.taskIds.filter((t) => t !== taskId) } : f
     )
     emit()
   },

@@ -501,6 +501,13 @@ export const taskStore = {
   remove(id: string): void {
     setState({ tasks: state.tasks.filter((t) => t.id !== id) })
   },
+  // Mirrors conversationStore.setStatus — same enum, same "Set Outcome" UI,
+  // now on task rows too.
+  setStatus(id: string, status: ConvStatus | undefined): void {
+    setState({
+      tasks: state.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
+    })
+  },
   toggle(id: string): void {
     const task = state.tasks.find((t) => t.id === id)
     setState({

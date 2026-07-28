@@ -1713,9 +1713,12 @@ export default function Inbox() {
   }
   const [newFolderOpen, setNewFolderOpen] = React.useState(false)
   const [newFolderName, setNewFolderName] = React.useState("")
-  // Set only when the dialog was opened from a conversation's "Add to
-  // folder" menu, so the new folder picks that conversation up immediately.
+  // Set only when the dialog was opened from a conversation's or task's "Add
+  // to folder" menu, so the new folder picks that record up immediately.
   const [newFolderForConvId, setNewFolderForConvId] = React.useState<string | undefined>(
+    undefined
+  )
+  const [newFolderForTaskId, setNewFolderForTaskId] = React.useState<string | undefined>(
     undefined
   )
   const [newFolderWasOpen, setNewFolderWasOpen] = React.useState(newFolderOpen)
@@ -1862,6 +1865,21 @@ export default function Inbox() {
     [query]
   )
 
+  // Same search matching as matchesSearch, for tasks — used by both the "My
+  // Tasks" row list and the Folder/Outcome task section below.
+  const taskMatchesSearch = React.useCallback(
+    (t: Task): boolean => {
+      if (!query.trim()) return true
+      const p = t.prospectId ? getProspect(t.prospectId) : undefined
+      const hay = [t.title, p?.firstName, p?.lastName, p?.company]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+      return hay.includes(query.trim().toLowerCase())
+    },
+    [query]
+  )
+
   // Which campaign(s) a prospect is enrolled in, at any status — Conversation
   // has no direct campaignId, so this is the same enrollment lookup already
   // used above for the "next sequence step" timeline preview.
@@ -1983,6 +2001,26 @@ export default function Inbox() {
     matchesSearch,
   ])
 
+  // Tasks that belong to the Folder currently being browsed — rendered as a
+  // second section below `list`'s matching conversations (see the render
+  // below), so a Folder view shows everything tagged into it, not just
+  // conversations. Empty for every other view kind ("My Tasks" already
+  // renders task rows directly via filteredTaskRows). Scoped like
+  // conversations are: any owner, excluding done/ignored tasks — the same
+  // way archived conversations are excluded outside the Archived folder.
+  const matchingTaskRows = React.useMemo(() => {
+    if (view.kind !== "custom") return []
+    const openTasks = tasks.filter((t) => !t.done && !t.ignored)
+    const inView = openTasks.filter((t) => {
+      const folder = customFolders.find((f) => f.id === view.id)
+      return folder?.taskIds.includes(t.id) ?? false
+    })
+    return inView
+      .filter(taskMatchesSearch)
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+  }, [tasks, view, customFolders, taskMatchesSearch])
+
+
   // True whenever the current view renders task rows instead of the
   // conversation `list` — the old "My Tasks" folder, or any Tasks-tab
   // quickview (all of which filter `myTaskRows`, not conversations).
@@ -2091,7 +2129,9 @@ export default function Inbox() {
         : view.id === "follow_ups"
           ? c.tabFollowups
           : c[FOLDERS.find((f) => f.id === view.id)!.key]
-  const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
+  const viewCount = isMyTasksView
+    ? filteredTaskRows.length
+    : list.length + matchingTaskRows.length
   const filtersActive =
     channelFilter !== "all" ||
     unreadOnly ||
@@ -2115,8 +2155,9 @@ export default function Inbox() {
     if (!effectiveActive || !snoozeCustomValue) return
     snoozeConversation(effectiveActive.id, new Date(snoozeCustomValue).toISOString())
   }
-  function openNewFolder(forConvId?: string) {
-    setNewFolderForConvId(forConvId)
+  function openNewFolder(forRecord?: { convId?: string; taskId?: string }) {
+    setNewFolderForConvId(forRecord?.convId)
+    setNewFolderForTaskId(forRecord?.taskId)
     setNewFolderOpen(true)
   }
   function confirmNewFolder() {
@@ -2124,6 +2165,7 @@ export default function Inbox() {
     if (!name) return
     const created = customFolderStore.create(name)
     if (newFolderForConvId) customFolderStore.addConversation(created.id, newFolderForConvId)
+    if (newFolderForTaskId) customFolderStore.addTask(created.id, newFolderForTaskId)
     toast.success(c.folderCreated)
     setNewFolderOpen(false)
   }
@@ -2167,6 +2209,149 @@ export default function Inbox() {
   function openTaskConversation(task: Task) {
     const conv = conversations.find((c) => c.prospectId === task.prospectId)
     if (conv) openConversation(conv.id)
+  }
+  // Shared task-row renderer — used for the "My Tasks" tab views and for the
+  // Tasks section that appears under a Folder/Outcome view once a task has
+  // that folder membership or outcome. Mirrors the conversation thread's
+  // "..." menu (Set Outcome / Add to folder), just anchored to the row
+  // instead of the open thread, since tasks have no open-thread equivalent.
+  function renderTaskRow(task: Task) {
+    const p = task.prospectId ? getProspect(task.prospectId) : undefined
+    const Icon = TASK_TYPE_ICON[task.type as TaskType] ?? ListTodo
+    const isActive = Boolean(effectiveActive && task.prospectId === effectiveActive.prospectId)
+    return (
+      <div
+        key={task.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => openTaskConversation(task)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") openTaskConversation(task)
+        }}
+        className={cn(
+          "relative flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors",
+          isActive ? "bg-muted/60" : "hover:bg-muted/40"
+        )}
+      >
+        {isActive && <span className="bg-primary absolute inset-y-0 left-0 w-0.5" />}
+        <div className="flex shrink-0 items-center" onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={task.done}
+            onCheckedChange={() => taskStore.toggle(task.id)}
+            aria-label="Mark task done"
+          />
+        </div>
+        <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
+          <Icon className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{task.title}</p>
+          {p && (
+            <p className="text-muted-foreground truncate text-xs">
+              {p.firstName} {p.lastName} · {p.company}
+            </p>
+          )}
+          {task.status && (
+            <div className="mt-1">
+              <StatusBadge status={task.status} locale={locale} />
+            </div>
+          )}
+        </div>
+        <span className="text-muted-foreground shrink-0 text-xs">
+          {formatDueAt(task.dueDate)}
+        </span>
+        <div className="flex shrink-0 items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-7" aria-label={c.more}>
+                <MoreHorizontal className="size-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Tag className="size-4" />
+                  {c.setStatus}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {STATUS_ORDER.map((s) => (
+                    <DropdownMenuItem
+                      key={s}
+                      onClick={() => {
+                        taskStore.setStatus(task.id, s)
+                        toast.success(c.statusToast(STATUS_META[s][locale === "es" ? "es" : "en"]))
+                      }}
+                    >
+                      <span className={cn("size-2 rounded-full", STATUS_META[s].dot)} />
+                      {STATUS_META[s][locale === "es" ? "es" : "en"]}
+                      {task.status === s && <Check className="ml-auto size-4" />}
+                    </DropdownMenuItem>
+                  ))}
+                  {task.status && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          taskStore.setStatus(task.id, undefined)
+                          toast.success(c.statusClearedToast)
+                        }}
+                      >
+                        <X className="size-4" />
+                        {c.clearStatus}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <FolderIcon className="size-4" />
+                  {c.addToFolder}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {customFolders.length === 0 ? (
+                    <DropdownMenuItem disabled>{c.noFolders}</DropdownMenuItem>
+                  ) : (
+                    customFolders.map((folder) => {
+                      const inFolder = folder.taskIds.includes(task.id)
+                      return (
+                        <DropdownMenuItem
+                          key={folder.id}
+                          onClick={() =>
+                            inFolder
+                              ? customFolderStore.removeTask(folder.id, task.id)
+                              : customFolderStore.addTask(folder.id, task.id)
+                          }
+                        >
+                          <FolderIcon className="size-4" />
+                          <span className="flex-1 truncate">{folder.name}</span>
+                          {inFolder && <Check className="size-4" />}
+                        </DropdownMenuItem>
+                      )
+                    })
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => openNewFolder({ taskId: task.id })}>
+                    <Plus className="size-4" />
+                    {c.newFolder}
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            aria-label={c.editTask}
+            title={c.editTask}
+            onClick={() => setEditingTask(task)}
+          >
+            <Pencil className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
   }
   function toggleTranslation(id: string) {
     setShownTranslations((prev) => {
@@ -2381,7 +2566,9 @@ export default function Inbox() {
             <div className="space-y-0.5">
               {customFolders.map((folder) => {
                 const activeFolder = view.kind === "custom" && view.id === folder.id
-                const count = visible.filter((x) => folder.conversationIds.includes(x.id)).length
+                const count =
+                  visible.filter((x) => folder.conversationIds.includes(x.id)).length +
+                  tasks.filter((t) => !t.done && !t.ignored && folder.taskIds.includes(t.id)).length
                 return (
                   <div key={folder.id} className="group flex items-center gap-0.5">
                     <button
@@ -2603,77 +2790,16 @@ export default function Inbox() {
                 <p className="text-sm">{c.emptyHintTasks}</p>
               </div>
             ) : (
-              filteredTaskRows.map((task) => {
-                const p = task.prospectId ? getProspect(task.prospectId) : undefined
-                const Icon = TASK_TYPE_ICON[task.type as TaskType] ?? ListTodo
-                const isActive = Boolean(
-                  effectiveActive && task.prospectId === effectiveActive.prospectId
-                )
-                return (
-                  <div
-                    key={task.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openTaskConversation(task)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") openTaskConversation(task)
-                    }}
-                    className={cn(
-                      "relative flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors",
-                      isActive ? "bg-muted/60" : "hover:bg-muted/40"
-                    )}
-                  >
-                    {isActive && (
-                      <span className="bg-primary absolute inset-y-0 left-0 w-0.5" />
-                    )}
-                    <div
-                      className="flex shrink-0 items-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Checkbox
-                        checked={task.done}
-                        onCheckedChange={() => taskStore.toggle(task.id)}
-                        aria-label="Mark task done"
-                      />
-                    </div>
-                    <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
-                      <Icon className="size-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{task.title}</p>
-                      {p && (
-                        <p className="text-muted-foreground truncate text-xs">
-                          {p.firstName} {p.lastName} · {p.company}
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-muted-foreground shrink-0 text-xs">
-                      {formatDueAt(task.dueDate)}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 shrink-0"
-                      aria-label={c.editTask}
-                      title={c.editTask}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEditingTask(task)
-                      }}
-                    >
-                      <Pencil className="size-3.5" />
-                    </Button>
-                  </div>
-                )
-              })
+              filteredTaskRows.map(renderTaskRow)
             )
-          ) : list.length === 0 ? (
+          ) : list.length === 0 && matchingTaskRows.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center gap-2 p-10 text-center">
               <InboxIcon className="size-6 opacity-50" />
               <p className="text-sm">{c.emptyHint}</p>
             </div>
           ) : (
-            list.map((conv) => {
+            <>
+            {list.map((conv) => {
               const p = getProspect(conv.prospectId)
               if (!p) return null
               const last = lastMessage(conv)
@@ -2783,7 +2909,16 @@ export default function Inbox() {
                   )}
                 </div>
               )
-            })
+            })}
+            {matchingTaskRows.length > 0 && (
+              <>
+                <div className="bg-muted/30 text-muted-foreground border-b px-4 py-1.5 text-xs font-semibold tracking-wide uppercase">
+                  {c.tabTasks}
+                </div>
+                {matchingTaskRows.map(renderTaskRow)}
+              </>
+            )}
+            </>
           )}
         </div>
 
@@ -3096,7 +3231,7 @@ export default function Inbox() {
                       })
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => openNewFolder(effectiveActive.id)}>
+                    <DropdownMenuItem onClick={() => openNewFolder({ convId: effectiveActive.id })}>
                       <Plus className="size-4" />
                       {c.newFolder}
                     </DropdownMenuItem>

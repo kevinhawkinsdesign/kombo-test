@@ -689,6 +689,10 @@ export interface Task {
   // What created it. Undefined reads as "user" (everything pre-dating this
   // field was created by hand in the app).
   source?: TaskSource
+  // Outcome the task has been tagged with — same fixed enum and "Set
+  // Outcome" UI as Conversation.status, so a task can carry the same
+  // funnel signal a conversation can.
+  status?: ConvStatus
   // Arbitrary caller-defined fields (see CustomMetadata).
   metadata?: CustomMetadata
 }
