@@ -12,7 +12,7 @@ import {
   type NodeTypes,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import { AlertTriangle, ListTodo, Plus, Split } from "lucide-react"
+import { AlertTriangle, Clock, ListTodo, Plus, Split } from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
 import {
@@ -304,6 +304,10 @@ interface StepNodeExtraData extends StepNodeData {
   // True while a dragged step is currently hovering this node as a
   // candidate parallel-attach target.
   isDropTarget?: boolean
+  // Cosmetic only — every card shows the same campaign-level sender, since
+  // there's no per-step sending identity in the data model. Undefined hides
+  // the avatar entirely rather than showing a placeholder.
+  senderLabel?: string
 }
 
 // Invisible anchor points — nodesConnectable is false everywhere this canvas
@@ -311,6 +315,19 @@ interface StepNodeExtraData extends StepNodeData {
 // Handle, React Flow can't compute a connection point and silently drops
 // the edge (no line, no console error visible to the user).
 const HANDLE_CLASS = "invisible !size-0 !min-w-0 !border-0"
+
+// A track is either the "condition met" or "condition not met" arm of a
+// fork — met arms get the same positive (green) treatment as this app's
+// other reply-rate-style indicators (text-chart-1), not-met arms the same
+// negative treatment as its destructive/error indicators.
+function isPositiveTrack(kind: StepTrackKind): boolean {
+  return kind === "reply" || kind === "opened" || kind === "clicked" || kind === "accepted" || kind === "read"
+}
+
+function initialsOf(label: string): string {
+  const parts = label.trim().split(/\s+/)
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase()
+}
 
 // The plain channel label ("LinkedIn message") doesn't distinguish a
 // Connect/View Profile/Voice Message/Like Post step from a regular one —
@@ -332,12 +349,14 @@ function StepCard({
   selected,
   interactive,
   isDropTarget,
+  senderLabel,
   onClick,
 }: {
   step: CampaignStep
   selected: boolean
   interactive: boolean
   isDropTarget?: boolean
+  senderLabel?: string
   onClick?: (step: CampaignStep) => void
 }) {
   const { locale } = useLocale()
@@ -354,7 +373,7 @@ function StepCard({
       onClick={() => onClick?.(step)}
       style={{ width: 240 }}
       className={cn(
-        "bg-card flex shrink-0 items-center gap-2.5 rounded-xl border p-3 text-left shadow-sm transition-colors",
+        "bg-card flex shrink-0 flex-col overflow-hidden rounded-xl border text-left shadow-sm transition-colors",
         isDropTarget
           ? "border-primary bg-primary/10 ring-primary/30 ring-2"
           : selected
@@ -362,47 +381,88 @@ function StepCard({
             : interactive && "hover:bg-muted/40"
       )}
     >
-      <span
-        className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-lg",
-          meta.tint
-        )}
-      >
-        <meta.Icon className="size-4" />
-      </span>
-      <div className="min-w-0 flex-1 space-y-1">
-        <p className="truncate text-sm font-medium">
-          {stepTitle(c, step)}
-        </p>
-        <p className="text-muted-foreground truncate text-xs">
-          {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
-        </p>
-        {(step.isManualTask || needsAction) && (
-          <div className="flex flex-wrap gap-1 pt-0.5">
-            {step.isManualTask && (
-              <span className="bg-secondary text-secondary-foreground flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
-                <ListTodo className="size-3" />
-                {c.manualTaskBadge}
-              </span>
-            )}
-            {needsAction && (
-              <span className="bg-destructive/15 text-destructive flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
-                <AlertTriangle className="size-3" />
-                {c.actionNeeded}
-              </span>
-            )}
-          </div>
+      {/* Timing header — its own row, separate from the step content below,
+          so the delay reads as metadata about when this fires rather than
+          part of the step's own title. */}
+      <div className="bg-muted/50 text-muted-foreground flex items-center gap-1.5 border-b px-3 py-1.5 text-xs">
+        <Clock className="size-3 shrink-0" />
+        {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
+      </div>
+
+      <div className="flex items-center gap-2.5 p-3">
+        <span
+          className={cn(
+            "flex size-8 shrink-0 items-center justify-center rounded-lg",
+            meta.tint
+          )}
+        >
+          <meta.Icon className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="truncate text-sm font-medium">
+            {stepTitle(c, step)}
+          </p>
+          {(step.isManualTask || needsAction) && (
+            <div className="flex flex-wrap gap-1">
+              {step.isManualTask && (
+                <span className="bg-secondary text-secondary-foreground flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
+                  <ListTodo className="size-3" />
+                  {c.manualTaskBadge}
+                </span>
+              )}
+              {needsAction && (
+                <span className="bg-destructive/15 text-destructive flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]">
+                  <AlertTriangle className="size-3" />
+                  {c.actionNeeded}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        {senderLabel && (
+          <span
+            className="bg-primary/15 text-primary flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
+            title={senderLabel}
+          >
+            {initialsOf(senderLabel)}
+          </span>
         )}
       </div>
     </button>
   )
 }
 
+function TrackLabelPill({ kind }: { kind: StepTrackKind }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const positive = isPositiveTrack(kind)
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
+        positive
+          ? "bg-chart-1/15 text-chart-1 border-chart-1/30"
+          : "bg-destructive/10 text-destructive border-destructive/25"
+      )}
+    >
+      {c.trackLabel[kind]}
+    </span>
+  )
+}
+
 function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const { step, selectedStepId, interactive, onClick, trackLabel, onAddParallel, isDropTarget } =
-    data
+  const {
+    step,
+    selectedStepId,
+    interactive,
+    onClick,
+    trackLabel,
+    onAddParallel,
+    isDropTarget,
+    senderLabel,
+  } = data
   const parallelSteps = step.parallelSteps ?? []
   // A step is either a fork anchor or parallel-able, never both — keeps the
   // canvas geometry simple (no lane collisions between a wide parallel
@@ -439,6 +499,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
         selected={step.id === selectedStepId}
         interactive={interactive}
         isDropTarget={isDropTarget}
+        senderLabel={senderLabel}
         onClick={onClick}
       />
       {parallelSteps.map((p) => (
@@ -448,6 +509,7 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
           selected={p.id === selectedStepId}
           interactive={interactive}
           isDropTarget={isDropTarget}
+          senderLabel={senderLabel}
           onClick={onClick}
         />
       ))}
@@ -486,9 +548,9 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
         className={HANDLE_CLASS}
       />
       {trackLabel && (
-        <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
-          {c.trackLabel[trackLabel]}
-        </span>
+        <div className="flex justify-center">
+          <TrackLabelPill kind={trackLabel} />
+        </div>
       )}
       {hasParallel ? (
         <div className="flex items-stretch gap-2">
@@ -530,11 +592,7 @@ function AddNodeComponent({
 
   return (
     <div className="flex flex-col items-center gap-1">
-      {data.trackLabel && (
-        <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium">
-          {c.trackLabel[data.trackLabel]}
-        </span>
-      )}
+      {data.trackLabel && <TrackLabelPill kind={data.trackLabel} />}
       <div style={{ width: 240 }} className="flex justify-center">
         <Handle type="target" position={Position.Top} className={HANDLE_CLASS} />
         <button
@@ -570,6 +628,10 @@ interface SequenceCanvasProps {
   onAddParallel?: (step: CampaignStep) => void
   onMoveStep?: (stepId: string, target: MoveTarget) => void
   className?: string
+  // Cosmetic only — shown as a small avatar on every step card. There's no
+  // per-step sending identity in the data model, so this is typically the
+  // campaign's single sender account, not something that varies per step.
+  senderLabel?: string
 }
 
 export function SequenceCanvas(props: SequenceCanvasProps) {
@@ -592,6 +654,7 @@ function SequenceCanvasInner({
   onAddParallel,
   onMoveStep,
   className,
+  senderLabel,
 }: SequenceCanvasProps) {
   const interactive = mode === "interactive"
   const { getIntersectingNodes } = useReactFlow()
@@ -617,6 +680,7 @@ function SequenceCanvasInner({
             interactive,
             onClick: (step: CampaignStep) => onSelectStep?.(step.id),
             onAddParallel,
+            senderLabel,
           } satisfies StepNodeExtraData,
         }
       }
@@ -629,7 +693,7 @@ function SequenceCanvasInner({
       }
     })
     return { nodes, edges: layout.edges }
-  }, [steps, interactive, selectedStepId, onSelectStep, onAddRequest, onAddParallel])
+  }, [steps, interactive, selectedStepId, onSelectStep, onAddRequest, onAddParallel, senderLabel])
 
   // A separate highlight pass so dragging doesn't force the layout memo
   // above (and the whole node/edge tree) to recompute on every pointer move.

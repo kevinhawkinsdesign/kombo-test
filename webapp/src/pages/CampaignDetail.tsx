@@ -3016,6 +3016,7 @@ export default function CampaignDetail() {
                   setStepPickerOpen(true)
                 }}
                 onMoveStep={(id, target) => draft.moveStepToTarget(id, target)}
+                senderLabel={campaign.senderAccount}
               />
             </div>
 

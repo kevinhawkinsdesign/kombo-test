@@ -1154,7 +1154,11 @@ function OutreachPanel({
         <SequenceCostSummary steps={campaign.steps} />
       </div>
       <div className="mt-3">
-        <SequenceCanvas steps={campaign.steps} mode="readonly" />
+        <SequenceCanvas
+          steps={campaign.steps}
+          mode="readonly"
+          senderLabel={campaign.senderAccount}
+        />
       </div>
     </div>
   )

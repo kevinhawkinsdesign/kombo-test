@@ -92,7 +92,16 @@ function layoutTrack(
   steps.forEach((step) => {
     nodes.push(stepNode(step, depth, lane, { trackLabel }))
     const source = prevId ?? forkStepId
-    edges.push({ id: `${source}->${step.id}`, source, target: step.id })
+    // Only the edge straight off the fork anchor actually changes lanes
+    // (anchor sits at the fork's own lane, this step at the track's offset
+    // one) — give it an elbow instead of a diagonal. Every edge after that
+    // is already same-lane, so it stays a plain straight line.
+    edges.push({
+      id: `${source}->${step.id}`,
+      source,
+      target: step.id,
+      ...(prevId ? {} : { type: "smoothstep" }),
+    })
     prevId = step.id
     depth += 1
   })
@@ -116,7 +125,7 @@ function layoutTrack(
         addNode(ghostId, ghostDepth, lane, { kind: "add", afterStepId: lastStep.id, trackLabel })
       )
       for (const src of nested.rejoinSources) {
-        edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
+        edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId, type: "smoothstep" })
       }
       depth = ghostDepth + GHOST_TRAILING_GAP
     }
@@ -137,7 +146,15 @@ function layoutTrack(
         trackLabel,
       })
     )
-    edges.push({ id: `${source}->${ghostId}`, source, target: ghostId })
+    // Only diagonal (lane-changing) when the track is still empty, so the
+    // ghost hangs directly off the fork anchor rather than off a same-lane
+    // step of its own.
+    edges.push({
+      id: `${source}->${ghostId}`,
+      source,
+      target: ghostId,
+      ...(prevId ? {} : { type: "smoothstep" }),
+    })
   }
   return { nodes, edges, endDepth: depth, rejoinSources: prevId ? [prevId] : [] }
 }
@@ -280,7 +297,15 @@ export function computeLayout(
         addNode(ghostId, ghostDepth, 0, { kind: "add", afterStepId: step.id, trackLabel })
       )
       for (const src of result.rejoinSources) {
-        edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
+        edges.push({
+          id: `${src}->${ghostId}`,
+          source: src,
+          target: ghostId,
+          // Rejoin sources sit at offset lanes only when this step forked —
+          // an unforked step's single rejoin source (itself) is already at
+          // lane 0, same as the ghost, so it stays a plain straight line.
+          ...(step.fork ? { type: "smoothstep" } : {}),
+        })
       }
       pendingSources = [ghostId]
       // Old behavior reserved a full extra row (depth += 1) past the ghost
