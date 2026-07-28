@@ -1270,17 +1270,25 @@ export function AddRecordsDialog({
       <DialogContent
         showCloseButton
         fullScreen
-        // A nested Dialog (Columns/AddCostConfirm/save-search-name) portals to
-        // document.body just like this one, so by DOM containment a click
-        // inside it always reads as "outside" this dialog's content to
-        // Radix — without this it dismisses the whole Add modal (and the
-        // search/filters under it) instead of just the nested one. Pointer
-        // clicks landing inside another dialog-content are ignored; losing
-        // focus to the nested dialog isn't a "click outside" at all, so
-        // that path is ignored unconditionally.
+        // Nested Radix primitives (a Dialog like Columns/AddCostConfirm/
+        // save-search-name, but also the Sort DropdownMenu, database-picker
+        // DropdownMenu, and any Select/Popover) all portal to document.body
+        // just like this one — by DOM containment their content is a
+        // *sibling* of this dialog-content, never a descendant, so Radix's
+        // own outside-click check can't tell a click inside one of them from
+        // a genuine click outside this dialog. Without checking every one of
+        // those portaled-content slots here, clicking a dropdown/select/
+        // popover's trigger or item can dismiss the whole Add modal (and the
+        // search/filters under it) instead of just closing that one popover.
         onPointerDownOutside={(e) => {
           const target = e.detail.originalEvent.target as Element | null
-          if (target?.closest('[data-slot="dialog-content"]')) e.preventDefault()
+          if (
+            target?.closest(
+              '[data-slot="dialog-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"], [data-slot="popover-content"]'
+            )
+          ) {
+            e.preventDefault()
+          }
         }}
         onFocusOutside={(e) => e.preventDefault()}
       >
