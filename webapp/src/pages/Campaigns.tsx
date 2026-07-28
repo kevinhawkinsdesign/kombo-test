@@ -78,6 +78,8 @@ const COPY = {
     campaignOptions: "Campaign options",
     editSequence: "Edit sequence",
     duplicate: "Duplicate",
+    exportRecord: "Export",
+    exportedOne: (name: string) => `${name} exported to CSV`,
     archive: "Archive",
     enrolled: "Enrolled",
     opened: "Opened",
@@ -152,6 +154,8 @@ const COPY = {
     campaignOptions: "Opciones de campaña",
     editSequence: "Editar secuencia",
     duplicate: "Duplicar",
+    exportRecord: "Exportar",
+    exportedOne: (name: string) => `${name} exportada a CSV`,
     archive: "Archivar",
     enrolled: "Inscritos",
     opened: "Aperturas",
@@ -228,6 +232,8 @@ const COPY = {
     campaignOptions: "Opzioni della campagna",
     editSequence: "Modifica sequenza",
     duplicate: "Duplica",
+    exportRecord: "Esporta",
+    exportedOne: (name: string) => `${name} esportata in CSV`,
     archive: "Archivia",
     enrolled: "Iscritti",
     opened: "Aperture",
@@ -304,6 +310,8 @@ const COPY = {
     campaignOptions: "Options de la campagne",
     editSequence: "Modifier la séquence",
     duplicate: "Dupliquer",
+    exportRecord: "Exporter",
+    exportedOne: (name: string) => `${name} exportée en CSV`,
     archive: "Archiver",
     enrolled: "Inscrits",
     opened: "Ouvertures",
@@ -380,6 +388,8 @@ const COPY = {
     campaignOptions: "Kampagnenoptionen",
     editSequence: "Sequenz bearbeiten",
     duplicate: "Duplizieren",
+    exportRecord: "Exportieren",
+    exportedOne: (name: string) => `${name} als CSV exportiert`,
     archive: "Archivieren",
     enrolled: "Aufgenommen",
     opened: "Geöffnet",
@@ -456,6 +466,8 @@ const COPY = {
     campaignOptions: "Opções da campanha",
     editSequence: "Editar sequência",
     duplicate: "Duplicar",
+    exportRecord: "Exportar",
+    exportedOne: (name: string) => `${name} exportada para CSV`,
     archive: "Arquivar",
     enrolled: "Inscritos",
     opened: "Aberturas",
@@ -532,6 +544,8 @@ const COPY = {
     campaignOptions: "Opções da campanha",
     editSequence: "Editar sequência",
     duplicate: "Duplicar",
+    exportRecord: "Exportar",
+    exportedOne: (name: string) => `${name} exportada em CSV`,
     archive: "Arquivar",
     enrolled: "Inscritos",
     opened: "Aberturas",
@@ -629,11 +643,13 @@ function CampaignCard({
   audience,
   onDuplicate,
   onDelete,
+  onExport,
 }: {
   campaign: Campaign
   audience?: CampaignAudience
   onDuplicate: (campaign: Campaign) => void
   onDelete: (campaign: Campaign) => void
+  onExport: (campaign: Campaign) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -736,10 +752,14 @@ function CampaignCard({
               <DropdownMenuItem onClick={() => onDuplicate(campaign)}>
                 {c.duplicate}
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onExport(campaign)}>
+                {c.exportRecord}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => onDelete(campaign)}
               >
+                <Trash2 className="size-4" />
                 {c.archive}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -864,6 +884,7 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     group: "campaign",
     pinned: true,
     minWidth: "200px",
+    getValue: (cm) => cm.name,
     render: (cm) => (
       <Link to={`/campaigns/${cm.id}`} className="font-medium hover:underline">
         {cm.name}
@@ -883,6 +904,8 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     },
     group: "campaign",
     default: true,
+    getValue: (cm) => cm.status,
+    filterType: "enum",
     render: (cm, locale) => (
       <Badge variant={STATUS_VARIANT[cm.status]}>
         {COPY[locale].statusLabel[cm.status]}
@@ -903,6 +926,7 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     group: "campaign",
     default: true,
     align: "right",
+    getValue: (cm) => cm.enrolled,
     render: (cm) => <span className="tabular-nums">{cm.enrolled}</span>,
   },
   {
@@ -919,6 +943,7 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     group: "campaign",
     default: true,
     align: "right",
+    getValue: (cm) => cm.opened,
     render: (cm) => <span className="tabular-nums">{cm.opened}</span>,
   },
   {
@@ -935,6 +960,7 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     group: "campaign",
     default: true,
     align: "right",
+    getValue: (cm) => replyRateOf(cm),
     render: (cm) => (
       <span className="text-chart-1 font-medium tabular-nums">
         {replyRateOf(cm)}%
@@ -955,6 +981,7 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     group: "campaign",
     default: true,
     align: "right",
+    getValue: (cm) => cm.meetings,
     render: (cm) => <span className="tabular-nums">{cm.meetings}</span>,
   },
   {
@@ -971,6 +998,7 @@ const CAMPAIGN_COLUMNS: ColumnDef<Campaign>[] = [
     group: "campaign",
     default: true,
     align: "right",
+    getValue: (cm) => cm.createdAt,
     render: (cm) => (
       <span className="text-muted-foreground text-xs whitespace-nowrap">
         {formatDate(cm.createdAt)}
@@ -1055,6 +1083,25 @@ export default function Campaigns() {
       ])
     )
     toast.success(c.exported)
+  }
+
+  // The per-row "…" menu's Export item — same CSV shape as the bulk export,
+  // just for a single campaign.
+  function exportOne(cm: Campaign) {
+    downloadCsv(
+      "campaign.csv",
+      [c.colName, c.colStatus, c.enrolled, c.opened, c.colReply, c.meetings, c.colCreated],
+      [[
+        cm.name,
+        c.statusLabel[cm.status],
+        cm.enrolled,
+        cm.opened,
+        `${replyRateOf(cm)}%`,
+        cm.meetings,
+        formatDate(cm.createdAt),
+      ]]
+    )
+    toast.success(c.exportedOne(cm.name))
   }
 
   // Bulk selection — same DataTable selection pattern used elsewhere.
@@ -1199,6 +1246,7 @@ export default function Campaigns() {
               audience={audienceByCampaign.get(campaign.id)}
               onDuplicate={handleDuplicate}
               onDelete={setPendingDelete}
+              onExport={exportOne}
             />
           ))}
         </div>
@@ -1236,10 +1284,14 @@ export default function Campaigns() {
                   <DropdownMenuItem onClick={() => handleDuplicate(cm)}>
                     {c.duplicate}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportOne(cm)}>
+                    {c.exportRecord}
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => setPendingDelete(cm)}
                   >
+                    <Trash2 className="size-4" />
                     {c.archive}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
