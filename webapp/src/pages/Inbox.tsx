@@ -49,8 +49,9 @@ import {
   Pause,
   Square,
   ListFilter,
-  ShieldCheck,
   Folder as FolderIcon,
+  Moon,
+  CircleAlert,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -163,11 +164,20 @@ const COPY = {
     tabRepliesSubtitle: "They replied — needs your response.",
     tabTasksSubtitle: "Open tasks assigned to you.",
     tabFollowupsSubtitle: "They took an action — worth reaching out.",
+    viewsHeaderReplies: "Views · Replies",
+    viewsHeaderTasks: "Views · Tasks",
+    viewsHeaderFollowups: "Views · Follow-ups",
+    viewAllOpen: "All open",
+    viewWaitingOnThem: "Waiting on them",
+    viewAllTasks: "All tasks",
+    viewDueToday: "Due today",
+    viewOverdue: "Overdue",
+    viewCalls: "Calls",
+    viewAllFollowups: "All follow-ups",
+    viewPostCall: "Post-call",
     scheduled: "Scheduled",
     sent: "Sent",
     archivedFolder: "Archived",
-    expandFolders: "Expand folders",
-    collapseFolders: "Collapse folders",
     tags: "Outcomes",
     search: "Search prospects, companies…",
     filters: "Filters",
@@ -187,6 +197,7 @@ const COPY = {
     clearFilters: "Clear filters",
     empty: "Nothing here",
     emptyHint: "New conversations will show up here.",
+    emptyHintTasks: "No tasks match this view.",
     backToInbox: "Back",
     createTask: "Create task",
     editTask: "Edit task",
@@ -324,11 +335,20 @@ const COPY = {
     tabRepliesSubtitle: "Respondieron — necesita tu respuesta.",
     tabTasksSubtitle: "Tareas abiertas asignadas a ti.",
     tabFollowupsSubtitle: "Realizaron una acción — vale la pena contactarlos.",
+    viewsHeaderReplies: "Vistas · Respuestas",
+    viewsHeaderTasks: "Vistas · Tareas",
+    viewsHeaderFollowups: "Vistas · Seguimientos",
+    viewAllOpen: "Todo abierto",
+    viewWaitingOnThem: "Esperando su respuesta",
+    viewAllTasks: "Todas las tareas",
+    viewDueToday: "Vence hoy",
+    viewOverdue: "Atrasadas",
+    viewCalls: "Llamadas",
+    viewAllFollowups: "Todos los seguimientos",
+    viewPostCall: "Después de la llamada",
     scheduled: "Programados",
     sent: "Enviados",
     archivedFolder: "Archivados",
-    expandFolders: "Expandir carpetas",
-    collapseFolders: "Contraer carpetas",
     tags: "Resultados",
     search: "Buscar prospectos, empresas…",
     filters: "Filtros",
@@ -348,6 +368,7 @@ const COPY = {
     clearFilters: "Limpiar filtros",
     empty: "Nada por aquí",
     emptyHint: "Las nuevas conversaciones aparecerán aquí.",
+    emptyHintTasks: "Ninguna tarea coincide con esta vista.",
     backToInbox: "Volver",
     createTask: "Crear tarea",
     editTask: "Editar tarea",
@@ -484,11 +505,20 @@ const COPY = {
     tabRepliesSubtitle: "Hanno risposto — richiede una tua risposta.",
     tabTasksSubtitle: "Attività aperte assegnate a te.",
     tabFollowupsSubtitle: "Hanno compiuto un'azione — vale la pena ricontattarli.",
+    viewsHeaderReplies: "Viste · Risposte",
+    viewsHeaderTasks: "Viste · Attività",
+    viewsHeaderFollowups: "Viste · Follow-up",
+    viewAllOpen: "Tutti aperti",
+    viewWaitingOnThem: "In attesa di loro",
+    viewAllTasks: "Tutte le attività",
+    viewDueToday: "Scade oggi",
+    viewOverdue: "In ritardo",
+    viewCalls: "Chiamate",
+    viewAllFollowups: "Tutti i follow-up",
+    viewPostCall: "Dopo la chiamata",
     scheduled: "Programmate",
     sent: "Inviate",
     archivedFolder: "Archiviate",
-    expandFolders: "Espandi cartelle",
-    collapseFolders: "Comprimi cartelle",
     tags: "Risultati",
     search: "Cerca prospect, aziende…",
     filters: "Filtri",
@@ -508,6 +538,7 @@ const COPY = {
     clearFilters: "Azzera filtri",
     empty: "Qui non c'è nulla",
     emptyHint: "Le nuove conversazioni appariranno qui.",
+    emptyHintTasks: "Nessuna attività corrisponde a questa vista.",
     backToInbox: "Indietro",
     createTask: "Crea attività",
     editTask: "Modifica attività",
@@ -644,11 +675,20 @@ const COPY = {
     tabRepliesSubtitle: "Ils ont répondu — nécessite votre réponse.",
     tabTasksSubtitle: "Tâches ouvertes qui vous sont assignées.",
     tabFollowupsSubtitle: "Ils ont effectué une action — cela vaut la peine de les recontacter.",
+    viewsHeaderReplies: "Vues · Réponses",
+    viewsHeaderTasks: "Vues · Tâches",
+    viewsHeaderFollowups: "Vues · Suivis",
+    viewAllOpen: "Tout ouvert",
+    viewWaitingOnThem: "En attente d'eux",
+    viewAllTasks: "Toutes les tâches",
+    viewDueToday: "À faire aujourd'hui",
+    viewOverdue: "En retard",
+    viewCalls: "Appels",
+    viewAllFollowups: "Tous les suivis",
+    viewPostCall: "Après l'appel",
     scheduled: "Programmées",
     sent: "Envoyées",
     archivedFolder: "Archivées",
-    expandFolders: "Développer les dossiers",
-    collapseFolders: "Réduire les dossiers",
     tags: "Résultats",
     search: "Rechercher des prospects, entreprises…",
     filters: "Filtres",
@@ -668,6 +708,7 @@ const COPY = {
     clearFilters: "Effacer les filtres",
     empty: "Rien ici",
     emptyHint: "Les nouvelles conversations apparaîtront ici.",
+    emptyHintTasks: "Aucune tâche ne correspond à cette vue.",
     backToInbox: "Retour",
     createTask: "Créer une tâche",
     editTask: "Modifier la tâche",
@@ -804,11 +845,20 @@ const COPY = {
     tabRepliesSubtitle: "Sie haben geantwortet — erfordert deine Antwort.",
     tabTasksSubtitle: "Offene Aufgaben, die dir zugewiesen sind.",
     tabFollowupsSubtitle: "Sie haben eine Aktion durchgeführt — es lohnt sich, sie zu kontaktieren.",
+    viewsHeaderReplies: "Ansichten · Antworten",
+    viewsHeaderTasks: "Ansichten · Aufgaben",
+    viewsHeaderFollowups: "Ansichten · Follow-ups",
+    viewAllOpen: "Alle offenen",
+    viewWaitingOnThem: "Wartet auf sie",
+    viewAllTasks: "Alle Aufgaben",
+    viewDueToday: "Heute fällig",
+    viewOverdue: "Überfällig",
+    viewCalls: "Anrufe",
+    viewAllFollowups: "Alle Follow-ups",
+    viewPostCall: "Nach dem Anruf",
     scheduled: "Geplant",
     sent: "Gesendet",
     archivedFolder: "Archiviert",
-    expandFolders: "Ordner ausklappen",
-    collapseFolders: "Ordner einklappen",
     tags: "Ergebnisse",
     search: "Prospects, Unternehmen suchen…",
     filters: "Filter",
@@ -828,6 +878,7 @@ const COPY = {
     clearFilters: "Filter zurücksetzen",
     empty: "Hier ist nichts",
     emptyHint: "Neue Unterhaltungen erscheinen hier.",
+    emptyHintTasks: "Keine Aufgaben entsprechen dieser Ansicht.",
     backToInbox: "Zurück",
     createTask: "Aufgabe erstellen",
     editTask: "Aufgabe bearbeiten",
@@ -964,11 +1015,20 @@ const COPY = {
     tabRepliesSubtitle: "Responderam — precisa da sua resposta.",
     tabTasksSubtitle: "Tarefas em aberto atribuídas a si.",
     tabFollowupsSubtitle: "Realizaram uma ação — vale a pena contactá-los.",
+    viewsHeaderReplies: "Vistas · Respostas",
+    viewsHeaderTasks: "Vistas · Tarefas",
+    viewsHeaderFollowups: "Vistas · Acompanhamentos",
+    viewAllOpen: "Todos abertos",
+    viewWaitingOnThem: "A aguardar resposta deles",
+    viewAllTasks: "Todas as tarefas",
+    viewDueToday: "Vence hoje",
+    viewOverdue: "Atrasadas",
+    viewCalls: "Chamadas",
+    viewAllFollowups: "Todos os acompanhamentos",
+    viewPostCall: "Após a chamada",
     scheduled: "Agendadas",
     sent: "Enviadas",
     archivedFolder: "Arquivadas",
-    expandFolders: "Expandir pastas",
-    collapseFolders: "Recolher pastas",
     tags: "Resultados",
     search: "Pesquisar prospects, empresas…",
     filters: "Filtros",
@@ -988,6 +1048,7 @@ const COPY = {
     clearFilters: "Limpar filtros",
     empty: "Nada por aqui",
     emptyHint: "As novas conversas vão aparecer aqui.",
+    emptyHintTasks: "Nenhuma tarefa corresponde a esta vista.",
     backToInbox: "Voltar",
     createTask: "Criar tarefa",
     editTask: "Editar tarefa",
@@ -1124,11 +1185,20 @@ const COPY = {
     tabRepliesSubtitle: "Responderam — precisa da sua resposta.",
     tabTasksSubtitle: "Tarefas em aberto atribuídas a você.",
     tabFollowupsSubtitle: "Realizaram uma ação — vale a pena entrar em contato.",
+    viewsHeaderReplies: "Visualizações · Respostas",
+    viewsHeaderTasks: "Visualizações · Tarefas",
+    viewsHeaderFollowups: "Visualizações · Acompanhamentos",
+    viewAllOpen: "Todos abertos",
+    viewWaitingOnThem: "Aguardando resposta deles",
+    viewAllTasks: "Todas as tarefas",
+    viewDueToday: "Vence hoje",
+    viewOverdue: "Atrasadas",
+    viewCalls: "Chamadas",
+    viewAllFollowups: "Todos os acompanhamentos",
+    viewPostCall: "Após a chamada",
     scheduled: "Agendadas",
     sent: "Enviadas",
     archivedFolder: "Arquivadas",
-    expandFolders: "Expandir pastas",
-    collapseFolders: "Recolher pastas",
     tags: "Resultados",
     search: "Buscar prospects, empresas…",
     filters: "Filtros",
@@ -1148,6 +1218,7 @@ const COPY = {
     clearFilters: "Limpar filtros",
     empty: "Nada por aqui",
     emptyHint: "Novas conversas vão aparecer aqui.",
+    emptyHintTasks: "Nenhuma tarefa corresponde a esta visualização.",
     backToInbox: "Voltar",
     createTask: "Criar tarefa",
     editTask: "Editar tarefa",
@@ -1310,6 +1381,45 @@ const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "archived", key: "archivedFolder", icon: Archive },
 ]
 
+// The sidebar's per-tab "Views" section — Replies/Tasks/Follow-ups each get
+// their own small, fixed list instead of sharing one static folder tree, so
+// the sidebar stays relevant to whichever tab the user is actually working
+// in. `key` indexes into COPY (existing keys are reused where the label is
+// identical, e.g. "unread"/"scheduled").
+// Only the plain-string keys of Copy — excludes the handful of keys whose
+// value is a formatter function (e.g. statusToast), which isn't valid here.
+type StringCopyKey = { [K in keyof Copy]: Copy[K] extends string ? K : never }[keyof Copy]
+type QuickviewDef = { id: string; key: StringCopyKey; icon: typeof InboxIcon }
+const REPLIES_VIEWS: QuickviewDef[] = [
+  { id: "all_open", key: "viewAllOpen", icon: Square },
+  { id: "unread", key: "unread", icon: Circle },
+  { id: "need_reply", key: "needs_reply", icon: Reply },
+  { id: "waiting_on_them", key: "viewWaitingOnThem", icon: Clock },
+  { id: "snoozed", key: "snoozedFolder", icon: Moon },
+]
+const TASKS_VIEWS: QuickviewDef[] = [
+  { id: "all_tasks", key: "viewAllTasks", icon: Square },
+  { id: "due_today", key: "viewDueToday", icon: Circle },
+  { id: "overdue", key: "viewOverdue", icon: CircleAlert },
+  { id: "calls", key: "viewCalls", icon: Phone },
+  { id: "awaiting_approval", key: "awaitingApproval", icon: Check },
+  { id: "scheduled", key: "scheduled", icon: ClipboardList },
+]
+const FOLLOWUPS_VIEWS: QuickviewDef[] = [
+  { id: "all_followups", key: "viewAllFollowups", icon: Square },
+  { id: "due_today", key: "viewDueToday", icon: Circle },
+  { id: "overdue", key: "viewOverdue", icon: CircleAlert },
+  { id: "post_call", key: "viewPostCall", icon: Phone },
+  { id: "snoozed", key: "snoozedFolder", icon: Moon },
+]
+// Which view a tab lands on when first selected — always that tab's
+// broadest "All ..." view.
+const DEFAULT_QUICKVIEW_ID: Record<"needs_reply" | "my_tasks" | "follow_ups", string> = {
+  needs_reply: "all_open",
+  my_tasks: "all_tasks",
+  follow_ups: "all_followups",
+}
+
 const EVENT_META: Record<
   ConvEventKind,
   { en: string; es: string; icon: typeof InboxIcon }
@@ -1388,6 +1498,11 @@ type View =
   | { kind: "approvals" }
   // A user-created manual folder — id references a CustomFolder.
   | { kind: "custom"; id: string }
+  // A tab-scoped "View" from the sidebar's per-tab Views section — e.g.
+  // "Unread"/"Waiting on them" under Replies, "Due today"/"Overdue" under
+  // Tasks. `tab` pins which quick-tab's view list `id` belongs to, since the
+  // same id string (e.g. "due_today") means a different predicate per tab.
+  | { kind: "quickview"; tab: "needs_reply" | "my_tasks" | "follow_ups"; id: string }
 
 // The quick-tab row above the list is a prominent shortcut into 3 specific
 // folder views plus an "All" catch-all, not a separate filter dimension —
@@ -1428,6 +1543,63 @@ const FOLLOWUP_EVENT_KINDS: ConvEventKind[] = ["open", "click", "view", "connect
 function hasFollowUpSignal(conv: Conversation): boolean {
   if (awaitingReply(conv) || isScheduled(conv) || isSnoozed(conv)) return false
   return (conv.events ?? []).some((e) => FOLLOWUP_EVENT_KINDS.includes(e.kind))
+}
+// Most recent follow-up-triggering event's timestamp, for the Follow-ups
+// tab's "Due today"/"Overdue" views — a conversation itself has no due date,
+// so recency of the triggering signal stands in for one.
+function latestFollowUpSignalAt(conv: Conversation): number | undefined {
+  const matches = (conv.events ?? []).filter((e) => FOLLOWUP_EVENT_KINDS.includes(e.kind))
+  if (matches.length === 0) return undefined
+  return Math.max(...matches.map((e) => new Date(e.timestamp).getTime()))
+}
+
+function startOfDay(ms: number): number {
+  const d = new Date(ms)
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+}
+const TODAY_START = startOfDay(Date.now())
+
+// The Replies tab's Views: broadest-to-narrowest funnel over the same base
+// "awaiting reply" universe. "Need to reply" and "Unread" partition it by
+// whether the thread's been opened yet; "Waiting on them" is the mirror
+// image (we already sent the last message).
+function isOpenReply(conv: Conversation): boolean {
+  return awaitingReply(conv) && !isScheduled(conv) && !isSnoozed(conv)
+}
+function isWaitingOnThem(conv: Conversation): boolean {
+  return lastMessage(conv)?.direction === "outbound" && !isSnoozed(conv)
+}
+
+function isTaskDueToday(t: Task): boolean {
+  return startOfDay(new Date(t.dueDate).getTime()) === TODAY_START
+}
+function isTaskOverdue(t: Task): boolean {
+  return startOfDay(new Date(t.dueDate).getTime()) < TODAY_START
+}
+// "Scheduled" under Tasks means queued for a later day — the complement of
+// Due today/Overdue, not a separate stored field.
+function isTaskScheduledLater(t: Task): boolean {
+  return startOfDay(new Date(t.dueDate).getTime()) > TODAY_START
+}
+// "Post-call" under Follow-ups: a connection accepted is the most common
+// signal that trails an actual call/meeting (vs. a passive open/click/view
+// on an email), so it stands in for "this follow-up trails a real call."
+function isPostCallFollowUp(conv: Conversation): boolean {
+  if (!hasFollowUpSignal(conv)) return false
+  return (conv.events ?? []).some((e) => e.kind === "connection")
+}
+// "Due today"/"Overdue" under Follow-ups: a conversation has no due date of
+// its own, so how fresh the triggering signal is stands in for one — a
+// same-day signal is still worth acting on today, an older one is overdue.
+function isFollowUpDueToday(conv: Conversation): boolean {
+  if (!hasFollowUpSignal(conv)) return false
+  const at = latestFollowUpSignalAt(conv)
+  return at !== undefined && startOfDay(at) === TODAY_START
+}
+function isFollowUpOverdue(conv: Conversation): boolean {
+  if (!hasFollowUpSignal(conv)) return false
+  const at = latestFollowUpSignalAt(conv)
+  return at !== undefined && startOfDay(at) < TODAY_START
 }
 
 // The inbox's offline EN<->ES demo translator (lib/mock-translate.ts) only
@@ -1613,7 +1785,6 @@ export default function Inbox() {
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
   const [outcomesOpen, setOutcomesOpen] = React.useState(true)
-  const [inboxOpen, setInboxOpen] = React.useState(true)
   // Prospect/company summary panel: defaults open (unlike focus mode) since
   // a context panel's job is to be glanceable while triaging, not to hide
   // chrome for reading one thread.
@@ -1651,17 +1822,31 @@ export default function Inbox() {
     [tasks]
   )
   const filteredTaskRows = React.useMemo(() => {
-    if (!query.trim()) return myTaskRows
-    const q = query.trim().toLowerCase()
-    return myTaskRows.filter((t) => {
-      const p = t.prospectId ? getProspect(t.prospectId) : undefined
-      const hay = [t.title, p?.firstName, p?.lastName, p?.company]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-      return hay.includes(q)
-    })
-  }, [myTaskRows, query])
+    const bySearch = !query.trim()
+      ? myTaskRows
+      : myTaskRows.filter((t) => {
+          const q = query.trim().toLowerCase()
+          const p = t.prospectId ? getProspect(t.prospectId) : undefined
+          const hay = [t.title, p?.firstName, p?.lastName, p?.company]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+          return hay.includes(q)
+        })
+    if (view.kind !== "quickview" || view.tab !== "my_tasks") return bySearch
+    switch (view.id) {
+      case "due_today":
+        return bySearch.filter(isTaskDueToday)
+      case "overdue":
+        return bySearch.filter(isTaskOverdue)
+      case "calls":
+        return bySearch.filter((t) => t.type === "call")
+      case "scheduled":
+        return bySearch.filter(isTaskScheduledLater)
+      default:
+        return bySearch
+    }
+  }, [myTaskRows, query, view])
 
   const folderCount = React.useCallback(
     (id: Folder): number => {
@@ -1689,6 +1874,61 @@ export default function Inbox() {
       }
     },
     [visible, conversations, myTaskRows]
+  )
+
+  // Counts for the sidebar's per-tab Views list — separate from folderCount
+  // above, which backs the "All" tab's static folder tree and the segmented
+  // tab-row badges; the two intentionally use different (if related)
+  // predicates for a couple of ids (see isOpenReply's comment).
+  const quickviewCount = React.useCallback(
+    (tab: InboxQuickTab, id: string): number => {
+      if (tab === "needs_reply") {
+        switch (id) {
+          case "all_open":
+            return visible.filter(isOpenReply).length
+          case "unread":
+            return visible.filter((x) => isOpenReply(x) && x.unread > 0).length
+          case "need_reply":
+            return visible.filter(needsReply).length
+          case "waiting_on_them":
+            return visible.filter(isWaitingOnThem).length
+          case "snoozed":
+            return visible.filter(isSnoozed).length
+        }
+      }
+      if (tab === "my_tasks") {
+        switch (id) {
+          case "all_tasks":
+            return myTaskRows.length
+          case "due_today":
+            return myTaskRows.filter(isTaskDueToday).length
+          case "overdue":
+            return myTaskRows.filter(isTaskOverdue).length
+          case "calls":
+            return myTaskRows.filter((t) => t.type === "call").length
+          case "awaiting_approval":
+            return pendingApprovalsCount
+          case "scheduled":
+            return myTaskRows.filter(isTaskScheduledLater).length
+        }
+      }
+      if (tab === "follow_ups") {
+        switch (id) {
+          case "all_followups":
+            return visible.filter(hasFollowUpSignal).length
+          case "due_today":
+            return visible.filter(isFollowUpDueToday).length
+          case "overdue":
+            return visible.filter(isFollowUpOverdue).length
+          case "post_call":
+            return visible.filter(isPostCallFollowUp).length
+          case "snoozed":
+            return visible.filter((x) => hasFollowUpSignal(x) && isSnoozed(x)).length
+        }
+      }
+      return 0
+    },
+    [visible, myTaskRows, pendingApprovalsCount]
   )
 
   const tagCounts = React.useMemo(() => {
@@ -1749,6 +1989,40 @@ export default function Inbox() {
         return (
           customFolders.find((f) => f.id === view.id)?.conversationIds.includes(conv.id) ?? false
         )
+      }
+      if (view.kind === "quickview") {
+        if (view.tab === "my_tasks") return false // renders task rows, not conversations
+        if (view.tab === "needs_reply") {
+          switch (view.id) {
+            case "all_open":
+              return isOpenReply(conv)
+            case "unread":
+              return isOpenReply(conv) && conv.unread > 0
+            case "need_reply":
+              return needsReply(conv)
+            case "waiting_on_them":
+              return isWaitingOnThem(conv)
+            case "snoozed":
+              return isSnoozed(conv)
+            default:
+              return false
+          }
+        }
+        // view.tab === "follow_ups"
+        switch (view.id) {
+          case "all_followups":
+            return hasFollowUpSignal(conv)
+          case "due_today":
+            return isFollowUpDueToday(conv)
+          case "overdue":
+            return isFollowUpOverdue(conv)
+          case "post_call":
+            return isPostCallFollowUp(conv)
+          case "snoozed":
+            return hasFollowUpSignal(conv) && isSnoozed(conv)
+          default:
+            return false
+        }
       }
       switch (view.id) {
         case "inbox":
@@ -1823,14 +2097,21 @@ export default function Inbox() {
     return Array.from(set).sort()
   }, [conversations])
 
-  const isMyTasksView = view.kind === "folder" && view.id === "my_tasks"
+  // True whenever the current view renders task rows instead of the
+  // conversation `list` — the old "My Tasks" folder, or any Tasks-tab
+  // quickview (all of which filter `myTaskRows`, not conversations).
+  const isMyTasksView =
+    (view.kind === "folder" && view.id === "my_tasks") ||
+    (view.kind === "quickview" && view.tab === "my_tasks")
   const isApprovalsView = view.kind === "approvals"
   const quickTab: InboxQuickTab = isApprovalsView
     ? "my_tasks"
-    : view.kind === "folder" &&
-        (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
-      ? view.id
-      : "all"
+    : view.kind === "quickview"
+      ? view.tab
+      : view.kind === "folder" &&
+          (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
+        ? view.id
+        : "all"
   const active = conversations.find((conv) => conv.id === activeId)
   // "My Tasks" doesn't read `list` for rendering (it renders task rows
   // instead), so a task's linked conversation is "in view" if it matches one
@@ -1916,9 +2197,20 @@ export default function Inbox() {
         ? c.awaitingApproval
         : view.kind === "custom"
           ? (customFolders.find((f) => f.id === view.id)?.name ?? c.folders)
-          : view.id === "follow_ups"
-            ? c.tabFollowups
-            : c[FOLDERS.find((f) => f.id === view.id)!.key]
+          : view.kind === "quickview"
+            ? (() => {
+                const views =
+                  view.tab === "needs_reply"
+                    ? REPLIES_VIEWS
+                    : view.tab === "my_tasks"
+                      ? TASKS_VIEWS
+                      : FOLLOWUPS_VIEWS
+                const def = views.find((v) => v.id === view.id)
+                return def ? c[def.key] : c.tabAll
+              })()
+            : view.id === "follow_ups"
+              ? c.tabFollowups
+              : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive =
     channelFilter !== "all" ||
@@ -2087,98 +2379,132 @@ export default function Inbox() {
       >
         <nav className="space-y-0.5 p-3">
           {(() => {
-            const myTasksFolder = FOLDERS.find((f) => f.id === "my_tasks")!
-            const inboxFolder = FOLDERS.find((f) => f.id === "inbox")!
-            const childFolders = FOLDERS.filter(
-              (f) => f.id !== "my_tasks" && f.id !== "inbox"
-            )
-            const folderButton = (f: (typeof FOLDERS)[number], fill: "w-full" | "flex-1") => {
-              const Icon = f.icon
-              const activeFolder = view.kind === "folder" && view.id === f.id
-              const count = folderCount(f.id)
+            if (quickTab === "all") {
+              const inboxFolder = FOLDERS.find((f) => f.id === "inbox")!
+              const childFolders = FOLDERS.filter(
+                (f) => f.id !== "my_tasks" && f.id !== "inbox"
+              )
+              const folderButton = (f: (typeof FOLDERS)[number]) => {
+                const Icon = f.icon
+                const activeFolder = view.kind === "folder" && view.id === f.id
+                const count = folderCount(f.id)
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setView({ kind: "folder", id: f.id })}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                      activeFolder
+                        ? "bg-muted font-medium text-foreground"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("size-4 shrink-0", f.id === "drafts" && "text-primary")} />
+                    <span className="flex-1 truncate text-left">{c[f.key]}</span>
+                    {count > 0 && (
+                      <span
+                        className={cn(
+                          "rounded-full px-1.5 text-[11px] tabular-nums",
+                          f.id === "unread"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                )
+              }
               return (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setView({ kind: "folder", id: f.id })}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                    fill,
-                    activeFolder
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                  )}
-                >
-                  <Icon className={cn("size-4 shrink-0", f.id === "drafts" && "text-primary")} />
-                  <span className="flex-1 truncate text-left">{c[f.key]}</span>
-                  {count > 0 && (
-                    <span
-                      className={cn(
-                        "rounded-full px-1.5 text-[11px] tabular-nums",
-                        f.id === "unread"
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
+                <>
+                  {folderButton(inboxFolder)}
+                  <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
+                    {childFolders.map((f) => folderButton(f))}
+                  </div>
+                </>
               )
             }
+
+            // Replies/Tasks/Follow-ups: the sidebar swaps to that tab's own
+            // small "Views" list instead of the static folder tree above —
+            // kept relevant to whatever the user is actually working on
+            // rather than one fixed nav regardless of tab.
+            const views =
+              quickTab === "needs_reply"
+                ? REPLIES_VIEWS
+                : quickTab === "my_tasks"
+                  ? TASKS_VIEWS
+                  : FOLLOWUPS_VIEWS
+            const headerKey =
+              quickTab === "needs_reply"
+                ? "viewsHeaderReplies"
+                : quickTab === "my_tasks"
+                  ? "viewsHeaderTasks"
+                  : "viewsHeaderFollowups"
             return (
               <>
-                <div className="flex items-center gap-0.5">
-                  {folderButton(inboxFolder, "flex-1")}
-                  <button
-                    type="button"
-                    onClick={() => setInboxOpen((v) => !v)}
-                    aria-expanded={inboxOpen}
-                    aria-label={inboxOpen ? c.collapseFolders : c.expandFolders}
-                    title={inboxOpen ? c.collapseFolders : c.expandFolders}
-                    className="text-muted-foreground hover:bg-muted/60 hover:text-foreground shrink-0 rounded-md p-1.5"
-                  >
-                    <ChevronDown
-                      className={cn(
-                        "size-3.5 transition-transform",
-                        !inboxOpen && "-rotate-90"
-                      )}
-                    />
-                  </button>
-                </div>
-                {inboxOpen && (
-                  <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
-                    {childFolders.map((f) => folderButton(f, "w-full"))}
-                  </div>
-                )}
-                <div className="bg-border my-1.5 h-px" />
-                {folderButton(myTasksFolder, "w-full")}
-                {/* Awaiting approval = the AI-drafted-message approvals queue,
-                    a v2-only surface (no AI automations in the v1 extension scope). */}
-                {!isV1 && (
-                  <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
+                <p className="text-muted-foreground px-2.5 pt-1 pb-1.5 text-[11px] font-semibold tracking-wide uppercase">
+                  {c[headerKey]}
+                </p>
+                {views.map((v) => {
+                  // "Awaiting approval" reuses the Automations approvals
+                  // queue wholesale (see the View type) rather than being a
+                  // conversation/task filter like its siblings, and is
+                  // v2-only (no AI automations in the v1 extension scope).
+                  if (v.id === "awaiting_approval") {
+                    if (isV1) return null
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setView({ kind: "approvals" })}
+                        className={cn(
+                          "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                          isApprovalsView
+                            ? "bg-muted font-medium text-foreground"
+                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                        )}
+                      >
+                        <v.icon className="size-4 shrink-0" />
+                        <span className="flex-1 truncate text-left">{c[v.key]}</span>
+                        {pendingApprovalsCount > 0 && (
+                          <span className="text-muted-foreground text-[11px] tabular-nums">
+                            {pendingApprovalsCount}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  }
+                  const activeView =
+                    view.kind === "quickview" && view.tab === quickTab && view.id === v.id
+                  const count = quickviewCount(quickTab, v.id)
+                  return (
                     <button
+                      key={v.id}
                       type="button"
-                      onClick={() => setView({ kind: "approvals" })}
+                      onClick={() => setView({ kind: "quickview", tab: quickTab, id: v.id })}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                        isApprovalsView
+                        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                        activeView
                           ? "bg-muted font-medium text-foreground"
                           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                       )}
                     >
-                      <ShieldCheck className="size-4 shrink-0" />
-                      <span className="flex-1 truncate text-left">
-                        {c.awaitingApproval}
-                      </span>
-                      {pendingApprovalsCount > 0 && (
+                      <v.icon
+                        className="size-4 shrink-0"
+                        fill={v.icon === Circle ? "currentColor" : "none"}
+                      />
+                      <span className="flex-1 truncate text-left">{c[v.key]}</span>
+                      {count > 0 && (
                         <span className="text-muted-foreground text-[11px] tabular-nums">
-                          {pendingApprovalsCount}
+                          {count}
                         </span>
                       )}
                     </button>
-                  </div>
-                )}
+                  )
+                })}
               </>
             )
           })()}
@@ -2418,7 +2744,11 @@ export default function Inbox() {
             <Segmented<InboxQuickTab>
               value={quickTab}
               onChange={(v) =>
-                setView({ kind: "folder", id: v === "all" ? "inbox" : v })
+                setView(
+                  v === "all"
+                    ? { kind: "folder", id: "inbox" }
+                    : { kind: "quickview", tab: v, id: DEFAULT_QUICKVIEW_ID[v] }
+                )
               }
               options={[
                 { v: "all", label: c.tabAll },
@@ -2494,7 +2824,7 @@ export default function Inbox() {
             filteredTaskRows.length === 0 ? (
               <div className="text-muted-foreground flex flex-col items-center gap-2 p-10 text-center">
                 <ListTodo className="size-6 opacity-50" />
-                <p className="text-sm">{c.emptyHint}</p>
+                <p className="text-sm">{c.emptyHintTasks}</p>
               </div>
             ) : (
               filteredTaskRows.map((task) => {
