@@ -32,8 +32,9 @@ export const LANE_WIDTH = 320
 const GHOST_TRAILING_GAP = 0.2
 
 // A track is either the "condition met" (Yes) or "condition not met" (No)
-// arm of a fork. Met arms deviate into their own lane and render green;
-// not-met arms stay on the default centered spine and render red.
+// arm of a fork. Both arms are color-coded (green for met, red for
+// not-met) — used for edge/pill color, not for layout: both arms sit at a
+// fixed, symmetric distance from the fork's own lane (see layoutFork).
 export function isPositiveTrack(kind: StepTrackKind): boolean {
   return (
     kind === "reply" ||
@@ -72,15 +73,17 @@ function edgeStyle(
       ? "var(--color-chart-1)"
       : "var(--color-destructive)"
     : "var(--color-muted-foreground)"
-  // The deviating (met/Yes) arm has to clear the parent lane immediately.
-  // smoothstep's turn point defaults to the vertical midpoint between the
-  // two nodes (its `stepPosition`, default 0.5) — `offset` alone only pads
-  // the minimum stub length off each node, it does NOT move the turn
-  // itself, so the offset-only version of this still ran both arms
-  // parallel down to the row's midpoint before finally kinking sideways.
-  // A near-zero stepPosition puts that kink immediately below the fork
-  // card instead, so the arm reads as breaking outward right away.
-  const branchesOut = trackKind != null && isPositiveTrack(trackKind)
+  // Both arms deviate from the fork's own lane now (see layoutFork), so
+  // both need to clear it immediately below the card. smoothstep's turn
+  // point defaults to the vertical midpoint between the two nodes (its
+  // `stepPosition`, default 0.5) — `offset` alone only pads the minimum
+  // stub length off each node, it does NOT move the turn itself, so the
+  // offset-only version of this still ran the arm parallel down to the
+  // row's midpoint before finally kinking sideways. A near-zero
+  // stepPosition puts that kink immediately below the fork card instead,
+  // so each arm reads as breaking outward right away, in mirrored
+  // directions.
+  const branchesOut = trackKind != null
   return {
     type: "smoothstep",
     style: { stroke: color, strokeWidth: 1.5 },
@@ -252,13 +255,20 @@ interface StepLayout {
   rejoinSources: string[]
 }
 
-// Lays out a single step's own fork. The "condition not met" arm — no
-// reply, connection not accepted — stays on the parent's own lane, because
-// that's what most prospects do: the unbroken vertical spine down the
-// middle of the canvas is the default path. Only the "met" arm (Yes /
-// Connected) deviates sideways, so a deviation always reads as "something
-// happened here." `spread` halves per nesting level so a nested fork's own
-// deviation can't collide with an outer branch.
+// Lays out a single step's own fork. Both tracks sit at a fixed, symmetric
+// offset from the fork's own lane — not-met (red) a half-spread to the
+// left, met (green) a half-spread to the right — always, from the moment
+// the condition is created, whether or not either arm has any steps yet.
+// The offset is a function of "which arm is this" alone, never of how much
+// content that arm (or its sibling) currently holds — an earlier version
+// anchored the not-met arm to the parent's own lane and only pushed the
+// met arm out, an asymmetric split that made a branch's column appear to
+// move sideways relative to its sibling as soon as one arm's card was
+// wider or narrower than expected. Fixed, symmetric offsets computed only
+// from which arm this is mean adding content later never moves anything
+// already on screen. `spread` halves per nesting level so a nested fork's
+// own deviation can't collide with an outer branch; the two arms still
+// split that spread evenly around center.
 function layoutFork(
   step: CampaignStep,
   depth: number,
@@ -270,7 +280,7 @@ function layoutFork(
   const nodes: SequenceNode[] = []
   const edges: Edge[] = []
   const lanes = fork.tracks.map((t) =>
-    isPositiveTrack(t.kind) ? lane + spread : lane
+    isPositiveTrack(t.kind) ? lane + spread / 2 : lane - spread / 2
   )
   let maxRejoinDepth = depth + 1
   // An empty track (right after adding a condition, before either arm has a
