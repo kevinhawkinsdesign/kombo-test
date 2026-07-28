@@ -18,10 +18,56 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { useProspects, taskStore } from "@/lib/store"
 import { assignableUsers } from "@/lib/task-people"
 import { currentUser } from "@/lib/mock-data"
+import { useLocale, type Locale } from "@/lib/locale"
 import type { Task, TaskKind, TaskType } from "@/lib/types"
+
+// This dialog predates the app's per-file COPY convention (still English-
+// only throughout); scoped to just the new prospect search strings rather
+// than retrofitting the whole file's localization.
+const PROSPECT_SEARCH_COPY: Record<
+  Locale,
+  { none: string; searchPlaceholder: string; emptyText: string }
+> = {
+  en: {
+    none: "— None —",
+    searchPlaceholder: "Search prospects...",
+    emptyText: "No prospects found.",
+  },
+  es: {
+    none: "— Ninguno —",
+    searchPlaceholder: "Buscar prospectos...",
+    emptyText: "No se encontraron prospectos.",
+  },
+  it: {
+    none: "— Nessuno —",
+    searchPlaceholder: "Cerca prospect...",
+    emptyText: "Nessun prospect trovato.",
+  },
+  fr: {
+    none: "— Aucun —",
+    searchPlaceholder: "Rechercher des prospects...",
+    emptyText: "Aucun prospect trouvé.",
+  },
+  de: {
+    none: "— Keine —",
+    searchPlaceholder: "Interessenten durchsuchen...",
+    emptyText: "Keine Interessenten gefunden.",
+  },
+  pt: {
+    none: "— Nenhum —",
+    searchPlaceholder: "Pesquisar prospects...",
+    emptyText: "Nenhum prospect encontrado.",
+  },
+  pt_BR: {
+    none: "— Nenhum —",
+    searchPlaceholder: "Pesquisar prospects...",
+    emptyText: "Nenhum prospect encontrado.",
+  },
+}
 
 interface TaskFormDialogProps {
   open: boolean
@@ -63,6 +109,8 @@ export function TaskFormDialog({
 }: TaskFormDialogProps) {
   const prospects = useProspects()
   const users = assignableUsers()
+  const { locale } = useLocale()
+  const pc = PROSPECT_SEARCH_COPY[locale]
 
   const [title, setTitle] = React.useState("")
   const [type, setType] = React.useState<TaskKind>("call")
@@ -190,19 +238,22 @@ export function TaskFormDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="task-prospect">Prospect</Label>
-              <Select value={prospectId} onValueChange={setProspectId}>
-                <SelectTrigger id="task-prospect" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE_VALUE}>— None —</SelectItem>
-                  {prospects.map((prospect) => (
-                    <SelectItem key={prospect.id} value={prospect.id}>
-                      {prospect.firstName} {prospect.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchCombobox
+                id="task-prospect"
+                value={prospectId}
+                onChange={setProspectId}
+                options={[
+                  { value: NONE_VALUE, label: pc.none },
+                  ...prospects.map((prospect) => ({
+                    value: prospect.id,
+                    label: `${prospect.firstName} ${prospect.lastName}`,
+                  })),
+                ]}
+                placeholder={pc.none}
+                searchPlaceholder={pc.searchPlaceholder}
+                emptyText={pc.emptyText}
+                className="w-full"
+              />
             </div>
 
             <div className="space-y-2">

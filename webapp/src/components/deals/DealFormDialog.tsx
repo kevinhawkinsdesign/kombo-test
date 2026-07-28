@@ -19,10 +19,56 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { dealStore } from "@/lib/store"
 import { accounts, DEAL_STAGES } from "@/lib/mock-extra"
 import { team } from "@/lib/team"
+import { useLocale, type Locale } from "@/lib/locale"
 import type { Deal, DealStage } from "@/lib/types"
+
+// This dialog predates the app's per-file COPY convention (still English-
+// only throughout); scoped to just the new account search strings rather
+// than retrofitting the whole file's localization.
+const ACCOUNT_SEARCH_COPY: Record<
+  Locale,
+  { placeholder: string; searchPlaceholder: string; emptyText: string }
+> = {
+  en: {
+    placeholder: "Select account",
+    searchPlaceholder: "Search accounts...",
+    emptyText: "No accounts found.",
+  },
+  es: {
+    placeholder: "Seleccionar cuenta",
+    searchPlaceholder: "Buscar cuentas...",
+    emptyText: "No se encontraron cuentas.",
+  },
+  it: {
+    placeholder: "Seleziona account",
+    searchPlaceholder: "Cerca account...",
+    emptyText: "Nessun account trovato.",
+  },
+  fr: {
+    placeholder: "Sélectionner un compte",
+    searchPlaceholder: "Rechercher des comptes...",
+    emptyText: "Aucun compte trouvé.",
+  },
+  de: {
+    placeholder: "Konto auswählen",
+    searchPlaceholder: "Konten durchsuchen...",
+    emptyText: "Keine Konten gefunden.",
+  },
+  pt: {
+    placeholder: "Selecionar conta",
+    searchPlaceholder: "Pesquisar contas...",
+    emptyText: "Nenhuma conta encontrada.",
+  },
+  pt_BR: {
+    placeholder: "Selecionar conta",
+    searchPlaceholder: "Pesquisar contas...",
+    emptyText: "Nenhuma conta encontrada.",
+  },
+}
 
 interface DealFormDialogProps {
   open: boolean
@@ -79,6 +125,9 @@ export function DealFormDialog({
   onOpenChange,
   deal,
 }: DealFormDialogProps) {
+  const { locale } = useLocale()
+  const ac = ACCOUNT_SEARCH_COPY[locale]
+
   const [form, setForm] = React.useState<DealFormState>(() => seedState(deal))
 
   // Reset the form whenever the dialog transitions to open, seeding from the
@@ -151,21 +200,19 @@ export function DealFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="deal-account">Account</Label>
-              <Select
+              <SearchCombobox
+                id="deal-account"
                 value={form.accountId}
-                onValueChange={(value) => setField("accountId", value)}
-              >
-                <SelectTrigger id="deal-account" className="w-full">
-                  <SelectValue placeholder="Select account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(value) => setField("accountId", value)}
+                options={accounts.map((account) => ({
+                  value: account.id,
+                  label: account.name,
+                }))}
+                placeholder={ac.placeholder}
+                searchPlaceholder={ac.searchPlaceholder}
+                emptyText={ac.emptyText}
+                className="w-full"
+              />
             </div>
 
             <div className="grid gap-2">

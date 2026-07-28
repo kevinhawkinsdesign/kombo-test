@@ -53,6 +53,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
+import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { CallScorecard } from "@/components/coach/CoachScorecard"
 import { CallQaPanel } from "@/components/coach/CallQaPanel"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -176,6 +177,8 @@ const COPY = {
     followUpSent: "Follow-up email sent",
     templateLabel: "Template",
     aiDraftOption: "AI draft (from this call)",
+    searchTemplatesPlaceholder: "Search templates...",
+    noTemplatesFound: "No templates found.",
     saveAsTemplate: "Save as template",
     templateNamePlaceholder: "e.g. Thanks + next steps",
     saveTemplateBtn: "Save",
@@ -314,6 +317,8 @@ const COPY = {
     followUpSent: "Correo de seguimiento enviado",
     templateLabel: "Plantilla",
     aiDraftOption: "Borrador de IA (de esta llamada)",
+    searchTemplatesPlaceholder: "Buscar plantillas...",
+    noTemplatesFound: "No se encontraron plantillas.",
     saveAsTemplate: "Guardar como plantilla",
     templateNamePlaceholder: "p. ej. Gracias + próximos pasos",
     saveTemplateBtn: "Guardar",
@@ -452,6 +457,8 @@ const COPY = {
     followUpSent: "Email di follow-up inviata",
     templateLabel: "Modello",
     aiDraftOption: "Bozza AI (da questa chiamata)",
+    searchTemplatesPlaceholder: "Cerca modelli...",
+    noTemplatesFound: "Nessun modello trovato.",
     saveAsTemplate: "Salva come modello",
     templateNamePlaceholder: "es. Grazie + prossimi passi",
     saveTemplateBtn: "Salva",
@@ -590,6 +597,8 @@ const COPY = {
     followUpSent: "E-mail de suivi envoyé",
     templateLabel: "Modèle",
     aiDraftOption: "Brouillon IA (à partir de cet appel)",
+    searchTemplatesPlaceholder: "Rechercher des modèles...",
+    noTemplatesFound: "Aucun modèle trouvé.",
     saveAsTemplate: "Enregistrer comme modèle",
     templateNamePlaceholder: "ex. Merci + prochaines étapes",
     saveTemplateBtn: "Enregistrer",
@@ -728,6 +737,8 @@ const COPY = {
     followUpSent: "Follow-up-E-Mail gesendet",
     templateLabel: "Vorlage",
     aiDraftOption: "KI-Entwurf (aus diesem Call)",
+    searchTemplatesPlaceholder: "Vorlagen durchsuchen...",
+    noTemplatesFound: "Keine Vorlagen gefunden.",
     saveAsTemplate: "Als Vorlage speichern",
     templateNamePlaceholder: "z. B. Danke + nächste Schritte",
     saveTemplateBtn: "Speichern",
@@ -866,6 +877,8 @@ const COPY = {
     followUpSent: "Email de seguimento enviado",
     templateLabel: "Modelo",
     aiDraftOption: "Rascunho de IA (desta chamada)",
+    searchTemplatesPlaceholder: "Pesquisar modelos...",
+    noTemplatesFound: "Nenhum modelo encontrado.",
     saveAsTemplate: "Guardar como modelo",
     templateNamePlaceholder: "p. ex. Obrigado + próximos passos",
     saveTemplateBtn: "Guardar",
@@ -1004,6 +1017,8 @@ const COPY = {
     followUpSent: "E-mail de follow-up enviado",
     templateLabel: "Modelo",
     aiDraftOption: "Rascunho de IA (desta ligação)",
+    searchTemplatesPlaceholder: "Pesquisar modelos...",
+    noTemplatesFound: "Nenhum modelo encontrado.",
     saveAsTemplate: "Salvar como modelo",
     templateNamePlaceholder: "ex.: Obrigado + próximos passos",
     saveTemplateBtn: "Salvar",
@@ -2204,22 +2219,18 @@ function FollowUpTab({
             <div className="space-y-1.5">
               <Label>{c.templateLabel}</Label>
               <div className="flex items-center gap-1.5">
-                <Select
+                <SearchCombobox
                   value={templateId || AI_DRAFT}
-                  onValueChange={applyTemplateChoice}
-                >
-                  <SelectTrigger className="min-w-0 flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={AI_DRAFT}>{c.aiDraftOption}</SelectItem>
-                    {templates.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={applyTemplateChoice}
+                  options={[
+                    { value: AI_DRAFT, label: c.aiDraftOption },
+                    ...templates.map((t) => ({ value: t.id, label: t.name })),
+                  ]}
+                  placeholder={c.templateLabel}
+                  searchPlaceholder={c.searchTemplatesPlaceholder}
+                  emptyText={c.noTemplatesFound}
+                  className="min-w-0 flex-1"
+                />
                 {templateId && (
                   <>
                     <Button
