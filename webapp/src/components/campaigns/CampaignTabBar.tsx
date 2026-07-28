@@ -130,6 +130,20 @@ const STATUS_VARIANT: Record<
   completed: "default",
 }
 
+// Non-active tabs get a small dot instead of the full badge (too wide/noisy
+// once several tabs are open) — colored to match the exact same variant each
+// status already renders as above: success stays chart-1 green, default
+// (completed/"Ended") stays primary purple, and the deliberately unfilled
+// secondary/outline variants become a neutral gray fill vs. a hollow ring, so
+// "paused" and "draft" both read as muted but stay distinguishable from
+// each other.
+const STATUS_DOT_CLASS: Record<CampaignStatus, string> = {
+  active: "bg-chart-1",
+  paused: "bg-muted-foreground",
+  draft: "border border-muted-foreground bg-transparent",
+  completed: "bg-primary",
+}
+
 // Chrome/Lemlist-style tab strip for campaigns the user has open at once —
 // mirrors ListTabBar's shape and store pattern (lib/campaign-tabs.ts).
 export function CampaignTabBar({ currentId }: { currentId: string }) {
@@ -194,9 +208,23 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
           >
             <Link
               to={`/campaigns/${t.id}`}
-              className={cn("min-w-0 truncate", active ? "max-w-64" : "max-w-40")}
+              className={cn(
+                "flex min-w-0 items-center gap-1.5",
+                active ? "max-w-64" : "max-w-40"
+              )}
             >
-              {t.name}
+              {!active && (
+                <span
+                  role="img"
+                  aria-label={c.statusLabel[t.status]}
+                  title={c.statusLabel[t.status]}
+                  className={cn(
+                    "size-2 shrink-0 rounded-full",
+                    STATUS_DOT_CLASS[t.status]
+                  )}
+                />
+              )}
+              <span className="truncate">{t.name}</span>
             </Link>
             {active &&
               (isCampaignScheduled(t) ? (
