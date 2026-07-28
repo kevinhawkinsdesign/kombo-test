@@ -26,16 +26,19 @@ import {
   Bookmark,
   UserSearch,
   Building2,
-  Eye,
   Braces,
-  MessageSquare,
-  ThumbsUp,
-  Mic,
   ExternalLink,
   FileText,
 } from "lucide-react"
 
-import { channelMeta, normalizeChannel } from "@/lib/step-channels"
+import {
+  channelMeta,
+  normalizeChannel,
+  STEP_TYPES,
+  ACTION_ICON,
+  stepTypeKeyFor,
+  stepTypeLabel,
+} from "@/lib/step-channels"
 import { SequenceCanvas } from "@/components/sequence/SequenceCanvas"
 import { StepTypePickerDialog } from "@/components/sequence/StepTypePickerDialog"
 import type { AddNodeData } from "@/lib/sequence-layout"
@@ -100,9 +103,7 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -171,32 +172,14 @@ import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type {
   CampaignStatus,
   Channel,
-  StepChannel,
   ConditionKind,
   EnrollmentStatus,
   Prospect,
   EmailTemplate,
   CampaignStep,
   LinkedInAction,
-  WhatsAppAction,
   StepTypeSelection,
 } from "@/lib/types"
-
-const LINKEDIN_ACTIONS: LinkedInAction[] = [
-  "message",
-  "connect",
-  "like_post",
-  "view_profile",
-  "voice_message",
-]
-const WHATSAPP_ACTIONS: WhatsAppAction[] = ["message", "voice_message"]
-const LINKEDIN_ACTION_ICON: Record<LinkedInAction, typeof MessageSquare> = {
-  message: MessageSquare,
-  connect: UserPlus,
-  like_post: ThumbsUp,
-  view_profile: Eye,
-  voice_message: Mic,
-}
 
 // Sending accounts: the current user first, then teammates, deduped by id.
 const ACCOUNT_OPTIONS = [
@@ -208,16 +191,6 @@ const ACCOUNT_OPTIONS = [
 
 const COPY = {
   en: {
-    channelLabel: {
-      email: "Email",
-      whatsapp: "WhatsApp",
-      call: "Phone call",
-      ai_call: "AI Voice Call",
-      linkedin_message: "LinkedIn message",
-      linkedin_dm: "LinkedIn DM",
-      linkedin_inmail: "LinkedIn Sales Navigator message",
-      manual: "Manual task",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Active",
       paused: "Inactive",
@@ -317,14 +290,6 @@ const COPY = {
     closePanel: "Close panel",
     insertStepAria: "Insert step here",
     stepChannelAria: (n: number) => `Step ${n} channel`,
-    linkedinActionAria: (n: number) => `Step ${n} LinkedIn action`,
-    linkedinActionLabel: {
-      message: "Message",
-      connect: "Connect",
-      like_post: "Like post",
-      view_profile: "View profile",
-      voice_message: "Voice message",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Sends a LinkedIn connection request — no message.",
@@ -389,11 +354,6 @@ const COPY = {
       n === 1
         ? "1 step copied into the sequence"
         : `${n} steps copied into the sequence`,
-    groupEmail: "Email",
-    groupMessaging: "Messaging",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "AI-powered",
-    groupOther: "Other",
     setupProspectsLabel: "Add prospects",
     setupProspectsDesc: "Attach a list or enroll the prospects to contact.",
     setupProspectsCta: "Add prospects",
@@ -448,16 +408,6 @@ const COPY = {
     alertSent: "Alert sent",
   },
   es: {
-    channelLabel: {
-      email: "Correo",
-      whatsapp: "WhatsApp",
-      call: "Llamada",
-      ai_call: "Llamada de voz IA",
-      linkedin_message: "Mensaje de LinkedIn",
-      linkedin_dm: "Mensaje directo de LinkedIn",
-      linkedin_inmail: "Mensaje de Sales Navigator de LinkedIn",
-      manual: "Tarea manual",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Activa",
       paused: "Inactiva",
@@ -557,14 +507,6 @@ const COPY = {
     closePanel: "Cerrar panel",
     insertStepAria: "Insertar paso aquí",
     stepChannelAria: (n: number) => `Canal del paso ${n}`,
-    linkedinActionAria: (n: number) => `Acción de LinkedIn del paso ${n}`,
-    linkedinActionLabel: {
-      message: "Mensaje",
-      connect: "Conectar",
-      like_post: "Dar me gusta",
-      view_profile: "Ver perfil",
-      voice_message: "Mensaje de voz",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Envía una solicitud de conexión de LinkedIn — sin mensaje.",
@@ -629,11 +571,6 @@ const COPY = {
       n === 1
         ? "1 paso copiado a la secuencia"
         : `${n} pasos copiados a la secuencia`,
-    groupEmail: "Correo",
-    groupMessaging: "Mensajería",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "Con IA",
-    groupOther: "Otro",
     setupProspectsLabel: "Añade prospectos",
     setupProspectsDesc: "Vincula una lista o inscribe los prospectos a contactar.",
     setupProspectsCta: "Añadir prospectos",
@@ -688,16 +625,6 @@ const COPY = {
     alertSent: "Alerta enviada",
   },
   it: {
-    channelLabel: {
-      email: "Email",
-      whatsapp: "WhatsApp",
-      call: "Telefonata",
-      ai_call: "Chiamata vocale IA",
-      linkedin_message: "Messaggio LinkedIn",
-      linkedin_dm: "Messaggio diretto di LinkedIn",
-      linkedin_inmail: "Messaggio Sales Navigator di LinkedIn",
-      manual: "Attività manuale",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Attiva",
       paused: "Inattiva",
@@ -797,14 +724,6 @@ const COPY = {
     closePanel: "Chiudi pannello",
     insertStepAria: "Inserisci un passaggio qui",
     stepChannelAria: (n: number) => `Canale del passaggio ${n}`,
-    linkedinActionAria: (n: number) => `Azione LinkedIn del passaggio ${n}`,
-    linkedinActionLabel: {
-      message: "Messaggio",
-      connect: "Connetti",
-      like_post: "Metti mi piace",
-      view_profile: "Visualizza profilo",
-      voice_message: "Messaggio vocale",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Invia una richiesta di connessione LinkedIn — senza messaggio.",
@@ -869,11 +788,6 @@ const COPY = {
       n === 1
         ? "1 passaggio copiato nella sequenza"
         : `${n} passaggi copiati nella sequenza`,
-    groupEmail: "Email",
-    groupMessaging: "Messaggistica",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "Basato su IA",
-    groupOther: "Altro",
     setupProspectsLabel: "Aggiungi prospect",
     setupProspectsDesc: "Collega una lista o iscrivi i prospect da contattare.",
     setupProspectsCta: "Aggiungi prospect",
@@ -928,16 +842,6 @@ const COPY = {
     alertSent: "Avviso inviato",
   },
   fr: {
-    channelLabel: {
-      email: "E-mail",
-      whatsapp: "WhatsApp",
-      call: "Appel téléphonique",
-      ai_call: "Appel vocal IA",
-      linkedin_message: "Message LinkedIn",
-      linkedin_dm: "Message direct LinkedIn",
-      linkedin_inmail: "Message Sales Navigator LinkedIn",
-      manual: "Tâche manuelle",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Active",
       paused: "Inactive",
@@ -1037,14 +941,6 @@ const COPY = {
     closePanel: "Fermer le panneau",
     insertStepAria: "Insérer une étape ici",
     stepChannelAria: (n: number) => `Canal de l'étape ${n}`,
-    linkedinActionAria: (n: number) => `Action LinkedIn de l'étape ${n}`,
-    linkedinActionLabel: {
-      message: "Message",
-      connect: "Se connecter",
-      like_post: "Aimer la publication",
-      view_profile: "Voir le profil",
-      voice_message: "Message vocal",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Envoie une demande de connexion LinkedIn — sans message.",
@@ -1109,11 +1005,6 @@ const COPY = {
       n === 1
         ? "1 étape copiée dans la séquence"
         : `${n} étapes copiées dans la séquence`,
-    groupEmail: "E-mail",
-    groupMessaging: "Messagerie",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "Propulsé par l'IA",
-    groupOther: "Autre",
     setupProspectsLabel: "Ajoutez des prospects",
     setupProspectsDesc: "Liez une liste ou inscrivez les prospects à contacter.",
     setupProspectsCta: "Ajouter des prospects",
@@ -1168,16 +1059,6 @@ const COPY = {
     alertSent: "Alerte envoyée",
   },
   de: {
-    channelLabel: {
-      email: "E-Mail",
-      whatsapp: "WhatsApp",
-      call: "Anruf",
-      ai_call: "KI-Sprachanruf",
-      linkedin_message: "LinkedIn-Nachricht",
-      linkedin_dm: "LinkedIn-Direktnachricht",
-      linkedin_inmail: "LinkedIn Sales Navigator-Nachricht",
-      manual: "Manuelle Aufgabe",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Aktiv",
       paused: "Inaktiv",
@@ -1277,14 +1158,6 @@ const COPY = {
     closePanel: "Panel schließen",
     insertStepAria: "Schritt hier einfügen",
     stepChannelAria: (n: number) => `Kanal für Schritt ${n}`,
-    linkedinActionAria: (n: number) => `LinkedIn-Aktion für Schritt ${n}`,
-    linkedinActionLabel: {
-      message: "Nachricht",
-      connect: "Vernetzen",
-      like_post: "Beitrag liken",
-      view_profile: "Profil ansehen",
-      voice_message: "Sprachnachricht",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Sendet eine LinkedIn-Vernetzungsanfrage — ohne Nachricht.",
@@ -1349,11 +1222,6 @@ const COPY = {
       n === 1
         ? "1 Schritt in die Sequenz kopiert"
         : `${n} Schritte in die Sequenz kopiert`,
-    groupEmail: "E-Mail",
-    groupMessaging: "Messaging",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "KI-gestützt",
-    groupOther: "Sonstiges",
     setupProspectsLabel: "Prospects hinzufügen",
     setupProspectsDesc: "Verknüpfe eine Liste oder schreibe die zu kontaktierenden Prospects ein.",
     setupProspectsCta: "Prospects hinzufügen",
@@ -1408,16 +1276,6 @@ const COPY = {
     alertSent: "Benachrichtigung gesendet",
   },
   pt: {
-    channelLabel: {
-      email: "E-mail",
-      whatsapp: "WhatsApp",
-      call: "Chamada telefónica",
-      ai_call: "Chamada de voz IA",
-      linkedin_message: "Mensagem do LinkedIn",
-      linkedin_dm: "Mensagem direta do LinkedIn",
-      linkedin_inmail: "Mensagem do Sales Navigator do LinkedIn",
-      manual: "Tarefa manual",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Ativa",
       paused: "Inativa",
@@ -1517,14 +1375,6 @@ const COPY = {
     closePanel: "Fechar painel",
     insertStepAria: "Inserir um passo aqui",
     stepChannelAria: (n: number) => `Canal do passo ${n}`,
-    linkedinActionAria: (n: number) => `Ação do LinkedIn do passo ${n}`,
-    linkedinActionLabel: {
-      message: "Mensagem",
-      connect: "Ligar",
-      like_post: "Gostar da publicação",
-      view_profile: "Ver perfil",
-      voice_message: "Mensagem de voz",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Envia um pedido de ligação do LinkedIn — sem mensagem.",
@@ -1589,11 +1439,6 @@ const COPY = {
       n === 1
         ? "1 passo copiado para a sequência"
         : `${n} passos copiados para a sequência`,
-    groupEmail: "E-mail",
-    groupMessaging: "Mensagens",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "Com IA",
-    groupOther: "Outro",
     setupProspectsLabel: "Adicione prospects",
     setupProspectsDesc: "Vincule uma lista ou inscreva os prospects a contactar.",
     setupProspectsCta: "Adicionar prospects",
@@ -1648,16 +1493,6 @@ const COPY = {
     alertSent: "Alerta enviado",
   },
   pt_BR: {
-    channelLabel: {
-      email: "E-mail",
-      whatsapp: "WhatsApp",
-      call: "Ligação",
-      ai_call: "Chamada de voz IA",
-      linkedin_message: "Mensagem do LinkedIn",
-      linkedin_dm: "Mensagem direta do LinkedIn",
-      linkedin_inmail: "Mensagem do Sales Navigator do LinkedIn",
-      manual: "Tarefa manual",
-    } as Record<StepChannel, string>,
     statusLabel: {
       active: "Ativa",
       paused: "Inativa",
@@ -1757,14 +1592,6 @@ const COPY = {
     closePanel: "Fechar painel",
     insertStepAria: "Inserir uma etapa aqui",
     stepChannelAria: (n: number) => `Canal da etapa ${n}`,
-    linkedinActionAria: (n: number) => `Ação do LinkedIn da etapa ${n}`,
-    linkedinActionLabel: {
-      message: "Mensagem",
-      connect: "Conectar",
-      like_post: "Curtir publicação",
-      view_profile: "Ver perfil",
-      voice_message: "Mensagem de voz",
-    } as Record<LinkedInAction, string>,
     linkedinActionDescription: {
       message: "",
       connect: "Envia uma solicitação de conexão do LinkedIn — sem mensagem.",
@@ -1829,11 +1656,6 @@ const COPY = {
       n === 1
         ? "1 etapa copiada para a sequência"
         : `${n} etapas copiadas para a sequência`,
-    groupEmail: "E-mail",
-    groupMessaging: "Mensagens",
-    groupLinkedin: "LinkedIn",
-    groupAiPowered: "Com IA",
-    groupOther: "Outro",
     setupProspectsLabel: "Adicione prospects",
     setupProspectsDesc: "Vincule uma lista ou inscreva os prospects a contatar.",
     setupProspectsCta: "Adicionar prospects",
@@ -2407,6 +2229,22 @@ export default function CampaignDetail() {
     selectedRows.forEach((r) => campaignStore.removeProspect(campaignId, r.id))
     toast.success(c.removedFromCampaignCount(selectedRows.length))
     setSelectedRowIds(new Set())
+  }
+  // The per-row "…" menu's Export item — same CSV shape as the bulk
+  // export, just for a single prospect row.
+  function exportOneRow(row: CampaignProspectRow) {
+    downloadCsv(
+      "campaign-prospect.csv",
+      ["Name", "Title", "Company", "Step", "Status"],
+      [[
+        row.prospect ? `${row.prospect.firstName} ${row.prospect.lastName}` : row.id,
+        row.prospect?.title ?? "",
+        row.prospect?.company ?? "",
+        String(row.currentStep),
+        row.status,
+      ]]
+    )
+    toast.success(c.exportedCsv)
   }
   function exportSelectedProspects() {
     downloadCsv(
@@ -3291,95 +3129,45 @@ export default function CampaignDetail() {
                       >
                         <meta.Icon className="size-4" />
                       </span>
-                      {isLinkedIn && (
-                        <Select
-                          value={step.linkedinAction ?? "message"}
-                          onValueChange={(v) =>
-                            draft.updateStep(step.id, {
-                              linkedinAction: v as LinkedInAction,
-                            })
-                          }
-                        >
-                          <SelectTrigger
-                            size="sm"
-                            className="w-[150px]"
-                            aria-label={c.linkedinActionAria(i + 1)}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LINKEDIN_ACTIONS.map((action) => {
-                              const ActionIcon = LINKEDIN_ACTION_ICON[action]
-                              return (
-                                <SelectItem key={action} value={action}>
-                                  <span className="flex items-center gap-2">
-                                    <ActionIcon className="size-3.5" />
-                                    {c.linkedinActionLabel[action]}
-                                  </span>
-                                </SelectItem>
-                              )
-                            })}
-                          </SelectContent>
-                        </Select>
-                      )}
-                      {isWhatsApp && (
-                        <Select
-                          value={step.whatsappAction ?? "message"}
-                          onValueChange={(v) =>
-                            draft.updateStep(step.id, {
-                              whatsappAction: v as WhatsAppAction,
-                            })
-                          }
-                        >
-                          <SelectTrigger
-                            size="sm"
-                            className="w-[150px]"
-                            aria-label={c.linkedinActionAria(i + 1)}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {WHATSAPP_ACTIONS.map((action) => {
-                              const ActionIcon = LINKEDIN_ACTION_ICON[action]
-                              return (
-                                <SelectItem key={action} value={action}>
-                                  <span className="flex items-center gap-2">
-                                    <ActionIcon className="size-3.5" />
-                                    {c.linkedinActionLabel[action]}
-                                  </span>
-                                </SelectItem>
-                              )
-                            })}
-                          </SelectContent>
-                        </Select>
-                      )}
                       <Select
-                        value={normalizeChannel(step.channel)}
-                        onValueChange={(v) =>
+                        value={stepTypeKeyFor(
+                          normalizeChannel(step.channel),
+                          step.linkedinAction,
+                          step.whatsappAction
+                        )}
+                        onValueChange={(v) => {
+                          const picked = STEP_TYPES.find((t) => t.key === v)
+                          if (!picked) return
                           draft.updateStep(step.id, {
-                            channel: v as StepChannel,
-                            isManualTask: v === "manual",
+                            channel: picked.channel,
+                            linkedinAction: picked.linkedinAction,
+                            whatsappAction: picked.whatsappAction,
+                            isManualTask: picked.channel === "manual",
                           })
-                        }
+                        }}
                       >
                         <SelectTrigger
                           size="sm"
-                          className="w-[180px]"
+                          className="w-[220px]"
                           aria-label={c.stepChannelAria(i + 1)}
                         >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {CHANNEL_GROUPS.map((group) => (
-                            <SelectGroup key={group.labelKey}>
-                              <SelectLabel>{c[group.labelKey]}</SelectLabel>
-                              {group.channels.map((channelKey) => (
-                                <SelectItem key={channelKey} value={channelKey}>
-                                  {c.channelLabel[channelKey]}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          ))}
+                          {STEP_TYPES.map((type) => {
+                            const typeMeta = channelMeta(type.channel)
+                            const actionKey = type.linkedinAction ?? type.whatsappAction
+                            const TypeIcon =
+                              type.icon || (actionKey && ACTION_ICON[actionKey]) || typeMeta.Icon
+                            return (
+                              <SelectItem key={type.key} value={type.key}>
+                                <span className="flex items-center gap-2">
+                                  <TypeIcon className="size-3.5" />
+                                  {stepTypeLabel(locale, type.key)}
+                                </span>
+                              </SelectItem>
+                            )
+                          })}
                         </SelectContent>
                       </Select>
                       <div className="ml-auto flex items-center gap-1">
@@ -3877,6 +3665,7 @@ export default function CampaignDetail() {
                     <RecordActionsMenu
                       kind="person"
                       record={row.prospect}
+                      onExport={() => exportOneRow(row)}
                       extra={
                         row.manual
                           ? {
@@ -4393,31 +4182,6 @@ function TimeDelayField({
     </div>
   )
 }
-
-// Grouped like Lemlist's step picker (Suggestions / LinkedIn actions / Phone
-// & Messaging, adapted to the channels we actually support).
-const CHANNEL_GROUPS: {
-  labelKey:
-    | "groupEmail"
-    | "groupMessaging"
-    | "groupLinkedin"
-    | "groupAiPowered"
-    | "groupOther"
-  channels: StepChannel[]
-}[] = [
-  { labelKey: "groupEmail", channels: ["email"] },
-  { labelKey: "groupMessaging", channels: ["whatsapp", "call"] },
-  {
-    labelKey: "groupLinkedin",
-    channels: ["linkedin_message", "linkedin_inmail"],
-  },
-  // Agentic, AI-driven steps — a distinct mechanism from a human `call`,
-  // so it gets its own group rather than joining groupMessaging.
-  { labelKey: "groupAiPowered", channels: ["ai_call"] },
-  // Channel-less offline activities (calls, visits, handwritten notes) —
-  // free-form title + notes.
-  { labelKey: "groupOther", channels: ["manual"] },
-]
 
 function EditCampaignDialog({
   open,
