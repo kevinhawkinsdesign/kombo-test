@@ -461,7 +461,11 @@ export interface CoachScoreMetric {
   label: string
   metricScore: number // 0-100
   metricSummary?: string
-  subMetrics?: { label: string; score: number }[]
+  // When true, this metric wasn't applicable to this call (e.g. "Handled
+  // objections" on a call where none came up) — render an "NA" chip instead
+  // of the (misleading) percent score.
+  isNa?: boolean
+  subMetrics?: { label: string; score: number; isNa?: boolean }[]
 }
 
 // A meeting participant identified from calendar/attendance data — the

@@ -124,6 +124,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `This analysis was generated with the “${t}” type — re-analyze to refresh it.`,
     callScoreBreakdown: "Call score breakdown",
+    na: "NA",
     callReview: "Call review",
     yourAverage: "Your average",
     teamAverage: "Team average",
@@ -265,6 +266,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Este análisis se generó con el tipo «${t}» — reanaliza para actualizarlo.`,
     callScoreBreakdown: "Desglose de la puntuación",
+    na: "NA",
     callReview: "Revisión de la llamada",
     yourAverage: "Tu media",
     teamAverage: "Media del equipo",
@@ -406,6 +408,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Questa analisi è stata generata con il tipo «${t}» — rianalizza per aggiornarla.`,
     callScoreBreakdown: "Dettaglio del punteggio",
+    na: "NA",
     callReview: "Revisione della chiamata",
     yourAverage: "La tua media",
     teamAverage: "Media del team",
@@ -547,6 +550,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Cette analyse a été générée avec le type « ${t} » — relancez l'analyse pour l'actualiser.`,
     callScoreBreakdown: "Détail du score",
+    na: "NA",
     callReview: "Bilan de l'appel",
     yourAverage: "Votre moyenne",
     teamAverage: "Moyenne de l'équipe",
@@ -688,6 +692,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Diese Analyse wurde mit dem Typ „${t}“ erstellt — analysiere neu, um sie zu aktualisieren.`,
     callScoreBreakdown: "Score-Aufschlüsselung",
+    na: "NA",
     callReview: "Call-Review",
     yourAverage: "Dein Durchschnitt",
     teamAverage: "Team-Durchschnitt",
@@ -829,6 +834,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo «${t}» — reanalise para a atualizar.`,
     callScoreBreakdown: "Detalhe da pontuação",
+    na: "NA",
     callReview: "Revisão da chamada",
     yourAverage: "A sua média",
     teamAverage: "Média da equipa",
@@ -970,6 +976,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo “${t}” — reanalise para atualizá-la.`,
     callScoreBreakdown: "Detalhamento da pontuação",
+    na: "NA",
     callReview: "Revisão da ligação",
     yourAverage: "Sua média",
     teamAverage: "Média do time",
@@ -2286,14 +2293,23 @@ function ScoreBreakdownRow({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <span
-            className={cn(
-              "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
-              scorePillClass(metric.metricScore)
-            )}
-          >
-            {metric.metricScore}
-          </span>
+          {metric.isNa ? (
+            <Badge
+              variant="outline"
+              className="text-muted-foreground border-muted-foreground/30"
+            >
+              {c.na}
+            </Badge>
+          ) : (
+            <span
+              className={cn(
+                "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
+                scorePillClass(metric.metricScore)
+              )}
+            >
+              {metric.metricScore}
+            </span>
+          )}
           {subMetrics.length > 0 && (
             <Button
               variant="ghost"
@@ -2317,14 +2333,23 @@ function ScoreBreakdownRow({
               className="flex items-center justify-between text-sm"
             >
               <span className="text-muted-foreground">{sub.label}</span>
-              <span
-                className={cn(
-                  "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
-                  scorePillClass(sub.score)
-                )}
-              >
-                {sub.score}
-              </span>
+              {sub.isNa ? (
+                <Badge
+                  variant="outline"
+                  className="text-muted-foreground border-muted-foreground/30"
+                >
+                  {c.na}
+                </Badge>
+              ) : (
+                <span
+                  className={cn(
+                    "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
+                    scorePillClass(sub.score)
+                  )}
+                >
+                  {sub.score}
+                </span>
+              )}
             </div>
           ))}
         </div>
