@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { useProspects, taskStore } from "@/lib/store"
 import { assignableUsers } from "@/lib/task-people"
 import { currentUser } from "@/lib/mock-data"
-import type { Task, TaskType } from "@/lib/types"
+import type { Task, TaskKind, TaskType } from "@/lib/types"
 
 interface TaskFormDialogProps {
   open: boolean
@@ -65,7 +65,7 @@ export function TaskFormDialog({
   const users = assignableUsers()
 
   const [title, setTitle] = React.useState("")
-  const [type, setType] = React.useState<TaskType>("call")
+  const [type, setType] = React.useState<TaskKind>("call")
   const [priority, setPriority] = React.useState<Task["priority"]>("medium")
   const [dueDate, setDueDate] = React.useState(todayInputValue())
   const [prospectId, setProspectId] = React.useState<string>(NONE_VALUE)

@@ -9,6 +9,7 @@ import {
   setLiveProspects,
   setLiveLists,
   setLiveCampaigns,
+  recentActivity as seedActivity,
 } from "./mock-data"
 import {
   deals as seedDeals,
@@ -32,6 +33,7 @@ import type {
   Task,
   EmailTemplate,
   Account,
+  ActivityItem,
   Conversation,
   Message,
   ChatLang,
@@ -134,6 +136,9 @@ interface StoreState {
   campaigns: Campaign[]
   deals: Deal[]
   tasks: Task[]
+  // Append-only event feed (dashboard "Recent activity" + anything a
+  // sequence/user/system wants to record) — see activityStore.log().
+  activities: ActivityItem[]
   templates: EmailTemplate[]
   accounts: Account[]
   conversations: Conversation[]
@@ -155,6 +160,7 @@ function seed(): StoreState {
     campaigns: seedCampaigns,
     deals: seedDeals,
     tasks: seedTasks,
+    activities: seedActivity,
     templates: seedTemplates,
     accounts: seedAccounts,
     conversations: seedConversations,
@@ -212,6 +218,7 @@ function load(): StoreState {
         campaigns: migrateCampaigns(parsed.campaigns ?? base.campaigns),
         deals: parsed.deals ?? base.deals,
         tasks: parsed.tasks ?? base.tasks,
+        activities: parsed.activities ?? base.activities,
         templates: parsed.templates ?? base.templates,
         accounts: parsed.accounts ?? base.accounts,
         conversations: convOutdated
@@ -302,6 +309,9 @@ export function useCampaigns(): Campaign[] {
 }
 export function useDeals(): Deal[] {
   return useSlice((s) => s.deals)
+}
+export function useActivities(): ActivityItem[] {
+  return useSlice((s) => s.activities)
 }
 export function useTasks(): Task[] {
   return useSlice((s) => s.tasks)
@@ -469,11 +479,47 @@ export const taskStore = {
     setState({ tasks: state.tasks.filter((t) => t.id !== id) })
   },
   toggle(id: string): void {
+    const task = state.tasks.find((t) => t.id === id)
     setState({
       tasks: state.tasks.map((t) =>
         t.id === id ? { ...t, done: !t.done } : t
       ),
     })
+    // Completing a task is itself an event on the activity stream —
+    // un-completing is just a correction, not worth a feed entry.
+    if (task && !task.done) {
+      const prospect = task.prospectId
+        ? state.prospects.find((p) => p.id === task.prospectId)
+        : undefined
+      activityStore.log({
+        type: "task_completed",
+        actor: "user",
+        prospectName: prospect ? `${prospect.firstName} ${prospect.lastName}` : "—",
+        prospectId: task.prospectId,
+        detail: task.title,
+        metadata: { taskId: task.id, taskType: task.type },
+      })
+    }
+  },
+}
+
+// The programmatic event log, Genesy-custom-CRM style: anything — a user
+// action, a sequence firing, the system, an external integration — can
+// record an activity with an open `type`, an actor, optional record links,
+// and free-form metadata. The dashboard feed (and anything else) just
+// reads the stream; unknown types render with a generic fallback.
+export const activityStore = {
+  log(
+    data: Omit<ActivityItem, "id" | "timestamp"> &
+      Partial<Pick<ActivityItem, "timestamp">>
+  ): ActivityItem {
+    const item: ActivityItem = {
+      ...data,
+      id: uid("act"),
+      timestamp: data.timestamp ?? nowISO(),
+    }
+    setState({ activities: [item, ...state.activities] })
+    return item
   },
 }
 
@@ -971,6 +1017,16 @@ export const campaignStore = {
             }
           : c
       ),
+    })
+    // A sequence starting to run is an event in its own right — an open
+    // activity type the dashboard renders with its generic fallback.
+    activityStore.log({
+      type: "campaign_activated",
+      actor: "sequence",
+      prospectName: campaign.name,
+      campaignId: id,
+      detail: `${recipients.length} prospects enrolled`,
+      metadata: { recipients: recipients.length },
     })
   },
   // Make a campaign inactive. Keeps messagedIds so re-activation skips them.
