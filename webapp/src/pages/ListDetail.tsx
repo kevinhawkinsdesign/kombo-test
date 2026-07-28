@@ -16,6 +16,7 @@ import {
   TriangleAlert,
   UserSearch,
   FolderOpen,
+  FolderInput,
 } from "lucide-react"
 
 import { Page } from "@/components/layout/Page"
@@ -115,6 +116,7 @@ const COPY = {
     colScore: "Score",
     colStatus: "Status",
     removeFromListAction: "Remove from list",
+    moveToListAction: "Move to list",
     enrichRow: "Enrich",
     removed: "Removed from list",
     removedCount: (n: number) => `${n} removed from list`,
@@ -226,6 +228,7 @@ const COPY = {
     colScore: "Puntuación",
     colStatus: "Estado",
     removeFromListAction: "Quitar de la lista",
+    moveToListAction: "Mover a lista",
     enrichRow: "Enriquecer",
     removed: "Quitado de la lista",
     removedCount: (n: number) => `${n} quitados de la lista`,
@@ -338,6 +341,7 @@ const COPY = {
     colScore: "Punteggio",
     colStatus: "Stato",
     removeFromListAction: "Rimuovi dalla lista",
+    moveToListAction: "Sposta in lista",
     enrichRow: "Arricchisci",
     removed: "Rimosso dalla lista",
     removedCount: (n: number) => `${n} rimossi dalla lista`,
@@ -449,6 +453,7 @@ const COPY = {
     colScore: "Score",
     colStatus: "Statut",
     removeFromListAction: "Retirer de la liste",
+    moveToListAction: "Déplacer vers une liste",
     enrichRow: "Enrichir",
     removed: "Retiré de la liste",
     removedCount: (n: number) => `${n} retirés de la liste`,
@@ -560,6 +565,7 @@ const COPY = {
     colScore: "Score",
     colStatus: "Status",
     removeFromListAction: "Aus der Liste entfernen",
+    moveToListAction: "In Liste verschieben",
     enrichRow: "Anreichern",
     removed: "Aus der Liste entfernt",
     removedCount: (n: number) => `${n} aus der Liste entfernt`,
@@ -671,6 +677,7 @@ const COPY = {
     colScore: "Pontuação",
     colStatus: "Estado",
     removeFromListAction: "Remover da lista",
+    moveToListAction: "Mover para lista",
     enrichRow: "Enriquecer",
     removed: "Removido da lista",
     removedCount: (n: number) => `${n} removidos da lista`,
@@ -782,6 +789,7 @@ const COPY = {
     colScore: "Pontuação",
     colStatus: "Status",
     removeFromListAction: "Remover da lista",
+    moveToListAction: "Mover para lista",
     enrichRow: "Enriquecer",
     removed: "Removido da lista",
     removedCount: (n: number) => `${n} removidos da lista`,
@@ -881,6 +889,9 @@ export default function ListDetail() {
   const [rowEnrichProspect, setRowEnrichProspect] = React.useState<Prospect | null>(null)
   const [bulkAddOpen, setBulkAddOpen] = React.useState(false)
   const [bulkMoveOpen, setBulkMoveOpen] = React.useState(false)
+  // Single-record "Move to list" from a row's own "…" menu — reuses the
+  // same BulkAddDialog as the bulk action, just scoped to one id.
+  const [moveOneId, setMoveOneId] = React.useState<string | null>(null)
   const [exportOpen, setExportOpen] = React.useState(false)
   const columnPrefs = useColumnPrefs("list-prospects", PEOPLE_DEFAULT_IDS)
   const accountColumnPrefs = useColumnPrefs("list-accounts", COMPANY_DEFAULT_IDS)
@@ -955,6 +966,22 @@ export default function ListDetail() {
     }
     toast.success(c.removedCount(selectedCount))
     sel.clear()
+  }
+  // The per-row "…" menu's Export item — same CSV shape as the bulk
+  // export, just for a single record and no format picker.
+  function exportOneAccount(a: Account) {
+    downloadCsv("company.csv", ["Company", "Industry", "Domain", "Tier"], [
+      [a.name, a.industry, a.domain, a.tier],
+    ])
+    toast.success(c.exported("CSV"))
+  }
+  function exportOneProspect(p: Prospect) {
+    downloadCsv(
+      "prospect.csv",
+      ["Name", "Title", "Company", "Email", "Location"],
+      [[`${p.firstName} ${p.lastName}`, p.title, p.company, p.email, p.location]]
+    )
+    toast.success(c.exported("CSV"))
   }
   function confirmExport(opts: { format: ExportFormat; sendTo?: string }) {
     if (opts.format === "crm") {
@@ -1172,15 +1199,23 @@ export default function ListDetail() {
                 <RecordActionsMenu
                   kind="company"
                   record={a}
-                  extra={{
-                    label: c.removeFromListAction,
-                    icon: <X className="size-4" />,
-                    destructive: true,
-                    onClick: () => {
-                      listStore.removeAccount(list.id, a.id)
-                      toast.success(c.removed)
+                  onExport={() => exportOneAccount(a)}
+                  extra={[
+                    {
+                      label: c.moveToListAction,
+                      icon: <FolderInput className="size-4" />,
+                      onClick: () => setMoveOneId(a.id),
                     },
-                  }}
+                    {
+                      label: c.removeFromListAction,
+                      icon: <X className="size-4" />,
+                      destructive: true,
+                      onClick: () => {
+                        listStore.removeAccount(list.id, a.id)
+                        toast.success(c.removed)
+                      },
+                    },
+                  ]}
                 />
               )}
               sort={companyTsf.sort}
@@ -1228,15 +1263,23 @@ export default function ListDetail() {
                   <RecordActionsMenu
                     kind="person"
                     record={p}
-                    extra={{
-                      label: c.removeFromListAction,
-                      icon: <X className="size-4" />,
-                      destructive: true,
-                      onClick: () => {
-                        listStore.removeProspect(list.id, p.id)
-                        toast.success(c.removed)
+                    onExport={() => exportOneProspect(p)}
+                    extra={[
+                      {
+                        label: c.moveToListAction,
+                        icon: <FolderInput className="size-4" />,
+                        onClick: () => setMoveOneId(p.id),
                       },
-                    }}
+                      {
+                        label: c.removeFromListAction,
+                        icon: <X className="size-4" />,
+                        destructive: true,
+                        onClick: () => {
+                          listStore.removeProspect(list.id, p.id)
+                          toast.success(c.removed)
+                        },
+                      },
+                    ]}
                   />
                 </div>
               )}
@@ -1288,6 +1331,18 @@ export default function ListDetail() {
         moveFromListId={listId}
         skipCostConfirm
         onDone={sel.clear}
+      />
+
+      <BulkAddDialog
+        open={moveOneId !== null}
+        onOpenChange={(v) => !v && setMoveOneId(null)}
+        mode="list"
+        recordKind={isCompany ? "company" : "person"}
+        ids={moveOneId ? [moveOneId] : []}
+        excludeListId={listId}
+        moveFromListId={listId}
+        skipCostConfirm
+        onDone={() => setMoveOneId(null)}
       />
 
       {isCompany ? (

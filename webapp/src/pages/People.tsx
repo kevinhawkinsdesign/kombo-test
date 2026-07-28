@@ -416,6 +416,25 @@ export default function People() {
   )
   const addIdsArr = cappedForAdd.map((p) => p.id)
 
+  // The per-row "…" menu's Export item — same CSV shape as the bulk
+  // export, just for a single prospect and no format picker.
+  function exportOne(p: Prospect) {
+    downloadCsv(
+      "prospect.csv",
+      ["Name", "Title", "Company", "Email", "Status", "Location", "Source"],
+      [[
+        `${p.firstName} ${p.lastName}`,
+        p.title,
+        p.company,
+        p.email,
+        STATUS_LABELS[p.status],
+        p.location,
+        prospectSource(p),
+      ]]
+    )
+    toast.success(c.exportedToast(1, "CSV"))
+  }
+
   function confirmExport(opts: { format: ExportFormat }) {
     if (opts.format === "crm") {
       toast.success(c.crmSyncedToast(selectedProspects.length, CONNECTED_CRM_PROVIDER.name))
@@ -621,7 +640,9 @@ export default function People() {
             locale={locale}
             editing={editing}
             onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
-            actions={(p) => <RecordActionsMenu kind="person" record={p} />}
+            actions={(p) => (
+              <RecordActionsMenu kind="person" record={p} onExport={() => exportOne(p)} />
+            )}
             selection={{
               isSelected: (p) => selectedIds.has(p.id),
               toggle: sel.toggleRow,

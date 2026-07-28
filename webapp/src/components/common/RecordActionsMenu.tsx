@@ -10,6 +10,7 @@ import {
   UserSearch,
   ScanSearch,
   Ban,
+  Download,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -24,10 +25,11 @@ import { AddToCollectionDialog } from "@/components/common/AddToCollectionDialog
 import { CrmExportDialog } from "@/components/common/CrmExportDialog"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
+import { CompanyEnrichDialog } from "@/components/lists/CompanyEnrichDialog"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { blacklistStore } from "@/lib/store"
-import { needsAnyEnrichScope } from "@/lib/enrichment"
+import { needsAnyEnrichScope, isCompanyEnriched } from "@/lib/enrichment"
 import type { RecordKind } from "@/lib/crm-mapping"
 import type { Account, Prospect } from "@/lib/types"
 
@@ -42,6 +44,7 @@ const COPY = {
     addToBlacklist: "Add to blacklist",
     blacklistedToast: (name: string) => `${name} added to blacklist`,
     findLookalikes: "Find lookalikes",
+    exportRecord: "Export",
   },
   es: {
     actions: "Acciones",
@@ -53,6 +56,7 @@ const COPY = {
     addToBlacklist: "Añadir a lista negra",
     blacklistedToast: (name: string) => `${name} añadido a la lista negra`,
     findLookalikes: "Buscar similares",
+    exportRecord: "Exportar",
   },
   it: {
     actions: "Azioni",
@@ -64,6 +68,7 @@ const COPY = {
     addToBlacklist: "Aggiungi alla blacklist",
     blacklistedToast: (name: string) => `${name} aggiunto alla blacklist`,
     findLookalikes: "Trova simili",
+    exportRecord: "Esporta",
   },
   fr: {
     actions: "Actions",
@@ -75,6 +80,7 @@ const COPY = {
     addToBlacklist: "Ajouter à la liste noire",
     blacklistedToast: (name: string) => `${name} ajouté à la liste noire`,
     findLookalikes: "Trouver des profils similaires",
+    exportRecord: "Exporter",
   },
   de: {
     actions: "Aktionen",
@@ -86,6 +92,7 @@ const COPY = {
     addToBlacklist: "Zur Blacklist hinzufügen",
     blacklistedToast: (name: string) => `${name} zur Blacklist hinzugefügt`,
     findLookalikes: "Ähnliche finden",
+    exportRecord: "Exportieren",
   },
   pt: {
     actions: "Ações",
@@ -97,6 +104,7 @@ const COPY = {
     addToBlacklist: "Adicionar à lista negra",
     blacklistedToast: (name: string) => `${name} adicionado à lista negra`,
     findLookalikes: "Encontrar semelhantes",
+    exportRecord: "Exportar",
   },
   pt_BR: {
     actions: "Ações",
@@ -108,14 +116,16 @@ const COPY = {
     addToBlacklist: "Adicionar à lista negra",
     blacklistedToast: (name: string) => `${name} adicionado à lista negra`,
     findLookalikes: "Encontrar similares",
+    exportRecord: "Exportar",
   },
 } as const
 
 type Dialog = "list" | "crm" | "enrich" | "findProspects" | null
 
 // A page-specific action appended after the shared ones (e.g. "Remove from
-// list" on a list's members table). Destructive actions render in the
-// destructive tone, separated from the shared actions.
+// list" on a list's members table). Pass an array when a page needs more
+// than one (e.g. both "Move to list" and "Remove from list"). Destructive
+// actions render in the destructive tone, separated from the shared ones.
 export interface RecordExtraAction {
   label: string
   icon?: React.ReactNode
@@ -128,16 +138,23 @@ export function RecordActionsMenu({
   record,
   className,
   extra,
+  onExport,
 }: {
   kind: RecordKind
   record: Prospect | Account
   className?: string
-  extra?: RecordExtraAction
+  extra?: RecordExtraAction | RecordExtraAction[]
+  // Every row-level menu should be able to do everything its page's bulk
+  // action bar can do to a single selected row — Export is the one action
+  // every table's bulk bar offers that this menu otherwise has no equivalent
+  // for, so it's a first-class prop rather than folded into `extra`.
+  onExport?: () => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
   const [dialog, setDialog] = React.useState<Dialog>(null)
+  const extraActions = extra ? (Array.isArray(extra) ? extra : [extra]) : []
 
   const name =
     kind === "person"
@@ -159,6 +176,21 @@ export function RecordActionsMenu({
             industry: p.industry,
             region: "",
             headcount: p.headcount,
+          },
+        },
+      })
+    } else {
+      const a = record as Account
+      navigate("/search", {
+        state: {
+          lookalikeSeed: {
+            id: a.id,
+            kind: "company",
+            name: a.name,
+            sub: a.industry,
+            industry: a.industry,
+            region: "",
+            headcount: a.employees,
           },
         },
       })
@@ -207,12 +239,19 @@ export function RecordActionsMenu({
               {c.enrich}
             </DropdownMenuItem>
           )}
-          {kind === "person" && (
-            <DropdownMenuItem onClick={findLookalikes}>
-              <ScanSearch className="size-4" />
-              {c.findLookalikes}
+          {kind === "company" && (
+            <DropdownMenuItem
+              disabled={isCompanyEnriched(record as Account)}
+              onClick={() => setDialog("enrich")}
+            >
+              <Layers className="size-4" />
+              {c.enrich}
             </DropdownMenuItem>
           )}
+          <DropdownMenuItem onClick={findLookalikes}>
+            <ScanSearch className="size-4" />
+            {c.findLookalikes}
+          </DropdownMenuItem>
           {kind === "company" && (
             <DropdownMenuItem onClick={() => setDialog("findProspects")}>
               <UserSearch className="size-4" />
@@ -223,6 +262,12 @@ export function RecordActionsMenu({
             <FolderPlus className="size-4" />
             {c.addToList}
           </DropdownMenuItem>
+          {onExport && (
+            <DropdownMenuItem onClick={onExport}>
+              <Download className="size-4" />
+              {c.exportRecord}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => setDialog("crm")}>
             <Building2 className="size-4" />
             {c.addToCrm}
@@ -233,16 +278,19 @@ export function RecordActionsMenu({
               {c.addToBlacklist}
             </DropdownMenuItem>
           )}
-          {extra && (
+          {extraActions.length > 0 && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant={extra.destructive ? "destructive" : undefined}
-                onClick={extra.onClick}
-              >
-                {extra.icon}
-                {extra.label}
-              </DropdownMenuItem>
+              {extraActions.map((action) => (
+                <DropdownMenuItem
+                  key={action.label}
+                  variant={action.destructive ? "destructive" : undefined}
+                  onClick={action.onClick}
+                >
+                  {action.icon}
+                  {action.label}
+                </DropdownMenuItem>
+              ))}
             </>
           )}
         </DropdownMenuContent>
@@ -280,6 +328,13 @@ export function RecordActionsMenu({
           open
           onOpenChange={(v) => !v && setDialog(null)}
           prospects={[record as Prospect]}
+        />
+      )}
+      {dialog === "enrich" && kind === "company" && (
+        <CompanyEnrichDialog
+          open
+          onOpenChange={(v) => !v && setDialog(null)}
+          accounts={[record as Account]}
         />
       )}
     </>

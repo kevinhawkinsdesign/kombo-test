@@ -459,6 +459,17 @@ export default function Companies() {
   // (e.g. by paging through and selecting page-by-page past the cap).
   const addIdsArr = [...selectedIds].slice(0, MAX_ENRICH_BATCH)
 
+  // The per-row "…" menu's Export item — same CSV shape as the bulk
+  // export, just for a single company and no format picker.
+  function exportOne(a: Account) {
+    downloadCsv(
+      "company.csv",
+      ["Company", "Industry", "Domain", "Tier", "Health", "Pipeline"],
+      [[a.name, a.industry, a.domain, a.tier, a.healthScore, a.pipeline]]
+    )
+    toast.success(c.exportedToast(1, "CSV"))
+  }
+
   function confirmExport(opts: { format: ExportFormat }) {
     if (opts.format === "crm") {
       toast.success(c.crmSyncedToast(selectedAccounts.length, CONNECTED_CRM_PROVIDER.name))
@@ -622,7 +633,9 @@ export default function Companies() {
             locale={locale}
             editing={editing}
             onUpdate={(a, patch) => accountStore.update(a.id, patch)}
-            actions={(a) => <RecordActionsMenu kind="company" record={a} />}
+            actions={(a) => (
+              <RecordActionsMenu kind="company" record={a} onExport={() => exportOne(a)} />
+            )}
             selection={{
               isSelected: (a) => selectedIds.has(a.id),
               toggle: sel.toggleRow,
