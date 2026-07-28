@@ -1861,19 +1861,30 @@ const PROSPECT_COL_DEFAULT_IDS = [
 // pinned "prospect" column linking to the profile.
 const PROSPECT_DETAIL_COLUMNS: ColumnDef<CampaignProspectRow>[] = PEOPLE_COLUMNS.filter(
   (col) => !col.pinned
-).map((col) => ({
-  id: `p_${col.id}`,
-  label: col.label,
-  group: col.group,
-  align: col.align,
-  minWidth: col.minWidth,
-  render: (row, locale) =>
-    row.prospect ? (
-      col.render(row.prospect, locale)
-    ) : (
-      <span className="text-muted-foreground">—</span>
-    ),
-}))
+).map((col) => {
+  const getValue = col.getValue
+  return {
+    id: `p_${col.id}`,
+    label: col.label,
+    group: col.group,
+    align: col.align,
+    minWidth: col.minWidth,
+    render: (row, locale) =>
+      row.prospect ? (
+        col.render(row.prospect, locale)
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+    // Carry the source column's sort/filter contract forward — row.prospect
+    // can be undefined here (manual rows without a matched prospect), so
+    // treat those as "no value" rather than throwing.
+    getValue: getValue
+      ? (row: CampaignProspectRow) =>
+          row.prospect ? getValue(row.prospect) : undefined
+      : undefined,
+    filterType: col.filterType,
+  }
+})
 
 const CAMPAIGN_STATUSES: CampaignStatus[] = [
   "draft",
