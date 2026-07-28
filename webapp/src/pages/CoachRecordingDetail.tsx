@@ -33,6 +33,10 @@ import {
   Trash2,
   Plus,
   AlertTriangle,
+  Video,
+  Mic,
+  MessageCircle,
+  Phone,
 } from "lucide-react"
 
 import { useLocale, type Locale } from "@/lib/locale"
@@ -191,6 +195,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Original video",
+    originalAudio: "Original audio",
+    audioOnly: "Audio only",
     openOnLinkedIn: "Watch the original video on LinkedIn",
     linkedinNoEmbed:
       "LinkedIn calls can't be played here — open the original on LinkedIn.",
@@ -326,6 +332,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vídeo original",
+    originalAudio: "Audio original",
+    audioOnly: "Solo audio",
     openOnLinkedIn: "Ver el vídeo original en LinkedIn",
     linkedinNoEmbed:
       "Las llamadas de LinkedIn no se pueden reproducir aquí — abre el original en LinkedIn.",
@@ -461,6 +469,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Video originale",
+    originalAudio: "Audio originale",
+    audioOnly: "Solo audio",
     openOnLinkedIn: "Guarda il video originale su LinkedIn",
     linkedinNoEmbed:
       "Le chiamate LinkedIn non si possono riprodurre qui — apri l'originale su LinkedIn.",
@@ -596,6 +606,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vidéo originale",
+    originalAudio: "Audio original",
+    audioOnly: "Audio uniquement",
     openOnLinkedIn: "Voir la vidéo originale sur LinkedIn",
     linkedinNoEmbed:
       "Les appels LinkedIn ne peuvent pas être lus ici — ouvrez l'original sur LinkedIn.",
@@ -731,6 +743,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Originalvideo",
+    originalAudio: "Original-Audio",
+    audioOnly: "Nur Audio",
     openOnLinkedIn: "Das Originalvideo auf LinkedIn ansehen",
     linkedinNoEmbed:
       "LinkedIn-Calls können hier nicht abgespielt werden — öffne das Original auf LinkedIn.",
@@ -866,6 +880,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vídeo original",
+    originalAudio: "Áudio original",
+    audioOnly: "Apenas áudio",
     openOnLinkedIn: "Ver o vídeo original no LinkedIn",
     linkedinNoEmbed:
       "As chamadas do LinkedIn não podem ser reproduzidas aqui — abra o original no LinkedIn.",
@@ -1001,6 +1017,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vídeo original",
+    originalAudio: "Áudio original",
+    audioOnly: "Somente áudio",
     openOnLinkedIn: "Assistir ao vídeo original no LinkedIn",
     linkedinNoEmbed:
       "Ligações do LinkedIn não podem ser reproduzidas aqui — abra o original no LinkedIn.",
@@ -1079,6 +1097,47 @@ function formatClock(totalSec: number): string {
   const m = Math.floor(totalSec / 60)
   const s = Math.floor(totalSec % 60)
   return `${m}:${String(s).padStart(2, "0")}`
+}
+
+// Which icon (and brand tint) represents each call source in the player
+// stage's badge. Meet/Teams/WhatsApp/Gong mirror the exact icon+tint pairing
+// already used for these platforms in ConnectionsPanel's "Call sources"
+// section, so a source reads the same way everywhere it appears. Zoom has no
+// brand mark anywhere in this app — it gets the same generic Video treatment
+// as Meet/Teams (tinted with Zoom's brand blue) rather than inventing a fake
+// logo. `linkedin` is included for type completeness even though that source
+// never reaches this map (it renders its own "watch on LinkedIn" branch).
+const VIDEO_SOURCE_ICON: Record<
+  NonNullable<CoachRecording["videoSource"]>,
+  { Icon: React.ComponentType<{ className?: string }>; className: string }
+> = {
+  meet: { Icon: Video, className: "text-[#00832d]" },
+  teams: { Icon: Video, className: "text-[#4b53bc]" },
+  zoom: { Icon: Video, className: "text-[#2d8cff]" },
+  gong: { Icon: Mic, className: "text-[#7444d6]" },
+  whatsapp: { Icon: MessageCircle, className: "text-emerald-600" },
+  phone: { Icon: Phone, className: "text-muted-foreground" },
+  linkedin: { Icon: LinkedinIcon, className: "text-[#0a66c2]" },
+}
+
+const WAVEFORM_BAR_COUNT = 56
+
+// Deterministic pseudo-random bar heights (0–1) for the audio-only stage's
+// waveform visualization — seeded by the recording id so the pattern is
+// stable across re-renders instead of reshuffling on every paint. Not real
+// audio analysis (there's no media file in this prototype), just a plausible
+// static waveform preview, same idea as a real player's scrub-bar thumbnail.
+function waveformBars(seed: string, count: number): number[] {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) {
+    h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  }
+  const bars: number[] = []
+  for (let i = 0; i < count; i++) {
+    h = (h * 1664525 + 1013904223) >>> 0
+    bars.push(0.2 + ((h >>> 8) % 1000) / 1000 * 0.8)
+  }
+  return bars
 }
 
 // Fill a follow-up template's {{variables}} from the recording.
@@ -1190,6 +1249,14 @@ export default function CoachRecordingDetail() {
   const prospectRatio = 100 - rec.talkRatio
   const scorecard = getScorecard(rec.id)
   const quotes = scorecard.sections.filter((s) => s.quote)
+
+  // The player stage: undefined mediaKind reads as "video" for back-compat
+  // with any recording that predates this field.
+  const isAudioOnly = rec.mediaKind === "audio"
+  const sourceKey = rec.videoSource ?? "meet"
+  const { Icon: SourceIcon, className: sourceIconClass } =
+    VIDEO_SOURCE_ICON[sourceKey]
+  const waveform = waveformBars(rec.id, WAVEFORM_BAR_COUNT)
 
   const transcriptTurns = analysis?.transcript ?? []
   const tq = transcriptQuery.trim().toLowerCase()
@@ -1556,27 +1623,68 @@ export default function CoachRecordingDetail() {
         </Card>
       ) : (
         <Card className="mb-6 gap-0 overflow-hidden p-0">
-          <div className="relative flex aspect-video max-h-80 w-full items-center justify-center bg-zinc-900">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <span className="bg-primary/25 text-primary-foreground flex size-20 items-center justify-center rounded-full text-2xl font-semibold">
-                {rec.prospectName
-                  .split(" ")
-                  .map((w) => w[0])
-                  .slice(0, 2)
-                  .join("")}
-              </span>
-              <p className="text-sm font-medium text-white">
-                {rec.prospectName}
-              </p>
-              <p className="text-xs text-white/60">{rec.company}</p>
-            </div>
+          <div
+            className={cn(
+              "relative flex aspect-video max-h-80 w-full items-center justify-center",
+              isAudioOnly ? "bg-muted" : "bg-zinc-900"
+            )}
+          >
+            {isAudioOnly ? (
+              <div className="flex w-full flex-col items-center gap-3 px-6">
+                <div className="flex h-16 w-full max-w-md items-end justify-center gap-[3px]">
+                  {waveform.map((barHeight, i) => {
+                    const played =
+                      durationSec > 0 &&
+                      (i / waveform.length) * durationSec <= positionSec
+                    return (
+                      <span
+                        key={i}
+                        className={cn(
+                          "w-1 shrink-0 rounded-full transition-colors",
+                          played ? "bg-primary" : "bg-muted-foreground/30"
+                        )}
+                        style={{ height: `${Math.round(barHeight * 100)}%` }}
+                      />
+                    )
+                  })}
+                </div>
+                <p className="text-foreground text-sm font-medium">
+                  {rec.prospectName}
+                </p>
+                <p className="text-muted-foreground text-xs">{rec.company}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <span className="bg-primary/25 text-primary-foreground flex size-20 items-center justify-center rounded-full text-2xl font-semibold">
+                  {rec.prospectName
+                    .split(" ")
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join("")}
+                </span>
+                <p className="text-sm font-medium text-white">
+                  {rec.prospectName}
+                </p>
+                <p className="text-xs text-white/60">{rec.company}</p>
+              </div>
+            )}
             <Badge
               variant="secondary"
-              className="absolute top-3 left-3 font-normal"
+              className="absolute top-3 left-3 flex items-center gap-1.5 font-normal"
             >
-              {c.originalVideo} ·{" "}
-              {c.videoSourceLabel[rec.videoSource ?? "meet"]}
+              <SourceIcon className={cn("size-3.5", sourceIconClass)} />
+              {isAudioOnly ? c.originalAudio : c.originalVideo} ·{" "}
+              {c.videoSourceLabel[sourceKey]}
             </Badge>
+            {isAudioOnly && (
+              <Badge
+                variant="outline"
+                className="bg-background/80 absolute top-3 right-3 flex items-center gap-1.5 font-normal"
+              >
+                <Mic className="size-3.5" />
+                {c.audioOnly}
+              </Badge>
+            )}
             <button
               type="button"
               onClick={togglePlay}

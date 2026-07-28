@@ -1158,10 +1158,27 @@ export const coachRecordings: CoachRecording[] = [
     highlights: ["Skeptical on ROI", "Missed budget qualification"],
     nextSteps: ["Build ROI case study", "Re-engage in 30 days"],
     videoSource: "linkedin",
+    mediaKind: "video",
     summarized: false,
     analyzed: false,
     prospectPosition: "Sales Director",
     salesRepId: "rep_2",
+  },
+  {
+    id: "r_4",
+    title: "Check-in — Delta Robotics",
+    prospectName: "Hugo Alvarez",
+    company: "Delta Robotics",
+    date: "2026-06-17T13:00:00Z",
+    durationMin: 14,
+    score: 69,
+    talkRatio: 51,
+    sentiment: "neutral",
+    highlights: ["Quick pricing check-in", "Confirmed decision timeline"],
+    nextSteps: ["Send updated proposal", "Follow up after board review"],
+    // A regular phone call has no video track — audio-only.
+    videoSource: "phone",
+    mediaKind: "audio",
   },
 ]
 
