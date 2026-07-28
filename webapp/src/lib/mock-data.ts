@@ -1056,7 +1056,9 @@ export const coachRecordings: CoachRecording[] = [
         metricSummary: "Uncovered current tooling, team size, and specific pain points early.",
         subMetrics: [
           { label: "Open-ended questions", score: 90 },
-          { label: "Pain quantification", score: 94 },
+          // Flagged NA as a concrete example of the "not applicable" chip —
+          // renders a neutral pill instead of a (misleading) percent score.
+          { label: "Pain quantification", score: 94, isNa: true },
         ],
       },
       {

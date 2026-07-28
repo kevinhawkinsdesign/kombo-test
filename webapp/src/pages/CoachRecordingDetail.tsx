@@ -46,8 +46,10 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
 import { TabSkeleton } from "@/components/common/ContentSkeleton"
@@ -123,6 +125,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `This analysis was generated with the “${t}” type — re-analyze to refresh it.`,
     callScoreBreakdown: "Call score breakdown",
+    na: "NA",
     callReview: "Call review",
     yourAverage: "Your average",
     teamAverage: "Team average",
@@ -150,6 +153,8 @@ const COPY = {
     noShow: "No-show",
     addToCrm: "Add to CRM",
     inCrm: "In CRM",
+    nextStepFieldLabel: (n: number) => `Next step ${n}`,
+    selectNextStepAria: (step: string) => `Select for CRM: ${step}`,
     crmFirstName: "First name",
     crmLastName: "Last name",
     crmEmail: "Email",
@@ -164,6 +169,12 @@ const COPY = {
     overviewEmpty: "This call hasn't been summarized yet.",
     summary: "Summary",
     followUpTitle: (name: string) => `Follow up with ${name}`,
+    valuePropGateTitle: "Confirm your value proposition",
+    valuePropGateIntro:
+      "Confirm your value proposition so Kai can tailor this follow-up.",
+    valuePropGateDefault: (company: string) =>
+      `${company} helps sales teams find and engage the right prospects faster with AI-powered search, enrichment, and outreach — all in one place.`,
+    valuePropGateConfirm: "Confirm & continue",
     followUpSubjectLabel: "Subject",
     followUpBodyLabel: "Message",
     followUpDefaultSubject: (company: string) => `Following up — ${company}`,
@@ -258,6 +269,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Este análisis se generó con el tipo «${t}» — reanaliza para actualizarlo.`,
     callScoreBreakdown: "Desglose de la puntuación",
+    na: "NA",
     callReview: "Revisión de la llamada",
     yourAverage: "Tu media",
     teamAverage: "Media del equipo",
@@ -285,6 +297,8 @@ const COPY = {
     noShow: "No asistió",
     addToCrm: "Añadir al CRM",
     inCrm: "En CRM",
+    nextStepFieldLabel: (n: number) => `Próximo paso ${n}`,
+    selectNextStepAria: (step: string) => `Seleccionar para el CRM: ${step}`,
     crmFirstName: "Nombre",
     crmLastName: "Apellidos",
     crmEmail: "Correo",
@@ -299,6 +313,12 @@ const COPY = {
     overviewEmpty: "Esta llamada aún no se ha resumido.",
     summary: "Resumen",
     followUpTitle: (name: string) => `Seguimiento con ${name}`,
+    valuePropGateTitle: "Confirma tu propuesta de valor",
+    valuePropGateIntro:
+      "Confirma tu propuesta de valor para que Kai pueda adaptar este seguimiento.",
+    valuePropGateDefault: (company: string) =>
+      `${company} ayuda a los equipos de ventas a encontrar y contactar a los prospectos adecuados más rápido con búsqueda, enriquecimiento y prospección impulsados por IA — todo en un mismo lugar.`,
+    valuePropGateConfirm: "Confirmar y continuar",
     followUpSubjectLabel: "Asunto",
     followUpBodyLabel: "Mensaje",
     followUpDefaultSubject: (company: string) => `Seguimiento — ${company}`,
@@ -393,6 +413,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Questa analisi è stata generata con il tipo «${t}» — rianalizza per aggiornarla.`,
     callScoreBreakdown: "Dettaglio del punteggio",
+    na: "NA",
     callReview: "Revisione della chiamata",
     yourAverage: "La tua media",
     teamAverage: "Media del team",
@@ -420,6 +441,8 @@ const COPY = {
     noShow: "Assente",
     addToCrm: "Aggiungi al CRM",
     inCrm: "Nel CRM",
+    nextStepFieldLabel: (n: number) => `Prossimo passo ${n}`,
+    selectNextStepAria: (step: string) => `Seleziona per il CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Cognome",
     crmEmail: "Email",
@@ -434,6 +457,12 @@ const COPY = {
     overviewEmpty: "Questa chiamata non è stata ancora riepilogata.",
     summary: "Riepilogo",
     followUpTitle: (name: string) => `Follow-up con ${name}`,
+    valuePropGateTitle: "Conferma la tua proposta di valore",
+    valuePropGateIntro:
+      "Conferma la tua proposta di valore così Kai può personalizzare questo follow-up.",
+    valuePropGateDefault: (company: string) =>
+      `${company} aiuta i team di vendita a trovare e coinvolgere i prospect giusti più velocemente con ricerca, arricchimento e prospecting basati sull'AI — tutto in un unico posto.`,
+    valuePropGateConfirm: "Conferma e continua",
     followUpSubjectLabel: "Oggetto",
     followUpBodyLabel: "Messaggio",
     followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
@@ -528,6 +557,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Cette analyse a été générée avec le type « ${t} » — relancez l'analyse pour l'actualiser.`,
     callScoreBreakdown: "Détail du score",
+    na: "NA",
     callReview: "Bilan de l'appel",
     yourAverage: "Votre moyenne",
     teamAverage: "Moyenne de l'équipe",
@@ -555,6 +585,8 @@ const COPY = {
     noShow: "Absent",
     addToCrm: "Ajouter au CRM",
     inCrm: "Dans le CRM",
+    nextStepFieldLabel: (n: number) => `Étape suivante ${n}`,
+    selectNextStepAria: (step: string) => `Sélectionner pour le CRM : ${step}`,
     crmFirstName: "Prénom",
     crmLastName: "Nom",
     crmEmail: "E-mail",
@@ -569,6 +601,12 @@ const COPY = {
     overviewEmpty: "Cet appel n'a pas encore été résumé.",
     summary: "Résumé",
     followUpTitle: (name: string) => `Suivi avec ${name}`,
+    valuePropGateTitle: "Confirmez votre proposition de valeur",
+    valuePropGateIntro:
+      "Confirmez votre proposition de valeur pour que Kai puisse adapter ce suivi.",
+    valuePropGateDefault: (company: string) =>
+      `${company} aide les équipes commerciales à trouver et engager les bons prospects plus rapidement grâce à la recherche, l'enrichissement et la prospection propulsés par l'IA — le tout au même endroit.`,
+    valuePropGateConfirm: "Confirmer et continuer",
     followUpSubjectLabel: "Objet",
     followUpBodyLabel: "Message",
     followUpDefaultSubject: (company: string) => `Suivi — ${company}`,
@@ -663,6 +701,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Diese Analyse wurde mit dem Typ „${t}“ erstellt — analysiere neu, um sie zu aktualisieren.`,
     callScoreBreakdown: "Score-Aufschlüsselung",
+    na: "NA",
     callReview: "Call-Review",
     yourAverage: "Dein Durchschnitt",
     teamAverage: "Team-Durchschnitt",
@@ -690,6 +729,8 @@ const COPY = {
     noShow: "Nicht erschienen",
     addToCrm: "Zum CRM hinzufügen",
     inCrm: "Im CRM",
+    nextStepFieldLabel: (n: number) => `Nächster Schritt ${n}`,
+    selectNextStepAria: (step: string) => `Für CRM auswählen: ${step}`,
     crmFirstName: "Vorname",
     crmLastName: "Nachname",
     crmEmail: "E-Mail",
@@ -704,6 +745,12 @@ const COPY = {
     overviewEmpty: "Dieser Anruf wurde noch nicht zusammengefasst.",
     summary: "Zusammenfassung",
     followUpTitle: (name: string) => `Follow-up mit ${name}`,
+    valuePropGateTitle: "Bestätige deine Value Proposition",
+    valuePropGateIntro:
+      "Bestätige deine Value Proposition, damit Kai dieses Follow-up darauf abstimmen kann.",
+    valuePropGateDefault: (company: string) =>
+      `${company} hilft Sales-Teams, die richtigen Prospects schneller zu finden und anzusprechen — mit KI-gestützter Suche, Anreicherung und Prospecting, alles an einem Ort.`,
+    valuePropGateConfirm: "Bestätigen und fortfahren",
     followUpSubjectLabel: "Betreff",
     followUpBodyLabel: "Nachricht",
     followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
@@ -798,6 +845,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo «${t}» — reanalise para a atualizar.`,
     callScoreBreakdown: "Detalhe da pontuação",
+    na: "NA",
     callReview: "Revisão da chamada",
     yourAverage: "A sua média",
     teamAverage: "Média da equipa",
@@ -825,6 +873,8 @@ const COPY = {
     noShow: "Não compareceu",
     addToCrm: "Adicionar ao CRM",
     inCrm: "No CRM",
+    nextStepFieldLabel: (n: number) => `Próximo passo ${n}`,
+    selectNextStepAria: (step: string) => `Selecionar para o CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Apelido",
     crmEmail: "Email",
@@ -839,6 +889,12 @@ const COPY = {
     overviewEmpty: "Esta chamada ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Seguimento com ${name}`,
+    valuePropGateTitle: "Confirme a sua proposta de valor",
+    valuePropGateIntro:
+      "Confirme a sua proposta de valor para que o Kai possa adaptar este seguimento.",
+    valuePropGateDefault: (company: string) =>
+      `${company} ajuda as equipas de vendas a encontrar e envolver os prospects certos mais depressa com pesquisa, enriquecimento e prospeção com IA — tudo num só lugar.`,
+    valuePropGateConfirm: "Confirmar e continuar",
     followUpSubjectLabel: "Assunto",
     followUpBodyLabel: "Mensagem",
     followUpDefaultSubject: (company: string) => `Seguimento — ${company}`,
@@ -933,6 +989,7 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo “${t}” — reanalise para atualizá-la.`,
     callScoreBreakdown: "Detalhamento da pontuação",
+    na: "NA",
     callReview: "Revisão da ligação",
     yourAverage: "Sua média",
     teamAverage: "Média do time",
@@ -960,6 +1017,8 @@ const COPY = {
     noShow: "Não compareceu",
     addToCrm: "Adicionar ao CRM",
     inCrm: "No CRM",
+    nextStepFieldLabel: (n: number) => `Próximo passo ${n}`,
+    selectNextStepAria: (step: string) => `Selecionar para o CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Sobrenome",
     crmEmail: "E-mail",
@@ -974,6 +1033,12 @@ const COPY = {
     overviewEmpty: "Esta ligação ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Follow-up com ${name}`,
+    valuePropGateTitle: "Confirme sua proposta de valor",
+    valuePropGateIntro:
+      "Confirme sua proposta de valor para que o Kai possa personalizar este follow-up.",
+    valuePropGateDefault: (company: string) =>
+      `${company} ajuda times de vendas a encontrar e engajar os prospects certos mais rápido com busca, enriquecimento e prospecção com IA — tudo em um só lugar.`,
+    valuePropGateConfirm: "Confirmar e continuar",
     followUpSubjectLabel: "Assunto",
     followUpBodyLabel: "Mensagem",
     followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
@@ -1340,10 +1405,26 @@ export default function CoachRecordingDetail() {
   }
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
   const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
+  // Lives on the page, not inside FollowUpTab — that component unmounts
+  // whenever this TabsContent isn't the active tab (see its own comment),
+  // so state kept there wouldn't survive switching away and back.
+  const [valuePropConfirmed, setValuePropConfirmed] = React.useState(false)
   const [crmOpen, setCrmOpen] = React.useState(false)
   const [crmParticipant, setCrmParticipant] = React.useState<CoachParticipant | null>(
     null
   )
+  // Summary tab's own "Add to CRM" entry points — separate from the
+  // Participants tab's crmOpen/crmParticipant above, but wired to the same
+  // shared AddToCrmDialog component (two more mounts of it below).
+  const [overviewCrmOpen, setOverviewCrmOpen] = React.useState(false)
+  const [selectedForCrm, setSelectedForCrm] = React.useState<Record<number, boolean>>(
+    {}
+  )
+  const [nextStepsInCrm, setNextStepsInCrm] = React.useState<Record<number, boolean>>(
+    {}
+  )
+  const [nextStepsCrmOpen, setNextStepsCrmOpen] = React.useState(false)
+  const [nextStepsCrmIndices, setNextStepsCrmIndices] = React.useState<number[]>([])
 
   if (!rec) {
     return (
@@ -1439,6 +1520,60 @@ export default function CoachRecordingDetail() {
       ]
     : []
 
+  // Opens the shared "Add to CRM" wizard for the AI-generated overview,
+  // pushed as a single note against the prospect on the call. AddToCrmDialog
+  // only reports open/closed (no separate "wizard actually finished" signal),
+  // so — like the page-header "Add notes to CRM" button above, which fires
+  // the same toast on click with no dialog at all — this treats opening the
+  // picker as the commit point rather than waiting on an event the shared
+  // dialog doesn't expose.
+  function openOverviewCrmDialog() {
+    setOverviewCrmOpen(true)
+    toast.success(c.notesAdded)
+  }
+  const overviewCrmFields = [{ label: c.overview, value: rec.overview ?? "" }]
+
+  function toggleSelectedForCrm(index: number) {
+    setSelectedForCrm((prev) => ({ ...prev, [index]: !prev[index] }))
+  }
+  const selectedNextStepIndices = rec.nextSteps
+    .map((_, i) => i)
+    .filter((i) => selectedForCrm[i] && !nextStepsInCrm[i])
+
+  // Opens the shared "Add to CRM" wizard for the checked next steps, pushed
+  // as CRM notes against the prospect on the call. Same optimistic reasoning
+  // as openOverviewCrmDialog above: marks the pushed rows "In CRM" and clears
+  // their selection as soon as the picker opens, rather than the dialog
+  // reporting back a completion event it doesn't have.
+  function openNextStepsCrmDialog() {
+    if (selectedNextStepIndices.length === 0) return
+    const indices = selectedNextStepIndices
+    setNextStepsCrmIndices(indices)
+    setNextStepsCrmOpen(true)
+    setNextStepsInCrm((prev) => {
+      const next = { ...prev }
+      indices.forEach((i) => {
+        next[i] = true
+      })
+      return next
+    })
+    setSelectedForCrm((prev) => {
+      const next = { ...prev }
+      indices.forEach((i) => {
+        delete next[i]
+      })
+      return next
+    })
+    toast.success(c.notesAdded)
+  }
+  // Snapshotted from nextStepsCrmIndices at click time (not recomputed from
+  // selectedNextStepIndices, which clears immediately above) so the dialog's
+  // field list stays stable for as long as it's open.
+  const nextStepsCrmFields = nextStepsCrmIndices.map((i, idx) => ({
+    label: c.nextStepFieldLabel(idx + 1),
+    value: rec.nextSteps[i],
+  }))
+
   const participantsCard =
     rec.participants && rec.participants.length > 0 ? (
       <Card>
@@ -1513,18 +1648,43 @@ export default function CoachRecordingDetail() {
   // Steps shouldn't disappear or reshuffle just because the call type changed.
   const nextStepsCard = rec.nextSteps.length > 0 && (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-base">{c.actionItems}</CardTitle>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={selectedNextStepIndices.length === 0}
+          onClick={openNextStepsCrmDialog}
+        >
+          <Building2 className="size-4" />
+          {c.addToCrm}
+        </Button>
       </CardHeader>
       <CardContent className="space-y-2">
         {rec.nextSteps.map((item, i) => {
           const done = doneItems[i] ?? false
+          const inCrm = nextStepsInCrm[i] ?? false
           const priority = ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
           return (
             <div
               key={item}
               className="bg-muted/50 flex items-center gap-2 rounded-md px-3 py-2 text-sm"
             >
+              {inCrm ? (
+                <span
+                  aria-hidden
+                  className="flex size-6 shrink-0 items-center justify-center"
+                >
+                  <Building2 className="text-muted-foreground size-4" />
+                </span>
+              ) : (
+                <Checkbox
+                  checked={selectedForCrm[i] ?? false}
+                  onCheckedChange={() => toggleSelectedForCrm(i)}
+                  aria-label={c.selectNextStepAria(item)}
+                  className="shrink-0"
+                />
+              )}
               <Button
                 size="icon"
                 variant="ghost"
@@ -1549,6 +1709,11 @@ export default function CoachRecordingDetail() {
               <Badge variant="outline" className="shrink-0 font-normal">
                 {c.priorityLabel(c.priority[priority])}
               </Badge>
+              {inCrm && (
+                <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs">
+                  {c.inCrm}
+                </span>
+              )}
             </div>
           )
         })}
@@ -1948,8 +2113,18 @@ export default function CoachRecordingDetail() {
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
                   <CardTitle className="text-base">{c.overview}</CardTitle>
+                  {rec.overview && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={openOverviewCrmDialog}
+                    >
+                      <Building2 className="size-4" />
+                      {c.addToCrm}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {rec.overview ? (
@@ -2145,6 +2320,8 @@ export default function CoachRecordingDetail() {
             problem={analysis?.keyFields?.problem}
             helpful={followUpHelpful}
             setHelpful={setFollowUpHelpful}
+            valuePropConfirmed={valuePropConfirmed}
+            setValuePropConfirmed={setValuePropConfirmed}
           />
         </TabsContent>
         </>
@@ -2189,6 +2366,26 @@ export default function CoachRecordingDetail() {
         recordName={crmParticipant?.name ?? ""}
         accountName={rec.company}
         fields={crmParticipantFields}
+      />
+
+      <AddToCrmDialog
+        open={overviewCrmOpen}
+        onOpenChange={setOverviewCrmOpen}
+        kind="prospect"
+        recordId={`${rec.id}-overview`}
+        recordName={rec.prospectName}
+        accountName={rec.company}
+        fields={overviewCrmFields}
+      />
+
+      <AddToCrmDialog
+        open={nextStepsCrmOpen}
+        onOpenChange={setNextStepsCrmOpen}
+        kind="prospect"
+        recordId={`${rec.id}-next-steps`}
+        recordName={rec.prospectName}
+        accountName={rec.company}
+        fields={nextStepsCrmFields}
       />
     </Page>
   )
@@ -2237,14 +2434,23 @@ function ScoreBreakdownRow({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <span
-            className={cn(
-              "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
-              scorePillClass(metric.metricScore)
-            )}
-          >
-            {metric.metricScore}
-          </span>
+          {metric.isNa ? (
+            <Badge
+              variant="outline"
+              className="text-muted-foreground border-muted-foreground/30"
+            >
+              {c.na}
+            </Badge>
+          ) : (
+            <span
+              className={cn(
+                "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
+                scorePillClass(metric.metricScore)
+              )}
+            >
+              {metric.metricScore}
+            </span>
+          )}
           {subMetrics.length > 0 && (
             <Button
               variant="ghost"
@@ -2268,14 +2474,23 @@ function ScoreBreakdownRow({
               className="flex items-center justify-between text-sm"
             >
               <span className="text-muted-foreground">{sub.label}</span>
-              <span
-                className={cn(
-                  "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
-                  scorePillClass(sub.score)
-                )}
-              >
-                {sub.score}
-              </span>
+              {sub.isNa ? (
+                <Badge
+                  variant="outline"
+                  className="text-muted-foreground border-muted-foreground/30"
+                >
+                  {c.na}
+                </Badge>
+              ) : (
+                <span
+                  className={cn(
+                    "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
+                    scorePillClass(sub.score)
+                  )}
+                >
+                  {sub.score}
+                </span>
+              )}
             </div>
           ))}
         </div>
@@ -2324,6 +2539,8 @@ function FollowUpTab({
   problem,
   helpful,
   setHelpful,
+  valuePropConfirmed,
+  setValuePropConfirmed,
 }: {
   rec: CoachRecording
   c: Copy
@@ -2334,7 +2551,12 @@ function FollowUpTab({
   problem?: string
   helpful: boolean | null
   setHelpful: (v: boolean | null) => void
+  valuePropConfirmed: boolean
+  setValuePropConfirmed: (v: boolean) => void
 }) {
+  const [valueProp, setValueProp] = React.useState(() =>
+    c.valuePropGateDefault(currentUser.company)
+  )
   const templates = useFollowUpTemplates()
   // Nothing concrete to personalize the draft with yet — next steps carry
   // the "what to do", `problem` carries the "why it matters"; without either
@@ -2412,6 +2634,31 @@ function FollowUpTab({
   }
 
   const hasText = stripHtml(body).trim().length > 0
+
+  // Gate the composer behind a one-time-per-session value-prop confirmation,
+  // mirroring the Chrome extension's FollowUpEmailPrep flow. `valuePropConfirmed`
+  // lives on the page (see its declaration there) so it survives switching to
+  // another tab and back — only remounting the page resets it.
+  if (!valuePropConfirmed) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.valuePropGateTitle}</CardTitle>
+          <p className="text-muted-foreground text-sm">{c.valuePropGateIntro}</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={valueProp}
+            onChange={(e) => setValueProp(e.target.value)}
+            className="min-h-28"
+          />
+          <Button variant="volt" onClick={() => setValuePropConfirmed(true)}>
+            {c.valuePropGateConfirm}
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <>

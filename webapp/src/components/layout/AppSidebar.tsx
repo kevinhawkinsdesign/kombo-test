@@ -30,6 +30,7 @@ import {
   Search,
   Folder,
   Compass,
+  BarChart3,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -111,6 +112,7 @@ const groups: NavGroup[] = [
       { to: "/sequences", labelKey: "nav.sequences", icon: Workflow, isNew: true },
       { to: "/templates", labelKey: "nav.templates", icon: Mail },
       { to: "/coach", labelKey: "nav.coach", icon: GraduationCap },
+      { to: "/call-analytics", labelKey: "nav.callAnalytics", icon: BarChart3 },
     ],
   },
   {
