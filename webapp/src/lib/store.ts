@@ -501,6 +501,13 @@ export const taskStore = {
   remove(id: string): void {
     setState({ tasks: state.tasks.filter((t) => t.id !== id) })
   },
+  // Mirrors conversationStore.setStatus — same enum, same "Set Outcome" UI,
+  // now on task rows too.
+  setStatus(id: string, status: ConvStatus | undefined): void {
+    setState({
+      tasks: state.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
+    })
+  },
   toggle(id: string): void {
     const task = state.tasks.find((t) => t.id === id)
     setState({
@@ -1146,17 +1153,20 @@ export const prospectStore = {
       prospects: state.prospects.map((p) => {
         if (!set.has(p.id)) return p
         const next: Prospect = { ...p }
-        if (scope === "email") {
+        // "profile" is a superset: it already includes a verified email and
+        // direct dial (see lib/enrichment.ts), so it reveals those two
+        // fields exactly like buying them individually would.
+        if (scope === "email" || scope === "profile") {
           next.email =
             p.email ||
             `${p.firstName}.${p.lastName}@${p.companyDomain}`
               .toLowerCase()
               .replace(/\s+/g, "")
         }
-        if (scope === "phone") {
+        if (scope === "phone" || scope === "profile") {
           next.phone = p.phone || mockPhone(p.id)
         }
-        // "profile" reveals the ~30 data points — the master enrichment flag.
+        // "profile" also reveals the ~30 data points — the master enrichment flag.
         if (scope === "profile") {
           next.enriched = true
         }

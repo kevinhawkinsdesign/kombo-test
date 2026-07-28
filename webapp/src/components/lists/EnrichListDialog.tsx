@@ -17,6 +17,7 @@ import {
   ENRICH_COST,
   MAX_ENRICH_BATCH,
   needsEnrichScope,
+  needsAnyEnrichScope,
   type EnrichScope,
 } from "@/lib/enrichment"
 import { prospectStore, listStore } from "@/lib/store"
@@ -38,7 +39,8 @@ const COPY = {
     scopeProfile: "Profile enrichment",
     scopeEmailDesc: "Verified work email",
     scopePhoneDesc: "Direct dial & mobile",
-    scopeProfileDesc: "Scoring + 30+ data points",
+    scopeProfileDesc: "Includes email + phone, plus scoring & 30+ data points",
+    included: "Included",
     toEnrich: "Prospects to enrich",
     total: "Total",
     pickOne: "Pick at least one thing to reveal.",
@@ -70,7 +72,8 @@ const COPY = {
     scopeProfile: "Perfil enriquecido",
     scopeEmailDesc: "Correo de trabajo verificado",
     scopePhoneDesc: "Teléfono directo y móvil",
-    scopeProfileDesc: "Puntuación + más de 30 datos",
+    scopeProfileDesc: "Incluye correo y teléfono, además de puntuación y más de 30 datos",
+    included: "Incluido",
     toEnrich: "Prospectos por enriquecer",
     total: "Total",
     pickOne: "Elige al menos una cosa para revelar.",
@@ -102,7 +105,8 @@ const COPY = {
     scopeProfile: "Arricchimento del profilo",
     scopeEmailDesc: "Email di lavoro verificata",
     scopePhoneDesc: "Numero diretto e cellulare",
-    scopeProfileDesc: "Punteggio + oltre 30 dati",
+    scopeProfileDesc: "Include email e telefono, oltre a punteggio e più di 30 dati",
+    included: "Incluso",
     toEnrich: "Prospect da arricchire",
     total: "Totale",
     pickOne: "Scegli almeno una cosa da rivelare.",
@@ -134,7 +138,9 @@ const COPY = {
     scopeProfile: "Enrichissement du profil",
     scopeEmailDesc: "E-mail professionnel vérifié",
     scopePhoneDesc: "Ligne directe et mobile",
-    scopeProfileDesc: "Scoring + plus de 30 points de données",
+    scopeProfileDesc:
+      "Inclut l'e-mail et le téléphone, plus le scoring et plus de 30 points de données",
+    included: "Inclus",
     toEnrich: "Prospects à enrichir",
     total: "Total",
     pickOne: "Choisissez au moins un élément à révéler.",
@@ -166,7 +172,8 @@ const COPY = {
     scopeProfile: "Profilanreicherung",
     scopeEmailDesc: "Verifizierte geschäftliche E-Mail",
     scopePhoneDesc: "Durchwahl & Mobilnummer",
-    scopeProfileDesc: "Scoring + über 30 Datenpunkte",
+    scopeProfileDesc: "Enthält E-Mail und Telefon, plus Scoring und über 30 Datenpunkte",
+    included: "Inbegriffen",
     toEnrich: "Zu bereichernde Prospects",
     total: "Gesamt",
     pickOne: "Wähle mindestens eine Option zum Aufdecken.",
@@ -199,7 +206,9 @@ const COPY = {
     scopeProfile: "Enriquecimento do perfil",
     scopeEmailDesc: "Email profissional verificado",
     scopePhoneDesc: "Contacto direto e telemóvel",
-    scopeProfileDesc: "Pontuação + mais de 30 pontos de dados",
+    scopeProfileDesc:
+      "Inclui email e telefone, além de pontuação e mais de 30 pontos de dados",
+    included: "Incluído",
     toEnrich: "Prospects a enriquecer",
     total: "Total",
     pickOne: "Escolha pelo menos uma coisa para revelar.",
@@ -231,7 +240,9 @@ const COPY = {
     scopeProfile: "Enriquecimento do perfil",
     scopeEmailDesc: "Email profissional verificado",
     scopePhoneDesc: "Contato direto e celular",
-    scopeProfileDesc: "Pontuação + mais de 30 pontos de dados",
+    scopeProfileDesc:
+      "Inclui email e telefone, além de pontuação e mais de 30 pontos de dados",
+    included: "Incluído",
     toEnrich: "Prospects a enriquecer",
     total: "Total",
     pickOne: "Escolha pelo menos uma coisa para revelar.",
@@ -273,7 +284,10 @@ export function EnrichListDialog({
   const { locale } = useLocale()
   const c = COPY[locale]
   const { balance, spend } = useCredits()
-  // The three reveals are independent — start with all selected, deselect freely.
+  // Email and phone are independent, a-la-carte reveals. Profile enrichment is
+  // a superset that already includes both (plus the ~30 data points) — start
+  // with everything selected, deselect freely, but see profileOn below for
+  // how profile locks in (and absorbs the charge for) the other two.
   const [selected, setSelected] = React.useState<Set<EnrichScope>>(
     () => new Set(ALL_SCOPES)
   )
@@ -293,7 +307,17 @@ export function EnrichListDialog({
     { value: "profile", label: c.scopeProfile, desc: c.scopeProfileDesc, icon: Database },
   ]
 
+  // Profile enrichment already includes verified email + direct dial, so
+  // while it's selected the other two tiles are shown as included (checked,
+  // locked, "Included" instead of their own price) rather than stacking a
+  // second charge on top of profile's.
+  const profileOn = selected.has("profile")
+  const isScopeActive = (scope: EnrichScope) =>
+    scope === "profile" ? profileOn : profileOn || selected.has(scope)
+  const isScopeLocked = (scope: EnrichScope) => scope !== "profile" && profileOn
+
   function toggleScope(scope: EnrichScope) {
+    if (isScopeLocked(scope)) return
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(scope)) next.delete(scope)
@@ -302,20 +326,42 @@ export function EnrichListDialog({
     })
   }
 
-  const scopes = ALL_SCOPES.filter((s) => selected.has(s))
-  // Contacts needing at least one selected reveal, capped to one batch.
-  const affected = prospects.filter((p) =>
-    scopes.some((s) => needsEnrichScope(p, s))
-  )
+  // À la carte scopes only matter when profile isn't selected — once it is,
+  // it alone drives the batch/cost math below (its price already covers
+  // email + phone, so they must never contribute their own line).
+  const alaCarteScopes = profileOn
+    ? []
+    : ALL_SCOPES.filter((s) => s !== "profile" && selected.has(s))
+  const anySelected = profileOn || alaCarteScopes.length > 0
+
+  // Contacts needing at least one thing the current selection would reveal,
+  // capped to one batch. Profile's "need" is the full-bundle check (any of
+  // email/phone/profile still missing) since buying it fills in all three.
+  const affected = profileOn
+    ? prospects.filter(needsAnyEnrichScope)
+    : prospects.filter((p) => alaCarteScopes.some((s) => needsEnrichScope(p, s)))
   const batch = affected.slice(0, MAX_ENRICH_BATCH)
   const queued = affected.length - batch.length
-  // Per-scope breakdown so the credit math is transparent.
-  const perScope = scopes
-    .map((s) => {
-      const count = batch.filter((p) => needsEnrichScope(p, s)).length
-      return { scope: s, count, unit: ENRICH_COST[s], cost: count * ENRICH_COST[s] }
-    })
-    .filter((x) => x.count > 0)
+  // Per-scope breakdown so the credit math is transparent. Profile collapses
+  // to a single line (its flat price already covers email + phone) instead of
+  // three lines that could double-charge or silently drop one another.
+  const perScope = profileOn
+    ? batch.length > 0
+      ? [
+          {
+            scope: "profile" as EnrichScope,
+            count: batch.length,
+            unit: ENRICH_COST.profile,
+            cost: batch.length * ENRICH_COST.profile,
+          },
+        ]
+      : []
+    : alaCarteScopes
+        .map((s) => {
+          const count = batch.filter((p) => needsEnrichScope(p, s)).length
+          return { scope: s, count, unit: ENRICH_COST[s], cost: count * ENRICH_COST[s] }
+        })
+        .filter((x) => x.count > 0)
   const cost = perScope.reduce((sum, x) => sum + x.cost, 0)
   const after = balance - cost
   const affordable = after >= 0
@@ -324,13 +370,23 @@ export function EnrichListDialog({
 
   function handleEnrich() {
     if (batch.length === 0) return
-    const label = scopes.map(scopeLabel).join(" + ")
+    const label = profileOn
+      ? scopeLabel("profile")
+      : alaCarteScopes.map(scopeLabel).join(" + ")
     const ok = spend(cost, c.usageLabel(batch.length, label))
     if (!ok) return
-    // Apply each selected reveal to the contacts that still need it.
-    for (const s of scopes) {
-      const ids = batch.filter((p) => needsEnrichScope(p, s)).map((p) => p.id)
-      if (ids.length > 0) prospectStore.enrich(ids, s)
+    if (profileOn) {
+      // One call reveals email + phone + the ~30 data points together.
+      prospectStore.enrich(
+        batch.map((p) => p.id),
+        "profile"
+      )
+    } else {
+      // Apply each selected reveal to the contacts that still need it.
+      for (const s of alaCarteScopes) {
+        const ids = batch.filter((p) => needsEnrichScope(p, s)).map((p) => p.id)
+        if (ids.length > 0) prospectStore.enrich(ids, s)
+      }
     }
     toast.success(c.done(batch.length) + (queued > 0 ? c.queued(queued) : ""))
     onOpenChange(false)
@@ -400,18 +456,21 @@ export function EnrichListDialog({
             <div className="grid grid-cols-3 gap-2">
               {scopeOptions.map((o) => {
                 const Icon = o.icon
-                const isActive = selected.has(o.value)
+                const isActive = isScopeActive(o.value)
+                const locked = isScopeLocked(o.value)
                 return (
                   <button
                     key={o.value}
                     type="button"
                     onClick={() => toggleScope(o.value)}
                     aria-pressed={isActive}
+                    disabled={locked}
                     className={cn(
                       "relative flex flex-col gap-1 rounded-lg border p-2.5 text-left transition-colors",
                       isActive
                         ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
-                        : "hover:bg-muted/60"
+                        : "hover:bg-muted/60",
+                      locked && "cursor-default"
                     )}
                   >
                     {isActive && (
@@ -429,8 +488,13 @@ export function EnrichListDialog({
                     <span className="text-muted-foreground text-[11px] leading-tight">
                       {o.desc}
                     </span>
-                    <span className="text-primary mt-0.5 text-[11px] font-semibold tabular-nums">
-                      {ENRICH_COST[o.value]} {c.credits}
+                    <span
+                      className={cn(
+                        "mt-0.5 text-[11px] font-semibold tabular-nums",
+                        locked ? "text-muted-foreground" : "text-primary"
+                      )}
+                    >
+                      {locked ? c.included : `${ENRICH_COST[o.value]} ${c.credits}`}
                     </span>
                   </button>
                 )
@@ -438,7 +502,7 @@ export function EnrichListDialog({
             </div>
           </div>
 
-          {scopes.length === 0 ? (
+          {!anySelected ? (
             <p className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
               <TriangleAlert className="text-chart-4 size-4" />
               {c.pickOne}
@@ -487,7 +551,7 @@ export function EnrichListDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             {c.cancel}
           </Button>
-          {scopes.length > 0 && batch.length > 0 && (
+          {anySelected && batch.length > 0 && (
             <Button variant="volt" onClick={handleEnrich} disabled={!affordable}>
               <Layers className="size-4" />
               {c.enrich(batch.length)}

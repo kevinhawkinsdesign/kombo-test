@@ -57,6 +57,8 @@ import {
 } from "@/lib/merge-vars"
 import { BackLink } from "@/components/common/BackLink"
 import { EmptyState } from "@/components/common/EmptyState"
+import { TabSkeleton } from "@/components/common/ContentSkeleton"
+import { useSkeletonTransition } from "@/lib/use-skeleton-transition"
 import kaiUrl from "@/assets/kai-pleased.png"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { Segmented } from "@/components/common/Segmented"
@@ -2125,6 +2127,7 @@ export default function CampaignDetail() {
   const [tab, setTab] = React.useState(
     campaign?.status === "draft" ? "sequence" : "overview"
   )
+  const tabTransitioning = useSkeletonTransition(tab)
   const [enrichGateOpen, setEnrichGateOpen] = React.useState(false)
   const [scheduleOpen, setScheduleOpen] = React.useState(false)
   const [scheduleValue, setScheduleValue] = React.useState("")
@@ -3184,6 +3187,10 @@ export default function CampaignDetail() {
           <TabsTrigger value="settings">{c.tabSettings}</TabsTrigger>
         </TabsList>
 
+        {tabTransitioning ? (
+          <TabSkeleton />
+        ) : (
+        <>
         {/* Overview — only once the campaign has run at least once */}
         {hasPerformanceData && (
         <TabsContent value="overview" className="mt-4 space-y-4">
@@ -4233,6 +4240,8 @@ export default function CampaignDetail() {
         <TabsContent value="settings" className="mt-4 space-y-4">
           {campaignSettingsSection}
         </TabsContent>
+        </>
+        )}
       </Tabs>
 
       <EditCampaignDialog

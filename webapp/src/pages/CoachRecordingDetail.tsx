@@ -52,6 +52,8 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
+import { TabSkeleton } from "@/components/common/ContentSkeleton"
+import { useSkeletonTransition } from "@/lib/use-skeleton-transition"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { CallScorecard } from "@/components/coach/CoachScorecard"
@@ -1182,6 +1184,7 @@ export default function CoachRecordingDetail() {
   const analysis = id ? recordingDetails[id] : undefined
 
   const [tab, setTab] = React.useState("analysis")
+  const tabTransitioning = useSkeletonTransition(tab)
   // The saved call type vs the type the visible analysis was generated with —
   // "Just save" updates only the label, so the two can drift until the user
   // re-analyzes (the stale-analysis banner nudges them to).
@@ -1735,6 +1738,10 @@ export default function CoachRecordingDetail() {
           <TabsTrigger value="followUp">{c.tabFollowUp}</TabsTrigger>
         </TabsList>
 
+        {tabTransitioning ? (
+          <TabSkeleton />
+        ) : (
+        <>
         <TabsContent value="analysis">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
@@ -2106,6 +2113,8 @@ export default function CoachRecordingDetail() {
             setHelpful={setFollowUpHelpful}
           />
         </TabsContent>
+        </>
+        )}
       </Tabs>
 
       <Dialog

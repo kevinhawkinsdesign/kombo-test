@@ -453,6 +453,10 @@ export const tasks: Task[] = [
     dueDate: "2026-07-15T14:00:00Z",
     done: false,
     priority: "high",
+    // Seeds the Inbox Outcomes "Interested" view with a task row alongside
+    // any interested conversations, so the folder/outcome-on-tasks behavior
+    // is visible without having to create data by hand first.
+    status: "interested",
   },
 ]
 
