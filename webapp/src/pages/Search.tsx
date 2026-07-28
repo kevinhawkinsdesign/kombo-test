@@ -3484,6 +3484,52 @@ export default function Search() {
               </div>
             </div>
             )}
+            {/* Database selector — controls WHERE the query runs (KomboAI,
+                Lookalike, Sales Nav, Google Maps, TripAdvisor), so it sits as
+                a modifier right next to the search input, not among the
+                content filters in the rail. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 gap-1.5"
+                  title={c.dbLabel}
+                >
+                  {sourceMeta(source).icon}
+                  <span className="hidden sm:inline">{sourceMeta(source).label}</span>
+                  <ChevronDown className="text-muted-foreground size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="text-muted-foreground text-xs">
+                  {c.dbLabel}
+                </DropdownMenuLabel>
+                {(entity === "companies" ? COMPANY_SOURCES : PEOPLE_SOURCES).map((k) => {
+                  const meta = sourceMeta(k)
+                  return (
+                    <DropdownMenuItem
+                      key={k}
+                      onClick={() => selectSource(k)}
+                      className="gap-2.5 py-2"
+                    >
+                      <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
+                        {meta.icon}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="text-sm font-medium">{meta.label}</span>
+                        <span className="text-muted-foreground text-xs">
+                          {meta.desc}
+                        </span>
+                      </span>
+                      {source === k && (
+                        <CheckCircle2 className="text-primary size-4 shrink-0" />
+                      )}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               type="submit"
               variant="volt"
@@ -3537,49 +3583,13 @@ export default function Search() {
           />
           <div className="min-w-0 flex-1">
         <div className="min-w-0 space-y-3">
-          {/* Blended controls: sources, filters & sort */}
+          {/* Blended controls: sort, columns & row actions — the database
+              selector now lives in the search bar itself, since it picks
+              WHERE the query runs rather than filtering its results. */}
           <Card className="gap-3 p-3">
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex flex-wrap items-center gap-2">
-              {/* Database selector — KomboAI, Lookalike, or LinkedIn. */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5" title={c.dbLabel}>
-                    {sourceMeta(source).icon}
-                    <span className="hidden sm:inline">{sourceMeta(source).label}</span>
-                    <ChevronDown className="text-muted-foreground size-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuLabel className="text-muted-foreground text-xs">
-                    {c.dbLabel}
-                  </DropdownMenuLabel>
-                  {(entity === "companies" ? COMPANY_SOURCES : PEOPLE_SOURCES).map((k) => {
-                    const meta = sourceMeta(k)
-                    return (
-                      <DropdownMenuItem
-                        key={k}
-                        onClick={() => selectSource(k)}
-                        className="gap-2.5 py-2"
-                      >
-                        <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
-                          {meta.icon}
-                        </span>
-                        <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="text-sm font-medium">{meta.label}</span>
-                          <span className="text-muted-foreground text-xs">
-                            {meta.desc}
-                          </span>
-                        </span>
-                        {source === k && (
-                          <CheckCircle2 className="text-primary size-4 shrink-0" />
-                        )}
-                      </DropdownMenuItem>
-                    )
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
