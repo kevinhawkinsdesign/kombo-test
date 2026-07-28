@@ -17,8 +17,21 @@ import {
   MousePointerClick,
   Radar,
   Hand,
-  ArrowDown,
 } from "lucide-react"
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  Controls,
+  Handle,
+  Position,
+  MarkerType,
+  Panel,
+  type Node,
+  type Edge,
+  type NodeProps,
+} from "@xyflow/react"
+import "@xyflow/react/dist/style.css"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { Button } from "@/components/ui/button"
@@ -36,7 +49,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { InfoHint } from "@/components/common/InfoHint"
@@ -114,6 +126,17 @@ function ChannelGlyph({
   return <Icon className={className} />
 }
 
+function triggerHint(step: BuilderStep): string {
+  const t = TRIGGERS[step.trigger.type]
+  if (step.trigger.type === "delay")
+    return step.trigger.days && step.trigger.days > 0
+      ? `${t.short} of ${step.trigger.days}d`
+      : "Immediately"
+  if (step.trigger.type === "on_no_reply")
+    return `${t.short} in ${step.trigger.days ?? 0}d`
+  return t.short
+}
+
 /* ------------------------------ the builder ------------------------------ */
 export function SequenceBuilder({
   initialSteps,
@@ -125,7 +148,7 @@ export function SequenceBuilder({
   className?: string
 }) {
   const [steps, setSteps] = React.useState<BuilderStep[]>(initialSteps)
-  const [view, setView] = React.useState<"timeline" | "diagram">("diagram")
+  const [view, setView] = React.useState<"timeline" | "diagram">("timeline")
   const [autoPause, setAutoPause] = React.useState(true)
   const dragIndex = React.useRef<number | null>(null)
   const [overIndex, setOverIndex] = React.useState<number | null>(null)
@@ -152,36 +175,18 @@ export function SequenceBuilder({
     )
   }
 
-  function makeStep(channel: SequenceChannelType): BuilderStep {
-    return {
-      id: newStepId(),
-      channel,
-      title:
-        channel === "wait" ? "Pause + review" : `New ${CHANNELS[channel].label} step`,
-      subtitle: "",
-      trigger: { type: "delay", days: 2 },
-    }
-  }
-
   function addStep(channel: SequenceChannelType) {
-    update([...steps, makeStep(channel)])
-  }
-
-  // Insert a sequential step at a position (used by the diagram's between-step
-  // "+" controls — start, between, or end).
-  function insertStep(at: number, channel: SequenceChannelType) {
-    const next = [...steps]
-    next.splice(at, 0, { ...makeStep(channel), parallel: false })
-    update(next)
-  }
-
-  // Add a step that runs in parallel with the step at `index` (a fan-out).
-  // Parallel flows only read clearly in the diagram, so switch to it.
-  function addParallelAfter(index: number, channel: SequenceChannelType) {
-    const next = [...steps]
-    next.splice(index + 1, 0, { ...makeStep(channel), parallel: true })
-    update(next)
-    setView("diagram")
+    update([
+      ...steps,
+      {
+        id: newStepId(),
+        channel,
+        title:
+          channel === "wait" ? "Pause + review" : `New ${CHANNELS[channel].label} step`,
+        subtitle: "",
+        trigger: { type: "delay", days: 2 },
+      },
+    ])
   }
 
   function removeStep(id: string) {
@@ -211,7 +216,7 @@ export function SequenceBuilder({
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="bg-muted text-muted-foreground inline-flex h-9 items-center rounded-lg p-[3px]">
-          {(["diagram", "timeline"] as const).map((v) => (
+          {(["timeline", "diagram"] as const).map((v) => (
             <button
               key={v}
               type="button"
@@ -234,38 +239,6 @@ export function SequenceBuilder({
           </Badge>
           <AddStepMenu onAdd={addStep} />
         </div>
-      </div>
-
-      {/* Automation (sequence-level) — shown above the steps. */}
-      <div className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-xl border p-3 sm:p-4">
-        <span className="bg-chart-4/15 text-chart-4 flex size-8 shrink-0 items-center justify-center rounded-lg">
-          <Zap className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1 text-sm font-medium">
-            Runs automatically
-            <InfoHint label="How automation works">
-              Steps fire on their trigger — a delay, an opened email, a clicked
-              link, or a data signal. The sequence pauses the instant a prospect
-              replies so you never message someone who's already engaged.
-            </InfoHint>
-          </p>
-          <p className="text-muted-foreground text-xs">
-            {autoPause
-              ? "Auto-pauses the moment a prospect replies."
-              : "Continues regardless of replies."}
-          </p>
-        </div>
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground hidden sm:inline">
-            Auto-pause on reply
-          </span>
-          <Switch
-            checked={autoPause}
-            onCheckedChange={setAutoPause}
-            aria-label="Auto-pause on reply"
-          />
-        </label>
       </div>
 
       {view === "timeline" ? (
@@ -408,11 +381,7 @@ export function SequenceBuilder({
                             aria-label={`Step ${index + 1} delay in days`}
                             className="h-8 w-16"
                           />
-                          <span className="text-muted-foreground text-xs">
-                            {index === 0
-                              ? "days after campaign start"
-                              : "days after previous step"}
-                          </span>
+                          <span className="text-muted-foreground text-xs">days</span>
                         </div>
                       )}
 
@@ -423,12 +392,9 @@ export function SequenceBuilder({
                           size="sm"
                           className="h-8 gap-1"
                           aria-pressed={step.parallel ?? false}
-                          onClick={() => {
-                            const enabling = !step.parallel
-                            patchStep(step.id, { parallel: enabling })
-                            // Parallel branches only read clearly in the diagram.
-                            if (enabling) setView("diagram")
-                          }}
+                          onClick={() =>
+                            patchStep(step.id, { parallel: !step.parallel })
+                          }
                         >
                           <GitBranch className="size-3.5" />
                           Parallel
@@ -484,47 +450,58 @@ export function SequenceBuilder({
           )}
         </ol>
       ) : (
-        <SequenceDiagram
-          steps={steps}
-          days={days}
-          autoPause={autoPause}
-          onPatchStep={patchStep}
-          onPatchTrigger={patchTrigger}
-          onRemoveStep={removeStep}
-          onInsertStep={insertStep}
-          onAddParallel={addParallelAfter}
-        />
+        <SequenceDiagram steps={steps} days={days} autoPause={autoPause} />
       )}
 
+      {/* Footer: automation */}
+      <div className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-xl border p-3 sm:p-4">
+        <span className="bg-chart-4/15 text-chart-4 flex size-8 shrink-0 items-center justify-center rounded-lg">
+          <Zap className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1 text-sm font-medium">
+            Runs automatically
+            <InfoHint label="How automation works">
+              Steps fire on their trigger — a delay, an opened email, a clicked
+              link, or a data signal. The sequence pauses the instant a prospect
+              replies so you never message someone who's already engaged.
+            </InfoHint>
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {autoPause
+              ? "Auto-pauses the moment a prospect replies."
+              : "Continues regardless of replies."}
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground hidden sm:inline">
+            Auto-pause on reply
+          </span>
+          <Switch
+            checked={autoPause}
+            onCheckedChange={setAutoPause}
+            aria-label="Auto-pause on reply"
+          />
+        </label>
+      </div>
     </div>
   )
 }
 
 function AddStepMenu({
   onAdd,
-  children,
-  align = "end",
-  label = "Add a step",
 }: {
   onAdd: (channel: SequenceChannelType) => void
-  children?: React.ReactNode
-  align?: "start" | "center" | "end"
-  label?: string
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {children ?? (
-          <Button size="sm">
-            <Plus className="size-4" />
-            Add step
-          </Button>
-        )}
+        <Button size="sm">
+          <Plus className="size-4" />
+          Add step
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align}>
-        <DropdownMenuLabel className="text-muted-foreground text-xs">
-          {label}
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end">
         {SEQUENCE_CHANNELS.map((c) => {
           const meta = CHANNELS[c]
           return (
@@ -546,284 +523,246 @@ function AddStepMenu({
   )
 }
 
-/* ------------------------------ diagram view ------------------------------ */
-// The diagram is a fully editable canvas: every node edits channel/trigger/
-// delay/parallel inline, "+" controls insert a step at the start, between any
-// two steps, or at the end, and each group can fan out a parallel step.
-function SequenceDiagram({
-  steps,
-  days,
-  autoPause,
-  onPatchStep,
-  onPatchTrigger,
-  onRemoveStep,
-  onInsertStep,
-  onAddParallel,
-}: {
-  steps: BuilderStep[]
-  days: number[]
+/* ─────────────────────── React Flow diagram view ──────────────────────── */
+
+interface StepNodeData extends Record<string, unknown> {
+  step: BuilderStep
+  dayLabel: string
+  meta: ChannelMeta
+}
+
+interface StartEndNodeData extends Record<string, unknown> {
+  label: string
+  isEnd?: boolean
+}
+
+const INVISIBLE_HANDLE: React.CSSProperties = {
+  background: "transparent",
+  border: "none",
+  width: 1,
+  height: 1,
+}
+
+function StepFlowNode({ data }: NodeProps) {
+  const { step, dayLabel, meta } = data as StepNodeData
+  return (
+    <>
+      <Handle type="target" position={Position.Top} style={INVISIBLE_HANDLE} />
+      <div className="bg-card flex w-[192px] flex-col gap-2 rounded-xl border p-3 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-lg",
+              meta.tint
+            )}
+          >
+            <meta.Icon className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-muted-foreground mb-0.5 text-[10px] font-medium tracking-wide uppercase leading-none">
+              {dayLabel} · {meta.label}
+            </div>
+            <div className="truncate text-sm font-semibold leading-tight">
+              {step.title}
+            </div>
+          </div>
+        </div>
+        <div className="text-muted-foreground text-[11px] leading-tight">
+          {triggerHint(step)}
+        </div>
+      </div>
+      <Handle type="source" position={Position.Bottom} style={INVISIBLE_HANDLE} />
+    </>
+  )
+}
+
+function StartEndFlowNode({ data }: NodeProps) {
+  const { label, isEnd } = data as StartEndNodeData
+  return (
+    <>
+      {isEnd && (
+        <Handle type="target" position={Position.Top} style={INVISIBLE_HANDLE} />
+      )}
+      <span
+        className={cn(
+          "block rounded-full border px-4 py-1.5 text-xs font-medium whitespace-nowrap",
+          isEnd
+            ? "bg-muted text-muted-foreground"
+            : "bg-primary/10 text-primary border-primary/20"
+        )}
+      >
+        {label}
+      </span>
+      {!isEnd && (
+        <Handle type="source" position={Position.Bottom} style={INVISIBLE_HANDLE} />
+      )}
+    </>
+  )
+}
+
+const FLOW_NODE_TYPES = {
+  step: StepFlowNode,
+  startEnd: StartEndFlowNode,
+}
+
+const NODE_W = 192
+const NODE_H = 110
+const NODE_GAP_H = 24
+const GROUP_GAP_V = 80
+const PILL_H = 32
+
+function buildFlowGraph(
+  steps: BuilderStep[],
+  days: number[],
   autoPause: boolean
-  onPatchStep: (id: string, patch: Partial<BuilderStep>) => void
-  onPatchTrigger: (id: string, patch: Partial<BuilderStep["trigger"]>) => void
-  onRemoveStep: (id: string) => void
-  onInsertStep: (at: number, channel: SequenceChannelType) => void
-  onAddParallel: (index: number, channel: SequenceChannelType) => void
-}) {
-  // Group consecutive parallel steps so fan-outs render side by side.
-  const groups: { lead: number; steps: { step: BuilderStep; index: number }[] }[] =
-    []
+): { nodes: Node[]; edges: Edge[] } {
+  const nodes: Node[] = []
+  const edges: Edge[] = []
+
+  // Group consecutive parallel steps into rows
+  const groups: { steps: { step: BuilderStep; index: number }[] }[] = []
   steps.forEach((step, index) => {
     if (step.parallel && groups.length > 0) {
       groups[groups.length - 1].steps.push({ step, index })
     } else {
-      groups.push({ lead: index, steps: [{ step, index }] })
+      groups.push({ steps: [{ step, index }] })
     }
   })
 
+  const edgeBase: Omit<Edge, "id" | "source" | "target"> = {
+    type: "smoothstep",
+    style: { stroke: "hsl(var(--border))", strokeWidth: 1.5 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "hsl(var(--border))" },
+  }
+
+  // Start node (pill, centered at x=0)
+  const PILL_W = 120
+  nodes.push({
+    id: "__start",
+    type: "startEnd",
+    position: { x: -PILL_W / 2, y: 0 },
+    data: { label: "Enrolled" },
+    draggable: true,
+  })
+
+  let y = PILL_H + 28
+  let prevIds = ["__start"]
+
+  groups.forEach((group, gi) => {
+    const n = group.steps.length
+    const totalW = n * NODE_W + (n - 1) * NODE_GAP_H
+    const startX = -totalW / 2
+
+    const groupIds: string[] = []
+
+    group.steps.forEach(({ step, index }, i) => {
+      const dayLabel = step.parallel ? "Parallel" : `Day ${days[index]}`
+      nodes.push({
+        id: step.id,
+        type: "step",
+        position: { x: startX + i * (NODE_W + NODE_GAP_H), y },
+        data: { step, dayLabel, meta: CHANNELS[step.channel] },
+        draggable: true,
+      })
+      groupIds.push(step.id)
+    })
+
+    // Edges from previous group to this group
+    for (const prevId of prevIds) {
+      for (const nodeId of groupIds) {
+        edges.push({
+          id: `${prevId}->${nodeId}`,
+          source: prevId,
+          target: nodeId,
+          ...edgeBase,
+          // Annotate the first edge with auto-pause hint
+          label:
+            gi === 0 && autoPause && prevId === "__start"
+              ? "↩ on reply → pause & notify"
+              : undefined,
+          labelStyle: {
+            fontSize: 10,
+            fontWeight: 500,
+            fill: "hsl(var(--chart-1))",
+          },
+          labelBgStyle: {
+            fill: "hsl(var(--background))",
+            fillOpacity: 0.85,
+          },
+          labelBgPadding: [4, 6] as [number, number],
+          labelBgBorderRadius: 4,
+        })
+      }
+    }
+
+    prevIds = groupIds
+    y += NODE_H + GROUP_GAP_V
+  })
+
+  // End node (pill, centered)
+  const END_PILL_W = 168
+  nodes.push({
+    id: "__end",
+    type: "startEnd",
+    position: { x: -END_PILL_W / 2, y },
+    data: { label: "Re-score & recommend", isEnd: true },
+    draggable: true,
+  })
+
+  for (const prevId of prevIds) {
+    edges.push({
+      id: `${prevId}->__end`,
+      source: prevId,
+      target: "__end",
+      ...edgeBase,
+    })
+  }
+
+  return { nodes, edges }
+}
+
+function SequenceDiagram({
+  steps,
+  days,
+  autoPause,
+}: {
+  steps: BuilderStep[]
+  days: number[]
+  autoPause: boolean
+}) {
+  const stepKey = steps.map((s) => s.id).join(",")
+  const daysKey = days.join(",")
+  const { nodes, edges } = React.useMemo(
+    () => buildFlowGraph(steps, days, autoPause),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [stepKey, daysKey, autoPause]
+  )
+
   return (
-    <div className="bg-muted/20 overflow-x-auto rounded-xl border p-4 sm:p-6">
-      <div className="mx-auto flex w-fit min-w-full flex-col items-center gap-1">
-        <NodePill label="Enrolled" tone="start" />
-        <InsertControl at={0} onInsert={onInsertStep} />
-        {groups.map((group, gi) => {
-          const lastIndex = group.steps[group.steps.length - 1].index
-          return (
-            <React.Fragment key={group.lead}>
-              <Connector />
-              {group.steps.length > 1 ? (
-                // A fan-out: these steps fire together — frame them so the
-                // parallel branch reads clearly.
-                <div className="border-primary/30 bg-primary/[0.04] flex flex-col items-center gap-2 rounded-2xl border border-dashed p-2.5">
-                  <span className="text-primary inline-flex items-center gap-1 text-[10px] font-semibold tracking-wide uppercase">
-                    <GitBranch className="size-3" />
-                    In parallel
-                  </span>
-                  <div className="flex items-stretch justify-center gap-3">
-                    {group.steps.map(({ step, index }) => (
-                      <DiagramNode
-                        key={step.id}
-                        step={step}
-                        index={index}
-                        dayLabel={step.parallel ? "Parallel" : `Day ${days[index]}`}
-                        onPatchStep={onPatchStep}
-                        onPatchTrigger={onPatchTrigger}
-                        onRemoveStep={onRemoveStep}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-stretch justify-center gap-3">
-                  {group.steps.map(({ step, index }) => (
-                    <DiagramNode
-                      key={step.id}
-                      step={step}
-                      index={index}
-                      dayLabel={step.parallel ? "Parallel" : `Day ${days[index]}`}
-                      onPatchStep={onPatchStep}
-                      onPatchTrigger={onPatchTrigger}
-                      onRemoveStep={onRemoveStep}
-                    />
-                  ))}
-                </div>
-              )}
-              {/* Fan out a parallel step alongside this group. */}
-              <AddStepMenu
-                onAdd={(c) => onAddParallel(lastIndex, c)}
-                align="center"
-                label="Add a parallel step"
-              >
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:text-foreground hover:border-primary/40 mt-1 inline-flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 text-[11px] font-medium transition-colors"
-                >
-                  <GitBranch className="size-3" />
-                  Parallel step
-                </button>
-              </AddStepMenu>
-              {gi === 0 && autoPause && (
-                <span className="text-chart-1 mt-1 flex items-center gap-1 text-[11px] font-medium">
-                  <Reply className="size-3" /> on reply → stop &amp; notify rep
-                </span>
-              )}
-              <InsertControl at={lastIndex + 1} onInsert={onInsertStep} />
-            </React.Fragment>
-          )
-        })}
-        <Connector />
-        <NodePill label="Re-score & recommend" tone="end" />
-      </div>
+    <div className="overflow-hidden rounded-xl border" style={{ height: 540 }}>
+      <ReactFlow
+        defaultNodes={nodes}
+        defaultEdges={edges}
+        nodeTypes={FLOW_NODE_TYPES}
+        fitView
+        fitViewOptions={{ padding: 0.18 }}
+        colorMode="system"
+        proOptions={{ hideAttribution: true }}
+        minZoom={0.3}
+        maxZoom={2}
+        nodesDraggable
+        nodesConnectable={false}
+        elementsSelectable
+        deleteKeyCode={null}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+        <Controls showInteractive={false} />
+        <Panel position="top-right">
+          <span className="bg-background/80 text-muted-foreground rounded-md border px-2 py-1 text-[11px]">
+            Drag to rearrange · scroll to zoom
+          </span>
+        </Panel>
+      </ReactFlow>
     </div>
-  )
-}
-
-// One editable node in the diagram — same controls as a timeline row.
-function DiagramNode({
-  step,
-  index,
-  dayLabel,
-  onPatchStep,
-  onPatchTrigger,
-  onRemoveStep,
-}: {
-  step: BuilderStep
-  index: number
-  dayLabel: string
-  onPatchStep: (id: string, patch: Partial<BuilderStep>) => void
-  onPatchTrigger: (id: string, patch: Partial<BuilderStep["trigger"]>) => void
-  onRemoveStep: (id: string) => void
-}) {
-  const meta = CHANNELS[step.channel]
-  return (
-    <div className="bg-card flex w-56 flex-col gap-2 rounded-xl border p-3 shadow-sm">
-      <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-            meta.tint
-          )}
-        >
-          <ChannelGlyph channel={step.channel} className="size-4" />
-        </span>
-        <span className="text-muted-foreground flex-1 truncate text-[10px] font-medium tracking-wide uppercase">
-          {dayLabel}
-        </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive size-6"
-          aria-label={`Remove step ${index + 1}`}
-          onClick={() => onRemoveStep(step.id)}
-        >
-          <Trash2 className="size-3.5" />
-        </Button>
-      </div>
-
-      <Input
-        value={step.title}
-        onChange={(e) => onPatchStep(step.id, { title: e.target.value })}
-        aria-label={`Step ${index + 1} title`}
-        className="h-8 text-sm font-medium"
-      />
-
-      <Select
-        value={step.channel}
-        onValueChange={(v) =>
-          onPatchStep(step.id, { channel: v as SequenceChannelType })
-        }
-      >
-        <SelectTrigger size="sm" className="h-8 w-full">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {SEQUENCE_CHANNELS.map((c) => (
-            <SelectItem key={c} value={c}>
-              {CHANNELS[c].label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={step.trigger.type}
-        onValueChange={(v) =>
-          onPatchTrigger(step.id, { type: v as StepTriggerType })
-        }
-      >
-        <SelectTrigger size="sm" className="h-8 w-full">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {STEP_TRIGGERS.map((t) => (
-            <SelectItem key={t} value={t}>
-              {TRIGGERS[t].label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {TRIGGERS[step.trigger.type].needsDays && (
-        <div className="flex items-center gap-1.5">
-          <Input
-            type="number"
-            min={0}
-            value={step.trigger.days ?? 0}
-            onChange={(e) =>
-              onPatchTrigger(step.id, {
-                days: Math.max(0, Number(e.target.value) || 0),
-              })
-            }
-            aria-label={`Step ${index + 1} delay in days`}
-            className="h-8 w-16"
-          />
-          <span className="text-muted-foreground text-xs">days</span>
-        </div>
-      )}
-
-      {index > 0 && (
-        <Button
-          type="button"
-          variant={step.parallel ? "secondary" : "ghost"}
-          size="sm"
-          className="h-7 gap-1"
-          aria-pressed={step.parallel ?? false}
-          onClick={() => onPatchStep(step.id, { parallel: !step.parallel })}
-        >
-          <GitBranch className="size-3.5" />
-          {step.parallel ? "Parallel" : "Make parallel"}
-        </Button>
-      )}
-    </div>
-  )
-}
-
-// A dashed "+" between nodes that inserts a sequential step at `at`.
-function InsertControl({
-  at,
-  onInsert,
-}: {
-  at: number
-  onInsert: (at: number, channel: SequenceChannelType) => void
-}) {
-  return (
-    <AddStepMenu
-      onAdd={(c) => onInsert(at, c)}
-      align="center"
-      label="Insert a step here"
-    >
-      <button
-        type="button"
-        aria-label="Insert step"
-        className="text-muted-foreground hover:text-primary hover:border-primary/50 bg-background my-0.5 flex size-6 items-center justify-center rounded-full border border-dashed transition-colors"
-      >
-        <Plus className="size-3.5" />
-      </button>
-    </AddStepMenu>
-  )
-}
-
-function Connector() {
-  return <ArrowDown className="text-muted-foreground/50 size-4" aria-hidden="true" />
-}
-
-function NodePill({
-  label,
-  tone,
-}: {
-  label: string
-  tone: "start" | "end"
-}) {
-  return (
-    <span
-      className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium",
-        tone === "start"
-          ? "bg-primary/10 text-primary border-primary/20"
-          : "bg-muted text-muted-foreground"
-      )}
-    >
-      {label}
-    </span>
   )
 }
