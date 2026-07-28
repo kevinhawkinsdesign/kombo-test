@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -152,6 +153,8 @@ const COPY = {
     noShow: "No-show",
     addToCrm: "Add to CRM",
     inCrm: "In CRM",
+    nextStepFieldLabel: (n: number) => `Next step ${n}`,
+    selectNextStepAria: (step: string) => `Select for CRM: ${step}`,
     crmFirstName: "First name",
     crmLastName: "Last name",
     crmEmail: "Email",
@@ -294,6 +297,8 @@ const COPY = {
     noShow: "No asistió",
     addToCrm: "Añadir al CRM",
     inCrm: "En CRM",
+    nextStepFieldLabel: (n: number) => `Próximo paso ${n}`,
+    selectNextStepAria: (step: string) => `Seleccionar para el CRM: ${step}`,
     crmFirstName: "Nombre",
     crmLastName: "Apellidos",
     crmEmail: "Correo",
@@ -436,6 +441,8 @@ const COPY = {
     noShow: "Assente",
     addToCrm: "Aggiungi al CRM",
     inCrm: "Nel CRM",
+    nextStepFieldLabel: (n: number) => `Prossimo passo ${n}`,
+    selectNextStepAria: (step: string) => `Seleziona per il CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Cognome",
     crmEmail: "Email",
@@ -578,6 +585,8 @@ const COPY = {
     noShow: "Absent",
     addToCrm: "Ajouter au CRM",
     inCrm: "Dans le CRM",
+    nextStepFieldLabel: (n: number) => `Étape suivante ${n}`,
+    selectNextStepAria: (step: string) => `Sélectionner pour le CRM : ${step}`,
     crmFirstName: "Prénom",
     crmLastName: "Nom",
     crmEmail: "E-mail",
@@ -720,6 +729,8 @@ const COPY = {
     noShow: "Nicht erschienen",
     addToCrm: "Zum CRM hinzufügen",
     inCrm: "Im CRM",
+    nextStepFieldLabel: (n: number) => `Nächster Schritt ${n}`,
+    selectNextStepAria: (step: string) => `Für CRM auswählen: ${step}`,
     crmFirstName: "Vorname",
     crmLastName: "Nachname",
     crmEmail: "E-Mail",
@@ -862,6 +873,8 @@ const COPY = {
     noShow: "Não compareceu",
     addToCrm: "Adicionar ao CRM",
     inCrm: "No CRM",
+    nextStepFieldLabel: (n: number) => `Próximo passo ${n}`,
+    selectNextStepAria: (step: string) => `Selecionar para o CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Apelido",
     crmEmail: "Email",
@@ -1004,6 +1017,8 @@ const COPY = {
     noShow: "Não compareceu",
     addToCrm: "Adicionar ao CRM",
     inCrm: "No CRM",
+    nextStepFieldLabel: (n: number) => `Próximo passo ${n}`,
+    selectNextStepAria: (step: string) => `Selecionar para o CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Sobrenome",
     crmEmail: "E-mail",
@@ -1398,6 +1413,18 @@ export default function CoachRecordingDetail() {
   const [crmParticipant, setCrmParticipant] = React.useState<CoachParticipant | null>(
     null
   )
+  // Summary tab's own "Add to CRM" entry points — separate from the
+  // Participants tab's crmOpen/crmParticipant above, but wired to the same
+  // shared AddToCrmDialog component (two more mounts of it below).
+  const [overviewCrmOpen, setOverviewCrmOpen] = React.useState(false)
+  const [selectedForCrm, setSelectedForCrm] = React.useState<Record<number, boolean>>(
+    {}
+  )
+  const [nextStepsInCrm, setNextStepsInCrm] = React.useState<Record<number, boolean>>(
+    {}
+  )
+  const [nextStepsCrmOpen, setNextStepsCrmOpen] = React.useState(false)
+  const [nextStepsCrmIndices, setNextStepsCrmIndices] = React.useState<number[]>([])
 
   if (!rec) {
     return (
@@ -1493,6 +1520,60 @@ export default function CoachRecordingDetail() {
       ]
     : []
 
+  // Opens the shared "Add to CRM" wizard for the AI-generated overview,
+  // pushed as a single note against the prospect on the call. AddToCrmDialog
+  // only reports open/closed (no separate "wizard actually finished" signal),
+  // so — like the page-header "Add notes to CRM" button above, which fires
+  // the same toast on click with no dialog at all — this treats opening the
+  // picker as the commit point rather than waiting on an event the shared
+  // dialog doesn't expose.
+  function openOverviewCrmDialog() {
+    setOverviewCrmOpen(true)
+    toast.success(c.notesAdded)
+  }
+  const overviewCrmFields = [{ label: c.overview, value: rec.overview ?? "" }]
+
+  function toggleSelectedForCrm(index: number) {
+    setSelectedForCrm((prev) => ({ ...prev, [index]: !prev[index] }))
+  }
+  const selectedNextStepIndices = rec.nextSteps
+    .map((_, i) => i)
+    .filter((i) => selectedForCrm[i] && !nextStepsInCrm[i])
+
+  // Opens the shared "Add to CRM" wizard for the checked next steps, pushed
+  // as CRM notes against the prospect on the call. Same optimistic reasoning
+  // as openOverviewCrmDialog above: marks the pushed rows "In CRM" and clears
+  // their selection as soon as the picker opens, rather than the dialog
+  // reporting back a completion event it doesn't have.
+  function openNextStepsCrmDialog() {
+    if (selectedNextStepIndices.length === 0) return
+    const indices = selectedNextStepIndices
+    setNextStepsCrmIndices(indices)
+    setNextStepsCrmOpen(true)
+    setNextStepsInCrm((prev) => {
+      const next = { ...prev }
+      indices.forEach((i) => {
+        next[i] = true
+      })
+      return next
+    })
+    setSelectedForCrm((prev) => {
+      const next = { ...prev }
+      indices.forEach((i) => {
+        delete next[i]
+      })
+      return next
+    })
+    toast.success(c.notesAdded)
+  }
+  // Snapshotted from nextStepsCrmIndices at click time (not recomputed from
+  // selectedNextStepIndices, which clears immediately above) so the dialog's
+  // field list stays stable for as long as it's open.
+  const nextStepsCrmFields = nextStepsCrmIndices.map((i, idx) => ({
+    label: c.nextStepFieldLabel(idx + 1),
+    value: rec.nextSteps[i],
+  }))
+
   const participantsCard =
     rec.participants && rec.participants.length > 0 ? (
       <Card>
@@ -1567,18 +1648,43 @@ export default function CoachRecordingDetail() {
   // Steps shouldn't disappear or reshuffle just because the call type changed.
   const nextStepsCard = rec.nextSteps.length > 0 && (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-base">{c.actionItems}</CardTitle>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={selectedNextStepIndices.length === 0}
+          onClick={openNextStepsCrmDialog}
+        >
+          <Building2 className="size-4" />
+          {c.addToCrm}
+        </Button>
       </CardHeader>
       <CardContent className="space-y-2">
         {rec.nextSteps.map((item, i) => {
           const done = doneItems[i] ?? false
+          const inCrm = nextStepsInCrm[i] ?? false
           const priority = ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
           return (
             <div
               key={item}
               className="bg-muted/50 flex items-center gap-2 rounded-md px-3 py-2 text-sm"
             >
+              {inCrm ? (
+                <span
+                  aria-hidden
+                  className="flex size-6 shrink-0 items-center justify-center"
+                >
+                  <Building2 className="text-muted-foreground size-4" />
+                </span>
+              ) : (
+                <Checkbox
+                  checked={selectedForCrm[i] ?? false}
+                  onCheckedChange={() => toggleSelectedForCrm(i)}
+                  aria-label={c.selectNextStepAria(item)}
+                  className="shrink-0"
+                />
+              )}
               <Button
                 size="icon"
                 variant="ghost"
@@ -1603,6 +1709,11 @@ export default function CoachRecordingDetail() {
               <Badge variant="outline" className="shrink-0 font-normal">
                 {c.priorityLabel(c.priority[priority])}
               </Badge>
+              {inCrm && (
+                <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs">
+                  {c.inCrm}
+                </span>
+              )}
             </div>
           )
         })}
@@ -2002,8 +2113,18 @@ export default function CoachRecordingDetail() {
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
                   <CardTitle className="text-base">{c.overview}</CardTitle>
+                  {rec.overview && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={openOverviewCrmDialog}
+                    >
+                      <Building2 className="size-4" />
+                      {c.addToCrm}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {rec.overview ? (
@@ -2245,6 +2366,26 @@ export default function CoachRecordingDetail() {
         recordName={crmParticipant?.name ?? ""}
         accountName={rec.company}
         fields={crmParticipantFields}
+      />
+
+      <AddToCrmDialog
+        open={overviewCrmOpen}
+        onOpenChange={setOverviewCrmOpen}
+        kind="prospect"
+        recordId={`${rec.id}-overview`}
+        recordName={rec.prospectName}
+        accountName={rec.company}
+        fields={overviewCrmFields}
+      />
+
+      <AddToCrmDialog
+        open={nextStepsCrmOpen}
+        onOpenChange={setNextStepsCrmOpen}
+        kind="prospect"
+        recordId={`${rec.id}-next-steps`}
+        recordName={rec.prospectName}
+        accountName={rec.company}
+        fields={nextStepsCrmFields}
       />
     </Page>
   )
