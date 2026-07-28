@@ -225,7 +225,7 @@ const COPY = {
     endCampaign: "End campaign",
     endConfirmTitle: "End this campaign?",
     endConfirmBody:
-      "Ending unschedules all incomplete sequences (messages not yet sent). This cannot be resumed.",
+      "Ending unschedules all incomplete sequences (messages not yet sent). You can activate the campaign again later if needed.",
     endConfirm: "End campaign",
     ended: (name: string) => `${name} ended`,
     account: "Account",
@@ -455,7 +455,7 @@ const COPY = {
     endCampaign: "Finalizar campaña",
     endConfirmTitle: "¿Finalizar esta campaña?",
     endConfirmBody:
-      "Al finalizar se desprograman todas las secuencias incompletas (mensajes aún no enviados). No se puede reanudar.",
+      "Al finalizar se desprograman todas las secuencias incompletas (mensajes aún no enviados). Podrás activar la campaña de nuevo más adelante si lo necesitas.",
     endConfirm: "Finalizar campaña",
     ended: (name: string) => `${name} finalizada`,
     account: "Cuenta",
@@ -685,7 +685,7 @@ const COPY = {
     endCampaign: "Termina campagna",
     endConfirmTitle: "Terminare questa campagna?",
     endConfirmBody:
-      "Terminandola si annulla la programmazione di tutte le sequenze incomplete (messaggi non ancora inviati). Non si può riprendere.",
+      "Terminandola si annulla la programmazione di tutte le sequenze incomplete (messaggi non ancora inviati). Potrai riattivarla più avanti, se necessario.",
     endConfirm: "Termina campagna",
     ended: (name: string) => `${name} terminata`,
     account: "Account",
@@ -915,7 +915,7 @@ const COPY = {
     endCampaign: "Terminer la campagne",
     endConfirmTitle: "Terminer cette campagne ?",
     endConfirmBody:
-      "Terminer la campagne déprogramme toutes les séquences incomplètes (messages pas encore envoyés). Cette action est irréversible.",
+      "Terminer la campagne déprogramme toutes les séquences incomplètes (messages pas encore envoyés). Vous pourrez la réactiver plus tard si nécessaire.",
     endConfirm: "Terminer la campagne",
     ended: (name: string) => `${name} terminée`,
     account: "Compte",
@@ -1145,7 +1145,7 @@ const COPY = {
     endCampaign: "Kampagne beenden",
     endConfirmTitle: "Diese Kampagne beenden?",
     endConfirmBody:
-      "Beim Beenden werden alle unvollständigen Sequenzen (noch nicht gesendete Nachrichten) aus dem Zeitplan genommen. Das kann nicht fortgesetzt werden.",
+      "Beim Beenden werden alle unvollständigen Sequenzen (noch nicht gesendete Nachrichten) aus dem Zeitplan genommen. Du kannst die Kampagne bei Bedarf später wieder aktivieren.",
     endConfirm: "Kampagne beenden",
     ended: (name: string) => `${name} beendet`,
     account: "Konto",
@@ -1375,7 +1375,7 @@ const COPY = {
     endCampaign: "Terminar campanha",
     endConfirmTitle: "Terminar esta campanha?",
     endConfirmBody:
-      "Ao terminar, desprograma-se todas as sequências incompletas (mensagens ainda não enviadas). Não é possível retomar.",
+      "Ao terminar, desprograma-se todas as sequências incompletas (mensagens ainda não enviadas). Pode reativar a campanha mais tarde, se necessário.",
     endConfirm: "Terminar campanha",
     ended: (name: string) => `${name} terminada`,
     account: "Conta",
@@ -1605,7 +1605,7 @@ const COPY = {
     endCampaign: "Encerrar campanha",
     endConfirmTitle: "Encerrar esta campanha?",
     endConfirmBody:
-      "Encerrar cancela o agendamento de todas as sequências incompletas (mensagens ainda não enviadas). Isso não pode ser retomado.",
+      "Encerrar cancela o agendamento de todas as sequências incompletas (mensagens ainda não enviadas). Você pode reativar a campanha mais tarde, se necessário.",
     endConfirm: "Encerrar campanha",
     ended: (name: string) => `${name} encerrada`,
     account: "Conta",
@@ -2535,10 +2535,15 @@ export default function CampaignDetail() {
     .filter((p): p is NonNullable<typeof p> => Boolean(p))
   const hasProspects = enrollments.length > 0 || manualProspects.length > 0
 
-  // Guided setup: a campaign is ready once it has a sequence and a prospect
-  // source (an attached list or manually-enrolled prospects).
+  // Guided setup: a campaign is ready once it has a sequence and at least one
+  // prospect actually enrolled. `hasFeed` deliberately equals `hasProspects`
+  // (not `|| Boolean(attachedList)`) — merely attaching a list is a
+  // structural link that doesn't by itself put anyone in the Prospects tab
+  // below: a list's members only count once they're enrolled (matching
+  // prospectRows exactly), so an attached-but-empty (or not-yet-synced) list
+  // can't make Activate look ready while the tab still shows its empty state.
   const hasSequence = steps.length > 0
-  const hasFeed = hasProspects || Boolean(attachedList)
+  const hasFeed = hasProspects
   // A campaign that has been launched at least once — active, paused
   // mid-run, or finished. Only a "draft" (never launched) has nothing to
   // show yet.
@@ -3228,9 +3233,10 @@ export default function CampaignDetail() {
             <Pencil className="size-4" />
             {c.edit}
           </Button>
-          {/* End is the destructive, irreversible opposite of Activate — only
-              offered once the campaign has been started (active or inactive). */}
-          {campaign.status === "active" && (
+          {/* End is offered once the campaign has been started (active or
+              paused) — a paused campaign was previously activated, so it's
+              still eligible to end even though it isn't sending right now. */}
+          {(campaign.status === "active" || campaign.status === "paused") && (
             <Button
               variant="outline"
               className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"

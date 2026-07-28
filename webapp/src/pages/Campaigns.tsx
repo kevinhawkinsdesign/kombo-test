@@ -32,6 +32,12 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -48,7 +54,13 @@ import {
   type ColumnDef,
   type ColGroup,
 } from "@/lib/table-columns"
-import { useCampaigns, useLists, campaignStore } from "@/lib/store"
+import {
+  useCampaigns,
+  useLists,
+  campaignStore,
+  campaignHasProspects,
+} from "@/lib/store"
+import { currentUser } from "@/lib/mock-data"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate, isCampaignScheduled } from "@/lib/format"
 import { useLocale, type Locale } from "@/lib/locale"
@@ -75,6 +87,12 @@ const COPY = {
     continuous: "Continuous",
     pause: "Pause",
     activate: "Activate",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Add a sequence and prospects before activating."
+      if (missingSequence) return "Add a sequence before activating."
+      return "Add prospects before activating."
+    },
     campaignOptions: "Campaign options",
     editSequence: "Edit sequence",
     duplicate: "Duplicate",
@@ -152,6 +170,12 @@ const COPY = {
     continuous: "Continua",
     pause: "Pausar",
     activate: "Activar",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Agrega una secuencia y prospectos antes de activar."
+      if (missingSequence) return "Agrega una secuencia antes de activar."
+      return "Agrega prospectos antes de activar."
+    },
     campaignOptions: "Opciones de campaña",
     editSequence: "Editar secuencia",
     duplicate: "Duplicar",
@@ -231,6 +255,12 @@ const COPY = {
     continuous: "Continua",
     pause: "Pausa",
     activate: "Attiva",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Aggiungi una sequenza e dei prospect prima di attivare."
+      if (missingSequence) return "Aggiungi una sequenza prima di attivare."
+      return "Aggiungi dei prospect prima di attivare."
+    },
     campaignOptions: "Opzioni della campagna",
     editSequence: "Modifica sequenza",
     duplicate: "Duplica",
@@ -310,6 +340,12 @@ const COPY = {
     continuous: "Continue",
     pause: "Pause",
     activate: "Activer",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Ajoutez une séquence et des prospects avant d'activer."
+      if (missingSequence) return "Ajoutez une séquence avant d'activer."
+      return "Ajoutez des prospects avant d'activer."
+    },
     campaignOptions: "Options de la campagne",
     editSequence: "Modifier la séquence",
     duplicate: "Dupliquer",
@@ -389,6 +425,12 @@ const COPY = {
     continuous: "Fortlaufend",
     pause: "Pausieren",
     activate: "Aktivieren",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Füge eine Sequenz und Prospects hinzu, bevor du aktivierst."
+      if (missingSequence) return "Füge eine Sequenz hinzu, bevor du aktivierst."
+      return "Füge Prospects hinzu, bevor du aktivierst."
+    },
     campaignOptions: "Kampagnenoptionen",
     editSequence: "Sequenz bearbeiten",
     duplicate: "Duplizieren",
@@ -468,6 +510,12 @@ const COPY = {
     continuous: "Contínua",
     pause: "Pausar",
     activate: "Ativar",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Adicione uma sequência e prospects antes de ativar."
+      if (missingSequence) return "Adicione uma sequência antes de ativar."
+      return "Adicione prospects antes de ativar."
+    },
     campaignOptions: "Opções da campanha",
     editSequence: "Editar sequência",
     duplicate: "Duplicar",
@@ -547,6 +595,12 @@ const COPY = {
     continuous: "Contínua",
     pause: "Pausar",
     activate: "Ativar",
+    activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
+      if (missingSequence && missingProspects)
+        return "Adicione uma sequência e prospects antes de ativar."
+      if (missingSequence) return "Adicione uma sequência antes de ativar."
+      return "Adicione prospects antes de ativar."
+    },
     campaignOptions: "Opções da campanha",
     editSequence: "Editar sequência",
     duplicate: "Duplicar",
@@ -665,15 +719,31 @@ function CampaignCard({
     : 0
   const scheduled = isCampaignScheduled(campaign)
 
+  // Same rule CampaignDetail.tsx enforces before enabling its own Activate
+  // button: a sequence and at least one prospect that would actually show up
+  // in the Prospects tab — never gate on a merely-attached list.
+  const hasSequence = campaign.steps.length > 0
+  const hasProspects = campaignHasProspects(campaign.id)
+  const canActivate = hasSequence && hasProspects
+
+  // Pausing an active campaign is always valid. Activating only ever runs
+  // once `canActivate` gates it (the button below is disabled otherwise), and
+  // reuses the real campaignStore.activate() — not a raw status patch — so
+  // the same enrollment side effects (messagedIds) fire as from the detail
+  // page. The campaign's own already-set sender/language carry over as-is;
+  // there's no separate picker for this quick toggle.
   function toggleStatus() {
-    const nextStatus: CampaignStatus =
-      campaign.status === "active" ? "paused" : "active"
-    campaignStore.update(campaign.id, { status: nextStatus })
-    toast.success(
-      nextStatus === "paused"
-        ? c.paused(campaign.name)
-        : c.activated(campaign.name)
-    )
+    if (campaign.status === "active") {
+      campaignStore.deactivate(campaign.id)
+      toast.success(c.paused(campaign.name))
+      return
+    }
+    campaignStore.activate(campaign.id, {
+      senderAccountId: campaign.senderAccountId ?? currentUser.id,
+      senderAccount: campaign.senderAccount ?? currentUser.name,
+      language: campaign.language ?? "en",
+    })
+    toast.success(c.activated(campaign.name))
   }
 
   return (
@@ -733,19 +803,37 @@ function CampaignCard({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" onClick={toggleStatus}>
-            {campaign.status === "active" ? (
-              <>
-                <Pause className="size-4" />
-                {c.pause}
-              </>
-            ) : (
-              <>
-                <Play className="size-4" />
-                {c.activate}
-              </>
-            )}
-          </Button>
+          {campaign.status === "active" || canActivate ? (
+            <Button variant="outline" size="sm" onClick={toggleStatus}>
+              {campaign.status === "active" ? (
+                <>
+                  <Pause className="size-4" />
+                  {c.pause}
+                </>
+              ) : (
+                <>
+                  <Play className="size-4" />
+                  {c.activate}
+                </>
+              )}
+            </Button>
+          ) : (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-flex">
+                    <Button variant="outline" size="sm" disabled>
+                      <Play className="size-4" />
+                      {c.activate}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {c.activateDisabledReason(!hasSequence, !hasProspects)}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" aria-label={c.campaignOptions}>
