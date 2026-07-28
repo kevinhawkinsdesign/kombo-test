@@ -1153,17 +1153,20 @@ export const prospectStore = {
       prospects: state.prospects.map((p) => {
         if (!set.has(p.id)) return p
         const next: Prospect = { ...p }
-        if (scope === "email") {
+        // "profile" is a superset: it already includes a verified email and
+        // direct dial (see lib/enrichment.ts), so it reveals those two
+        // fields exactly like buying them individually would.
+        if (scope === "email" || scope === "profile") {
           next.email =
             p.email ||
             `${p.firstName}.${p.lastName}@${p.companyDomain}`
               .toLowerCase()
               .replace(/\s+/g, "")
         }
-        if (scope === "phone") {
+        if (scope === "phone" || scope === "profile") {
           next.phone = p.phone || mockPhone(p.id)
         }
-        // "profile" reveals the ~30 data points — the master enrichment flag.
+        // "profile" also reveals the ~30 data points — the master enrichment flag.
         if (scope === "profile") {
           next.enriched = true
         }
