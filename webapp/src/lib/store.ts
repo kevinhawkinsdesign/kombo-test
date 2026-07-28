@@ -48,6 +48,7 @@ import {
   blacklistedCompanies as seedBlacklist,
   type BlacklistedCompany,
 } from "./mock-settings"
+import { campaignEnrollments } from "./mock-depth"
 
 // Mock ElevenLabs voice roster for ai_call steps — no real ElevenLabs
 // account is wired up in this prototype.
@@ -1100,7 +1101,9 @@ export const campaignStore = {
     })
   },
   // End a campaign: unschedule all incomplete sequences (messages not yet sent)
-  // and mark it finished. Cannot be resumed.
+  // and mark it finished ("completed" is not a terminal state — activate()
+  // has no status guard, so a completed campaign can be started again later,
+  // same as one that was merely paused).
   end(id: string): void {
     setState({
       campaigns: state.campaigns.map((c) =>
@@ -1124,6 +1127,27 @@ export const campaignStore = {
       }),
     })
   },
+}
+
+// Whether a campaign currently has at least one prospect that would actually
+// render as a row in its own Prospects tab table (CampaignDetail.tsx's
+// prospectRows: the mock enrollment records for this campaign, plus manually
+// enrolled ids that still resolve to a real prospect). An attached list's
+// membership does NOT count by itself — attaching a list is a structural
+// link only; its members don't show up as Prospects-tab rows unless they're
+// separately enrolled (activate() does fold an attached list's members into
+// messagedIds as recipients, but that's a launch-time mechanic distinct from
+// what's actually visible on the tab, which is what this gate must track).
+// Shared here so the Campaigns list page's card-view Activate gate can reuse
+// the exact same rule as the detail page's and the two can't drift apart.
+export function campaignHasProspects(campaignId: string): boolean {
+  const enrolled = campaignEnrollments[campaignId] ?? []
+  if (enrolled.length > 0) return true
+  const campaign = state.campaigns.find((c) => c.id === campaignId)
+  const alreadyCounted = new Set(enrolled.map((e) => e.prospectId))
+  return (campaign?.enrolledIds ?? []).some(
+    (id) => !alreadyCounted.has(id) && state.prospects.some((p) => p.id === id)
+  )
 }
 
 export const accountStore = {
