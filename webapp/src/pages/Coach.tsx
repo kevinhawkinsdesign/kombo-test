@@ -20,7 +20,7 @@ import {
   Sparkles,
 } from "lucide-react"
 
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import {
@@ -59,6 +59,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
+import { DataTable } from "@/components/common/DataTable"
+import type { ColumnDef } from "@/lib/table-columns"
+import {
+  useTableSortFilter,
+  type SortState,
+  type ColumnFilterState,
+} from "@/lib/table-sort-filter"
 import { coachRecordings } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import {
@@ -687,6 +694,98 @@ const weakSections = coachRecordings
   .sort((a, b) => a.score - b.score)
 const rankedCalls = [...coachRecordings].sort((a, b) => b.score - a.score)
 
+// Header labels reuse the per-locale strings already defined in COPY above
+// (colTitle, colContact, …) rather than duplicating translations.
+function colLabel(key: "colTitle" | "colContact" | "colDate" | "colDuration" | "colSentiment" | "colScore") {
+  return {
+    en: COPY.en[key],
+    es: COPY.es[key],
+    it: COPY.it[key],
+    fr: COPY.fr[key],
+    de: COPY.de[key],
+    pt: COPY.pt[key],
+    pt_BR: COPY.pt_BR[key],
+  }
+}
+
+const RECORDING_COLUMNS: ColumnDef<CoachRecording>[] = [
+  {
+    id: "title",
+    label: colLabel("colTitle"),
+    group: "coach",
+    pinned: true,
+    getValue: (r) => r.title,
+    render: (r) => <span className="font-medium">{r.title}</span>,
+  },
+  {
+    id: "contact",
+    label: colLabel("colContact"),
+    group: "coach",
+    getValue: (r) => `${r.prospectName} ${r.company}`,
+    render: (r) => (
+      <span className="text-muted-foreground text-sm">
+        {r.prospectName} · {r.company}
+      </span>
+    ),
+  },
+  {
+    id: "date",
+    label: colLabel("colDate"),
+    group: "coach",
+    getValue: (r) => r.date,
+    render: (r) => (
+      <span className="text-muted-foreground text-sm whitespace-nowrap">
+        {formatDate(r.date)}
+      </span>
+    ),
+  },
+  {
+    id: "duration",
+    label: colLabel("colDuration"),
+    group: "coach",
+    align: "right",
+    getValue: (r) => r.durationMin,
+    render: (r) => <span className="tabular-nums">{r.durationMin} min</span>,
+  },
+  {
+    id: "sentiment",
+    label: colLabel("colSentiment"),
+    group: "coach",
+    // English label (not the raw key) so the filter checklist shows readable
+    // values — same convention as EMAIL_STATUS in lib/table-columns.tsx.
+    getValue: (r) => COPY.en.sentiment[r.sentiment],
+    filterType: "enum",
+    render: (r, locale) => {
+      const cc = COPY[locale]
+      const sentiment = SENTIMENT[r.sentiment]
+      const SentimentIcon = sentiment.icon
+      return (
+        <span className={`flex items-center gap-1 text-sm ${sentiment.className}`}>
+          <SentimentIcon className="size-3.5" />
+          {cc.sentiment[r.sentiment]}
+        </span>
+      )
+    },
+  },
+  {
+    id: "score",
+    label: colLabel("colScore"),
+    group: "coach",
+    align: "right",
+    getValue: (r) => r.score,
+    render: (r) => (
+      <span
+        className={cn(
+          "inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+          scorePillClass(r.score)
+        )}
+      >
+        {r.score}
+      </span>
+    ),
+  },
+]
+
 export default function Coach() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -726,24 +825,37 @@ export default function Coach() {
     return sorted
   }, [query, sort, dateFrom, dateTo])
 
+  // Column-level sort/filter (from the table's header controls) layers on
+  // top of the toolbar's search/sort/date-range filtering above.
+  const tsf = useTableSortFilter(RECORDING_COLUMNS, visible)
+
   // Reset to the first page whenever the filtered/sorted result set changes.
-  const resultSig = `${query}|${sort}|${dateFrom}|${dateTo}`
+  // Column filters are serialized by hand — JSON.stringify would collapse the
+  // enum filters' Sets to "{}" and miss changes within an active filter.
+  const filterSig = Object.entries(tsf.filters)
+    .map(([id, f]) =>
+      f.type === "enum"
+        ? `${id}:${Array.from(f.excluded).sort().join(",")}`
+        : `${id}:${f.query}`
+    )
+    .join("|")
+  const resultSig = `${query}|${sort}|${dateFrom}|${dateTo}|${tsf.sort?.columnId}|${tsf.sort?.dir}|${filterSig}`
   const [pageSig, setPageSig] = React.useState(resultSig)
   if (resultSig !== pageSig) {
     setPageSig(resultSig)
     setPage(0)
   }
-  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(tsf.rows.length / PAGE_SIZE))
   const safePage = Math.min(page, pageCount - 1)
   const pageStart = safePage * PAGE_SIZE
-  const pageEnd = Math.min(pageStart + PAGE_SIZE, visible.length)
-  const paged = visible.slice(pageStart, pageEnd)
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, tsf.rows.length)
+  const paged = tsf.rows.slice(pageStart, pageEnd)
 
   function exportCsv() {
     downloadCsv(
       "kombo-calls.csv",
       [c.colTitle, c.colContact, c.colDate, c.colDuration, c.colSentiment, c.colScore],
-      visible.map((r) => [
+      tsf.rows.map((r) => [
         r.title,
         `${r.prospectName} (${r.company})`,
         formatDate(r.date),
@@ -835,7 +947,22 @@ export default function Coach() {
           ) : (
             <>
               {view === "table" ? (
-                <RecordingTable rows={paged} c={c} />
+                // Rendered even when column filters exclude every row — the
+                // header controls have to stay reachable to clear the filter
+                // (the empty state shows inside the table body instead).
+                <RecordingTable
+                  rows={paged}
+                  filterRows={visible}
+                  locale={locale}
+                  sort={tsf.sort}
+                  onSortChange={tsf.setSort}
+                  filters={tsf.filters}
+                  onFilterChange={tsf.setFilter}
+                />
+              ) : paged.length === 0 ? (
+                <Card className="text-muted-foreground p-8 text-center text-sm">
+                  {c.noResults}
+                </Card>
               ) : (
                 <div className="space-y-4">
                   {paged.map((rec) => (
@@ -843,9 +970,10 @@ export default function Coach() {
                   ))}
                 </div>
               )}
+              {tsf.rows.length > 0 && (
               <div className="mt-3 flex items-center justify-end gap-1">
                 <span className="text-muted-foreground px-1 text-xs tabular-nums">
-                  {c.pageRange(pageStart + 1, pageEnd, visible.length)}
+                  {c.pageRange(pageStart + 1, pageEnd, tsf.rows.length)}
                 </span>
                 <Button
                   variant="outline"
@@ -868,6 +996,7 @@ export default function Coach() {
                   <ChevronRight className="size-4" />
                 </Button>
               </div>
+              )}
             </>
           )}
         </TabsContent>
@@ -1212,69 +1341,39 @@ function TeamTab({ c }: { c: Copy }) {
 
 function RecordingTable({
   rows,
-  c,
+  filterRows,
+  locale,
+  sort,
+  onSortChange,
+  filters,
+  onFilterChange,
 }: {
   rows: CoachRecording[]
-  c: Copy
+  // Full pre-pagination result set — used to derive per-column filter
+  // checklists so they don't shrink as the user pages through results.
+  filterRows: CoachRecording[]
+  locale: Locale
+  sort: SortState
+  onSortChange: (next: SortState) => void
+  filters: Record<string, ColumnFilterState>
+  onFilterChange: (columnId: string, next: ColumnFilterState | undefined) => void
 }) {
   const navigate = useNavigate()
   return (
-    <Card className="p-0">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{c.colTitle}</TableHead>
-            <TableHead>{c.colContact}</TableHead>
-            <TableHead>{c.colDate}</TableHead>
-            <TableHead className="text-right">{c.colDuration}</TableHead>
-            <TableHead>{c.colSentiment}</TableHead>
-            <TableHead className="text-right">{c.colScore}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((rec) => {
-            const sentiment = SENTIMENT[rec.sentiment]
-            const SentimentIcon = sentiment.icon
-            return (
-              <TableRow
-                key={rec.id}
-                className="cursor-pointer"
-                onClick={() => navigate(`/coach/${rec.id}`)}
-              >
-                <TableCell className="font-medium">{rec.title}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {rec.prospectName} · {rec.company}
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
-                  {formatDate(rec.date)}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {rec.durationMin} min
-                </TableCell>
-                <TableCell>
-                  <span
-                    className={`flex items-center gap-1 text-sm ${sentiment.className}`}
-                  >
-                    <SentimentIcon className="size-3.5" />
-                    {c.sentiment[rec.sentiment]}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                      scorePillClass(rec.score)
-                    )}
-                  >
-                    {rec.score}
-                  </span>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </Card>
+    <DataTable
+      columns={RECORDING_COLUMNS}
+      visible={["contact", "date", "duration", "sentiment", "score"]}
+      rows={rows}
+      rowKey={(rec) => rec.id}
+      locale={locale}
+      onRowClick={(rec) => navigate(`/coach/${rec.id}`)}
+      sort={sort}
+      onSortChange={onSortChange}
+      filters={filters}
+      onFilterChange={onFilterChange}
+      filterRows={filterRows}
+      empty={COPY[locale].noResults}
+    />
   )
 }
 

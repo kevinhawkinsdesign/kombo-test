@@ -38,28 +38,10 @@ import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { useAuth } from "@/lib/auth"
 import { useCredits } from "@/lib/credits"
 import { useLocale, type Locale } from "@/lib/locale"
+import { LOCALE_FLAG, LOCALE_LABEL } from "@/lib/locale-meta"
 import { APP_VERSION } from "@/lib/version"
 import { portraitFor } from "@/lib/avatars"
 import { initials } from "@/lib/format"
-
-const LOCALE_FLAG: Record<Locale, string> = {
-  en: "🇬🇧",
-  es: "🇪🇸",
-  it: "🇮🇹",
-  fr: "🇫🇷",
-  de: "🇩🇪",
-  pt: "🇵🇹",
-  pt_BR: "🇧🇷",
-}
-const LOCALE_LABEL: Record<Locale, string> = {
-  en: "English",
-  es: "Español",
-  it: "Italiano",
-  fr: "Français",
-  de: "Deutsch",
-  pt: "Português",
-  pt_BR: "Português (Brasil)",
-}
 
 const HELP_CENTER_URL = "https://info.getkombo.ai/en/"
 

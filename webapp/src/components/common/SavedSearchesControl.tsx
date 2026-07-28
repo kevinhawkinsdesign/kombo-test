@@ -4,6 +4,12 @@ import { Bookmark, ChevronDown, Search as SearchIcon, Trash2 } from "lucide-reac
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import type { SavedAiSearch } from "@/lib/mock-ai-search"
@@ -86,6 +92,7 @@ export function SavedSearchesControl({
   onSaveThis,
   saveThisLabel,
   saveThisDisabled,
+  saveThisDisabledReason,
   buttonClassName,
 }: {
   savedSearches: SavedAiSearch[]
@@ -97,6 +104,10 @@ export function SavedSearchesControl({
   onSaveThis?: () => void
   saveThisLabel?: string
   saveThisDisabled?: boolean
+  // Explains why Save is disabled (e.g. the current search has zero
+  // matches) — shown in a tooltip over the disabled button. Omit for a
+  // plain disabled button with no explanation.
+  saveThisDisabledReason?: string
   // Lets a caller match this control's height to neighboring toolbar buttons
   // (e.g. "h-10" in AddRecordsDialog's results toolbar) without changing the
   // default size used where it stands alone (the Search page header).
@@ -122,17 +133,39 @@ export function SavedSearchesControl({
     >
       {onSaveThis ? (
         <div className="inline-flex -space-x-px">
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn("rounded-r-none", buttonClassName)}
-            onClick={onSaveThis}
-            disabled={saveThisDisabled}
-            aria-label={saveThisLabel}
-          >
-            <Bookmark className="size-4" />
-            <span className="hidden sm:inline">{saveThisLabel}</span>
-          </Button>
+          {saveThisDisabled && saveThisDisabledReason ? (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-flex">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn("rounded-r-none", buttonClassName)}
+                      disabled
+                      aria-label={saveThisLabel}
+                    >
+                      <Bookmark className="size-4" />
+                      <span className="hidden sm:inline">{saveThisLabel}</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{saveThisDisabledReason}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("rounded-r-none", buttonClassName)}
+              onClick={onSaveThis}
+              disabled={saveThisDisabled}
+              aria-label={saveThisLabel}
+            >
+              <Bookmark className="size-4" />
+              <span className="hidden sm:inline">{saveThisLabel}</span>
+            </Button>
+          )}
           <PopoverTrigger asChild>
             <Button
               variant="outline"

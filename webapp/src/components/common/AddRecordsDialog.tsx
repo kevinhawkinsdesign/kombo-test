@@ -108,6 +108,7 @@ const COPY = {
     saveSearchDesc:
       "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
     saveNameLabel: "Search name",
+    saveDisabledReason: "No matches to save — broaden your search or filters.",
     savedToast: "Search saved with its prompt history",
     loadedToast: "Saved search loaded",
     removedSaved: "Saved search removed",
@@ -210,6 +211,7 @@ const COPY = {
     saveSearchDesc:
       "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
     saveNameLabel: "Nombre de la búsqueda",
+    saveDisabledReason: "Sin coincidencias para guardar — amplía tu búsqueda o filtros.",
     savedToast: "Búsqueda guardada con su historial de prompts",
     loadedToast: "Búsqueda guardada cargada",
     removedSaved: "Búsqueda guardada eliminada",
@@ -313,6 +315,7 @@ const COPY = {
     saveSearchDesc:
       "Dalle un nome per ritrovarla facilmente — te ne suggeriamo uno in base al tuo prompt e ai filtri.",
     saveNameLabel: "Nome della ricerca",
+    saveDisabledReason: "Nessuna corrispondenza da salvare — amplia la ricerca o i filtri.",
     savedToast: "Ricerca salvata con la cronologia dei prompt",
     loadedToast: "Ricerca salvata caricata",
     removedSaved: "Ricerca salvata rimossa",
@@ -415,6 +418,7 @@ const COPY = {
     saveSearchDesc:
       "Donnez-lui un nom pour la retrouver facilement — nous en suggérons un basé sur votre prompt et vos filtres.",
     saveNameLabel: "Nom de la recherche",
+    saveDisabledReason: "Aucune correspondance à enregistrer — élargissez votre recherche ou vos filtres.",
     savedToast: "Recherche enregistrée avec son historique de prompts",
     loadedToast: "Recherche enregistrée chargée",
     removedSaved: "Recherche enregistrée supprimée",
@@ -524,6 +528,7 @@ const COPY = {
     saveSearchDesc:
       "Gib ihr einen Namen, um sie wiederzufinden — wir haben schon einen anhand deines Prompts und deiner Filter vorgeschlagen.",
     saveNameLabel: "Name der Suche",
+    saveDisabledReason: "Keine Treffer zum Speichern — erweitere deine Suche oder Filter.",
     savedToast: "Suche mit Prompt-Verlauf gespeichert",
     loadedToast: "Gespeicherte Suche geladen",
     removedSaved: "Gespeicherte Suche entfernt",
@@ -628,6 +633,7 @@ const COPY = {
     saveSearchDesc:
       "Dá-lhe um nome para a encontrares depois — sugerimos um com base no teu prompt e filtros.",
     saveNameLabel: "Nome da pesquisa",
+    saveDisabledReason: "Sem correspondências para guardar — alarga a tua pesquisa ou filtros.",
     savedToast: "Pesquisa guardada com o histórico de prompts",
     loadedToast: "Pesquisa guardada carregada",
     removedSaved: "Pesquisa guardada removida",
@@ -733,6 +739,7 @@ const COPY = {
     saveSearchDesc:
       "Dê um nome para encontrá-la depois — sugerimos um com base no seu prompt e filtros.",
     saveNameLabel: "Nome da pesquisa",
+    saveDisabledReason: "Nenhuma correspondência para salvar — amplie sua busca ou filtros.",
     savedToast: "Pesquisa salva com o histórico de prompts",
     loadedToast: "Pesquisa salva carregada",
     removedSaved: "Pesquisa salva removida",
@@ -978,6 +985,15 @@ export function AddRecordsDialog({
     setSaveDialogOpen(true)
   }
   function confirmSave() {
+    // Invariant: a saved search must resolve to at least one result — it can
+    // later seed a list or a campaign's audience, and a zero-match search
+    // would silently import nothing there. The split-button's Save action is
+    // already disabled in this case; this is the belt-and-suspenders backstop.
+    if (total === 0) {
+      toast.error(c.saveDisabledReason)
+      setSaveDialogOpen(false)
+      return
+    }
     savedSearchStore.create({
       name: saveName.trim() || queryTitle(query, entity),
       entity,
@@ -1506,6 +1522,7 @@ export function AddRecordsDialog({
                     onSaveThis={openSaveDialog}
                     saveThisLabel={c.save}
                     saveThisDisabled={total === 0}
+                    saveThisDisabledReason={c.saveDisabledReason}
                     buttonClassName="h-10"
                   />
                 </div>

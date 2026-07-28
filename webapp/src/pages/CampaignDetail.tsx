@@ -167,6 +167,8 @@ import { campaignDailyStats, campaignEnrollments } from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
+import { LOCALES, LOCALE_FLAG, LOCALE_LABEL } from "@/lib/locale-meta"
+import { useTableSortFilter } from "@/lib/table-sort-filter"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type {
   CampaignStatus,
@@ -223,8 +225,6 @@ const COPY = {
     ended: (name: string) => `${name} ended`,
     account: "Account",
     language: "Language",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Sending",
     sendingSettingsDesc:
       "Choose which account this campaign sends from and in what language.",
@@ -447,8 +447,6 @@ const COPY = {
     ended: (name: string) => `${name} finalizada`,
     account: "Cuenta",
     language: "Idioma",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envío",
     sendingSettingsDesc:
       "Elige desde qué cuenta se envía esta campaña y en qué idioma.",
@@ -671,8 +669,6 @@ const COPY = {
     ended: (name: string) => `${name} terminata`,
     account: "Account",
     language: "Lingua",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Invio",
     sendingSettingsDesc:
       "Scegli da quale account viene inviata questa campagna e in quale lingua.",
@@ -895,8 +891,6 @@ const COPY = {
     ended: (name: string) => `${name} terminée`,
     account: "Compte",
     language: "Langue",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envoi",
     sendingSettingsDesc:
       "Choisissez depuis quel compte cette campagne envoie et dans quelle langue.",
@@ -1119,8 +1113,6 @@ const COPY = {
     ended: (name: string) => `${name} beendet`,
     account: "Konto",
     language: "Sprache",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Versand",
     sendingSettingsDesc:
       "Wähle, von welchem Konto diese Kampagne sendet und in welcher Sprache.",
@@ -1343,8 +1335,6 @@ const COPY = {
     ended: (name: string) => `${name} terminada`,
     account: "Conta",
     language: "Idioma",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envio",
     sendingSettingsDesc:
       "Escolha a partir de que conta esta campanha envia e em que idioma.",
@@ -1567,8 +1557,6 @@ const COPY = {
     ended: (name: string) => `${name} encerrada`,
     account: "Conta",
     language: "Idioma",
-    english: "English",
-    spanish: "Español",
     sendingSettings: "Envio",
     sendingSettingsDesc:
       "Escolha de qual conta esta campanha envia e em qual idioma.",
@@ -1899,6 +1887,206 @@ const POSITIVE_REPLIES = [
   "Thanks for reaching out. We've felt this pain. Let's set up 20 minutes.",
   "Good note. We're scaling the team right now so this is relevant. What does onboarding look like?",
 ]
+
+interface ConversationRow {
+  id: string
+  prospect: Prospect | undefined
+  reply: string
+  lastTouch: string
+}
+
+// Conversations-tab table, extracted so it can own useTableSortFilter (a
+// hook, so it can't live inside the conditional render block in the parent).
+// Column sort/filter applies to the full reply set before pagination, same
+// as the Prospects tab.
+function ConversationsTable({
+  rows,
+  locale,
+  c,
+  alertInterested,
+  alertEmail,
+  page,
+  setPage,
+}: {
+  rows: ConversationRow[]
+  locale: Locale
+  c: (typeof COPY)[Locale]
+  alertInterested: boolean
+  alertEmail: boolean
+  page: number
+  setPage: React.Dispatch<React.SetStateAction<number>>
+}) {
+  const conversationColumns: ColumnDef<ConversationRow>[] = [
+    {
+      id: "prospect",
+      label: {
+        en: "Prospect",
+        es: "Prospecto",
+        it: "Prospect",
+        fr: "Prospect",
+        de: "Prospect",
+        pt: "Prospect",
+        pt_BR: "Prospect",
+      },
+      group: "conversation",
+      pinned: true,
+      getValue: (row) =>
+        row.prospect
+          ? `${row.prospect.firstName} ${row.prospect.lastName}`
+          : "",
+      render: (row) =>
+        row.prospect ? (
+          <div className="flex items-center gap-2.5">
+            <ProspectAvatar prospect={row.prospect} />
+            <span className="truncate font-medium">
+              {row.prospect.firstName} {row.prospect.lastName}
+            </span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground">{c.unknownProspect}</span>
+        ),
+    },
+    {
+      id: "status",
+      label: {
+        en: "Status",
+        es: "Estado",
+        it: "Stato",
+        fr: "Statut",
+        de: "Status",
+        pt: "Estado",
+        pt_BR: "Status",
+      },
+      group: "conversation",
+      getValue: () => c.interested,
+      filterType: "enum",
+      render: () => (
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
+            <Sparkles className="size-3" />
+            {c.interested}
+          </Badge>
+          {alertInterested && (
+            <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+              <Zap className="text-chart-4 size-3" />
+              {c.alertSent}
+              {alertEmail ? " · email" : ""}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: "reply",
+      label: {
+        en: "Last message",
+        es: "Último mensaje",
+        it: "Ultimo messaggio",
+        fr: "Dernier message",
+        de: "Letzte Nachricht",
+        pt: "Última mensagem",
+        pt_BR: "Última mensagem",
+      },
+      group: "conversation",
+      minWidth: "280px",
+      getValue: (row) => row.reply,
+      render: (row) => (
+        <span className="text-muted-foreground line-clamp-1 text-sm">
+          {row.reply}
+        </span>
+      ),
+    },
+    {
+      id: "lastTouch",
+      label: {
+        en: "Time",
+        es: "Hora",
+        it: "Ora",
+        fr: "Heure",
+        de: "Zeit",
+        pt: "Hora",
+        pt_BR: "Hora",
+      },
+      group: "conversation",
+      getValue: (row) => row.lastTouch,
+      render: (row) => (
+        <span className="text-muted-foreground text-sm">
+          {relativeTime(row.lastTouch)}
+        </span>
+      ),
+    },
+  ]
+  const tsf = useTableSortFilter(conversationColumns, rows)
+  const pageCount = Math.max(
+    1,
+    Math.ceil(tsf.rows.length / CONVERSATIONS_PAGE_SIZE)
+  )
+  const safePage = Math.min(page, pageCount - 1)
+  const pageStart = safePage * CONVERSATIONS_PAGE_SIZE
+  const pageRows = tsf.rows.slice(
+    pageStart,
+    pageStart + CONVERSATIONS_PAGE_SIZE
+  )
+  return (
+    <>
+      <DataTable
+        columns={conversationColumns}
+        visible={["status", "reply", "lastTouch"]}
+        rows={pageRows}
+        rowKey={(row) => row.id}
+        locale={locale}
+        sort={tsf.sort}
+        onSortChange={tsf.setSort}
+        filters={tsf.filters}
+        onFilterChange={tsf.setFilter}
+        filterRows={rows}
+        actions={() => (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={c.viewInInbox}
+                asChild
+              >
+                <Link to="/inbox">
+                  <ExternalLink className="size-4" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{c.viewInInbox}</TooltipContent>
+          </Tooltip>
+        )}
+      />
+      {tsf.rows.length > CONVERSATIONS_PAGE_SIZE && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">
+            {pageStart + 1}–{Math.min(pageStart + CONVERSATIONS_PAGE_SIZE, tsf.rows.length)} {c.of} {tsf.rows.length}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage === 0}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              {c.prevPage}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage >= pageCount - 1}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              {c.nextPage}
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
 
 function shortDay(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -2479,7 +2667,7 @@ export default function CampaignDetail() {
   const accountId = camp.senderAccountId ?? currentUser.id
   const accountName = camp.senderAccount ?? currentUser.name
   const language: Locale = camp.language ?? "en"
-  const langLabel = language === "es" ? c.spanish : c.english
+  const langLabel = `${LOCALE_FLAG[language]} ${LOCALE_LABEL[language]}`
 
   function saveSender(next: {
     senderAccountId: string
@@ -2649,8 +2837,11 @@ export default function CampaignDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="en">{c.english}</SelectItem>
-                    <SelectItem value="es">{c.spanish}</SelectItem>
+                    {LOCALES.map((code) => (
+                      <SelectItem key={code} value={code}>
+                        {LOCALE_FLAG[code]} {LOCALE_LABEL[code]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               ) : (
@@ -2799,11 +2990,21 @@ export default function CampaignDetail() {
   )
 
   return (
-    <Page>
-      <BackLink to="/campaigns" label={c.campaigns} />
+    <>
+      <Page className="pb-0">
+        <BackLink to="/campaigns" label={c.campaigns} />
+      </Page>
 
-      <CampaignTabBar currentId={campaign.id} />
+      {/* Full-bleed within the main content area — not constrained to the
+          page's max-w-7xl — so the tab strip spans from the sidebar edge to
+          the viewport edge. Horizontal padding matches AppHeader's own
+          px-4 md:px-6 so its edges still line up with the rest of the
+          chrome. */}
+      <div className="px-4 md:px-6">
+        <CampaignTabBar currentId={campaign.id} />
+      </div>
 
+      <Page className="pt-0">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5">
           {scheduled && campaign.scheduledAt && (
@@ -3938,170 +4139,20 @@ export default function CampaignDetail() {
         {hasConversations && (
         <TabsContent value="conversations" className="mt-4 space-y-3">
           {replies.length > 0 ? (
-            (() => {
-              const rows = replies.map((e, i) => ({
+            <ConversationsTable
+              rows={replies.map((e, i) => ({
                 id: e.prospectId,
                 prospect: getProspect(e.prospectId),
                 reply: POSITIVE_REPLIES[i % POSITIVE_REPLIES.length],
                 lastTouch: e.lastTouch,
-              }))
-              const conversationColumns: ColumnDef<(typeof rows)[number]>[] = [
-                {
-                  id: "prospect",
-                  label: {
-                    en: "Prospect",
-                    es: "Prospecto",
-                    it: "Prospect",
-                    fr: "Prospect",
-                    de: "Prospect",
-                    pt: "Prospect",
-                    pt_BR: "Prospect",
-                  },
-                  group: "conversation",
-                  pinned: true,
-                  render: (row) =>
-                    row.prospect ? (
-                      <div className="flex items-center gap-2.5">
-                        <ProspectAvatar prospect={row.prospect} />
-                        <span className="truncate font-medium">
-                          {row.prospect.firstName} {row.prospect.lastName}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">{c.unknownProspect}</span>
-                    ),
-                },
-                {
-                  id: "status",
-                  label: {
-                    en: "Status",
-                    es: "Estado",
-                    it: "Stato",
-                    fr: "Statut",
-                    de: "Status",
-                    pt: "Estado",
-                    pt_BR: "Status",
-                  },
-                  group: "conversation",
-                  render: () => (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
-                        <Sparkles className="size-3" />
-                        {c.interested}
-                      </Badge>
-                      {alertInterested && (
-                        <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-                          <Zap className="text-chart-4 size-3" />
-                          {c.alertSent}
-                          {alertEmail ? " · email" : ""}
-                        </span>
-                      )}
-                    </div>
-                  ),
-                },
-                {
-                  id: "reply",
-                  label: {
-                    en: "Last message",
-                    es: "Último mensaje",
-                    it: "Ultimo messaggio",
-                    fr: "Dernier message",
-                    de: "Letzte Nachricht",
-                    pt: "Última mensagem",
-                    pt_BR: "Última mensagem",
-                  },
-                  group: "conversation",
-                  minWidth: "280px",
-                  render: (row) => (
-                    <span className="text-muted-foreground line-clamp-1 text-sm">
-                      {row.reply}
-                    </span>
-                  ),
-                },
-                {
-                  id: "lastTouch",
-                  label: {
-                    en: "Time",
-                    es: "Hora",
-                    it: "Ora",
-                    fr: "Heure",
-                    de: "Zeit",
-                    pt: "Hora",
-                    pt_BR: "Hora",
-                  },
-                  group: "conversation",
-                  render: (row) => (
-                    <span className="text-muted-foreground text-sm">
-                      {relativeTime(row.lastTouch)}
-                    </span>
-                  ),
-                },
-              ]
-              const pageCount = Math.max(
-                1,
-                Math.ceil(rows.length / CONVERSATIONS_PAGE_SIZE)
-              )
-              const safePage = Math.min(conversationsPage, pageCount - 1)
-              const pageStart = safePage * CONVERSATIONS_PAGE_SIZE
-              const pageRows = rows.slice(
-                pageStart,
-                pageStart + CONVERSATIONS_PAGE_SIZE
-              )
-              return (
-                <>
-                  <DataTable
-                    columns={conversationColumns}
-                    visible={["status", "reply", "lastTouch"]}
-                    rows={pageRows}
-                    rowKey={(row) => row.id}
-                    locale={locale}
-                    actions={() => (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8"
-                            aria-label={c.viewInInbox}
-                            asChild
-                          >
-                            <Link to="/inbox">
-                              <ExternalLink className="size-4" />
-                            </Link>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{c.viewInInbox}</TooltipContent>
-                      </Tooltip>
-                    )}
-                  />
-                  {rows.length > CONVERSATIONS_PAGE_SIZE && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {pageStart + 1}–{Math.min(pageStart + CONVERSATIONS_PAGE_SIZE, rows.length)} {c.of} {rows.length}
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={safePage === 0}
-                          onClick={() => setConversationsPage((p) => p - 1)}
-                        >
-                          {c.prevPage}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={safePage >= pageCount - 1}
-                          onClick={() => setConversationsPage((p) => p + 1)}
-                        >
-                          {c.nextPage}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )
-            })()
+              }))}
+              locale={locale}
+              c={c}
+              alertInterested={alertInterested}
+              alertEmail={alertEmail}
+              page={conversationsPage}
+              setPage={setConversationsPage}
+            />
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
@@ -4310,7 +4361,8 @@ export default function CampaignDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Page>
+      </Page>
+    </>
   )
 }
 

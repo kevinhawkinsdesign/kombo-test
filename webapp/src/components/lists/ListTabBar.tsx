@@ -84,10 +84,18 @@ export function ListTabBar({ currentId }: { currentId: string }) {
   const [pickerOpen, setPickerOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
   const [formOpen, setFormOpen] = React.useState(false)
+  const activeTabRef = React.useRef<HTMLDivElement>(null)
 
   const tabs = openIds
     .map((id) => lists.find((l) => l.id === id))
     .filter((l): l is ProspectList => Boolean(l))
+
+  // Keep the active tab visible — the strip clips it at the container's
+  // right edge otherwise, both on first mount and when navigating between
+  // already-open lists.
+  React.useEffect(() => {
+    activeTabRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" })
+  }, [currentId])
 
   function closeTab(id: string) {
     const remaining = tabs.filter((t) => t.id !== id)
@@ -117,6 +125,7 @@ export function ListTabBar({ currentId }: { currentId: string }) {
         return (
           <div
             key={t.id}
+            ref={active ? activeTabRef : undefined}
             className={cn(
               "group relative -mb-px flex shrink-0 items-center gap-2 rounded-t-lg border transition-colors",
               active

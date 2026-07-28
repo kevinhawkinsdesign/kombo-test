@@ -12,14 +12,81 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
-import { useSavedSearches } from "@/lib/mock-ai-search"
+import {
+  useSavedSearches,
+  searchLeads,
+  searchCompanies,
+  type AiLead,
+  type AiCompany,
+} from "@/lib/mock-ai-search"
 import { CRM_LISTS, CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
-import { listStore } from "@/lib/store"
+import { listStore, prospectStore, accountStore } from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
-import type { ProspectList } from "@/lib/types"
+import type { AccountTier, ProspectList } from "@/lib/types"
 
 type Source = "saved_search" | "crm_list"
+
+/* ----------------------------- materializers -----------------------------
+ * Same pattern as AddRecordsDialog.tsx / Search.tsx: a saved search's query
+ * is only ever a filter recipe, not real records, so linking a list to one
+ * has to re-run that recipe against the current mock pool and turn the
+ * matches into real prospectStore/accountStore rows — otherwise the list
+ * just carries a label with no actual membership. */
+function materializeLead(l: AiLead): string {
+  return prospectStore.create({
+    firstName: l.firstName,
+    lastName: l.lastName,
+    title: l.title,
+    company: l.company,
+    companyDomain: l.companyDomain,
+    location: l.location,
+    // Freshly sourced contacts arrive with only basic data — email is revealed
+    // later via enrichment.
+    email: "",
+    linkedinUrl: "",
+    avatarColor: l.avatarColor,
+    score: l.fit,
+    status: "new",
+    tags: [],
+    seniority: l.seniority,
+    department: l.department,
+    headcount: l.headcount,
+    industry: l.industry,
+    revenue: l.revenue,
+    about: "",
+    signals: l.signals,
+    source: "search",
+    enriched: false,
+  }).id
+}
+
+function materializeCompany(co: AiCompany): string {
+  const tier: AccountTier =
+    co.headcountNum >= 1000
+      ? "Enterprise"
+      : co.headcountNum >= 200
+        ? "Mid-market"
+        : "SMB"
+  return accountStore.create({
+    name: co.name,
+    domain: co.domain,
+    industry: co.industry,
+    employees: co.headcount,
+    revenue: co.revenue,
+    location: co.location,
+    logoColor: co.logoColor,
+    tier,
+    healthScore: co.fit,
+    openDeals: 0,
+    pipeline: 0,
+    contacts: 0,
+    ownerId: "",
+    about: "",
+    signals: co.signals,
+    keyExecutives: [],
+  }).id
+}
 
 const COPY = {
   en: {
@@ -202,6 +269,15 @@ export function AddSourceDialog({
     if (tab === "saved_search") {
       const target = matchingSearches.find((s) => s.id === pickId)
       if (!target) return
+      // Re-run the saved search's own filters against the current mock pool
+      // and materialize the matches into real records — a saved search is
+      // only ever a filter recipe, not a snapshot of members, so linking it
+      // must actually import records rather than just label the list.
+      if (wantEntity === "people") {
+        listStore.addProspects(list.id, searchLeads(target.query).map(materializeLead))
+      } else {
+        listStore.addAccounts(list.id, searchCompanies(target.query).map(materializeCompany))
+      }
       listStore.update(list.id, {
         dynamic: true,
         sourceType: "saved_search",
