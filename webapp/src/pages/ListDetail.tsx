@@ -861,8 +861,22 @@ const COPY = {
   },
 } as const
 
+// "All contacts enriched" is dismissable, but the dismissal only applies to
+// the specific enriched roster it was shown for — recorded as the member
+// count at dismiss time. If the list's membership changes afterward (a new
+// unenriched contact added, then re-enriched), that's a new "fully
+// enriched" instance and the banner reappears without needing a reload.
+function readAllEnrichedDismissCount(listId: string): number | null {
+  const raw = localStorage.getItem(`kb_list_${listId}_all_enriched_dismiss`)
+  return raw === null ? null : Number(raw)
+}
+
+function writeAllEnrichedDismissCount(listId: string, count: number): void {
+  localStorage.setItem(`kb_list_${listId}_all_enriched_dismiss`, String(count))
+}
+
 export default function ListDetail() {
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
   const c = COPY[locale]
   const { id } = useParams()
   const navigate = useNavigate()
@@ -934,6 +948,19 @@ export default function ListDetail() {
     list?.id
   )
   const { selectedIds, allSelected, someSelected } = sel
+
+  // Dismissal is scoped to the current list and the roster it was shown for
+  // (see readAllEnrichedDismissCount above) — re-derived whenever the list
+  // itself changes, following the same render-time-check reset pattern as
+  // usePagedSelection's resetKey, rather than an effect.
+  const [allEnrichedDismissedFor, setAllEnrichedDismissedFor] = React.useState(() =>
+    list ? readAllEnrichedDismissCount(list.id) : null
+  )
+  const [dismissTrackedListId, setDismissTrackedListId] = React.useState(list?.id)
+  if (list?.id !== dismissTrackedListId) {
+    setDismissTrackedListId(list?.id)
+    setAllEnrichedDismissedFor(list ? readAllEnrichedDismissCount(list.id) : null)
+  }
 
   if (!list) {
     return (
@@ -1047,7 +1074,10 @@ export default function ListDetail() {
         onLinkToCampaign={() => setLinkCampaignOpen(true)}
       />
 
-      {!isCompany && members.length > 0 && list.enrichment !== "continuous" && (
+      {!isCompany &&
+        members.length > 0 &&
+        list.enrichment !== "continuous" &&
+        (pending.length > 0 || allEnrichedDismissedFor !== members.length) && (
         <Card
           className={`mb-6 flex flex-row flex-wrap items-center gap-3 p-4 ${
             pending.length > 0 ? "border-chart-4/40 bg-chart-4/[0.05]" : ""
@@ -1077,10 +1107,23 @@ export default function ListDetail() {
               {pending.length > 0 ? c.needEnrichmentDesc : c.allEnrichedDesc}
             </p>
           </div>
-          {pending.length > 0 && (
+          {pending.length > 0 ? (
             <Button variant="volt" onClick={() => setEnrichOpen(true)}>
               <Layers className="size-4" />
               {c.enrichContacts(pending.length)}
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground size-8 shrink-0"
+              onClick={() => {
+                writeAllEnrichedDismissCount(list.id, members.length)
+                setAllEnrichedDismissedFor(members.length)
+              }}
+              aria-label={t("common.dismiss")}
+            >
+              <X className="size-4" />
             </Button>
           )}
         </Card>
