@@ -58,6 +58,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Label } from "@/components/ui/label"
 import { DataTable, type TableSelection } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
@@ -198,6 +204,7 @@ const COPY = {
     saveSearchDesc:
       "Give it a name so you can find it again — we've suggested one based on your prompt and filters.",
     saveNameLabel: "Search name",
+    saveDisabledReason: "No matches to save — broaden your search or filters.",
     noSaved: "No saved searches yet.",
     noSavedMatch: "No saved searches match your search.",
     searchSaved: "Search saved searches…",
@@ -504,6 +511,7 @@ const COPY = {
     saveSearchDesc:
       "Ponle un nombre para encontrarla después — sugerimos uno según tu prompt y filtros.",
     saveNameLabel: "Nombre de la búsqueda",
+    saveDisabledReason: "Sin coincidencias para guardar — amplía tu búsqueda o filtros.",
     noSaved: "Aún no hay búsquedas guardadas.",
     noSavedMatch: "Ninguna búsqueda guardada coincide.",
     searchSaved: "Buscar búsquedas guardadas…",
@@ -810,6 +818,7 @@ const COPY = {
     saveSearchDesc:
       "Dalle un nome per ritrovarla facilmente — te ne suggeriamo uno in base al tuo prompt e ai filtri.",
     saveNameLabel: "Nome della ricerca",
+    saveDisabledReason: "Nessuna corrispondenza da salvare — amplia la ricerca o i filtri.",
     noSaved: "Nessuna ricerca salvata ancora.",
     noSavedMatch: "Nessuna ricerca salvata corrisponde.",
     searchSaved: "Cerca nelle ricerche salvate…",
@@ -1116,6 +1125,7 @@ const COPY = {
     saveSearchDesc:
       "Donnez-lui un nom pour la retrouver facilement — nous en suggérons un basé sur votre prompt et vos filtres.",
     saveNameLabel: "Nom de la recherche",
+    saveDisabledReason: "Aucune correspondance à enregistrer — élargissez votre recherche ou vos filtres.",
     noSaved: "Aucune recherche enregistrée pour le moment.",
     noSavedMatch: "Aucune recherche enregistrée ne correspond.",
     searchSaved: "Rechercher dans les recherches enregistrées…",
@@ -1422,6 +1432,7 @@ const COPY = {
     saveSearchDesc:
       "Gib ihr einen Namen, um sie wiederzufinden — wir haben schon einen anhand deines Prompts und deiner Filter vorgeschlagen.",
     saveNameLabel: "Name der Suche",
+    saveDisabledReason: "Keine Treffer zum Speichern — erweitere deine Suche oder Filter.",
     noSaved: "Noch keine gespeicherten Suchen.",
     noSavedMatch: "Keine gespeicherte Suche passt.",
     searchSaved: "Gespeicherte Suchen durchsuchen…",
@@ -1728,6 +1739,7 @@ const COPY = {
     saveSearchDesc:
       "Dá-lhe um nome para a encontrares depois — sugerimos um com base no teu prompt e filtros.",
     saveNameLabel: "Nome da pesquisa",
+    saveDisabledReason: "Sem correspondências para guardar — alarga a tua pesquisa ou filtros.",
     noSaved: "Ainda não há pesquisas guardadas.",
     noSavedMatch: "Nenhuma pesquisa guardada corresponde.",
     searchSaved: "Pesquisar pesquisas guardadas…",
@@ -2034,6 +2046,7 @@ const COPY = {
     saveSearchDesc:
       "Dê um nome para encontrá-la depois — sugerimos um com base no seu prompt e filtros.",
     saveNameLabel: "Nome da pesquisa",
+    saveDisabledReason: "Nenhuma correspondência para salvar — amplie sua busca ou filtros.",
     noSaved: "Ainda não há pesquisas salvas.",
     noSavedMatch: "Nenhuma pesquisa salva corresponde.",
     searchSaved: "Pesquisar nas pesquisas salvas…",
@@ -3002,6 +3015,14 @@ export default function Search() {
     urlPills.length > 0 || parseDomainList(urlInput).length > 0
 
   function saveSearch(name: string) {
+    // Invariant: a saved search must resolve to at least one result — it can
+    // later seed a list or a campaign's audience, and a zero-match search
+    // would silently import nothing there. The toolbar button is already
+    // disabled in this case; this is the belt-and-suspenders backstop.
+    if (shownCount === 0) {
+      toast.error(c.saveDisabledReason)
+      return
+    }
     savedSearchStore.create({
       name,
       entity,
@@ -3628,16 +3649,36 @@ export default function Search() {
                 <ScanSearch className="size-4" />
                 <span className="hidden sm:inline">{c.lookalike}</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openSaveDialog}
-                disabled={shownCount === 0}
-                aria-label={c.saveThis}
-              >
-                <Bookmark className="size-4" />
-                <span className="hidden sm:inline">{c.saveThis}</span>
-              </Button>
+              {shownCount > 0 ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openSaveDialog}
+                  aria-label={c.saveThis}
+                >
+                  <Bookmark className="size-4" />
+                  <span className="hidden sm:inline">{c.saveThis}</span>
+                </Button>
+              ) : (
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0} className="inline-flex">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          aria-label={c.saveThis}
+                        >
+                          <Bookmark className="size-4" />
+                          <span className="hidden sm:inline">{c.saveThis}</span>
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{c.saveDisabledReason}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
           </Card>
