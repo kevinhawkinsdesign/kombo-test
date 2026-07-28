@@ -164,9 +164,6 @@ const COPY = {
     tabRepliesSubtitle: "They replied — needs your response.",
     tabTasksSubtitle: "Open tasks assigned to you.",
     tabFollowupsSubtitle: "They took an action — worth reaching out.",
-    viewsHeaderReplies: "Views · Replies",
-    viewsHeaderTasks: "Views · Tasks",
-    viewsHeaderFollowups: "Views · Follow-ups",
     viewAllOpen: "All open",
     viewWaitingOnThem: "Waiting on them",
     viewAllTasks: "All tasks",
@@ -186,8 +183,6 @@ const COPY = {
     email: "Email",
     linkedin: "LinkedIn",
     unreadOnly: "Unread only",
-    country: "Country",
-    allCountries: "All countries",
     recency: "Last message",
     recencyAny: "Any time",
     recency24h: "Past 24 hours",
@@ -335,9 +330,6 @@ const COPY = {
     tabRepliesSubtitle: "Respondieron — necesita tu respuesta.",
     tabTasksSubtitle: "Tareas abiertas asignadas a ti.",
     tabFollowupsSubtitle: "Realizaron una acción — vale la pena contactarlos.",
-    viewsHeaderReplies: "Vistas · Respuestas",
-    viewsHeaderTasks: "Vistas · Tareas",
-    viewsHeaderFollowups: "Vistas · Seguimientos",
     viewAllOpen: "Todo abierto",
     viewWaitingOnThem: "Esperando su respuesta",
     viewAllTasks: "Todas las tareas",
@@ -357,8 +349,6 @@ const COPY = {
     email: "Correo",
     linkedin: "LinkedIn",
     unreadOnly: "Solo sin leer",
-    country: "País",
-    allCountries: "Todos los países",
     recency: "Último mensaje",
     recencyAny: "Cualquier momento",
     recency24h: "Últimas 24 horas",
@@ -505,9 +495,6 @@ const COPY = {
     tabRepliesSubtitle: "Hanno risposto — richiede una tua risposta.",
     tabTasksSubtitle: "Attività aperte assegnate a te.",
     tabFollowupsSubtitle: "Hanno compiuto un'azione — vale la pena ricontattarli.",
-    viewsHeaderReplies: "Viste · Risposte",
-    viewsHeaderTasks: "Viste · Attività",
-    viewsHeaderFollowups: "Viste · Follow-up",
     viewAllOpen: "Tutti aperti",
     viewWaitingOnThem: "In attesa di loro",
     viewAllTasks: "Tutte le attività",
@@ -527,8 +514,6 @@ const COPY = {
     email: "Email",
     linkedin: "LinkedIn",
     unreadOnly: "Solo non lette",
-    country: "Paese",
-    allCountries: "Tutti i paesi",
     recency: "Ultimo messaggio",
     recencyAny: "Qualsiasi momento",
     recency24h: "Ultime 24 ore",
@@ -675,9 +660,6 @@ const COPY = {
     tabRepliesSubtitle: "Ils ont répondu — nécessite votre réponse.",
     tabTasksSubtitle: "Tâches ouvertes qui vous sont assignées.",
     tabFollowupsSubtitle: "Ils ont effectué une action — cela vaut la peine de les recontacter.",
-    viewsHeaderReplies: "Vues · Réponses",
-    viewsHeaderTasks: "Vues · Tâches",
-    viewsHeaderFollowups: "Vues · Suivis",
     viewAllOpen: "Tout ouvert",
     viewWaitingOnThem: "En attente d'eux",
     viewAllTasks: "Toutes les tâches",
@@ -697,8 +679,6 @@ const COPY = {
     email: "E-mail",
     linkedin: "LinkedIn",
     unreadOnly: "Non lues uniquement",
-    country: "Pays",
-    allCountries: "Tous les pays",
     recency: "Dernier message",
     recencyAny: "N'importe quand",
     recency24h: "Dernières 24 heures",
@@ -845,9 +825,6 @@ const COPY = {
     tabRepliesSubtitle: "Sie haben geantwortet — erfordert deine Antwort.",
     tabTasksSubtitle: "Offene Aufgaben, die dir zugewiesen sind.",
     tabFollowupsSubtitle: "Sie haben eine Aktion durchgeführt — es lohnt sich, sie zu kontaktieren.",
-    viewsHeaderReplies: "Ansichten · Antworten",
-    viewsHeaderTasks: "Ansichten · Aufgaben",
-    viewsHeaderFollowups: "Ansichten · Follow-ups",
     viewAllOpen: "Alle offenen",
     viewWaitingOnThem: "Wartet auf sie",
     viewAllTasks: "Alle Aufgaben",
@@ -867,8 +844,6 @@ const COPY = {
     email: "E-Mail",
     linkedin: "LinkedIn",
     unreadOnly: "Nur ungelesene",
-    country: "Land",
-    allCountries: "Alle Länder",
     recency: "Letzte Nachricht",
     recencyAny: "Beliebig",
     recency24h: "Letzte 24 Stunden",
@@ -1015,9 +990,6 @@ const COPY = {
     tabRepliesSubtitle: "Responderam — precisa da sua resposta.",
     tabTasksSubtitle: "Tarefas em aberto atribuídas a si.",
     tabFollowupsSubtitle: "Realizaram uma ação — vale a pena contactá-los.",
-    viewsHeaderReplies: "Vistas · Respostas",
-    viewsHeaderTasks: "Vistas · Tarefas",
-    viewsHeaderFollowups: "Vistas · Acompanhamentos",
     viewAllOpen: "Todos abertos",
     viewWaitingOnThem: "A aguardar resposta deles",
     viewAllTasks: "Todas as tarefas",
@@ -1037,8 +1009,6 @@ const COPY = {
     email: "Email",
     linkedin: "LinkedIn",
     unreadOnly: "Apenas por ler",
-    country: "País",
-    allCountries: "Todos os países",
     recency: "Última mensagem",
     recencyAny: "Qualquer altura",
     recency24h: "Últimas 24 horas",
@@ -1185,9 +1155,6 @@ const COPY = {
     tabRepliesSubtitle: "Responderam — precisa da sua resposta.",
     tabTasksSubtitle: "Tarefas em aberto atribuídas a você.",
     tabFollowupsSubtitle: "Realizaram uma ação — vale a pena entrar em contato.",
-    viewsHeaderReplies: "Visualizações · Respostas",
-    viewsHeaderTasks: "Visualizações · Tarefas",
-    viewsHeaderFollowups: "Visualizações · Acompanhamentos",
     viewAllOpen: "Todos abertos",
     viewWaitingOnThem: "Aguardando resposta deles",
     viewAllTasks: "Todas as tarefas",
@@ -1207,8 +1174,6 @@ const COPY = {
     email: "E-mail",
     linkedin: "LinkedIn",
     unreadOnly: "Apenas não lidas",
-    country: "País",
-    allCountries: "Todos os países",
     recency: "Última mensagem",
     recencyAny: "Qualquer momento",
     recency24h: "Últimas 24 horas",
@@ -1373,7 +1338,6 @@ const FOLDERS: { id: Folder; key: FolderLabelKey; icon: typeof InboxIcon }[] = [
   { id: "inbox", key: "inbox", icon: InboxIcon },
   { id: "drafts", key: "drafts", icon: Wand2 },
   { id: "unread", key: "unread", icon: MailOpen },
-  { id: "needs_reply", key: "needs_reply", icon: Reply },
   { id: "scheduled", key: "scheduled", icon: CalendarClock },
   { id: "snoozed", key: "snoozedFolder", icon: AlarmClock },
   { id: "sent", key: "sent", icon: Send },
@@ -1491,7 +1455,6 @@ function taskEventState(t: Task): TaskEventState {
 
 type View =
   | { kind: "folder"; id: Folder }
-  | { kind: "tag"; id: ConvStatus }
   // The Tasks tab's "Awaiting approval" sub-view — reuses the Automations
   // approvals queue wholesale rather than filtering conversations, so it
   // replaces the list+reading-pane layout instead of feeding into `list`.
@@ -1616,14 +1579,6 @@ function defaultLang(p: Prospect | undefined): ChatLang {
   if (!p) return "en"
   const loc = p.location.toLowerCase()
   return ES_LOCATIONS.some((x) => loc.includes(x)) ? "es" : "en"
-}
-
-// The mock location strings ("San Francisco, CA", "London, UK") end in either
-// a US state code or a country code — treat that trailing token as "country"
-// for filtering purposes; there's no real geo taxonomy in this prototype.
-function countryOf(location: string): string {
-  const parts = location.split(",")
-  return parts[parts.length - 1]?.trim() ?? location
 }
 
 type RecencyFilter = "any" | "24h" | "7d" | "30d"
@@ -1774,7 +1729,6 @@ export default function Inbox() {
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
-  const [countryFilter, setCountryFilter] = React.useState<string>("all")
   const [recencyFilter, setRecencyFilter] = React.useState<RecencyFilter>("any")
   const [advancedFilters, setAdvancedFilters] = React.useState<ConversationFilters>(
     emptyConversationFilters()
@@ -1784,7 +1738,6 @@ export default function Inbox() {
   // Focus mode: collapse the folder rail + conversation list to give the open
   // thread full width when reading/replying deep in a conversation.
   const [focused, setFocused] = React.useState(false)
-  const [outcomesOpen, setOutcomesOpen] = React.useState(true)
   // Prospect/company summary panel: defaults open (unlike focus mode) since
   // a context panel's job is to be glanceable while triaging, not to hide
   // chrome for reading one thread.
@@ -1931,15 +1884,6 @@ export default function Inbox() {
     [visible, myTaskRows, pendingApprovalsCount]
   )
 
-  const tagCounts = React.useMemo(() => {
-    const map = {} as Record<ConvStatus, number>
-    STATUS_ORDER.forEach((s) => (map[s] = 0))
-    visible.forEach((x) => {
-      if (x.status) map[x.status] += 1
-    })
-    return map
-  }, [visible])
-
   const matchesSearch = React.useCallback(
     (conv: Conversation): boolean => {
       if (!query.trim()) return true
@@ -1983,7 +1927,6 @@ export default function Inbox() {
         ? conversations.filter((x) => x.archived)
         : visible
     const inView = source.filter((conv) => {
-      if (view.kind === "tag") return conv.status === view.id
       if (view.kind === "approvals") return false
       if (view.kind === "custom") {
         return (
@@ -2052,8 +1995,6 @@ export default function Inbox() {
     const filtered = inView.filter((conv) => {
       if (channelFilter !== "all" && conv.channel !== channelFilter) return false
       if (unreadOnly && conv.unread === 0) return false
-      if (countryFilter !== "all" && countryOf(getProspect(conv.prospectId)?.location ?? "") !== countryFilter)
-        return false
       if (!withinRecency(conv.lastMessageAt, recencyFilter)) return false
       if (advancedFilters.campaignIds.size > 0) {
         const ids = prospectCampaignIds.get(conv.prospectId)
@@ -2081,21 +2022,11 @@ export default function Inbox() {
     customFolders,
     channelFilter,
     unreadOnly,
-    countryFilter,
     recencyFilter,
     advancedFilters,
     prospectCampaignIds,
     matchesSearch,
   ])
-
-  const countryOptions = React.useMemo(() => {
-    const set = new Set<string>()
-    for (const conv of conversations) {
-      const p = getProspect(conv.prospectId)
-      if (p) set.add(countryOf(p.location))
-    }
-    return Array.from(set).sort()
-  }, [conversations])
 
   // True whenever the current view renders task rows instead of the
   // conversation `list` — the old "My Tasks" folder, or any Tasks-tab
@@ -2191,11 +2122,9 @@ export default function Inbox() {
   }, [setCollapsed])
 
   const viewTitle =
-    view.kind === "tag"
-      ? STATUS_META[view.id][locale === "es" ? "es" : "en"]
-      : view.kind === "approvals"
-        ? c.awaitingApproval
-        : view.kind === "custom"
+    view.kind === "approvals"
+      ? c.awaitingApproval
+      : view.kind === "custom"
           ? (customFolders.find((f) => f.id === view.id)?.name ?? c.folders)
           : view.kind === "quickview"
             ? (() => {
@@ -2215,11 +2144,10 @@ export default function Inbox() {
   const filtersActive =
     channelFilter !== "all" ||
     unreadOnly ||
-    countryFilter !== "all" ||
     recencyFilter !== "any" ||
     countConversationFilters(advancedFilters) > 0
 
-  // Selection doesn't carry over when the user switches folders/outcomes.
+  // Selection doesn't carry over when the user switches folders/views.
   const viewSig = view.kind === "approvals" ? "approvals" : `${view.kind}:${view.id}`
   const [selSig, setSelSig] = React.useState(viewSig)
   if (viewSig !== selSig) {
@@ -2428,83 +2356,82 @@ export default function Inbox() {
             }
 
             // Replies/Tasks/Follow-ups: the sidebar swaps to that tab's own
-            // small "Views" list instead of the static folder tree above —
-            // kept relevant to whatever the user is actually working on
-            // rather than one fixed nav regardless of tab.
+            // small views list instead of the static folder tree above — kept
+            // relevant to whatever the user is actually working on rather
+            // than one fixed nav regardless of tab. Styled the same as the
+            // Inbox folder tree: the first view ("All ...") is always the
+            // broadest one, so it renders as the parent row, with the rest
+            // as indented sub-filters of it — no separate "Views" heading.
             const views =
               quickTab === "needs_reply"
                 ? REPLIES_VIEWS
                 : quickTab === "my_tasks"
                   ? TASKS_VIEWS
                   : FOLLOWUPS_VIEWS
-            const headerKey =
-              quickTab === "needs_reply"
-                ? "viewsHeaderReplies"
-                : quickTab === "my_tasks"
-                  ? "viewsHeaderTasks"
-                  : "viewsHeaderFollowups"
+            const viewButton = (v: (typeof views)[number]) => {
+              // "Awaiting approval" reuses the Automations approvals queue
+              // wholesale (see the View type) rather than being a
+              // conversation/task filter like its siblings, and is v2-only
+              // (no AI automations in the v1 extension scope).
+              if (v.id === "awaiting_approval") {
+                if (isV1) return null
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setView({ kind: "approvals" })}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                      isApprovalsView
+                        ? "bg-muted font-medium text-foreground"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    )}
+                  >
+                    <v.icon className="size-4 shrink-0" />
+                    <span className="flex-1 truncate text-left">{c[v.key]}</span>
+                    {pendingApprovalsCount > 0 && (
+                      <span className="text-muted-foreground text-[11px] tabular-nums">
+                        {pendingApprovalsCount}
+                      </span>
+                    )}
+                  </button>
+                )
+              }
+              const activeView =
+                view.kind === "quickview" && view.tab === quickTab && view.id === v.id
+              const count = quickviewCount(quickTab, v.id)
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setView({ kind: "quickview", tab: quickTab, id: v.id })}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                    activeView
+                      ? "bg-muted font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  )}
+                >
+                  <v.icon
+                    className="size-4 shrink-0"
+                    fill={v.icon === Circle ? "currentColor" : "none"}
+                  />
+                  <span className="flex-1 truncate text-left">{c[v.key]}</span>
+                  {count > 0 && (
+                    <span className="text-muted-foreground text-[11px] tabular-nums">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              )
+            }
+            const [parentView, ...childViews] = views
             return (
               <>
-                <p className="text-muted-foreground px-2.5 pt-1 pb-1.5 text-[11px] font-semibold tracking-wide uppercase">
-                  {c[headerKey]}
-                </p>
-                {views.map((v) => {
-                  // "Awaiting approval" reuses the Automations approvals
-                  // queue wholesale (see the View type) rather than being a
-                  // conversation/task filter like its siblings, and is
-                  // v2-only (no AI automations in the v1 extension scope).
-                  if (v.id === "awaiting_approval") {
-                    if (isV1) return null
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setView({ kind: "approvals" })}
-                        className={cn(
-                          "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                          isApprovalsView
-                            ? "bg-muted font-medium text-foreground"
-                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                        )}
-                      >
-                        <v.icon className="size-4 shrink-0" />
-                        <span className="flex-1 truncate text-left">{c[v.key]}</span>
-                        {pendingApprovalsCount > 0 && (
-                          <span className="text-muted-foreground text-[11px] tabular-nums">
-                            {pendingApprovalsCount}
-                          </span>
-                        )}
-                      </button>
-                    )
-                  }
-                  const activeView =
-                    view.kind === "quickview" && view.tab === quickTab && view.id === v.id
-                  const count = quickviewCount(quickTab, v.id)
-                  return (
-                    <button
-                      key={v.id}
-                      type="button"
-                      onClick={() => setView({ kind: "quickview", tab: quickTab, id: v.id })}
-                      className={cn(
-                        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                        activeView
-                          ? "bg-muted font-medium text-foreground"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                      )}
-                    >
-                      <v.icon
-                        className="size-4 shrink-0"
-                        fill={v.icon === Circle ? "currentColor" : "none"}
-                      />
-                      <span className="flex-1 truncate text-left">{c[v.key]}</span>
-                      {count > 0 && (
-                        <span className="text-muted-foreground text-[11px] tabular-nums">
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
+                {viewButton(parentView)}
+                <div className="border-border ml-4 flex flex-col gap-0.5 border-l pl-2">
+                  {childViews.map((v) => viewButton(v))}
+                </div>
               </>
             )
           })()}
@@ -2571,53 +2498,6 @@ export default function Inbox() {
           )}
         </div>
 
-        <div className="px-3 pb-4">
-          <button
-            type="button"
-            onClick={() => setOutcomesOpen((v) => !v)}
-            aria-expanded={outcomesOpen}
-            className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between gap-1 rounded-md px-2.5 pt-2 pb-1.5 text-left text-[11px] font-semibold tracking-wide uppercase transition-colors"
-          >
-            {c.tags}
-            <ChevronDown
-              className={cn(
-                "size-3.5 shrink-0 transition-transform",
-                !outcomesOpen && "-rotate-90"
-              )}
-            />
-          </button>
-          {outcomesOpen && (
-            <div className="space-y-0.5">
-              {STATUS_ORDER.map((s) => {
-                const m = STATUS_META[s]
-                const activeTag = view.kind === "tag" && view.id === s
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setView({ kind: "tag", id: s })}
-                    className={cn(
-                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-                      activeTag
-                        ? "bg-muted font-medium text-foreground"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    )}
-                  >
-                    <span className={cn("size-2 shrink-0 rounded-full", m.dot)} />
-                    <span className="flex-1 truncate text-left">
-                      {locale === "es" ? m.es : m.en}
-                    </span>
-                    {tagCounts[s] > 0 && (
-                      <span className="text-muted-foreground text-[11px] tabular-nums">
-                        {tagCounts[s]}
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
       </aside>
 
       {isApprovalsView ? (
@@ -2644,6 +2524,17 @@ export default function Inbox() {
               <span className="text-muted-foreground text-sm font-normal tabular-nums">
                 {viewCount}
               </span>
+              {view.kind === "custom" && (
+                <button
+                  type="button"
+                  onClick={() => setView({ kind: "folder", id: "inbox" })}
+                  aria-label={c.backToInbox}
+                  title={c.backToInbox}
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-full p-0.5 transition-colors"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
             </h2>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -2676,24 +2567,6 @@ export default function Inbox() {
                   <Checkbox checked={unreadOnly} className="pointer-events-none" />
                   {c.unreadOnly}
                 </DropdownMenuItem>
-                {countryOptions.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>{c.country}</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => setCountryFilter("all")}>
-                      <span className="size-4" />
-                      {c.allCountries}
-                      {countryFilter === "all" && <Check className="ml-auto size-4" />}
-                    </DropdownMenuItem>
-                    {countryOptions.map((country) => (
-                      <DropdownMenuItem key={country} onClick={() => setCountryFilter(country)}>
-                        <span className="size-4" />
-                        {country}
-                        {countryFilter === country && <Check className="ml-auto size-4" />}
-                      </DropdownMenuItem>
-                    ))}
-                  </>
-                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{c.recency}</DropdownMenuLabel>
                 {(["any", "24h", "7d", "30d"] as const).map((r) => (
@@ -2726,7 +2599,6 @@ export default function Inbox() {
                       onClick={() => {
                         setChannelFilter("all")
                         setUnreadOnly(false)
-                        setCountryFilter("all")
                         setRecencyFilter("any")
                         setAdvancedFilters(emptyConversationFilters())
                       }}
@@ -2742,7 +2614,11 @@ export default function Inbox() {
 
           <div className="space-y-1.5">
             <Segmented<InboxQuickTab>
-              value={quickTab}
+              // A custom Folder is an orthogonal view, not a 4th tab state —
+              // no pill lights up while browsing one (the "✕" next to the
+              // title above is how you leave it), rather than misleadingly
+              // highlighting "All".
+              value={view.kind === "custom" ? ("" as InboxQuickTab) : quickTab}
               onChange={(v) =>
                 setView(
                   v === "all"
@@ -2778,7 +2654,7 @@ export default function Inbox() {
             />
           </div>
 
-          {/* Mobile folder/tag chips */}
+          {/* Mobile folder chips */}
           <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 lg:hidden">
             {FOLDERS.map((f) => {
               const activeFolder = view.kind === "folder" && view.id === f.id
@@ -2795,24 +2671,6 @@ export default function Inbox() {
                   )}
                 >
                   {c[f.key]}
-                </button>
-              )
-            })}
-            {STATUS_ORDER.filter((s) => tagCounts[s] > 0).map((s) => {
-              const m = STATUS_META[s]
-              const activeTag = view.kind === "tag" && view.id === s
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setView({ kind: "tag", id: s })}
-                  className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-                    activeTag ? "bg-muted text-foreground" : "text-muted-foreground bg-muted/60"
-                  )}
-                >
-                  <span className={cn("size-1.5 rounded-full", m.dot)} />
-                  {locale === "es" ? m.es : m.en}
                 </button>
               )
             })}
