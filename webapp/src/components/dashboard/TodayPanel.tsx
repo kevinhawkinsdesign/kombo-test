@@ -25,8 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog"
-import { useTasks, taskStore } from "@/lib/store"
-import { recentActivity } from "@/lib/mock-data"
+import { useActivities, useTasks, taskStore } from "@/lib/store"
 import { relativeTime } from "@/lib/format"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
@@ -105,7 +104,9 @@ const COPY = {
   },
 } as const
 
-const TASK_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> = {
+// Known kinds only — an open TaskKind minted elsewhere falls back to the
+// generic Clock below.
+const TASK_ICON: Partial<Record<TaskType, React.ComponentType<{ className?: string }>>> = {
   call: Phone,
   email: Mail,
   linkedin: LinkedinIcon,
@@ -119,9 +120,10 @@ const PRIORITY_DOT: Record<string, string> = {
   low: "bg-muted-foreground/40",
 }
 
-const ACTIVITY_META: Record<
-  ActivityItem["type"],
-  { icon: React.ComponentType<{ className?: string }>; tint: string }
+// Known types only — open ActivityType values fall back to the generic
+// meta below, so an API/sequence-minted event still renders.
+const ACTIVITY_META: Partial<
+  Record<ActivityItem["type"], { icon: React.ComponentType<{ className?: string }>; tint: string }>
 > = {
   reply: { icon: Reply, tint: "bg-chart-1/15 text-chart-1" },
   meeting: { icon: CalendarCheck, tint: "bg-primary/15 text-primary" },
@@ -138,7 +140,7 @@ export function TodayPanel({ className }: { className?: string }) {
     .filter((t) => !t.done)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 5)
-  const activity = recentActivity.slice(0, 5)
+  const activity = useActivities().slice(0, 5)
   const [editingTask, setEditingTask] = React.useState<Task | undefined>()
 
   return (
@@ -167,7 +169,7 @@ export function TodayPanel({ className }: { className?: string }) {
             </p>
           ) : (
             open.map((task) => {
-              const Icon = TASK_ICON[task.type]
+              const Icon = TASK_ICON[task.type as TaskType] ?? Clock
               return (
                 <div
                   key={task.id}
@@ -215,7 +217,7 @@ export function TodayPanel({ className }: { className?: string }) {
         </CardHeader>
         <CardContent className="space-y-1">
           {activity.map((item) => {
-            const meta = ACTIVITY_META[item.type]
+            const meta = ACTIVITY_META[item.type] ?? { icon: Sparkles, tint: "bg-muted text-muted-foreground" }
             const Icon = meta.icon
             return (
               <div

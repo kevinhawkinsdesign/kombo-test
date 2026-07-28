@@ -477,12 +477,36 @@ export interface DashboardStat {
   hint: string
 }
 
+// The known activity types keep their fixed icons; any other string is
+// legal too (open union, same pattern as TaskKind) — a sequence step
+// firing, a CRM sync, an API-logged custom event.
+export type ActivityType =
+  | "reply"
+  | "meeting"
+  | "enriched"
+  | "added"
+  | "opened"
+  | (string & {})
+
+// Who did the thing: the prospect acting (replied, clicked), a user in the
+// app, a running sequence, or the system.
+export type ActivityActor = "prospect" | "user" | "sequence" | "system"
+
 export interface ActivityItem {
   id: string
-  type: "reply" | "meeting" | "enriched" | "added" | "opened"
+  type: ActivityType
   prospectName: string
   detail: string
   timestamp: string
+  // Undefined reads as "prospect" — everything pre-dating this field was a
+  // prospect-triggered event on the dashboard feed.
+  actor?: ActivityActor
+  // What the event hangs off — any combination, all optional.
+  prospectId?: string
+  campaignId?: string
+  stepId?: string
+  // Arbitrary caller-defined fields (see CustomMetadata).
+  metadata?: CustomMetadata
 }
 
 export type AccountTier = "Enterprise" | "Mid-market" | "SMB"
@@ -553,6 +577,21 @@ export interface EmailTemplate {
 
 export type TaskType = "call" | "email" | "linkedin" | "manual" | "follow_up"
 
+// Open task kind, Genesy-custom-CRM style: the known TaskType values keep
+// autocomplete and their fixed icons/labels, but any other string is legal
+// too — an integration or sequence can mint kinds we've never seen ("demo",
+// "contract_review") and the UI falls back to a generic rendering.
+export type TaskKind = TaskType | (string & {})
+
+// What created a task: a person in the app, Kai, a running sequence, the
+// system itself, or an external caller hitting the (future) API.
+export type TaskSource = "user" | "kai" | "sequence" | "system" | "api"
+
+// Extra fields on a task/activity beyond the first-class ones — free-form
+// key-values (Genesy's custom-CRM pattern), so callers can attach whatever
+// their workflow needs without a schema change here.
+export type CustomMetadata = Record<string, string | number | boolean>
+
 // Whether a task is completed inside the app (a message we can send) or
 // offline (a call to place, a manual to-do logged by hand).
 export type TaskMode = "in_app" | "offline"
@@ -560,7 +599,7 @@ export type TaskMode = "in_app" | "offline"
 export interface Task {
   id: string
   title: string
-  type: TaskType
+  type: TaskKind
   prospectId?: string
   ownerId: string // assignee — a team member or the current user
   // Who created/assigned the task: "kai" (AI), "system", or a user/rep id.
@@ -569,6 +608,18 @@ export interface Task {
   done: boolean
   ignored?: boolean // dismissed/snoozed out of the active queue
   priority: "high" | "medium" | "low"
+  // Free-text notes/instructions under the title.
+  notes?: string
+  // What the task hangs off — any combination, all optional.
+  accountId?: string
+  campaignId?: string
+  stepId?: string
+  listId?: string
+  // What created it. Undefined reads as "user" (everything pre-dating this
+  // field was created by hand in the app).
+  source?: TaskSource
+  // Arbitrary caller-defined fields (see CustomMetadata).
+  metadata?: CustomMetadata
 }
 
 export type NotificationType =

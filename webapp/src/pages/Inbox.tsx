@@ -1362,7 +1362,7 @@ const TASK_STATE_META: Record<
   done: { en: "Task completed", es: "Tarea completada", icon: CheckCircle2 },
 }
 
-const TASK_TYPE_ICON: Record<TaskType, React.ComponentType<{ className?: string }>> = {
+const TASK_TYPE_ICON: Partial<Record<TaskType, React.ComponentType<{ className?: string }>>> = {
   call: Phone,
   email: Mail,
   linkedin: LinkedinIcon,
@@ -2483,7 +2483,7 @@ export default function Inbox() {
             ) : (
               filteredTaskRows.map((task) => {
                 const p = task.prospectId ? getProspect(task.prospectId) : undefined
-                const Icon = TASK_TYPE_ICON[task.type]
+                const Icon = TASK_TYPE_ICON[task.type as TaskType] ?? ListTodo
                 const isActive = Boolean(
                   effectiveActive && task.prospectId === effectiveActive.prospectId
                 )
