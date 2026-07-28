@@ -17,16 +17,18 @@ import type { CampaignStep, StepTrackKind } from "@/lib/types"
 import { normalizeChannel } from "@/lib/step-channels"
 import { STEP_CREDIT_COST } from "@/lib/store"
 
-// As tight as possible while still clearing a real step card at its
-// tallest (title + subtitle + two badge chips, ~90px) with the "+" ghost
-// sitting halfway between two rows (see addNode calls at depth - 0.5) —
-// keeps consecutive step cards close together without the ghost overlapping
-// either one.
-export const ROW_HEIGHT = 200
-export const LANE_WIDTH = 260
+// Tall enough to clear a real step card at its tallest (gray timing header
+// + icon/title/badges/avatar body, ~140px) with room to spare before the
+// "+" ghost/track-label pill sitting halfway between two rows (see addNode
+// calls at depth - 0.5) — half of ROW_HEIGHT must exceed the card's own
+// height or a nested empty track's label pill renders on top of the card
+// above it instead of below it. Also gives fork-branch connector lines
+// (which jog through an elbow rather than a straight diagonal) enough
+// vertical run to read as one clean turn instead of a cramped zigzag.
+export const ROW_HEIGHT = 320
+export const LANE_WIDTH = 320
 // How far past the trailing "+" ghost the next real card starts, in the
-// same row-unit scale as ROW_HEIGHT — was effectively 1.5 rows (huge dead
-// space below the ghost); this is ~80% smaller.
+// same row-unit scale as ROW_HEIGHT.
 const GHOST_TRAILING_GAP = 0.2
 
 export interface StepNodeData extends Record<string, unknown> {
@@ -287,14 +289,13 @@ export function computeLayout(
       const ghostId = `add-after-${step.id}`
       const ghostOffset = step.parallelSteps?.length ? 0.1 : 0.5
       const ghostDepth = depth - ghostOffset
-      // Continuing past an unforked step implicitly means the prospect
-      // hasn't replied (a reply auto-pauses the campaign before it would
-      // ever reach here) — label the ordinary connector "No Reply" so that's
-      // explicit. A fork's own tracks carry their own condition labels
-      // instead, so skip it there.
-      const trackLabel: StepTrackKind | undefined = step.fork ? undefined : "no_reply"
+      // An ordinary connector carries no label — auto-pausing on reply is
+      // this app's default, implicit behavior for every step, not a
+      // condition the user added, so it doesn't earn a badge of its own.
+      // Only an actual fork's tracks (a real condition, whether user-added
+      // or the auto-inserted LinkedIn-connect gate) get a label.
       nodes.push(
-        addNode(ghostId, ghostDepth, 0, { kind: "add", afterStepId: step.id, trackLabel })
+        addNode(ghostId, ghostDepth, 0, { kind: "add", afterStepId: step.id })
       )
       for (const src of result.rejoinSources) {
         edges.push({
