@@ -55,6 +55,7 @@ import { useSkeletonTransition } from "@/lib/use-skeleton-transition"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import {
   Select,
   SelectContent,
@@ -88,6 +89,7 @@ import type {
   CoachSpeaker,
   CoachUtterance,
   CoachScoreMetric,
+  CoachParticipant,
 } from "@/lib/types"
 
 const SENTIMENT = {
@@ -144,8 +146,13 @@ const COPY = {
     tabFollowUp: "Follow-Up",
     host: "Host",
     joined: "Joined",
-    addToSalesforce: "Add to Salesforce",
     noKeyFields: "No key fields were extracted for this call.",
+    noShow: "No-show",
+    addToCrm: "Add to CRM",
+    inCrm: "In CRM",
+    crmFirstName: "First name",
+    crmLastName: "Last name",
+    crmEmail: "Email",
     priorityLabel: (p: string) => `Priority: ${p}`,
     priority: {
       high: "High",
@@ -205,9 +212,7 @@ const COPY = {
     transcript: "Transcript",
     participants: "Participants",
     noTranscript: "No transcript available for this recording.",
-    you: "You",
-    prospect: "Prospect",
-    talkTime: "talk time",
+    noParticipants: "No participants identified for this recording.",
     objections: "Objections",
     actionItems: "Next steps",
     markNotDone: "Mark as not done",
@@ -270,8 +275,13 @@ const COPY = {
     tabFollowUp: "Seguimiento",
     host: "Anfitrión",
     joined: "Unido",
-    addToSalesforce: "Añadir a Salesforce",
     noKeyFields: "No se extrajeron campos clave para esta llamada.",
+    noShow: "No asistió",
+    addToCrm: "Añadir al CRM",
+    inCrm: "En CRM",
+    crmFirstName: "Nombre",
+    crmLastName: "Apellidos",
+    crmEmail: "Correo",
     priorityLabel: (p: string) => `Prioridad: ${p}`,
     priority: {
       high: "Alta",
@@ -331,9 +341,7 @@ const COPY = {
     transcript: "Transcripción",
     participants: "Participantes",
     noTranscript: "No hay transcripción disponible para esta grabación.",
-    you: "Tú",
-    prospect: "Prospecto",
-    talkTime: "tiempo hablando",
+    noParticipants: "No se identificaron participantes para esta grabación.",
     objections: "Objeciones",
     actionItems: "Próximos pasos",
     markNotDone: "Marcar como pendiente",
@@ -396,8 +404,13 @@ const COPY = {
     tabFollowUp: "Follow-up",
     host: "Organizzatore",
     joined: "Presente",
-    addToSalesforce: "Aggiungi a Salesforce",
     noKeyFields: "Nessun campo chiave estratto per questa chiamata.",
+    noShow: "Assente",
+    addToCrm: "Aggiungi al CRM",
+    inCrm: "Nel CRM",
+    crmFirstName: "Nome",
+    crmLastName: "Cognome",
+    crmEmail: "Email",
     priorityLabel: (p: string) => `Priorità: ${p}`,
     priority: {
       high: "Alta",
@@ -457,9 +470,7 @@ const COPY = {
     transcript: "Trascrizione",
     participants: "Partecipanti",
     noTranscript: "Nessuna trascrizione disponibile per questa registrazione.",
-    you: "Tu",
-    prospect: "Prospect",
-    talkTime: "di tempo di parola",
+    noParticipants: "Nessun partecipante identificato per questa registrazione.",
     objections: "Obiezioni",
     actionItems: "Prossimi passi",
     markNotDone: "Segna come da fare",
@@ -522,8 +533,13 @@ const COPY = {
     tabFollowUp: "Suivi",
     host: "Hôte",
     joined: "Présent",
-    addToSalesforce: "Ajouter à Salesforce",
     noKeyFields: "Aucun champ clé extrait pour cet appel.",
+    noShow: "Absent",
+    addToCrm: "Ajouter au CRM",
+    inCrm: "Dans le CRM",
+    crmFirstName: "Prénom",
+    crmLastName: "Nom",
+    crmEmail: "E-mail",
     priorityLabel: (p: string) => `Priorité : ${p}`,
     priority: {
       high: "Haute",
@@ -583,9 +599,7 @@ const COPY = {
     transcript: "Transcription",
     participants: "Participants",
     noTranscript: "Aucune transcription disponible pour cet enregistrement.",
-    you: "Vous",
-    prospect: "Prospect",
-    talkTime: "de temps de parole",
+    noParticipants: "Aucun participant identifié pour cet enregistrement.",
     objections: "Objections",
     actionItems: "Prochaines étapes",
     markNotDone: "Marquer comme à faire",
@@ -648,8 +662,13 @@ const COPY = {
     tabFollowUp: "Follow-up",
     host: "Host",
     joined: "Beigetreten",
-    addToSalesforce: "Zu Salesforce hinzufügen",
     noKeyFields: "Für diesen Call wurden keine Schlüsselfelder extrahiert.",
+    noShow: "Nicht erschienen",
+    addToCrm: "Zum CRM hinzufügen",
+    inCrm: "Im CRM",
+    crmFirstName: "Vorname",
+    crmLastName: "Nachname",
+    crmEmail: "E-Mail",
     priorityLabel: (p: string) => `Priorität: ${p}`,
     priority: {
       high: "Hoch",
@@ -709,9 +728,7 @@ const COPY = {
     transcript: "Transkript",
     participants: "Teilnehmer",
     noTranscript: "Für diese Aufzeichnung ist kein Transkript verfügbar.",
-    you: "Du",
-    prospect: "Prospect",
-    talkTime: "Redezeit",
+    noParticipants: "Für diese Aufzeichnung wurden keine Teilnehmer identifiziert.",
     objections: "Einwände",
     actionItems: "Nächste Schritte",
     markNotDone: "Als offen markieren",
@@ -774,8 +791,13 @@ const COPY = {
     tabFollowUp: "Seguimento",
     host: "Anfitrião",
     joined: "Entrou",
-    addToSalesforce: "Adicionar ao Salesforce",
     noKeyFields: "Não foram extraídos campos-chave para esta chamada.",
+    noShow: "Não compareceu",
+    addToCrm: "Adicionar ao CRM",
+    inCrm: "No CRM",
+    crmFirstName: "Nome",
+    crmLastName: "Apelido",
+    crmEmail: "Email",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
     priority: {
       high: "Alta",
@@ -835,9 +857,7 @@ const COPY = {
     transcript: "Transcrição",
     participants: "Participantes",
     noTranscript: "Não há transcrição disponível para esta gravação.",
-    you: "Você",
-    prospect: "Prospect",
-    talkTime: "do tempo de fala",
+    noParticipants: "Não foram identificados participantes para esta gravação.",
     objections: "Objeções",
     actionItems: "Próximos passos",
     markNotDone: "Marcar como pendente",
@@ -900,8 +920,13 @@ const COPY = {
     tabFollowUp: "Follow-up",
     host: "Anfitrião",
     joined: "Entrou",
-    addToSalesforce: "Adicionar ao Salesforce",
     noKeyFields: "Nenhum campo-chave extraído para esta ligação.",
+    noShow: "Não compareceu",
+    addToCrm: "Adicionar ao CRM",
+    inCrm: "No CRM",
+    crmFirstName: "Nome",
+    crmLastName: "Sobrenome",
+    crmEmail: "E-mail",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
     priority: {
       high: "Alta",
@@ -961,9 +986,7 @@ const COPY = {
     transcript: "Transcrição",
     participants: "Participantes",
     noTranscript: "Nenhuma transcrição disponível para esta gravação.",
-    you: "Você",
-    prospect: "Prospect",
-    talkTime: "do tempo de fala",
+    noParticipants: "Nenhum participante identificado para esta gravação.",
     objections: "Objeções",
     actionItems: "Próximos passos",
     markNotDone: "Marcar como pendente",
@@ -1182,6 +1205,17 @@ function mergeFollowUpVars(text: string, rec: CoachRecording): string {
   return text.replace(/\{\{(\w+)\}\}/g, (whole, tag: string) => data[tag] ?? whole)
 }
 
+// Splits a participant's full name into first/last for the "Add to CRM"
+// wizard's field-mapping preview — participants only carry a single `name`,
+// not separate first/last fields like a full Prospect record.
+function splitParticipantName(name: string): {
+  firstName: string
+  lastName: string
+} {
+  const [firstName, ...rest] = name.trim().split(/\s+/)
+  return { firstName: firstName ?? "", lastName: rest.join(" ") }
+}
+
 const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2] as const
 
 // A call-aware first draft that seeds the follow-up composer — opens with the
@@ -1262,6 +1296,10 @@ export default function CoachRecordingDetail() {
   }
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
   const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
+  const [crmOpen, setCrmOpen] = React.useState(false)
+  const [crmParticipant, setCrmParticipant] = React.useState<CoachParticipant | null>(
+    null
+  )
 
   if (!rec) {
     return (
@@ -1338,63 +1376,91 @@ export default function CoachRecordingDetail() {
     })
   }
 
-  const participantsCard = analysis?.participants &&
-    analysis.participants.length > 0 && (
+  // Opens the shared "Add to CRM" wizard for a single (non-host) participant,
+  // seeded with whatever contact info the call captured — just name/email,
+  // since participants here aren't full Prospect records.
+  function openCrmDialog(participant: CoachParticipant) {
+    setCrmParticipant(participant)
+    setCrmOpen(true)
+  }
+
+  const { firstName: crmFirstName, lastName: crmLastName } = crmParticipant
+    ? splitParticipantName(crmParticipant.name)
+    : { firstName: "", lastName: "" }
+  const crmParticipantFields = crmParticipant
+    ? [
+        { label: c.crmFirstName, value: crmFirstName },
+        { label: c.crmLastName, value: crmLastName },
+        { label: c.crmEmail, value: crmParticipant.email ?? "—" },
+      ]
+    : []
+
+  const participantsCard =
+    rec.participants && rec.participants.length > 0 ? (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{c.participants}</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="text-muted-foreground size-4" />
+            {c.participants}
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {analysis.participants.map((p) => (
-            <div key={p.name}>
-              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Users className="text-muted-foreground size-4" />
-                  <span className="text-sm font-medium">{p.name}</span>
-                  <Badge
-                    variant={p.role === "rep" ? "default" : "secondary"}
-                    className="capitalize"
-                  >
-                    {p.role === "rep" ? c.you : c.prospect}
+        <CardContent className="space-y-3">
+          {rec.participants.map((p, i) => (
+            <div
+              key={`${p.name}-${i}`}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{p.name}</p>
+                {p.email && (
+                  <p className="text-muted-foreground truncate text-xs">
+                    {p.email}
+                  </p>
+                )}
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                {p.isOwner && (
+                  <Badge variant="outline" className="font-normal">
+                    {c.host}
                   </Badge>
-                  {p.role === "rep" && (
-                    <Badge variant="outline" className="font-normal">
-                      {c.host}
-                    </Badge>
-                  )}
+                )}
+                {p.attended === true && (
                   <Badge variant="outline" className="font-normal">
                     {c.joined}
                   </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm tabular-nums">
-                    {p.talkPct}% {c.talkTime}
-                  </span>
-                  {p.role === "prospect" && (
+                )}
+                {p.attended === false && (
+                  <Badge
+                    variant="outline"
+                    className="border-chart-4/40 font-normal text-chart-4"
+                  >
+                    {c.noShow}
+                  </Badge>
+                )}
+                {!p.isOwner &&
+                  (p.inCrm ? (
+                    <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                      <Building2 className="size-3.5" />
+                      {c.inCrm}
+                    </span>
+                  ) : (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => toast.success(c.notesAdded)}
+                      onClick={() => openCrmDialog(p)}
                     >
                       <Building2 className="size-4" />
-                      {c.addToSalesforce}
+                      {c.addToCrm}
                     </Button>
-                  )}
-                </div>
-              </div>
-              <p className="text-muted-foreground mb-1.5 text-xs">{p.title}</p>
-              <div className="bg-muted h-2 overflow-hidden rounded-full">
-                <div
-                  className={cn(
-                    "h-full rounded-full",
-                    p.role === "rep" ? "bg-primary" : "bg-chart-2"
-                  )}
-                  style={{ width: `${p.talkPct}%` }}
-                />
+                  ))}
               </div>
             </div>
           ))}
         </CardContent>
+      </Card>
+    ) : (
+      <Card className="text-muted-foreground p-8 text-center text-sm">
+        {c.noParticipants}
       </Card>
     )
 
@@ -2065,6 +2131,20 @@ export default function CoachRecordingDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AddToCrmDialog
+        open={crmOpen}
+        onOpenChange={setCrmOpen}
+        kind="prospect"
+        recordId={
+          crmParticipant
+            ? `${rec.id}-${crmParticipant.email ?? crmParticipant.name}`
+            : ""
+        }
+        recordName={crmParticipant?.name ?? ""}
+        accountName={rec.company}
+        fields={crmParticipantFields}
+      />
     </Page>
   )
 }
