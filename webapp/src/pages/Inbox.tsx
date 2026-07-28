@@ -52,6 +52,7 @@ import {
   Folder as FolderIcon,
   Moon,
   CircleAlert,
+  Bell,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -110,7 +111,6 @@ import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { getRep, assigneeName } from "@/lib/team"
 import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
-import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
 import { campaignEnrollments } from "@/lib/mock-depth"
 import {
@@ -130,8 +130,6 @@ import { groupByMergeVarGroup, MERGE_VARIABLES, MERGE_VARIABLE_GROUPS } from "@/
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
 import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
-import { useApprovals } from "@/lib/mock-approvals"
-import { ApprovalsPanel } from "@/components/automations/ApprovalsPanel"
 import { useCustomFolders, customFolderStore } from "@/lib/inbox-folders"
 import { ProspectSummaryPanel } from "@/components/common/ProspectSummaryPanel"
 import type {
@@ -156,7 +154,6 @@ const COPY = {
     unread: "Unread",
     needs_reply: "Need to Reply",
     myTasks: "My Tasks",
-    awaitingApproval: "Awaiting approval",
     tabAll: "All",
     tabReplies: "Replies",
     tabTasks: "Tasks",
@@ -165,7 +162,6 @@ const COPY = {
     tabTasksSubtitle: "Open tasks assigned to you.",
     tabFollowupsSubtitle: "They took an action — worth reaching out.",
     viewAllOpen: "All open",
-    viewWaitingOnThem: "Waiting on them",
     viewAllTasks: "All tasks",
     viewDueToday: "Due today",
     viewOverdue: "Overdue",
@@ -322,7 +318,6 @@ const COPY = {
     unread: "Sin leer",
     needs_reply: "Por responder",
     myTasks: "Mis tareas",
-    awaitingApproval: "Esperando aprobación",
     tabAll: "Todo",
     tabReplies: "Respuestas",
     tabTasks: "Tareas",
@@ -331,7 +326,6 @@ const COPY = {
     tabTasksSubtitle: "Tareas abiertas asignadas a ti.",
     tabFollowupsSubtitle: "Realizaron una acción — vale la pena contactarlos.",
     viewAllOpen: "Todo abierto",
-    viewWaitingOnThem: "Esperando su respuesta",
     viewAllTasks: "Todas las tareas",
     viewDueToday: "Vence hoy",
     viewOverdue: "Atrasadas",
@@ -487,7 +481,6 @@ const COPY = {
     unread: "Non lette",
     needs_reply: "Da rispondere",
     myTasks: "Le mie attività",
-    awaitingApproval: "In attesa di approvazione",
     tabAll: "Tutti",
     tabReplies: "Risposte",
     tabTasks: "Attività",
@@ -496,7 +489,6 @@ const COPY = {
     tabTasksSubtitle: "Attività aperte assegnate a te.",
     tabFollowupsSubtitle: "Hanno compiuto un'azione — vale la pena ricontattarli.",
     viewAllOpen: "Tutti aperti",
-    viewWaitingOnThem: "In attesa di loro",
     viewAllTasks: "Tutte le attività",
     viewDueToday: "Scade oggi",
     viewOverdue: "In ritardo",
@@ -652,7 +644,6 @@ const COPY = {
     unread: "Non lues",
     needs_reply: "À répondre",
     myTasks: "Mes tâches",
-    awaitingApproval: "En attente d'approbation",
     tabAll: "Tous",
     tabReplies: "Réponses",
     tabTasks: "Tâches",
@@ -661,7 +652,6 @@ const COPY = {
     tabTasksSubtitle: "Tâches ouvertes qui vous sont assignées.",
     tabFollowupsSubtitle: "Ils ont effectué une action — cela vaut la peine de les recontacter.",
     viewAllOpen: "Tout ouvert",
-    viewWaitingOnThem: "En attente d'eux",
     viewAllTasks: "Toutes les tâches",
     viewDueToday: "À faire aujourd'hui",
     viewOverdue: "En retard",
@@ -817,7 +807,6 @@ const COPY = {
     unread: "Ungelesen",
     needs_reply: "Zu beantworten",
     myTasks: "Meine Aufgaben",
-    awaitingApproval: "Wartet auf Genehmigung",
     tabAll: "Alle",
     tabReplies: "Antworten",
     tabTasks: "Aufgaben",
@@ -826,7 +815,6 @@ const COPY = {
     tabTasksSubtitle: "Offene Aufgaben, die dir zugewiesen sind.",
     tabFollowupsSubtitle: "Sie haben eine Aktion durchgeführt — es lohnt sich, sie zu kontaktieren.",
     viewAllOpen: "Alle offenen",
-    viewWaitingOnThem: "Wartet auf sie",
     viewAllTasks: "Alle Aufgaben",
     viewDueToday: "Heute fällig",
     viewOverdue: "Überfällig",
@@ -982,7 +970,6 @@ const COPY = {
     unread: "Por ler",
     needs_reply: "Por responder",
     myTasks: "As minhas tarefas",
-    awaitingApproval: "A aguardar aprovação",
     tabAll: "Tudo",
     tabReplies: "Respostas",
     tabTasks: "Tarefas",
@@ -991,7 +978,6 @@ const COPY = {
     tabTasksSubtitle: "Tarefas em aberto atribuídas a si.",
     tabFollowupsSubtitle: "Realizaram uma ação — vale a pena contactá-los.",
     viewAllOpen: "Todos abertos",
-    viewWaitingOnThem: "A aguardar resposta deles",
     viewAllTasks: "Todas as tarefas",
     viewDueToday: "Vence hoje",
     viewOverdue: "Atrasadas",
@@ -1147,7 +1133,6 @@ const COPY = {
     unread: "Não lidas",
     needs_reply: "Para responder",
     myTasks: "Minhas tarefas",
-    awaitingApproval: "Aguardando aprovação",
     tabAll: "Tudo",
     tabReplies: "Respostas",
     tabTasks: "Tarefas",
@@ -1156,7 +1141,6 @@ const COPY = {
     tabTasksSubtitle: "Tarefas em aberto atribuídas a você.",
     tabFollowupsSubtitle: "Realizaram uma ação — vale a pena entrar em contato.",
     viewAllOpen: "Todos abertos",
-    viewWaitingOnThem: "Aguardando resposta deles",
     viewAllTasks: "Todas as tarefas",
     viewDueToday: "Vence hoje",
     viewOverdue: "Atrasadas",
@@ -1358,19 +1342,17 @@ const REPLIES_VIEWS: QuickviewDef[] = [
   { id: "all_open", key: "viewAllOpen", icon: Square },
   { id: "unread", key: "unread", icon: Circle },
   { id: "need_reply", key: "needs_reply", icon: Reply },
-  { id: "waiting_on_them", key: "viewWaitingOnThem", icon: Clock },
   { id: "snoozed", key: "snoozedFolder", icon: Moon },
 ]
 const TASKS_VIEWS: QuickviewDef[] = [
-  { id: "all_tasks", key: "viewAllTasks", icon: Square },
+  { id: "all_tasks", key: "viewAllTasks", icon: ListTodo },
   { id: "due_today", key: "viewDueToday", icon: Circle },
   { id: "overdue", key: "viewOverdue", icon: CircleAlert },
   { id: "calls", key: "viewCalls", icon: Phone },
-  { id: "awaiting_approval", key: "awaitingApproval", icon: Check },
   { id: "scheduled", key: "scheduled", icon: ClipboardList },
 ]
 const FOLLOWUPS_VIEWS: QuickviewDef[] = [
-  { id: "all_followups", key: "viewAllFollowups", icon: Square },
+  { id: "all_followups", key: "viewAllFollowups", icon: Bell },
   { id: "due_today", key: "viewDueToday", icon: Circle },
   { id: "overdue", key: "viewOverdue", icon: CircleAlert },
   { id: "post_call", key: "viewPostCall", icon: Phone },
@@ -1455,16 +1437,12 @@ function taskEventState(t: Task): TaskEventState {
 
 type View =
   | { kind: "folder"; id: Folder }
-  // The Tasks tab's "Awaiting approval" sub-view — reuses the Automations
-  // approvals queue wholesale rather than filtering conversations, so it
-  // replaces the list+reading-pane layout instead of feeding into `list`.
-  | { kind: "approvals" }
   // A user-created manual folder — id references a CustomFolder.
   | { kind: "custom"; id: string }
   // A tab-scoped "View" from the sidebar's per-tab Views section — e.g.
-  // "Unread"/"Waiting on them" under Replies, "Due today"/"Overdue" under
-  // Tasks. `tab` pins which quick-tab's view list `id` belongs to, since the
-  // same id string (e.g. "due_today") means a different predicate per tab.
+  // "Unread" under Replies, "Due today"/"Overdue" under Tasks. `tab` pins
+  // which quick-tab's view list `id` belongs to, since the same id string
+  // (e.g. "due_today") means a different predicate per tab.
   | { kind: "quickview"; tab: "needs_reply" | "my_tasks" | "follow_ups"; id: string }
 
 // The quick-tab row above the list is a prominent shortcut into 3 specific
@@ -1529,10 +1507,6 @@ const TODAY_START = startOfDay(Date.now())
 function isOpenReply(conv: Conversation): boolean {
   return awaitingReply(conv) && !isScheduled(conv) && !isSnoozed(conv)
 }
-function isWaitingOnThem(conv: Conversation): boolean {
-  return lastMessage(conv)?.direction === "outbound" && !isSnoozed(conv)
-}
-
 function isTaskDueToday(t: Task): boolean {
   return startOfDay(new Date(t.dueDate).getTime()) === TODAY_START
 }
@@ -1705,21 +1679,9 @@ export default function Inbox() {
   const conversations = useConversations()
   const tasks = useTasks()
   const campaigns = useCampaigns()
-  const pendingApprovalsCount = useApprovals().filter((a) => a.status === "pending").length
   const customFolders = useCustomFolders()
-  const { isV1 } = useReleaseMode()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
-  // "Awaiting approval" (the AI-drafted-message approvals queue) is v2 only —
-  // if the release toggle flips to v1 while it's open, fall back to Inbox
-  // rather than leaving the view stuck on a now-hidden entry point.
-  const [wasV1, setWasV1] = React.useState(isV1)
-  if (isV1 !== wasV1) {
-    setWasV1(isV1)
-    if (isV1 && view.kind === "approvals") {
-      setView({ kind: "folder", id: "inbox" })
-    }
-  }
   const [activeId, setActiveId] = React.useState<string | undefined>()
   const [showThreadMobile, setShowThreadMobile] = React.useState(false)
   const [shownTranslations, setShownTranslations] = React.useState<Set<string>>(new Set())
@@ -1843,8 +1805,6 @@ export default function Inbox() {
             return visible.filter((x) => isOpenReply(x) && x.unread > 0).length
           case "need_reply":
             return visible.filter(needsReply).length
-          case "waiting_on_them":
-            return visible.filter(isWaitingOnThem).length
           case "snoozed":
             return visible.filter(isSnoozed).length
         }
@@ -1859,8 +1819,6 @@ export default function Inbox() {
             return myTaskRows.filter(isTaskOverdue).length
           case "calls":
             return myTaskRows.filter((t) => t.type === "call").length
-          case "awaiting_approval":
-            return pendingApprovalsCount
           case "scheduled":
             return myTaskRows.filter(isTaskScheduledLater).length
         }
@@ -1881,7 +1839,7 @@ export default function Inbox() {
       }
       return 0
     },
-    [visible, myTaskRows, pendingApprovalsCount]
+    [visible, myTaskRows]
   )
 
   const matchesSearch = React.useCallback(
@@ -1927,7 +1885,6 @@ export default function Inbox() {
         ? conversations.filter((x) => x.archived)
         : visible
     const inView = source.filter((conv) => {
-      if (view.kind === "approvals") return false
       if (view.kind === "custom") {
         return (
           customFolders.find((f) => f.id === view.id)?.conversationIds.includes(conv.id) ?? false
@@ -1943,8 +1900,6 @@ export default function Inbox() {
               return isOpenReply(conv) && conv.unread > 0
             case "need_reply":
               return needsReply(conv)
-            case "waiting_on_them":
-              return isWaitingOnThem(conv)
             case "snoozed":
               return isSnoozed(conv)
             default:
@@ -2034,10 +1989,8 @@ export default function Inbox() {
   const isMyTasksView =
     (view.kind === "folder" && view.id === "my_tasks") ||
     (view.kind === "quickview" && view.tab === "my_tasks")
-  const isApprovalsView = view.kind === "approvals"
-  const quickTab: InboxQuickTab = isApprovalsView
-    ? "my_tasks"
-    : view.kind === "quickview"
+  const quickTab: InboxQuickTab =
+    view.kind === "quickview"
       ? view.tab
       : view.kind === "folder" &&
           (view.id === "needs_reply" || view.id === "my_tasks" || view.id === "follow_ups")
@@ -2122,24 +2075,22 @@ export default function Inbox() {
   }, [setCollapsed])
 
   const viewTitle =
-    view.kind === "approvals"
-      ? c.awaitingApproval
-      : view.kind === "custom"
-          ? (customFolders.find((f) => f.id === view.id)?.name ?? c.folders)
-          : view.kind === "quickview"
-            ? (() => {
-                const views =
-                  view.tab === "needs_reply"
-                    ? REPLIES_VIEWS
-                    : view.tab === "my_tasks"
-                      ? TASKS_VIEWS
-                      : FOLLOWUPS_VIEWS
-                const def = views.find((v) => v.id === view.id)
-                return def ? c[def.key] : c.tabAll
-              })()
-            : view.id === "follow_ups"
-              ? c.tabFollowups
-              : c[FOLDERS.find((f) => f.id === view.id)!.key]
+    view.kind === "custom"
+      ? (customFolders.find((f) => f.id === view.id)?.name ?? c.folders)
+      : view.kind === "quickview"
+        ? (() => {
+            const views =
+              view.tab === "needs_reply"
+                ? REPLIES_VIEWS
+                : view.tab === "my_tasks"
+                  ? TASKS_VIEWS
+                  : FOLLOWUPS_VIEWS
+            const def = views.find((v) => v.id === view.id)
+            return def ? c[def.key] : c.tabAll
+          })()
+        : view.id === "follow_ups"
+          ? c.tabFollowups
+          : c[FOLDERS.find((f) => f.id === view.id)!.key]
   const viewCount = isMyTasksView ? filteredTaskRows.length : list.length
   const filtersActive =
     channelFilter !== "all" ||
@@ -2148,7 +2099,7 @@ export default function Inbox() {
     countConversationFilters(advancedFilters) > 0
 
   // Selection doesn't carry over when the user switches folders/views.
-  const viewSig = view.kind === "approvals" ? "approvals" : `${view.kind}:${view.id}`
+  const viewSig = `${view.kind}:${view.id}`
   const [selSig, setSelSig] = React.useState(viewSig)
   if (viewSig !== selSig) {
     setSelSig(viewSig)
@@ -2369,34 +2320,6 @@ export default function Inbox() {
                   ? TASKS_VIEWS
                   : FOLLOWUPS_VIEWS
             const viewButton = (v: (typeof views)[number]) => {
-              // "Awaiting approval" reuses the Automations approvals queue
-              // wholesale (see the View type) rather than being a
-              // conversation/task filter like its siblings, and is v2-only
-              // (no AI automations in the v1 extension scope).
-              if (v.id === "awaiting_approval") {
-                if (isV1) return null
-                return (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => setView({ kind: "approvals" })}
-                    className={cn(
-                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                      isApprovalsView
-                        ? "bg-muted font-medium text-foreground"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    )}
-                  >
-                    <v.icon className="size-4 shrink-0" />
-                    <span className="flex-1 truncate text-left">{c[v.key]}</span>
-                    {pendingApprovalsCount > 0 && (
-                      <span className="text-muted-foreground text-[11px] tabular-nums">
-                        {pendingApprovalsCount}
-                      </span>
-                    )}
-                  </button>
-                )
-              }
               const activeView =
                 view.kind === "quickview" && view.tab === quickTab && view.id === v.id
               const count = quickviewCount(quickTab, v.id)
@@ -2500,12 +2423,7 @@ export default function Inbox() {
 
       </aside>
 
-      {isApprovalsView ? (
-        <div className="flex-1 overflow-y-auto">
-          <ApprovalsPanel />
-        </div>
-      ) : (
-        <>
+      <>
       {/* List column */}
       <div
         className={cn(
@@ -3420,8 +3338,7 @@ export default function Inbox() {
           <ProspectSummaryPanel prospect={activeProspect} locale={locale} />
         </div>
       )}
-        </>
-      )}
+      </>
 
       <ConfirmDialog
         open={toDelete !== null}

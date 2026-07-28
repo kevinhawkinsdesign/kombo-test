@@ -26,7 +26,7 @@ const COPY = {
     createNewCampaign: "Create new campaign",
     statusLabel: {
       active: "Active",
-      paused: "Inactive",
+      paused: "Paused",
       draft: "Draft",
       completed: "Ended",
     } as Record<CampaignStatus, string>,
@@ -40,7 +40,7 @@ const COPY = {
     createNewCampaign: "Crear nueva campaña",
     statusLabel: {
       active: "Activa",
-      paused: "Inactiva",
+      paused: "En pausa",
       draft: "Borrador",
       completed: "Finalizada",
     } as Record<CampaignStatus, string>,
@@ -54,7 +54,7 @@ const COPY = {
     createNewCampaign: "Crea nuova campagna",
     statusLabel: {
       active: "Attiva",
-      paused: "Inattiva",
+      paused: "In pausa",
       draft: "Bozza",
       completed: "Terminata",
     } as Record<CampaignStatus, string>,
@@ -68,7 +68,7 @@ const COPY = {
     createNewCampaign: "Créer une nouvelle campagne",
     statusLabel: {
       active: "Active",
-      paused: "Inactive",
+      paused: "En pause",
       draft: "Brouillon",
       completed: "Terminée",
     } as Record<CampaignStatus, string>,
@@ -82,7 +82,7 @@ const COPY = {
     createNewCampaign: "Neue Kampagne erstellen",
     statusLabel: {
       active: "Aktiv",
-      paused: "Inaktiv",
+      paused: "Pausiert",
       draft: "Entwurf",
       completed: "Beendet",
     } as Record<CampaignStatus, string>,
@@ -96,7 +96,7 @@ const COPY = {
     createNewCampaign: "Criar nova campanha",
     statusLabel: {
       active: "Ativa",
-      paused: "Inativa",
+      paused: "Em pausa",
       draft: "Rascunho",
       completed: "Terminada",
     } as Record<CampaignStatus, string>,
@@ -110,7 +110,7 @@ const COPY = {
     createNewCampaign: "Criar nova campanha",
     statusLabel: {
       active: "Ativa",
-      paused: "Inativa",
+      paused: "Em pausa",
       draft: "Rascunho",
       completed: "Encerrada",
     } as Record<CampaignStatus, string>,
