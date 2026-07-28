@@ -182,6 +182,12 @@ const COPY = {
     templateCreated: "Follow-up template created",
     templateUpdated: "Follow-up template updated",
     templateDeleted: "Follow-up template deleted",
+    followUpGreeting: (first: string) => `Hi ${first},`,
+    followUpNextStepsLabel: "Next steps:",
+    followUpRecapLabel: "Quick recap of what stood out:",
+    followUpSignoff: "Best,",
+    followUpNoContext:
+      "This call doesn't have any next steps or key details logged yet — the draft below is a general recap. Add specifics before sending.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -311,6 +317,12 @@ const COPY = {
     templateCreated: "Plantilla de seguimiento creada",
     templateUpdated: "Plantilla de seguimiento actualizada",
     templateDeleted: "Plantilla de seguimiento eliminada",
+    followUpGreeting: (first: string) => `Hola ${first}:`,
+    followUpNextStepsLabel: "Próximos pasos:",
+    followUpRecapLabel: "Un resumen rápido de lo más destacado:",
+    followUpSignoff: "Un saludo,",
+    followUpNoContext:
+      "Esta llamada aún no tiene próximos pasos ni detalles clave registrados — el borrador de abajo es un resumen general. Añade detalles concretos antes de enviarlo.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -440,6 +452,12 @@ const COPY = {
     templateCreated: "Modello di follow-up creato",
     templateUpdated: "Modello di follow-up aggiornato",
     templateDeleted: "Modello di follow-up eliminato",
+    followUpGreeting: (first: string) => `Ciao ${first},`,
+    followUpNextStepsLabel: "Prossimi passi:",
+    followUpRecapLabel: "Un rapido riepilogo di ciò che è emerso:",
+    followUpSignoff: "Un saluto,",
+    followUpNoContext:
+      "Questa chiamata non ha ancora prossimi passi o dettagli chiave registrati — la bozza qui sotto è un riepilogo generico. Aggiungi dettagli specifici prima di inviarla.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -569,6 +587,12 @@ const COPY = {
     templateCreated: "Modèle de suivi créé",
     templateUpdated: "Modèle de suivi mis à jour",
     templateDeleted: "Modèle de suivi supprimé",
+    followUpGreeting: (first: string) => `Bonjour ${first},`,
+    followUpNextStepsLabel: "Prochaines étapes :",
+    followUpRecapLabel: "Un rapide résumé de ce qui est ressorti :",
+    followUpSignoff: "Cordialement,",
+    followUpNoContext:
+      "Cet appel n'a pas encore d'étapes suivantes ni de détails clés enregistrés — le brouillon ci-dessous est un résumé général. Ajoutez des précisions avant de l'envoyer.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -698,6 +722,12 @@ const COPY = {
     templateCreated: "Follow-up-Vorlage erstellt",
     templateUpdated: "Follow-up-Vorlage aktualisiert",
     templateDeleted: "Follow-up-Vorlage gelöscht",
+    followUpGreeting: (first: string) => `Hallo ${first},`,
+    followUpNextStepsLabel: "Nächste Schritte:",
+    followUpRecapLabel: "Kurz zusammengefasst, was aufgefallen ist:",
+    followUpSignoff: "Viele Grüße,",
+    followUpNoContext:
+      "Für diesen Call sind noch keine nächsten Schritte oder Schlüsseldetails erfasst — der Entwurf unten ist eine allgemeine Zusammenfassung. Ergänze Details, bevor du sendest.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -827,6 +857,12 @@ const COPY = {
     templateCreated: "Modelo de seguimento criado",
     templateUpdated: "Modelo de seguimento atualizado",
     templateDeleted: "Modelo de seguimento eliminado",
+    followUpGreeting: (first: string) => `Olá ${first},`,
+    followUpNextStepsLabel: "Próximos passos:",
+    followUpRecapLabel: "Um resumo rápido do que se destacou:",
+    followUpSignoff: "Cumprimentos,",
+    followUpNoContext:
+      "Esta chamada ainda não tem próximos passos nem detalhes-chave registados — o rascunho abaixo é um resumo genérico. Acrescente detalhes antes de enviar.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -956,6 +992,12 @@ const COPY = {
     templateCreated: "Modelo de follow-up criado",
     templateUpdated: "Modelo de follow-up atualizado",
     templateDeleted: "Modelo de follow-up excluído",
+    followUpGreeting: (first: string) => `Oi ${first},`,
+    followUpNextStepsLabel: "Próximos passos:",
+    followUpRecapLabel: "Um resumo rápido do que chamou atenção:",
+    followUpSignoff: "Atenciosamente,",
+    followUpNoContext:
+      "Esta ligação ainda não tem próximos passos nem detalhes-chave registrados — o rascunho abaixo é um resumo genérico. Adicione detalhes antes de enviar.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -1220,28 +1262,30 @@ const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2] as const
 
 // A call-aware first draft that seeds the follow-up composer — opens with the
 // line the recording's call type prescribes (a demo thanks differently than a
-// negotiation), then the shared next-steps block.
+// negotiation), optionally bridges into the specific problem the Key Fields
+// tab captured for this call, then the shared next-steps block. `problem` is
+// the raw (English) Key Fields "problem" text — same non-localized-content
+// convention as `nextSteps` below: the call's own substance isn't translated,
+// only the surrounding template copy is.
 function buildFollowUpDraft(
   rec: CoachRecording,
   locale: Locale,
-  callType: CallType
+  callType: CallType,
+  problem?: string
 ): string {
+  const t = COPY[locale]
   const first = rec.prospectName.split(" ")[0]
   const steps = rec.nextSteps
+  const senderFirst = currentUser.name.split(" ")[0]
   const opener = CALL_TYPE_META[callType].followUpOpener[locale].replace(
     /\{\{company\}\}/g,
     rec.company
   )
-  if (locale === "es") {
-    const s = steps.length
-      ? `\n\nPróximos pasos:\n${steps.map((x) => `• ${x}`).join("\n")}`
-      : ""
-    return `Hola ${first}:\n\n${opener}${s}\n\nUn saludo,\nKevin`
-  }
-  const s = steps.length
-    ? `\n\nNext steps:\n${steps.map((x) => `• ${x}`).join("\n")}`
+  const recap = problem ? `\n\n${t.followUpRecapLabel} ${problem}` : ""
+  const nextStepsBlock = steps.length
+    ? `\n\n${t.followUpNextStepsLabel}\n${steps.map((x) => `• ${x}`).join("\n")}`
     : ""
-  return `Hi ${first},\n\n${opener}${s}\n\nBest,\nKevin`
+  return `${t.followUpGreeting(first)}\n\n${opener}${recap}${nextStepsBlock}\n\n${t.followUpSignoff}\n${senderFirst}`
 }
 
 export default function CoachRecordingDetail() {
@@ -2098,6 +2142,7 @@ export default function CoachRecordingDetail() {
             c={c}
             locale={locale}
             callType={analyzedType}
+            problem={analysis?.keyFields?.problem}
             helpful={followUpHelpful}
             setHelpful={setFollowUpHelpful}
           />
@@ -2276,6 +2321,7 @@ function FollowUpTab({
   c,
   locale,
   callType,
+  problem,
   helpful,
   setHelpful,
 }: {
@@ -2283,10 +2329,17 @@ function FollowUpTab({
   c: Copy
   locale: Locale
   callType: CallType
+  // The Key Fields tab's "problem" extraction for this call, if analyzed —
+  // the closest thing to a call-content overview available for the draft.
+  problem?: string
   helpful: boolean | null
   setHelpful: (v: boolean | null) => void
 }) {
   const templates = useFollowUpTemplates()
+  // Nothing concrete to personalize the draft with yet — next steps carry
+  // the "what to do", `problem` carries the "why it matters"; without either
+  // the draft would be nothing but the fixed call-type opener.
+  const hasContext = rec.nextSteps.length > 0 || Boolean(problem)
   // Radix unmounts inactive TabsContent, so this mounts fresh each time the
   // Follow-Up tab is selected — a plain initializer is enough, no dialog-style
   // open/close reset needed.
@@ -2294,7 +2347,7 @@ function FollowUpTab({
     c.followUpDefaultSubject(rec.company)
   )
   const [body, setBody] = React.useState(() =>
-    plainToHtml(buildFollowUpDraft(rec, locale, callType))
+    plainToHtml(buildFollowUpDraft(rec, locale, callType, problem))
   )
   const [generating, setGenerating] = React.useState(false)
   // "" = the AI draft; otherwise the id of the applied follow-up template.
@@ -2310,7 +2363,7 @@ function FollowUpTab({
     if (v === AI_DRAFT) {
       setTemplateId("")
       setSubject(c.followUpDefaultSubject(rec.company))
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType)))
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType, problem)))
       return
     }
     const tpl = templates.find((t) => t.id === v)
@@ -2353,7 +2406,7 @@ function FollowUpTab({
   function generate() {
     setGenerating(true)
     setTimeout(() => {
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType)))
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType, problem)))
       setGenerating(false)
     }, 600)
   }
@@ -2361,174 +2414,186 @@ function FollowUpTab({
   const hasText = stripHtml(body).trim().length > 0
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              {c.followUpTitle(rec.prospectName)}
-            </CardTitle>
-            <p className="text-muted-foreground text-sm">{rec.company}</p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>{c.templateLabel}</Label>
-              <div className="flex items-center gap-1.5">
-                <SearchCombobox
-                  value={templateId || AI_DRAFT}
-                  onChange={applyTemplateChoice}
-                  options={[
-                    { value: AI_DRAFT, label: c.aiDraftOption },
-                    ...templates.map((t) => ({ value: t.id, label: t.name })),
-                  ]}
-                  placeholder={c.templateLabel}
-                  searchPlaceholder={c.searchTemplatesPlaceholder}
-                  emptyText={c.noTemplatesFound}
-                  className="min-w-0 flex-1"
-                />
-                {templateId && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 shrink-0"
-                      onClick={updateTemplate}
-                      aria-label={c.updateTemplate}
-                      title={c.updateTemplate}
-                    >
-                      <Save className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive size-8 shrink-0"
-                      onClick={deleteTemplate}
-                      aria-label={c.deleteTemplate}
-                      title={c.deleteTemplate}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => setSaveAsOpen((v) => !v)}
-                >
-                  <Plus className="size-4" />
-                  {c.saveAsTemplate}
-                </Button>
-              </div>
-              {saveAsOpen && (
+    <>
+      {/* Not a blocker — the composer below is always usable — just a heads
+          up that the AI draft has nothing call-specific to work from yet. */}
+      {!hasContext && (
+        <Card className="border-chart-4/40 bg-chart-4/5 mb-6">
+          <CardContent className="flex items-center gap-3">
+            <AlertTriangle className="text-chart-4 size-4 shrink-0" />
+            <p className="min-w-0 flex-1 text-sm">{c.followUpNoContext}</p>
+          </CardContent>
+        </Card>
+      )}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">
+                {c.followUpTitle(rec.prospectName)}
+              </CardTitle>
+              <p className="text-muted-foreground text-sm">{rec.company}</p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>{c.templateLabel}</Label>
                 <div className="flex items-center gap-1.5">
-                  <Input
-                    autoFocus
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    placeholder={c.templateNamePlaceholder}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        saveAsTemplate()
-                      }
-                    }}
-                    className="h-8 flex-1"
+                  <SearchCombobox
+                    value={templateId || AI_DRAFT}
+                    onChange={applyTemplateChoice}
+                    options={[
+                      { value: AI_DRAFT, label: c.aiDraftOption },
+                      ...templates.map((t) => ({ value: t.id, label: t.name })),
+                    ]}
+                    placeholder={c.templateLabel}
+                    searchPlaceholder={c.searchTemplatesPlaceholder}
+                    emptyText={c.noTemplatesFound}
+                    className="min-w-0 flex-1"
                   />
+                  {templateId && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 shrink-0"
+                        onClick={updateTemplate}
+                        aria-label={c.updateTemplate}
+                        title={c.updateTemplate}
+                      >
+                        <Save className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                        onClick={deleteTemplate}
+                        aria-label={c.deleteTemplate}
+                        title={c.deleteTemplate}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </>
+                  )}
                   <Button
-                    variant="volt"
+                    variant="ghost"
                     size="sm"
-                    onClick={saveAsTemplate}
-                    disabled={saveName.trim().length === 0}
+                    className="shrink-0"
+                    onClick={() => setSaveAsOpen((v) => !v)}
                   >
-                    {c.saveTemplateBtn}
+                    <Plus className="size-4" />
+                    {c.saveAsTemplate}
                   </Button>
                 </div>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label>{c.followUpSubjectLabel}</Label>
-              <Input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label>{c.followUpBodyLabel}</Label>
+                {saveAsOpen && (
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      autoFocus
+                      value={saveName}
+                      onChange={(e) => setSaveName(e.target.value)}
+                      placeholder={c.templateNamePlaceholder}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          saveAsTemplate()
+                        }
+                      }}
+                      className="h-8 flex-1"
+                    />
+                    <Button
+                      variant="volt"
+                      size="sm"
+                      onClick={saveAsTemplate}
+                      disabled={saveName.trim().length === 0}
+                    >
+                      {c.saveTemplateBtn}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>{c.followUpSubjectLabel}</Label>
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label>{c.followUpBodyLabel}</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={generate}
+                    disabled={generating}
+                  >
+                    {generating ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="size-4" />
+                    )}
+                    {c.aiDraft}
+                  </Button>
+                </div>
+                <RichTextEditor
+                  value={body}
+                  onChange={setBody}
+                  minHeight="min-h-44"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <Button
+                variant="volt"
+                className="w-full"
+                disabled={!hasText}
+                onClick={() => toast.success(c.followUpSent)}
+              >
+                <Send className="size-4" />
+                {c.sendFollowUp}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.wasFollowUpHelpful}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-1">
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={generate}
-                  disabled={generating}
+                  variant={helpful === true ? "default" : "outline"}
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.helpful}
+                  onClick={() => {
+                    setHelpful(true)
+                    toast.success(c.gladHelped)
+                  }}
                 >
-                  {generating ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="size-4" />
-                  )}
-                  {c.aiDraft}
+                  <ThumbsUp className="size-4" />
+                </Button>
+                <Button
+                  variant={helpful === false ? "default" : "outline"}
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.notHelpful}
+                  onClick={() => {
+                    setHelpful(false)
+                    toast.info(c.willImprove)
+                  }}
+                >
+                  <ThumbsDown className="size-4" />
                 </Button>
               </div>
-              <RichTextEditor
-                value={body}
-                onChange={setBody}
-                minHeight="min-h-44"
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="pt-6">
-            <Button
-              variant="volt"
-              className="w-full"
-              disabled={!hasText}
-              onClick={() => toast.success(c.followUpSent)}
-            >
-              <Send className="size-4" />
-              {c.sendFollowUp}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{c.wasFollowUpHelpful}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-1">
-              <Button
-                variant={helpful === true ? "default" : "outline"}
-                size="icon"
-                className="size-8"
-                aria-label={c.helpful}
-                onClick={() => {
-                  setHelpful(true)
-                  toast.success(c.gladHelped)
-                }}
-              >
-                <ThumbsUp className="size-4" />
-              </Button>
-              <Button
-                variant={helpful === false ? "default" : "outline"}
-                size="icon"
-                className="size-8"
-                aria-label={c.notHelpful}
-                onClick={() => {
-                  setHelpful(false)
-                  toast.info(c.willImprove)
-                }}
-              >
-                <ThumbsDown className="size-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </>
   )
 }
