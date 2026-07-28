@@ -3017,6 +3017,12 @@ export default function CampaignDetail() {
                 }}
                 onMoveStep={(id, target) => draft.moveStepToTarget(id, target)}
                 senderLabel={campaign.senderAccount}
+                onMoveStepDirection={(id, dir) => draft.moveStep(id, dir)}
+                onDuplicateStep={(id) => draft.duplicateStep(id)}
+                onDeleteStep={(id) => {
+                  draft.removeStep(id)
+                  if (selectedStepId === id) setSelectedStepId(undefined)
+                }}
               />
             </div>
 
