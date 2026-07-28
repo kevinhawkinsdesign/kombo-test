@@ -77,8 +77,8 @@ const COPY = {
         description: "Splits the sequence based on whether they click a link.",
       },
       accept: {
-        label: "Accepted connection",
-        description: "Splits the sequence based on whether they accept the connection.",
+        label: "Connected on LinkedIn",
+        description: "Splits the sequence based on whether they're connected on LinkedIn — including if they already were before you sent a request.",
       },
       read: {
         label: "Read the message",
@@ -121,8 +121,8 @@ const COPY = {
         description: "Divide la secuencia según si hacen clic en un enlace.",
       },
       accept: {
-        label: "Aceptó la conexión",
-        description: "Divide la secuencia según si aceptan la conexión.",
+        label: "Conectado en LinkedIn",
+        description: "Divide la secuencia según si están conectados en LinkedIn, incluso si ya lo estaban antes de enviar la solicitud.",
       },
       read: {
         label: "Leyó el mensaje",
@@ -165,8 +165,8 @@ const COPY = {
         description: "Divide la sequenza a seconda che clicchino un link.",
       },
       accept: {
-        label: "Ha accettato la connessione",
-        description: "Divide la sequenza a seconda che accettino la connessione.",
+        label: "Connesso su LinkedIn",
+        description: "Divide la sequenza a seconda che siano connessi su LinkedIn, anche se lo erano già prima dell'invito.",
       },
       read: {
         label: "Ha letto il messaggio",
@@ -209,8 +209,8 @@ const COPY = {
         description: "Scinde la séquence selon qu'ils cliquent sur un lien ou non.",
       },
       accept: {
-        label: "A accepté la connexion",
-        description: "Scinde la séquence selon qu'ils acceptent la connexion ou non.",
+        label: "Connecté sur LinkedIn",
+        description: "Scinde la séquence selon qu'ils sont connectés sur LinkedIn, même s'ils l'étaient déjà avant l'invitation.",
       },
       read: {
         label: "A lu le message",
@@ -253,8 +253,8 @@ const COPY = {
         description: "Teilt die Sequenz danach, ob sie auf einen Link klicken.",
       },
       accept: {
-        label: "Verbindung angenommen",
-        description: "Teilt die Sequenz danach, ob sie die Verbindung annehmen.",
+        label: "Auf LinkedIn verbunden",
+        description: "Teilt die Sequenz danach, ob sie auf LinkedIn verbunden sind — auch wenn sie es schon vor der Anfrage waren.",
       },
       read: {
         label: "Nachricht gelesen",
@@ -297,8 +297,8 @@ const COPY = {
         description: "Divide a sequência consoante cliquem num link ou não.",
       },
       accept: {
-        label: "Aceitou a ligação",
-        description: "Divide a sequência consoante aceitem a ligação ou não.",
+        label: "Ligado no LinkedIn",
+        description: "Divide a sequência consoante estejam ligados no LinkedIn, mesmo que já estivessem antes do pedido.",
       },
       read: {
         label: "Leu a mensagem",
@@ -341,8 +341,8 @@ const COPY = {
         description: "Divide a sequência conforme cliquem em um link ou não.",
       },
       accept: {
-        label: "Aceitou a conexão",
-        description: "Divide a sequência conforme aceitem a conexão ou não.",
+        label: "Conectado no LinkedIn",
+        description: "Divide a sequência conforme estejam conectados no LinkedIn, mesmo que já estivessem antes do pedido.",
       },
       read: {
         label: "Leu a mensagem",

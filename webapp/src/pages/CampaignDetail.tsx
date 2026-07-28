@@ -2059,12 +2059,36 @@ export default function CampaignDetail() {
     )
   }
 
+  // Whether `step` (or anything inside it — a fork track, a parallel
+  // sibling) is or contains a LinkedIn connect step. Connect steps only
+  // ever live at the top level (addConnectGatedStep always inserts there),
+  // but a track can still carry one if a user manually picks "LinkedIn
+  // connect" as a plain step type from within it.
+  function stepContainsConnect(step: CampaignStep): boolean {
+    if (step.linkedinAction === "connect") return true
+    if (step.parallelSteps?.some((p) => p.linkedinAction === "connect")) return true
+    return step.fork?.tracks.some((t) => t.steps.some(stepContainsConnect)) ?? false
+  }
+
+  // A prospect only ever needs to accept one LinkedIn connection request —
+  // once a connect step exists anywhere earlier in the sequence, every
+  // later step already has an accepted connection to rely on, so it never
+  // needs its own gating fork.
+  function alreadyHasLinkedInConnect(beforeStepId: string | undefined): boolean {
+    if (!beforeStepId) return false
+    const idx = draft.steps.findIndex((s) => s.id === beforeStepId)
+    if (idx === -1) return false
+    return draft.steps.slice(0, idx + 1).some(stepContainsConnect)
+  }
+
   // Routes a step type picked in the modal to whichever action triggered
   // it — a parallel add, a fork track, a top-level insert, or a brand-new
   // append. A top-level pick that requires a connection first is routed
   // through addConnectGatedStep instead, which inserts a Connect step and
-  // an accepted/not-accepted branch rather than the plain step. All
-  // draft-only until Apply Changes.
+  // an accepted/not-accepted branch rather than the plain step — unless a
+  // connect step already happened earlier in the sequence, in which case
+  // it's inserted as a plain step like any other. All draft-only until
+  // Apply Changes.
   function handleStepTypeSelect(selection: StepTypeSelection) {
     const { channel, linkedinAction, whatsappAction } = selection
     if (pendingParallelStep) {
@@ -2077,7 +2101,10 @@ export default function CampaignDetail() {
     if (!ghost) return
     if (ghost.trackId && ghost.forkStepId) {
       draft.addForkStep(ghost.forkStepId, ghost.trackId, channel, { linkedinAction, whatsappAction })
-    } else if (requiresLinkedInConnection(selection)) {
+    } else if (
+      requiresLinkedInConnection(selection) &&
+      !alreadyHasLinkedInConnect(ghost.afterStepId)
+    ) {
       draft.addConnectGatedStep(selection, ghost.afterStepId)
       toast.info(c.connectStepAutoAdded)
     } else if (ghost.afterStepId) {
@@ -3022,9 +3049,6 @@ export default function CampaignDetail() {
               function insertCustomStepVar() {
                 const text = stepCustomVarText.trim()
                 if (!text) return
-                // Same false positive as the onClick below — only reads the
-                // ref from this handler, invoked via click/Enter, never render.
-                // eslint-disable-next-line react-hooks/refs
                 insertStepVariable(text, step, isAiCall)
                 setStepCustomVarText("")
               }
