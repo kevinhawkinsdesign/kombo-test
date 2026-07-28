@@ -334,11 +334,14 @@ const COPY = {
       reply: "Replied",
       open: "Opened",
       click: "Clicked a link",
-      accept: "Accepted connection",
+      accept: "Connected on LinkedIn",
       read: "Read the message",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Forks on: ${name}`,
     removeCondition: "Remove condition",
+    withinDaysLabel: "Check within",
+    withinDaysSuffix: "days",
+    withinDaysHint: 'After this window, prospects who haven\'t connected yet continue down the "Not Connected" track.',
     parallelStepNote: "Sends at the same time as the step next to it.",
     addParallelStepTitle: "Add a parallel step",
     applyChanges: "Apply changes",
@@ -551,11 +554,14 @@ const COPY = {
       reply: "Respondió",
       open: "Abrió",
       click: "Hizo clic en un enlace",
-      accept: "Aceptó la conexión",
+      accept: "Conectado en LinkedIn",
       read: "Leyó el mensaje",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca en: ${name}`,
     removeCondition: "Quitar condición",
+    withinDaysLabel: "Revisar dentro de",
+    withinDaysSuffix: "días",
+    withinDaysHint: 'Pasado este plazo, los prospectos que aún no se hayan conectado continúan por la vía "No conectados".',
     parallelStepNote: "Se envía al mismo tiempo que el paso junto a él.",
     addParallelStepTitle: "Añadir un paso paralelo",
     applyChanges: "Aplicar cambios",
@@ -768,11 +774,14 @@ const COPY = {
       reply: "Ha risposto",
       open: "Ha aperto",
       click: "Ha cliccato un link",
-      accept: "Ha accettato la connessione",
+      accept: "Connesso su LinkedIn",
       read: "Ha letto il messaggio",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Si dirama su: ${name}`,
     removeCondition: "Rimuovi condizione",
+    withinDaysLabel: "Verifica entro",
+    withinDaysSuffix: "giorni",
+    withinDaysHint: 'Trascorso questo periodo, i prospect non ancora connessi proseguono nel percorso "Non connesso".',
     parallelStepNote: "Viene inviato nello stesso momento del passaggio accanto.",
     addParallelStepTitle: "Aggiungi un passaggio parallelo",
     applyChanges: "Applica modifiche",
@@ -985,11 +994,14 @@ const COPY = {
       reply: "A répondu",
       open: "A ouvert",
       click: "A cliqué sur un lien",
-      accept: "A accepté la connexion",
+      accept: "Connecté sur LinkedIn",
       read: "A lu le message",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Se divise sur : ${name}`,
     removeCondition: "Supprimer la condition",
+    withinDaysLabel: "Vérifier sous",
+    withinDaysSuffix: "jours",
+    withinDaysHint: "Passé ce délai, les prospects non encore connectés poursuivent sur la voie « Non connecté ».",
     parallelStepNote: "Envoyé en même temps que l'étape voisine.",
     addParallelStepTitle: "Ajouter une étape parallèle",
     applyChanges: "Appliquer les modifications",
@@ -1202,11 +1214,14 @@ const COPY = {
       reply: "Hat geantwortet",
       open: "Hat geöffnet",
       click: "Hat auf einen Link geklickt",
-      accept: "Hat die Verbindung angenommen",
+      accept: "Auf LinkedIn verbunden",
       read: "Hat die Nachricht gelesen",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Verzweigt bei: ${name}`,
     removeCondition: "Bedingung entfernen",
+    withinDaysLabel: "Prüfen innerhalb von",
+    withinDaysSuffix: "Tagen",
+    withinDaysHint: "Nach diesem Zeitraum folgen noch nicht verbundene Interessenten dem Pfad „Nicht verbunden“.",
     parallelStepNote: "Wird gleichzeitig mit dem danebenliegenden Schritt gesendet.",
     addParallelStepTitle: "Parallelen Schritt hinzufügen",
     applyChanges: "Änderungen übernehmen",
@@ -1419,11 +1434,14 @@ const COPY = {
       reply: "Respondeu",
       open: "Abriu",
       click: "Clicou numa ligação",
-      accept: "Aceitou a ligação",
+      accept: "Ligado no LinkedIn",
       read: "Leu a mensagem",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca em: ${name}`,
     removeCondition: "Remover condição",
+    withinDaysLabel: "Verificar em",
+    withinDaysSuffix: "dias",
+    withinDaysHint: 'Após este período, os contactos que ainda não estejam ligados seguem pelo percurso "Não ligado".',
     parallelStepNote: "É enviado ao mesmo tempo que o passo ao lado.",
     addParallelStepTitle: "Adicionar um passo paralelo",
     applyChanges: "Aplicar alterações",
@@ -1636,11 +1654,14 @@ const COPY = {
       reply: "Respondeu",
       open: "Abriu",
       click: "Clicou em um link",
-      accept: "Aceitou a conexão",
+      accept: "Conectado no LinkedIn",
       read: "Leu a mensagem",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca em: ${name}`,
     removeCondition: "Remover condição",
+    withinDaysLabel: "Verificar em",
+    withinDaysSuffix: "dias",
+    withinDaysHint: 'Após esse período, os contatos que ainda não estejam conectados seguem pelo caminho "Não conectado".',
     parallelStepNote: "É enviado ao mesmo tempo que a etapa ao lado.",
     addParallelStepTitle: "Adicionar uma etapa paralela",
     applyChanges: "Aplicar alterações",
@@ -1981,17 +2002,25 @@ export default function CampaignDetail() {
     pendingGhost != null &&
     (!pendingGhost.afterStepId ||
       pendingGhost.afterStepId === draft.steps[draft.steps.length - 1]?.id)
-  // Conditions fork the sequence one level deep, so only offered when the
-  // ghost inserts at the top level (not inside an existing track) and the
-  // step it would anchor to isn't already forked or parallel-able.
-  const conditionAnchorStep =
-    pendingGhost && !pendingGhost.trackId && pendingGhost.afterStepId
-      ? findCampaignStep(draft.steps, pendingGhost.afterStepId)
+  // Conditions fork the sequence one level deep almost everywhere, so
+  // normally only offered at the top level (not inside an existing track).
+  // The one exception: a track hanging off a LinkedIn-connect ("accept")
+  // fork can nest another condition on its own trailing step, so connection
+  // status can be reassessed again after further touches (e.g. a follow-up
+  // email) — matches how far competitors' equivalent "Accepted invite"
+  // condition is allowed to repeat.
+  const conditionAnchorStep = pendingGhost?.afterStepId
+    ? findCampaignStep(draft.steps, pendingGhost.afterStepId)
+    : undefined
+  const enclosingForkCondition =
+    pendingGhost?.trackId && pendingGhost.forkStepId
+      ? findCampaignStep(draft.steps, pendingGhost.forkStepId)?.fork?.condition
       : undefined
   const allowCondition = Boolean(
     conditionAnchorStep &&
       !conditionAnchorStep.fork &&
-      !conditionAnchorStep.parallelSteps?.length
+      !conditionAnchorStep.parallelSteps?.length &&
+      (!pendingGhost?.trackId || enclosingForkCondition === "accept")
   )
   const enrolledIds = campaign.enrolledIds ?? []
 
@@ -3267,18 +3296,44 @@ export default function CampaignDetail() {
                     )}
 
                     {step.fork && (
-                      <div className="bg-muted/40 flex items-center gap-2.5 rounded-lg border p-2.5">
-                        <GitFork className="text-muted-foreground size-4 shrink-0" />
-                        <p className="text-muted-foreground min-w-0 flex-1 text-sm">
-                          {c.conditionActiveLabel(c.conditionName[step.fork.condition])}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => draft.removeFork(step.id)}
-                        >
-                          {c.removeCondition}
-                        </Button>
+                      <div className="bg-muted/40 space-y-2 rounded-lg border p-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <GitFork className="text-muted-foreground size-4 shrink-0" />
+                          <p className="text-muted-foreground min-w-0 flex-1 text-sm">
+                            {c.conditionActiveLabel(c.conditionName[step.fork.condition])}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => draft.removeFork(step.id)}
+                          >
+                            {c.removeCondition}
+                          </Button>
+                        </div>
+                        {step.fork.condition === "accept" && (
+                          <div className="space-y-1 pl-[26px]">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-sm">
+                                {c.withinDaysLabel}
+                              </span>
+                              <Input
+                                type="number"
+                                min={1}
+                                value={String(step.fork.withinDays ?? 4)}
+                                onChange={(e) => {
+                                  const n = Math.max(1, Math.round(Number(e.target.value)) || 1)
+                                  draft.updateForkWithinDays(step.id, n)
+                                }}
+                                clearable={false}
+                                className="h-8 w-16 tabular-nums"
+                              />
+                              <span className="text-muted-foreground text-sm">
+                                {c.withinDaysSuffix}
+                              </span>
+                            </div>
+                            <p className="text-muted-foreground text-xs">{c.withinDaysHint}</p>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -3966,6 +4021,7 @@ export default function CampaignDetail() {
         conditionChannel={
           conditionAnchorStep ? normalizeChannel(conditionAnchorStep.channel) : undefined
         }
+        forceAllowAccept={enclosingForkCondition === "accept"}
         onUseTemplate={
           isTrailingAdd ? () => setTemplatePickerOpen(true) : undefined
         }

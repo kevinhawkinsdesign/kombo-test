@@ -347,9 +347,12 @@ export interface CampaignStep {
   assigneeId?: string
   // A condition creates a fork anchored at this step: two mutually-
   // exclusive tracks that both reconnect into whatever follows. Steps
-  // inside a track never carry their own `fork` or `parallelSteps`
-  // (enforced by the UI, not this type) so the model stays exactly one
-  // level deep.
+  // inside a track normally don't carry their own `fork` — the UI only
+  // offers adding a condition on a track's own trailing step when that
+  // track descends from a LinkedIn-connect ("accept") fork, so a prospect's
+  // connection status can be reassessed again after further touches. Every
+  // other condition type still caps at one level deep (enforced by the UI,
+  // not this type).
   fork?: StepFork
   // Steps that fire at the same time as this one — concurrent, not a fork:
   // the sequence continues as a single line afterward, with no rejoin/
@@ -387,6 +390,10 @@ export interface StepFork {
   // there is no dead-ending arm.
   condition: ConditionKind
   tracks: StepTrack[]
+  // Only meaningful when condition is "accept": how many days to wait for
+  // the LinkedIn connection before treating the prospect as not connected.
+  // Undefined reads as 4 (the common default).
+  withinDays?: number
 }
 
 export interface Campaign {

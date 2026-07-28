@@ -1,7 +1,11 @@
-// Converts the (still fundamentally tree-shaped — one level of forking,
-// never deeper) CampaignStep list into React Flow's flat nodes[]/edges[]
-// shape. Positions are computed, not user-draggable: depth (position in a
-// track) maps to Y, lane (which track) maps to X.
+// Converts the tree-shaped CampaignStep list into React Flow's flat
+// nodes[]/edges[] shape. Positions are computed, not user-draggable: depth
+// (position in a track) maps to Y, lane (which track) maps to X. Forking is
+// one level deep everywhere EXCEPT under a LinkedIn-connect ("accept")
+// fork, where a track's own trailing step can fork again (reassessing
+// connection status after further touches) — recursively, to any depth.
+// Each nesting level halves its lane spread so nested tracks never collide
+// with a sibling branch's own tracks.
 //
 // Parallel siblings (CampaignStep.parallelSteps) are not a separate lane —
 // they render inside the same node as their anchor step, since they're
@@ -9,7 +13,7 @@
 
 import type { Edge, Node } from "@xyflow/react"
 
-import type { CampaignStep, StepFork, StepTrackKind } from "@/lib/types"
+import type { CampaignStep, StepTrackKind } from "@/lib/types"
 import { normalizeChannel } from "@/lib/step-channels"
 import { STEP_CREDIT_COST } from "@/lib/store"
 
@@ -71,22 +75,16 @@ function addNode(id: string, depth: number, lane: number, data: AddNodeData): Se
   }
 }
 
-// Lane offsets for a fork's two tracks (the condition's met/not-met pair),
-// centered around the main line (lane 0).
-function trackLanes(fork: StepFork): [number, number] {
-  void fork
-  return [-1, 1]
-}
-
 function layoutTrack(
   steps: CampaignStep[],
   startDepth: number,
   lane: number,
+  spread: number,
   interactive: boolean,
   trackLabel: StepTrackKind,
   forkStepId: string,
   trackId: string
-): { nodes: SequenceNode[]; edges: Edge[]; endDepth: number; lastId: string | undefined } {
+): { nodes: SequenceNode[]; edges: Edge[]; endDepth: number; rejoinSources: string[] } {
   const nodes: SequenceNode[] = []
   const edges: Edge[] = []
   let depth = startDepth
@@ -98,6 +96,33 @@ function layoutTrack(
     prevId = step.id
     depth += 1
   })
+
+  const lastStep = steps[steps.length - 1]
+  if (lastStep?.fork) {
+    // The track's own last step forks again — only reachable for
+    // LinkedIn-connect ("accept") forks, the one case the UI offers
+    // nesting a condition this deep (reassessing connection status after
+    // further touches). Recurse instead of adding a plain trailing "+",
+    // halving the lane spread so the nested tracks never collide with a
+    // sibling branch's own tracks.
+    const nested = layoutFork(lastStep, depth - 1, lane, spread / 2, interactive)
+    nodes.push(...nested.nodes)
+    edges.push(...nested.edges)
+    depth = nested.nextDepth
+    if (interactive && nested.rejoinSources.length > 0) {
+      const ghostId = `add-after-${lastStep.id}`
+      const ghostDepth = depth - 0.5
+      nodes.push(
+        addNode(ghostId, ghostDepth, lane, { kind: "add", afterStepId: lastStep.id, trackLabel })
+      )
+      for (const src of nested.rejoinSources) {
+        edges.push({ id: `${src}->${ghostId}`, source: src, target: ghostId })
+      }
+      depth = ghostDepth + GHOST_TRAILING_GAP
+    }
+    return { nodes, edges, endDepth: depth, rejoinSources: nested.rejoinSources }
+  }
+
   if (interactive) {
     const ghostId = `add-track-${trackId}`
     const source = prevId ?? forkStepId
@@ -114,7 +139,7 @@ function layoutTrack(
     )
     edges.push({ id: `${source}->${ghostId}`, source, target: ghostId })
   }
-  return { nodes, edges, endDepth: depth, lastId: prevId }
+  return { nodes, edges, endDepth: depth, rejoinSources: prevId ? [prevId] : [] }
 }
 
 interface StepLayout {
@@ -126,15 +151,21 @@ interface StepLayout {
   rejoinSources: string[]
 }
 
-function layoutStep(step: CampaignStep, depth: number, interactive: boolean): StepLayout {
-  const nodes: SequenceNode[] = [stepNode(step, depth, 0)]
+// Lays out a single step's own fork: two tracks, each starting at `lane -
+// spread` / `lane + spread`. Shared by the top-level loop (spread = 1, the
+// original ±1-lane-width behavior) and by `layoutTrack` recursing into a
+// nested LinkedIn-connect fork (spread halved each level).
+function layoutFork(
+  step: CampaignStep,
+  depth: number,
+  lane: number,
+  spread: number,
+  interactive: boolean
+): { nodes: SequenceNode[]; edges: Edge[]; nextDepth: number; rejoinSources: string[] } {
+  const fork = step.fork!
+  const nodes: SequenceNode[] = []
   const edges: Edge[] = []
-
-  if (!step.fork) {
-    return { nodes, edges, nextDepth: depth + 1, rejoinSources: [step.id] }
-  }
-
-  const lanes = trackLanes(step.fork)
+  const lanes: [number, number] = [lane - spread, lane + spread]
   let maxRejoinDepth = depth + 1
   // An empty track (right after adding a condition, before either arm has a
   // step yet) contributes no rejoin source at all — falling back to the
@@ -145,11 +176,12 @@ function layoutStep(step: CampaignStep, depth: number, interactive: boolean): St
   // rejoin source as normal.
   const rejoinSources = new Set<string>()
 
-  step.fork.tracks.forEach((track, i) => {
+  fork.tracks.forEach((track, i) => {
     const result = layoutTrack(
       track.steps,
       depth + 1,
       lanes[i],
+      spread,
       interactive,
       track.kind,
       step.id,
@@ -158,7 +190,7 @@ function layoutStep(step: CampaignStep, depth: number, interactive: boolean): St
     nodes.push(...result.nodes)
     edges.push(...result.edges)
     maxRejoinDepth = Math.max(maxRejoinDepth, result.endDepth)
-    if (result.lastId) rejoinSources.add(result.lastId)
+    result.rejoinSources.forEach((id) => rejoinSources.add(id))
   })
 
   return {
@@ -166,6 +198,22 @@ function layoutStep(step: CampaignStep, depth: number, interactive: boolean): St
     edges,
     nextDepth: maxRejoinDepth,
     rejoinSources: [...rejoinSources],
+  }
+}
+
+function layoutStep(step: CampaignStep, depth: number, interactive: boolean): StepLayout {
+  const nodes: SequenceNode[] = [stepNode(step, depth, 0)]
+
+  if (!step.fork) {
+    return { nodes, edges: [], nextDepth: depth + 1, rejoinSources: [step.id] }
+  }
+
+  const forkResult = layoutFork(step, depth, 0, 1, interactive)
+  return {
+    nodes: [...nodes, ...forkResult.nodes],
+    edges: forkResult.edges,
+    nextDepth: forkResult.nextDepth,
+    rejoinSources: forkResult.rejoinSources,
   }
 }
 

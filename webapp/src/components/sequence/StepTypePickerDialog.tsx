@@ -368,6 +368,13 @@ interface StepTypePickerDialogProps {
   // means something for an email step). Unused when onSelectCondition is
   // omitted.
   conditionChannel?: StepChannel
+  // Set when this ghost is nested inside a track that already descends
+  // from a LinkedIn-connect ("accept") fork — reassessing connection
+  // status again doesn't depend on the anchor step's own channel (the
+  // reference case is re-checking after a follow-up *email*), so "Connected
+  // on LinkedIn" stays offered even when conditionChannel would otherwise
+  // filter it out.
+  forceAllowAccept?: boolean
   // Quick-start shortcuts — only offered when the ghost that opened this
   // dialog is an append (not a mid-sequence insert or fork track), since
   // these always add to the end of the top-level sequence.
@@ -383,13 +390,18 @@ export function StepTypePickerDialog({
   description,
   onSelectCondition,
   conditionChannel,
+  forceAllowAccept,
   onUseTemplate,
   onUsePrompt,
 }: StepTypePickerDialogProps) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const availableConditions = conditionChannel
-    ? CONDITIONS.filter((condition) => conditionAllowedForChannel(condition, conditionChannel))
+    ? CONDITIONS.filter(
+        (condition) =>
+          (condition === "accept" && forceAllowAccept) ||
+          conditionAllowedForChannel(condition, conditionChannel)
+      )
     : CONDITIONS
   const hasQuickActions = onUseTemplate || onUsePrompt
 
