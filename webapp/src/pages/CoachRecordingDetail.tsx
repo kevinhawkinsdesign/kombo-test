@@ -83,7 +83,6 @@ import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type {
-  KeyMoment,
   CoachRecording,
   CallType,
   CoachSpeaker,
