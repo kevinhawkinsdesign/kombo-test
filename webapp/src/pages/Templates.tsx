@@ -15,6 +15,7 @@ import {
   Wand2,
   MessageCircle,
   Columns3,
+  Download,
 } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -611,6 +612,7 @@ const COPY = {
     viewTable: "Table",
     exportLabel: "Export",
     exported: "Templates exported to CSV",
+    exportedOne: (name: string) => `"${name}" exported to CSV`,
     noResults: "No templates match your search.",
     sortRecent: "Recently updated",
     sortName: "Name (A–Z)",
@@ -736,6 +738,7 @@ const COPY = {
     viewTable: "Tabla",
     exportLabel: "Exportar",
     exported: "Plantillas exportadas a CSV",
+    exportedOne: (name: string) => `"${name}" exportado a CSV`,
     noResults: "Ninguna plantilla coincide con tu búsqueda.",
     sortRecent: "Actualizadas recientemente",
     sortName: "Nombre (A–Z)",
@@ -858,6 +861,7 @@ const COPY = {
     viewTable: "Tabella",
     exportLabel: "Esporta",
     exported: "Modelli esportati in CSV",
+    exportedOne: (name: string) => `"${name}" esportato in CSV`,
     noResults: "Nessun modello corrisponde alla tua ricerca.",
     sortRecent: "Aggiornati di recente",
     sortName: "Nome (A–Z)",
@@ -980,6 +984,7 @@ const COPY = {
     viewTable: "Tableau",
     exportLabel: "Exporter",
     exported: "Modèles exportés en CSV",
+    exportedOne: (name: string) => `"${name}" exporté en CSV`,
     noResults: "Aucun modèle ne correspond à votre recherche.",
     sortRecent: "Mis à jour récemment",
     sortName: "Nom (A–Z)",
@@ -1101,6 +1106,7 @@ const COPY = {
     viewTable: "Tabelle",
     exportLabel: "Exportieren",
     exported: "Vorlagen als CSV exportiert",
+    exportedOne: (name: string) => `"${name}" als CSV exportiert`,
     noResults: "Keine Vorlagen entsprechen deiner Suche.",
     sortRecent: "Zuletzt aktualisiert",
     sortName: "Name (A–Z)",
@@ -1226,6 +1232,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Modelos exportados para CSV",
+    exportedOne: (name: string) => `"${name}" exportado para CSV`,
     noResults: "Nenhum modelo corresponde à sua pesquisa.",
     sortRecent: "Atualizados recentemente",
     sortName: "Nome (A–Z)",
@@ -1351,6 +1358,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Modelos exportados para CSV",
+    exportedOne: (name: string) => `"${name}" exportado para CSV`,
     noResults: "Nenhum modelo corresponde à sua busca.",
     sortRecent: "Atualizados recentemente",
     sortName: "Nome (A–Z)",
@@ -1427,6 +1435,7 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     group: "template",
     pinned: true,
     minWidth: "200px",
+    getValue: (t) => t.name,
     render: (t) => (
       <div className="flex items-center gap-2">
         <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md">
@@ -1449,6 +1458,8 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     },
     group: "template",
     default: true,
+    getValue: (t) => t.folder,
+    filterType: "enum",
     render: (t) => (
       <Badge variant="secondary" className="font-normal">
         {t.folder}
@@ -1468,6 +1479,7 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     },
     group: "template",
     default: true,
+    getValue: (t) => (t.channel === "email" ? t.subject : stripHtml(t.body)),
     render: (t) => (
       <span className="text-muted-foreground block max-w-[260px] truncate text-sm">
         {t.channel === "email" ? t.subject : stripHtml(t.body)}
@@ -1488,6 +1500,7 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     group: "template",
     default: true,
     align: "right",
+    getValue: (t) => t.sent,
     render: (t) => (
       <span className="tabular-nums">{t.sent.toLocaleString()}</span>
     ),
@@ -1506,6 +1519,7 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     group: "template",
     default: true,
     align: "right",
+    getValue: (t) => t.replyRate,
     render: (t) => (
       <span className="text-chart-1 font-medium tabular-nums">
         {t.replyRate}%
@@ -1526,6 +1540,7 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     group: "template",
     default: true,
     align: "right",
+    getValue: (t) => t.updatedAt,
     render: (t) => (
       <span className="text-muted-foreground text-xs whitespace-nowrap">
         {formatDate(t.updatedAt)}
@@ -1985,6 +2000,27 @@ export default function Templates() {
     return sorted
   }, [templates, matches, sort])
 
+  // The per-row "…" menu's Export item — same CSV shape as the bulk
+  // export, just for a single template and no format picker.
+  function exportOne(t: EmailTemplate) {
+    downloadCsv(
+      "kombo-templates.csv",
+      [c.colName, c.colFolder, c.colChannel, c.colSubject, c.colSent, c.colReply, c.colUpdated],
+      [
+        [
+          t.name,
+          t.folder,
+          channelLabel(t.channel, c),
+          t.subject,
+          t.sent,
+          `${t.replyRate}%`,
+          formatDate(t.updatedAt),
+        ],
+      ]
+    )
+    toast.success(c.exportedOne(t.name))
+  }
+
   function exportCsv() {
     downloadCsv(
       "kombo-templates.csv",
@@ -2238,6 +2274,10 @@ export default function Templates() {
                     <DropdownMenuItem onClick={() => duplicateTemplate(t)}>
                       <Copy className="size-4" />
                       {c.copy}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportOne(t)}>
+                      <Download className="size-4" />
+                      {c.exportLabel}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       variant="destructive"

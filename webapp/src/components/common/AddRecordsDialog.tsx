@@ -171,7 +171,8 @@ const COPY = {
     liConnections: "LinkedIn connections",
     liFollowers: "LinkedIn followers",
     crmViews: (crm: string) => `${crm} views`,
-    connectCrm: "Connect a CRM",
+    noCrmConnected: "No CRM connected",
+    importingCrm: (crm: string) => `Importing from ${crm}…`,
     snLeads: "Sales Navigator leads link",
     snCompanies: "Sales Navigator companies link",
     liPost: "LinkedIn post link",
@@ -273,7 +274,8 @@ const COPY = {
     liConnections: "Conexiones de LinkedIn",
     liFollowers: "Seguidores de LinkedIn",
     crmViews: (crm: string) => `Vistas de ${crm}`,
-    connectCrm: "Conecta un CRM",
+    noCrmConnected: "Ningún CRM conectado",
+    importingCrm: (crm: string) => `Importando desde ${crm}…`,
     snLeads: "Enlace de leads de Sales Navigator",
     snCompanies: "Enlace de empresas de Sales Navigator",
     liPost: "Enlace de publicación de LinkedIn",
@@ -374,7 +376,8 @@ const COPY = {
     liConnections: "Connessioni LinkedIn",
     liFollowers: "Follower LinkedIn",
     crmViews: (crm: string) => `Viste di ${crm}`,
-    connectCrm: "Collega un CRM",
+    noCrmConnected: "Nessun CRM collegato",
+    importingCrm: (crm: string) => `Importazione da ${crm} in corso…`,
     snLeads: "Link lead di Sales Navigator",
     snCompanies: "Link aziende di Sales Navigator",
     liPost: "Link post LinkedIn",
@@ -481,7 +484,8 @@ const COPY = {
     liConnections: "Relations LinkedIn",
     liFollowers: "Abonnés LinkedIn",
     crmViews: (crm: string) => `Vues ${crm}`,
-    connectCrm: "Connecter un CRM",
+    noCrmConnected: "Aucun CRM connecté",
+    importingCrm: (crm: string) => `Importation depuis ${crm}…`,
     snLeads: "Lien de leads Sales Navigator",
     snCompanies: "Lien d'entreprises Sales Navigator",
     liPost: "Lien de publication LinkedIn",
@@ -585,7 +589,8 @@ const COPY = {
     liConnections: "LinkedIn-Kontakte",
     liFollowers: "LinkedIn-Follower",
     crmViews: (crm: string) => `${crm}-Ansichten`,
-    connectCrm: "CRM verbinden",
+    noCrmConnected: "Kein CRM verbunden",
+    importingCrm: (crm: string) => `Import aus ${crm} läuft…`,
     snLeads: "Sales-Navigator-Leads-Link",
     snCompanies: "Sales-Navigator-Unternehmens-Link",
     liPost: "LinkedIn-Beitragslink",
@@ -689,7 +694,8 @@ const COPY = {
     liConnections: "Ligações do LinkedIn",
     liFollowers: "Seguidores do LinkedIn",
     crmViews: (crm: string) => `Vistas do ${crm}`,
-    connectCrm: "Liga um CRM",
+    noCrmConnected: "Nenhum CRM ligado",
+    importingCrm: (crm: string) => `A importar do ${crm}…`,
     snLeads: "Link de leads do Sales Navigator",
     snCompanies: "Link de empresas do Sales Navigator",
     liPost: "Link de publicação do LinkedIn",
@@ -793,7 +799,8 @@ const COPY = {
     liConnections: "Conexões do LinkedIn",
     liFollowers: "Seguidores do LinkedIn",
     crmViews: (crm: string) => `Visualizações do ${crm}`,
-    connectCrm: "Conecte um CRM",
+    noCrmConnected: "Nenhum CRM conectado",
+    importingCrm: (crm: string) => `Importando do ${crm}…`,
     snLeads: "Link de leads do Sales Navigator",
     snCompanies: "Link de empresas do Sales Navigator",
     liPost: "Link de post do LinkedIn",
@@ -997,8 +1004,13 @@ export function AddRecordsDialog({
     toast.success(c.importingFile)
     onOpenChange(false)
   }
+  // Pulls records from the already-connected CRM's views. Never a shortcut
+  // into integration settings — when no CRM is connected the tile is
+  // disabled instead (see ImportPane), so this only fires with one present.
   function handleImportConnect() {
-    leave("/integrations")
+    if (!CONNECTED_CRM) return
+    toast.success(c.importingCrm(CONNECTED_CRM))
+    onOpenChange(false)
   }
   function handleImportSync() {
     toast.success(c.syncing)
@@ -1130,10 +1142,6 @@ export function AddRecordsDialog({
       toast.success(c.addedCompanies(chosen.length))
     }
     onOpenChange(false)
-  }
-  function leave(to: string) {
-    onOpenChange(false)
-    navigate(to)
   }
 
   const groups = SEARCH_FILTER_GROUPS.filter(
@@ -1323,7 +1331,14 @@ export function AddRecordsDialog({
                 {/* Database — switches the per-database facet catalog. Scales to
                     N sources; extras beyond Kombo/Sales Nav are on the roadmap. */}
                 <div className="border-b p-2">
-                  <DropdownMenu>
+                  {/* modal=false: this already lives inside a modal fullscreen
+                      Dialog. A nested modal DropdownMenu fights the Dialog
+                      over document.body's pointer-events — Radix's own focus
+                      trap for this menu isn't needed, and without this, a
+                      2nd click on the trigger (toggling the menu closed)
+                      lands on the Dialog's own overlay instead of the
+                      trigger and dismisses the whole Add modal. */}
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
@@ -1454,7 +1469,11 @@ export function AddRecordsDialog({
                     <Search className="size-4" />
                     {c.run}
                   </Button>
-                  <DropdownMenu>
+                  {/* modal=false — see the database-picker DropdownMenu above
+                      for why (nested modal DropdownMenu inside a modal
+                      fullscreen Dialog closes the whole Dialog on the 2nd,
+                      toggle-closed click). */}
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="h-10">
                         <ArrowDownUp className="size-4" />
@@ -1720,28 +1739,31 @@ function ImportPane({
           { key: "sn-companies", label: c.snCompanies, placeholder: c.snCompaniesPh, icon: Compass, tint: linkTint },
         ]
 
-  // The CRM "views" method is dynamic — it reflects whichever CRM is connected
-  // (its contact lists / segments), or prompts to connect one when none is.
-  const crmMethod: ImportMethod & { onClick: () => void } = CONNECTED_CRM
-    ? {
-        key: "crm-views",
-        label: c.crmViews(CONNECTED_CRM),
-        icon: CONNECTED_CRM === "HubSpot" ? Plug : Cloud,
-        tint:
-          CONNECTED_CRM === "HubSpot"
-            ? "bg-[#ff7a59]/15 text-[#ff7a59]"
-            : "bg-[#00a1e0]/10 text-[#00a1e0]",
-        onClick: onConnect,
-      }
-    : {
-        key: "connect-crm",
-        label: c.connectCrm,
-        icon: Database,
-        tint: "bg-muted text-muted-foreground",
-        onClick: onConnect,
-      }
+  // The CRM "views" method is dynamic — with a CRM connected it pulls that
+  // CRM's views directly (never a detour into integration settings); with
+  // none connected the tile is disabled rather than linking to setup.
+  const crmMethod: ImportMethod & { onClick: () => void; disabled?: boolean } =
+    CONNECTED_CRM
+      ? {
+          key: "crm-views",
+          label: c.crmViews(CONNECTED_CRM),
+          icon: CONNECTED_CRM === "HubSpot" ? Plug : Cloud,
+          tint:
+            CONNECTED_CRM === "HubSpot"
+              ? "bg-[#ff7a59]/15 text-[#ff7a59]"
+              : "bg-[#00a1e0]/10 text-[#00a1e0]",
+          onClick: onConnect,
+        }
+      : {
+          key: "connect-crm",
+          label: c.noCrmConnected,
+          icon: Database,
+          tint: "bg-muted text-muted-foreground",
+          onClick: onConnect,
+          disabled: true,
+        }
 
-  const connectMethods: (ImportMethod & { onClick: () => void })[] = [
+  const connectMethods: (ImportMethod & { onClick: () => void; disabled?: boolean })[] = [
     crmMethod,
     ...(entity === "people"
       ? [{ key: "li-followers", label: c.liFollowers, icon: LinkedinIcon, tint: linkTint, onClick: onSync }]
@@ -1753,14 +1775,23 @@ function ImportPane({
   const sectionLabel =
     "text-muted-foreground mt-6 mb-2 text-xs font-medium tracking-wide uppercase"
 
-  const renderMethod = (m: ImportMethod, onClick: () => void) => {
+  const renderMethod = (
+    m: ImportMethod & { disabled?: boolean },
+    onClick: () => void
+  ) => {
     const Icon = m.icon
     return (
       <button
         key={m.key}
         type="button"
         onClick={onClick}
-        className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors"
+        disabled={m.disabled}
+        className={cn(
+          "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors",
+          m.disabled
+            ? "cursor-not-allowed opacity-50"
+            : "hover:border-primary/40 hover:bg-muted/40"
+        )}
       >
         <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-md", m.tint)}>
           <Icon className="size-4" />
