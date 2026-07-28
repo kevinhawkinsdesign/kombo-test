@@ -171,6 +171,8 @@ const COPY = {
       low: "Low",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Was the information above helpful?",
+    overview: "Overview",
+    overviewEmpty: "This call hasn't been summarized yet.",
     summary: "Summary",
     followUpTitle: (name: string) => `Follow up with ${name}`,
     followUpSubjectLabel: "Subject",
@@ -311,6 +313,8 @@ const COPY = {
       low: "Baja",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "¿Te resultó útil la información anterior?",
+    overview: "Visión general",
+    overviewEmpty: "Esta llamada aún no se ha resumido.",
     summary: "Resumen",
     followUpTitle: (name: string) => `Seguimiento con ${name}`,
     followUpSubjectLabel: "Asunto",
@@ -451,6 +455,8 @@ const COPY = {
       low: "Bassa",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Le informazioni qui sopra ti sono state utili?",
+    overview: "Panoramica",
+    overviewEmpty: "Questa chiamata non è stata ancora riepilogata.",
     summary: "Riepilogo",
     followUpTitle: (name: string) => `Follow-up con ${name}`,
     followUpSubjectLabel: "Oggetto",
@@ -591,6 +597,8 @@ const COPY = {
       low: "Basse",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Les informations ci-dessus vous ont-elles été utiles ?",
+    overview: "Aperçu",
+    overviewEmpty: "Cet appel n'a pas encore été résumé.",
     summary: "Résumé",
     followUpTitle: (name: string) => `Suivi avec ${name}`,
     followUpSubjectLabel: "Objet",
@@ -731,6 +739,8 @@ const COPY = {
       low: "Niedrig",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Waren die Informationen oben hilfreich?",
+    overview: "Überblick",
+    overviewEmpty: "Dieser Anruf wurde noch nicht zusammengefasst.",
     summary: "Zusammenfassung",
     followUpTitle: (name: string) => `Follow-up mit ${name}`,
     followUpSubjectLabel: "Betreff",
@@ -871,6 +881,8 @@ const COPY = {
       low: "Baixa",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "A informação acima foi útil?",
+    overview: "Visão geral",
+    overviewEmpty: "Esta chamada ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Seguimento com ${name}`,
     followUpSubjectLabel: "Assunto",
@@ -1011,6 +1023,8 @@ const COPY = {
       low: "Baixa",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "As informações acima foram úteis?",
+    overview: "Visão geral",
+    overviewEmpty: "Esta ligação ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Follow-up com ${name}`,
     followUpSubjectLabel: "Assunto",
@@ -1605,13 +1619,16 @@ export default function CoachRecordingDetail() {
     </Card>
   )
 
-  const actionItemsCard = analysis && analysis.actionItems.length > 0 && (
+  // Sourced from `rec.nextSteps` (a stable property of the recording) rather
+  // than `analysis.actionItems` (which regenerates per re-analysis) — Next
+  // Steps shouldn't disappear or reshuffle just because the call type changed.
+  const nextStepsCard = rec.nextSteps.length > 0 && (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{c.actionItems}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {analysis.actionItems.map((item, i) => {
+        {rec.nextSteps.map((item, i) => {
           const done = doneItems[i] ?? false
           const priority = ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
           return (
@@ -2170,6 +2187,20 @@ export default function CoachRecordingDetail() {
             <div className="space-y-6 lg:col-span-2">
               <Card>
                 <CardHeader>
+                  <CardTitle className="text-base">{c.overview}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {rec.overview ? (
+                    <p className="text-sm">{rec.overview}</p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      {c.overviewEmpty}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
                   <CardTitle className="flex items-center gap-1.5 text-base">
                     {c.summary}
                     <InfoHint label={c.summaryHintLabel}>{c.summaryHint}</InfoHint>
@@ -2196,7 +2227,7 @@ export default function CoachRecordingDetail() {
                 </CardContent>
               </Card>
             </div>
-            <div className="space-y-6">{actionItemsCard}</div>
+            <div className="space-y-6">{nextStepsCard}</div>
           </div>
         </TabsContent>
 

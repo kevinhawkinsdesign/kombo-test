@@ -1037,6 +1037,9 @@ export const coachRecordings: CoachRecording[] = [
     score: 88,
     talkRatio: 42,
     sentiment: "positive",
+    overview:
+      "A 34-minute discovery call with Wei Zhang (Head of Sales, Criteo). Maya surfaced the team's core outbound pain — wildly inconsistent weekly meeting volume — and got procurement looped in early. Wei flagged security as a gating concern, so the SOC 2 report and a technical deep-dive are the immediate next steps.",
+    summarized: true,
     highlights: [
       "Strong discovery on current outbound pain",
       "Clear next step booked",
@@ -1115,6 +1118,9 @@ export const coachRecordings: CoachRecording[] = [
     score: 76,
     talkRatio: 58,
     sentiment: "neutral",
+    overview:
+      "A 41-minute product demo with Marcus Riley (Head of RevOps, Softonic). The walkthrough landed well, though Jordan's talk ratio ran high (58%) and a 4-minute monologue cost some engagement. Marcus wants an ROI breakdown against their current tool before Tuesday's follow-up.",
+    summarized: true,
     highlights: ["Good product walkthrough", "Talk ratio a bit high"],
     nextSteps: ["Send ROI breakdown", "Confirm Tuesday follow-up"],
     videoSource: "teams",
@@ -1155,6 +1161,7 @@ export const coachRecordings: CoachRecording[] = [
     score: 61,
     talkRatio: 67,
     sentiment: "negative",
+    summarized: false,
     highlights: ["Skeptical on ROI", "Missed budget qualification"],
     nextSteps: ["Build ROI case study", "Re-engage in 30 days"],
     videoSource: "linkedin",
