@@ -18,7 +18,8 @@ import {
   Mail,
 } from "lucide-react"
 
-import { useLocale } from "@/lib/locale"
+import { useLocale, type Locale } from "@/lib/locale"
+import { LOCALES, LOCALE_FLAG, LOCALE_LABEL } from "@/lib/locale-meta"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Card,
@@ -176,6 +177,12 @@ const COPY = {
     weeklyDigestDesc: "A Monday summary of team performance.",
     notificationsSaved: "Notification settings saved",
     preferencesSaved: "Preferences saved",
+    coachLanguage: "Coach language",
+    coachLanguageDesc: "The language Kai uses for AI-generated call coaching.",
+    coachLanguageCompanyDefault: "Use company default",
+    coachLanguageHint:
+      "Controls the language Kai uses when generating call summaries, analysis, and follow-up drafts — separate from your app display language.",
+    coachLanguageUpdated: "Coach language updated",
     currentPlan: "Current plan",
     currentPlanDesc: (plan?: string) => `You are on the ${plan} plan.`,
     active: "Active",
@@ -315,6 +322,13 @@ const COPY = {
     weeklyDigestDesc: "Un resumen de los lunes del rendimiento del equipo.",
     notificationsSaved: "Ajustes de notificaciones guardados",
     preferencesSaved: "Preferencias guardadas",
+    coachLanguage: "Idioma del coach",
+    coachLanguageDesc:
+      "El idioma que usa Kai para el coaching generado por IA.",
+    coachLanguageCompanyDefault: "Usar el predeterminado de la empresa",
+    coachLanguageHint:
+      "Controla el idioma que usa Kai al generar resúmenes de llamadas, análisis y borradores de seguimiento — independiente del idioma de visualización de la app.",
+    coachLanguageUpdated: "Idioma del coach actualizado",
     currentPlan: "Plan actual",
     currentPlanDesc: (plan?: string) => `Tienes el plan ${plan}.`,
     active: "Activo",
@@ -456,6 +470,13 @@ const COPY = {
     weeklyDigestDesc: "Un riepilogo del lunedì sulle prestazioni del team.",
     notificationsSaved: "Impostazioni delle notifiche salvate",
     preferencesSaved: "Preferenze salvate",
+    coachLanguage: "Lingua del coach",
+    coachLanguageDesc:
+      "La lingua che Kai utilizza per il coaching generato dall'IA.",
+    coachLanguageCompanyDefault: "Usa l'impostazione predefinita dell'azienda",
+    coachLanguageHint:
+      "Controlla la lingua che Kai utilizza per generare riepiloghi delle chiamate, analisi e bozze di follow-up — indipendente dalla lingua di visualizzazione dell'app.",
+    coachLanguageUpdated: "Lingua del coach aggiornata",
     currentPlan: "Piano attuale",
     currentPlanDesc: (plan?: string) => `Hai il piano ${plan}.`,
     active: "Attivo",
@@ -597,6 +618,14 @@ const COPY = {
     weeklyDigestDesc: "Un résumé le lundi des performances de l'équipe.",
     notificationsSaved: "Paramètres de notification enregistrés",
     preferencesSaved: "Préférences enregistrées",
+    coachLanguage: "Langue du coach",
+    coachLanguageDesc:
+      "La langue que Kai utilise pour le coaching généré par IA.",
+    coachLanguageCompanyDefault:
+      "Utiliser la langue par défaut de l'entreprise",
+    coachLanguageHint:
+      "Détermine la langue que Kai utilise pour générer les résumés d'appels, les analyses et les brouillons de relance — indépendamment de la langue d'affichage de l'application.",
+    coachLanguageUpdated: "Langue du coach mise à jour",
     currentPlan: "Plan actuel",
     currentPlanDesc: (plan?: string) => `Vous êtes sur le plan ${plan}.`,
     active: "Actif",
@@ -738,6 +767,13 @@ const COPY = {
     weeklyDigestDesc: "Jeden Montag eine Zusammenfassung der Team-Performance.",
     notificationsSaved: "Benachrichtigungseinstellungen gespeichert",
     preferencesSaved: "Präferenzen gespeichert",
+    coachLanguage: "Coach-Sprache",
+    coachLanguageDesc:
+      "Die Sprache, die Kai für KI-generiertes Coaching verwendet.",
+    coachLanguageCompanyDefault: "Unternehmensstandard verwenden",
+    coachLanguageHint:
+      "Legt fest, in welcher Sprache Kai Anrufzusammenfassungen, Analysen und Follow-up-Entwürfe erstellt — unabhängig von der Anzeigesprache deiner App.",
+    coachLanguageUpdated: "Coach-Sprache aktualisiert",
     currentPlan: "Aktueller Plan",
     currentPlanDesc: (plan?: string) => `Du nutzt den Plan ${plan}.`,
     active: "Aktiv",
@@ -879,6 +915,13 @@ const COPY = {
     weeklyDigestDesc: "Um resumo à segunda-feira do desempenho da equipa.",
     notificationsSaved: "Definições de notificações guardadas",
     preferencesSaved: "Preferências guardadas",
+    coachLanguage: "Idioma do coach",
+    coachLanguageDesc:
+      "O idioma que o Kai utiliza para o coaching gerado por IA.",
+    coachLanguageCompanyDefault: "Utilizar a predefinição da empresa",
+    coachLanguageHint:
+      "Controla o idioma que o Kai utiliza ao gerar resumos de chamadas, análises e rascunhos de acompanhamento — independente do idioma de visualização da app.",
+    coachLanguageUpdated: "Idioma do coach atualizado",
     currentPlan: "Plano atual",
     currentPlanDesc: (plan?: string) => `Está no plano ${plan}.`,
     active: "Ativo",
@@ -1020,6 +1063,12 @@ const COPY = {
     weeklyDigestDesc: "Um resumo às segundas do desempenho do time.",
     notificationsSaved: "Configurações de notificação salvas",
     preferencesSaved: "Preferências salvas",
+    coachLanguage: "Idioma do coach",
+    coachLanguageDesc: "O idioma que o Kai usa para o coaching gerado por IA.",
+    coachLanguageCompanyDefault: "Usar o padrão da empresa",
+    coachLanguageHint:
+      "Controla o idioma que o Kai usa ao gerar resumos de ligações, análises e rascunhos de follow-up — separado do idioma de exibição do seu app.",
+    coachLanguageUpdated: "Idioma do coach atualizado",
     currentPlan: "Plano atual",
     currentPlanDesc: (plan?: string) => `Você está no plano ${plan}.`,
     active: "Ativo",
@@ -1089,6 +1138,9 @@ export default function Settings() {
   const [invites, setInvites] = React.useState<PendingInvite[]>([])
   const [inviteEmail, setInviteEmail] = React.useState("")
   const [inviteRole, setInviteRole] = React.useState<PendingInvite["role"]>("employee")
+  const [coachLanguage, setCoachLanguage] = React.useState<Locale | "company">(
+    "company"
+  )
 
   function viewAsRep(rep: TeamMember) {
     impersonate(rep.id)
@@ -1293,6 +1345,42 @@ export default function Settings() {
                   {c.saveChanges}
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.coachLanguage}</CardTitle>
+              <CardDescription>{c.coachLanguageDesc}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Select
+                value={coachLanguage}
+                onValueChange={(v) => {
+                  setCoachLanguage(v as Locale | "company")
+                  toast.success(c.coachLanguageUpdated)
+                }}
+              >
+                <SelectTrigger
+                  aria-label={c.coachLanguage}
+                  className="w-full sm:w-72"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="company">
+                    {c.coachLanguageCompanyDefault}
+                  </SelectItem>
+                  {LOCALES.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {LOCALE_FLAG[code]} {LOCALE_LABEL[code]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                {c.coachLanguageHint}
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
