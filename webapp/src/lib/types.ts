@@ -497,6 +497,18 @@ export interface CoachKeyField {
   value: string
 }
 
+// Where the call happened. LinkedIn calls can't embed their recording — the
+// player links out to the original instead; every other source plays the
+// full video inline.
+export type CoachVideoSource =
+  | "meet"
+  | "teams"
+  | "zoom"
+  | "gong"
+  | "whatsapp"
+  | "phone"
+  | "linkedin"
+
 export interface CoachRecording {
   id: string
   title: string
@@ -511,9 +523,8 @@ export interface CoachRecording {
   nextSteps: string[]
   // Where the call happened. LinkedIn calls can't embed their recording — the
   // player links out to the original instead; every other source plays the
-  // full video inline. Widened to cover every call channel the platform
-  // supports: video (Meet/Teams/Zoom), VOIP (Gong), regular phone, WhatsApp.
-  videoSource?: "meet" | "teams" | "zoom" | "gong" | "phone" | "whatsapp" | "linkedin"
+  // full video inline.
+  videoSource?: CoachVideoSource
   // Whether the recording has a video track — the detail page's player
   // shows a video frame or an audio waveform accordingly. In a real
   // integration this would be probed from the media file itself; here it's

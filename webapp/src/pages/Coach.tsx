@@ -15,9 +15,8 @@ import {
   ThumbsUp,
   Target,
   SlidersHorizontal,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
+  X,
 } from "lucide-react"
 
 import { useLocale, type Locale } from "@/lib/locale"
@@ -57,9 +56,12 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
 import { DataTable } from "@/components/common/DataTable"
+import { SelectionControls } from "@/components/common/SelectionControls"
+import { usePagedSelection } from "@/lib/use-paged-selection"
 import type { ColumnDef } from "@/lib/table-columns"
 import {
   useTableSortFilter,
@@ -67,16 +69,40 @@ import {
   type ColumnFilterState,
 } from "@/lib/table-sort-filter"
 import { coachRecordings } from "@/lib/mock-data"
+import { useCoachRecordings, coachRecordingStore } from "@/lib/store"
 import { getScorecard } from "@/lib/mock-coaching"
 import {
   coachLeaderboard,
   coachTeamAvg,
   type CoachSkill,
 } from "@/lib/mock-coach-team"
+import { deals } from "@/lib/mock-extra"
+import { team } from "@/lib/team"
 import { formatDate } from "@/lib/format"
 import { downloadCsv } from "@/lib/csv"
 import { cn } from "@/lib/utils"
-import type { CoachRecording } from "@/lib/types"
+import type { CoachRecording, CoachVideoSource } from "@/lib/types"
+
+// Fixed canonical order for the Source filter checklist — every value the
+// widened videoSource union supports, regardless of whether a mock
+// recording currently uses it (same convention as the Outcomes checklist in
+// FilterConversationsDialog).
+const COACH_VIDEO_SOURCES: CoachVideoSource[] = [
+  "meet",
+  "teams",
+  "zoom",
+  "gong",
+  "phone",
+  "whatsapp",
+  "linkedin",
+]
+
+function toggled<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set)
+  if (next.has(value)) next.delete(value)
+  else next.add(value)
+  return next
+}
 
 const SENTIMENT = {
   positive: { icon: Smile, className: "text-chart-1" },
@@ -150,14 +176,42 @@ const COPY = {
     colScore: "Score",
     filters: "Filters",
     filterDialogTitle: "Filter calls",
-    filterDialogDescription: "Narrow the list to calls in a specific date range.",
+    filterDialogDescription:
+      "Narrow the list by prospect, deal, rep, date range, or source.",
     dateFrom: "From",
     dateTo: "To",
     clearAll: "Clear all",
+    clear: "Clear",
     cancel: "Cancel",
     apply: "Apply",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
+    filterProspectName: "Prospect name",
+    filterProspectPosition: "Prospect position",
+    filterProspectCompany: "Prospect company",
+    filterDeal: "Deal",
+    filterSalesRep: "Sales rep",
+    filterSource: "Source",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Phone",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "AI status",
+    badgeSummary: "Summary",
+    badgeAnalysis: "Analysis",
+    selectedCount: (n: number) => `${n} selected`,
+    bulkSummarize: (n: number) => `Summarize Recordings (${n})`,
+    bulkAnalyze: (n: number) => `Analyze Recordings (${n})`,
+    processRecordings: "Process Recordings",
+    processToastBoth: (s: number, a: number) =>
+      `${s} recordings summarized, ${a} analyzed`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "recording" : "recordings"} summarized`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "recording" : "recordings"} analyzed`,
     skill: {
       rapport: "Rapport",
       discovery: "Discovery",
@@ -232,14 +286,42 @@ const COPY = {
     colScore: "Puntuación",
     filters: "Filtros",
     filterDialogTitle: "Filtrar llamadas",
-    filterDialogDescription: "Reduce la lista a llamadas en un rango de fechas específico.",
+    filterDialogDescription:
+      "Reduce la lista por prospecto, negocio, representante, rango de fechas u origen.",
     dateFrom: "Desde",
     dateTo: "Hasta",
     clearAll: "Limpiar todo",
+    clear: "Limpiar",
     cancel: "Cancelar",
     apply: "Aplicar",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
+    filterProspectName: "Nombre del prospecto",
+    filterProspectPosition: "Cargo del prospecto",
+    filterProspectCompany: "Empresa del prospecto",
+    filterDeal: "Negocio",
+    filterSalesRep: "Representante de ventas",
+    filterSource: "Origen",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Teléfono",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "Estado de IA",
+    badgeSummary: "Resumen",
+    badgeAnalysis: "Análisis",
+    selectedCount: (n: number) => `${n} seleccionados`,
+    bulkSummarize: (n: number) => `Resumir grabaciones (${n})`,
+    bulkAnalyze: (n: number) => `Analizar grabaciones (${n})`,
+    processRecordings: "Procesar grabaciones",
+    processToastBoth: (s: number, a: number) =>
+      `${s} grabaciones resumidas, ${a} analizadas`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "grabación resumida" : "grabaciones resumidas"}`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "grabación analizada" : "grabaciones analizadas"}`,
     skill: {
       rapport: "Rapport",
       discovery: "Descubrimiento",
@@ -314,14 +396,42 @@ const COPY = {
     colScore: "Punteggio",
     filters: "Filtri",
     filterDialogTitle: "Filtra le chiamate",
-    filterDialogDescription: "Restringi l'elenco alle chiamate in un intervallo di date specifico.",
+    filterDialogDescription:
+      "Restringi l'elenco per prospect, trattativa, rappresentante, intervallo di date o origine.",
     dateFrom: "Da",
     dateTo: "A",
     clearAll: "Cancella tutto",
+    clear: "Cancella",
     cancel: "Annulla",
     apply: "Applica",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} di ${total.toLocaleString()}`,
+    filterProspectName: "Nome del prospect",
+    filterProspectPosition: "Ruolo del prospect",
+    filterProspectCompany: "Azienda del prospect",
+    filterDeal: "Trattativa",
+    filterSalesRep: "Rappresentante di vendita",
+    filterSource: "Origine",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Telefono",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "Stato IA",
+    badgeSummary: "Riepilogo",
+    badgeAnalysis: "Analisi",
+    selectedCount: (n: number) => `${n} selezionati`,
+    bulkSummarize: (n: number) => `Riassumi registrazioni (${n})`,
+    bulkAnalyze: (n: number) => `Analizza registrazioni (${n})`,
+    processRecordings: "Elabora registrazioni",
+    processToastBoth: (s: number, a: number) =>
+      `${s} registrazioni riassunte, ${a} analizzate`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "registrazione riassunta" : "registrazioni riassunte"}`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "registrazione analizzata" : "registrazioni analizzate"}`,
     skill: {
       rapport: "Rapport",
       discovery: "Discovery",
@@ -396,14 +506,42 @@ const COPY = {
     colScore: "Score",
     filters: "Filtres",
     filterDialogTitle: "Filtrer les appels",
-    filterDialogDescription: "Limitez la liste aux appels d'une plage de dates précise.",
+    filterDialogDescription:
+      "Affinez la liste par prospect, transaction, commercial, plage de dates ou source.",
     dateFrom: "Du",
     dateTo: "Au",
     clearAll: "Tout effacer",
+    clear: "Effacer",
     cancel: "Annuler",
     apply: "Appliquer",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} sur ${total.toLocaleString()}`,
+    filterProspectName: "Nom du prospect",
+    filterProspectPosition: "Poste du prospect",
+    filterProspectCompany: "Entreprise du prospect",
+    filterDeal: "Transaction",
+    filterSalesRep: "Commercial",
+    filterSource: "Source",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Téléphone",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "État IA",
+    badgeSummary: "Résumé",
+    badgeAnalysis: "Analyse",
+    selectedCount: (n: number) => `${n} sélectionné(s)`,
+    bulkSummarize: (n: number) => `Résumer les enregistrements (${n})`,
+    bulkAnalyze: (n: number) => `Analyser les enregistrements (${n})`,
+    processRecordings: "Traiter les enregistrements",
+    processToastBoth: (s: number, a: number) =>
+      `${s} enregistrements résumés, ${a} analysés`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "enregistrement résumé" : "enregistrements résumés"}`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "enregistrement analysé" : "enregistrements analysés"}`,
     skill: {
       rapport: "Relationnel",
       discovery: "Découverte",
@@ -478,14 +616,42 @@ const COPY = {
     colScore: "Score",
     filters: "Filter",
     filterDialogTitle: "Calls filtern",
-    filterDialogDescription: "Grenze die Liste auf Calls in einem bestimmten Zeitraum ein.",
+    filterDialogDescription:
+      "Grenze die Liste nach Prospect, Deal, Vertriebsmitarbeiter, Zeitraum oder Quelle ein.",
     dateFrom: "Von",
     dateTo: "Bis",
     clearAll: "Alles zurücksetzen",
+    clear: "Leeren",
     cancel: "Abbrechen",
     apply: "Anwenden",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} von ${total.toLocaleString()}`,
+    filterProspectName: "Name des Prospects",
+    filterProspectPosition: "Position des Prospects",
+    filterProspectCompany: "Unternehmen des Prospects",
+    filterDeal: "Deal",
+    filterSalesRep: "Vertriebsmitarbeiter",
+    filterSource: "Quelle",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Telefon",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "KI-Status",
+    badgeSummary: "Zusammenfassung",
+    badgeAnalysis: "Analyse",
+    selectedCount: (n: number) => `${n} ausgewählt`,
+    bulkSummarize: (n: number) => `Aufzeichnungen zusammenfassen (${n})`,
+    bulkAnalyze: (n: number) => `Aufzeichnungen analysieren (${n})`,
+    processRecordings: "Aufzeichnungen verarbeiten",
+    processToastBoth: (s: number, a: number) =>
+      `${s} Aufzeichnungen zusammengefasst, ${a} analysiert`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "Aufzeichnung" : "Aufzeichnungen"} zusammengefasst`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "Aufzeichnung" : "Aufzeichnungen"} analysiert`,
     skill: {
       rapport: "Rapport",
       discovery: "Discovery",
@@ -560,14 +726,42 @@ const COPY = {
     colScore: "Pontuação",
     filters: "Filtros",
     filterDialogTitle: "Filtrar chamadas",
-    filterDialogDescription: "Restrinja a lista a chamadas num intervalo de datas específico.",
+    filterDialogDescription:
+      "Reduz a lista por prospect, negócio, representante, intervalo de datas ou origem.",
     dateFrom: "De",
     dateTo: "Até",
     clearAll: "Limpar tudo",
+    clear: "Limpar",
     cancel: "Cancelar",
     apply: "Aplicar",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
+    filterProspectName: "Nome do prospect",
+    filterProspectPosition: "Cargo do prospect",
+    filterProspectCompany: "Empresa do prospect",
+    filterDeal: "Negócio",
+    filterSalesRep: "Representante de vendas",
+    filterSource: "Origem",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Telefone",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "Estado de IA",
+    badgeSummary: "Resumo",
+    badgeAnalysis: "Análise",
+    selectedCount: (n: number) => `${n} selecionados`,
+    bulkSummarize: (n: number) => `Resumir gravações (${n})`,
+    bulkAnalyze: (n: number) => `Analisar gravações (${n})`,
+    processRecordings: "Processar gravações",
+    processToastBoth: (s: number, a: number) =>
+      `${s} gravações resumidas, ${a} analisadas`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "gravação resumida" : "gravações resumidas"}`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "gravação analisada" : "gravações analisadas"}`,
     skill: {
       rapport: "Rapport",
       discovery: "Descoberta",
@@ -642,14 +836,42 @@ const COPY = {
     colScore: "Pontuação",
     filters: "Filtros",
     filterDialogTitle: "Filtrar ligações",
-    filterDialogDescription: "Restrinja a lista a ligações em um intervalo de datas específico.",
+    filterDialogDescription:
+      "Reduza a lista por prospect, negócio, representante, intervalo de datas ou origem.",
     dateFrom: "De",
     dateTo: "Até",
     clearAll: "Limpar tudo",
+    clear: "Limpar",
     cancel: "Cancelar",
     apply: "Aplicar",
-    pageRange: (from: number, to: number, total: number) =>
-      `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
+    filterProspectName: "Nome do prospect",
+    filterProspectPosition: "Cargo do prospect",
+    filterProspectCompany: "Empresa do prospect",
+    filterDeal: "Negócio",
+    filterSalesRep: "Representante de vendas",
+    filterSource: "Origem",
+    source: {
+      meet: "Meet",
+      teams: "Teams",
+      zoom: "Zoom",
+      gong: "Gong",
+      phone: "Telefone",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+    } as Record<CoachVideoSource, string>,
+    colAiStatus: "Status de IA",
+    badgeSummary: "Resumo",
+    badgeAnalysis: "Análise",
+    selectedCount: (n: number) => `${n} selecionados`,
+    bulkSummarize: (n: number) => `Resumir gravações (${n})`,
+    bulkAnalyze: (n: number) => `Analisar gravações (${n})`,
+    processRecordings: "Processar gravações",
+    processToastBoth: (s: number, a: number) =>
+      `${s} gravações resumidas, ${a} analisadas`,
+    processToastSummarizeOnly: (n: number) =>
+      `${n} ${n === 1 ? "gravação resumida" : "gravações resumidas"}`,
+    processToastAnalyzeOnly: (n: number) =>
+      `${n} ${n === 1 ? "gravação analisada" : "gravações analisadas"}`,
     skill: {
       rapport: "Rapport",
       discovery: "Descoberta",
@@ -696,7 +918,16 @@ const rankedCalls = [...coachRecordings].sort((a, b) => b.score - a.score)
 
 // Header labels reuse the per-locale strings already defined in COPY above
 // (colTitle, colContact, …) rather than duplicating translations.
-function colLabel(key: "colTitle" | "colContact" | "colDate" | "colDuration" | "colSentiment" | "colScore") {
+function colLabel(
+  key:
+    | "colTitle"
+    | "colContact"
+    | "colDate"
+    | "colDuration"
+    | "colSentiment"
+    | "colScore"
+    | "colAiStatus"
+) {
   return {
     en: COPY.en[key],
     es: COPY.es[key],
@@ -706,6 +937,26 @@ function colLabel(key: "colTitle" | "colContact" | "colDate" | "colDuration" | "
     pt: COPY.pt[key],
     pt_BR: COPY.pt_BR[key],
   }
+}
+
+// The Summary/Analysis per-recording status pair — filled + colored (chart-1,
+// the app's existing "positive/strong" green) when the flag is true, muted
+// and dashed when false. Sparkles is reused rather than a new icon: both
+// actions are AI-powered, and Sparkles is the app-wide fixed icon for that.
+function AiStatusBadge({ label, active }: { label: string; active: boolean }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium",
+        active
+          ? "border-chart-1/30 bg-chart-1/15 text-chart-1"
+          : "border-dashed text-muted-foreground/70"
+      )}
+    >
+      <Sparkles className={cn("size-3", !active && "opacity-50")} />
+      {label}
+    </span>
+  )
 }
 
 const RECORDING_COLUMNS: ColumnDef<CoachRecording>[] = [
@@ -784,23 +1035,61 @@ const RECORDING_COLUMNS: ColumnDef<CoachRecording>[] = [
       </span>
     ),
   },
+  {
+    // No getValue — like the app's other multi-value chip columns, this
+    // shows two independent statuses at once, so there's no single value
+    // to sort or contains-filter by. minWidth keeps both badges from being
+    // clipped by the header-label-driven auto column width (same reason
+    // Tags/Signals in table-columns.tsx set one).
+    id: "aiStatus",
+    label: colLabel("colAiStatus"),
+    group: "coach",
+    minWidth: "190px",
+    render: (r, locale) => {
+      const cc = COPY[locale]
+      return (
+        <div className="flex items-center gap-1">
+          <AiStatusBadge label={cc.badgeSummary} active={Boolean(r.summarized)} />
+          <AiStatusBadge label={cc.badgeAnalysis} active={Boolean(r.analyzed)} />
+        </div>
+      )
+    },
+  },
 ]
 
 export default function Coach() {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const liveRecordings = useCoachRecordings()
   const [view, setView] = React.useState<CollectionView>("table")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
   const [filterOpen, setFilterOpen] = React.useState(false)
   const [dateFrom, setDateFrom] = React.useState("")
   const [dateTo, setDateTo] = React.useState("")
-  const [page, setPage] = React.useState(0)
-  const filtersActive = Boolean(dateFrom || dateTo)
+  const [prospectNameFilter, setProspectNameFilter] = React.useState("")
+  const [prospectPositionFilter, setProspectPositionFilter] = React.useState("")
+  const [prospectCompanyFilter, setProspectCompanyFilter] = React.useState("")
+  const [dealIds, setDealIds] = React.useState<Set<string>>(new Set())
+  const [salesRepIds, setSalesRepIds] = React.useState<Set<string>>(new Set())
+  const [sources, setSources] = React.useState<Set<CoachVideoSource>>(new Set())
+  const filtersActive = Boolean(
+    dateFrom ||
+      dateTo ||
+      prospectNameFilter ||
+      prospectPositionFilter ||
+      prospectCompanyFilter ||
+      dealIds.size ||
+      salesRepIds.size ||
+      sources.size
+  )
 
   const visible = React.useMemo(() => {
     const q = query.trim().toLowerCase()
-    const filtered = coachRecordings.filter((r) => {
+    const nameQ = prospectNameFilter.trim().toLowerCase()
+    const positionQ = prospectPositionFilter.trim().toLowerCase()
+    const companyQ = prospectCompanyFilter.trim().toLowerCase()
+    const filtered = liveRecordings.filter((r) => {
       const matchesQuery =
         !q ||
         r.title.toLowerCase().includes(q) ||
@@ -809,7 +1098,26 @@ export default function Coach() {
       const day = r.date.slice(0, 10)
       const matchesFrom = !dateFrom || day >= dateFrom
       const matchesTo = !dateTo || day <= dateTo
-      return matchesQuery && matchesFrom && matchesTo
+      const matchesName = !nameQ || r.prospectName.toLowerCase().includes(nameQ)
+      const matchesPosition =
+        !positionQ || (r.prospectPosition ?? "").toLowerCase().includes(positionQ)
+      const matchesCompany = !companyQ || r.company.toLowerCase().includes(companyQ)
+      const matchesDeal = dealIds.size === 0 || (r.dealId ? dealIds.has(r.dealId) : false)
+      const matchesRep =
+        salesRepIds.size === 0 || (r.salesRepId ? salesRepIds.has(r.salesRepId) : false)
+      const matchesSource =
+        sources.size === 0 || (r.videoSource ? sources.has(r.videoSource) : false)
+      return (
+        matchesQuery &&
+        matchesFrom &&
+        matchesTo &&
+        matchesName &&
+        matchesPosition &&
+        matchesCompany &&
+        matchesDeal &&
+        matchesRep &&
+        matchesSource
+      )
     })
     const sorted = [...filtered]
     sorted.sort((a, b) => {
@@ -823,7 +1131,19 @@ export default function Coach() {
       }
     })
     return sorted
-  }, [query, sort, dateFrom, dateTo])
+  }, [
+    liveRecordings,
+    query,
+    sort,
+    dateFrom,
+    dateTo,
+    prospectNameFilter,
+    prospectPositionFilter,
+    prospectCompanyFilter,
+    dealIds,
+    salesRepIds,
+    sources,
+  ])
 
   // Column-level sort/filter (from the table's header controls) layers on
   // top of the toolbar's search/sort/date-range filtering above.
@@ -839,17 +1159,42 @@ export default function Coach() {
         : `${id}:${f.query}`
     )
     .join("|")
-  const resultSig = `${query}|${sort}|${dateFrom}|${dateTo}|${tsf.sort?.columnId}|${tsf.sort?.dir}|${filterSig}`
-  const [pageSig, setPageSig] = React.useState(resultSig)
-  if (resultSig !== pageSig) {
-    setPageSig(resultSig)
-    setPage(0)
+  const resultSig = [
+    query,
+    sort,
+    dateFrom,
+    dateTo,
+    prospectNameFilter,
+    prospectPositionFilter,
+    prospectCompanyFilter,
+    Array.from(dealIds).sort().join(","),
+    Array.from(salesRepIds).sort().join(","),
+    Array.from(sources).sort().join(","),
+    tsf.sort?.columnId,
+    tsf.sort?.dir,
+    filterSig,
+  ].join("|")
+
+  // Same "select page at a time, capped select-all" behavior Companies/People
+  // use — pagination and selection share one hook so a page of checkboxes
+  // always matches the page actually on screen.
+  const sel = usePagedSelection(tsf.rows, (r) => r.id, resultSig, PAGE_SIZE)
+  const selectedRecordings = liveRecordings.filter((r) => sel.selectedIds.has(r.id))
+  const toSummarizeCount = selectedRecordings.filter((r) => !r.summarized).length
+  const toAnalyzeCount = selectedRecordings.filter((r) => !r.analyzed).length
+
+  function handleProcess(opts: { summarize: boolean; analyze: boolean }) {
+    const ids = Array.from(sel.selectedIds)
+    coachRecordingStore.process(ids, opts)
+    if (opts.summarize && opts.analyze) {
+      toast.success(c.processToastBoth(toSummarizeCount, toAnalyzeCount))
+    } else if (opts.summarize) {
+      toast.success(c.processToastSummarizeOnly(toSummarizeCount))
+    } else {
+      toast.success(c.processToastAnalyzeOnly(toAnalyzeCount))
+    }
+    sel.clear()
   }
-  const pageCount = Math.max(1, Math.ceil(tsf.rows.length / PAGE_SIZE))
-  const safePage = Math.min(page, pageCount - 1)
-  const pageStart = safePage * PAGE_SIZE
-  const pageEnd = Math.min(pageStart + PAGE_SIZE, tsf.rows.length)
-  const paged = tsf.rows.slice(pageStart, pageEnd)
 
   function exportCsv() {
     downloadCsv(
@@ -946,56 +1291,56 @@ export default function Coach() {
             </Card>
           ) : (
             <>
+              <SelectionControls
+                allSelected={sel.allSelected}
+                onTogglePage={sel.togglePage}
+                selectedCount={sel.selectedIds.size}
+                selectableCount={sel.selectableCount}
+                onSelectAllCapped={sel.selectAllCapped}
+                pageStart={sel.pageStart}
+                pageEnd={sel.pageEnd}
+                total={tsf.rows.length}
+                page={sel.page}
+                pageCount={sel.pageCount}
+                onPrevPage={() => sel.setPage(Math.max(0, sel.page - 1))}
+                onNextPage={() => sel.setPage(Math.min(sel.pageCount - 1, sel.page + 1))}
+              />
+
               {view === "table" ? (
                 // Rendered even when column filters exclude every row — the
                 // header controls have to stay reachable to clear the filter
                 // (the empty state shows inside the table body instead).
                 <RecordingTable
-                  rows={paged}
+                  rows={sel.pagedItems}
                   filterRows={visible}
                   locale={locale}
                   sort={tsf.sort}
                   onSortChange={tsf.setSort}
                   filters={tsf.filters}
                   onFilterChange={tsf.setFilter}
+                  selection={{
+                    isSelected: (r) => sel.selectedIds.has(r.id),
+                    toggle: sel.toggleRow,
+                    toggleAll: sel.togglePage,
+                    allSelected: sel.allSelected,
+                    someSelected: sel.someSelected,
+                  }}
                 />
-              ) : paged.length === 0 ? (
+              ) : sel.pagedItems.length === 0 ? (
                 <Card className="text-muted-foreground p-8 text-center text-sm">
                   {c.noResults}
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {paged.map((rec) => (
-                    <RecordingCard key={rec.id} rec={rec} />
+                  {sel.pagedItems.map((rec) => (
+                    <RecordingCard
+                      key={rec.id}
+                      rec={rec}
+                      selected={sel.selectedIds.has(rec.id)}
+                      onToggleSelect={() => sel.toggleRow(rec)}
+                    />
                   ))}
                 </div>
-              )}
-              {tsf.rows.length > 0 && (
-              <div className="mt-3 flex items-center justify-end gap-1">
-                <span className="text-muted-foreground px-1 text-xs tabular-nums">
-                  {c.pageRange(pageStart + 1, pageEnd, tsf.rows.length)}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-7"
-                  disabled={safePage === 0}
-                  onClick={() => setPage(Math.max(0, safePage - 1))}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-7"
-                  disabled={safePage >= pageCount - 1}
-                  onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
-                  aria-label="Next page"
-                >
-                  <ChevronRight className="size-4" />
-                </Button>
-              </div>
               )}
             </>
           )}
@@ -1010,57 +1355,123 @@ export default function Coach() {
         </TabsContent>
       </Tabs>
 
+      <CoachBulkActionsBar
+        count={sel.selectedIds.size}
+        toSummarizeCount={toSummarizeCount}
+        toAnalyzeCount={toAnalyzeCount}
+        onProcess={handleProcess}
+        onClear={sel.clear}
+      />
+
       <CoachFilterDialog
         open={filterOpen}
         onOpenChange={setFilterOpen}
+        prospectName={prospectNameFilter}
+        prospectPosition={prospectPositionFilter}
+        prospectCompany={prospectCompanyFilter}
         dateFrom={dateFrom}
         dateTo={dateTo}
+        dealIds={dealIds}
+        salesRepIds={salesRepIds}
+        sources={sources}
         onApply={(next) => {
+          setProspectNameFilter(next.prospectName)
+          setProspectPositionFilter(next.prospectPosition)
+          setProspectCompanyFilter(next.prospectCompany)
           setDateFrom(next.dateFrom)
           setDateTo(next.dateTo)
+          setDealIds(next.dealIds)
+          setSalesRepIds(next.salesRepIds)
+          setSources(next.sources)
         }}
       />
     </Page>
   )
 }
 
+interface CoachFilterValues {
+  prospectName: string
+  prospectPosition: string
+  prospectCompany: string
+  dateFrom: string
+  dateTo: string
+  dealIds: Set<string>
+  salesRepIds: Set<string>
+  sources: Set<CoachVideoSource>
+}
+
 function CoachFilterDialog({
   open,
   onOpenChange,
+  prospectName,
+  prospectPosition,
+  prospectCompany,
   dateFrom,
   dateTo,
+  dealIds,
+  salesRepIds,
+  sources,
   onApply,
-}: {
+}: CoachFilterValues & {
   open: boolean
   onOpenChange: (v: boolean) => void
-  dateFrom: string
-  dateTo: string
-  onApply: (next: { dateFrom: string; dateTo: string }) => void
+  onApply: (next: CoachFilterValues) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
 
+  const [name, setName] = React.useState(prospectName)
+  const [position, setPosition] = React.useState(prospectPosition)
+  const [company, setCompany] = React.useState(prospectCompany)
   const [from, setFrom] = React.useState(dateFrom)
   const [to, setTo] = React.useState(dateTo)
+  const [deals_, setDeals_] = React.useState(dealIds)
+  const [reps, setReps] = React.useState(salesRepIds)
+  const [srcs, setSrcs] = React.useState(sources)
 
   // Reset on open (house pattern — render-time check, never an effect).
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
     if (open) {
+      setName(prospectName)
+      setPosition(prospectPosition)
+      setCompany(prospectCompany)
       setFrom(dateFrom)
       setTo(dateTo)
+      setDeals_(new Set(dealIds))
+      setReps(new Set(salesRepIds))
+      setSrcs(new Set(sources))
     }
   }
 
+  const totalActive =
+    (name.trim() ? 1 : 0) +
+    (position.trim() ? 1 : 0) +
+    (company.trim() ? 1 : 0) +
+    (from ? 1 : 0) +
+    (to ? 1 : 0) +
+    deals_.size +
+    reps.size +
+    srcs.size
+
   function handleApply() {
-    onApply({ dateFrom: from, dateTo: to })
+    onApply({
+      prospectName: name,
+      prospectPosition: position,
+      prospectCompany: company,
+      dateFrom: from,
+      dateTo: to,
+      dealIds: deals_,
+      salesRepIds: reps,
+      sources: srcs,
+    })
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
@@ -1071,36 +1482,121 @@ function CoachFilterDialog({
           <DialogDescription>{c.filterDialogDescription}</DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="coach-filter-from">{c.dateFrom}</Label>
-            <Input
-              id="coach-filter-from"
-              type="date"
-              value={from}
-              max={to || undefined}
-              onChange={(e) => setFrom(e.target.value)}
-            />
+        <div className="max-h-[65vh] space-y-5 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="coach-filter-name">{c.filterProspectName}</Label>
+              <Input
+                id="coach-filter-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="coach-filter-position">{c.filterProspectPosition}</Label>
+              <Input
+                id="coach-filter-position"
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="coach-filter-company">{c.filterProspectCompany}</Label>
+              <Input
+                id="coach-filter-company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
+            </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="coach-filter-from">{c.dateFrom}</Label>
+              <Input
+                id="coach-filter-from"
+                type="date"
+                value={from}
+                max={to || undefined}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="coach-filter-to">{c.dateTo}</Label>
+              <Input
+                id="coach-filter-to"
+                type="date"
+                value={to}
+                min={from || undefined}
+                onChange={(e) => setTo(e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className="space-y-1.5">
-            <Label htmlFor="coach-filter-to">{c.dateTo}</Label>
-            <Input
-              id="coach-filter-to"
-              type="date"
-              value={to}
-              min={from || undefined}
-              onChange={(e) => setTo(e.target.value)}
-            />
+            <p className="text-muted-foreground px-1 text-xs font-medium">{c.filterDeal}</p>
+            {deals.map((d) => (
+              <label
+                key={d.id}
+                className="hover:bg-muted/60 flex items-center gap-2 rounded-md px-1.5 py-1 text-sm"
+              >
+                <Checkbox
+                  checked={deals_.has(d.id)}
+                  onCheckedChange={() => setDeals_((s) => toggled(s, d.id))}
+                />
+                <span className="truncate">{d.name}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className="space-y-1.5">
+            <p className="text-muted-foreground px-1 text-xs font-medium">
+              {c.filterSalesRep}
+            </p>
+            {team.map((m) => (
+              <label
+                key={m.id}
+                className="hover:bg-muted/60 flex items-center gap-2 rounded-md px-1.5 py-1 text-sm"
+              >
+                <Checkbox
+                  checked={reps.has(m.id)}
+                  onCheckedChange={() => setReps((s) => toggled(s, m.id))}
+                />
+                <span className="truncate">{m.name}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className="space-y-1.5">
+            <p className="text-muted-foreground px-1 text-xs font-medium">{c.filterSource}</p>
+            {COACH_VIDEO_SOURCES.map((src) => (
+              <label
+                key={src}
+                className="hover:bg-muted/60 flex items-center gap-2 rounded-md px-1.5 py-1 text-sm"
+              >
+                <Checkbox
+                  checked={srcs.has(src)}
+                  onCheckedChange={() => setSrcs((s) => toggled(s, src))}
+                />
+                <span className="truncate">{c.source[src]}</span>
+              </label>
+            ))}
           </div>
         </div>
 
         <DialogFooter className="sm:justify-between">
           <Button
             variant="ghost"
-            disabled={!from && !to}
+            disabled={totalActive === 0}
             onClick={() => {
+              setName("")
+              setPosition("")
+              setCompany("")
               setFrom("")
               setTo("")
+              setDeals_(new Set())
+              setReps(new Set())
+              setSrcs(new Set())
             }}
           >
             {c.clearAll}
@@ -1116,6 +1612,101 @@ function CoachFilterDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// The bulk "Summarize"/"Analyze" panel: matches BulkActionsBar's visual
+// shape (sticky bottom bar, "N selected", ghost Clear on the far right) but
+// its interaction is different from that component's instant-fire buttons —
+// each AI action is independently checkable, and a single "Process
+// Recordings" button runs whichever are checked. That shape doesn't fit
+// BulkActionsBar's props, so this is a page-local sibling rather than a
+// widened shared component.
+function CoachBulkActionsBar({
+  count,
+  toSummarizeCount,
+  toAnalyzeCount,
+  onProcess,
+  onClear,
+}: {
+  count: number
+  toSummarizeCount: number
+  toAnalyzeCount: number
+  onProcess: (opts: { summarize: boolean; analyze: boolean }) => void
+  onClear: () => void
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+
+  const [armSummarize, setArmSummarize] = React.useState(true)
+  const [armAnalyze, setArmAnalyze] = React.useState(true)
+  // Re-arm both actions whenever a fresh selection begins, so a leftover
+  // "off" toggle from a previous batch never silently carries over.
+  const isEmpty = count === 0
+  const [wasEmpty, setWasEmpty] = React.useState(isEmpty)
+  if (isEmpty !== wasEmpty) {
+    setWasEmpty(isEmpty)
+    if (!isEmpty) {
+      setArmSummarize(true)
+      setArmAnalyze(true)
+    }
+  }
+
+  if (count === 0) return null
+
+  const canSummarize = toSummarizeCount > 0
+  const canAnalyze = toAnalyzeCount > 0
+  const willSummarize = armSummarize && canSummarize
+  const willAnalyze = armAnalyze && canAnalyze
+
+  return (
+    <div className="bg-background sticky bottom-4 z-20 mt-3 flex flex-col gap-1.5 rounded-xl border p-2 shadow-lg">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="px-2 text-sm font-medium tabular-nums">
+          {c.selectedCount(count)}
+        </span>
+        <span className="bg-border mx-1 h-5 w-px" />
+        <button
+          type="button"
+          disabled={!canSummarize}
+          onClick={() => setArmSummarize((v) => !v)}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+            willSummarize ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted"
+          )}
+        >
+          <Checkbox checked={willSummarize} className="pointer-events-none" />
+          <Sparkles className="size-4" />
+          {c.bulkSummarize(toSummarizeCount)}
+        </button>
+        <button
+          type="button"
+          disabled={!canAnalyze}
+          onClick={() => setArmAnalyze((v) => !v)}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+            willAnalyze ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted"
+          )}
+        >
+          <Checkbox checked={willAnalyze} className="pointer-events-none" />
+          <Sparkles className="size-4" />
+          {c.bulkAnalyze(toAnalyzeCount)}
+        </button>
+        <span className="bg-border mx-1 h-5 w-px" />
+        <Button
+          variant="volt"
+          size="sm"
+          disabled={!willSummarize && !willAnalyze}
+          onClick={() => onProcess({ summarize: willSummarize, analyze: willAnalyze })}
+        >
+          {c.processRecordings}
+        </Button>
+        <Button variant="ghost" size="sm" className="ml-auto" onClick={onClear}>
+          <X className="size-4" />
+          {c.clear}
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -1347,6 +1938,7 @@ function RecordingTable({
   onSortChange,
   filters,
   onFilterChange,
+  selection,
 }: {
   rows: CoachRecording[]
   // Full pre-pagination result set — used to derive per-column filter
@@ -1357,12 +1949,19 @@ function RecordingTable({
   onSortChange: (next: SortState) => void
   filters: Record<string, ColumnFilterState>
   onFilterChange: (columnId: string, next: ColumnFilterState | undefined) => void
+  selection: {
+    isSelected: (rec: CoachRecording) => boolean
+    toggle: (rec: CoachRecording) => void
+    toggleAll: () => void
+    allSelected: boolean
+    someSelected: boolean
+  }
 }) {
   const navigate = useNavigate()
   return (
     <DataTable
       columns={RECORDING_COLUMNS}
-      visible={["contact", "date", "duration", "sentiment", "score"]}
+      visible={["contact", "date", "duration", "sentiment", "score", "aiStatus"]}
       rows={rows}
       rowKey={(rec) => rec.id}
       locale={locale}
@@ -1373,11 +1972,20 @@ function RecordingTable({
       onFilterChange={onFilterChange}
       filterRows={filterRows}
       empty={COPY[locale].noResults}
+      selection={selection}
     />
   )
 }
 
-function RecordingCard({ rec }: { rec: CoachRecording }) {
+function RecordingCard({
+  rec,
+  selected,
+  onToggleSelect,
+}: {
+  rec: CoachRecording
+  selected: boolean
+  onToggleSelect: () => void
+}) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const sentiment = SENTIMENT[rec.sentiment]
@@ -1390,6 +1998,16 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
     <Card>
       <CardHeader className="flex-row items-start justify-between">
         <div className="flex min-w-0 items-start gap-3">
+          <div
+            className="flex shrink-0 items-center pt-2.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={selected}
+              onCheckedChange={onToggleSelect}
+              aria-label="Select recording"
+            />
+          </div>
           <Button
             size="icon"
             variant="outline"
@@ -1419,6 +2037,10 @@ function RecordingCard({ rec }: { rec: CoachRecording }) {
                 <SentimentIcon className="size-3.5" />
                 {c.sentiment[rec.sentiment]}
               </span>
+            </div>
+            <div className="mt-2 flex items-center gap-1.5">
+              <AiStatusBadge label={c.badgeSummary} active={Boolean(rec.summarized)} />
+              <AiStatusBadge label={c.badgeAnalysis} active={Boolean(rec.analyzed)} />
             </div>
             {criticalNote && (
               <p className="text-muted-foreground mt-2 text-sm">

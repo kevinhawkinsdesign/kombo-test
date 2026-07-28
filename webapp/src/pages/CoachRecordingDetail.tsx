@@ -9,17 +9,11 @@ import {
   Smile,
   Meh,
   Frown,
-  TrendingUp,
-  MessageCircleQuestion,
-  Clock,
-  Timer,
   ListChecks,
   CheckCircle2,
   Circle,
-  GraduationCap,
   Users,
   Brain,
-  Star,
   ThumbsUp,
   ThumbsDown,
   Search,
@@ -33,6 +27,11 @@ import {
   Trash2,
   Plus,
   AlertTriangle,
+  Video,
+  Mic,
+  MessageCircle,
+  Phone,
+  ChevronDown,
 } from "lucide-react"
 
 import { useLocale, type Locale } from "@/lib/locale"
@@ -49,16 +48,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
 import { TabSkeleton } from "@/components/common/ContentSkeleton"
 import { useSkeletonTransition } from "@/lib/use-skeleton-transition"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
-import { CallScorecard } from "@/components/coach/CoachScorecard"
-import { CallQaPanel } from "@/components/coach/CallQaPanel"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import {
   Select,
   SelectContent,
@@ -81,11 +78,19 @@ import {
 import { coachRecordings, currentUser } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import { recordingDetails } from "@/lib/mock-depth"
+import { coachTeam, coachTeamAvg } from "@/lib/mock-coach-team"
 import { CALL_TYPES, CALL_TYPE_META } from "@/lib/call-types"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { KeyMoment, CoachRecording, CallType } from "@/lib/types"
+import type {
+  CoachRecording,
+  CallType,
+  CoachSpeaker,
+  CoachUtterance,
+  CoachScoreMetric,
+  CoachParticipant,
+} from "@/lib/types"
 
 const SENTIMENT = {
   positive: { icon: Smile, variant: "success" as const },
@@ -96,28 +101,6 @@ const SENTIMENT = {
 // No real per-item priority data exists yet — cycles a deterministic
 // high/medium/low so the Next Steps list reads as prioritized.
 const ACTION_ITEM_PRIORITIES = ["high", "medium", "low"] as const
-
-const MOMENT_STYLES: Record<
-  KeyMoment["type"],
-  { dot: string; badge: string }
-> = {
-  positive: {
-    dot: "bg-chart-1",
-    badge: "bg-chart-1/15 text-chart-1",
-  },
-  risk: {
-    dot: "bg-destructive",
-    badge: "bg-destructive/15 text-destructive",
-  },
-  action: {
-    dot: "bg-primary",
-    badge: "bg-primary/15 text-primary",
-  },
-  question: {
-    dot: "bg-chart-4",
-    badge: "bg-chart-4/15 text-chart-4",
-  },
-}
 
 const COPY = {
   en: {
@@ -139,7 +122,18 @@ const COPY = {
     analysisUpdated: "Analysis updated",
     staleAnalysis: (t: string) =>
       `This analysis was generated with the “${t}” type — re-analyze to refresh it.`,
-    analysisFocus: "Analysis focus",
+    callScoreBreakdown: "Call score breakdown",
+    callReview: "Call review",
+    yourAverage: "Your average",
+    teamAverage: "Team average",
+    whatWentWell: "What went well",
+    whatCanImprove: "What can be improved",
+    noAnalysisTitle: "No analysis yet",
+    noAnalysisDesc:
+      "Analyze this call to see its call score, a scored breakdown, and review feedback.",
+    analyzeThisCall: "Analyze this call",
+    expand: "Expand",
+    collapse: "Collapse",
     notesAdded: "Notes added to CRM",
     addNotesToCrm: "Add notes to CRM",
     pause: "Pause",
@@ -152,16 +146,13 @@ const COPY = {
     tabFollowUp: "Follow-Up",
     host: "Host",
     joined: "Joined",
-    addToSalesforce: "Add to Salesforce",
-    fieldProblem: "Problem",
-    fieldProblemHint: "The main problem the customer is facing.",
-    fieldImpact: "Impact",
-    fieldImpactHint: "The business or personal cost of the problem.",
-    fieldContext: "Context",
-    fieldContextHint: "How the customer works today.",
-    fieldPeople: "People",
-    fieldPeopleHint: "Stakeholders involved in the decision.",
-    noKeyFields: "No key fields captured for this call.",
+    noKeyFields: "No key fields were extracted for this call.",
+    noShow: "No-show",
+    addToCrm: "Add to CRM",
+    inCrm: "In CRM",
+    crmFirstName: "First name",
+    crmLastName: "Last name",
+    crmEmail: "Email",
     priorityLabel: (p: string) => `Priority: ${p}`,
     priority: {
       high: "High",
@@ -169,6 +160,8 @@ const COPY = {
       low: "Low",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Was the information above helpful?",
+    overview: "Overview",
+    overviewEmpty: "This call hasn't been summarized yet.",
     summary: "Summary",
     followUpTitle: (name: string) => `Follow up with ${name}`,
     followUpSubjectLabel: "Subject",
@@ -189,6 +182,12 @@ const COPY = {
     templateCreated: "Follow-up template created",
     templateUpdated: "Follow-up template updated",
     templateDeleted: "Follow-up template deleted",
+    followUpGreeting: (first: string) => `Hi ${first},`,
+    followUpNextStepsLabel: "Next steps:",
+    followUpRecapLabel: "Quick recap of what stood out:",
+    followUpSignoff: "Best,",
+    followUpNoContext:
+      "This call doesn't have any next steps or key details logged yet — the draft below is a general recap. Add specifics before sending.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -199,6 +198,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Original video",
+    originalAudio: "Original audio",
+    audioOnly: "Audio only",
     openOnLinkedIn: "Watch the original video on LinkedIn",
     linkedinNoEmbed:
       "LinkedIn calls can't be played here — open the original on LinkedIn.",
@@ -211,28 +212,13 @@ const COPY = {
       "This summary follows a custom prompt that can be configured per user or per company. For now the Kombo team sets it up for you — ask us to tune yours.",
     searchTranscript: "Search this transcript…",
     noTranscriptMatch: "No lines match your search.",
-    notableQuotes: "Notable quotes",
-    topicJumpHint: "Click a topic to find it in the transcript",
+    transcriptSpeakingTime: "Speaking time",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Jump to ${speaker} at ${time}`,
     transcript: "Transcript",
-    keyMoments: "Key moments",
     participants: "Participants",
     noTranscript: "No transcript available for this recording.",
-    noKeyMoments: "No key moments captured.",
-    you: "You",
-    prospect: "Prospect",
-    talkTime: "talk time",
-    callAnalysis: "Call analysis",
-    talkRatio: "Talk ratio",
-    talkRatioHintLabel: "What is talk ratio?",
-    talkRatioHint:
-      "The share of the call you (the rep) spoke versus the prospect. Lower is usually better — let them talk.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `You ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Talk ratio is high — aim for under 50%.",
-    questionsAsked: "Questions asked",
-    longestMonologue: "Longest monologue",
-    avgResponseTime: "Avg response time",
-    topicsDiscussed: "Topics discussed",
+    noParticipants: "No participants identified for this recording.",
     objections: "Objections",
     actionItems: "Next steps",
     markNotDone: "Mark as not done",
@@ -240,12 +226,7 @@ const COPY = {
     completed: (label: string) => `Completed: ${label}`,
     tasksCreated: "Tasks created",
     createTasks: "Create tasks",
-    coachingTips: "Coaching tips",
     personalityRead: "Personality read",
-    rateThisAnalysis: "Rate this analysis",
-    rateStar: (n: number) => `Rate ${n} star${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Thanks for the feedback",
-    wasHelpful: "Was this helpful?",
     helpful: "Helpful",
     notHelpful: "Not helpful",
     gladHelped: "Glad it helped",
@@ -256,12 +237,6 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negative",
     },
-    moments: {
-      positive: "Positive",
-      risk: "Risk",
-      action: "Action",
-      question: "Question",
-    } as Record<KeyMoment["type"], string>,
   },
   es: {
     recordingNotFound: "Grabación no encontrada.",
@@ -282,7 +257,18 @@ const COPY = {
     analysisUpdated: "Análisis actualizado",
     staleAnalysis: (t: string) =>
       `Este análisis se generó con el tipo «${t}» — reanaliza para actualizarlo.`,
-    analysisFocus: "Enfoque del análisis",
+    callScoreBreakdown: "Desglose de la puntuación",
+    callReview: "Revisión de la llamada",
+    yourAverage: "Tu media",
+    teamAverage: "Media del equipo",
+    whatWentWell: "Qué salió bien",
+    whatCanImprove: "Qué se puede mejorar",
+    noAnalysisTitle: "Sin análisis todavía",
+    noAnalysisDesc:
+      "Analiza esta llamada para ver su puntuación, un desglose detallado y comentarios de revisión.",
+    analyzeThisCall: "Analizar esta llamada",
+    expand: "Ampliar",
+    collapse: "Contraer",
     notesAdded: "Notas añadidas al CRM",
     addNotesToCrm: "Añadir notas al CRM",
     pause: "Pausar",
@@ -295,16 +281,13 @@ const COPY = {
     tabFollowUp: "Seguimiento",
     host: "Anfitrión",
     joined: "Unido",
-    addToSalesforce: "Añadir a Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "El principal problema que enfrenta el cliente.",
-    fieldImpact: "Impacto",
-    fieldImpactHint: "El coste empresarial o personal del problema.",
-    fieldContext: "Contexto",
-    fieldContextHint: "Cómo trabaja el cliente hoy.",
-    fieldPeople: "Personas",
-    fieldPeopleHint: "Personas implicadas en la decisión.",
-    noKeyFields: "No se capturaron campos clave para esta llamada.",
+    noKeyFields: "No se extrajeron campos clave para esta llamada.",
+    noShow: "No asistió",
+    addToCrm: "Añadir al CRM",
+    inCrm: "En CRM",
+    crmFirstName: "Nombre",
+    crmLastName: "Apellidos",
+    crmEmail: "Correo",
     priorityLabel: (p: string) => `Prioridad: ${p}`,
     priority: {
       high: "Alta",
@@ -312,6 +295,8 @@ const COPY = {
       low: "Baja",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "¿Te resultó útil la información anterior?",
+    overview: "Visión general",
+    overviewEmpty: "Esta llamada aún no se ha resumido.",
     summary: "Resumen",
     followUpTitle: (name: string) => `Seguimiento con ${name}`,
     followUpSubjectLabel: "Asunto",
@@ -332,6 +317,12 @@ const COPY = {
     templateCreated: "Plantilla de seguimiento creada",
     templateUpdated: "Plantilla de seguimiento actualizada",
     templateDeleted: "Plantilla de seguimiento eliminada",
+    followUpGreeting: (first: string) => `Hola ${first}:`,
+    followUpNextStepsLabel: "Próximos pasos:",
+    followUpRecapLabel: "Un resumen rápido de lo más destacado:",
+    followUpSignoff: "Un saludo,",
+    followUpNoContext:
+      "Esta llamada aún no tiene próximos pasos ni detalles clave registrados — el borrador de abajo es un resumen general. Añade detalles concretos antes de enviarlo.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -342,6 +333,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vídeo original",
+    originalAudio: "Audio original",
+    audioOnly: "Solo audio",
     openOnLinkedIn: "Ver el vídeo original en LinkedIn",
     linkedinNoEmbed:
       "Las llamadas de LinkedIn no se pueden reproducir aquí — abre el original en LinkedIn.",
@@ -354,28 +347,13 @@ const COPY = {
       "Este resumen sigue un prompt personalizado configurable por usuario o por empresa. Por ahora lo configura el equipo de Kombo — pídenos ajustar el tuyo.",
     searchTranscript: "Busca en la transcripción…",
     noTranscriptMatch: "Ninguna línea coincide con tu búsqueda.",
-    notableQuotes: "Frases destacadas",
-    topicJumpHint: "Toca un tema para encontrarlo en la transcripción",
+    transcriptSpeakingTime: "Tiempo de conversación",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Saltar a ${speaker} en ${time}`,
     transcript: "Transcripción",
-    keyMoments: "Momentos clave",
     participants: "Participantes",
     noTranscript: "No hay transcripción disponible para esta grabación.",
-    noKeyMoments: "No se capturaron momentos clave.",
-    you: "Tú",
-    prospect: "Prospecto",
-    talkTime: "tiempo hablando",
-    callAnalysis: "Análisis de la llamada",
-    talkRatio: "Ratio de conversación",
-    talkRatioHintLabel: "¿Qué es el ratio de conversación?",
-    talkRatioHint:
-      "La proporción de la llamada en la que hablaste tú (el representante) frente al prospecto. Cuanto más bajo, mejor: deja que hablen.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Tú ${rep}% / Prospecto ${prospect}%`,
-    talkRatioHigh: "El ratio de conversación es alto: apunta a menos del 50 %.",
-    questionsAsked: "Preguntas realizadas",
-    longestMonologue: "Monólogo más largo",
-    avgResponseTime: "Tiempo medio de respuesta",
-    topicsDiscussed: "Temas tratados",
+    noParticipants: "No se identificaron participantes para esta grabación.",
     objections: "Objeciones",
     actionItems: "Próximos pasos",
     markNotDone: "Marcar como pendiente",
@@ -383,12 +361,7 @@ const COPY = {
     completed: (label: string) => `Completada: ${label}`,
     tasksCreated: "Tareas creadas",
     createTasks: "Crear tareas",
-    coachingTips: "Consejos de coaching",
     personalityRead: "Análisis de personalidad",
-    rateThisAnalysis: "Valora este análisis",
-    rateStar: (n: number) => `Valorar con ${n} estrella${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Gracias por tu opinión",
-    wasHelpful: "¿Te resultó útil?",
     helpful: "Útil",
     notHelpful: "No útil",
     gladHelped: "Nos alegra que te ayudara",
@@ -399,12 +372,6 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Riesgo",
-      action: "Acción",
-      question: "Pregunta",
-    } as Record<KeyMoment["type"], string>,
   },
   it: {
     recordingNotFound: "Registrazione non trovata.",
@@ -425,7 +392,18 @@ const COPY = {
     analysisUpdated: "Analisi aggiornata",
     staleAnalysis: (t: string) =>
       `Questa analisi è stata generata con il tipo «${t}» — rianalizza per aggiornarla.`,
-    analysisFocus: "Focus dell'analisi",
+    callScoreBreakdown: "Dettaglio del punteggio",
+    callReview: "Revisione della chiamata",
+    yourAverage: "La tua media",
+    teamAverage: "Media del team",
+    whatWentWell: "Cosa è andato bene",
+    whatCanImprove: "Cosa si può migliorare",
+    noAnalysisTitle: "Nessuna analisi ancora",
+    noAnalysisDesc:
+      "Analizza questa chiamata per vedere il punteggio, un dettaglio per categoria e un riepilogo di revisione.",
+    analyzeThisCall: "Analizza questa chiamata",
+    expand: "Espandi",
+    collapse: "Comprimi",
     notesAdded: "Note aggiunte al CRM",
     addNotesToCrm: "Aggiungi note al CRM",
     pause: "Pausa",
@@ -438,16 +416,13 @@ const COPY = {
     tabFollowUp: "Follow-up",
     host: "Organizzatore",
     joined: "Presente",
-    addToSalesforce: "Aggiungi a Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "Il problema principale che il cliente sta affrontando.",
-    fieldImpact: "Impatto",
-    fieldImpactHint: "Il costo aziendale o personale del problema.",
-    fieldContext: "Contesto",
-    fieldContextHint: "Come lavora il cliente oggi.",
-    fieldPeople: "Persone",
-    fieldPeopleHint: "Le persone coinvolte nella decisione.",
-    noKeyFields: "Nessun campo chiave rilevato per questa chiamata.",
+    noKeyFields: "Nessun campo chiave estratto per questa chiamata.",
+    noShow: "Assente",
+    addToCrm: "Aggiungi al CRM",
+    inCrm: "Nel CRM",
+    crmFirstName: "Nome",
+    crmLastName: "Cognome",
+    crmEmail: "Email",
     priorityLabel: (p: string) => `Priorità: ${p}`,
     priority: {
       high: "Alta",
@@ -455,6 +430,8 @@ const COPY = {
       low: "Bassa",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Le informazioni qui sopra ti sono state utili?",
+    overview: "Panoramica",
+    overviewEmpty: "Questa chiamata non è stata ancora riepilogata.",
     summary: "Riepilogo",
     followUpTitle: (name: string) => `Follow-up con ${name}`,
     followUpSubjectLabel: "Oggetto",
@@ -475,6 +452,12 @@ const COPY = {
     templateCreated: "Modello di follow-up creato",
     templateUpdated: "Modello di follow-up aggiornato",
     templateDeleted: "Modello di follow-up eliminato",
+    followUpGreeting: (first: string) => `Ciao ${first},`,
+    followUpNextStepsLabel: "Prossimi passi:",
+    followUpRecapLabel: "Un rapido riepilogo di ciò che è emerso:",
+    followUpSignoff: "Un saluto,",
+    followUpNoContext:
+      "Questa chiamata non ha ancora prossimi passi o dettagli chiave registrati — la bozza qui sotto è un riepilogo generico. Aggiungi dettagli specifici prima di inviarla.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -485,6 +468,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Video originale",
+    originalAudio: "Audio originale",
+    audioOnly: "Solo audio",
     openOnLinkedIn: "Guarda il video originale su LinkedIn",
     linkedinNoEmbed:
       "Le chiamate LinkedIn non si possono riprodurre qui — apri l'originale su LinkedIn.",
@@ -497,28 +482,13 @@ const COPY = {
       "Questo riepilogo segue un prompt personalizzato configurabile per utente o per azienda. Per ora lo configura il team di Kombo — chiedici di regolare il tuo.",
     searchTranscript: "Cerca nella trascrizione…",
     noTranscriptMatch: "Nessuna riga corrisponde alla tua ricerca.",
-    notableQuotes: "Citazioni rilevanti",
-    topicJumpHint: "Clicca un argomento per trovarlo nella trascrizione",
+    transcriptSpeakingTime: "Tempo di parola",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Vai a ${speaker} a ${time}`,
     transcript: "Trascrizione",
-    keyMoments: "Momenti chiave",
     participants: "Partecipanti",
     noTranscript: "Nessuna trascrizione disponibile per questa registrazione.",
-    noKeyMoments: "Nessun momento chiave rilevato.",
-    you: "Tu",
-    prospect: "Prospect",
-    talkTime: "di tempo di parola",
-    callAnalysis: "Analisi della chiamata",
-    talkRatio: "Rapporto di conversazione",
-    talkRatioHintLabel: "Cos'è il rapporto di conversazione?",
-    talkRatioHint:
-      "La quota della chiamata in cui hai parlato tu (il venditore) rispetto al prospect. Più basso è, meglio è — lascialo parlare.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Tu ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Il rapporto di conversazione è alto — punta a meno del 50%.",
-    questionsAsked: "Domande poste",
-    longestMonologue: "Monologo più lungo",
-    avgResponseTime: "Tempo medio di risposta",
-    topicsDiscussed: "Argomenti trattati",
+    noParticipants: "Nessun partecipante identificato per questa registrazione.",
     objections: "Obiezioni",
     actionItems: "Prossimi passi",
     markNotDone: "Segna come da fare",
@@ -526,12 +496,7 @@ const COPY = {
     completed: (label: string) => `Completato: ${label}`,
     tasksCreated: "Attività create",
     createTasks: "Crea attività",
-    coachingTips: "Consigli di coaching",
     personalityRead: "Profilo di personalità",
-    rateThisAnalysis: "Valuta questa analisi",
-    rateStar: (n: number) => `Valuta con ${n} stell${n > 1 ? "e" : "a"}`,
-    thanksFeedback: "Grazie per il feedback",
-    wasHelpful: "Ti è stato utile?",
     helpful: "Utile",
     notHelpful: "Non utile",
     gladHelped: "Felici che ti sia servito",
@@ -542,12 +507,6 @@ const COPY = {
       neutral: "Neutro",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Rischio",
-      action: "Azione",
-      question: "Domanda",
-    } as Record<KeyMoment["type"], string>,
   },
   fr: {
     recordingNotFound: "Enregistrement introuvable.",
@@ -568,7 +527,18 @@ const COPY = {
     analysisUpdated: "Analyse mise à jour",
     staleAnalysis: (t: string) =>
       `Cette analyse a été générée avec le type « ${t} » — relancez l'analyse pour l'actualiser.`,
-    analysisFocus: "Axes d'analyse",
+    callScoreBreakdown: "Détail du score",
+    callReview: "Bilan de l'appel",
+    yourAverage: "Votre moyenne",
+    teamAverage: "Moyenne de l'équipe",
+    whatWentWell: "Ce qui s'est bien passé",
+    whatCanImprove: "Ce qui peut être amélioré",
+    noAnalysisTitle: "Pas encore d'analyse",
+    noAnalysisDesc:
+      "Analysez cet appel pour obtenir son score, un détail par catégorie et un bilan.",
+    analyzeThisCall: "Analyser cet appel",
+    expand: "Développer",
+    collapse: "Réduire",
     notesAdded: "Notes ajoutées au CRM",
     addNotesToCrm: "Ajouter les notes au CRM",
     pause: "Pause",
@@ -581,16 +551,13 @@ const COPY = {
     tabFollowUp: "Suivi",
     host: "Hôte",
     joined: "Présent",
-    addToSalesforce: "Ajouter à Salesforce",
-    fieldProblem: "Problème",
-    fieldProblemHint: "Le principal problème rencontré par le client.",
-    fieldImpact: "Impact",
-    fieldImpactHint: "Le coût business ou personnel du problème.",
-    fieldContext: "Contexte",
-    fieldContextHint: "Comment le client travaille aujourd'hui.",
-    fieldPeople: "Personnes",
-    fieldPeopleHint: "Les parties prenantes impliquées dans la décision.",
-    noKeyFields: "Aucun champ clé capturé pour cet appel.",
+    noKeyFields: "Aucun champ clé extrait pour cet appel.",
+    noShow: "Absent",
+    addToCrm: "Ajouter au CRM",
+    inCrm: "Dans le CRM",
+    crmFirstName: "Prénom",
+    crmLastName: "Nom",
+    crmEmail: "E-mail",
     priorityLabel: (p: string) => `Priorité : ${p}`,
     priority: {
       high: "Haute",
@@ -598,6 +565,8 @@ const COPY = {
       low: "Basse",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Les informations ci-dessus vous ont-elles été utiles ?",
+    overview: "Aperçu",
+    overviewEmpty: "Cet appel n'a pas encore été résumé.",
     summary: "Résumé",
     followUpTitle: (name: string) => `Suivi avec ${name}`,
     followUpSubjectLabel: "Objet",
@@ -618,6 +587,12 @@ const COPY = {
     templateCreated: "Modèle de suivi créé",
     templateUpdated: "Modèle de suivi mis à jour",
     templateDeleted: "Modèle de suivi supprimé",
+    followUpGreeting: (first: string) => `Bonjour ${first},`,
+    followUpNextStepsLabel: "Prochaines étapes :",
+    followUpRecapLabel: "Un rapide résumé de ce qui est ressorti :",
+    followUpSignoff: "Cordialement,",
+    followUpNoContext:
+      "Cet appel n'a pas encore d'étapes suivantes ni de détails clés enregistrés — le brouillon ci-dessous est un résumé général. Ajoutez des précisions avant de l'envoyer.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -628,6 +603,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vidéo originale",
+    originalAudio: "Audio original",
+    audioOnly: "Audio uniquement",
     openOnLinkedIn: "Voir la vidéo originale sur LinkedIn",
     linkedinNoEmbed:
       "Les appels LinkedIn ne peuvent pas être lus ici — ouvrez l'original sur LinkedIn.",
@@ -640,28 +617,13 @@ const COPY = {
       "Ce résumé suit un prompt personnalisé configurable par utilisateur ou par entreprise. Pour l'instant, l'équipe Kombo le configure pour vous — demandez-nous d'ajuster le vôtre.",
     searchTranscript: "Rechercher dans la transcription…",
     noTranscriptMatch: "Aucune ligne ne correspond à votre recherche.",
-    notableQuotes: "Citations marquantes",
-    topicJumpHint: "Cliquez sur un sujet pour le retrouver dans la transcription",
+    transcriptSpeakingTime: "Temps de parole",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Aller à ${speaker} à ${time}`,
     transcript: "Transcription",
-    keyMoments: "Moments clés",
     participants: "Participants",
     noTranscript: "Aucune transcription disponible pour cet enregistrement.",
-    noKeyMoments: "Aucun moment clé capturé.",
-    you: "Vous",
-    prospect: "Prospect",
-    talkTime: "de temps de parole",
-    callAnalysis: "Analyse de l'appel",
-    talkRatio: "Ratio de parole",
-    talkRatioHintLabel: "Qu'est-ce que le ratio de parole ?",
-    talkRatioHint:
-      "La part de l'appel pendant laquelle vous (le commercial) avez parlé par rapport au prospect. Plus c'est bas, mieux c'est — laissez-le parler.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Vous ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Le ratio de parole est élevé — visez moins de 50 %.",
-    questionsAsked: "Questions posées",
-    longestMonologue: "Monologue le plus long",
-    avgResponseTime: "Temps de réponse moyen",
-    topicsDiscussed: "Sujets abordés",
+    noParticipants: "Aucun participant identifié pour cet enregistrement.",
     objections: "Objections",
     actionItems: "Prochaines étapes",
     markNotDone: "Marquer comme à faire",
@@ -669,12 +631,7 @@ const COPY = {
     completed: (label: string) => `Terminé : ${label}`,
     tasksCreated: "Tâches créées",
     createTasks: "Créer les tâches",
-    coachingTips: "Conseils de coaching",
     personalityRead: "Profil de personnalité",
-    rateThisAnalysis: "Notez cette analyse",
-    rateStar: (n: number) => `Noter ${n} étoile${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Merci pour votre retour",
-    wasHelpful: "Cela vous a-t-il été utile ?",
     helpful: "Utile",
     notHelpful: "Pas utile",
     gladHelped: "Ravi que cela vous ait aidé",
@@ -685,12 +642,6 @@ const COPY = {
       neutral: "Neutre",
       negative: "Négatif",
     },
-    moments: {
-      positive: "Positif",
-      risk: "Risque",
-      action: "Action",
-      question: "Question",
-    } as Record<KeyMoment["type"], string>,
   },
   de: {
     recordingNotFound: "Aufzeichnung nicht gefunden.",
@@ -711,7 +662,18 @@ const COPY = {
     analysisUpdated: "Analyse aktualisiert",
     staleAnalysis: (t: string) =>
       `Diese Analyse wurde mit dem Typ „${t}“ erstellt — analysiere neu, um sie zu aktualisieren.`,
-    analysisFocus: "Analyse-Fokus",
+    callScoreBreakdown: "Score-Aufschlüsselung",
+    callReview: "Call-Review",
+    yourAverage: "Dein Durchschnitt",
+    teamAverage: "Team-Durchschnitt",
+    whatWentWell: "Was gut lief",
+    whatCanImprove: "Was verbessert werden kann",
+    noAnalysisTitle: "Noch keine Analyse",
+    noAnalysisDesc:
+      "Analysiere diesen Call, um Score, Aufschlüsselung und Review-Feedback zu sehen.",
+    analyzeThisCall: "Call analysieren",
+    expand: "Erweitern",
+    collapse: "Einklappen",
     notesAdded: "Notizen zum CRM hinzugefügt",
     addNotesToCrm: "Notizen zum CRM hinzufügen",
     pause: "Pause",
@@ -724,16 +686,13 @@ const COPY = {
     tabFollowUp: "Follow-up",
     host: "Host",
     joined: "Beigetreten",
-    addToSalesforce: "Zu Salesforce hinzufügen",
-    fieldProblem: "Problem",
-    fieldProblemHint: "Das Hauptproblem, mit dem der Kunde konfrontiert ist.",
-    fieldImpact: "Auswirkung",
-    fieldImpactHint: "Die geschäftlichen oder persönlichen Kosten des Problems.",
-    fieldContext: "Kontext",
-    fieldContextHint: "Wie der Kunde heute arbeitet.",
-    fieldPeople: "Personen",
-    fieldPeopleHint: "Die an der Entscheidung beteiligten Stakeholder.",
-    noKeyFields: "Für diesen Call wurden keine Schlüsselfelder erfasst.",
+    noKeyFields: "Für diesen Call wurden keine Schlüsselfelder extrahiert.",
+    noShow: "Nicht erschienen",
+    addToCrm: "Zum CRM hinzufügen",
+    inCrm: "Im CRM",
+    crmFirstName: "Vorname",
+    crmLastName: "Nachname",
+    crmEmail: "E-Mail",
     priorityLabel: (p: string) => `Priorität: ${p}`,
     priority: {
       high: "Hoch",
@@ -741,6 +700,8 @@ const COPY = {
       low: "Niedrig",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "Waren die Informationen oben hilfreich?",
+    overview: "Überblick",
+    overviewEmpty: "Dieser Anruf wurde noch nicht zusammengefasst.",
     summary: "Zusammenfassung",
     followUpTitle: (name: string) => `Follow-up mit ${name}`,
     followUpSubjectLabel: "Betreff",
@@ -761,6 +722,12 @@ const COPY = {
     templateCreated: "Follow-up-Vorlage erstellt",
     templateUpdated: "Follow-up-Vorlage aktualisiert",
     templateDeleted: "Follow-up-Vorlage gelöscht",
+    followUpGreeting: (first: string) => `Hallo ${first},`,
+    followUpNextStepsLabel: "Nächste Schritte:",
+    followUpRecapLabel: "Kurz zusammengefasst, was aufgefallen ist:",
+    followUpSignoff: "Viele Grüße,",
+    followUpNoContext:
+      "Für diesen Call sind noch keine nächsten Schritte oder Schlüsseldetails erfasst — der Entwurf unten ist eine allgemeine Zusammenfassung. Ergänze Details, bevor du sendest.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -771,6 +738,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Originalvideo",
+    originalAudio: "Original-Audio",
+    audioOnly: "Nur Audio",
     openOnLinkedIn: "Das Originalvideo auf LinkedIn ansehen",
     linkedinNoEmbed:
       "LinkedIn-Calls können hier nicht abgespielt werden — öffne das Original auf LinkedIn.",
@@ -783,28 +752,13 @@ const COPY = {
       "Diese Zusammenfassung folgt einem individuellen Prompt, der pro Nutzer oder pro Unternehmen konfiguriert werden kann. Aktuell richtet ihn das Kombo-Team für dich ein — sprich uns an, um deinen anzupassen.",
     searchTranscript: "Dieses Transkript durchsuchen…",
     noTranscriptMatch: "Keine Zeilen entsprechen deiner Suche.",
-    notableQuotes: "Markante Zitate",
-    topicJumpHint: "Klicke auf ein Thema, um es im Transkript zu finden",
+    transcriptSpeakingTime: "Redezeit",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Zu ${speaker} bei ${time} springen`,
     transcript: "Transkript",
-    keyMoments: "Schlüsselmomente",
     participants: "Teilnehmer",
     noTranscript: "Für diese Aufzeichnung ist kein Transkript verfügbar.",
-    noKeyMoments: "Keine Schlüsselmomente erfasst.",
-    you: "Du",
-    prospect: "Prospect",
-    talkTime: "Redezeit",
-    callAnalysis: "Call-Analyse",
-    talkRatio: "Redeanteil",
-    talkRatioHintLabel: "Was ist der Redeanteil?",
-    talkRatioHint:
-      "Der Anteil des Calls, in dem du (der Rep) gesprochen hast, im Vergleich zum Prospect. Niedriger ist meist besser — lass ihn reden.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Du ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "Der Redeanteil ist hoch — ziele auf unter 50 %.",
-    questionsAsked: "Gestellte Fragen",
-    longestMonologue: "Längster Monolog",
-    avgResponseTime: "Ø Antwortzeit",
-    topicsDiscussed: "Besprochene Themen",
+    noParticipants: "Für diese Aufzeichnung wurden keine Teilnehmer identifiziert.",
     objections: "Einwände",
     actionItems: "Nächste Schritte",
     markNotDone: "Als offen markieren",
@@ -812,12 +766,7 @@ const COPY = {
     completed: (label: string) => `Erledigt: ${label}`,
     tasksCreated: "Aufgaben erstellt",
     createTasks: "Aufgaben erstellen",
-    coachingTips: "Coaching-Tipps",
     personalityRead: "Persönlichkeitsprofil",
-    rateThisAnalysis: "Bewerte diese Analyse",
-    rateStar: (n: number) => `Mit ${n} Stern${n > 1 ? "en" : ""} bewerten`,
-    thanksFeedback: "Danke für dein Feedback",
-    wasHelpful: "War das hilfreich?",
     helpful: "Hilfreich",
     notHelpful: "Nicht hilfreich",
     gladHelped: "Schön, dass es geholfen hat",
@@ -828,12 +777,6 @@ const COPY = {
       neutral: "Neutral",
       negative: "Negativ",
     },
-    moments: {
-      positive: "Positiv",
-      risk: "Risiko",
-      action: "Aktion",
-      question: "Frage",
-    } as Record<KeyMoment["type"], string>,
   },
   pt: {
     recordingNotFound: "Gravação não encontrada.",
@@ -854,7 +797,18 @@ const COPY = {
     analysisUpdated: "Análise atualizada",
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo «${t}» — reanalise para a atualizar.`,
-    analysisFocus: "Foco da análise",
+    callScoreBreakdown: "Detalhe da pontuação",
+    callReview: "Revisão da chamada",
+    yourAverage: "A sua média",
+    teamAverage: "Média da equipa",
+    whatWentWell: "O que correu bem",
+    whatCanImprove: "O que pode ser melhorado",
+    noAnalysisTitle: "Ainda sem análise",
+    noAnalysisDesc:
+      "Analise esta chamada para ver a pontuação, um detalhe por categoria e feedback de revisão.",
+    analyzeThisCall: "Analisar esta chamada",
+    expand: "Expandir",
+    collapse: "Reduzir",
     notesAdded: "Notas adicionadas ao CRM",
     addNotesToCrm: "Adicionar notas ao CRM",
     pause: "Pausar",
@@ -867,16 +821,13 @@ const COPY = {
     tabFollowUp: "Seguimento",
     host: "Anfitrião",
     joined: "Entrou",
-    addToSalesforce: "Adicionar ao Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "O principal problema que o cliente enfrenta.",
-    fieldImpact: "Impacto",
-    fieldImpactHint: "O custo empresarial ou pessoal do problema.",
-    fieldContext: "Contexto",
-    fieldContextHint: "Como o cliente trabalha hoje.",
-    fieldPeople: "Pessoas",
-    fieldPeopleHint: "As pessoas envolvidas na decisão.",
-    noKeyFields: "Não foram capturados campos-chave para esta chamada.",
+    noKeyFields: "Não foram extraídos campos-chave para esta chamada.",
+    noShow: "Não compareceu",
+    addToCrm: "Adicionar ao CRM",
+    inCrm: "No CRM",
+    crmFirstName: "Nome",
+    crmLastName: "Apelido",
+    crmEmail: "Email",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
     priority: {
       high: "Alta",
@@ -884,6 +835,8 @@ const COPY = {
       low: "Baixa",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "A informação acima foi útil?",
+    overview: "Visão geral",
+    overviewEmpty: "Esta chamada ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Seguimento com ${name}`,
     followUpSubjectLabel: "Assunto",
@@ -904,6 +857,12 @@ const COPY = {
     templateCreated: "Modelo de seguimento criado",
     templateUpdated: "Modelo de seguimento atualizado",
     templateDeleted: "Modelo de seguimento eliminado",
+    followUpGreeting: (first: string) => `Olá ${first},`,
+    followUpNextStepsLabel: "Próximos passos:",
+    followUpRecapLabel: "Um resumo rápido do que se destacou:",
+    followUpSignoff: "Cumprimentos,",
+    followUpNoContext:
+      "Esta chamada ainda não tem próximos passos nem detalhes-chave registados — o rascunho abaixo é um resumo genérico. Acrescente detalhes antes de enviar.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -914,6 +873,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vídeo original",
+    originalAudio: "Áudio original",
+    audioOnly: "Apenas áudio",
     openOnLinkedIn: "Ver o vídeo original no LinkedIn",
     linkedinNoEmbed:
       "As chamadas do LinkedIn não podem ser reproduzidas aqui — abra o original no LinkedIn.",
@@ -926,28 +887,13 @@ const COPY = {
       "Este resumo segue um prompt personalizado configurável por utilizador ou por empresa. Por agora, é a equipa Kombo que o configura — peça-nos para ajustar o seu.",
     searchTranscript: "Pesquisar nesta transcrição…",
     noTranscriptMatch: "Nenhuma linha corresponde à sua pesquisa.",
-    notableQuotes: "Citações relevantes",
-    topicJumpHint: "Clique num tema para o encontrar na transcrição",
+    transcriptSpeakingTime: "Tempo de conversa",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Saltar para ${speaker} em ${time}`,
     transcript: "Transcrição",
-    keyMoments: "Momentos-chave",
     participants: "Participantes",
     noTranscript: "Não há transcrição disponível para esta gravação.",
-    noKeyMoments: "Não foram capturados momentos-chave.",
-    you: "Você",
-    prospect: "Prospect",
-    talkTime: "do tempo de fala",
-    callAnalysis: "Análise da chamada",
-    talkRatio: "Rácio de conversa",
-    talkRatioHintLabel: "O que é o rácio de conversa?",
-    talkRatioHint:
-      "A parte da chamada em que você (o comercial) falou face ao prospect. Quanto mais baixo, melhor — deixe-o falar.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Você ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "O rácio de conversa está alto — aponte para menos de 50%.",
-    questionsAsked: "Perguntas feitas",
-    longestMonologue: "Monólogo mais longo",
-    avgResponseTime: "Tempo médio de resposta",
-    topicsDiscussed: "Temas abordados",
+    noParticipants: "Não foram identificados participantes para esta gravação.",
     objections: "Objeções",
     actionItems: "Próximos passos",
     markNotDone: "Marcar como pendente",
@@ -955,12 +901,7 @@ const COPY = {
     completed: (label: string) => `Concluído: ${label}`,
     tasksCreated: "Tarefas criadas",
     createTasks: "Criar tarefas",
-    coachingTips: "Dicas de coaching",
     personalityRead: "Perfil de personalidade",
-    rateThisAnalysis: "Avalie esta análise",
-    rateStar: (n: number) => `Avaliar com ${n} estrela${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Obrigado pelo feedback",
-    wasHelpful: "Isto foi útil?",
     helpful: "Útil",
     notHelpful: "Não útil",
     gladHelped: "Ainda bem que ajudou",
@@ -971,12 +912,6 @@ const COPY = {
       neutral: "Neutro",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Risco",
-      action: "Ação",
-      question: "Pergunta",
-    } as Record<KeyMoment["type"], string>,
   },
   pt_BR: {
     recordingNotFound: "Gravação não encontrada.",
@@ -997,7 +932,18 @@ const COPY = {
     analysisUpdated: "Análise atualizada",
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo “${t}” — reanalise para atualizá-la.`,
-    analysisFocus: "Foco da análise",
+    callScoreBreakdown: "Detalhamento da pontuação",
+    callReview: "Revisão da ligação",
+    yourAverage: "Sua média",
+    teamAverage: "Média do time",
+    whatWentWell: "O que foi bem",
+    whatCanImprove: "O que pode melhorar",
+    noAnalysisTitle: "Ainda sem análise",
+    noAnalysisDesc:
+      "Analise esta ligação para ver a pontuação, um detalhamento por categoria e feedback de revisão.",
+    analyzeThisCall: "Analisar esta ligação",
+    expand: "Expandir",
+    collapse: "Recolher",
     notesAdded: "Notas adicionadas ao CRM",
     addNotesToCrm: "Adicionar notas ao CRM",
     pause: "Pausar",
@@ -1010,16 +956,13 @@ const COPY = {
     tabFollowUp: "Follow-up",
     host: "Anfitrião",
     joined: "Entrou",
-    addToSalesforce: "Adicionar ao Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "O principal problema que o cliente enfrenta.",
-    fieldImpact: "Impacto",
-    fieldImpactHint: "O custo de negócio ou pessoal do problema.",
-    fieldContext: "Contexto",
-    fieldContextHint: "Como o cliente trabalha hoje.",
-    fieldPeople: "Pessoas",
-    fieldPeopleHint: "As pessoas envolvidas na decisão.",
-    noKeyFields: "Nenhum campo-chave capturado para esta ligação.",
+    noKeyFields: "Nenhum campo-chave extraído para esta ligação.",
+    noShow: "Não compareceu",
+    addToCrm: "Adicionar ao CRM",
+    inCrm: "No CRM",
+    crmFirstName: "Nome",
+    crmLastName: "Sobrenome",
+    crmEmail: "E-mail",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
     priority: {
       high: "Alta",
@@ -1027,6 +970,8 @@ const COPY = {
       low: "Baixa",
     } as Record<"high" | "medium" | "low", string>,
     wasFollowUpHelpful: "As informações acima foram úteis?",
+    overview: "Visão geral",
+    overviewEmpty: "Esta ligação ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Follow-up com ${name}`,
     followUpSubjectLabel: "Assunto",
@@ -1047,6 +992,12 @@ const COPY = {
     templateCreated: "Modelo de follow-up criado",
     templateUpdated: "Modelo de follow-up atualizado",
     templateDeleted: "Modelo de follow-up excluído",
+    followUpGreeting: (first: string) => `Oi ${first},`,
+    followUpNextStepsLabel: "Próximos passos:",
+    followUpRecapLabel: "Um resumo rápido do que chamou atenção:",
+    followUpSignoff: "Atenciosamente,",
+    followUpNoContext:
+      "Esta ligação ainda não tem próximos passos nem detalhes-chave registrados — o rascunho abaixo é um resumo genérico. Adicione detalhes antes de enviar.",
     videoSourceLabel: {
       meet: "Google Meet",
       teams: "Microsoft Teams",
@@ -1057,6 +1008,8 @@ const COPY = {
       whatsapp: "WhatsApp",
     } as Record<string, string>,
     originalVideo: "Vídeo original",
+    originalAudio: "Áudio original",
+    audioOnly: "Somente áudio",
     openOnLinkedIn: "Assistir ao vídeo original no LinkedIn",
     linkedinNoEmbed:
       "Ligações do LinkedIn não podem ser reproduzidas aqui — abra o original no LinkedIn.",
@@ -1069,28 +1022,13 @@ const COPY = {
       "Este resumo segue um prompt personalizado configurável por usuário ou por empresa. Por enquanto, o time da Kombo configura para você — fale com a gente para ajustar o seu.",
     searchTranscript: "Buscar nesta transcrição…",
     noTranscriptMatch: "Nenhuma linha corresponde à sua busca.",
-    notableQuotes: "Citações relevantes",
-    topicJumpHint: "Clique em um tópico para encontrá-lo na transcrição",
+    transcriptSpeakingTime: "Tempo de fala",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Pular para ${speaker} em ${time}`,
     transcript: "Transcrição",
-    keyMoments: "Momentos-chave",
     participants: "Participantes",
     noTranscript: "Nenhuma transcrição disponível para esta gravação.",
-    noKeyMoments: "Nenhum momento-chave capturado.",
-    you: "Você",
-    prospect: "Prospect",
-    talkTime: "do tempo de fala",
-    callAnalysis: "Análise da ligação",
-    talkRatio: "Proporção de fala",
-    talkRatioHintLabel: "O que é a proporção de fala?",
-    talkRatioHint:
-      "A parte da ligação em que você (o representante) falou em comparação com o prospect. Quanto mais baixo, melhor — deixe o prospect falar.",
-    talkRatioSplit: (rep: number, prospect: number) =>
-      `Você ${rep}% / Prospect ${prospect}%`,
-    talkRatioHigh: "A proporção de fala está alta — mire em menos de 50%.",
-    questionsAsked: "Perguntas feitas",
-    longestMonologue: "Monólogo mais longo",
-    avgResponseTime: "Tempo médio de resposta",
-    topicsDiscussed: "Tópicos discutidos",
+    noParticipants: "Nenhum participante identificado para esta gravação.",
     objections: "Objeções",
     actionItems: "Próximos passos",
     markNotDone: "Marcar como pendente",
@@ -1098,12 +1036,7 @@ const COPY = {
     completed: (label: string) => `Concluído: ${label}`,
     tasksCreated: "Tarefas criadas",
     createTasks: "Criar tarefas",
-    coachingTips: "Dicas de coaching",
     personalityRead: "Perfil de personalidade",
-    rateThisAnalysis: "Avalie esta análise",
-    rateStar: (n: number) => `Avaliar com ${n} estrela${n > 1 ? "s" : ""}`,
-    thanksFeedback: "Obrigado pelo feedback",
-    wasHelpful: "Isso foi útil?",
     helpful: "Útil",
     notHelpful: "Não útil",
     gladHelped: "Que bom que ajudou",
@@ -1114,12 +1047,6 @@ const COPY = {
       neutral: "Neutro",
       negative: "Negativo",
     },
-    moments: {
-      positive: "Positivo",
-      risk: "Risco",
-      action: "Ação",
-      question: "Pergunta",
-    } as Record<KeyMoment["type"], string>,
   },
 } as const
 
@@ -1137,6 +1064,178 @@ function formatClock(totalSec: number): string {
   return `${m}:${String(s).padStart(2, "0")}`
 }
 
+// Which icon (and brand tint) represents each call source in the player
+// stage's badge. Meet/Teams/WhatsApp/Gong mirror the exact icon+tint pairing
+// already used for these platforms in ConnectionsPanel's "Call sources"
+// section, so a source reads the same way everywhere it appears. Zoom has no
+// brand mark anywhere in this app — it gets the same generic Video treatment
+// as Meet/Teams (tinted with Zoom's brand blue) rather than inventing a fake
+// logo. `linkedin` is included for type completeness even though that source
+// never reaches this map (it renders its own "watch on LinkedIn" branch).
+const VIDEO_SOURCE_ICON: Record<
+  NonNullable<CoachRecording["videoSource"]>,
+  { Icon: React.ComponentType<{ className?: string }>; className: string }
+> = {
+  meet: { Icon: Video, className: "text-[#00832d]" },
+  teams: { Icon: Video, className: "text-[#4b53bc]" },
+  zoom: { Icon: Video, className: "text-[#2d8cff]" },
+  gong: { Icon: Mic, className: "text-[#7444d6]" },
+  whatsapp: { Icon: MessageCircle, className: "text-emerald-600" },
+  phone: { Icon: Phone, className: "text-muted-foreground" },
+  linkedin: { Icon: LinkedinIcon, className: "text-[#0a66c2]" },
+}
+
+const WAVEFORM_BAR_COUNT = 56
+
+// Deterministic pseudo-random bar heights (0–1) for the audio-only stage's
+// waveform visualization — seeded by the recording id so the pattern is
+// stable across re-renders instead of reshuffling on every paint. Not real
+// audio analysis (there's no media file in this prototype), just a plausible
+// static waveform preview, same idea as a real player's scrub-bar thumbnail.
+function waveformBars(seed: string, count: number): number[] {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) {
+    h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  }
+  const bars: number[] = []
+  for (let i = 0; i < count; i++) {
+    h = (h * 1664525 + 1013904223) >>> 0
+    bars.push(0.2 + ((h >>> 8) % 1000) / 1000 * 0.8)
+  }
+  return bars
+}
+
+// --- Transcript tab helpers ---
+
+function findSpeaker(
+  speakers: CoachSpeaker[] | undefined,
+  speakerId: string
+): CoachSpeaker | undefined {
+  return speakers?.find((s) => s.speakerId === speakerId)
+}
+
+function transcriptSpeakerLabel(
+  speakers: CoachSpeaker[] | undefined,
+  speakerId: string
+): string {
+  return findSpeaker(speakers, speakerId)?.name ?? speakerId
+}
+
+// speaker-0 is the caller by convention, but prefer the modeled role once one
+// exists — a call could seat multiple reps or hand off between speakers.
+function isRepSpeaker(
+  speakers: CoachSpeaker[] | undefined,
+  speakerId: string
+): boolean {
+  const role = findSpeaker(speakers, speakerId)?.role
+  if (role) return role.toLowerCase() === "rep"
+  return speakerId === "speaker-0"
+}
+
+interface SpeakingSegment {
+  speakerId: string
+  startSec: number
+  endSec: number
+}
+
+// Utterances only carry a start time, so each turn's implied duration runs
+// until the next turn starts (or the recording ends, for the last one).
+function buildSpeakingSegments(
+  utterances: CoachUtterance[],
+  durationSec: number
+): SpeakingSegment[] {
+  const sorted = [...utterances].sort((a, b) => a.atSec - b.atSec)
+  return sorted.map((u, i) => {
+    const startSec = Math.max(0, u.atSec)
+    const next = i + 1 < sorted.length ? sorted[i + 1].atSec : durationSec
+    return { speakerId: u.speakerId, startSec, endSec: Math.max(startSec, next) }
+  })
+}
+
+// A single-row timeline: one colored segment per turn, positioned by when it
+// happened and sized by how long it ran, plus each speaker's total share.
+function TranscriptSpeakingTime({
+  utterances,
+  speakers,
+  durationSec,
+  onSeekTo,
+  c,
+}: {
+  utterances: CoachUtterance[]
+  speakers: CoachSpeaker[] | undefined
+  durationSec: number
+  onSeekTo: (sec: number) => void
+  c: Copy
+}) {
+  if (utterances.length === 0 || durationSec <= 0) return null
+
+  const segments = buildSpeakingSegments(utterances, durationSec)
+  const totalsBySpeaker = new Map<string, number>()
+  segments.forEach((seg) => {
+    totalsBySpeaker.set(
+      seg.speakerId,
+      (totalsBySpeaker.get(seg.speakerId) ?? 0) + (seg.endSec - seg.startSec)
+    )
+  })
+  const totalSpoken = [...totalsBySpeaker.values()].reduce((a, b) => a + b, 0)
+
+  return (
+    <div className="space-y-2">
+      <p className="text-muted-foreground text-xs font-medium">
+        {c.transcriptSpeakingTime}
+      </p>
+      <div className="bg-muted relative h-2.5 w-full overflow-hidden rounded-full">
+        {segments.map((seg, i) => {
+          const isRep = isRepSpeaker(speakers, seg.speakerId)
+          const label = transcriptSpeakerLabel(speakers, seg.speakerId)
+          const left = (seg.startSec / durationSec) * 100
+          const width = Math.max(
+            0.6,
+            ((seg.endSec - seg.startSec) / durationSec) * 100
+          )
+          return (
+            <button
+              key={`${seg.speakerId}-${seg.startSec}-${i}`}
+              type="button"
+              onClick={() => onSeekTo(seg.startSec)}
+              aria-label={c.transcriptSeekAria(label, formatClock(seg.startSec))}
+              title={`${label} · ${formatClock(seg.startSec)}`}
+              className={cn(
+                "absolute top-0 bottom-0 transition-opacity hover:opacity-80",
+                isRep ? "bg-muted-foreground/70" : "bg-primary"
+              )}
+              style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
+            />
+          )
+        })}
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        {[...totalsBySpeaker.entries()].map(([speakerId, spokenSec]) => {
+          const isRep = isRepSpeaker(speakers, speakerId)
+          const label = transcriptSpeakerLabel(speakers, speakerId)
+          const pct =
+            totalSpoken > 0 ? Math.round((spokenSec / totalSpoken) * 100) : 0
+          return (
+            <span key={speakerId} className="flex items-center gap-1.5 text-xs">
+              <span
+                aria-hidden
+                className={cn(
+                  "size-2 shrink-0 rounded-full",
+                  isRep ? "bg-muted-foreground/70" : "bg-primary"
+                )}
+              />
+              <span className="font-medium">{label}</span>
+              <span className="text-muted-foreground tabular-nums">
+                {formatClock(spokenSec)} · {pct}%
+              </span>
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // Fill a follow-up template's {{variables}} from the recording.
 function mergeFollowUpVars(text: string, rec: CoachRecording): string {
   const data: Record<string, string> = {
@@ -1148,32 +1247,45 @@ function mergeFollowUpVars(text: string, rec: CoachRecording): string {
   return text.replace(/\{\{(\w+)\}\}/g, (whole, tag: string) => data[tag] ?? whole)
 }
 
+// Splits a participant's full name into first/last for the "Add to CRM"
+// wizard's field-mapping preview — participants only carry a single `name`,
+// not separate first/last fields like a full Prospect record.
+function splitParticipantName(name: string): {
+  firstName: string
+  lastName: string
+} {
+  const [firstName, ...rest] = name.trim().split(/\s+/)
+  return { firstName: firstName ?? "", lastName: rest.join(" ") }
+}
+
 const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2] as const
 
 // A call-aware first draft that seeds the follow-up composer — opens with the
 // line the recording's call type prescribes (a demo thanks differently than a
-// negotiation), then the shared next-steps block.
+// negotiation), optionally bridges into the specific problem the Key Fields
+// tab captured for this call, then the shared next-steps block. `problem` is
+// the raw (English) Key Fields "problem" text — same non-localized-content
+// convention as `nextSteps` below: the call's own substance isn't translated,
+// only the surrounding template copy is.
 function buildFollowUpDraft(
   rec: CoachRecording,
   locale: Locale,
-  callType: CallType
+  callType: CallType,
+  problem?: string
 ): string {
+  const t = COPY[locale]
   const first = rec.prospectName.split(" ")[0]
   const steps = rec.nextSteps
+  const senderFirst = currentUser.name.split(" ")[0]
   const opener = CALL_TYPE_META[callType].followUpOpener[locale].replace(
     /\{\{company\}\}/g,
     rec.company
   )
-  if (locale === "es") {
-    const s = steps.length
-      ? `\n\nPróximos pasos:\n${steps.map((x) => `• ${x}`).join("\n")}`
-      : ""
-    return `Hola ${first}:\n\n${opener}${s}\n\nUn saludo,\nKevin`
-  }
-  const s = steps.length
-    ? `\n\nNext steps:\n${steps.map((x) => `• ${x}`).join("\n")}`
+  const recap = problem ? `\n\n${t.followUpRecapLabel} ${problem}` : ""
+  const nextStepsBlock = steps.length
+    ? `\n\n${t.followUpNextStepsLabel}\n${steps.map((x) => `• ${x}`).join("\n")}`
     : ""
-  return `Hi ${first},\n\n${opener}${s}\n\nBest,\nKevin`
+  return `${t.followUpGreeting(first)}\n\n${opener}${recap}${nextStepsBlock}\n\n${t.followUpSignoff}\n${senderFirst}`
 }
 
 export default function CoachRecordingDetail() {
@@ -1227,9 +1339,11 @@ export default function CoachRecordingDetail() {
     setIsPlaying((p) => !p)
   }
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
-  const [rating, setRating] = React.useState(0)
-  const [helpful, setHelpful] = React.useState<boolean | null>(null)
   const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
+  const [crmOpen, setCrmOpen] = React.useState(false)
+  const [crmParticipant, setCrmParticipant] = React.useState<CoachParticipant | null>(
+    null
+  )
 
   if (!rec) {
     return (
@@ -1242,18 +1356,31 @@ export default function CoachRecordingDetail() {
 
   const sentiment = SENTIMENT[rec.sentiment]
   const SentimentIcon = sentiment.icon
-  const repRatio = rec.talkRatio
-  const prospectRatio = 100 - rec.talkRatio
   const scorecard = getScorecard(rec.id)
-  const quotes = scorecard.sections.filter((s) => s.quote)
+  // The rep who took this call, for the Call Score hero's "your average"
+  // comparison — this page treats the rep on the call as "you" throughout
+  // (see the Participants tab), regardless of which teammate it actually was.
+  const repAvgScore = coachTeam.find((r) => r.repId === rec.salesRepId)?.avgScore
 
-  const transcriptTurns = analysis?.transcript ?? []
+  // The player stage: undefined mediaKind reads as "video" for back-compat
+  // with any recording that predates this field.
+  const isAudioOnly = rec.mediaKind === "audio"
+  const sourceKey = rec.videoSource ?? "meet"
+  const { Icon: SourceIcon, className: sourceIconClass } =
+    VIDEO_SOURCE_ICON[sourceKey]
+  const waveform = waveformBars(rec.id, WAVEFORM_BAR_COUNT)
+
+  const transcriptTurns = [...(rec.transcript ?? [])].sort(
+    (a, b) => a.atSec - b.atSec
+  )
   const tq = transcriptQuery.trim().toLowerCase()
   const filteredTranscript = tq
     ? transcriptTurns.filter(
         (t) =>
           t.text.toLowerCase().includes(tq) ||
-          t.name.toLowerCase().includes(tq)
+          transcriptSpeakerLabel(rec.speakers, t.speakerId)
+            .toLowerCase()
+            .includes(tq)
       )
     : transcriptTurns
 
@@ -1293,152 +1420,104 @@ export default function CoachRecordingDetail() {
     })
   }
 
-  // "See parts of conversations on specific topics" — jump the transcript to a
-  // topic keyword and switch to the tab where the transcript lives.
-  const jumpToTopic = (label: string) => {
-    setTranscriptQuery(label)
-    setTab("transcript")
+  // Opens the shared "Add to CRM" wizard for a single (non-host) participant,
+  // seeded with whatever contact info the call captured — just name/email,
+  // since participants here aren't full Prospect records.
+  function openCrmDialog(participant: CoachParticipant) {
+    setCrmParticipant(participant)
+    setCrmOpen(true)
   }
 
-  const participantsCard = analysis?.participants &&
-    analysis.participants.length > 0 && (
+  const { firstName: crmFirstName, lastName: crmLastName } = crmParticipant
+    ? splitParticipantName(crmParticipant.name)
+    : { firstName: "", lastName: "" }
+  const crmParticipantFields = crmParticipant
+    ? [
+        { label: c.crmFirstName, value: crmFirstName },
+        { label: c.crmLastName, value: crmLastName },
+        { label: c.crmEmail, value: crmParticipant.email ?? "—" },
+      ]
+    : []
+
+  const participantsCard =
+    rec.participants && rec.participants.length > 0 ? (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{c.participants}</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="text-muted-foreground size-4" />
+            {c.participants}
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {analysis.participants.map((p) => (
-            <div key={p.name}>
-              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Users className="text-muted-foreground size-4" />
-                  <span className="text-sm font-medium">{p.name}</span>
-                  <Badge
-                    variant={p.role === "rep" ? "default" : "secondary"}
-                    className="capitalize"
-                  >
-                    {p.role === "rep" ? c.you : c.prospect}
+        <CardContent className="space-y-3">
+          {rec.participants.map((p, i) => (
+            <div
+              key={`${p.name}-${i}`}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{p.name}</p>
+                {p.email && (
+                  <p className="text-muted-foreground truncate text-xs">
+                    {p.email}
+                  </p>
+                )}
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                {p.isOwner && (
+                  <Badge variant="outline" className="font-normal">
+                    {c.host}
                   </Badge>
-                  {p.role === "rep" && (
-                    <Badge variant="outline" className="font-normal">
-                      {c.host}
-                    </Badge>
-                  )}
+                )}
+                {p.attended === true && (
                   <Badge variant="outline" className="font-normal">
                     {c.joined}
                   </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm tabular-nums">
-                    {p.talkPct}% {c.talkTime}
-                  </span>
-                  {p.role === "prospect" && (
+                )}
+                {p.attended === false && (
+                  <Badge
+                    variant="outline"
+                    className="border-chart-4/40 font-normal text-chart-4"
+                  >
+                    {c.noShow}
+                  </Badge>
+                )}
+                {!p.isOwner &&
+                  (p.inCrm ? (
+                    <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                      <Building2 className="size-3.5" />
+                      {c.inCrm}
+                    </span>
+                  ) : (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => toast.success(c.notesAdded)}
+                      onClick={() => openCrmDialog(p)}
                     >
                       <Building2 className="size-4" />
-                      {c.addToSalesforce}
+                      {c.addToCrm}
                     </Button>
-                  )}
-                </div>
-              </div>
-              <p className="text-muted-foreground mb-1.5 text-xs">{p.title}</p>
-              <div className="bg-muted h-2 overflow-hidden rounded-full">
-                <div
-                  className={cn(
-                    "h-full rounded-full",
-                    p.role === "rep" ? "bg-primary" : "bg-chart-2"
-                  )}
-                  style={{ width: `${p.talkPct}%` }}
-                />
+                  ))}
               </div>
             </div>
           ))}
         </CardContent>
       </Card>
+    ) : (
+      <Card className="text-muted-foreground p-8 text-center text-sm">
+        {c.noParticipants}
+      </Card>
     )
 
-  const callMetricsCard = (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{c.callAnalysis}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="size-3.5" />
-              {c.talkRatio}
-              <InfoHint label={c.talkRatioHintLabel}>{c.talkRatioHint}</InfoHint>
-            </span>
-            <span className="font-medium tabular-nums">
-              {c.talkRatioSplit(repRatio, prospectRatio)}
-            </span>
-          </div>
-          <div className="bg-muted flex h-6 w-full overflow-hidden rounded-md">
-            <div
-              className="bg-primary h-full transition-all"
-              style={{ width: `${repRatio}%` }}
-            />
-            <div
-              className="bg-muted h-full transition-all"
-              style={{ width: `${prospectRatio}%` }}
-            />
-          </div>
-          {repRatio > 55 && (
-            <p className="text-muted-foreground mt-1 text-xs">
-              {c.talkRatioHigh}
-            </p>
-          )}
-        </div>
-
-        {analysis && (
-          <>
-            <Separator />
-            <div className="space-y-2.5 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <MessageCircleQuestion className="size-4" />
-                  {c.questionsAsked}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {analysis.questionsAsked}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Clock className="size-4" />
-                  {c.longestMonologue}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {analysis.longestMonologueMin} {c.min}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Timer className="size-4" />
-                  {c.avgResponseTime}
-                </span>
-                <span className="font-medium tabular-nums">
-                  {analysis.patience}s
-                </span>
-              </div>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  )
-
-  const actionItemsCard = analysis && analysis.actionItems.length > 0 && (
+  // Sourced from `rec.nextSteps` (a stable property of the recording) rather
+  // than `analysis.actionItems` (which regenerates per re-analysis) — Next
+  // Steps shouldn't disappear or reshuffle just because the call type changed.
+  const nextStepsCard = rec.nextSteps.length > 0 && (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{c.actionItems}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {analysis.actionItems.map((item, i) => {
+        {rec.nextSteps.map((item, i) => {
           const done = doneItems[i] ?? false
           const priority = ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
           return (
@@ -1612,27 +1691,68 @@ export default function CoachRecordingDetail() {
         </Card>
       ) : (
         <Card className="mb-6 gap-0 overflow-hidden p-0">
-          <div className="relative flex aspect-video max-h-80 w-full items-center justify-center bg-zinc-900">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <span className="bg-primary/25 text-primary-foreground flex size-20 items-center justify-center rounded-full text-2xl font-semibold">
-                {rec.prospectName
-                  .split(" ")
-                  .map((w) => w[0])
-                  .slice(0, 2)
-                  .join("")}
-              </span>
-              <p className="text-sm font-medium text-white">
-                {rec.prospectName}
-              </p>
-              <p className="text-xs text-white/60">{rec.company}</p>
-            </div>
+          <div
+            className={cn(
+              "relative flex aspect-video max-h-80 w-full items-center justify-center",
+              isAudioOnly ? "bg-muted" : "bg-zinc-900"
+            )}
+          >
+            {isAudioOnly ? (
+              <div className="flex w-full flex-col items-center gap-3 px-6">
+                <div className="flex h-16 w-full max-w-md items-end justify-center gap-[3px]">
+                  {waveform.map((barHeight, i) => {
+                    const played =
+                      durationSec > 0 &&
+                      (i / waveform.length) * durationSec <= positionSec
+                    return (
+                      <span
+                        key={i}
+                        className={cn(
+                          "w-1 shrink-0 rounded-full transition-colors",
+                          played ? "bg-primary" : "bg-muted-foreground/30"
+                        )}
+                        style={{ height: `${Math.round(barHeight * 100)}%` }}
+                      />
+                    )
+                  })}
+                </div>
+                <p className="text-foreground text-sm font-medium">
+                  {rec.prospectName}
+                </p>
+                <p className="text-muted-foreground text-xs">{rec.company}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <span className="bg-primary/25 text-primary-foreground flex size-20 items-center justify-center rounded-full text-2xl font-semibold">
+                  {rec.prospectName
+                    .split(" ")
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join("")}
+                </span>
+                <p className="text-sm font-medium text-white">
+                  {rec.prospectName}
+                </p>
+                <p className="text-xs text-white/60">{rec.company}</p>
+              </div>
+            )}
             <Badge
               variant="secondary"
-              className="absolute top-3 left-3 font-normal"
+              className="absolute top-3 left-3 flex items-center gap-1.5 font-normal"
             >
-              {c.originalVideo} ·{" "}
-              {c.videoSourceLabel[rec.videoSource ?? "meet"]}
+              <SourceIcon className={cn("size-3.5", sourceIconClass)} />
+              {isAudioOnly ? c.originalAudio : c.originalVideo} ·{" "}
+              {c.videoSourceLabel[sourceKey]}
             </Badge>
+            {isAudioOnly && (
+              <Badge
+                variant="outline"
+                className="bg-background/80 absolute top-3 right-3 flex items-center gap-1.5 font-normal"
+              >
+                <Mic className="size-3.5" />
+                {c.audioOnly}
+              </Badge>
+            )}
             <button
               type="button"
               onClick={togglePlay}
@@ -1743,217 +1863,104 @@ export default function CoachRecordingDetail() {
         ) : (
         <>
         <TabsContent value="analysis">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
-              {/* What this call type's analysis scores — changes with the type. */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-1.5 text-base">
-                    <Sparkles className="text-primary size-4" />
-                    {c.analysisFocus} · {CALL_TYPE_META[analyzedType].label[locale]}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-1.5">
-                  {CALL_TYPE_META[analyzedType].focus[locale].map((f) => (
-                    <Badge key={f} variant="secondary" className="font-normal">
-                      {f}
-                    </Badge>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <CallScorecard scorecard={scorecard} />
-
-              {/* Notable quotes — verbatim, tagged by section */}
-              {quotes.length > 0 && (
+          {rec.analyzed && rec.scoreBreakdown && rec.scoreBreakdown.length > 0 ? (
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="space-y-6 lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">{c.notableQuotes}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {quotes.map((s) => (
-                      <blockquote
-                        key={s.label}
-                        className="border-muted-foreground/30 border-l-2 pl-3"
-                      >
-                        <p className="text-sm italic">“{s.quote}”</p>
-                        <p className="text-muted-foreground mt-1 text-xs">
-                          {s.label}
-                        </p>
-                      </blockquote>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-
-              {analysis && analysis.keyMoments.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">{c.keyMoments}</CardTitle>
+                    <CardTitle className="text-base">{c.callScore}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ol className="space-y-3">
-                      {analysis.keyMoments.map((moment, i) => {
-                        const style = MOMENT_STYLES[moment.type]
-                        return (
-                          <li
-                            key={`${moment.time}-${i}`}
-                            className="flex items-start gap-3"
-                          >
-                            <span className="text-muted-foreground mt-0.5 w-12 shrink-0 font-mono text-xs tabular-nums">
-                              {moment.time}
-                            </span>
-                            <span
-                              className={cn(
-                                "mt-1.5 size-2 shrink-0 rounded-full",
-                                style.dot
-                              )}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm">{moment.label}</p>
-                              <span
-                                className={cn(
-                                  "mt-1 inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
-                                  style.badge
-                                )}
-                              >
-                                {c.moments[moment.type]}
-                              </span>
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ol>
+                    <div className="grid grid-cols-3 gap-4">
+                      <ScoreStat label={c.callScore} score={rec.score} />
+                      {repAvgScore !== undefined && (
+                        <ScoreStat label={c.yourAverage} score={repAvgScore} />
+                      )}
+                      <ScoreStat
+                        label={c.teamAverage}
+                        score={coachTeamAvg.score}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Ask precise questions about this call */}
-              <CallQaPanel recordingId={rec.id} />
-            </div>
-
-            <div className="space-y-6">
-              {callMetricsCard}
-
-              {/* Drill into specific topics — jumps the transcript */}
-              {analysis && analysis.topics.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">
-                      {c.topicsDiscussed}
+                      {c.callScoreBreakdown}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2.5">
-                    <p className="text-muted-foreground text-xs">
-                      {c.topicJumpHint}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {analysis.topics.map((topic) => (
-                        <button
-                          key={topic.label}
-                          type="button"
-                          onClick={() => jumpToTopic(topic.label)}
-                          className="hover:border-primary/40 hover:bg-muted/40 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors"
-                        >
-                          {topic.label}
-                          <span className="text-muted-foreground tabular-nums">
-                            {topic.pct}%
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {analysis && analysis.coachingTips.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <GraduationCap className="text-primary size-4" />
-                      {c.coachingTips}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {analysis.coachingTips.map((tip) => (
-                      <div
-                        key={tip}
-                        className="bg-primary/10 text-primary rounded px-3 py-2 text-sm font-medium"
-                      >
-                        {tip}
-                      </div>
+                  <CardContent className="space-y-3">
+                    {rec.scoreBreakdown.map((metric) => (
+                      <ScoreBreakdownRow key={metric.label} metric={metric} c={c} />
                     ))}
                   </CardContent>
                 </Card>
-              )}
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">{c.rateThisAnalysis}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => {
-                          setRating(n)
-                          toast.success(c.thanksFeedback)
-                        }}
-                        aria-label={c.rateStar(n)}
-                      >
-                        <Star
-                          className={cn(
-                            "size-6 transition-colors",
-                            n <= rating
-                              ? "fill-chart-4 text-chart-4"
-                              : "text-muted-foreground/40"
-                          )}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-sm">
-                      {c.wasHelpful}
-                    </span>
-                    <div className="flex gap-1">
-                      <Button
-                        variant={helpful === true ? "default" : "outline"}
-                        size="icon"
-                        className="size-8"
-                        aria-label={c.helpful}
-                        onClick={() => {
-                          setHelpful(true)
-                          toast.success(c.gladHelped)
-                        }}
-                      >
-                        <ThumbsUp className="size-4" />
-                      </Button>
-                      <Button
-                        variant={helpful === false ? "default" : "outline"}
-                        size="icon"
-                        className="size-8"
-                        aria-label={c.notHelpful}
-                        onClick={() => {
-                          setHelpful(false)
-                          toast.info(c.willImprove)
-                        }}
-                      >
-                        <ThumbsDown className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                {rec.review && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">{c.callReview}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ReviewCallout
+                        icon={ThumbsUp}
+                        label={c.whatWentWell}
+                        text={rec.review.positiveFeedback}
+                        tone="good"
+                      />
+                      <ReviewCallout
+                        icon={ThumbsDown}
+                        label={c.whatCanImprove}
+                        text={rec.review.thingsToImprove}
+                        tone="improve"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <EmptyState
+              icon={<Sparkles className="size-8" />}
+              title={c.noAnalysisTitle}
+              description={c.noAnalysisDesc}
+            >
+              <Button
+                variant="volt"
+                onClick={() => runReanalysis(callType)}
+                disabled={analyzing}
+              >
+                {analyzing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {c.analyzeThisCall}
+              </Button>
+            </EmptyState>
+          )}
         </TabsContent>
 
         <TabsContent value="summary">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{c.overview}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {rec.overview ? (
+                    <p className="text-sm">{rec.overview}</p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      {c.overviewEmpty}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-1.5 text-base">
@@ -1982,7 +1989,7 @@ export default function CoachRecordingDetail() {
                 </CardContent>
               </Card>
             </div>
-            <div className="space-y-6">{actionItemsCard}</div>
+            <div className="space-y-6">{nextStepsCard}</div>
           </div>
         </TabsContent>
 
@@ -2001,7 +2008,16 @@ export default function CoachRecordingDetail() {
                 />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {transcriptTurns.length > 0 && (
+                <TranscriptSpeakingTime
+                  utterances={transcriptTurns}
+                  speakers={rec.speakers}
+                  durationSec={durationSec}
+                  onSeekTo={setPositionSec}
+                  c={c}
+                />
+              )}
               {transcriptTurns.length === 0 ? (
                 <p className="text-muted-foreground py-6 text-center text-sm">
                   {c.noTranscript}
@@ -2010,23 +2026,43 @@ export default function CoachRecordingDetail() {
                 <EmptyState variant="plain" description={c.noTranscriptMatch} />
               ) : (
                 <div className="space-y-3">
-                  {filteredTranscript.map((turn) => (
-                    <div
-                      key={turn.id}
-                      className={cn(
-                        "rounded-md px-3 py-2 text-sm",
-                        turn.speaker === "rep"
-                          ? "bg-muted"
-                          : "border-primary border-l-2 pl-3"
-                      )}
-                    >
-                      <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
-                        <span className="font-medium">{turn.name}</span>
-                        <span className="tabular-nums">{turn.time}</span>
+                  {filteredTranscript.map((turn, i) => {
+                    const isRep = isRepSpeaker(rec.speakers, turn.speakerId)
+                    const label = transcriptSpeakerLabel(
+                      rec.speakers,
+                      turn.speakerId
+                    )
+                    const time = formatClock(turn.atSec)
+                    return (
+                      <div
+                        key={`${turn.speakerId}-${turn.atSec}-${i}`}
+                        className={cn(
+                          "rounded-md px-3 py-2 text-sm",
+                          isRep ? "bg-muted" : "border-primary border-l-2 pl-3"
+                        )}
+                      >
+                        <div className="mb-1 flex items-center justify-between text-xs">
+                          <span
+                            className={cn(
+                              "font-medium",
+                              isRep ? "text-foreground" : "text-primary"
+                            )}
+                          >
+                            {label}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setPositionSec(turn.atSec)}
+                            aria-label={c.transcriptSeekAria(label, time)}
+                            className="text-muted-foreground hover:text-primary tabular-nums hover:underline"
+                          >
+                            {time}
+                          </button>
+                        </div>
+                        <p>{turn.text}</p>
                       </div>
-                      <p>{turn.text}</p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>
@@ -2072,23 +2108,20 @@ export default function CoachRecordingDetail() {
         </TabsContent>
 
         <TabsContent value="keyFields">
-          {analysis?.keyFields ? (
+          {rec.keyFields && rec.keyFields.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              {(
-                [
-                  ["problem", c.fieldProblem, c.fieldProblemHint],
-                  ["impact", c.fieldImpact, c.fieldImpactHint],
-                  ["context", c.fieldContext, c.fieldContextHint],
-                  ["people", c.fieldPeople, c.fieldPeopleHint],
-                ] as const
-              ).map(([key, label, hint]) => (
-                <Card key={key}>
+              {rec.keyFields.map((field) => (
+                <Card key={field.label}>
                   <CardHeader>
-                    <CardTitle className="text-base">{label}</CardTitle>
-                    <p className="text-muted-foreground text-xs">{hint}</p>
+                    <CardTitle className="text-base">{field.label}</CardTitle>
+                    {field.description && (
+                      <p className="text-muted-foreground text-xs">
+                        {field.description}
+                      </p>
+                    )}
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm">{analysis.keyFields![key]}</p>
+                    <p className="text-sm">{field.value}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -2109,6 +2142,7 @@ export default function CoachRecordingDetail() {
             c={c}
             locale={locale}
             callType={analyzedType}
+            problem={analysis?.keyFields?.problem}
             helpful={followUpHelpful}
             setHelpful={setFollowUpHelpful}
           />
@@ -2142,7 +2176,143 @@ export default function CoachRecordingDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AddToCrmDialog
+        open={crmOpen}
+        onOpenChange={setCrmOpen}
+        kind="prospect"
+        recordId={
+          crmParticipant
+            ? `${rec.id}-${crmParticipant.email ?? crmParticipant.name}`
+            : ""
+        }
+        recordName={crmParticipant?.name ?? ""}
+        accountName={rec.company}
+        fields={crmParticipantFields}
+      />
     </Page>
+  )
+}
+
+// A single score in the Call Score hero — the call's own score, or one of
+// the comparison averages — using the same pill styling as the score badge
+// in the page header.
+function ScoreStat({ label, score }: { label: string; score: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1.5 rounded-lg border py-3 text-center">
+      <span
+        className={cn(
+          "rounded-full px-3 py-1 text-lg font-semibold tabular-nums",
+          scorePillClass(score)
+        )}
+      >
+        {score}
+      </span>
+      <span className="text-muted-foreground text-xs">{label}</span>
+    </div>
+  )
+}
+
+// One row of the Call Score Breakdown — a scored metric category with an
+// optional summary and, when present, expandable sub-metrics.
+function ScoreBreakdownRow({
+  metric,
+  c,
+}: {
+  metric: CoachScoreMetric
+  c: Copy
+}) {
+  const [open, setOpen] = React.useState(false)
+  const subMetrics = metric.subMetrics ?? []
+
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{metric.label}</p>
+          {metric.metricSummary && (
+            <p className="text-muted-foreground mt-1 text-xs">
+              {metric.metricSummary}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span
+            className={cn(
+              "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
+              scorePillClass(metric.metricScore)
+            )}
+          >
+            {metric.metricScore}
+          </span>
+          {subMetrics.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? c.collapse : c.expand}
+            >
+              <ChevronDown
+                className={cn("size-4 transition-transform", open && "rotate-180")}
+              />
+            </Button>
+          )}
+        </div>
+      </div>
+      {subMetrics.length > 0 && open && (
+        <div className="mt-3 space-y-1.5 border-t pt-3">
+          {subMetrics.map((sub) => (
+            <div
+              key={sub.label}
+              className="flex items-center justify-between text-sm"
+            >
+              <span className="text-muted-foreground">{sub.label}</span>
+              <span
+                className={cn(
+                  "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
+                  scorePillClass(sub.score)
+                )}
+              >
+                {sub.score}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// A "What went well" / "What can be improved" callout in Call Review.
+function ReviewCallout({
+  icon: Icon,
+  label,
+  text,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  text: string
+  tone: "good" | "improve"
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border p-3",
+        tone === "good"
+          ? "border-chart-1/30 bg-chart-1/5"
+          : "border-chart-4/30 bg-chart-4/5"
+      )}
+    >
+      <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+        <Icon
+          className={cn("size-4", tone === "good" ? "text-chart-1" : "text-chart-4")}
+        />
+        {label}
+      </div>
+      <p className="text-muted-foreground text-sm">{text}</p>
+    </div>
   )
 }
 
@@ -2151,6 +2321,7 @@ function FollowUpTab({
   c,
   locale,
   callType,
+  problem,
   helpful,
   setHelpful,
 }: {
@@ -2158,10 +2329,17 @@ function FollowUpTab({
   c: Copy
   locale: Locale
   callType: CallType
+  // The Key Fields tab's "problem" extraction for this call, if analyzed —
+  // the closest thing to a call-content overview available for the draft.
+  problem?: string
   helpful: boolean | null
   setHelpful: (v: boolean | null) => void
 }) {
   const templates = useFollowUpTemplates()
+  // Nothing concrete to personalize the draft with yet — next steps carry
+  // the "what to do", `problem` carries the "why it matters"; without either
+  // the draft would be nothing but the fixed call-type opener.
+  const hasContext = rec.nextSteps.length > 0 || Boolean(problem)
   // Radix unmounts inactive TabsContent, so this mounts fresh each time the
   // Follow-Up tab is selected — a plain initializer is enough, no dialog-style
   // open/close reset needed.
@@ -2169,7 +2347,7 @@ function FollowUpTab({
     c.followUpDefaultSubject(rec.company)
   )
   const [body, setBody] = React.useState(() =>
-    plainToHtml(buildFollowUpDraft(rec, locale, callType))
+    plainToHtml(buildFollowUpDraft(rec, locale, callType, problem))
   )
   const [generating, setGenerating] = React.useState(false)
   // "" = the AI draft; otherwise the id of the applied follow-up template.
@@ -2185,7 +2363,7 @@ function FollowUpTab({
     if (v === AI_DRAFT) {
       setTemplateId("")
       setSubject(c.followUpDefaultSubject(rec.company))
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType)))
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType, problem)))
       return
     }
     const tpl = templates.find((t) => t.id === v)
@@ -2228,7 +2406,7 @@ function FollowUpTab({
   function generate() {
     setGenerating(true)
     setTimeout(() => {
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType)))
+      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType, problem)))
       setGenerating(false)
     }, 600)
   }
@@ -2236,174 +2414,186 @@ function FollowUpTab({
   const hasText = stripHtml(body).trim().length > 0
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              {c.followUpTitle(rec.prospectName)}
-            </CardTitle>
-            <p className="text-muted-foreground text-sm">{rec.company}</p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>{c.templateLabel}</Label>
-              <div className="flex items-center gap-1.5">
-                <SearchCombobox
-                  value={templateId || AI_DRAFT}
-                  onChange={applyTemplateChoice}
-                  options={[
-                    { value: AI_DRAFT, label: c.aiDraftOption },
-                    ...templates.map((t) => ({ value: t.id, label: t.name })),
-                  ]}
-                  placeholder={c.templateLabel}
-                  searchPlaceholder={c.searchTemplatesPlaceholder}
-                  emptyText={c.noTemplatesFound}
-                  className="min-w-0 flex-1"
-                />
-                {templateId && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 shrink-0"
-                      onClick={updateTemplate}
-                      aria-label={c.updateTemplate}
-                      title={c.updateTemplate}
-                    >
-                      <Save className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive size-8 shrink-0"
-                      onClick={deleteTemplate}
-                      aria-label={c.deleteTemplate}
-                      title={c.deleteTemplate}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => setSaveAsOpen((v) => !v)}
-                >
-                  <Plus className="size-4" />
-                  {c.saveAsTemplate}
-                </Button>
-              </div>
-              {saveAsOpen && (
+    <>
+      {/* Not a blocker — the composer below is always usable — just a heads
+          up that the AI draft has nothing call-specific to work from yet. */}
+      {!hasContext && (
+        <Card className="border-chart-4/40 bg-chart-4/5 mb-6">
+          <CardContent className="flex items-center gap-3">
+            <AlertTriangle className="text-chart-4 size-4 shrink-0" />
+            <p className="min-w-0 flex-1 text-sm">{c.followUpNoContext}</p>
+          </CardContent>
+        </Card>
+      )}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">
+                {c.followUpTitle(rec.prospectName)}
+              </CardTitle>
+              <p className="text-muted-foreground text-sm">{rec.company}</p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label>{c.templateLabel}</Label>
                 <div className="flex items-center gap-1.5">
-                  <Input
-                    autoFocus
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    placeholder={c.templateNamePlaceholder}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        saveAsTemplate()
-                      }
-                    }}
-                    className="h-8 flex-1"
+                  <SearchCombobox
+                    value={templateId || AI_DRAFT}
+                    onChange={applyTemplateChoice}
+                    options={[
+                      { value: AI_DRAFT, label: c.aiDraftOption },
+                      ...templates.map((t) => ({ value: t.id, label: t.name })),
+                    ]}
+                    placeholder={c.templateLabel}
+                    searchPlaceholder={c.searchTemplatesPlaceholder}
+                    emptyText={c.noTemplatesFound}
+                    className="min-w-0 flex-1"
                   />
+                  {templateId && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 shrink-0"
+                        onClick={updateTemplate}
+                        aria-label={c.updateTemplate}
+                        title={c.updateTemplate}
+                      >
+                        <Save className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                        onClick={deleteTemplate}
+                        aria-label={c.deleteTemplate}
+                        title={c.deleteTemplate}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </>
+                  )}
                   <Button
-                    variant="volt"
+                    variant="ghost"
                     size="sm"
-                    onClick={saveAsTemplate}
-                    disabled={saveName.trim().length === 0}
+                    className="shrink-0"
+                    onClick={() => setSaveAsOpen((v) => !v)}
                   >
-                    {c.saveTemplateBtn}
+                    <Plus className="size-4" />
+                    {c.saveAsTemplate}
                   </Button>
                 </div>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label>{c.followUpSubjectLabel}</Label>
-              <Input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label>{c.followUpBodyLabel}</Label>
+                {saveAsOpen && (
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      autoFocus
+                      value={saveName}
+                      onChange={(e) => setSaveName(e.target.value)}
+                      placeholder={c.templateNamePlaceholder}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          saveAsTemplate()
+                        }
+                      }}
+                      className="h-8 flex-1"
+                    />
+                    <Button
+                      variant="volt"
+                      size="sm"
+                      onClick={saveAsTemplate}
+                      disabled={saveName.trim().length === 0}
+                    >
+                      {c.saveTemplateBtn}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>{c.followUpSubjectLabel}</Label>
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label>{c.followUpBodyLabel}</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={generate}
+                    disabled={generating}
+                  >
+                    {generating ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="size-4" />
+                    )}
+                    {c.aiDraft}
+                  </Button>
+                </div>
+                <RichTextEditor
+                  value={body}
+                  onChange={setBody}
+                  minHeight="min-h-44"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <Button
+                variant="volt"
+                className="w-full"
+                disabled={!hasText}
+                onClick={() => toast.success(c.followUpSent)}
+              >
+                <Send className="size-4" />
+                {c.sendFollowUp}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.wasFollowUpHelpful}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-1">
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={generate}
-                  disabled={generating}
+                  variant={helpful === true ? "default" : "outline"}
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.helpful}
+                  onClick={() => {
+                    setHelpful(true)
+                    toast.success(c.gladHelped)
+                  }}
                 >
-                  {generating ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="size-4" />
-                  )}
-                  {c.aiDraft}
+                  <ThumbsUp className="size-4" />
+                </Button>
+                <Button
+                  variant={helpful === false ? "default" : "outline"}
+                  size="icon"
+                  className="size-8"
+                  aria-label={c.notHelpful}
+                  onClick={() => {
+                    setHelpful(false)
+                    toast.info(c.willImprove)
+                  }}
+                >
+                  <ThumbsDown className="size-4" />
                 </Button>
               </div>
-              <RichTextEditor
-                value={body}
-                onChange={setBody}
-                minHeight="min-h-44"
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="pt-6">
-            <Button
-              variant="volt"
-              className="w-full"
-              disabled={!hasText}
-              onClick={() => toast.success(c.followUpSent)}
-            >
-              <Send className="size-4" />
-              {c.sendFollowUp}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{c.wasFollowUpHelpful}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-1">
-              <Button
-                variant={helpful === true ? "default" : "outline"}
-                size="icon"
-                className="size-8"
-                aria-label={c.helpful}
-                onClick={() => {
-                  setHelpful(true)
-                  toast.success(c.gladHelped)
-                }}
-              >
-                <ThumbsUp className="size-4" />
-              </Button>
-              <Button
-                variant={helpful === false ? "default" : "outline"}
-                size="icon"
-                className="size-8"
-                aria-label={c.notHelpful}
-                onClick={() => {
-                  setHelpful(false)
-                  toast.info(c.willImprove)
-                }}
-              >
-                <ThumbsDown className="size-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </>
   )
 }
