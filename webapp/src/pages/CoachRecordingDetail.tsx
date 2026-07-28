@@ -89,7 +89,13 @@ import { CALL_TYPES, CALL_TYPE_META } from "@/lib/call-types"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { KeyMoment, CoachRecording, CallType } from "@/lib/types"
+import type {
+  KeyMoment,
+  CoachRecording,
+  CallType,
+  CoachSpeaker,
+  CoachUtterance,
+} from "@/lib/types"
 
 const SENTIMENT = {
   positive: { icon: Smile, variant: "success" as const },
@@ -209,6 +215,9 @@ const COPY = {
       "This summary follows a custom prompt that can be configured per user or per company. For now the Kombo team sets it up for you — ask us to tune yours.",
     searchTranscript: "Search this transcript…",
     noTranscriptMatch: "No lines match your search.",
+    transcriptSpeakingTime: "Speaking time",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Jump to ${speaker} at ${time}`,
     notableQuotes: "Notable quotes",
     topicJumpHint: "Click a topic to find it in the transcript",
     transcript: "Transcript",
@@ -346,6 +355,9 @@ const COPY = {
       "Este resumen sigue un prompt personalizado configurable por usuario o por empresa. Por ahora lo configura el equipo de Kombo — pídenos ajustar el tuyo.",
     searchTranscript: "Busca en la transcripción…",
     noTranscriptMatch: "Ninguna línea coincide con tu búsqueda.",
+    transcriptSpeakingTime: "Tiempo de conversación",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Saltar a ${speaker} en ${time}`,
     notableQuotes: "Frases destacadas",
     topicJumpHint: "Toca un tema para encontrarlo en la transcripción",
     transcript: "Transcripción",
@@ -483,6 +495,9 @@ const COPY = {
       "Questo riepilogo segue un prompt personalizzato configurabile per utente o per azienda. Per ora lo configura il team di Kombo — chiedici di regolare il tuo.",
     searchTranscript: "Cerca nella trascrizione…",
     noTranscriptMatch: "Nessuna riga corrisponde alla tua ricerca.",
+    transcriptSpeakingTime: "Tempo di parola",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Vai a ${speaker} a ${time}`,
     notableQuotes: "Citazioni rilevanti",
     topicJumpHint: "Clicca un argomento per trovarlo nella trascrizione",
     transcript: "Trascrizione",
@@ -620,6 +635,9 @@ const COPY = {
       "Ce résumé suit un prompt personnalisé configurable par utilisateur ou par entreprise. Pour l'instant, l'équipe Kombo le configure pour vous — demandez-nous d'ajuster le vôtre.",
     searchTranscript: "Rechercher dans la transcription…",
     noTranscriptMatch: "Aucune ligne ne correspond à votre recherche.",
+    transcriptSpeakingTime: "Temps de parole",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Aller à ${speaker} à ${time}`,
     notableQuotes: "Citations marquantes",
     topicJumpHint: "Cliquez sur un sujet pour le retrouver dans la transcription",
     transcript: "Transcription",
@@ -757,6 +775,9 @@ const COPY = {
       "Diese Zusammenfassung folgt einem individuellen Prompt, der pro Nutzer oder pro Unternehmen konfiguriert werden kann. Aktuell richtet ihn das Kombo-Team für dich ein — sprich uns an, um deinen anzupassen.",
     searchTranscript: "Dieses Transkript durchsuchen…",
     noTranscriptMatch: "Keine Zeilen entsprechen deiner Suche.",
+    transcriptSpeakingTime: "Redezeit",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Zu ${speaker} bei ${time} springen`,
     notableQuotes: "Markante Zitate",
     topicJumpHint: "Klicke auf ein Thema, um es im Transkript zu finden",
     transcript: "Transkript",
@@ -894,6 +915,9 @@ const COPY = {
       "Este resumo segue um prompt personalizado configurável por utilizador ou por empresa. Por agora, é a equipa Kombo que o configura — peça-nos para ajustar o seu.",
     searchTranscript: "Pesquisar nesta transcrição…",
     noTranscriptMatch: "Nenhuma linha corresponde à sua pesquisa.",
+    transcriptSpeakingTime: "Tempo de conversa",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Saltar para ${speaker} em ${time}`,
     notableQuotes: "Citações relevantes",
     topicJumpHint: "Clique num tema para o encontrar na transcrição",
     transcript: "Transcrição",
@@ -1031,6 +1055,9 @@ const COPY = {
       "Este resumo segue um prompt personalizado configurável por usuário ou por empresa. Por enquanto, o time da Kombo configura para você — fale com a gente para ajustar o seu.",
     searchTranscript: "Buscar nesta transcrição…",
     noTranscriptMatch: "Nenhuma linha corresponde à sua busca.",
+    transcriptSpeakingTime: "Tempo de fala",
+    transcriptSeekAria: (speaker: string, time: string) =>
+      `Pular para ${speaker} em ${time}`,
     notableQuotes: "Citações relevantes",
     topicJumpHint: "Clique em um tópico para encontrá-lo na transcrição",
     transcript: "Transcrição",
@@ -1138,6 +1165,137 @@ function waveformBars(seed: string, count: number): number[] {
     bars.push(0.2 + ((h >>> 8) % 1000) / 1000 * 0.8)
   }
   return bars
+}
+
+// --- Transcript tab helpers ---
+
+function findSpeaker(
+  speakers: CoachSpeaker[] | undefined,
+  speakerId: string
+): CoachSpeaker | undefined {
+  return speakers?.find((s) => s.speakerId === speakerId)
+}
+
+function transcriptSpeakerLabel(
+  speakers: CoachSpeaker[] | undefined,
+  speakerId: string
+): string {
+  return findSpeaker(speakers, speakerId)?.name ?? speakerId
+}
+
+// speaker-0 is the caller by convention, but prefer the modeled role once one
+// exists — a call could seat multiple reps or hand off between speakers.
+function isRepSpeaker(
+  speakers: CoachSpeaker[] | undefined,
+  speakerId: string
+): boolean {
+  const role = findSpeaker(speakers, speakerId)?.role
+  if (role) return role.toLowerCase() === "rep"
+  return speakerId === "speaker-0"
+}
+
+interface SpeakingSegment {
+  speakerId: string
+  startSec: number
+  endSec: number
+}
+
+// Utterances only carry a start time, so each turn's implied duration runs
+// until the next turn starts (or the recording ends, for the last one).
+function buildSpeakingSegments(
+  utterances: CoachUtterance[],
+  durationSec: number
+): SpeakingSegment[] {
+  const sorted = [...utterances].sort((a, b) => a.atSec - b.atSec)
+  return sorted.map((u, i) => {
+    const startSec = Math.max(0, u.atSec)
+    const next = i + 1 < sorted.length ? sorted[i + 1].atSec : durationSec
+    return { speakerId: u.speakerId, startSec, endSec: Math.max(startSec, next) }
+  })
+}
+
+// A single-row timeline: one colored segment per turn, positioned by when it
+// happened and sized by how long it ran, plus each speaker's total share.
+function TranscriptSpeakingTime({
+  utterances,
+  speakers,
+  durationSec,
+  onSeekTo,
+  c,
+}: {
+  utterances: CoachUtterance[]
+  speakers: CoachSpeaker[] | undefined
+  durationSec: number
+  onSeekTo: (sec: number) => void
+  c: Copy
+}) {
+  if (utterances.length === 0 || durationSec <= 0) return null
+
+  const segments = buildSpeakingSegments(utterances, durationSec)
+  const totalsBySpeaker = new Map<string, number>()
+  segments.forEach((seg) => {
+    totalsBySpeaker.set(
+      seg.speakerId,
+      (totalsBySpeaker.get(seg.speakerId) ?? 0) + (seg.endSec - seg.startSec)
+    )
+  })
+  const totalSpoken = [...totalsBySpeaker.values()].reduce((a, b) => a + b, 0)
+
+  return (
+    <div className="space-y-2">
+      <p className="text-muted-foreground text-xs font-medium">
+        {c.transcriptSpeakingTime}
+      </p>
+      <div className="bg-muted relative h-2.5 w-full overflow-hidden rounded-full">
+        {segments.map((seg, i) => {
+          const isRep = isRepSpeaker(speakers, seg.speakerId)
+          const label = transcriptSpeakerLabel(speakers, seg.speakerId)
+          const left = (seg.startSec / durationSec) * 100
+          const width = Math.max(
+            0.6,
+            ((seg.endSec - seg.startSec) / durationSec) * 100
+          )
+          return (
+            <button
+              key={`${seg.speakerId}-${seg.startSec}-${i}`}
+              type="button"
+              onClick={() => onSeekTo(seg.startSec)}
+              aria-label={c.transcriptSeekAria(label, formatClock(seg.startSec))}
+              title={`${label} · ${formatClock(seg.startSec)}`}
+              className={cn(
+                "absolute top-0 bottom-0 transition-opacity hover:opacity-80",
+                isRep ? "bg-muted-foreground/70" : "bg-primary"
+              )}
+              style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
+            />
+          )
+        })}
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        {[...totalsBySpeaker.entries()].map(([speakerId, spokenSec]) => {
+          const isRep = isRepSpeaker(speakers, speakerId)
+          const label = transcriptSpeakerLabel(speakers, speakerId)
+          const pct =
+            totalSpoken > 0 ? Math.round((spokenSec / totalSpoken) * 100) : 0
+          return (
+            <span key={speakerId} className="flex items-center gap-1.5 text-xs">
+              <span
+                aria-hidden
+                className={cn(
+                  "size-2 shrink-0 rounded-full",
+                  isRep ? "bg-muted-foreground/70" : "bg-primary"
+                )}
+              />
+              <span className="font-medium">{label}</span>
+              <span className="text-muted-foreground tabular-nums">
+                {formatClock(spokenSec)} · {pct}%
+              </span>
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 // Fill a follow-up template's {{variables}} from the recording.
@@ -1258,13 +1416,17 @@ export default function CoachRecordingDetail() {
     VIDEO_SOURCE_ICON[sourceKey]
   const waveform = waveformBars(rec.id, WAVEFORM_BAR_COUNT)
 
-  const transcriptTurns = analysis?.transcript ?? []
+  const transcriptTurns = [...(rec.transcript ?? [])].sort(
+    (a, b) => a.atSec - b.atSec
+  )
   const tq = transcriptQuery.trim().toLowerCase()
   const filteredTranscript = tq
     ? transcriptTurns.filter(
         (t) =>
           t.text.toLowerCase().includes(tq) ||
-          t.name.toLowerCase().includes(tq)
+          transcriptSpeakerLabel(rec.speakers, t.speakerId)
+            .toLowerCase()
+            .includes(tq)
       )
     : transcriptTurns
 
@@ -2053,7 +2215,16 @@ export default function CoachRecordingDetail() {
                 />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {transcriptTurns.length > 0 && (
+                <TranscriptSpeakingTime
+                  utterances={transcriptTurns}
+                  speakers={rec.speakers}
+                  durationSec={durationSec}
+                  onSeekTo={setPositionSec}
+                  c={c}
+                />
+              )}
               {transcriptTurns.length === 0 ? (
                 <p className="text-muted-foreground py-6 text-center text-sm">
                   {c.noTranscript}
@@ -2062,23 +2233,43 @@ export default function CoachRecordingDetail() {
                 <EmptyState variant="plain" description={c.noTranscriptMatch} />
               ) : (
                 <div className="space-y-3">
-                  {filteredTranscript.map((turn) => (
-                    <div
-                      key={turn.id}
-                      className={cn(
-                        "rounded-md px-3 py-2 text-sm",
-                        turn.speaker === "rep"
-                          ? "bg-muted"
-                          : "border-primary border-l-2 pl-3"
-                      )}
-                    >
-                      <div className="text-muted-foreground mb-1 flex items-center justify-between text-xs">
-                        <span className="font-medium">{turn.name}</span>
-                        <span className="tabular-nums">{turn.time}</span>
+                  {filteredTranscript.map((turn, i) => {
+                    const isRep = isRepSpeaker(rec.speakers, turn.speakerId)
+                    const label = transcriptSpeakerLabel(
+                      rec.speakers,
+                      turn.speakerId
+                    )
+                    const time = formatClock(turn.atSec)
+                    return (
+                      <div
+                        key={`${turn.speakerId}-${turn.atSec}-${i}`}
+                        className={cn(
+                          "rounded-md px-3 py-2 text-sm",
+                          isRep ? "bg-muted" : "border-primary border-l-2 pl-3"
+                        )}
+                      >
+                        <div className="mb-1 flex items-center justify-between text-xs">
+                          <span
+                            className={cn(
+                              "font-medium",
+                              isRep ? "text-foreground" : "text-primary"
+                            )}
+                          >
+                            {label}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setPositionSec(turn.atSec)}
+                            aria-label={c.transcriptSeekAria(label, time)}
+                            className="text-muted-foreground hover:text-primary tabular-nums hover:underline"
+                          >
+                            {time}
+                          </button>
+                        </div>
+                        <p>{turn.text}</p>
                       </div>
-                      <p>{turn.text}</p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>
