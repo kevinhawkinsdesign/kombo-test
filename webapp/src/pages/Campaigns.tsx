@@ -96,6 +96,7 @@ const COPY = {
     startsAt: (d: string) => `Starts ${d}`,
     newCampaign: "New campaign",
     campaignDuplicated: "Campaign duplicated",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "campaign" : "campaigns"} duplicated`,
     campaignDeleted: "Campaign deleted",
     pageTitle: "Campaigns",
     pageDescription: "Multi-channel sequences across email and LinkedIn.",
@@ -172,6 +173,7 @@ const COPY = {
     startsAt: (d: string) => `Empieza el ${d}`,
     newCampaign: "Nueva campaña",
     campaignDuplicated: "Campaña duplicada",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "campaña duplicada" : "campañas duplicadas"}`,
     campaignDeleted: "Campaña eliminada",
     pageTitle: "Campañas",
     pageDescription: "Secuencias multicanal por correo y LinkedIn.",
@@ -250,6 +252,7 @@ const COPY = {
     startsAt: (d: string) => `Inizia il ${d}`,
     newCampaign: "Nuova campagna",
     campaignDuplicated: "Campagna duplicata",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "campagna duplicata" : "campagne duplicate"}`,
     campaignDeleted: "Campagna eliminata",
     pageTitle: "Campagne",
     pageDescription: "Sequenze multicanale via email e LinkedIn.",
@@ -328,6 +331,7 @@ const COPY = {
     startsAt: (d: string) => `Démarre le ${d}`,
     newCampaign: "Nouvelle campagne",
     campaignDuplicated: "Campagne dupliquée",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "campagne dupliquée" : "campagnes dupliquées"}`,
     campaignDeleted: "Campagne supprimée",
     pageTitle: "Campagnes",
     pageDescription: "Séquences multicanales par e-mail et LinkedIn.",
@@ -406,6 +410,7 @@ const COPY = {
     startsAt: (d: string) => `Startet am ${d}`,
     newCampaign: "Neue Kampagne",
     campaignDuplicated: "Kampagne dupliziert",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "Kampagne" : "Kampagnen"} dupliziert`,
     campaignDeleted: "Kampagne gelöscht",
     pageTitle: "Kampagnen",
     pageDescription: "Multi-Channel-Sequenzen über E-Mail und LinkedIn.",
@@ -484,6 +489,7 @@ const COPY = {
     startsAt: (d: string) => `Começa a ${d}`,
     newCampaign: "Nova campanha",
     campaignDuplicated: "Campanha duplicada",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "campanha duplicada" : "campanhas duplicadas"}`,
     campaignDeleted: "Campanha eliminada",
     pageTitle: "Campanhas",
     pageDescription: "Sequências multicanal por e-mail e LinkedIn.",
@@ -562,6 +568,7 @@ const COPY = {
     startsAt: (d: string) => `Começa em ${d}`,
     newCampaign: "Nova campanha",
     campaignDuplicated: "Campanha duplicada",
+    campaignsDuplicated: (n: number) => `${n} ${n === 1 ? "campanha duplicada" : "campanhas duplicadas"}`,
     campaignDeleted: "Campanha excluída",
     pageTitle: "Campanhas",
     pageDescription: "Sequências multicanal por e-mail e LinkedIn.",
@@ -1168,6 +1175,21 @@ export default function Campaigns() {
     toast.success(c.campaignDuplicated)
   }
 
+  // Bulk counterpart to the row menu's "Duplicate" — creates an independent
+  // copy of each selected campaign.
+  function duplicateSelected() {
+    const copySuffix = COPY_SUFFIX[locale]
+    const selected = visible.filter((cm) => selectedIds.has(cm.id))
+    selected.forEach((cm) => {
+      campaignStore.create({
+        ...cm,
+        name: `${cm.name} ${copySuffix}`,
+      })
+    })
+    toast.success(c.campaignsDuplicated(selected.length))
+    setSelectedIds(new Set())
+  }
+
   function handleDelete() {
     if (!pendingDelete) return
     campaignStore.remove(pendingDelete.id)
@@ -1302,6 +1324,7 @@ export default function Campaigns() {
             count={selectedIds.size}
             onClear={() => setSelectedIds(new Set())}
             onExport={exportSelectedCsv}
+            onDuplicate={duplicateSelected}
             extra={{
               label: c.archive,
               icon: <Trash2 className="size-4" />,

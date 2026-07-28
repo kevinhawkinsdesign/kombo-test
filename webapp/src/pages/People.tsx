@@ -28,6 +28,7 @@ import { TableViews } from "@/components/common/TableViews"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkAddToCrmDialog } from "@/components/common/BulkAddToCrmDialog"
 import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
 import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { EnrichListDialog } from "@/components/lists/EnrichListDialog"
@@ -363,6 +364,7 @@ export default function People() {
   const [addOpen, setAddOpen] = React.useState(false)
   const [bulkList, setBulkList] = React.useState(false)
   const [bulkEnrich, setBulkEnrich] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
   const [exportOpen, setExportOpen] = React.useState(false)
   const [aiColOpen, setAiColOpen] = React.useState(false)
   const [perCompanyCap, setPerCompanyCap] = React.useState<number | null>(null)
@@ -455,6 +457,19 @@ export default function People() {
       ])
     )
     toast.success(c.exportedToast(selectedProspects.length, opts.format === "excel" ? "Excel" : "CSV"))
+  }
+  // Mirrors the row menu's "Add to CRM" — this app only ever has one
+  // connected CRM, so there's nothing to pick, just an owner to confirm.
+  // Same never-overwrite rule as the row-level wizard: only fills in an
+  // owner where one isn't already set.
+  function confirmBulkCrm(ownerId: string | undefined) {
+    if (ownerId) {
+      selectedProspects.forEach((p) => {
+        if (!p.ownerId) prospectStore.update(p.id, { ownerId })
+      })
+    }
+    toast.success(c.crmSyncedToast(selectedProspects.length, CONNECTED_CRM_PROVIDER.name))
+    sel.clear()
   }
   // Lookalike is a kind of search — hand the seed to the Search page.
   function findLookalikes() {
@@ -669,6 +684,7 @@ export default function People() {
         onEnrich={() => setBulkEnrich(true)}
         onAddToList={() => setBulkList(true)}
         onLookalikes={findLookalikes}
+        onAddToCrm={() => setBulkCrmOpen(true)}
       />
 
       <BulkAddDialog
@@ -682,6 +698,12 @@ export default function People() {
         open={bulkEnrich}
         onOpenChange={setBulkEnrich}
         prospects={selectedProspects}
+      />
+      <BulkAddToCrmDialog
+        open={bulkCrmOpen}
+        onOpenChange={setBulkCrmOpen}
+        count={selectedIds.size}
+        onConfirm={confirmBulkCrm}
       />
       <ExportDialog
         open={exportOpen}

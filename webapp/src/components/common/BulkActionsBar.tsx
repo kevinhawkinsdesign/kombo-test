@@ -6,6 +6,9 @@ import {
   FolderInput,
   ScanSearch,
   UserSearch,
+  Building2,
+  Ban,
+  Copy,
   X,
 } from "lucide-react"
 
@@ -22,6 +25,9 @@ const COPY = {
     moveToList: "Move to list",
     lookalikes: "Find lookalikes",
     findContacts: "Find prospects",
+    duplicate: "Duplicate",
+    addToCrm: "Add to CRM",
+    addToBlacklist: "Add to blacklist",
     clear: "Clear",
     capLabel: "Max / company",
     capNoLimit: "No limit",
@@ -34,6 +40,9 @@ const COPY = {
     moveToList: "Mover a lista",
     lookalikes: "Buscar similares",
     findContacts: "Buscar prospectos",
+    duplicate: "Duplicar",
+    addToCrm: "Añadir al CRM",
+    addToBlacklist: "Añadir a lista negra",
     clear: "Limpiar",
     capLabel: "Máx / empresa",
     capNoLimit: "Sin límite",
@@ -46,6 +55,9 @@ const COPY = {
     moveToList: "Sposta in lista",
     lookalikes: "Trova simili",
     findContacts: "Trova prospect",
+    duplicate: "Duplica",
+    addToCrm: "Aggiungi al CRM",
+    addToBlacklist: "Aggiungi alla blacklist",
     clear: "Cancella",
     capLabel: "Max / azienda",
     capNoLimit: "Nessun limite",
@@ -58,6 +70,9 @@ const COPY = {
     moveToList: "Déplacer vers une liste",
     lookalikes: "Trouver des similaires",
     findContacts: "Trouver des prospects",
+    duplicate: "Dupliquer",
+    addToCrm: "Ajouter au CRM",
+    addToBlacklist: "Ajouter à la liste noire",
     clear: "Effacer",
     capLabel: "Max / entreprise",
     capNoLimit: "Aucune limite",
@@ -70,6 +85,9 @@ const COPY = {
     moveToList: "In Liste verschieben",
     lookalikes: "Ähnliche finden",
     findContacts: "Prospects finden",
+    duplicate: "Duplizieren",
+    addToCrm: "Zum CRM hinzufügen",
+    addToBlacklist: "Zur Blacklist hinzufügen",
     clear: "Leeren",
     capLabel: "Max. / Unternehmen",
     capNoLimit: "Kein Limit",
@@ -82,6 +100,9 @@ const COPY = {
     moveToList: "Mover para lista",
     lookalikes: "Encontrar semelhantes",
     findContacts: "Encontrar prospects",
+    duplicate: "Duplicar",
+    addToCrm: "Adicionar ao CRM",
+    addToBlacklist: "Adicionar à lista negra",
     clear: "Limpar",
     capLabel: "Máx. / empresa",
     capNoLimit: "Sem limite",
@@ -94,6 +115,9 @@ const COPY = {
     moveToList: "Mover para lista",
     lookalikes: "Encontrar parecidos",
     findContacts: "Encontrar prospects",
+    duplicate: "Duplicar",
+    addToCrm: "Adicionar ao CRM",
+    addToBlacklist: "Adicionar à lista negra",
     clear: "Limpar",
     capLabel: "Máx. / empresa",
     capNoLimit: "Sem limite",
@@ -127,6 +151,9 @@ export function BulkActionsBar({
   onMoveToList,
   onLookalikes,
   onFindContacts,
+  onDuplicate,
+  onAddToCrm,
+  onAddToBlacklist,
   extra,
 }: {
   count: number
@@ -144,6 +171,12 @@ export function BulkActionsBar({
   onLookalikes?: () => void
   // Companies only: find people at the selected accounts.
   onFindContacts?: () => void
+  // Creates an independent copy of each selected record.
+  onDuplicate?: () => void
+  // Pushes the whole selection to the connected CRM as new records.
+  onAddToCrm?: () => void
+  // Companies only: mirrors the row menu's "Add to blacklist".
+  onAddToBlacklist?: () => void
   extra?: BulkExtraAction
 }) {
   const { locale } = useLocale()
@@ -204,6 +237,24 @@ export function BulkActionsBar({
         <Button variant="outline" size="sm" onClick={onLookalikes}>
           <ScanSearch className="size-4" />
           {c.lookalikes}
+        </Button>
+      )}
+      {onDuplicate && (
+        <Button variant="outline" size="sm" onClick={onDuplicate}>
+          <Copy className="size-4" />
+          {c.duplicate}
+        </Button>
+      )}
+      {onAddToCrm && (
+        <Button variant="outline" size="sm" onClick={onAddToCrm}>
+          <Building2 className="size-4" />
+          {c.addToCrm}
+        </Button>
+      )}
+      {onAddToBlacklist && (
+        <Button variant="outline" size="sm" onClick={onAddToBlacklist}>
+          <Ban className="size-4" />
+          {c.addToBlacklist}
         </Button>
       )}
       {extra && (

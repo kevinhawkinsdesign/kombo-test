@@ -32,6 +32,7 @@ import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { SelectionControls } from "@/components/common/SelectionControls"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
+import { BulkAddToCrmDialog } from "@/components/common/BulkAddToCrmDialog"
 import { ExportDialog, type ExportFormat } from "@/components/common/ExportDialog"
 import { CONNECTED_CRM_PROVIDER, CRM_LISTS } from "@/lib/mock-depth"
 import { downloadCsv } from "@/lib/csv"
@@ -59,7 +60,7 @@ import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { getProspect, getCampaign } from "@/lib/mock-data"
 import { getAccount } from "@/lib/mock-extra"
 import { useSavedSearches } from "@/lib/mock-ai-search"
-import { useLists, listStore, prospectStore, accountStore } from "@/lib/store"
+import { useLists, listStore, prospectStore, accountStore, blacklistStore } from "@/lib/store"
 import { listTabsStore } from "@/lib/list-tabs"
 import { ListTabBar } from "@/components/lists/ListTabBar"
 import {
@@ -84,6 +85,7 @@ const COPY = {
     exported: (format: string) => `Exported to ${format}`,
     exportedAndSent: (format: string, email: string) => `Exported to ${format} and sent to ${email}`,
     crmSynced: (crm: string) => `Synced to ${crm}`,
+    blacklistedCount: (n: number) => `${n} ${n === 1 ? "company" : "companies"} added to blacklist`,
     linkToCampaign: "Link to campaign",
     duplicateList: "Duplicate",
     copySuffix: "(copy)",
@@ -196,6 +198,7 @@ const COPY = {
     exported: (format: string) => `Exportado a ${format}`,
     exportedAndSent: (format: string, email: string) => `Exportado a ${format} y enviado a ${email}`,
     crmSynced: (crm: string) => `Sincronizado con ${crm}`,
+    blacklistedCount: (n: number) => `${n} ${n === 1 ? "empresa añadida" : "empresas añadidas"} a la lista negra`,
     linkToCampaign: "Vincular a campaña",
     duplicateList: "Duplicar",
     copySuffix: "(copia)",
@@ -309,6 +312,7 @@ const COPY = {
     exported: (format: string) => `Esportato in ${format}`,
     exportedAndSent: (format: string, email: string) => `Esportato in ${format} e inviato a ${email}`,
     crmSynced: (crm: string) => `Sincronizzato con ${crm}`,
+    blacklistedCount: (n: number) => `${n} ${n === 1 ? "azienda aggiunta" : "aziende aggiunte"} alla blacklist`,
     linkToCampaign: "Collega a una campagna",
     duplicateList: "Duplica",
     copySuffix: "(copia)",
@@ -421,6 +425,7 @@ const COPY = {
     exported: (format: string) => `Exporté au format ${format}`,
     exportedAndSent: (format: string, email: string) => `Exporté au format ${format} et envoyé à ${email}`,
     crmSynced: (crm: string) => `Synchronisé avec ${crm}`,
+    blacklistedCount: (n: number) => `${n} ${n === 1 ? "entreprise ajoutée" : "entreprises ajoutées"} à la liste noire`,
     linkToCampaign: "Lier à une campagne",
     duplicateList: "Dupliquer",
     copySuffix: "(copie)",
@@ -533,6 +538,7 @@ const COPY = {
     exported: (format: string) => `Als ${format} exportiert`,
     exportedAndSent: (format: string, email: string) => `Als ${format} exportiert und an ${email} gesendet`,
     crmSynced: (crm: string) => `Mit ${crm} synchronisiert`,
+    blacklistedCount: (n: number) => `${n} Unternehmen zur Blacklist hinzugefügt`,
     linkToCampaign: "Mit Kampagne verknüpfen",
     duplicateList: "Duplizieren",
     copySuffix: "(Kopie)",
@@ -645,6 +651,7 @@ const COPY = {
     exported: (format: string) => `Exportado para ${format}`,
     exportedAndSent: (format: string, email: string) => `Exportado para ${format} e enviado para ${email}`,
     crmSynced: (crm: string) => `Sincronizado com ${crm}`,
+    blacklistedCount: (n: number) => `${n} ${n === 1 ? "empresa adicionada" : "empresas adicionadas"} à lista negra`,
     linkToCampaign: "Associar a uma campanha",
     duplicateList: "Duplicar",
     copySuffix: "(cópia)",
@@ -757,6 +764,7 @@ const COPY = {
     exported: (format: string) => `Exportado para ${format}`,
     exportedAndSent: (format: string, email: string) => `Exportado para ${format} e enviado para ${email}`,
     crmSynced: (crm: string) => `Sincronizado com ${crm}`,
+    blacklistedCount: (n: number) => `${n} ${n === 1 ? "empresa adicionada" : "empresas adicionadas"} à lista negra`,
     linkToCampaign: "Vincular a uma campanha",
     duplicateList: "Duplicar",
     copySuffix: "(cópia)",
@@ -897,6 +905,14 @@ export default function ListDetail() {
   const [linkCrmOpen, setLinkCrmOpen] = React.useState(false)
   const [companyEnrichOpen, setCompanyEnrichOpen] = React.useState(false)
   const [bulkEnrichOpen, setBulkEnrichOpen] = React.useState(false)
+  // Company lists only — the row menu's "Enrich" is always array-based
+  // (CompanyEnrichDialog), so the bulk-selection version just scopes it to
+  // the current selection instead of the whole list.
+  const [bulkCompanyEnrichOpen, setBulkCompanyEnrichOpen] = React.useState(false)
+  const [bulkCrmOpen, setBulkCrmOpen] = React.useState(false)
+  // Company lists only — "Find prospects" scoped to the current selection,
+  // distinct from the whole-list version in the toolbar above the table.
+  const [selectionFindContactsOpen, setSelectionFindContactsOpen] = React.useState(false)
   // Per-row Enrich — a dedicated one-click action distinct from the "…"
   // menu's own Enrich item, scoped to a single member rather than the
   // current multi-select.
@@ -1039,6 +1055,70 @@ export default function ListDetail() {
     toast.success(
       opts.sendTo ? c.exportedAndSent(formatLabel, opts.sendTo) : c.exported(formatLabel)
     )
+    sel.clear()
+  }
+  // Lookalike is a kind of search — hand the seed to the Search page, same
+  // pattern as Companies.tsx/People.tsx, seeded from the first selected row.
+  function findLookalikes() {
+    if (isCompany) {
+      const a = selectedAccounts[0]
+      if (!a) return
+      navigate("/search", {
+        state: {
+          lookalikeSeed: {
+            id: a.id,
+            kind: "company",
+            name: a.name,
+            sub: a.industry,
+            industry: a.industry,
+            region: "",
+            headcount: a.employees,
+          },
+        },
+      })
+    } else {
+      const p = selectedMembers[0]
+      if (!p) return
+      navigate("/search", {
+        state: {
+          lookalikeSeed: {
+            id: p.id,
+            kind: "person",
+            name: `${p.firstName} ${p.lastName}`,
+            sub: `${p.title} @ ${p.company}`,
+            industry: p.industry,
+            region: "",
+            headcount: p.headcount,
+          },
+        },
+      })
+    }
+  }
+  // Mirrors the row menu's "Add to CRM" — this app only ever has one
+  // connected CRM, so there's nothing to pick, just an owner to confirm.
+  // Same never-overwrite rule as the row-level wizard: only fills in an
+  // owner where one isn't already set.
+  function confirmBulkCrm(ownerId: string | undefined) {
+    if (ownerId) {
+      if (isCompany) {
+        selectedAccounts.forEach((a) => {
+          if (!a.ownerId) accountStore.update(a.id, { ownerId })
+        })
+      } else {
+        selectedMembers.forEach((p) => {
+          if (!p.ownerId) prospectStore.update(p.id, { ownerId })
+        })
+      }
+    }
+    toast.success(c.crmSynced(CONNECTED_CRM_PROVIDER.name))
+    sel.clear()
+  }
+  // Company lists only — mirrors the row menu's "Add to blacklist".
+  function addSelectedToBlacklist() {
+    blacklistStore.addMany(
+      selectedAccounts.map((a) => ({ name: a.name, domain: a.domain, reason: "Manual" }))
+    )
+    toast.success(c.blacklistedCount(selectedAccounts.length))
     sel.clear()
   }
 
@@ -1343,9 +1423,17 @@ export default function ListDetail() {
             count={selectedCount}
             onClear={sel.clear}
             onExport={() => setExportOpen(true)}
-            onEnrich={isCompany ? undefined : () => setBulkEnrichOpen(true)}
+            onEnrich={
+              isCompany
+                ? () => setBulkCompanyEnrichOpen(true)
+                : () => setBulkEnrichOpen(true)
+            }
             onAddToList={() => setBulkAddOpen(true)}
             onMoveToList={() => setBulkMoveOpen(true)}
+            onLookalikes={findLookalikes}
+            onFindContacts={isCompany ? () => setSelectionFindContactsOpen(true) : undefined}
+            onAddToCrm={() => setBulkCrmOpen(true)}
+            onAddToBlacklist={isCompany ? addSelectedToBlacklist : undefined}
             extra={{
               label: c.removeFromListAction,
               icon: <X className="size-4" />,
@@ -1488,6 +1576,17 @@ export default function ListDetail() {
         />
       )}
 
+      {/* Bulk "Find prospects" — scoped to the selected companies only,
+          distinct from the whole-list toolbar version above. */}
+      {isCompany && (
+        <AddRecordsDialog
+          open={selectionFindContactsOpen}
+          onOpenChange={setSelectionFindContactsOpen}
+          kind="contact"
+          scopeCompanies={selectedAccounts.map((a) => a.name)}
+        />
+      )}
+
       <EnrichListDialog
         open={enrichOpen}
         onOpenChange={setEnrichOpen}
@@ -1510,11 +1609,26 @@ export default function ListDetail() {
         prospects={selectedMembers}
       />
 
+      {/* Bulk enrich for company lists — scoped to the selected accounts
+          only, distinct from the settings box's whole-list version above. */}
+      <CompanyEnrichDialog
+        open={bulkCompanyEnrichOpen}
+        onOpenChange={setBulkCompanyEnrichOpen}
+        accounts={selectedAccounts}
+      />
+
       {/* Per-row Enrich — scoped to whichever member's row action was clicked. */}
       <EnrichListDialog
         open={rowEnrichProspect !== null}
         onOpenChange={(v) => !v && setRowEnrichProspect(null)}
         prospects={rowEnrichProspect ? [rowEnrichProspect] : []}
+      />
+
+      <BulkAddToCrmDialog
+        open={bulkCrmOpen}
+        onOpenChange={setBulkCrmOpen}
+        count={selectedCount}
+        onConfirm={confirmBulkCrm}
       />
 
       <LinkListToCampaignDialog

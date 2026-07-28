@@ -572,6 +572,7 @@ const COPY = {
     deleteSelectedTitle: (n: number) => `Delete ${n} ${n === 1 ? "template" : "templates"}?`,
     deleteSelectedDescription: "These templates will be permanently removed.",
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "template" : "templates"} deleted`,
+    templatesDuplicated: (n: number) => `${n} ${n === 1 ? "template" : "templates"} duplicated`,
     variablesTitle: "Variables",
     variablesSubtitle: "Click to insert, drag into the body, or copy.",
     personalizedVariable: "Personalized variable",
@@ -698,6 +699,8 @@ const COPY = {
     deleteSelectedDescription: "Estas plantillas se eliminarán de forma permanente.",
     templatesDeleted: (n: number) =>
       `${n} ${n === 1 ? "plantilla eliminada" : "plantillas eliminadas"}`,
+    templatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "plantilla duplicada" : "plantillas duplicadas"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Haz clic para insertar, arrastra al cuerpo o copia.",
     personalizedVariable: "Variable personalizada",
@@ -821,6 +824,7 @@ const COPY = {
     deleteSelectedTitle: (n: number) => `Eliminare ${n} ${n === 1 ? "modello" : "modelli"}?`,
     deleteSelectedDescription: "Questi modelli verranno eliminati definitivamente.",
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "modello eliminato" : "modelli eliminati"}`,
+    templatesDuplicated: (n: number) => `${n} ${n === 1 ? "modello duplicato" : "modelli duplicati"}`,
     variablesTitle: "Variabili",
     variablesSubtitle: "Clicca per inserire, trascina nel corpo o copia.",
     personalizedVariable: "Variabile personalizzata",
@@ -944,6 +948,7 @@ const COPY = {
     deleteSelectedTitle: (n: number) => `Supprimer ${n} ${n === 1 ? "modèle" : "modèles"} ?`,
     deleteSelectedDescription: "Ces modèles seront définitivement supprimés.",
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "modèle supprimé" : "modèles supprimés"}`,
+    templatesDuplicated: (n: number) => `${n} ${n === 1 ? "modèle dupliqué" : "modèles dupliqués"}`,
     variablesTitle: "Variables",
     variablesSubtitle: "Cliquez pour insérer, glissez dans le corps ou copiez.",
     personalizedVariable: "Variable personnalisée",
@@ -1066,6 +1071,7 @@ const COPY = {
     deleteSelectedTitle: (n: number) => `${n} ${n === 1 ? "Vorlage" : "Vorlagen"} löschen?`,
     deleteSelectedDescription: "Diese Vorlagen werden endgültig gelöscht.",
     templatesDeleted: (n: number) => `${n} ${n === 1 ? "Vorlage" : "Vorlagen"} gelöscht`,
+    templatesDuplicated: (n: number) => `${n} ${n === 1 ? "Vorlage" : "Vorlagen"} dupliziert`,
     variablesTitle: "Variablen",
     variablesSubtitle: "Klicke zum Einfügen, ziehe es in den Text oder kopiere es.",
     personalizedVariable: "Personalisierte Variable",
@@ -1192,6 +1198,8 @@ const COPY = {
     deleteSelectedDescription: "Estes modelos serão eliminados permanentemente.",
     templatesDeleted: (n: number) =>
       `${n} ${n === 1 ? "modelo eliminado" : "modelos eliminados"}`,
+    templatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "modelo duplicado" : "modelos duplicados"}`,
     variablesTitle: "Variáveis",
     variablesSubtitle: "Clique para inserir, arraste para o corpo ou copie.",
     personalizedVariable: "Variável personalizada",
@@ -1318,6 +1326,8 @@ const COPY = {
     deleteSelectedDescription: "Estes modelos serão excluídos permanentemente.",
     templatesDeleted: (n: number) =>
       `${n} ${n === 1 ? "modelo excluído" : "modelos excluídos"}`,
+    templatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "modelo duplicado" : "modelos duplicados"}`,
     variablesTitle: "Variáveis",
     variablesSubtitle: "Clique para inserir, arraste para o corpo ou copie.",
     personalizedVariable: "Variável personalizada",
@@ -2071,6 +2081,23 @@ export default function Templates() {
     )
     toast.success(c.exported)
   }
+  // Bulk counterpart to the row menu's "Copy" — creates an independent copy
+  // of each selected template.
+  function duplicateSelected() {
+    const selected = flat.filter((t) => selectedIds.has(t.id))
+    selected.forEach((t) => {
+      templateStore.create({
+        name: `${t.name} ${c.copySuffix}`,
+        folder: t.folder,
+        channel: t.channel,
+        subject: t.subject,
+        body: t.body,
+        tags: t.tags,
+      })
+    })
+    toast.success(c.templatesDuplicated(selected.length))
+    setSelectedIds(new Set())
+  }
   function deleteSelected() {
     selectedIds.forEach((id) => templateStore.remove(id))
     toast.success(c.templatesDeleted(selectedIds.size))
@@ -2294,6 +2321,7 @@ export default function Templates() {
               count={selectedIds.size}
               onClear={() => setSelectedIds(new Set())}
               onExport={exportSelectedCsv}
+              onDuplicate={duplicateSelected}
               extra={{
                 label: c.delete,
                 icon: <Trash2 className="size-4" />,
