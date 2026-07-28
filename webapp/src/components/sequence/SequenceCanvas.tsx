@@ -12,7 +12,18 @@ import {
   type NodeTypes,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import { AlertTriangle, Clock, ListTodo, Plus, Split } from "lucide-react"
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  Clock,
+  Copy,
+  ListTodo,
+  MoreHorizontal,
+  Plus,
+  Split,
+  Trash2,
+} from "lucide-react"
 
 import { channelMeta, normalizeChannel } from "@/lib/step-channels"
 import {
@@ -24,6 +35,13 @@ import { stripHtml } from "@/lib/rich-text"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import type { CampaignStep, LinkedInAction, StepTrackKind } from "@/lib/types"
 import type { MoveTarget } from "@/lib/sequence-draft"
 
@@ -65,6 +83,11 @@ const COPY = {
     addStep: "Add step",
     addParallel: "Add parallel step",
     inParallel: "In parallel",
+    stepActions: "Step actions",
+    moveStepUp: "Move up",
+    moveStepDown: "Move down",
+    duplicateStep: "Duplicate",
+    deleteStep: "Delete",
   },
   es: {
     channelLabel: {
@@ -103,6 +126,11 @@ const COPY = {
     addStep: "Añadir paso",
     addParallel: "Añadir paso paralelo",
     inParallel: "En paralelo",
+    stepActions: "Acciones del paso",
+    moveStepUp: "Mover arriba",
+    moveStepDown: "Mover abajo",
+    duplicateStep: "Duplicar",
+    deleteStep: "Eliminar",
   },
   it: {
     channelLabel: {
@@ -141,6 +169,11 @@ const COPY = {
     addStep: "Aggiungi passaggio",
     addParallel: "Aggiungi passaggio parallelo",
     inParallel: "In parallelo",
+    stepActions: "Azioni del passaggio",
+    moveStepUp: "Sposta su",
+    moveStepDown: "Sposta giù",
+    duplicateStep: "Duplica",
+    deleteStep: "Elimina",
   },
   fr: {
     channelLabel: {
@@ -179,6 +212,11 @@ const COPY = {
     addStep: "Ajouter une étape",
     addParallel: "Ajouter une étape parallèle",
     inParallel: "En parallèle",
+    stepActions: "Actions de l'étape",
+    moveStepUp: "Monter",
+    moveStepDown: "Descendre",
+    duplicateStep: "Dupliquer",
+    deleteStep: "Supprimer",
   },
   de: {
     channelLabel: {
@@ -217,6 +255,11 @@ const COPY = {
     addStep: "Schritt hinzufügen",
     addParallel: "Parallelen Schritt hinzufügen",
     inParallel: "Parallel",
+    stepActions: "Schrittaktionen",
+    moveStepUp: "Nach oben verschieben",
+    moveStepDown: "Nach unten verschieben",
+    duplicateStep: "Duplizieren",
+    deleteStep: "Löschen",
   },
   pt: {
     channelLabel: {
@@ -255,6 +298,11 @@ const COPY = {
     addStep: "Adicionar passo",
     addParallel: "Adicionar passo paralelo",
     inParallel: "Em paralelo",
+    stepActions: "Ações do passo",
+    moveStepUp: "Mover para cima",
+    moveStepDown: "Mover para baixo",
+    duplicateStep: "Duplicar",
+    deleteStep: "Eliminar",
   },
   pt_BR: {
     channelLabel: {
@@ -293,6 +341,11 @@ const COPY = {
     addStep: "Adicionar etapa",
     addParallel: "Adicionar etapa paralela",
     inParallel: "Em paralelo",
+    stepActions: "Ações da etapa",
+    moveStepUp: "Mover para cima",
+    moveStepDown: "Mover para baixo",
+    duplicateStep: "Duplicar",
+    deleteStep: "Excluir",
   },
 } as const
 
@@ -308,6 +361,12 @@ interface StepNodeExtraData extends StepNodeData {
   // there's no per-step sending identity in the data model. Undefined hides
   // the avatar entirely rather than showing a placeholder.
   senderLabel?: string
+  // The card's own "..." menu — Move up/down, Duplicate, Delete. Omitting a
+  // handler drops that specific action from the menu; the menu itself is
+  // hidden when none are provided.
+  onMoveStepDirection?: (step: CampaignStep, dir: -1 | 1) => void
+  onDuplicateStep?: (step: CampaignStep) => void
+  onDeleteStep?: (step: CampaignStep) => void
 }
 
 // Invisible anchor points — nodesConnectable is false everywhere this canvas
@@ -351,6 +410,9 @@ function StepCard({
   isDropTarget,
   senderLabel,
   onClick,
+  onMove,
+  onDuplicate,
+  onDelete,
 }: {
   step: CampaignStep
   selected: boolean
@@ -358,6 +420,9 @@ function StepCard({
   isDropTarget?: boolean
   senderLabel?: string
   onClick?: (step: CampaignStep) => void
+  onMove?: (step: CampaignStep, dir: -1 | 1) => void
+  onDuplicate?: (step: CampaignStep) => void
+  onDelete?: (step: CampaignStep) => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -365,15 +430,27 @@ function StepCard({
   const needsAction = step.isManualTask
     ? stripHtml(step.subject ?? "").trim().length === 0
     : stripHtml(step.body).trim().length === 0
+  const hasMenu = interactive && (onMove || onDuplicate || onDelete)
 
   return (
-    <button
-      type="button"
-      disabled={!interactive}
-      onClick={() => onClick?.(step)}
+    // A real <button> here would make the "..." trigger below a nested
+    // button, which browsers/AT don't handle — role="button" + a click/
+    // keydown handler reproduces the same click-to-open-detail-panel
+    // semantics without that nesting.
+    <div
+      role="button"
+      tabIndex={interactive ? 0 : -1}
+      onClick={() => interactive && onClick?.(step)}
+      onKeyDown={(e) => {
+        if (interactive && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault()
+          onClick?.(step)
+        }
+      }}
       style={{ width: 240 }}
       className={cn(
         "bg-card flex shrink-0 flex-col overflow-hidden rounded-xl border text-left shadow-sm transition-colors",
+        interactive && "cursor-pointer",
         isDropTarget
           ? "border-primary bg-primary/10 ring-primary/30 ring-2"
           : selected
@@ -384,9 +461,59 @@ function StepCard({
       {/* Timing header — its own row, separate from the step content below,
           so the delay reads as metadata about when this fires rather than
           part of the step's own title. */}
-      <div className="bg-muted/50 text-muted-foreground flex items-center gap-1.5 border-b px-3 py-1.5 text-xs">
-        <Clock className="size-3 shrink-0" />
-        {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
+      <div className="bg-muted/50 text-muted-foreground flex items-center justify-between gap-1.5 border-b px-3 py-1.5 text-xs">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <Clock className="size-3 shrink-0" />
+          {step.delayDays === 0 ? c.sendImmediately : c.waitDays(step.delayDays)}
+        </span>
+        {hasMenu && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label={c.stepActions}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="text-muted-foreground hover:text-foreground hover:bg-background -m-1 flex size-6 shrink-0 items-center justify-center rounded-md transition-colors"
+              >
+                <MoreHorizontal className="size-3.5" />
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {onMove && (
+                <>
+                  <DropdownMenuItem onClick={() => onMove(step, -1)}>
+                    <ArrowUp className="size-4" />
+                    {c.moveStepUp}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onMove(step, 1)}>
+                    <ArrowDown className="size-4" />
+                    {c.moveStepDown}
+                  </DropdownMenuItem>
+                </>
+              )}
+              {onDuplicate && (
+                <DropdownMenuItem onClick={() => onDuplicate(step)}>
+                  <Copy className="size-4" />
+                  {c.duplicateStep}
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <>
+                  {(onMove || onDuplicate) && <DropdownMenuSeparator />}
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(step)}>
+                    <Trash2 className="size-4" />
+                    {c.deleteStep}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <div className="flex items-center gap-2.5 p-3">
@@ -428,7 +555,7 @@ function StepCard({
           </span>
         )}
       </div>
-    </button>
+    </div>
   )
 }
 
@@ -462,6 +589,9 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
     onAddParallel,
     isDropTarget,
     senderLabel,
+    onMoveStepDirection,
+    onDuplicateStep,
+    onDeleteStep,
   } = data
   const parallelSteps = step.parallelSteps ?? []
   // A step is either a fork anchor or parallel-able, never both — keeps the
@@ -501,6 +631,9 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
         isDropTarget={isDropTarget}
         senderLabel={senderLabel}
         onClick={onClick}
+        onMove={onMoveStepDirection}
+        onDuplicate={onDuplicateStep}
+        onDelete={onDeleteStep}
       />
       {parallelSteps.map((p) => (
         <StepCard
@@ -511,6 +644,9 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
           isDropTarget={isDropTarget}
           senderLabel={senderLabel}
           onClick={onClick}
+          onMove={onMoveStepDirection}
+          onDuplicate={onDuplicateStep}
+          onDelete={onDeleteStep}
         />
       ))}
     </>
@@ -632,6 +768,12 @@ interface SequenceCanvasProps {
   // per-step sending identity in the data model, so this is typically the
   // campaign's single sender account, not something that varies per step.
   senderLabel?: string
+  // The card's own "..." menu (Move up/down, Duplicate, Delete) — a faster
+  // path than opening the detail panel for the same actions. Omitting a
+  // handler drops that action from the menu.
+  onMoveStepDirection?: (stepId: string, dir: -1 | 1) => void
+  onDuplicateStep?: (stepId: string) => void
+  onDeleteStep?: (stepId: string) => void
 }
 
 export function SequenceCanvas(props: SequenceCanvasProps) {
@@ -655,6 +797,9 @@ function SequenceCanvasInner({
   onMoveStep,
   className,
   senderLabel,
+  onMoveStepDirection,
+  onDuplicateStep,
+  onDeleteStep,
 }: SequenceCanvasProps) {
   const interactive = mode === "interactive"
   const { getIntersectingNodes } = useReactFlow()
@@ -681,6 +826,15 @@ function SequenceCanvasInner({
             onClick: (step: CampaignStep) => onSelectStep?.(step.id),
             onAddParallel,
             senderLabel,
+            onMoveStepDirection: onMoveStepDirection
+              ? (step: CampaignStep, dir: -1 | 1) => onMoveStepDirection(step.id, dir)
+              : undefined,
+            onDuplicateStep: onDuplicateStep
+              ? (step: CampaignStep) => onDuplicateStep(step.id)
+              : undefined,
+            onDeleteStep: onDeleteStep
+              ? (step: CampaignStep) => onDeleteStep(step.id)
+              : undefined,
           } satisfies StepNodeExtraData,
         }
       }
@@ -693,7 +847,18 @@ function SequenceCanvasInner({
       }
     })
     return { nodes, edges: layout.edges }
-  }, [steps, interactive, selectedStepId, onSelectStep, onAddRequest, onAddParallel, senderLabel])
+  }, [
+    steps,
+    interactive,
+    selectedStepId,
+    onSelectStep,
+    onAddRequest,
+    onAddParallel,
+    senderLabel,
+    onMoveStepDirection,
+    onDuplicateStep,
+    onDeleteStep,
+  ])
 
   // A separate highlight pass so dragging doesn't force the layout memo
   // above (and the whole node/edge tree) to recompute on every pointer move.

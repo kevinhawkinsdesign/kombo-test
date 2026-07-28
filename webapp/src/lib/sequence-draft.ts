@@ -29,6 +29,9 @@ export interface SequenceDraftApi {
   addStepFromTemplate(data: { channel: StepChannel; subject?: string; body: string }): CampaignStep
   updateStep(stepId: string, patch: Partial<CampaignStep>): void
   removeStep(stepId: string): void
+  // Inserts a copy of the step (and, recursively, its own fork tracks /
+  // parallel siblings, each with fresh ids) directly after the original.
+  duplicateStep(stepId: string): void
   moveStep(stepId: string, dir: -1 | 1): void
   moveStepToTarget(stepId: string, target: MoveTarget): void
   addCondition(stepId: string, condition: ConditionKind): void
@@ -60,6 +63,32 @@ function newStep(channel: StepChannel, delayDays: number, extra?: StepExtra): Ca
     ...(extra?.whatsappAction ? { whatsappAction: extra.whatsappAction } : {}),
     ...(channel === "manual" ? { isManualTask: true } : {}),
     ...(channel === "ai_call" ? { aiVoice: AI_VOICES[0] } : {}),
+  }
+}
+
+// Deep-clones a step with fresh ids throughout — including any nested fork
+// tracks and parallel siblings — so a duplicate never collides with the
+// original, matching the "fresh id per node" invariant newStep()/
+// addCondition() already rely on.
+function cloneStepWithNewIds(step: CampaignStep): CampaignStep {
+  return {
+    ...step,
+    id: uid("s"),
+    ...(step.parallelSteps
+      ? { parallelSteps: step.parallelSteps.map(cloneStepWithNewIds) }
+      : {}),
+    ...(step.fork
+      ? {
+          fork: {
+            ...step.fork,
+            tracks: step.fork.tracks.map((t) => ({
+              ...t,
+              id: uid("trk"),
+              steps: t.steps.map(cloneStepWithNewIds),
+            })),
+          },
+        }
+      : {}),
   }
 }
 
@@ -157,6 +186,15 @@ export function useSequenceDraft(
     },
     removeStep(stepId) {
       setDraft(updateStepTree(state.draft, stepId, (list, i) => list.filter((_, idx) => idx !== i)))
+    },
+    duplicateStep(stepId) {
+      setDraft(
+        updateStepTree(state.draft, stepId, (list, i) => {
+          const next = [...list]
+          next.splice(i + 1, 0, cloneStepWithNewIds(list[i]))
+          return next
+        })
+      )
     },
     moveStep(stepId, dir) {
       setDraft(
