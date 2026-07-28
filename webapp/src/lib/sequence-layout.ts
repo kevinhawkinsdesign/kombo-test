@@ -27,20 +27,37 @@ import { STEP_CREDIT_COST } from "@/lib/store"
 // vertical run to read as one clean turn instead of a cramped zigzag.
 export const ROW_HEIGHT = 320
 export const LANE_WIDTH = 320
+// The standard "next thing after a step" row-gap, in row-unit scale — how
+// far below a step its own trailing "+" ghost (or, for a fork's track, the
+// track's own pill) sits. Used everywhere a ghost/pill is the first thing
+// to appear after a real step, so that gap reads the same size throughout
+// the canvas instead of varying by context.
+const GHOST_OFFSET = 0.5
 // How far past the trailing "+" ghost the next real card starts, in the
 // same row-unit scale as ROW_HEIGHT.
 const GHOST_TRAILING_GAP = 0.2
+// Where a fork track's first REAL step lands, relative to the track's
+// nominal start (one full row below the fork step) — pulled up so the gap
+// from the fork card to the track's first row matches the standard
+// GHOST_OFFSET + GHOST_TRAILING_GAP a real step gets anywhere else in the
+// chain, instead of the fork anchor's own uncompacted full ROW_HEIGHT.
+const FORK_TRACK_FIRST_STEP_PULLUP = 1 - (GHOST_OFFSET + GHOST_TRAILING_GAP)
 
 // A track is either the "condition met" (Yes) or "condition not met" (No)
-// arm of a fork. Met arms deviate into their own lane and render green;
-// not-met arms stay on the default centered spine and render red.
+// arm of a fork. Both arms are color-coded (green for met, red for
+// not-met) — used for edge/pill color, not for layout: both arms sit at a
+// fixed, symmetric distance from the fork's own lane (see layoutFork).
 export function isPositiveTrack(kind: StepTrackKind): boolean {
   return (
     kind === "reply" ||
     kind === "opened" ||
     kind === "clicked" ||
     kind === "accepted" ||
-    kind === "read"
+    kind === "read" ||
+    kind === "connected" ||
+    kind === "has_profile" ||
+    kind === "professional" ||
+    kind === "answered"
   )
 }
 
@@ -68,15 +85,17 @@ function edgeStyle(
       ? "var(--color-chart-1)"
       : "var(--color-destructive)"
     : "var(--color-muted-foreground)"
-  // The deviating (met/Yes) arm has to clear the parent lane immediately.
-  // smoothstep's turn point defaults to the vertical midpoint between the
-  // two nodes (its `stepPosition`, default 0.5) — `offset` alone only pads
-  // the minimum stub length off each node, it does NOT move the turn
-  // itself, so the offset-only version of this still ran both arms
-  // parallel down to the row's midpoint before finally kinking sideways.
-  // A near-zero stepPosition puts that kink immediately below the fork
-  // card instead, so the arm reads as breaking outward right away.
-  const branchesOut = trackKind != null && isPositiveTrack(trackKind)
+  // Both arms deviate from the fork's own lane now (see layoutFork), so
+  // both need to clear it immediately below the card. smoothstep's turn
+  // point defaults to the vertical midpoint between the two nodes (its
+  // `stepPosition`, default 0.5) — `offset` alone only pads the minimum
+  // stub length off each node, it does NOT move the turn itself, so the
+  // offset-only version of this still ran the arm parallel down to the
+  // row's midpoint before finally kinking sideways. A near-zero
+  // stepPosition puts that kink immediately below the fork card instead,
+  // so each arm reads as breaking outward right away, in mirrored
+  // directions.
+  const branchesOut = trackKind != null
   return {
     type: "smoothstep",
     style: { stroke: color, strokeWidth: 1.5 },
@@ -154,6 +173,14 @@ function layoutTrack(
   let depth = startDepth
   let prevId: string | undefined
   steps.forEach((step) => {
+    // The track's first real step sits closer to the fork than the nominal
+    // full row below it (see FORK_TRACK_FIRST_STEP_PULLUP) — so the gap
+    // from the fork card down to this track's content matches the same
+    // GHOST_OFFSET + GHOST_TRAILING_GAP gap a step gets anywhere else in
+    // the chain, rather than a bigger, fork-only gap. Every step after the
+    // first keeps the normal one-row spacing, so this only shifts where
+    // the track starts, not its own internal rhythm.
+    if (!prevId) depth -= FORK_TRACK_FIRST_STEP_PULLUP
     // The condition pill marks the branch point, so only the arm's FIRST
     // node carries it — repeating it on every later step in the same track
     // just restates what the reader already knows. `inTrack` keeps the
@@ -191,7 +218,7 @@ function layoutTrack(
     depth = nested.nextDepth
     if (interactive && nested.rejoinSources.length > 0) {
       const ghostId = `add-after-${lastStep.id}`
-      const ghostDepth = depth - 0.5
+      const ghostDepth = depth - GHOST_OFFSET
       nodes.push(
         addNode(ghostId, ghostDepth, lane, { kind: "add", afterStepId: lastStep.id })
       )
@@ -216,7 +243,7 @@ function layoutTrack(
     // The pill only belongs at the arm's start — an empty track's ghost IS
     // that start; once the track has steps, the first step carries it.
     nodes.push(
-      addNode(ghostId, depth - 0.5, lane, {
+      addNode(ghostId, depth - GHOST_OFFSET, lane, {
         kind: "add",
         trackId,
         forkStepId,
@@ -230,11 +257,12 @@ function layoutTrack(
       target: ghostId,
       ...edgeStyle(prevId ? undefined : trackLabel, true),
     })
-    // Reserve the row the ghost occupies. Without this the fork's own merge
-    // ghost lands at the exact same coordinates as the DEFAULT arm's
-    // trailing ghost (both sit on the parent lane now that the not-met arm
-    // stays centered), stacking two "+" buttons on top of each other.
-    depth += 0.5
+    // Reserve the row the ghost occupies, so this track's own `endDepth`
+    // properly accounts for it — otherwise whatever reads `endDepth` (a
+    // sibling track's merge point, or the row the fork's own trailing
+    // content starts on) could land on the exact same row this ghost
+    // already occupies.
+    depth += GHOST_OFFSET
   }
   return { nodes, edges, endDepth: depth, rejoinSources: prevId ? [prevId] : [] }
 }
@@ -248,13 +276,20 @@ interface StepLayout {
   rejoinSources: string[]
 }
 
-// Lays out a single step's own fork. The "condition not met" arm — no
-// reply, connection not accepted — stays on the parent's own lane, because
-// that's what most prospects do: the unbroken vertical spine down the
-// middle of the canvas is the default path. Only the "met" arm (Yes /
-// Connected) deviates sideways, so a deviation always reads as "something
-// happened here." `spread` halves per nesting level so a nested fork's own
-// deviation can't collide with an outer branch.
+// Lays out a single step's own fork. Both tracks sit at a fixed, symmetric
+// offset from the fork's own lane — not-met (red) a half-spread to the
+// left, met (green) a half-spread to the right — always, from the moment
+// the condition is created, whether or not either arm has any steps yet.
+// The offset is a function of "which arm is this" alone, never of how much
+// content that arm (or its sibling) currently holds — an earlier version
+// anchored the not-met arm to the parent's own lane and only pushed the
+// met arm out, an asymmetric split that made a branch's column appear to
+// move sideways relative to its sibling as soon as one arm's card was
+// wider or narrower than expected. Fixed, symmetric offsets computed only
+// from which arm this is mean adding content later never moves anything
+// already on screen. `spread` halves per nesting level so a nested fork's
+// own deviation can't collide with an outer branch; the two arms still
+// split that spread evenly around center.
 function layoutFork(
   step: CampaignStep,
   depth: number,
@@ -266,7 +301,7 @@ function layoutFork(
   const nodes: SequenceNode[] = []
   const edges: Edge[] = []
   const lanes = fork.tracks.map((t) =>
-    isPositiveTrack(t.kind) ? lane + spread : lane
+    isPositiveTrack(t.kind) ? lane + spread / 2 : lane - spread / 2
   )
   let maxRejoinDepth = depth + 1
   // An empty track (right after adding a condition, before either arm has a
@@ -404,7 +439,7 @@ export function computeLayout(
       // so it gets pushed further down — there's plenty of unused space
       // before the next real row regardless.
       const ghostId = `add-after-${step.id}`
-      const ghostOffset = step.parallelSteps?.length ? 0.1 : 0.5
+      const ghostOffset = step.parallelSteps?.length ? 0.1 : GHOST_OFFSET
       const ghostDepth = depth - ghostOffset
       // An ordinary connector carries no label — auto-pausing on reply is
       // this app's default, implicit behavior for every step, not a

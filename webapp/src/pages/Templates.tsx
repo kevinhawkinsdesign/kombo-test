@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Columns3,
   Download,
+  Workflow,
 } from "lucide-react"
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -70,7 +71,7 @@ import {
   type PromptTemplate,
 } from "@/lib/prompt-templates"
 import type { CollectionView } from "@/components/common/ViewToggle"
-import { useTemplates, templateStore } from "@/lib/store"
+import { useTemplates, templateStore, flattenCampaignSteps } from "@/lib/store"
 import { folderStore, useTemplateFolders } from "@/lib/template-folders"
 import { generateTemplate, PROMPT_PRESETS } from "@/lib/mock-template-ai"
 import { TemplateRecommendations } from "@/components/common/Recommendations"
@@ -83,7 +84,13 @@ import {
   groupByMergeVarGroup,
   type MergeVarGroupKey,
 } from "@/lib/merge-vars"
-import type { Channel, EmailTemplate } from "@/lib/types"
+import {
+  useSequenceTemplates,
+  sequenceTemplateStore,
+  type SequenceTemplate,
+} from "@/lib/sequence-templates"
+import { channelMeta } from "@/lib/step-channels"
+import type { Channel, CampaignStep, EmailTemplate } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { highlightVarsHtml, mergeVarsRaw } from "@/lib/merge-vars-highlight"
 
@@ -627,6 +634,23 @@ const COPY = {
     colReply: "Reply rate",
     colUpdated: "Updated",
     columns: "Columns",
+    sectionSequences: "Sequences",
+    colSequence: "Sequence",
+    colSteps: "Steps",
+    colChannelsUsed: "Channels",
+    sortSteps: "Most steps",
+    stepCount: (n: number) => `${n} ${n === 1 ? "step" : "steps"}`,
+    sequencesEmpty:
+      "No sequence templates yet — save one from any campaign's Sequence tab.",
+    sequencesNoResults: "No sequence templates match your search.",
+    deleteSequenceTitle: "Delete sequence template?",
+    sequenceDeleted: "Sequence template deleted",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `Delete ${n} ${n === 1 ? "sequence template" : "sequence templates"}?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "sequence template" : "sequence templates"} deleted`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "sequence template" : "sequence templates"} duplicated`,
   },
   es: {
     topPerformer: "Mejor rendimiento",
@@ -755,6 +779,24 @@ const COPY = {
     colReply: "Tasa de respuesta",
     colUpdated: "Actualizada",
     columns: "Columnas",
+    sectionSequences: "Secuencias",
+    colSequence: "Secuencia",
+    colSteps: "Pasos",
+    colChannelsUsed: "Canales",
+    sortSteps: "Más pasos",
+    stepCount: (n: number) => `${n} ${n === 1 ? "paso" : "pasos"}`,
+    sequencesEmpty:
+      "Aún no hay plantillas de secuencia — guarda una desde la pestaña Secuencia de cualquier campaña.",
+    sequencesNoResults:
+      "Ninguna plantilla de secuencia coincide con tu búsqueda.",
+    deleteSequenceTitle: "¿Eliminar plantilla de secuencia?",
+    sequenceDeleted: "Plantilla de secuencia eliminada",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `¿Eliminar ${n} ${n === 1 ? "plantilla de secuencia" : "plantillas de secuencia"}?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "plantilla de secuencia eliminada" : "plantillas de secuencia eliminadas"}`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "plantilla de secuencia duplicada" : "plantillas de secuencia duplicadas"}`,
   },
   it: {
     topPerformer: "Miglior rendimento",
@@ -879,6 +921,24 @@ const COPY = {
     colReply: "Tasso di risposta",
     colUpdated: "Aggiornato",
     columns: "Colonne",
+    sectionSequences: "Sequenze",
+    colSequence: "Sequenza",
+    colSteps: "Passaggi",
+    colChannelsUsed: "Canali",
+    sortSteps: "Più passaggi",
+    stepCount: (n: number) => `${n} ${n === 1 ? "passaggio" : "passaggi"}`,
+    sequencesEmpty:
+      "Ancora nessun modello di sequenza — salvane uno dalla scheda Sequenza di qualsiasi campagna.",
+    sequencesNoResults:
+      "Nessun modello di sequenza corrisponde alla tua ricerca.",
+    deleteSequenceTitle: "Eliminare il modello di sequenza?",
+    sequenceDeleted: "Modello di sequenza eliminato",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `Eliminare ${n} ${n === 1 ? "modello di sequenza" : "modelli di sequenza"}?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "modello di sequenza eliminato" : "modelli di sequenza eliminati"}`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "modello di sequenza duplicato" : "modelli di sequenza duplicati"}`,
   },
   fr: {
     topPerformer: "Meilleure performance",
@@ -1003,6 +1063,24 @@ const COPY = {
     colReply: "Taux de réponse",
     colUpdated: "Mis à jour",
     columns: "Colonnes",
+    sectionSequences: "Séquences",
+    colSequence: "Séquence",
+    colSteps: "Étapes",
+    colChannelsUsed: "Canaux",
+    sortSteps: "Le plus d'étapes",
+    stepCount: (n: number) => `${n} ${n === 1 ? "étape" : "étapes"}`,
+    sequencesEmpty:
+      "Pas encore de modèle de séquence — enregistrez-en un depuis l'onglet Séquence de n'importe quelle campagne.",
+    sequencesNoResults:
+      "Aucun modèle de séquence ne correspond à votre recherche.",
+    deleteSequenceTitle: "Supprimer le modèle de séquence ?",
+    sequenceDeleted: "Modèle de séquence supprimé",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `Supprimer ${n} ${n === 1 ? "modèle de séquence" : "modèles de séquence"} ?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "modèle de séquence supprimé" : "modèles de séquence supprimés"}`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "modèle de séquence dupliqué" : "modèles de séquence dupliqués"}`,
   },
   de: {
     topPerformer: "Top-Performer",
@@ -1126,6 +1204,24 @@ const COPY = {
     colReply: "Antwortquote",
     colUpdated: "Aktualisiert",
     columns: "Spalten",
+    sectionSequences: "Sequenzen",
+    colSequence: "Sequenz",
+    colSteps: "Schritte",
+    colChannelsUsed: "Kanäle",
+    sortSteps: "Meiste Schritte",
+    stepCount: (n: number) => `${n} ${n === 1 ? "Schritt" : "Schritte"}`,
+    sequencesEmpty:
+      "Noch keine Sequenzvorlagen — speichere eine über den Sequenz-Tab einer beliebigen Kampagne.",
+    sequencesNoResults:
+      "Keine Sequenzvorlagen entsprechen deiner Suche.",
+    deleteSequenceTitle: "Sequenzvorlage löschen?",
+    sequenceDeleted: "Sequenzvorlage gelöscht",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `${n} ${n === 1 ? "Sequenzvorlage" : "Sequenzvorlagen"} löschen?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "Sequenzvorlage" : "Sequenzvorlagen"} gelöscht`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "Sequenzvorlage" : "Sequenzvorlagen"} dupliziert`,
   },
   pt: {
     topPerformer: "Melhor desempenho",
@@ -1254,6 +1350,24 @@ const COPY = {
     colReply: "Taxa de resposta",
     colUpdated: "Atualizado",
     columns: "Colunas",
+    sectionSequences: "Sequências",
+    colSequence: "Sequência",
+    colSteps: "Passos",
+    colChannelsUsed: "Canais",
+    sortSteps: "Mais passos",
+    stepCount: (n: number) => `${n} ${n === 1 ? "passo" : "passos"}`,
+    sequencesEmpty:
+      "Ainda não há modelos de sequência — guarde um a partir do separador Sequência de qualquer campanha.",
+    sequencesNoResults:
+      "Nenhum modelo de sequência corresponde à sua pesquisa.",
+    deleteSequenceTitle: "Eliminar modelo de sequência?",
+    sequenceDeleted: "Modelo de sequência eliminado",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `Eliminar ${n} ${n === 1 ? "modelo de sequência" : "modelos de sequência"}?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "modelo de sequência eliminado" : "modelos de sequência eliminados"}`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "modelo de sequência duplicado" : "modelos de sequência duplicados"}`,
   },
   pt_BR: {
     topPerformer: "Melhor desempenho",
@@ -1382,6 +1496,24 @@ const COPY = {
     colReply: "Taxa de resposta",
     colUpdated: "Atualizado",
     columns: "Colunas",
+    sectionSequences: "Sequências",
+    colSequence: "Sequência",
+    colSteps: "Etapas",
+    colChannelsUsed: "Canais",
+    sortSteps: "Mais etapas",
+    stepCount: (n: number) => `${n} ${n === 1 ? "etapa" : "etapas"}`,
+    sequencesEmpty:
+      "Ainda não há modelos de sequência — salve um na aba Sequência de qualquer campanha.",
+    sequencesNoResults:
+      "Nenhum modelo de sequência corresponde à sua busca.",
+    deleteSequenceTitle: "Excluir modelo de sequência?",
+    sequenceDeleted: "Modelo de sequência excluído",
+    deleteSelectedSequencesTitle: (n: number) =>
+      `Excluir ${n} ${n === 1 ? "modelo de sequência" : "modelos de sequência"}?`,
+    sequenceTemplatesDeleted: (n: number) =>
+      `${n} ${n === 1 ? "modelo de sequência excluído" : "modelos de sequência excluídos"}`,
+    sequenceTemplatesDuplicated: (n: number) =>
+      `${n} ${n === 1 ? "modelo de sequência duplicado" : "modelos de sequência duplicados"}`,
   },
 } as const
 
@@ -1558,6 +1690,194 @@ const TEMPLATE_COLUMNS: ColumnDef<EmailTemplate>[] = [
     ),
   },
 ]
+
+// Distinct channels touched by a sequence template, in first-appearance
+// order — shown as a compact row of icon chips (same channel identity —
+// icon + tint — the Sequence tab's canvas and CopySequenceDialog use, via
+// lib/step-channels's channelMeta()).
+function SequenceChannels({ steps }: { steps: CampaignStep[] }) {
+  const flat = flattenCampaignSteps(steps)
+  const seen = new Set<string>()
+  const unique: CampaignStep["channel"][] = []
+  for (const s of flat) {
+    if (!seen.has(s.channel)) {
+      seen.add(s.channel)
+      unique.push(s.channel)
+    }
+  }
+  return (
+    <div className="flex items-center gap-1">
+      {unique.map((ch) => {
+        const { Icon, tint } = channelMeta(ch)
+        return (
+          <span
+            key={ch}
+            className={cn("flex size-6 items-center justify-center rounded-md", tint)}
+          >
+            <Icon className="size-3.5" />
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+// Table-view columns for the Sequences tab — a saved sequence template has
+// no folder/channel/reply-rate concept of its own (those are per-message),
+// so this is a smaller registry than TEMPLATE_COLUMNS: step count, channels
+// touched, and last-updated.
+const SEQUENCE_COL_GROUPS: ColGroup[] = [
+  {
+    id: "sequence",
+    label: {
+      en: "Sequence",
+      es: "Secuencia",
+      it: "Sequenza",
+      fr: "Séquence",
+      de: "Sequenz",
+      pt: "Sequência",
+      pt_BR: "Sequência",
+    },
+  },
+]
+const SEQUENCE_COL_DEFAULT_IDS = ["steps", "channels", "updated"]
+
+const SEQUENCE_COLUMNS: ColumnDef<SequenceTemplate>[] = [
+  {
+    id: "name",
+    label: {
+      en: COPY.en.colSequence,
+      es: COPY.es.colSequence,
+      it: COPY.it.colSequence,
+      fr: COPY.fr.colSequence,
+      de: COPY.de.colSequence,
+      pt: COPY.pt.colSequence,
+      pt_BR: COPY.pt_BR.colSequence,
+    },
+    group: "sequence",
+    pinned: true,
+    minWidth: "220px",
+    getValue: (t) => t.name,
+    render: (t) => (
+      <div className="flex items-center gap-2">
+        <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md">
+          <Workflow className="size-3.5" />
+        </span>
+        <span className="font-medium">{t.name}</span>
+      </div>
+    ),
+  },
+  {
+    id: "steps",
+    label: {
+      en: COPY.en.colSteps,
+      es: COPY.es.colSteps,
+      it: COPY.it.colSteps,
+      fr: COPY.fr.colSteps,
+      de: COPY.de.colSteps,
+      pt: COPY.pt.colSteps,
+      pt_BR: COPY.pt_BR.colSteps,
+    },
+    group: "sequence",
+    default: true,
+    align: "right",
+    getValue: (t) => flattenCampaignSteps(t.steps).length,
+    render: (t) => (
+      <span className="tabular-nums">{flattenCampaignSteps(t.steps).length}</span>
+    ),
+  },
+  {
+    id: "channels",
+    label: {
+      en: COPY.en.colChannelsUsed,
+      es: COPY.es.colChannelsUsed,
+      it: COPY.it.colChannelsUsed,
+      fr: COPY.fr.colChannelsUsed,
+      de: COPY.de.colChannelsUsed,
+      pt: COPY.pt.colChannelsUsed,
+      pt_BR: COPY.pt_BR.colChannelsUsed,
+    },
+    group: "sequence",
+    default: true,
+    render: (t) => <SequenceChannels steps={t.steps} />,
+  },
+  {
+    id: "updated",
+    label: {
+      en: COPY.en.colUpdated,
+      es: COPY.es.colUpdated,
+      it: COPY.it.colUpdated,
+      fr: COPY.fr.colUpdated,
+      de: COPY.de.colUpdated,
+      pt: COPY.pt.colUpdated,
+      pt_BR: COPY.pt_BR.colUpdated,
+    },
+    group: "sequence",
+    default: true,
+    align: "right",
+    getValue: (t) => t.updatedAt,
+    render: (t) => (
+      <span className="text-muted-foreground text-xs whitespace-nowrap">
+        {formatDate(t.updatedAt)}
+      </span>
+    ),
+  },
+]
+
+// Card-view tile for a saved sequence template — mirrors TemplateCard's
+// layout (avatar, name, duplicate/delete actions, meta line) but isn't
+// clickable-to-open: a sequence template has no standalone editor of its
+// own, only the campaign Sequence tab that saved it.
+function SequenceTemplateCard({
+  template,
+  c,
+  onDuplicate,
+  onDelete,
+}: {
+  template: SequenceTemplate
+  c: Copy
+  onDuplicate: (template: SequenceTemplate) => void
+  onDelete: (template: SequenceTemplate) => void
+}) {
+  const count = flattenCampaignSteps(template.steps).length
+  return (
+    <div className="bg-card text-card-foreground relative flex h-full flex-col gap-3 rounded-xl border p-4 text-left shadow-sm">
+      <div className="flex items-start gap-3">
+        <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+          <Workflow className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{template.name}</p>
+          <p className="text-muted-foreground mt-0.5 text-sm">
+            {c.stepCount(count)}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={c.duplicateAria(template.name)}
+          className="text-muted-foreground -mt-1 size-8 shrink-0"
+          onClick={() => onDuplicate(template)}
+        >
+          <Copy className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={c.deleteAria(template.name)}
+          className="text-muted-foreground hover:text-destructive -mt-1 -mr-1 size-8 shrink-0"
+          onClick={() => onDelete(template)}
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+      <SequenceChannels steps={template.steps} />
+      <p className="text-muted-foreground mt-auto text-xs">
+        {formatDate(template.updatedAt)}
+      </p>
+    </div>
+  )
+}
 
 // The Prompts section of Campaign Templates — saved AI prompts grouped into
 // folders, mirroring the extension's picker.
@@ -1936,10 +2256,11 @@ export default function Templates() {
 
   const [view, setView] = React.useState<CollectionView>("table")
   const [columnsOpen, setColumnsOpen] = React.useState(false)
-  // Campaign Templates has two sections: fixed messages and AI prompts.
-  const [section, setSection] = React.useState<"messages" | "prompts">(
-    "messages"
-  )
+  // Campaign Templates has three sections: fixed messages, AI prompts, and
+  // saved full sequences (steps saved from a campaign's Sequence tab).
+  const [section, setSection] = React.useState<
+    "messages" | "prompts" | "sequences"
+  >("messages")
   const promptTemplates = usePromptTemplates()
   const [methodOpen, setMethodOpen] = React.useState(false)
   const [promptFormOpen, setPromptFormOpen] = React.useState(false)
@@ -1962,6 +2283,141 @@ export default function Templates() {
     })
     toast.success(c.duplicated(created.name))
   }
+
+  // Sequences section — full step sequences saved from a campaign's
+  // Sequence tab ("Save as template"). Own query/sort/view/selection state,
+  // separate from Messages', since the two sort by different fields.
+  const sequenceTemplates = useSequenceTemplates()
+  const sequenceColPrefs = useColumnPrefs("sequenceTemplates", SEQUENCE_COL_DEFAULT_IDS)
+  const [seqQuery, setSeqQuery] = React.useState("")
+  const [seqSort, setSeqSort] = React.useState("recent")
+  const [seqView, setSeqView] = React.useState<CollectionView>("table")
+  const [seqColumnsOpen, setSeqColumnsOpen] = React.useState(false)
+  const [seqSelectedIds, setSeqSelectedIds] = React.useState<Set<string>>(
+    new Set()
+  )
+  const [seqBulkDeleteOpen, setSeqBulkDeleteOpen] = React.useState(false)
+  const [seqDeleteTarget, setSeqDeleteTarget] =
+    React.useState<SequenceTemplate | null>(null)
+
+  const seqMatches = React.useCallback(
+    (t: SequenceTemplate) => {
+      const q = seqQuery.trim().toLowerCase()
+      if (!q) return true
+      if (t.name.toLowerCase().includes(q)) return true
+      return flattenCampaignSteps(t.steps).some(
+        (s) =>
+          (s.subject ?? "").toLowerCase().includes(q) ||
+          s.body.toLowerCase().includes(q)
+      )
+    },
+    [seqQuery]
+  )
+
+  const seqFlat = React.useMemo(() => {
+    const filtered = sequenceTemplates.filter(seqMatches)
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      switch (seqSort) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        case "steps":
+          return (
+            flattenCampaignSteps(b.steps).length -
+            flattenCampaignSteps(a.steps).length
+          )
+        default:
+          return (
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          )
+      }
+    })
+    return sorted
+  }, [sequenceTemplates, seqMatches, seqSort])
+
+  function sequenceExportRow(t: SequenceTemplate): (string | number)[] {
+    const flat = flattenCampaignSteps(t.steps)
+    const channels = [...new Set(flat.map((s) => s.channel))]
+    return [t.name, flat.length, channels.join(", "), formatDate(t.updatedAt)]
+  }
+  const sequenceExportHeaders = [
+    c.colSequence,
+    c.colSteps,
+    c.colChannelsUsed,
+    c.colUpdated,
+  ]
+  function exportSequenceOne(t: SequenceTemplate) {
+    downloadCsv(
+      "kombo-sequence-templates.csv",
+      sequenceExportHeaders,
+      [sequenceExportRow(t)]
+    )
+    toast.success(c.exportedOne(t.name))
+  }
+  function exportSequencesCsv() {
+    downloadCsv(
+      "kombo-sequence-templates.csv",
+      sequenceExportHeaders,
+      seqFlat.map(sequenceExportRow)
+    )
+    toast.success(c.exported)
+  }
+
+  function duplicateSequenceTemplate(t: SequenceTemplate) {
+    const created = sequenceTemplateStore.create(
+      `${t.name} ${c.copySuffix}`,
+      t.steps
+    )
+    toast.success(c.duplicated(created.name))
+  }
+  function handleDeleteSequence() {
+    if (!seqDeleteTarget) return
+    sequenceTemplateStore.remove(seqDeleteTarget.id)
+    toast.success(c.sequenceDeleted)
+  }
+
+  // Bulk selection over the Sequences table — same DataTable selection
+  // pattern Messages uses.
+  const seqRowIds = seqFlat.map((t) => t.id)
+  const seqAllSelected =
+    seqRowIds.length > 0 && seqRowIds.every((id) => seqSelectedIds.has(id))
+  const seqSomeSelected =
+    !seqAllSelected && seqRowIds.some((id) => seqSelectedIds.has(id))
+  function toggleSeqRow(id: string) {
+    setSeqSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  function toggleAllSeqRows() {
+    setSeqSelectedIds(seqAllSelected ? new Set() : new Set(seqRowIds))
+  }
+  function exportSelectedSequencesCsv() {
+    const selected = seqFlat.filter((t) => seqSelectedIds.has(t.id))
+    downloadCsv(
+      "kombo-sequence-templates.csv",
+      sequenceExportHeaders,
+      selected.map(sequenceExportRow)
+    )
+    toast.success(c.exported)
+  }
+  function duplicateSelectedSequences() {
+    const selected = seqFlat.filter((t) => seqSelectedIds.has(t.id))
+    selected.forEach((t) =>
+      sequenceTemplateStore.create(`${t.name} ${c.copySuffix}`, t.steps)
+    )
+    toast.success(c.sequenceTemplatesDuplicated(selected.length))
+    setSeqSelectedIds(new Set())
+  }
+  function deleteSelectedSequences() {
+    seqSelectedIds.forEach((id) => sequenceTemplateStore.remove(id))
+    toast.success(c.sequenceTemplatesDeleted(seqSelectedIds.size))
+    setSeqSelectedIds(new Set())
+    setSeqBulkDeleteOpen(false)
+  }
+
   const templateColPrefs = useColumnPrefs("templates", TEMPLATE_COL_DEFAULT_IDS)
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
@@ -2151,17 +2607,21 @@ export default function Templates() {
                 {c.newFolder}
               </Button>
             )}
-            {section === "messages" ? (
+            {section === "messages" && (
               <Button variant="volt" onClick={() => setMethodOpen(true)}>
                 <Plus className="size-4" />
                 {c.newTemplate}
               </Button>
-            ) : (
+            )}
+            {section === "prompts" && (
               <Button variant="volt" onClick={() => openPromptForm(null)}>
                 <Plus className="size-4" />
                 {c.newPrompt}
               </Button>
             )}
+            {/* Sequences has no "new" affordance here — a sequence template
+                is only ever created via "Save as template" on a campaign's
+                Sequence tab. */}
           </div>
         }
       />
@@ -2177,12 +2637,14 @@ export default function Templates() {
 
       <TemplateRecommendations />
 
-      {/* Campaign Templates come in two flavors: fixed messages with merge
-          variables, and prompts the AI expands per recipient. */}
+      {/* Campaign Templates come in three flavors: fixed messages with merge
+          variables, prompts the AI expands per recipient, and full step
+          sequences saved from a campaign's Sequence tab. */}
       <Segmented
         options={[
           { v: "messages" as const, label: c.sectionMessages, icon: Mail },
           { v: "prompts" as const, label: c.sectionPrompts, icon: Sparkles },
+          { v: "sequences" as const, label: c.sectionSequences, icon: Workflow },
         ]}
         value={section}
         onChange={setSection}
@@ -2399,6 +2861,114 @@ export default function Templates() {
           </section>
         ))}
       </div>
+      )}
+      </>
+      )}
+
+      {section === "sequences" && (
+      <>
+      <CollectionToolbar
+        query={seqQuery}
+        onQueryChange={setSeqQuery}
+        searchPlaceholder={c.search}
+        sort={seqSort}
+        onSortChange={setSeqSort}
+        sortOptions={[
+          { value: "recent", label: c.sortRecent },
+          { value: "name", label: c.sortName },
+          { value: "steps", label: c.sortSteps },
+        ]}
+        view={seqView}
+        onViewChange={setSeqView}
+        cardsLabel={c.viewCards}
+        tableLabel={c.viewTable}
+        onExport={exportSequencesCsv}
+        exportLabel={c.exportLabel}
+      >
+        {seqView === "table" && (
+          <Button variant="outline" onClick={() => setSeqColumnsOpen(true)}>
+            <Columns3 className="size-4" />
+            <span className="hidden sm:inline">{c.columns}</span>
+          </Button>
+        )}
+      </CollectionToolbar>
+
+      {seqFlat.length === 0 ? (
+        <Card className="text-muted-foreground p-8 text-center text-sm">
+          {sequenceTemplates.length === 0 ? c.sequencesEmpty : c.sequencesNoResults}
+        </Card>
+      ) : seqView === "table" ? (
+        <>
+          <DataTable
+            columns={SEQUENCE_COLUMNS}
+            visible={sequenceColPrefs.visible}
+            rows={seqFlat}
+            rowKey={(t) => t.id}
+            locale={locale}
+            selection={{
+              isSelected: (t) => seqSelectedIds.has(t.id),
+              toggle: (t) => toggleSeqRow(t.id),
+              toggleAll: toggleAllSeqRows,
+              allSelected: seqAllSelected,
+              someSelected: seqSomeSelected,
+            }}
+            actions={(t) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={c.more}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => duplicateSequenceTemplate(t)}>
+                    <Copy className="size-4" />
+                    {c.copy}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportSequenceOne(t)}>
+                    <Download className="size-4" />
+                    {c.exportLabel}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setSeqDeleteTarget(t)}
+                  >
+                    <Trash2 className="size-4" />
+                    {c.delete}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          />
+          <BulkActionsBar
+            count={seqSelectedIds.size}
+            onClear={() => setSeqSelectedIds(new Set())}
+            onExport={exportSelectedSequencesCsv}
+            onDuplicate={duplicateSelectedSequences}
+            extra={{
+              label: c.delete,
+              icon: <Trash2 className="size-4" />,
+              destructive: true,
+              onClick: () => setSeqBulkDeleteOpen(true),
+            }}
+          />
+        </>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {seqFlat.map((t) => (
+            <SequenceTemplateCard
+              key={t.id}
+              template={t}
+              c={c}
+              onDuplicate={duplicateSequenceTemplate}
+              onDelete={setSeqDeleteTarget}
+            />
+          ))}
+        </div>
       )}
       </>
       )}
@@ -2884,6 +3454,39 @@ export default function Templates() {
         columns={TEMPLATE_COLUMNS}
         groups={TEMPLATE_COL_GROUPS}
         prefs={templateColPrefs}
+        locale={locale}
+      />
+
+      <ConfirmDialog
+        open={seqDeleteTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setSeqDeleteTarget(null)
+        }}
+        title={c.deleteSequenceTitle}
+        description={
+          seqDeleteTarget ? c.deleteDescription(seqDeleteTarget.name) : undefined
+        }
+        confirmLabel={c.delete}
+        destructive
+        onConfirm={handleDeleteSequence}
+      />
+
+      <ConfirmDialog
+        open={seqBulkDeleteOpen}
+        onOpenChange={setSeqBulkDeleteOpen}
+        title={c.deleteSelectedSequencesTitle(seqSelectedIds.size)}
+        description={c.deleteSelectedDescription}
+        confirmLabel={c.delete}
+        destructive
+        onConfirm={deleteSelectedSequences}
+      />
+
+      <ColumnManager
+        open={seqColumnsOpen}
+        onOpenChange={setSeqColumnsOpen}
+        columns={SEQUENCE_COLUMNS}
+        groups={SEQUENCE_COL_GROUPS}
+        prefs={sequenceColPrefs}
         locale={locale}
       />
     </Page>

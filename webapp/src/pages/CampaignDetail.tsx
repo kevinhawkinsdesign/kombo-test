@@ -338,8 +338,12 @@ const COPY = {
       reply: "Replied",
       open: "Opened",
       click: "Clicked a link",
-      accept: "Connected on LinkedIn",
+      accept: "Accepted LinkedIn connection",
       read: "Read the message",
+      is_connected: "Is already a connection",
+      has_linkedin_profile: "Has LinkedIn Profile",
+      professional_email: "Has Professional Email",
+      call_answered: "Call answered",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Forks on: ${name}`,
     removeCondition: "Remove condition",
@@ -351,6 +355,9 @@ const COPY = {
     applyChanges: "Apply changes",
     sequenceApplied: "Sequence updated",
     connectStepAutoAdded: "Added a LinkedIn connect step first, since this step requires an accepted connection.",
+    duplicateConnectTitle: "LinkedIn connect already used",
+    duplicateConnectBody: "This sequence already has a LinkedIn connection request. Sending another isn't usually necessary since a connection only needs to be requested once. Add it anyway?",
+    duplicateConnectConfirm: "Add anyway",
     discardChanges: "Discard changes",
     copySequenceFrom: "Copy sequence from…",
     saveAsTemplate: "Save as template",
@@ -561,8 +568,12 @@ const COPY = {
       reply: "Respondió",
       open: "Abrió",
       click: "Hizo clic en un enlace",
-      accept: "Conectado en LinkedIn",
+      accept: "Conexión de LinkedIn aceptada",
       read: "Leyó el mensaje",
+      is_connected: "Ya es una conexión",
+      has_linkedin_profile: "Tiene perfil de LinkedIn",
+      professional_email: "Tiene correo profesional",
+      call_answered: "Llamada contestada",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca en: ${name}`,
     removeCondition: "Quitar condición",
@@ -574,6 +585,9 @@ const COPY = {
     applyChanges: "Aplicar cambios",
     sequenceApplied: "Secuencia actualizada",
     connectStepAutoAdded: "Se añadió primero un paso de conexión de LinkedIn, ya que este paso requiere una conexión aceptada.",
+    duplicateConnectTitle: "Conexión de LinkedIn ya utilizada",
+    duplicateConnectBody: "Esta secuencia ya tiene una solicitud de conexión de LinkedIn. Normalmente no hace falta enviar otra, ya que una conexión solo debe solicitarse una vez. ¿Añadirla de todos modos?",
+    duplicateConnectConfirm: "Añadir de todos modos",
     discardChanges: "Descartar cambios",
     copySequenceFrom: "Copiar secuencia de…",
     saveAsTemplate: "Guardar como plantilla",
@@ -784,8 +798,12 @@ const COPY = {
       reply: "Ha risposto",
       open: "Ha aperto",
       click: "Ha cliccato un link",
-      accept: "Connesso su LinkedIn",
+      accept: "Connessione LinkedIn accettata",
       read: "Ha letto il messaggio",
+      is_connected: "Già connesso su LinkedIn",
+      has_linkedin_profile: "Ha un profilo LinkedIn",
+      professional_email: "Ha un'email professionale",
+      call_answered: "Ha risposto alla chiamata",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Si dirama su: ${name}`,
     removeCondition: "Rimuovi condizione",
@@ -797,6 +815,9 @@ const COPY = {
     applyChanges: "Applica modifiche",
     sequenceApplied: "Sequenza aggiornata",
     connectStepAutoAdded: "È stato aggiunto prima un passaggio di connessione LinkedIn, poiché questo passaggio richiede una connessione accettata.",
+    duplicateConnectTitle: "Connessione LinkedIn già utilizzata",
+    duplicateConnectBody: "Questa sequenza ha già una richiesta di connessione LinkedIn. Di solito non serve inviarne un'altra, poiché una connessione va richiesta una sola volta. Aggiungerla comunque?",
+    duplicateConnectConfirm: "Aggiungi comunque",
     discardChanges: "Annulla modifiche",
     copySequenceFrom: "Copia sequenza da…",
     saveAsTemplate: "Salva come modello",
@@ -1007,8 +1028,12 @@ const COPY = {
       reply: "A répondu",
       open: "A ouvert",
       click: "A cliqué sur un lien",
-      accept: "Connecté sur LinkedIn",
+      accept: "Connexion LinkedIn acceptée",
       read: "A lu le message",
+      is_connected: "Déjà connecté sur LinkedIn",
+      has_linkedin_profile: "A un profil LinkedIn",
+      professional_email: "A un e-mail professionnel",
+      call_answered: "A répondu à l'appel",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Se divise sur : ${name}`,
     removeCondition: "Supprimer la condition",
@@ -1020,6 +1045,9 @@ const COPY = {
     applyChanges: "Appliquer les modifications",
     sequenceApplied: "Séquence mise à jour",
     connectStepAutoAdded: "Une étape de connexion LinkedIn a été ajoutée en premier, car cette étape nécessite une connexion acceptée.",
+    duplicateConnectTitle: "Connexion LinkedIn déjà utilisée",
+    duplicateConnectBody: "Cette séquence contient déjà une demande de connexion LinkedIn. Il n'est généralement pas nécessaire d'en envoyer une autre, une connexion ne devant être demandée qu'une seule fois. L'ajouter quand même ?",
+    duplicateConnectConfirm: "Ajouter quand même",
     discardChanges: "Annuler les modifications",
     copySequenceFrom: "Copier la séquence depuis…",
     saveAsTemplate: "Enregistrer comme modèle",
@@ -1230,8 +1258,12 @@ const COPY = {
       reply: "Hat geantwortet",
       open: "Hat geöffnet",
       click: "Hat auf einen Link geklickt",
-      accept: "Auf LinkedIn verbunden",
+      accept: "LinkedIn-Vernetzung angenommen",
       read: "Hat die Nachricht gelesen",
+      is_connected: "Bereits vernetzt auf LinkedIn",
+      has_linkedin_profile: "Hat ein LinkedIn-Profil",
+      professional_email: "Hat eine geschäftliche E-Mail",
+      call_answered: "Anruf beantwortet",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Verzweigt bei: ${name}`,
     removeCondition: "Bedingung entfernen",
@@ -1243,6 +1275,9 @@ const COPY = {
     applyChanges: "Änderungen übernehmen",
     sequenceApplied: "Sequenz aktualisiert",
     connectStepAutoAdded: "Zuerst wurde ein LinkedIn-Vernetzungsschritt hinzugefügt, da dieser Schritt eine angenommene Vernetzung erfordert.",
+    duplicateConnectTitle: "LinkedIn-Vernetzung bereits verwendet",
+    duplicateConnectBody: "Diese Sequenz enthält bereits eine LinkedIn-Vernetzungsanfrage. Eine weitere zu senden ist normalerweise nicht nötig, da eine Vernetzung nur einmal angefragt werden muss. Trotzdem hinzufügen?",
+    duplicateConnectConfirm: "Trotzdem hinzufügen",
     discardChanges: "Änderungen verwerfen",
     copySequenceFrom: "Sequenz kopieren von…",
     saveAsTemplate: "Als Vorlage speichern",
@@ -1453,8 +1488,12 @@ const COPY = {
       reply: "Respondeu",
       open: "Abriu",
       click: "Clicou numa ligação",
-      accept: "Ligado no LinkedIn",
+      accept: "Ligação do LinkedIn aceite",
       read: "Leu a mensagem",
+      is_connected: "Já é uma ligação",
+      has_linkedin_profile: "Tem perfil do LinkedIn",
+      professional_email: "Tem email profissional",
+      call_answered: "Atendeu a chamada",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca em: ${name}`,
     removeCondition: "Remover condição",
@@ -1466,6 +1505,9 @@ const COPY = {
     applyChanges: "Aplicar alterações",
     sequenceApplied: "Sequência atualizada",
     connectStepAutoAdded: "Foi adicionado primeiro um passo de ligação no LinkedIn, uma vez que este passo requer uma ligação aceite.",
+    duplicateConnectTitle: "Ligação no LinkedIn já utilizada",
+    duplicateConnectBody: "Esta sequência já tem um pedido de ligação no LinkedIn. Normalmente não é necessário enviar outro, pois uma ligação só precisa de ser pedida uma vez. Adicionar mesmo assim?",
+    duplicateConnectConfirm: "Adicionar mesmo assim",
     discardChanges: "Descartar alterações",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Guardar como modelo",
@@ -1676,8 +1718,12 @@ const COPY = {
       reply: "Respondeu",
       open: "Abriu",
       click: "Clicou em um link",
-      accept: "Conectado no LinkedIn",
+      accept: "Conexão do LinkedIn aceita",
       read: "Leu a mensagem",
+      is_connected: "Já é uma conexão",
+      has_linkedin_profile: "Tem perfil do LinkedIn",
+      professional_email: "Tem email profissional",
+      call_answered: "Atendeu a ligação",
     } as Record<ConditionKind, string>,
     conditionActiveLabel: (name: string) => `Bifurca em: ${name}`,
     removeCondition: "Remover condição",
@@ -1689,6 +1735,9 @@ const COPY = {
     applyChanges: "Aplicar alterações",
     sequenceApplied: "Sequência atualizada",
     connectStepAutoAdded: "Foi adicionada primeiro uma etapa de conexão no LinkedIn, já que esta etapa exige uma conexão aceita.",
+    duplicateConnectTitle: "Conexão no LinkedIn já utilizada",
+    duplicateConnectBody: "Esta sequência já tem um pedido de conexão no LinkedIn. Normalmente não é necessário enviar outro, já que uma conexão só precisa ser solicitada uma vez. Adicionar mesmo assim?",
+    duplicateConnectConfirm: "Adicionar mesmo assim",
     discardChanges: "Descartar alterações",
     copySequenceFrom: "Copiar sequência de…",
     saveAsTemplate: "Salvar como modelo",
@@ -2145,6 +2194,11 @@ export default function CampaignDetail() {
   // inline "Add parallel step" button rather than a canvas ghost.
   const [pendingParallelStep, setPendingParallelStep] =
     React.useState<CampaignStep | null>(null)
+  // A "LinkedIn connect" pick that lands on a sequence that already has one
+  // elsewhere — held here while the warning dialog asks the user to confirm
+  // rather than silently blocking or silently allowing the duplicate.
+  const [pendingConnectSelection, setPendingConnectSelection] =
+    React.useState<StepTypeSelection | null>(null)
   const [templatePickerOpen, setTemplatePickerOpen] = React.useState(false)
   const [promptPickerOpen, setPromptPickerOpen] = React.useState(false)
   // Same two pickers, but applying to the step being edited in the detail
@@ -2381,7 +2435,7 @@ export default function CampaignDetail() {
   // connect step already happened earlier in the sequence, in which case
   // it's inserted as a plain step like any other. All draft-only until
   // Apply Changes.
-  function handleStepTypeSelect(selection: StepTypeSelection) {
+  function performStepTypeSelect(selection: StepTypeSelection) {
     const { channel, linkedinAction, whatsappAction } = selection
     if (pendingParallelStep) {
       draft.addParallelStep(pendingParallelStep.id, channel, { linkedinAction, whatsappAction })
@@ -2407,6 +2461,22 @@ export default function CampaignDetail() {
     }
     setSelectedStepId(undefined)
     setPendingGhost(null)
+  }
+
+  // A prospect only ever needs to accept one LinkedIn connection request per
+  // sequence — a repeat pick of "LinkedIn connect" isn't blocked outright
+  // (there are legitimate reasons to re-request further down a long-lived
+  // sequence), but it's surfaced as a warning the user has to actively
+  // confirm past, rather than silently added or silently rejected.
+  function handleStepTypeSelect(selection: StepTypeSelection) {
+    if (
+      selection.linkedinAction === "connect" &&
+      draft.steps.some(stepContainsConnect)
+    ) {
+      setPendingConnectSelection(selection)
+      return
+    }
+    performStepTypeSelect(selection)
   }
 
   // A condition picked in the step-type modal always anchors to the step
@@ -4275,8 +4345,14 @@ export default function CampaignDetail() {
         onSelect={handleStepTypeSelect}
         title={pendingParallelStep ? c.addParallelStepTitle : undefined}
         onSelectCondition={allowCondition ? handleConditionSelect : undefined}
-        conditionChannel={
-          conditionAnchorStep ? normalizeChannel(conditionAnchorStep.channel) : undefined
+        conditionStepType={
+          conditionAnchorStep
+            ? stepTypeKeyFor(
+                conditionAnchorStep.channel,
+                conditionAnchorStep.linkedinAction,
+                conditionAnchorStep.whatsappAction
+              )
+            : undefined
         }
         forceAllowAccept={enclosingForkCondition === "accept"}
         onUseTemplate={
@@ -4371,6 +4447,44 @@ export default function CampaignDetail() {
             <Button variant="volt" onClick={enrichAndActivate}>
               <Layers className="size-4" />
               {c.enrichAndActivate} · {enrichCost}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Warns rather than silently blocking or silently allowing a second
+          "LinkedIn connect" step in the same sequence — a connection only
+          ever needs to be requested once, but there are edge cases (a very
+          long-lived sequence spanning a disconnect) where re-requesting is
+          a deliberate choice, so the pick still goes through on confirm. */}
+      <Dialog
+        open={pendingConnectSelection != null}
+        onOpenChange={(open) => {
+          if (!open) setPendingConnectSelection(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="bg-chart-4/15 text-chart-4 flex size-7 items-center justify-center rounded-md">
+                <AlertTriangle className="size-4" />
+              </span>
+              {c.duplicateConnectTitle}
+            </DialogTitle>
+            <DialogDescription>{c.duplicateConnectBody}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPendingConnectSelection(null)}>
+              {c.cancel}
+            </Button>
+            <Button
+              variant="volt"
+              onClick={() => {
+                if (pendingConnectSelection) performStepTypeSelect(pendingConnectSelection)
+                setPendingConnectSelection(null)
+              }}
+            >
+              {c.duplicateConnectConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

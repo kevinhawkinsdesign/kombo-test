@@ -15,26 +15,23 @@ import { Segmented } from "@/components/common/Segmented"
 import { useLocale } from "@/lib/locale"
 import {
   CHANNELS,
-  conditionAllowedForChannel,
+  categoryMeta,
+  conditionAppliesToStepType,
+  CONDITION_CATALOG,
+  CONDITION_CATEGORIES,
   STEP_TYPES,
   ACTION_ICON,
   stepTypeLabel,
+  type ConditionCategory,
+  type PickableCondition,
   type StepTypeKey,
 } from "@/lib/step-channels"
 import { cn } from "@/lib/utils"
-import type { ConditionKind, StepChannel, StepTypeSelection } from "@/lib/types"
+import type { ConditionKind, StepTypeSelection } from "@/lib/types"
 
 interface ChannelCardCopy {
   description: string
 }
-
-// "reply" is deliberately not offered here: a reply auto-pauses the
-// campaign (see the Sequence tab's "Auto-pauses the moment a prospect
-// replies" setting), so there's no "if they reply, keep going" track to
-// build — the ordinary unforked connector between two steps already means
-// "no reply yet," labeled as such in SequenceCanvas.
-type PickableCondition = Exclude<ConditionKind, "reply">
-const CONDITIONS: PickableCondition[] = ["open", "click", "accept", "read"]
 
 interface ConditionCardCopy {
   label: string
@@ -67,24 +64,48 @@ const COPY = {
       ai_call: { description: "Place an agentic AI voice call." },
       manual: { description: "Create a manual task for the rep." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Calls",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "Accepted LinkedIn connection",
+        description:
+          "Splits the sequence based on whether they accept your LinkedIn connection request — including if they were already connected before you sent it.",
+      },
+      is_connected: {
+        label: "Is already a connection",
+        description: "Splits the sequence based on whether the prospect is already a LinkedIn connection.",
+      },
+      has_linkedin_profile: {
+        label: "Has LinkedIn Profile",
+        description: "Splits the sequence based on whether the prospect has a LinkedIn profile on file.",
+      },
       open: {
-        label: "Opened",
-        description: "Splits the sequence based on whether they open the message.",
+        label: "Email opened",
+        description: "Splits the sequence based on whether they open the email.",
       },
       click: {
-        label: "Clicked a link",
-        description: "Splits the sequence based on whether they click a link.",
+        label: "Email link clicked",
+        description: "Splits the sequence based on whether they click a link in the email.",
       },
-      accept: {
-        label: "Connected on LinkedIn",
-        description: "Splits the sequence based on whether they're connected on LinkedIn — including if they already were before you sent a request.",
+      professional_email: {
+        label: "Has Professional Email",
+        description:
+          "Splits the sequence based on whether the prospect has a work email address rather than a personal one.",
       },
       read: {
-        label: "Read the message",
-        description: "Splits the sequence based on whether they read the message.",
+        label: "WhatsApp message read",
+        description: "Splits the sequence based on whether they read the WhatsApp message.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "Call answered",
+        description: "Splits the sequence based on whether they answer the call.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
   es: {
     title: "Añadir un paso",
@@ -111,24 +132,47 @@ const COPY = {
       ai_call: { description: "Realiza una llamada de voz con IA agente." },
       manual: { description: "Crea una tarea manual para el representante." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "Correo",
+      whatsapp: "WhatsApp",
+      call: "Llamadas",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "Conexión de LinkedIn aceptada",
+        description:
+          "Divide la secuencia según si aceptan tu solicitud de conexión de LinkedIn, incluso si ya estaban conectados antes de enviarla.",
+      },
+      is_connected: {
+        label: "Ya es una conexión",
+        description: "Divide la secuencia según si el prospecto ya es una conexión de LinkedIn.",
+      },
+      has_linkedin_profile: {
+        label: "Tiene perfil de LinkedIn",
+        description: "Divide la secuencia según si el prospecto tiene un perfil de LinkedIn registrado.",
+      },
       open: {
-        label: "Abrió",
-        description: "Divide la secuencia según si abren el mensaje.",
+        label: "Correo abierto",
+        description: "Divide la secuencia según si abren el correo.",
       },
       click: {
-        label: "Hizo clic en un enlace",
-        description: "Divide la secuencia según si hacen clic en un enlace.",
+        label: "Clic en enlace del correo",
+        description: "Divide la secuencia según si hacen clic en un enlace del correo.",
       },
-      accept: {
-        label: "Conectado en LinkedIn",
-        description: "Divide la secuencia según si están conectados en LinkedIn, incluso si ya lo estaban antes de enviar la solicitud.",
+      professional_email: {
+        label: "Tiene correo profesional",
+        description: "Divide la secuencia según si el prospecto tiene un correo de trabajo en lugar de uno personal.",
       },
       read: {
-        label: "Leyó el mensaje",
-        description: "Divide la secuencia según si leen el mensaje.",
+        label: "Mensaje de WhatsApp leído",
+        description: "Divide la secuencia según si leen el mensaje de WhatsApp.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "Llamada contestada",
+        description: "Divide la secuencia según si contestan la llamada.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
   it: {
     title: "Aggiungi un passaggio",
@@ -155,24 +199,47 @@ const COPY = {
       ai_call: { description: "Effettua una chiamata vocale con IA agentica." },
       manual: { description: "Crea un'attività manuale per il commerciale." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Chiamate",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "Connessione LinkedIn accettata",
+        description:
+          "Divide la sequenza a seconda che accettino la richiesta di connessione LinkedIn, anche se erano già connessi prima dell'invio.",
+      },
+      is_connected: {
+        label: "Già connesso su LinkedIn",
+        description: "Divide la sequenza a seconda che il prospect sia già una connessione LinkedIn.",
+      },
+      has_linkedin_profile: {
+        label: "Ha un profilo LinkedIn",
+        description: "Divide la sequenza a seconda che il prospect abbia un profilo LinkedIn registrato.",
+      },
       open: {
-        label: "Ha aperto",
-        description: "Divide la sequenza a seconda che aprano il messaggio.",
+        label: "Email aperta",
+        description: "Divide la sequenza a seconda che aprano l'email.",
       },
       click: {
-        label: "Ha cliccato un link",
-        description: "Divide la sequenza a seconda che clicchino un link.",
+        label: "Clic su link nell'email",
+        description: "Divide la sequenza a seconda che clicchino un link nell'email.",
       },
-      accept: {
-        label: "Connesso su LinkedIn",
-        description: "Divide la sequenza a seconda che siano connessi su LinkedIn, anche se lo erano già prima dell'invito.",
+      professional_email: {
+        label: "Ha un'email professionale",
+        description: "Divide la sequenza a seconda che il prospect abbia un'email di lavoro anziché personale.",
       },
       read: {
-        label: "Ha letto il messaggio",
-        description: "Divide la sequenza a seconda che leggano il messaggio.",
+        label: "Messaggio WhatsApp letto",
+        description: "Divide la sequenza a seconda che leggano il messaggio WhatsApp.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "Ha risposto alla chiamata",
+        description: "Divide la sequenza a seconda che rispondano alla chiamata.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
   fr: {
     title: "Ajouter une étape",
@@ -199,24 +266,48 @@ const COPY = {
       ai_call: { description: "Passez un appel vocal IA agentique." },
       manual: { description: "Créez une tâche manuelle pour le commercial." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "E-mail",
+      whatsapp: "WhatsApp",
+      call: "Appels",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "Connexion LinkedIn acceptée",
+        description:
+          "Scinde la séquence selon qu'ils acceptent votre demande de connexion LinkedIn — même s'ils étaient déjà connectés avant son envoi.",
+      },
+      is_connected: {
+        label: "Déjà connecté sur LinkedIn",
+        description: "Scinde la séquence selon que le prospect soit déjà une connexion LinkedIn.",
+      },
+      has_linkedin_profile: {
+        label: "A un profil LinkedIn",
+        description: "Scinde la séquence selon que le prospect ait un profil LinkedIn enregistré.",
+      },
       open: {
-        label: "A ouvert",
-        description: "Scinde la séquence selon qu'ils ouvrent le message ou non.",
+        label: "E-mail ouvert",
+        description: "Scinde la séquence selon qu'ils ouvrent l'e-mail ou non.",
       },
       click: {
-        label: "A cliqué sur un lien",
-        description: "Scinde la séquence selon qu'ils cliquent sur un lien ou non.",
+        label: "Lien cliqué dans l'e-mail",
+        description: "Scinde la séquence selon qu'ils cliquent sur un lien dans l'e-mail ou non.",
       },
-      accept: {
-        label: "Connecté sur LinkedIn",
-        description: "Scinde la séquence selon qu'ils sont connectés sur LinkedIn, même s'ils l'étaient déjà avant l'invitation.",
+      professional_email: {
+        label: "A un e-mail professionnel",
+        description:
+          "Scinde la séquence selon que le prospect ait une adresse e-mail professionnelle plutôt que personnelle.",
       },
       read: {
-        label: "A lu le message",
-        description: "Scinde la séquence selon qu'ils lisent le message ou non.",
+        label: "Message WhatsApp lu",
+        description: "Scinde la séquence selon qu'ils lisent le message WhatsApp ou non.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "A répondu à l'appel",
+        description: "Scinde la séquence selon qu'ils répondent à l'appel ou non.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
   de: {
     title: "Schritt hinzufügen",
@@ -243,24 +334,48 @@ const COPY = {
       ai_call: { description: "Führe einen agentischen KI-Sprachanruf durch." },
       manual: { description: "Erstelle eine manuelle Aufgabe für den Vertriebsmitarbeiter." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "E-Mail",
+      whatsapp: "WhatsApp",
+      call: "Anrufe",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "LinkedIn-Vernetzung angenommen",
+        description:
+          "Teilt die Sequenz danach, ob sie deine LinkedIn-Vernetzungsanfrage annehmen — auch wenn sie vor dem Senden bereits vernetzt waren.",
+      },
+      is_connected: {
+        label: "Bereits vernetzt auf LinkedIn",
+        description: "Teilt die Sequenz danach, ob der Lead bereits eine LinkedIn-Vernetzung ist.",
+      },
+      has_linkedin_profile: {
+        label: "Hat ein LinkedIn-Profil",
+        description: "Teilt die Sequenz danach, ob der Lead ein hinterlegtes LinkedIn-Profil hat.",
+      },
       open: {
-        label: "Geöffnet",
-        description: "Teilt die Sequenz danach, ob sie die Nachricht öffnen.",
+        label: "E-Mail geöffnet",
+        description: "Teilt die Sequenz danach, ob sie die E-Mail öffnen.",
       },
       click: {
-        label: "Link geklickt",
-        description: "Teilt die Sequenz danach, ob sie auf einen Link klicken.",
+        label: "Link in E-Mail geklickt",
+        description: "Teilt die Sequenz danach, ob sie auf einen Link in der E-Mail klicken.",
       },
-      accept: {
-        label: "Auf LinkedIn verbunden",
-        description: "Teilt die Sequenz danach, ob sie auf LinkedIn verbunden sind — auch wenn sie es schon vor der Anfrage waren.",
+      professional_email: {
+        label: "Hat eine geschäftliche E-Mail",
+        description:
+          "Teilt die Sequenz danach, ob der Lead eine geschäftliche statt einer privaten E-Mail-Adresse hat.",
       },
       read: {
-        label: "Nachricht gelesen",
-        description: "Teilt die Sequenz danach, ob sie die Nachricht lesen.",
+        label: "WhatsApp-Nachricht gelesen",
+        description: "Teilt die Sequenz danach, ob sie die WhatsApp-Nachricht lesen.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "Anruf beantwortet",
+        description: "Teilt die Sequenz danach, ob sie den Anruf entgegennehmen.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
   pt: {
     title: "Adicionar um passo",
@@ -287,24 +402,47 @@ const COPY = {
       ai_call: { description: "Faça uma chamada de voz com um agente de IA." },
       manual: { description: "Crie uma tarefa manual para o comercial." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Chamadas",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "Ligação do LinkedIn aceite",
+        description:
+          "Divide a sequência consoante aceitem o seu pedido de ligação do LinkedIn — mesmo que já estivessem ligados antes de o enviar.",
+      },
+      is_connected: {
+        label: "Já é uma ligação",
+        description: "Divide a sequência consoante o prospect já seja uma ligação do LinkedIn.",
+      },
+      has_linkedin_profile: {
+        label: "Tem perfil do LinkedIn",
+        description: "Divide a sequência consoante o prospect tenha um perfil do LinkedIn registado.",
+      },
       open: {
-        label: "Abriu",
-        description: "Divide a sequência consoante abram a mensagem ou não.",
+        label: "Email aberto",
+        description: "Divide a sequência consoante abram o email ou não.",
       },
       click: {
-        label: "Clicou num link",
-        description: "Divide a sequência consoante cliquem num link ou não.",
+        label: "Clique num link do email",
+        description: "Divide a sequência consoante cliquem num link do email ou não.",
       },
-      accept: {
-        label: "Ligado no LinkedIn",
-        description: "Divide a sequência consoante estejam ligados no LinkedIn, mesmo que já estivessem antes do pedido.",
+      professional_email: {
+        label: "Tem email profissional",
+        description: "Divide a sequência consoante o prospect tenha um email de trabalho em vez de um pessoal.",
       },
       read: {
-        label: "Leu a mensagem",
-        description: "Divide a sequência consoante leiam a mensagem ou não.",
+        label: "Mensagem do WhatsApp lida",
+        description: "Divide a sequência consoante leiam a mensagem do WhatsApp ou não.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "Atendeu a chamada",
+        description: "Divide a sequência consoante atendam a chamada.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
   pt_BR: {
     title: "Adicionar uma etapa",
@@ -331,24 +469,47 @@ const COPY = {
       ai_call: { description: "Faça uma ligação de voz com um agente de IA." },
       manual: { description: "Crie uma tarefa manual para o representante." },
     } as Record<StepTypeKey, ChannelCardCopy>,
+    conditionCategories: {
+      linkedin: "LinkedIn",
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Chamadas",
+    } as Record<ConditionCategory, string>,
     conditions: {
+      accept: {
+        label: "Conexão do LinkedIn aceita",
+        description:
+          "Divide a sequência conforme aceitem sua solicitação de conexão do LinkedIn — mesmo que já estivessem conectados antes de enviá-la.",
+      },
+      is_connected: {
+        label: "Já é uma conexão",
+        description: "Divide a sequência conforme o prospect já seja uma conexão do LinkedIn.",
+      },
+      has_linkedin_profile: {
+        label: "Tem perfil do LinkedIn",
+        description: "Divide a sequência conforme o prospect tenha um perfil do LinkedIn registrado.",
+      },
       open: {
-        label: "Abriu",
-        description: "Divide a sequência conforme abram a mensagem ou não.",
+        label: "Email aberto",
+        description: "Divide a sequência conforme abram o email ou não.",
       },
       click: {
-        label: "Clicou em um link",
-        description: "Divide a sequência conforme cliquem em um link ou não.",
+        label: "Clique em um link do email",
+        description: "Divide a sequência conforme cliquem em um link do email ou não.",
       },
-      accept: {
-        label: "Conectado no LinkedIn",
-        description: "Divide a sequência conforme estejam conectados no LinkedIn, mesmo que já estivessem antes do pedido.",
+      professional_email: {
+        label: "Tem email profissional",
+        description: "Divide a sequência conforme o prospect tenha um email de trabalho em vez de um pessoal.",
       },
       read: {
-        label: "Leu a mensagem",
-        description: "Divide a sequência conforme leiam a mensagem ou não.",
+        label: "Mensagem do WhatsApp lida",
+        description: "Divide a sequência conforme leiam a mensagem do WhatsApp ou não.",
       },
-    } as Record<Exclude<ConditionKind, "reply">, ConditionCardCopy>,
+      call_answered: {
+        label: "Atendeu a ligação",
+        description: "Divide a sequência conforme atendam a ligação.",
+      },
+    } as Record<PickableCondition, ConditionCardCopy>,
   },
 } as const
 
@@ -363,17 +524,17 @@ interface StepTypePickerDialogProps {
   // has parallel siblings) — conditions fork the sequence, which only
   // makes sense one level deep.
   onSelectCondition?: (condition: ConditionKind) => void
-  // The channel of the step this condition would anchor to — some
-  // conditions only make sense for certain channels (e.g. "Opened" only
-  // means something for an email step). Unused when onSelectCondition is
-  // omitted.
-  conditionChannel?: StepChannel
+  // The exact step type this condition would anchor to — which conditions
+  // are enabled depends on more than just the anchor's channel (e.g. only a
+  // LinkedIn *connect* step, not any LinkedIn action, can have an accepted
+  // invite). Unused when onSelectCondition is omitted.
+  conditionStepType?: StepTypeKey
   // Set when this ghost is nested inside a track that already descends
   // from a LinkedIn-connect ("accept") fork — reassessing connection
-  // status again doesn't depend on the anchor step's own channel (the
-  // reference case is re-checking after a follow-up *email*), so "Connected
-  // on LinkedIn" stays offered even when conditionChannel would otherwise
-  // filter it out.
+  // status again doesn't depend on the anchor step's own type (the
+  // reference case is re-checking after a follow-up *email*), so "Accepted
+  // LinkedIn connection" stays enabled even when conditionStepType would
+  // otherwise gate it out.
   forceAllowAccept?: boolean
   // Quick-start shortcuts — only offered when the ghost that opened this
   // dialog is an append (not a mid-sequence insert or fork track), since
@@ -389,20 +550,27 @@ export function StepTypePickerDialog({
   title,
   description,
   onSelectCondition,
-  conditionChannel,
+  conditionStepType,
   forceAllowAccept,
   onUseTemplate,
   onUsePrompt,
 }: StepTypePickerDialogProps) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const availableConditions = conditionChannel
-    ? CONDITIONS.filter(
-        (condition) =>
-          (condition === "accept" && forceAllowAccept) ||
-          conditionAllowedForChannel(condition, conditionChannel)
-      )
-    : CONDITIONS
+  // Conditions render grouped by category (matching the reference this tab
+  // is built from) with every condition always visible — inapplicable ones
+  // stay in place but greyed out and non-clickable, rather than being
+  // filtered out of the list entirely, so a user can see what exists and
+  // why it's unavailable here. Without a step-type context (shouldn't
+  // happen once onSelectCondition is set — see CampaignDetail's wiring),
+  // everything defaults to enabled rather than everything disabled.
+  const conditionsByCategory = CONDITION_CATEGORIES.map((category) => ({
+    category,
+    defs: CONDITION_CATALOG.filter((def) => def.category === category),
+  })).filter((group) => group.defs.length > 0)
+  const isConditionEnabled = (condition: PickableCondition): boolean =>
+    !conditionStepType ||
+    conditionAppliesToStepType(condition, conditionStepType, { forceAllowAccept })
   const hasQuickActions = onUseTemplate || onUsePrompt
 
   const [tab, setTab] = React.useState<"steps" | "conditions">("steps")
@@ -434,29 +602,55 @@ export function StepTypePickerDialog({
         )}
 
         {tab === "conditions" && onSelectCondition ? (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {availableConditions.map((condition) => {
-              const card = c.conditions[condition]
+          <div className="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
+            {conditionsByCategory.map(({ category, defs }) => {
+              const meta = categoryMeta(category)
               return (
-                <button
-                  key={condition}
-                  type="button"
-                  onClick={() => {
-                    onSelectCondition(condition)
-                    onOpenChange(false)
-                  }}
-                  className="hover:border-primary/40 hover:bg-muted/30 flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors"
-                >
-                  <span className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-md">
-                    <GitFork className="size-4" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium">{card.label}</span>
-                    <span className="text-muted-foreground block text-xs">
-                      {card.description}
-                    </span>
-                  </span>
-                </button>
+                <div key={category} className="space-y-2">
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase">
+                    <meta.Icon className="size-3.5" />
+                    {c.conditionCategories[category]}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {defs.map((def) => {
+                      const card = c.conditions[def.kind]
+                      const enabled = isConditionEnabled(def.kind)
+                      return (
+                        <button
+                          key={def.kind}
+                          type="button"
+                          disabled={!enabled}
+                          onClick={() => {
+                            if (!enabled) return
+                            onSelectCondition(def.kind)
+                            onOpenChange(false)
+                          }}
+                          className={cn(
+                            "flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors",
+                            enabled
+                              ? "hover:border-primary/40 hover:bg-muted/30"
+                              : "cursor-not-allowed opacity-50"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "flex size-8 items-center justify-center rounded-md",
+                              enabled ? meta.tint : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            <def.Icon className="size-4" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">{card.label}</span>
+                            <span className="text-muted-foreground block text-xs">
+                              {card.description}
+                            </span>
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               )
             })}
           </div>

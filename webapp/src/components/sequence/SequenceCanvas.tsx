@@ -34,6 +34,7 @@ import {
 } from "@/lib/sequence-layout"
 import { stripHtml } from "@/lib/rich-text"
 import { useLocale } from "@/lib/locale"
+import { useReleaseMode } from "@/lib/release-mode"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
@@ -79,6 +80,14 @@ const COPY = {
       not_accepted: "If Not Connected",
       read: "If read",
       not_read: "If not read",
+      connected: "If already connected",
+      not_connected: "If not already connected",
+      has_profile: "If has LinkedIn profile",
+      no_profile: "If no LinkedIn profile",
+      professional: "If professional email",
+      not_professional: "If not professional email",
+      answered: "If answered",
+      not_answered: "If not answered",
     } as Record<StepTrackKind, string>,
     addStep: "Add step",
     addParallel: "Add parallel step",
@@ -126,6 +135,14 @@ const COPY = {
       not_accepted: "Si no están conectados",
       read: "Si se lee",
       not_read: "Si no se lee",
+      connected: "Si ya están conectados",
+      not_connected: "Si aún no están conectados",
+      has_profile: "Si tienen perfil de LinkedIn",
+      no_profile: "Si no tienen perfil de LinkedIn",
+      professional: "Si el correo es profesional",
+      not_professional: "Si el correo no es profesional",
+      answered: "Si contestan la llamada",
+      not_answered: "Si no contestan la llamada",
     } as Record<StepTrackKind, string>,
     addStep: "Añadir paso",
     addParallel: "Añadir paso paralelo",
@@ -173,6 +190,14 @@ const COPY = {
       not_accepted: "Se non connesso",
       read: "Se letto",
       not_read: "Se non letto",
+      connected: "Se già connessi",
+      not_connected: "Se non ancora connessi",
+      has_profile: "Se hanno un profilo LinkedIn",
+      no_profile: "Se non hanno un profilo LinkedIn",
+      professional: "Se l'email è professionale",
+      not_professional: "Se l'email non è professionale",
+      answered: "Se rispondono alla chiamata",
+      not_answered: "Se non rispondono alla chiamata",
     } as Record<StepTrackKind, string>,
     addStep: "Aggiungi passaggio",
     addParallel: "Aggiungi passaggio parallelo",
@@ -220,6 +245,14 @@ const COPY = {
       not_accepted: "Si non connecté",
       read: "Si lu",
       not_read: "Si non lu",
+      connected: "S'ils sont déjà connectés",
+      not_connected: "S'ils ne sont pas encore connectés",
+      has_profile: "S'ils ont un profil LinkedIn",
+      no_profile: "S'ils n'ont pas de profil LinkedIn",
+      professional: "Si l'e-mail est professionnel",
+      not_professional: "Si l'e-mail n'est pas professionnel",
+      answered: "S'ils répondent à l'appel",
+      not_answered: "S'ils ne répondent pas à l'appel",
     } as Record<StepTrackKind, string>,
     addStep: "Ajouter une étape",
     addParallel: "Ajouter une étape parallèle",
@@ -267,6 +300,14 @@ const COPY = {
       not_accepted: "Wenn nicht verbunden",
       read: "Wenn gelesen",
       not_read: "Wenn nicht gelesen",
+      connected: "Wenn bereits vernetzt",
+      not_connected: "Wenn noch nicht vernetzt",
+      has_profile: "Wenn LinkedIn-Profil vorhanden",
+      no_profile: "Wenn kein LinkedIn-Profil vorhanden",
+      professional: "Wenn geschäftliche E-Mail",
+      not_professional: "Wenn keine geschäftliche E-Mail",
+      answered: "Wenn beantwortet",
+      not_answered: "Wenn nicht beantwortet",
     } as Record<StepTrackKind, string>,
     addStep: "Schritt hinzufügen",
     addParallel: "Parallelen Schritt hinzufügen",
@@ -314,6 +355,14 @@ const COPY = {
       not_accepted: "Se não estiverem ligados",
       read: "Se lerem",
       not_read: "Se não lerem",
+      connected: "Se já estiverem ligados",
+      not_connected: "Se ainda não estiverem ligados",
+      has_profile: "Se tiverem perfil do LinkedIn",
+      no_profile: "Se não tiverem perfil do LinkedIn",
+      professional: "Se o email for profissional",
+      not_professional: "Se o email não for profissional",
+      answered: "Se atenderem",
+      not_answered: "Se não atenderem",
     } as Record<StepTrackKind, string>,
     addStep: "Adicionar passo",
     addParallel: "Adicionar passo paralelo",
@@ -361,6 +410,14 @@ const COPY = {
       not_accepted: "Se não estiverem conectados",
       read: "Se lerem",
       not_read: "Se não lerem",
+      connected: "Se já estiverem conectados",
+      not_connected: "Se ainda não estiverem conectados",
+      has_profile: "Se tiverem perfil do LinkedIn",
+      no_profile: "Se não tiverem perfil do LinkedIn",
+      professional: "Se o email for profissional",
+      not_professional: "Se o email não for profissional",
+      answered: "Se atenderem",
+      not_answered: "Se não atenderem",
     } as Record<StepTrackKind, string>,
     addStep: "Adicionar etapa",
     addParallel: "Adicionar etapa paralela",
@@ -651,6 +708,7 @@ function TrackLabelPill({ kind }: { kind: StepTrackKind }) {
 function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   const { locale } = useLocale()
   const c = COPY[locale]
+  const { isV1 } = useReleaseMode()
   const {
     step,
     selectedStepId,
@@ -668,8 +726,11 @@ function StepNodeComponent({ data }: NodeProps & { data: StepNodeExtraData }) {
   // A step is either a fork anchor or parallel-able, never both — keeps the
   // canvas geometry simple (no lane collisions between a wide parallel
   // cluster and fork-track lanes on the same row). Only top-level steps
-  // qualify, so anything inside a condition track is out.
-  const canAddParallel = interactive && !step.fork && !inTrack
+  // qualify, so anything inside a condition track is out. Parallel steps are
+  // v2-only (see lib/release-mode.ts) — the add affordance is hidden in v1,
+  // matching the hide-the-button precedent used elsewhere (e.g.
+  // WorkspaceDetail.tsx's `{!isV1 && <Button>Run</Button>}`).
+  const canAddParallel = interactive && !step.fork && !inTrack && !isV1
   const hasParallel = parallelSteps.length > 0
   // Every node in this diagram — plain steps, parallel groups, and the "+"
   // ghosts — shares the same lane x position (its wrapper's left edge), so
