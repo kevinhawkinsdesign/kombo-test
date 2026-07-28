@@ -27,9 +27,21 @@ import { STEP_CREDIT_COST } from "@/lib/store"
 // vertical run to read as one clean turn instead of a cramped zigzag.
 export const ROW_HEIGHT = 320
 export const LANE_WIDTH = 320
+// The standard "next thing after a step" row-gap, in row-unit scale — how
+// far below a step its own trailing "+" ghost (or, for a fork's track, the
+// track's own pill) sits. Used everywhere a ghost/pill is the first thing
+// to appear after a real step, so that gap reads the same size throughout
+// the canvas instead of varying by context.
+const GHOST_OFFSET = 0.5
 // How far past the trailing "+" ghost the next real card starts, in the
 // same row-unit scale as ROW_HEIGHT.
 const GHOST_TRAILING_GAP = 0.2
+// Where a fork track's first REAL step lands, relative to the track's
+// nominal start (one full row below the fork step) — pulled up so the gap
+// from the fork card to the track's first row matches the standard
+// GHOST_OFFSET + GHOST_TRAILING_GAP a real step gets anywhere else in the
+// chain, instead of the fork anchor's own uncompacted full ROW_HEIGHT.
+const FORK_TRACK_FIRST_STEP_PULLUP = 1 - (GHOST_OFFSET + GHOST_TRAILING_GAP)
 
 // A track is either the "condition met" (Yes) or "condition not met" (No)
 // arm of a fork. Both arms are color-coded (green for met, red for
@@ -161,6 +173,14 @@ function layoutTrack(
   let depth = startDepth
   let prevId: string | undefined
   steps.forEach((step) => {
+    // The track's first real step sits closer to the fork than the nominal
+    // full row below it (see FORK_TRACK_FIRST_STEP_PULLUP) — so the gap
+    // from the fork card down to this track's content matches the same
+    // GHOST_OFFSET + GHOST_TRAILING_GAP gap a step gets anywhere else in
+    // the chain, rather than a bigger, fork-only gap. Every step after the
+    // first keeps the normal one-row spacing, so this only shifts where
+    // the track starts, not its own internal rhythm.
+    if (!prevId) depth -= FORK_TRACK_FIRST_STEP_PULLUP
     // The condition pill marks the branch point, so only the arm's FIRST
     // node carries it — repeating it on every later step in the same track
     // just restates what the reader already knows. `inTrack` keeps the
@@ -198,7 +218,7 @@ function layoutTrack(
     depth = nested.nextDepth
     if (interactive && nested.rejoinSources.length > 0) {
       const ghostId = `add-after-${lastStep.id}`
-      const ghostDepth = depth - 0.5
+      const ghostDepth = depth - GHOST_OFFSET
       nodes.push(
         addNode(ghostId, ghostDepth, lane, { kind: "add", afterStepId: lastStep.id })
       )
@@ -223,7 +243,7 @@ function layoutTrack(
     // The pill only belongs at the arm's start — an empty track's ghost IS
     // that start; once the track has steps, the first step carries it.
     nodes.push(
-      addNode(ghostId, depth - 0.5, lane, {
+      addNode(ghostId, depth - GHOST_OFFSET, lane, {
         kind: "add",
         trackId,
         forkStepId,
@@ -237,11 +257,12 @@ function layoutTrack(
       target: ghostId,
       ...edgeStyle(prevId ? undefined : trackLabel, true),
     })
-    // Reserve the row the ghost occupies. Without this the fork's own merge
-    // ghost lands at the exact same coordinates as the DEFAULT arm's
-    // trailing ghost (both sit on the parent lane now that the not-met arm
-    // stays centered), stacking two "+" buttons on top of each other.
-    depth += 0.5
+    // Reserve the row the ghost occupies, so this track's own `endDepth`
+    // properly accounts for it — otherwise whatever reads `endDepth` (a
+    // sibling track's merge point, or the row the fork's own trailing
+    // content starts on) could land on the exact same row this ghost
+    // already occupies.
+    depth += GHOST_OFFSET
   }
   return { nodes, edges, endDepth: depth, rejoinSources: prevId ? [prevId] : [] }
 }
@@ -418,7 +439,7 @@ export function computeLayout(
       // so it gets pushed further down — there's plenty of unused space
       // before the next real row regardless.
       const ghostId = `add-after-${step.id}`
-      const ghostOffset = step.parallelSteps?.length ? 0.1 : 0.5
+      const ghostOffset = step.parallelSteps?.length ? 0.1 : GHOST_OFFSET
       const ghostDepth = depth - ghostOffset
       // An ordinary connector carries no label — auto-pausing on reply is
       // this app's default, implicit behavior for every step, not a
