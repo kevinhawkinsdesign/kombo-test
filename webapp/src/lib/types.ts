@@ -433,6 +433,48 @@ export interface Campaign {
   autoPauseOnReply?: boolean
 }
 
+// A scored dimension in the Analysis tab's "Call Score Breakdown" (e.g.
+// "Discovery", "Objection handling"), each optionally split into sub-metrics.
+export interface CoachScoreMetric {
+  label: string
+  metricScore: number // 0-100
+  metricSummary?: string
+  subMetrics?: { label: string; score: number }[]
+}
+
+// A meeting participant identified from calendar/attendance data — the
+// Participants tab's row shape. `isOwner` is the host (the rep); `attended`
+// is undefined when attendance couldn't be determined at all (vs. a known
+// no-show, `false`).
+export interface CoachParticipant {
+  name: string
+  email?: string
+  isOwner?: boolean
+  attended?: boolean
+  inCrm?: boolean
+}
+
+// One speaker turn in the Transcript tab. `speaker-0` is always the rep, by
+// convention (matches the speaker-diarization convention used elsewhere).
+export interface CoachUtterance {
+  speakerId: string
+  atSec: number
+  text: string
+}
+export interface CoachSpeaker {
+  speakerId: string
+  name?: string
+  role?: string
+}
+
+// A single extracted value in the Key Fields tab — org-configured field
+// extraction (e.g. "Budget", "Decision timeline"), not a fixed schema.
+export interface CoachKeyField {
+  label: string
+  description?: string
+  value: string
+}
+
 export interface CoachRecording {
   id: string
   title: string
@@ -447,8 +489,37 @@ export interface CoachRecording {
   nextSteps: string[]
   // Where the call happened. LinkedIn calls can't embed their recording — the
   // player links out to the original instead; every other source plays the
-  // full video inline.
-  videoSource?: "meet" | "teams" | "linkedin" | "phone"
+  // full video inline. Widened to cover every call channel the platform
+  // supports: video (Meet/Teams/Zoom), VOIP (Gong), regular phone, WhatsApp.
+  videoSource?: "meet" | "teams" | "zoom" | "gong" | "phone" | "whatsapp" | "linkedin"
+  // Whether the recording has a video track — the detail page's player
+  // shows a video frame or an audio waveform accordingly. In a real
+  // integration this would be probed from the media file itself; here it's
+  // declared directly since the mock data has no real media to inspect.
+  mediaKind?: "audio" | "video"
+  // Recorded Calls always exist once a call is captured; Summarize and
+  // Analyze are separate, independent AI actions a user runs (individually
+  // or in bulk) against any not-yet-processed recording — a call can have
+  // one, both, or neither done.
+  summarized?: boolean
+  analyzed?: boolean
+  // Analysis tab
+  scoreBreakdown?: CoachScoreMetric[]
+  review?: { positiveFeedback: string; thingsToImprove: string }
+  // Summary tab (highlights/nextSteps above back its Summary/Next steps
+  // sections; this backs its Overview)
+  overview?: string
+  // Transcript tab
+  speakers?: CoachSpeaker[]
+  transcript?: CoachUtterance[]
+  // Participants tab
+  participants?: CoachParticipant[]
+  // Key Fields tab
+  keyFields?: CoachKeyField[]
+  // Dashboard filters
+  prospectPosition?: string
+  dealId?: string
+  salesRepId?: string
 }
 
 export interface Integration {
