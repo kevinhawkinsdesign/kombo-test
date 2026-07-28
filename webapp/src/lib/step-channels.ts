@@ -64,7 +64,7 @@ export function normalizeChannel(channel: string): StepChannel {
 const LINKEDIN_CHANNELS: StepChannel[] = ["linkedin_message", "linkedin_dm", "linkedin_inmail"]
 
 // Which channels a condition makes sense for — e.g. "Opened" only means
-// something for an email step, while "Accepted connection" only means
+// something for an email step, while "Connected on LinkedIn" only means
 // something for a LinkedIn step. `null` means unrestricted (the existing
 // "Replied" condition predates this map and never had a channel fence).
 const CONDITION_CHANNELS: Record<ConditionKind, StepChannel[] | null> = {

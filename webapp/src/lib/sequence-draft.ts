@@ -33,6 +33,9 @@ export interface SequenceDraftApi {
   moveStepToTarget(stepId: string, target: MoveTarget): void
   addCondition(stepId: string, condition: ConditionKind): void
   removeFork(stepId: string): void
+  // Only meaningful on a step whose fork.condition is "accept" — how long
+  // to wait for the LinkedIn connection before treating it as not made.
+  updateForkWithinDays(stepId: string, days: number): void
   addForkStep(stepId: string, trackId: string, channel: StepChannel, extra?: StepExtra): void
   addParallelStep(stepId: string, channel: StepChannel, extra?: StepExtra): void
   // Inserts a LinkedIn Connect step, forked into "accepted"/"not accepted"
@@ -236,6 +239,7 @@ export function useSequenceDraft(
                       { id: uid("trk"), kind: metKind, steps: [] },
                       { id: uid("trk"), kind: notMetKind, steps: [] },
                     ],
+                    ...(condition === "accept" ? { withinDays: 4 } : {}),
                   },
                 }
               : s
@@ -247,6 +251,15 @@ export function useSequenceDraft(
       setDraft(
         updateStepTree(state.draft, stepId, (list, i) =>
           list.map((s, idx) => (idx === i ? { ...s, fork: undefined } : s))
+        )
+      )
+    },
+    updateForkWithinDays(stepId, days) {
+      setDraft(
+        updateStepTree(state.draft, stepId, (list, i) =>
+          list.map((s, idx) =>
+            idx === i && s.fork ? { ...s, fork: { ...s.fork, withinDays: days } } : s
+          )
         )
       )
     },
@@ -294,6 +307,7 @@ export function useSequenceDraft(
           { id: uid("trk"), kind: metKind, steps: [target] },
           { id: uid("trk"), kind: notMetKind, steps: [] },
         ],
+        withinDays: 4,
       }
       if (afterStepId) {
         const idx = state.draft.findIndex((s) => s.id === afterStepId)
