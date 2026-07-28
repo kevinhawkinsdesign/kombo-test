@@ -2990,11 +2990,21 @@ export default function CampaignDetail() {
   )
 
   return (
-    <Page>
-      <BackLink to="/campaigns" label={c.campaigns} />
+    <>
+      <Page className="pb-0">
+        <BackLink to="/campaigns" label={c.campaigns} />
+      </Page>
 
-      <CampaignTabBar currentId={campaign.id} />
+      {/* Full-bleed within the main content area — not constrained to the
+          page's max-w-7xl — so the tab strip spans from the sidebar edge to
+          the viewport edge. Horizontal padding matches AppHeader's own
+          px-4 md:px-6 so its edges still line up with the rest of the
+          chrome. */}
+      <div className="px-4 md:px-6">
+        <CampaignTabBar currentId={campaign.id} />
+      </div>
 
+      <Page className="pt-0">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5">
           {scheduled && campaign.scheduledAt && (
@@ -4351,7 +4361,8 @@ export default function CampaignDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Page>
+      </Page>
+    </>
   )
 }
 

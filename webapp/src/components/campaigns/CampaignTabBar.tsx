@@ -143,10 +143,18 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
   )
   const [pickerOpen, setPickerOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
+  const activeTabRef = React.useRef<HTMLDivElement>(null)
 
   const tabs = openIds
     .map((id) => campaigns.find((cm) => cm.id === id))
     .filter((cm): cm is Campaign => Boolean(cm))
+
+  // Keep the active tab visible — the strip clips it at the container's
+  // right edge otherwise, both on first mount and when navigating between
+  // already-open campaigns.
+  React.useEffect(() => {
+    activeTabRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" })
+  }, [currentId])
 
   function closeTab(id: string) {
     const remaining = tabs.filter((t) => t.id !== id)
@@ -176,6 +184,7 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
         return (
           <div
             key={t.id}
+            ref={active ? activeTabRef : undefined}
             className={cn(
               "group relative -mb-px flex shrink-0 items-center gap-2 rounded-t-lg border transition-colors",
               active

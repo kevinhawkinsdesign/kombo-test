@@ -1043,11 +1043,21 @@ export default function ListDetail() {
   }
 
   return (
-    <Page>
-      <BackLink to="/lists" label={c.lists} />
+    <>
+      <Page className="pb-0">
+        <BackLink to="/lists" label={c.lists} />
+      </Page>
 
-      <ListTabBar currentId={list.id} />
+      {/* Full-bleed within the main content area — not constrained to the
+          page's max-w-7xl — so the tab strip spans from the sidebar edge to
+          the viewport edge. Horizontal padding matches AppHeader's own
+          px-4 md:px-6 so its edges still line up with the rest of the
+          chrome. */}
+      <div className="px-4 md:px-6">
+        <ListTabBar currentId={list.id} />
+      </div>
 
+      <Page className="pt-0">
       <ListSettingsBox
         list={list}
         isCompany={isCompany}
@@ -1512,7 +1522,8 @@ export default function ListDetail() {
         onOpenChange={setLinkCampaignOpen}
         list={list}
       />
-    </Page>
+      </Page>
+    </>
   )
 }
 
