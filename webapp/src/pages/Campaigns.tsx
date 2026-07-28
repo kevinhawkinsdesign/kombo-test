@@ -67,7 +67,7 @@ const COPY = {
       active: "Active",
       paused: "Paused",
       draft: "Draft",
-      completed: "Completed",
+      completed: "Ended",
     } as Record<CampaignStatus, string>,
     createdSteps: (date: string, steps: number) =>
       `Created ${date} · ${steps} steps`,
@@ -144,7 +144,7 @@ const COPY = {
       active: "Activa",
       paused: "En pausa",
       draft: "Borrador",
-      completed: "Completada",
+      completed: "Finalizada",
     } as Record<CampaignStatus, string>,
     createdSteps: (date: string, steps: number) =>
       `Creada el ${date} · ${steps} pasos`,
@@ -223,7 +223,7 @@ const COPY = {
       active: "Attiva",
       paused: "In pausa",
       draft: "Bozza",
-      completed: "Completata",
+      completed: "Terminata",
     } as Record<CampaignStatus, string>,
     createdSteps: (date: string, steps: number) =>
       `Creata il ${date} · ${steps} passaggi`,
@@ -381,7 +381,7 @@ const COPY = {
       active: "Aktiv",
       paused: "Pausiert",
       draft: "Entwurf",
-      completed: "Abgeschlossen",
+      completed: "Beendet",
     } as Record<CampaignStatus, string>,
     createdSteps: (date: string, steps: number) =>
       `Erstellt am ${date} · ${steps} Schritte`,
@@ -460,7 +460,7 @@ const COPY = {
       active: "Ativa",
       paused: "Em pausa",
       draft: "Rascunho",
-      completed: "Concluída",
+      completed: "Terminada",
     } as Record<CampaignStatus, string>,
     createdSteps: (date: string, steps: number) =>
       `Criada a ${date} · ${steps} passos`,
@@ -539,7 +539,7 @@ const COPY = {
       active: "Ativa",
       paused: "Em pausa",
       draft: "Rascunho",
-      completed: "Concluída",
+      completed: "Encerrada",
     } as Record<CampaignStatus, string>,
     createdSteps: (date: string, steps: number) =>
       `Criada em ${date} · ${steps} etapas`,

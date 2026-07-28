@@ -197,7 +197,7 @@ const COPY = {
   en: {
     statusLabel: {
       active: "Active",
-      paused: "Inactive",
+      paused: "Paused",
       draft: "Draft",
       completed: "Ended",
     } as Record<CampaignStatus, string>,
@@ -212,7 +212,7 @@ const COPY = {
     campaigns: "All Campaigns",
     createdSteps: (date: string, steps: number) =>
       `Created ${date} · ${steps} steps`,
-    pause: "Make inactive",
+    pause: "Pause",
     activate: "Activate",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
@@ -420,7 +420,7 @@ const COPY = {
   es: {
     statusLabel: {
       active: "Activa",
-      paused: "Inactiva",
+      paused: "En pausa",
       draft: "Borrador",
       completed: "Finalizada",
     } as Record<CampaignStatus, string>,
@@ -435,7 +435,7 @@ const COPY = {
     campaigns: "Todas las campañas",
     createdSteps: (date: string, steps: number) =>
       `Creada el ${date} · ${steps} pasos`,
-    pause: "Desactivar",
+    pause: "Pausar",
     activate: "Activar",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
@@ -643,7 +643,7 @@ const COPY = {
   it: {
     statusLabel: {
       active: "Attiva",
-      paused: "Inattiva",
+      paused: "In pausa",
       draft: "Bozza",
       completed: "Conclusa",
     } as Record<CampaignStatus, string>,
@@ -658,7 +658,7 @@ const COPY = {
     campaigns: "Tutte le campagne",
     createdSteps: (date: string, steps: number) =>
       `Creata il ${date} · ${steps} passaggi`,
-    pause: "Disattiva",
+    pause: "Pausa",
     activate: "Attiva",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
@@ -866,7 +866,7 @@ const COPY = {
   fr: {
     statusLabel: {
       active: "Active",
-      paused: "Inactive",
+      paused: "En pause",
       draft: "Brouillon",
       completed: "Terminée",
     } as Record<CampaignStatus, string>,
@@ -881,7 +881,7 @@ const COPY = {
     campaigns: "Toutes les campagnes",
     createdSteps: (date: string, steps: number) =>
       `Créée le ${date} · ${steps} étapes`,
-    pause: "Désactiver",
+    pause: "Pause",
     activate: "Activer",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
@@ -1089,7 +1089,7 @@ const COPY = {
   de: {
     statusLabel: {
       active: "Aktiv",
-      paused: "Inaktiv",
+      paused: "Pausiert",
       draft: "Entwurf",
       completed: "Beendet",
     } as Record<CampaignStatus, string>,
@@ -1104,7 +1104,7 @@ const COPY = {
     campaigns: "Alle Kampagnen",
     createdSteps: (date: string, steps: number) =>
       `Erstellt am ${date} · ${steps} Schritte`,
-    pause: "Deaktivieren",
+    pause: "Pausieren",
     activate: "Aktivieren",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
@@ -1312,7 +1312,7 @@ const COPY = {
   pt: {
     statusLabel: {
       active: "Ativa",
-      paused: "Inativa",
+      paused: "Em pausa",
       draft: "Rascunho",
       completed: "Terminada",
     } as Record<CampaignStatus, string>,
@@ -1327,7 +1327,7 @@ const COPY = {
     campaigns: "Todas as campanhas",
     createdSteps: (date: string, steps: number) =>
       `Criada a ${date} · ${steps} passos`,
-    pause: "Desativar",
+    pause: "Pausar",
     activate: "Ativar",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
@@ -1535,7 +1535,7 @@ const COPY = {
   pt_BR: {
     statusLabel: {
       active: "Ativa",
-      paused: "Inativa",
+      paused: "Em pausa",
       draft: "Rascunho",
       completed: "Encerrada",
     } as Record<CampaignStatus, string>,
@@ -1550,7 +1550,7 @@ const COPY = {
     campaigns: "Todas as campanhas",
     createdSteps: (date: string, steps: number) =>
       `Criada em ${date} · ${steps} etapas`,
-    pause: "Desativar",
+    pause: "Pausar",
     activate: "Ativar",
     activateDisabledReason: (missingSequence: boolean, missingProspects: boolean) => {
       if (missingSequence && missingProspects)
