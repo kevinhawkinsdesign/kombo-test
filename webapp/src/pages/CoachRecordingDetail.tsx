@@ -48,6 +48,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmptyState } from "@/components/common/EmptyState"
 import { TabSkeleton } from "@/components/common/ContentSkeleton"
@@ -164,6 +165,12 @@ const COPY = {
     overviewEmpty: "This call hasn't been summarized yet.",
     summary: "Summary",
     followUpTitle: (name: string) => `Follow up with ${name}`,
+    valuePropGateTitle: "Confirm your value proposition",
+    valuePropGateIntro:
+      "Confirm your value proposition so Kai can tailor this follow-up.",
+    valuePropGateDefault: (company: string) =>
+      `${company} helps sales teams find and engage the right prospects faster with AI-powered search, enrichment, and outreach — all in one place.`,
+    valuePropGateConfirm: "Confirm & continue",
     followUpSubjectLabel: "Subject",
     followUpBodyLabel: "Message",
     followUpDefaultSubject: (company: string) => `Following up — ${company}`,
@@ -299,6 +306,12 @@ const COPY = {
     overviewEmpty: "Esta llamada aún no se ha resumido.",
     summary: "Resumen",
     followUpTitle: (name: string) => `Seguimiento con ${name}`,
+    valuePropGateTitle: "Confirma tu propuesta de valor",
+    valuePropGateIntro:
+      "Confirma tu propuesta de valor para que Kai pueda adaptar este seguimiento.",
+    valuePropGateDefault: (company: string) =>
+      `${company} ayuda a los equipos de ventas a encontrar y contactar a los prospectos adecuados más rápido con búsqueda, enriquecimiento y prospección impulsados por IA — todo en un mismo lugar.`,
+    valuePropGateConfirm: "Confirmar y continuar",
     followUpSubjectLabel: "Asunto",
     followUpBodyLabel: "Mensaje",
     followUpDefaultSubject: (company: string) => `Seguimiento — ${company}`,
@@ -434,6 +447,12 @@ const COPY = {
     overviewEmpty: "Questa chiamata non è stata ancora riepilogata.",
     summary: "Riepilogo",
     followUpTitle: (name: string) => `Follow-up con ${name}`,
+    valuePropGateTitle: "Conferma la tua proposta di valore",
+    valuePropGateIntro:
+      "Conferma la tua proposta di valore così Kai può personalizzare questo follow-up.",
+    valuePropGateDefault: (company: string) =>
+      `${company} aiuta i team di vendita a trovare e coinvolgere i prospect giusti più velocemente con ricerca, arricchimento e prospecting basati sull'AI — tutto in un unico posto.`,
+    valuePropGateConfirm: "Conferma e continua",
     followUpSubjectLabel: "Oggetto",
     followUpBodyLabel: "Messaggio",
     followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
@@ -569,6 +588,12 @@ const COPY = {
     overviewEmpty: "Cet appel n'a pas encore été résumé.",
     summary: "Résumé",
     followUpTitle: (name: string) => `Suivi avec ${name}`,
+    valuePropGateTitle: "Confirmez votre proposition de valeur",
+    valuePropGateIntro:
+      "Confirmez votre proposition de valeur pour que Kai puisse adapter ce suivi.",
+    valuePropGateDefault: (company: string) =>
+      `${company} aide les équipes commerciales à trouver et engager les bons prospects plus rapidement grâce à la recherche, l'enrichissement et la prospection propulsés par l'IA — le tout au même endroit.`,
+    valuePropGateConfirm: "Confirmer et continuer",
     followUpSubjectLabel: "Objet",
     followUpBodyLabel: "Message",
     followUpDefaultSubject: (company: string) => `Suivi — ${company}`,
@@ -704,6 +729,12 @@ const COPY = {
     overviewEmpty: "Dieser Anruf wurde noch nicht zusammengefasst.",
     summary: "Zusammenfassung",
     followUpTitle: (name: string) => `Follow-up mit ${name}`,
+    valuePropGateTitle: "Bestätige deine Value Proposition",
+    valuePropGateIntro:
+      "Bestätige deine Value Proposition, damit Kai dieses Follow-up darauf abstimmen kann.",
+    valuePropGateDefault: (company: string) =>
+      `${company} hilft Sales-Teams, die richtigen Prospects schneller zu finden und anzusprechen — mit KI-gestützter Suche, Anreicherung und Prospecting, alles an einem Ort.`,
+    valuePropGateConfirm: "Bestätigen und fortfahren",
     followUpSubjectLabel: "Betreff",
     followUpBodyLabel: "Nachricht",
     followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
@@ -839,6 +870,12 @@ const COPY = {
     overviewEmpty: "Esta chamada ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Seguimento com ${name}`,
+    valuePropGateTitle: "Confirme a sua proposta de valor",
+    valuePropGateIntro:
+      "Confirme a sua proposta de valor para que o Kai possa adaptar este seguimento.",
+    valuePropGateDefault: (company: string) =>
+      `${company} ajuda as equipas de vendas a encontrar e envolver os prospects certos mais depressa com pesquisa, enriquecimento e prospeção com IA — tudo num só lugar.`,
+    valuePropGateConfirm: "Confirmar e continuar",
     followUpSubjectLabel: "Assunto",
     followUpBodyLabel: "Mensagem",
     followUpDefaultSubject: (company: string) => `Seguimento — ${company}`,
@@ -974,6 +1011,12 @@ const COPY = {
     overviewEmpty: "Esta ligação ainda não foi resumida.",
     summary: "Resumo",
     followUpTitle: (name: string) => `Follow-up com ${name}`,
+    valuePropGateTitle: "Confirme sua proposta de valor",
+    valuePropGateIntro:
+      "Confirme sua proposta de valor para que o Kai possa personalizar este follow-up.",
+    valuePropGateDefault: (company: string) =>
+      `${company} ajuda times de vendas a encontrar e engajar os prospects certos mais rápido com busca, enriquecimento e prospecção com IA — tudo em um só lugar.`,
+    valuePropGateConfirm: "Confirmar e continuar",
     followUpSubjectLabel: "Assunto",
     followUpBodyLabel: "Mensagem",
     followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
@@ -1340,6 +1383,10 @@ export default function CoachRecordingDetail() {
   }
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
   const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
+  // Lives on the page, not inside FollowUpTab — that component unmounts
+  // whenever this TabsContent isn't the active tab (see its own comment),
+  // so state kept there wouldn't survive switching away and back.
+  const [valuePropConfirmed, setValuePropConfirmed] = React.useState(false)
   const [crmOpen, setCrmOpen] = React.useState(false)
   const [crmParticipant, setCrmParticipant] = React.useState<CoachParticipant | null>(
     null
@@ -2145,6 +2192,8 @@ export default function CoachRecordingDetail() {
             problem={analysis?.keyFields?.problem}
             helpful={followUpHelpful}
             setHelpful={setFollowUpHelpful}
+            valuePropConfirmed={valuePropConfirmed}
+            setValuePropConfirmed={setValuePropConfirmed}
           />
         </TabsContent>
         </>
@@ -2324,6 +2373,8 @@ function FollowUpTab({
   problem,
   helpful,
   setHelpful,
+  valuePropConfirmed,
+  setValuePropConfirmed,
 }: {
   rec: CoachRecording
   c: Copy
@@ -2334,7 +2385,12 @@ function FollowUpTab({
   problem?: string
   helpful: boolean | null
   setHelpful: (v: boolean | null) => void
+  valuePropConfirmed: boolean
+  setValuePropConfirmed: (v: boolean) => void
 }) {
+  const [valueProp, setValueProp] = React.useState(() =>
+    c.valuePropGateDefault(currentUser.company)
+  )
   const templates = useFollowUpTemplates()
   // Nothing concrete to personalize the draft with yet — next steps carry
   // the "what to do", `problem` carries the "why it matters"; without either
@@ -2412,6 +2468,31 @@ function FollowUpTab({
   }
 
   const hasText = stripHtml(body).trim().length > 0
+
+  // Gate the composer behind a one-time-per-session value-prop confirmation,
+  // mirroring the Chrome extension's FollowUpEmailPrep flow. `valuePropConfirmed`
+  // lives on the page (see its declaration there) so it survives switching to
+  // another tab and back — only remounting the page resets it.
+  if (!valuePropConfirmed) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.valuePropGateTitle}</CardTitle>
+          <p className="text-muted-foreground text-sm">{c.valuePropGateIntro}</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={valueProp}
+            onChange={(e) => setValueProp(e.target.value)}
+            className="min-h-28"
+          />
+          <Button variant="volt" onClick={() => setValuePropConfirmed(true)}>
+            {c.valuePropGateConfirm}
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <>
