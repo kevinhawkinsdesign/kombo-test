@@ -153,15 +153,7 @@ const COPY = {
     host: "Host",
     joined: "Joined",
     addToSalesforce: "Add to Salesforce",
-    fieldProblem: "Problem",
-    fieldProblemHint: "The main problem the customer is facing.",
-    fieldImpact: "Impact",
-    fieldImpactHint: "The business or personal cost of the problem.",
-    fieldContext: "Context",
-    fieldContextHint: "How the customer works today.",
-    fieldPeople: "People",
-    fieldPeopleHint: "Stakeholders involved in the decision.",
-    noKeyFields: "No key fields captured for this call.",
+    noKeyFields: "No key fields were extracted for this call.",
     priorityLabel: (p: string) => `Priority: ${p}`,
     priority: {
       high: "High",
@@ -296,15 +288,7 @@ const COPY = {
     host: "Anfitrión",
     joined: "Unido",
     addToSalesforce: "Añadir a Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "El principal problema que enfrenta el cliente.",
-    fieldImpact: "Impacto",
-    fieldImpactHint: "El coste empresarial o personal del problema.",
-    fieldContext: "Contexto",
-    fieldContextHint: "Cómo trabaja el cliente hoy.",
-    fieldPeople: "Personas",
-    fieldPeopleHint: "Personas implicadas en la decisión.",
-    noKeyFields: "No se capturaron campos clave para esta llamada.",
+    noKeyFields: "No se extrajeron campos clave para esta llamada.",
     priorityLabel: (p: string) => `Prioridad: ${p}`,
     priority: {
       high: "Alta",
@@ -439,15 +423,7 @@ const COPY = {
     host: "Organizzatore",
     joined: "Presente",
     addToSalesforce: "Aggiungi a Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "Il problema principale che il cliente sta affrontando.",
-    fieldImpact: "Impatto",
-    fieldImpactHint: "Il costo aziendale o personale del problema.",
-    fieldContext: "Contesto",
-    fieldContextHint: "Come lavora il cliente oggi.",
-    fieldPeople: "Persone",
-    fieldPeopleHint: "Le persone coinvolte nella decisione.",
-    noKeyFields: "Nessun campo chiave rilevato per questa chiamata.",
+    noKeyFields: "Nessun campo chiave estratto per questa chiamata.",
     priorityLabel: (p: string) => `Priorità: ${p}`,
     priority: {
       high: "Alta",
@@ -582,15 +558,7 @@ const COPY = {
     host: "Hôte",
     joined: "Présent",
     addToSalesforce: "Ajouter à Salesforce",
-    fieldProblem: "Problème",
-    fieldProblemHint: "Le principal problème rencontré par le client.",
-    fieldImpact: "Impact",
-    fieldImpactHint: "Le coût business ou personnel du problème.",
-    fieldContext: "Contexte",
-    fieldContextHint: "Comment le client travaille aujourd'hui.",
-    fieldPeople: "Personnes",
-    fieldPeopleHint: "Les parties prenantes impliquées dans la décision.",
-    noKeyFields: "Aucun champ clé capturé pour cet appel.",
+    noKeyFields: "Aucun champ clé extrait pour cet appel.",
     priorityLabel: (p: string) => `Priorité : ${p}`,
     priority: {
       high: "Haute",
@@ -725,15 +693,7 @@ const COPY = {
     host: "Host",
     joined: "Beigetreten",
     addToSalesforce: "Zu Salesforce hinzufügen",
-    fieldProblem: "Problem",
-    fieldProblemHint: "Das Hauptproblem, mit dem der Kunde konfrontiert ist.",
-    fieldImpact: "Auswirkung",
-    fieldImpactHint: "Die geschäftlichen oder persönlichen Kosten des Problems.",
-    fieldContext: "Kontext",
-    fieldContextHint: "Wie der Kunde heute arbeitet.",
-    fieldPeople: "Personen",
-    fieldPeopleHint: "Die an der Entscheidung beteiligten Stakeholder.",
-    noKeyFields: "Für diesen Call wurden keine Schlüsselfelder erfasst.",
+    noKeyFields: "Für diesen Call wurden keine Schlüsselfelder extrahiert.",
     priorityLabel: (p: string) => `Priorität: ${p}`,
     priority: {
       high: "Hoch",
@@ -868,15 +828,7 @@ const COPY = {
     host: "Anfitrião",
     joined: "Entrou",
     addToSalesforce: "Adicionar ao Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "O principal problema que o cliente enfrenta.",
-    fieldImpact: "Impacto",
-    fieldImpactHint: "O custo empresarial ou pessoal do problema.",
-    fieldContext: "Contexto",
-    fieldContextHint: "Como o cliente trabalha hoje.",
-    fieldPeople: "Pessoas",
-    fieldPeopleHint: "As pessoas envolvidas na decisão.",
-    noKeyFields: "Não foram capturados campos-chave para esta chamada.",
+    noKeyFields: "Não foram extraídos campos-chave para esta chamada.",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
     priority: {
       high: "Alta",
@@ -1011,15 +963,7 @@ const COPY = {
     host: "Anfitrião",
     joined: "Entrou",
     addToSalesforce: "Adicionar ao Salesforce",
-    fieldProblem: "Problema",
-    fieldProblemHint: "O principal problema que o cliente enfrenta.",
-    fieldImpact: "Impacto",
-    fieldImpactHint: "O custo de negócio ou pessoal do problema.",
-    fieldContext: "Contexto",
-    fieldContextHint: "Como o cliente trabalha hoje.",
-    fieldPeople: "Pessoas",
-    fieldPeopleHint: "As pessoas envolvidas na decisão.",
-    noKeyFields: "Nenhum campo-chave capturado para esta ligação.",
+    noKeyFields: "Nenhum campo-chave extraído para esta ligação.",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
     priority: {
       high: "Alta",
@@ -2072,23 +2016,20 @@ export default function CoachRecordingDetail() {
         </TabsContent>
 
         <TabsContent value="keyFields">
-          {analysis?.keyFields ? (
+          {rec.keyFields && rec.keyFields.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              {(
-                [
-                  ["problem", c.fieldProblem, c.fieldProblemHint],
-                  ["impact", c.fieldImpact, c.fieldImpactHint],
-                  ["context", c.fieldContext, c.fieldContextHint],
-                  ["people", c.fieldPeople, c.fieldPeopleHint],
-                ] as const
-              ).map(([key, label, hint]) => (
-                <Card key={key}>
+              {rec.keyFields.map((field) => (
+                <Card key={field.label}>
                   <CardHeader>
-                    <CardTitle className="text-base">{label}</CardTitle>
-                    <p className="text-muted-foreground text-xs">{hint}</p>
+                    <CardTitle className="text-base">{field.label}</CardTitle>
+                    {field.description && (
+                      <p className="text-muted-foreground text-xs">
+                        {field.description}
+                      </p>
+                    )}
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm">{analysis.keyFields![key]}</p>
+                    <p className="text-sm">{field.value}</p>
                   </CardContent>
                 </Card>
               ))}
