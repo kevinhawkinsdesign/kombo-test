@@ -366,8 +366,22 @@ export interface CampaignStep {
   parallelSteps?: CampaignStep[]
 }
 
-// What the fork's two tracks are conditioned on.
-export type ConditionKind = "reply" | "open" | "click" | "accept" | "read"
+// What the fork's two tracks are conditioned on. "is_connected",
+// "has_linkedin_profile", and "professional_email" are prospect-attribute
+// checks (true regardless of which step they're anchored to); the rest are
+// outcomes of the anchor step itself, so which ones apply depends on that
+// step's type — see `appliesToStepTypes` in step-channels.ts's
+// CONDITION_CATALOG.
+export type ConditionKind =
+  | "reply"
+  | "open"
+  | "click"
+  | "accept"
+  | "read"
+  | "is_connected"
+  | "has_linkedin_profile"
+  | "professional_email"
+  | "call_answered"
 
 // The two fixed, mutually-exclusive arms of a condition. Which pair
 // applies is determined by the fork's `condition`.
@@ -382,6 +396,14 @@ export type StepTrackKind =
   | "not_accepted"
   | "read"
   | "not_read"
+  | "connected"
+  | "not_connected"
+  | "has_profile"
+  | "no_profile"
+  | "professional"
+  | "not_professional"
+  | "answered"
+  | "not_answered"
 
 export interface StepTrack {
   id: string

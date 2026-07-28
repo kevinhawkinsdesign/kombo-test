@@ -40,7 +40,11 @@ export function isPositiveTrack(kind: StepTrackKind): boolean {
     kind === "opened" ||
     kind === "clicked" ||
     kind === "accepted" ||
-    kind === "read"
+    kind === "read" ||
+    kind === "connected" ||
+    kind === "has_profile" ||
+    kind === "professional" ||
+    kind === "answered"
   )
 }
 

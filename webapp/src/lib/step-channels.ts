@@ -16,6 +16,13 @@ import {
   ThumbsUp,
   Eye,
   Mic,
+  MailOpen,
+  MousePointerClick,
+  BadgeCheck,
+  UserCheck,
+  Users,
+  MessageCircleCheck,
+  PhoneCall,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -60,28 +67,6 @@ export function normalizeChannel(channel: string): StepChannel {
   if (channel === "sms") return "whatsapp"
   if (channel === "instagram") return "linkedin_message"
   return "email"
-}
-
-const LINKEDIN_CHANNELS: StepChannel[] = ["linkedin_message", "linkedin_dm", "linkedin_inmail"]
-
-// Which channels a condition makes sense for — e.g. "Opened" only means
-// something for an email step, while "Connected on LinkedIn" only means
-// something for a LinkedIn step. `null` means unrestricted (the existing
-// "Replied" condition predates this map and never had a channel fence).
-const CONDITION_CHANNELS: Record<ConditionKind, StepChannel[] | null> = {
-  reply: null,
-  open: ["email"],
-  click: ["email", "whatsapp", ...LINKEDIN_CHANNELS],
-  accept: LINKEDIN_CHANNELS,
-  read: ["email", "whatsapp", ...LINKEDIN_CHANNELS],
-}
-
-export function conditionAllowedForChannel(
-  condition: ConditionKind,
-  channel: StepChannel
-): boolean {
-  const allowed = CONDITION_CHANNELS[condition]
-  return allowed === null || allowed.includes(channel)
 }
 
 // Which integration a channel can't run without — an email step needs a
@@ -281,4 +266,91 @@ const STEP_TYPE_LABELS: Record<Locale, Record<StepTypeKey, string>> = {
 
 export function stepTypeLabel(locale: Locale, key: StepTypeKey): string {
   return STEP_TYPE_LABELS[locale][key]
+}
+
+/* ------------------------------ conditions ------------------------------ */
+
+// How the step-type picker's "Conditions" tab groups its catalog — mirrors
+// the channel families STEP_TYPES already recognizes, so every condition
+// slots under the same header a user would expect from the "Actions" tab's
+// icon/tint choices.
+export type ConditionCategory = "linkedin" | "email" | "whatsapp" | "call"
+
+export const CONDITION_CATEGORIES: ConditionCategory[] = ["linkedin", "email", "whatsapp", "call"]
+
+// The channel whose CHANNELS tint/label a category borrows for display —
+// there's no independent color palette for conditions, they just read as
+// "the same LinkedIn/Email/WhatsApp/Call family" as the Actions tab.
+const CATEGORY_CHANNEL: Record<ConditionCategory, StepChannel> = {
+  linkedin: "linkedin_message",
+  email: "email",
+  whatsapp: "whatsapp",
+  call: "call",
+}
+
+export function categoryMeta(category: ConditionCategory): ChannelMeta {
+  return CHANNELS[CATEGORY_CHANNEL[category]]
+}
+
+// "reply" is deliberately excluded from the catalog — it auto-pauses the
+// campaign the moment it happens (see the Sequence tab's "Auto-pauses on
+// reply" setting), so there's no "if they reply, keep going" track left to
+// offer as a pickable condition; the ordinary unforked connector between two
+// steps already means "no reply yet."
+export type PickableCondition = Exclude<ConditionKind, "reply">
+
+const ALL_STEP_TYPE_KEYS: StepTypeKey[] = STEP_TYPES.map((t) => t.key)
+const WHATSAPP_STEP_TYPE_KEYS: StepTypeKey[] = STEP_TYPES.filter(
+  (t) => t.channel === "whatsapp"
+).map((t) => t.key)
+const CALL_STEP_TYPE_KEYS: StepTypeKey[] = ["call", "ai_call"]
+
+export interface ConditionDef {
+  kind: PickableCondition
+  category: ConditionCategory
+  Icon: React.ComponentType<{ className?: string }>
+  // Which step types this condition can anchor to. Outcome conditions (did
+  // THIS step get opened/clicked/answered/accepted) are gated to the step
+  // types that can actually produce that outcome — a call has no read
+  // receipts or links, and only a LinkedIn connect *request* can be
+  // accepted. Prospect-attribute conditions (is this person already a
+  // connection, do they have a LinkedIn profile / work email on file) don't
+  // depend on the anchor step at all, so every step type qualifies.
+  appliesToStepTypes: StepTypeKey[]
+}
+
+export const CONDITION_CATALOG: ConditionDef[] = [
+  { kind: "accept", category: "linkedin", Icon: UserCheck, appliesToStepTypes: ["linkedin_connect"] },
+  { kind: "is_connected", category: "linkedin", Icon: Users, appliesToStepTypes: ALL_STEP_TYPE_KEYS },
+  {
+    kind: "has_linkedin_profile",
+    category: "linkedin",
+    Icon: LinkedinIcon,
+    appliesToStepTypes: ALL_STEP_TYPE_KEYS,
+  },
+  { kind: "open", category: "email", Icon: MailOpen, appliesToStepTypes: ["email"] },
+  { kind: "click", category: "email", Icon: MousePointerClick, appliesToStepTypes: ["email"] },
+  {
+    kind: "professional_email",
+    category: "email",
+    Icon: BadgeCheck,
+    appliesToStepTypes: ALL_STEP_TYPE_KEYS,
+  },
+  { kind: "read", category: "whatsapp", Icon: MessageCircleCheck, appliesToStepTypes: WHATSAPP_STEP_TYPE_KEYS },
+  { kind: "call_answered", category: "call", Icon: PhoneCall, appliesToStepTypes: CALL_STEP_TYPE_KEYS },
+]
+
+// Whether `condition` can anchor to `stepType` — the gate behind every
+// Conditions-tab card's enabled/disabled state. `forceAllowAccept` is the
+// one carve-out: re-checking LinkedIn connection status nested under an
+// already-accepted fork stays offered regardless of the immediate anchor
+// step's own type (see StepTypePickerDialog's forceAllowAccept prop).
+export function conditionAppliesToStepType(
+  condition: PickableCondition,
+  stepType: StepTypeKey,
+  opts?: { forceAllowAccept?: boolean }
+): boolean {
+  if (condition === "accept" && opts?.forceAllowAccept) return true
+  const def = CONDITION_CATALOG.find((d) => d.kind === condition)
+  return def ? def.appliesToStepTypes.includes(stepType) : true
 }

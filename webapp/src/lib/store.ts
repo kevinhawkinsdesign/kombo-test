@@ -293,6 +293,10 @@ export const CONDITION_TRACK_KINDS: Record<ConditionKind, [StepTrackKind, StepTr
   click: ["clicked", "not_clicked"],
   accept: ["accepted", "not_accepted"],
   read: ["read", "not_read"],
+  is_connected: ["connected", "not_connected"],
+  has_linkedin_profile: ["has_profile", "no_profile"],
+  professional_email: ["professional", "not_professional"],
+  call_answered: ["answered", "not_answered"],
 }
 function nowISO(): string {
   return new Date().toISOString()
