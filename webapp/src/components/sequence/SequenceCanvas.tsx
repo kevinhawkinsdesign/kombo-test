@@ -442,9 +442,14 @@ function StepCard({
   const { locale } = useLocale()
   const c = COPY[locale]
   const meta = channelMeta(step.channel)
+  // A prompt-driven step has no fixed body to write — a non-empty prompt is
+  // its content, so it isn't "action needed" just because `body` is a
+  // regenerated sample.
   const needsAction = step.isManualTask
     ? stripHtml(step.subject ?? "").trim().length === 0
-    : stripHtml(step.body).trim().length === 0
+    : step.aiPrompt != null
+      ? step.aiPrompt.trim().length === 0
+      : stripHtml(step.body).trim().length === 0
   const hasMenu = interactive && (onMove || onDuplicate || onDelete)
   // A step whose sending provider isn't connected yet can't run at all —
   // surfaced as a "locked" badge rather than the ordinary "needs content"

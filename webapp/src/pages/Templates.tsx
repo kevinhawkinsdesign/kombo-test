@@ -84,6 +84,7 @@ import {
 } from "@/lib/merge-vars"
 import type { Channel, EmailTemplate } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { highlightVarsHtml, mergeVarsRaw } from "@/lib/merge-vars-highlight"
 
 const NEW_FOLDER = "__new_folder__"
 
@@ -481,61 +482,6 @@ const VARIABLES: VariableDef[] = TEMPLATE_MERGE_VARIABLES.map((mv) => ({
 // Dummy merge data used to render the live preview as a recipient would see it.
 // Exported for reuse anywhere else that previews a template outside a single
 // recipient's context (e.g. picking a template for a Campaign sequence step).
-export const SAMPLE_DATA: Record<string, string> = {
-  first_name: "Sarah",
-  last_name: "Chen",
-  full_name: "Sarah Chen",
-  company: "Acme Corp",
-  title: "VP of Sales",
-  industry: "SaaS",
-  city: "San Francisco",
-  province: "California",
-  region: "West Coast",
-  country: "United States",
-  icebreaker: "Loved your talk on scaling revenue teams at SaaStr",
-  pain_point: "keeping SDR ramp time under 60 days",
-  linkedin_post: "5 lessons from doubling our pipeline in 2024",
-  seniority: "VP",
-  department: "Sales",
-  email: "sarah.chen@acmecorp.com",
-  phone: "+1 415-555-0182",
-  linkedin_url: "linkedin.com/in/sarahchen",
-  founding_year: "2015",
-  revenue: "$50M-$100M",
-  top_traffic_country: "United States",
-  top_traffic_country_visits: "1.2M",
-  job_openings: "12",
-  open_job_title: "Enterprise Account Executive",
-  headcount: "201-500",
-  office_count: "4",
-  funding_amount: "$40M",
-  latest_funding_date: "March 2024",
-  latest_investor: "Sequoia Capital",
-  company_news: "Acme Corp raised a $40M Series C",
-  glassdoor_review: "Great culture and strong leadership team",
-  company_domain: "acmecorp.com",
-  about: "Sarah leads the West Coast sales team, focused on mid-market expansion.",
-  sender: "Alex Rivera",
-  sender_first_name: "Alex",
-  sender_full_name: "Alex Rivera",
-  sender_email: "alex@kombo.ai",
-  sender_company: "Kombo",
-  sender_title: "Account Executive",
-  calendar_link: "cal.com/alex-rivera",
-  value_proposition: "Find best-fit prospects 3x faster with AI lead scoring.",
-  day_of_week: "Monday",
-}
-
-// Substitute {{tag}} with sample data; unknown tags are left literal so the
-// author can still spot a typo'd variable in the preview.
-function renderWithSample(text: string): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (whole, tag: string) =>
-    Object.prototype.hasOwnProperty.call(SAMPLE_DATA, tag)
-      ? SAMPLE_DATA[tag]
-      : whole
-  )
-}
-
 // Bodies are stored as HTML (rich text). Plain-text snippet for list rows.
 function stripHtml(html: string): string {
   return html
@@ -632,7 +578,7 @@ const COPY = {
     varGroups: { yourDetails: "Your Details", prospectInfo: "Prospect Info", prospectCompany: "Prospect Company", other: "Other" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Preview",
-    previewSampleNote: "Sample data — your real merge fields fill in at send.",
+    previewSampleNote: "Variables stay as placeholders — each fills in per recipient at send.",
     previewEmptyState: "Start writing to see a live preview.",
     previewToLabel: "To",
     previewSubjectLabel: "Subject",
@@ -757,7 +703,7 @@ const COPY = {
     varGroups: { yourDetails: "Tus datos", prospectInfo: "Info del prospecto", prospectCompany: "Empresa del prospecto", other: "Otros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Vista previa",
-    previewSampleNote: "Datos de ejemplo — tus campos reales se rellenan al enviar.",
+    previewSampleNote: "Las variables quedan como marcadores — se rellenan por destinatario al enviar.",
     previewEmptyState: "Escribe para ver una vista previa.",
     previewToLabel: "Para",
     previewSubjectLabel: "Asunto",
@@ -879,7 +825,7 @@ const COPY = {
     varGroups: { yourDetails: "I tuoi dati", prospectInfo: "Info sul prospect", prospectCompany: "Azienda del prospect", other: "Altro" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variabili",
     tabPreview: "Anteprima",
-    previewSampleNote: "Dati di esempio — i tuoi campi reali verranno compilati all'invio.",
+    previewSampleNote: "Le variabili restano segnaposto — si compilano per destinatario all'invio.",
     previewEmptyState: "Inizia a scrivere per vedere un'anteprima dal vivo.",
     previewToLabel: "A",
     previewSubjectLabel: "Oggetto",
@@ -1001,7 +947,7 @@ const COPY = {
     varGroups: { yourDetails: "Vos informations", prospectInfo: "Infos du prospect", prospectCompany: "Entreprise du prospect", other: "Autre" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variables",
     tabPreview: "Aperçu",
-    previewSampleNote: "Données d'exemple — vos champs réels seront complétés à l'envoi.",
+    previewSampleNote: "Les variables restent des espaces réservés — remplies par destinataire à l'envoi.",
     previewEmptyState: "Commencez à écrire pour voir un aperçu en direct.",
     previewToLabel: "À",
     previewSubjectLabel: "Objet",
@@ -1122,7 +1068,7 @@ const COPY = {
     varGroups: { yourDetails: "Deine Angaben", prospectInfo: "Prospect-Infos", prospectCompany: "Unternehmen des Prospects", other: "Sonstiges" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variablen",
     tabPreview: "Vorschau",
-    previewSampleNote: "Beispieldaten — deine echten Felder werden beim Senden ausgefüllt.",
+    previewSampleNote: "Variablen bleiben Platzhalter — sie werden beim Senden pro Empfänger ausgefüllt.",
     previewEmptyState: "Beginne zu schreiben, um eine Live-Vorschau zu sehen.",
     previewToLabel: "An",
     previewSubjectLabel: "Betreff",
@@ -1247,7 +1193,7 @@ const COPY = {
     varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variáveis",
     tabPreview: "Pré-visualização",
-    previewSampleNote: "Dados de exemplo — os seus campos reais são preenchidos no envio.",
+    previewSampleNote: "As variáveis ficam como marcadores — preenchem-se por destinatário no envio.",
     previewEmptyState: "Comece a escrever para ver uma pré-visualização em direto.",
     previewToLabel: "Para",
     previewSubjectLabel: "Assunto",
@@ -1372,7 +1318,7 @@ const COPY = {
     varGroups: { yourDetails: "Os seus dados", prospectInfo: "Informações do prospect", prospectCompany: "Empresa do prospect", other: "Outros" } as Record<MergeVarGroupKey | "other", string>,
     tabVariables: "Variáveis",
     tabPreview: "Pré-visualização",
-    previewSampleNote: "Dados de exemplo — seus campos reais são preenchidos no envio.",
+    previewSampleNote: "As variáveis ficam como marcadores — são preenchidas por destinatário no envio.",
     previewEmptyState: "Comece a escrever para ver uma pré-visualização ao vivo.",
     previewToLabel: "Para",
     previewSubjectLabel: "Assunto",
@@ -2714,33 +2660,30 @@ export default function Templates() {
                         <span className="text-muted-foreground w-12 shrink-0">
                           {c.previewToLabel}
                         </span>
-                        <span className="font-medium">
-                          {SAMPLE_DATA.first_name} {SAMPLE_DATA.last_name}
-                        </span>
+                        <span className="text-muted-foreground font-mono text-[11px]">{"{{first_name}} {{last_name}}"}</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="text-muted-foreground w-12 shrink-0">
                           {c.previewSubjectLabel}
                         </span>
                         <span className="font-medium">
-                          {renderWithSample(subject) || "—"}
+                          {subject ? mergeVarsRaw(subject) : "—"}
                         </span>
                       </div>
                     </div>
                     <div
                       className="text-foreground/90 p-4 text-sm whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                      dangerouslySetInnerHTML={{ __html: renderWithSample(body) }}
+                      dangerouslySetInnerHTML={{ __html: highlightVarsHtml(body) }}
                     />
                   </div>
                 ) : (
                   <div className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
-                      {SAMPLE_DATA.first_name[0]}
-                      {SAMPLE_DATA.last_name[0]}
+                      {"{}"}
                     </span>
                     <div
                       className="bg-background max-w-full rounded-2xl rounded-tl-sm border p-3 text-sm whitespace-pre-wrap shadow-sm [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                      dangerouslySetInnerHTML={{ __html: renderWithSample(body) }}
+                      dangerouslySetInnerHTML={{ __html: highlightVarsHtml(body) }}
                     />
                   </div>
                 )}

@@ -9,6 +9,48 @@ import type { ReactNode } from "react"
 
 const MERGE_VAR_RE = /\{\{(\w+)\}\}/g
 
+// Renders the template EXACTLY as written — no substitution — with each
+// {{tag}} styled as a purple chip. For previews with no real recipient
+// (the sequence builder, the Templates page): filling in invented sample
+// people there reads as if a real message to a real person already exists.
+export function mergeVarsRaw(text: string): ReactNode[] {
+  const parts: ReactNode[] = []
+  let lastIndex = 0
+  let key = 0
+  let match: RegExpExecArray | null
+  MERGE_VAR_RE.lastIndex = 0
+  while ((match = MERGE_VAR_RE.exec(text))) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+    parts.push(
+      <span
+        key={key++}
+        className="bg-primary/10 text-primary rounded px-0.5 font-mono text-[0.9em] font-medium"
+      >
+        {match[0]}
+      </span>
+    )
+    lastIndex = MERGE_VAR_RE.lastIndex
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+  return parts
+}
+
+// Same idea for HTML strings rendered via dangerouslySetInnerHTML (the
+// rich-text template bodies): wraps each {{tag}} in a purple span instead
+// of substituting it. Tags are \w+ only, so no HTML can leak through the
+// replacement.
+export function highlightVarsHtml(html: string): string {
+  return html.replace(
+    MERGE_VAR_RE,
+    (whole) =>
+      `<span class="bg-primary/10 text-primary rounded px-0.5 font-mono text-[0.9em] font-medium">${whole}</span>`
+  )
+}
+
 export function mergeVarsHighlighted(
   text: string,
   data: Record<string, string>

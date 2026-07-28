@@ -57,18 +57,30 @@ export function isPositiveTrack(kind: StepTrackKind): boolean {
 function edgeStyle(
   trackKind: StepTrackKind | undefined,
   toGhost: boolean
-): Pick<Edge, "type" | "style" | "markerEnd"> {
+): {
+  type: "smoothstep"
+  style: { stroke: string; strokeWidth: number }
+  pathOptions?: { offset: number; borderRadius: number }
+  markerEnd?: { type: MarkerType; color: string; width: number; height: number }
+} {
   const color = trackKind
     ? isPositiveTrack(trackKind)
       ? "var(--color-chart-1)"
       : "var(--color-destructive)"
     : "var(--color-muted-foreground)"
+  // The deviating (met/Yes) arm has to clear the parent lane immediately.
+  // smoothstep's default turn is at the midpoint, which sends this edge
+  // straight down the centered lane — right through the default arm's own
+  // condition pill and "+" — before finally heading sideways. A short
+  // offset turns it out just below the fork card, above both.
+  const branchesOut = trackKind != null && isPositiveTrack(trackKind)
   return {
     type: "smoothstep",
-    style: { stroke: color, strokeWidth: 2 },
+    style: { stroke: color, strokeWidth: 1.5 },
+    ...(branchesOut ? { pathOptions: { offset: 24, borderRadius: 12 } } : {}),
     ...(toGhost
       ? {}
-      : { markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 } }),
+      : { markerEnd: { type: MarkerType.ArrowClosed, color, width: 12, height: 12 } }),
   }
 }
 

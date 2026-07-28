@@ -65,7 +65,6 @@ import { VoiceMessageRecorder } from "@/components/campaign/VoiceMessageRecorder
 import { cloneSequenceSteps } from "@/lib/sequence-templates"
 import { useSequenceDraft } from "@/lib/sequence-draft"
 import { registerUnsavedChangesBlocker } from "@/lib/unsaved-changes"
-import { SAMPLE_DATA } from "@/pages/Templates"
 
 import { Page } from "@/components/layout/Page"
 import {
@@ -352,6 +351,10 @@ const COPY = {
     saveAsTemplate: "Save as template",
     stepTemplates: "Templates",
     stepAiPrompt: "AI prompt",
+    aiPromptLabel: "AI prompt",
+    aiPromptPlaceholder: "Describe the message the AI should write for each recipient…",
+    aiPromptNote: "Each recipient gets their own AI-written version of this instruction.",
+    writeFixedMessage: "Write a fixed message instead",
     suggestedNext: (label: string) => `Suggested next: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -572,6 +575,10 @@ const COPY = {
     saveAsTemplate: "Guardar como plantilla",
     stepTemplates: "Plantillas",
     stepAiPrompt: "Prompt de IA",
+    aiPromptLabel: "Prompt de IA",
+    aiPromptPlaceholder: "Describe el mensaje que la IA debe escribir para cada destinatario…",
+    aiPromptNote: "Cada destinatario recibe su propia versión escrita por la IA a partir de esta instrucción.",
+    writeFixedMessage: "Escribir un mensaje fijo",
     suggestedNext: (label: string) => `Sugerencia: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -792,6 +799,10 @@ const COPY = {
     saveAsTemplate: "Salva come modello",
     stepTemplates: "Modelli",
     stepAiPrompt: "Prompt IA",
+    aiPromptLabel: "Prompt IA",
+    aiPromptPlaceholder: "Descrivi il messaggio che l'IA deve scrivere per ogni destinatario…",
+    aiPromptNote: "Ogni destinatario riceve la propria versione scritta dall'IA a partire da questa istruzione.",
+    writeFixedMessage: "Scrivi invece un messaggio fisso",
     suggestedNext: (label: string) => `Suggerito: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -1012,6 +1023,10 @@ const COPY = {
     saveAsTemplate: "Enregistrer comme modèle",
     stepTemplates: "Modèles",
     stepAiPrompt: "Prompt IA",
+    aiPromptLabel: "Prompt IA",
+    aiPromptPlaceholder: "Décrivez le message que l'IA doit rédiger pour chaque destinataire…",
+    aiPromptNote: "Chaque destinataire reçoit sa propre version rédigée par l'IA à partir de cette instruction.",
+    writeFixedMessage: "Rédiger plutôt un message fixe",
     suggestedNext: (label: string) => `Suggestion suivante : ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -1232,6 +1247,10 @@ const COPY = {
     saveAsTemplate: "Als Vorlage speichern",
     stepTemplates: "Vorlagen",
     stepAiPrompt: "KI-Prompt",
+    aiPromptLabel: "KI-Prompt",
+    aiPromptPlaceholder: "Beschreibe die Nachricht, die die KI für jeden Empfänger schreiben soll…",
+    aiPromptNote: "Jeder Empfänger erhält aus dieser Anweisung seine eigene, von der KI geschriebene Version.",
+    writeFixedMessage: "Stattdessen feste Nachricht schreiben",
     suggestedNext: (label: string) => `Vorschlag für Nächstes: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -1452,6 +1471,10 @@ const COPY = {
     saveAsTemplate: "Guardar como modelo",
     stepTemplates: "Modelos",
     stepAiPrompt: "Prompt de IA",
+    aiPromptLabel: "Prompt de IA",
+    aiPromptPlaceholder: "Descreva a mensagem que a IA deve escrever para cada destinatário…",
+    aiPromptNote: "Cada destinatário recebe a sua própria versão escrita pela IA a partir desta instrução.",
+    writeFixedMessage: "Escrever antes uma mensagem fixa",
     suggestedNext: (label: string) => `Sugestão seguinte: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -1672,6 +1695,10 @@ const COPY = {
     saveAsTemplate: "Salvar como modelo",
     stepTemplates: "Modelos",
     stepAiPrompt: "Prompt de IA",
+    aiPromptLabel: "Prompt de IA",
+    aiPromptPlaceholder: "Descreva a mensagem que a IA deve escrever para cada destinatário…",
+    aiPromptNote: "Cada destinatário recebe sua própria versão escrita pela IA a partir desta instrução.",
+    writeFixedMessage: "Escrever uma mensagem fixa",
     suggestedNext: (label: string) => `Sugestão de próximo: ${label}`,
     sequenceCopied: (n: number) =>
       n === 1
@@ -2058,6 +2085,7 @@ export default function CampaignDetail() {
       channel: seed.channel,
       subject: seed.subject,
       body: seed.body,
+      aiPrompt: seed.prompt,
     })
     setSelectedStepId(created.id)
   }
@@ -2087,6 +2115,7 @@ export default function CampaignDetail() {
   function applyPromptToStep(seed: PromptStepSeed) {
     if (!selectedStep) return
     updateSelectedStepLocal({
+      aiPrompt: seed.prompt,
       body: seed.body,
       ...(normalizeChannel(selectedStep.channel) === "email" && seed.subject
         ? { subject: seed.subject }
@@ -3586,6 +3615,42 @@ export default function CampaignDetail() {
                           />
                         )}
 
+                        {/* A prompt-driven step has no fixed message to
+                            edit — the AI writes a different one per
+                            recipient. Show the instruction itself, editable,
+                            instead of freezing one sample of its output. */}
+                        {step.aiPrompt != null ? (
+                          <div className="space-y-2 rounded-lg border p-3">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="text-primary size-4 shrink-0" />
+                              <span className="flex-1 text-sm font-medium">
+                                {c.aiPromptLabel}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground"
+                                onClick={() =>
+                                  updateSelectedStepLocal({ aiPrompt: undefined })
+                                }
+                              >
+                                {c.writeFixedMessage}
+                              </Button>
+                            </div>
+                            <Textarea
+                              value={step.aiPrompt}
+                              placeholder={c.aiPromptPlaceholder}
+                              aria-label={c.aiPromptLabel}
+                              onChange={(e) =>
+                                updateSelectedStepLocal({ aiPrompt: e.target.value })
+                              }
+                              className="min-h-40"
+                            />
+                            <p className="text-muted-foreground text-xs">
+                              {c.aiPromptNote}
+                            </p>
+                          </div>
+                        ) : (
                         <RichTextEditor
                           ref={stepBodyRef}
                           value={plainToHtml(step.body)}
@@ -3621,6 +3686,7 @@ export default function CampaignDetail() {
                             </>
                           }
                         />
+                        )}
                       </>
                     )}
 
@@ -4087,7 +4153,6 @@ export default function CampaignDetail() {
         open={templatePickerOpen}
         onOpenChange={setTemplatePickerOpen}
         onInsert={insertStepFromTemplate}
-        vars={SAMPLE_DATA}
         locale={locale}
         onBack={() => {
           setTemplatePickerOpen(false)
@@ -4111,7 +4176,6 @@ export default function CampaignDetail() {
         open={stepTemplateOpen}
         onOpenChange={setStepTemplateOpen}
         onInsert={applyTemplateToStep}
-        vars={SAMPLE_DATA}
         channel={selectedStep ? templateChannelOf(selectedStep) : undefined}
         locale={locale}
       />
@@ -4120,6 +4184,7 @@ export default function CampaignDetail() {
         open={stepPromptOpen}
         onOpenChange={setStepPromptOpen}
         onInsert={applyPromptToStep}
+        initialPrompt={stepDraft?.aiPrompt}
       />
 
       <CopySequenceDialog
