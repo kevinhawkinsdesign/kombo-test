@@ -1044,6 +1044,66 @@ export const coachRecordings: CoachRecording[] = [
     ],
     nextSteps: ["Send security docs", "Schedule technical deep-dive"],
     videoSource: "meet",
+    mediaKind: "video",
+    summarized: true,
+    analyzed: true,
+    overview:
+      "Wei walked through Criteo's current outbound stack and where reps lose time on manual research. Strong engagement throughout, with procurement looped in near the end.",
+    scoreBreakdown: [
+      {
+        label: "Discovery",
+        metricScore: 92,
+        metricSummary: "Uncovered current tooling, team size, and specific pain points early.",
+        subMetrics: [
+          { label: "Open-ended questions", score: 90 },
+          { label: "Pain quantification", score: 94 },
+        ],
+      },
+      {
+        label: "Objection handling",
+        metricScore: 81,
+        metricSummary: "Handled the security question well; slightly rushed the pricing pushback.",
+      },
+      {
+        label: "Next steps",
+        metricScore: 95,
+        metricSummary: "Booked a clear technical deep-dive with a named date.",
+      },
+    ],
+    review: {
+      positiveFeedback:
+        "Great use of silence after asking about current pain — let Wei fully explain before responding. Multi-threaded into procurement naturally.",
+      thingsToImprove:
+        "The pricing objection around the 40-seat minimum was answered quickly — worth slowing down and asking what budget range they had in mind first.",
+    },
+    speakers: [
+      { speakerId: "speaker-0", name: "You", role: "Rep" },
+      { speakerId: "speaker-1", name: "Wei Zhang", role: "Prospect" },
+    ],
+    transcript: [
+      { speakerId: "speaker-0", atSec: 4, text: "Thanks for making time, Wei — I'd love to hear how outbound works today on your team." },
+      { speakerId: "speaker-1", atSec: 18, text: "Sure. Right now our SDRs spend a lot of time just finding the right contact and verifying emails before they can even start a sequence." },
+      { speakerId: "speaker-0", atSec: 34, text: "How much time would you say that eats up per rep, per week?" },
+      { speakerId: "speaker-1", atSec: 41, text: "Honestly, probably a third of their week. It's a real bottleneck." },
+      { speakerId: "speaker-0", atSec: 612, text: "On pricing — we do have a 40-seat minimum for the team plan." },
+      { speakerId: "speaker-1", atSec: 620, text: "Okay, and where does that land relative to what we're paying today?" },
+      { speakerId: "speaker-0", atSec: 1830, text: "Let's get a technical deep-dive on the calendar with your security team." },
+      { speakerId: "speaker-1", atSec: 1840, text: "Works for me — I'll loop in procurement too." },
+    ],
+    participants: [
+      { name: "You", isOwner: true, attended: true, inCrm: true },
+      { name: "Wei Zhang", email: "wei.zhang@criteo.com", attended: true, inCrm: true },
+      { name: "Marta Molina", email: "marta.molina@criteo.com", attended: false },
+    ],
+    keyFields: [
+      { label: "Budget", description: "Stated or implied budget range", value: "$50K–$100K annually" },
+      { label: "Decision timeline", value: "End of Q3" },
+      { label: "Competitors mentioned", value: "Apollo, Outreach" },
+      { label: "Team size", value: "12 SDRs" },
+    ],
+    prospectPosition: "Head of Sales Development",
+    dealId: "deal_1",
+    salesRepId: "rep_1",
   },
   {
     id: "r_2",
@@ -1058,6 +1118,32 @@ export const coachRecordings: CoachRecording[] = [
     highlights: ["Good product walkthrough", "Talk ratio a bit high"],
     nextSteps: ["Send ROI breakdown", "Confirm Tuesday follow-up"],
     videoSource: "teams",
+    mediaKind: "video",
+    summarized: true,
+    analyzed: false,
+    overview:
+      "Product walkthrough for Marcus's revenue ops team. Good coverage of the enrichment and sequencing features; the rep talked more than ideal.",
+    speakers: [
+      { speakerId: "speaker-0", name: "You", role: "Rep" },
+      { speakerId: "speaker-1", name: "Marcus Riley", role: "Prospect" },
+    ],
+    transcript: [
+      { speakerId: "speaker-0", atSec: 10, text: "So this is the enrichment view — every contact gets 30+ data points automatically." },
+      { speakerId: "speaker-1", atSec: 95, text: "Nice, and how does that compare cost-wise to what we're doing manually today?" },
+      { speakerId: "speaker-0", atSec: 2280, text: "I'll send over an ROI breakdown by end of day." },
+      { speakerId: "speaker-1", atSec: 2290, text: "Perfect, let's regroup Tuesday." },
+    ],
+    participants: [
+      { name: "You", isOwner: true, attended: true },
+      { name: "Marcus Riley", email: "marcus.riley@softonic.com", attended: true, inCrm: true },
+    ],
+    keyFields: [
+      { label: "Budget", value: "Not yet discussed" },
+      { label: "Decision timeline", value: "Q3, pending internal review" },
+    ],
+    prospectPosition: "Head of Revenue Operations",
+    dealId: "deal_2",
+    salesRepId: "rep_1",
   },
   {
     id: "r_3",
@@ -1072,6 +1158,10 @@ export const coachRecordings: CoachRecording[] = [
     highlights: ["Skeptical on ROI", "Missed budget qualification"],
     nextSteps: ["Build ROI case study", "Re-engage in 30 days"],
     videoSource: "linkedin",
+    summarized: false,
+    analyzed: false,
+    prospectPosition: "Sales Director",
+    salesRepId: "rep_2",
   },
 ]
 
