@@ -15,6 +15,7 @@ import {
   ArrowUp,
   Clock,
   Copy,
+  GitFork,
   ListTodo,
   Lock,
   MoreHorizontal,
@@ -90,6 +91,7 @@ const COPY = {
     editStep: "Edit step",
     lockedBadge: "Locked",
     lockedReason: (name: string) => `Connect ${name} before this step can run.`,
+    checksWithinDays: (n: number) => `Checks for ${n} ${n === 1 ? "day" : "days"}`,
   },
   es: {
     channelLabel: {
@@ -136,6 +138,7 @@ const COPY = {
     editStep: "Editar paso",
     lockedBadge: "Bloqueado",
     lockedReason: (name: string) => `Conecta ${name} para que este paso pueda ejecutarse.`,
+    checksWithinDays: (n: number) => `Comprueba durante ${n} ${n === 1 ? "día" : "días"}`,
   },
   it: {
     channelLabel: {
@@ -182,6 +185,7 @@ const COPY = {
     editStep: "Modifica passaggio",
     lockedBadge: "Bloccato",
     lockedReason: (name: string) => `Collega ${name} prima che questo passaggio possa essere eseguito.`,
+    checksWithinDays: (n: number) => `Verifica per ${n} ${n === 1 ? "giorno" : "giorni"}`,
   },
   fr: {
     channelLabel: {
@@ -228,6 +232,7 @@ const COPY = {
     editStep: "Modifier l'étape",
     lockedBadge: "Verrouillé",
     lockedReason: (name: string) => `Connectez ${name} pour que cette étape puisse s'exécuter.`,
+    checksWithinDays: (n: number) => `Vérifie pendant ${n} ${n === 1 ? "jour" : "jours"}`,
   },
   de: {
     channelLabel: {
@@ -274,6 +279,7 @@ const COPY = {
     editStep: "Schritt bearbeiten",
     lockedBadge: "Gesperrt",
     lockedReason: (name: string) => `Verbinde ${name}, damit dieser Schritt ausgeführt werden kann.`,
+    checksWithinDays: (n: number) => `Prüft ${n} ${n === 1 ? "Tag" : "Tage"} lang`,
   },
   pt: {
     channelLabel: {
@@ -320,6 +326,7 @@ const COPY = {
     editStep: "Editar passo",
     lockedBadge: "Bloqueado",
     lockedReason: (name: string) => `Ligue o ${name} para que este passo possa ser executado.`,
+    checksWithinDays: (n: number) => `Verifica durante ${n} ${n === 1 ? "dia" : "dias"}`,
   },
   pt_BR: {
     channelLabel: {
@@ -366,6 +373,7 @@ const COPY = {
     editStep: "Editar etapa",
     lockedBadge: "Bloqueado",
     lockedReason: (name: string) => `Conecte o ${name} para que esta etapa possa ser executada.`,
+    checksWithinDays: (n: number) => `Verifica por ${n} ${n === 1 ? "dia" : "dias"}`,
   },
 } as const
 
@@ -602,6 +610,17 @@ function StepCard({
           </span>
         )}
       </div>
+
+      {/* A condition's own waiting period, shown at the branch point. This
+          is a different clock from the header's "Wait N days" (which is how
+          long before THIS step fires) — without it on the canvas, the
+          window silently conflicts with the delays on the steps below. */}
+      {step.fork?.withinDays != null && (
+        <div className="text-muted-foreground flex items-center gap-1.5 border-t px-3 py-1.5 text-[11px]">
+          <GitFork className="size-3 shrink-0" />
+          {c.checksWithinDays(step.fork.withinDays)}
+        </div>
+      )}
     </div>
   )
 }
