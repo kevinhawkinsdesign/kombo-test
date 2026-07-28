@@ -60,7 +60,7 @@ function edgeStyle(
 ): {
   type: "smoothstep"
   style: { stroke: string; strokeWidth: number }
-  pathOptions?: { offset: number; borderRadius: number }
+  pathOptions?: { offset: number; borderRadius: number; stepPosition: number }
   markerEnd?: { type: MarkerType; color: string; width: number; height: number }
 } {
   const color = trackKind
@@ -69,15 +69,20 @@ function edgeStyle(
       : "var(--color-destructive)"
     : "var(--color-muted-foreground)"
   // The deviating (met/Yes) arm has to clear the parent lane immediately.
-  // smoothstep's default turn is at the midpoint, which sends this edge
-  // straight down the centered lane — right through the default arm's own
-  // condition pill and "+" — before finally heading sideways. A short
-  // offset turns it out just below the fork card, above both.
+  // smoothstep's turn point defaults to the vertical midpoint between the
+  // two nodes (its `stepPosition`, default 0.5) — `offset` alone only pads
+  // the minimum stub length off each node, it does NOT move the turn
+  // itself, so the offset-only version of this still ran both arms
+  // parallel down to the row's midpoint before finally kinking sideways.
+  // A near-zero stepPosition puts that kink immediately below the fork
+  // card instead, so the arm reads as breaking outward right away.
   const branchesOut = trackKind != null && isPositiveTrack(trackKind)
   return {
     type: "smoothstep",
     style: { stroke: color, strokeWidth: 1.5 },
-    ...(branchesOut ? { pathOptions: { offset: 24, borderRadius: 12 } } : {}),
+    ...(branchesOut
+      ? { pathOptions: { offset: 16, borderRadius: 12, stepPosition: 0.08 } }
+      : {}),
     ...(toGhost
       ? {}
       : { markerEnd: { type: MarkerType.ArrowClosed, color, width: 12, height: 12 } }),
@@ -265,16 +270,11 @@ function layoutFork(
   )
   let maxRejoinDepth = depth + 1
   // An empty track (right after adding a condition, before either arm has a
-  // step yet) contributes no rejoin source at all — falling back to the
-  // fork step's own id here used to draw a third, redundant line straight
-  // down from the fork step to the trailing "after both tracks" ghost, on
-  // top of the two diagonal lines already going to each track's own empty-
-  // track ghost. Once a track has a real step, that step becomes the
-  // rejoin source as normal.
-  const rejoinSources = new Set<string>()
-
-  fork.tracks.forEach((track, i) => {
-    const result = layoutTrack(
+  // step yet) contributes no rejoin source of its own — computed per-track
+  // in `results` below, before any "what should feed the merge" decision is
+  // made, since that decision needs to see every sibling at once.
+  const results = fork.tracks.map((track, i) =>
+    layoutTrack(
       track.steps,
       depth + 1,
       lanes[i],
@@ -284,10 +284,44 @@ function layoutFork(
       step.id,
       track.id
     )
+  )
+  results.forEach((result) => {
     nodes.push(...result.nodes)
     edges.push(...result.edges)
     maxRejoinDepth = Math.max(maxRejoinDepth, result.endDepth)
-    result.rejoinSources.forEach((id) => rejoinSources.add(id))
+  })
+
+  // If EVERY track is empty (a condition just added, nothing in either arm
+  // yet), leave rejoinSources empty — the two tracks' own empty-track
+  // ghosts are already the only "+" affordances that make sense, and
+  // computeLayout's caller short-circuits on this (see its own comment) to
+  // avoid a third, redundant ghost/line straight down from the fork step.
+  const anyTrackHasSteps = fork.tracks.some((t) => t.steps.length > 0)
+  const rejoinSources = new Set<string>()
+  fork.tracks.forEach((track, i) => {
+    const result = results[i]
+    if (result.rejoinSources.length > 0) {
+      result.rejoinSources.forEach((id) => rejoinSources.add(id))
+      return
+    }
+    // This track is empty, but a sibling isn't — e.g. a LinkedIn-connect
+    // gate always seeds its "accepted" arm with the target step and leaves
+    // "not accepted" empty. The default (not-met) arm still has to lead
+    // somewhere real once the sequence continues past the fork, instead of
+    // dead-ending at its own trailing "+" with the actual next card sitting
+    // disconnected, several rows further down the very same lane (the bug
+    // this fixes). Chaining forward from the empty track's own ghost keeps
+    // one continuous line down that lane rather than adding a second,
+    // overlapping edge straight from the fork step. In readonly mode no
+    // ghost node exists at all, so chain straight from the fork step
+    // instead — there's no earlier edge in that lane to overlap with.
+    // Guard on the track being GENUINELY empty: a track that has steps but
+    // whose last step is a nested fork with all-empty nested tracks also
+    // reports zero rejoin sources, yet its `add-track-` ghost was never
+    // created — chaining from it would reference a nonexistent node.
+    if (anyTrackHasSteps && track.steps.length === 0) {
+      rejoinSources.add(interactive ? `add-track-${track.id}` : step.id)
+    }
   })
 
   return {
