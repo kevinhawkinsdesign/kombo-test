@@ -1895,6 +1895,10 @@ export default function CampaignDetail() {
   const [alertInterested, setAlertInterested] = React.useState(true)
   const [alertEmail, setAlertEmail] = React.useState(false)
   const [selectedStepId, setSelectedStepId] = React.useState<string | undefined>(undefined)
+  // The detail panel's local working copy of the selected step (see the
+  // seeding logic next to `selectedStep` below).
+  const [stepDraft, setStepDraft] = React.useState<CampaignStep | null>(null)
+  const [stepDraftKey, setStepDraftKey] = React.useState<string | undefined>(undefined)
   const [stepPickerOpen, setStepPickerOpen] = React.useState(false)
   const [pendingGhost, setPendingGhost] = React.useState<AddNodeData | null>(null)
   // Set instead of pendingGhost when the picker was opened from a step's
@@ -1975,7 +1979,7 @@ export default function CampaignDetail() {
       const start = aiScriptRef.current?.selectionStart ?? step.body.length
       const end = aiScriptRef.current?.selectionEnd ?? step.body.length
       const next = step.body.slice(0, start) + ins + step.body.slice(end)
-      draft.updateStep(step.id, { body: next })
+      updateSelectedStepLocal({ body: next })
       requestAnimationFrame(() => {
         aiScriptRef.current?.focus()
         aiScriptRef.current?.setSelectionRange(start + ins.length, start + ins.length)
@@ -1994,6 +1998,21 @@ export default function CampaignDetail() {
   const selectedStep = selectedStepId
     ? findCampaignStep(draft.steps, selectedStepId)
     : undefined
+  // The detail panel edits its own local copy of the selected step, so a
+  // step has the same Discard/Apply affordance the whole Sequence tab has —
+  // nothing reaches the sequence draft until the panel's Apply. Reseeded
+  // whenever the selection changes (the render-time-check pattern).
+  if (selectedStepId !== stepDraftKey) {
+    setStepDraftKey(selectedStepId)
+    setStepDraft(selectedStep ? { ...selectedStep } : null)
+  }
+  const stepDirty =
+    stepDraft != null &&
+    selectedStep != null &&
+    JSON.stringify(stepDraft) !== JSON.stringify(selectedStep)
+  function updateSelectedStepLocal(patch: Partial<CampaignStep>) {
+    setStepDraft((prev) => (prev ? { ...prev, ...patch } : prev))
+  }
   // The step-type modal's template/prompt/suggested-next shortcuts only
   // make sense when the ghost that opened it appends to the very end of
   // the top-level sequence — not a mid-sequence insert or track append,
@@ -2057,7 +2076,7 @@ export default function CampaignDetail() {
   // silently turn an email step into a LinkedIn one.
   function applyTemplateToStep(template: EmailTemplate) {
     if (!selectedStep) return
-    draft.updateStep(selectedStep.id, {
+    updateSelectedStepLocal({
       body: template.body,
       ...(normalizeChannel(selectedStep.channel) === "email"
         ? { subject: template.subject }
@@ -2067,7 +2086,7 @@ export default function CampaignDetail() {
 
   function applyPromptToStep(seed: PromptStepSeed) {
     if (!selectedStep) return
-    draft.updateStep(selectedStep.id, {
+    updateSelectedStepLocal({
       body: seed.body,
       ...(normalizeChannel(selectedStep.channel) === "email" && seed.subject
         ? { subject: seed.subject }
@@ -3024,8 +3043,8 @@ export default function CampaignDetail() {
             {/* Detail panel — the selected step's full editor. Dismissible
                 so the diagram can take the full width; clicking a step
                 card reopens it via onSelectStep above. */}
-            {selectedStep && (() => {
-              const step = selectedStep
+            {selectedStep && stepDraft && (() => {
+              const step = stepDraft
               // Position within whichever list the step actually lives in
               // (top-level, a condition track, or a step's parallel
               // siblings) — what "move up/down" and "is first/last"
@@ -3196,7 +3215,7 @@ export default function CampaignDetail() {
                         onValueChange={(v) => {
                           const picked = STEP_TYPES.find((t) => t.key === v)
                           if (!picked) return
-                          draft.updateStep(step.id, {
+                          updateSelectedStepLocal({
                             channel: picked.channel,
                             linkedinAction: picked.linkedinAction,
                             whatsappAction: picked.whatsappAction,
@@ -3281,7 +3300,7 @@ export default function CampaignDetail() {
                       <TimeDelayField
                         key={step.id}
                         step={step}
-                        onChange={(patch) => draft.updateStep(step.id, patch)}
+                        onChange={(patch) => updateSelectedStepLocal(patch)}
                       />
                     )}
 
@@ -3294,7 +3313,7 @@ export default function CampaignDetail() {
                           className="w-56"
                           value={step.assigneeId}
                           onChange={(assigneeId) =>
-                            draft.updateStep(step.id, {
+                            updateSelectedStepLocal({
                               assigneeId,
                             })
                           }
@@ -3312,7 +3331,7 @@ export default function CampaignDetail() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => draft.removeFork(step.id)}
+                            onClick={() => updateSelectedStepLocal({ fork: undefined })}
                           >
                             {c.removeCondition}
                           </Button>
@@ -3329,7 +3348,9 @@ export default function CampaignDetail() {
                                 value={String(step.fork.withinDays ?? 4)}
                                 onChange={(e) => {
                                   const n = Math.max(1, Math.round(Number(e.target.value)) || 1)
-                                  draft.updateForkWithinDays(step.id, n)
+                                  setStepDraft((prev) =>
+                                    prev?.fork ? { ...prev, fork: { ...prev.fork, withinDays: n } } : prev
+                                  )
                                 }}
                                 clearable={false}
                                 className="h-8 w-16 tabular-nums"
@@ -3349,13 +3370,13 @@ export default function CampaignDetail() {
                         recordingUrl={step.voiceRecordingUrl}
                         durationSec={step.voiceDurationSec}
                         onRecorded={(url, durationSec) =>
-                          draft.updateStep(step.id, {
+                          updateSelectedStepLocal({
                             voiceRecordingUrl: url,
                             voiceDurationSec: durationSec,
                           })
                         }
                         onDelete={() =>
-                          draft.updateStep(step.id, {
+                          updateSelectedStepLocal({
                             voiceRecordingUrl: undefined,
                             voiceDurationSec: undefined,
                           })
@@ -3371,7 +3392,7 @@ export default function CampaignDetail() {
                           value={step.subject ?? ""}
                           placeholder={c.taskTitlePlaceholder}
                           onChange={(e) =>
-                            draft.updateStep(step.id, {
+                            updateSelectedStepLocal({
                               subject: e.target.value,
                             })
                           }
@@ -3380,7 +3401,7 @@ export default function CampaignDetail() {
                           value={step.body}
                           placeholder={c.taskNotesPlaceholder}
                           onChange={(e) =>
-                            draft.updateStep(step.id, {
+                            updateSelectedStepLocal({
                               body: e.target.value,
                             })
                           }
@@ -3392,7 +3413,7 @@ export default function CampaignDetail() {
                             <Select
                               value={String(step.taskStartTime ?? TASK_START_TIME_OPTIONS[0].value)}
                               onValueChange={(v) =>
-                                draft.updateStep(step.id, {
+                                updateSelectedStepLocal({
                                   taskStartTime: Number(v),
                                 })
                               }
@@ -3414,7 +3435,7 @@ export default function CampaignDetail() {
                             <Select
                               value={String(step.taskReminderMinutes ?? TASK_REMINDER_OPTIONS[0].value)}
                               onValueChange={(v) =>
-                                draft.updateStep(step.id, {
+                                updateSelectedStepLocal({
                                   taskReminderMinutes: Number(v),
                                 })
                               }
@@ -3440,7 +3461,7 @@ export default function CampaignDetail() {
                           <Select
                             value={step.aiVoice ?? AI_VOICES[0]}
                             onValueChange={(aiVoice) =>
-                              draft.updateStep(step.id, {
+                              updateSelectedStepLocal({
                                 aiVoice,
                               })
                             }
@@ -3462,7 +3483,7 @@ export default function CampaignDetail() {
                           <Select
                             value={step.aiCallAgentId ?? AI_CALL_AGENTS[0].id}
                             onValueChange={(aiCallAgentId) =>
-                              draft.updateStep(step.id, {
+                              updateSelectedStepLocal({
                                 aiCallAgentId,
                               })
                             }
@@ -3485,7 +3506,7 @@ export default function CampaignDetail() {
                           value={step.body}
                           placeholder={c.aiScriptPlaceholder}
                           onChange={(e) =>
-                            draft.updateStep(step.id, {
+                            updateSelectedStepLocal({
                               body: e.target.value,
                             })
                           }
@@ -3496,7 +3517,7 @@ export default function CampaignDetail() {
                           <Checkbox
                             checked={step.aiCallRetryEnabled ?? false}
                             onCheckedChange={(checked) =>
-                              draft.updateStep(step.id, {
+                              updateSelectedStepLocal({
                                 aiCallRetryEnabled: checked === true,
                                 aiCallRetryCadence:
                                   checked === true
@@ -3521,7 +3542,7 @@ export default function CampaignDetail() {
                                       : "outline"
                                   }
                                   onClick={() =>
-                                    draft.updateStep(step.id, {
+                                    updateSelectedStepLocal({
                                       aiCallRetryCadence: cadence,
                                     })
                                   }
@@ -3558,7 +3579,7 @@ export default function CampaignDetail() {
                             value={step.subject ?? ""}
                             placeholder={c.subjectLine}
                             onChange={(e) =>
-                              draft.updateStep(step.id, {
+                              updateSelectedStepLocal({
                                 subject: e.target.value,
                               })
                             }
@@ -3571,7 +3592,7 @@ export default function CampaignDetail() {
                           placeholder={c.messageBody}
                           ariaLabel={c.messageBody}
                           onChange={(html) =>
-                            draft.updateStep(step.id, {
+                            updateSelectedStepLocal({
                               body: html,
                             })
                           }
@@ -3633,6 +3654,33 @@ export default function CampaignDetail() {
                             {replied}
                           </span>
                         </span>
+                      </div>
+                    )}
+
+                    {/* Per-step Discard/Apply — same affordance the whole
+                        Sequence tab has, scoped to this one step's edits.
+                        Everything above writes to the panel's local copy;
+                        only Apply pushes it into the sequence draft. */}
+                    {stepDirty && (
+                      <div className="flex justify-end gap-2 border-t pt-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setStepDraft(selectedStep ? { ...selectedStep } : null)
+                          }
+                        >
+                          {c.discardChanges}
+                        </Button>
+                        <Button
+                          variant="volt"
+                          size="sm"
+                          onClick={() => {
+                            if (stepDraft) draft.updateStep(stepDraft.id, stepDraft)
+                          }}
+                        >
+                          {c.applyChanges}
+                        </Button>
                       </div>
                     )}
                   </CardContent>
