@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import {
   RefreshCw,
@@ -79,7 +79,7 @@ import {
 } from "@/lib/followup-templates"
 import { coachRecordings, currentUser } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
-import { recordingDetails } from "@/lib/mock-depth"
+import { recordingDetails, CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
 import { coachTeam, coachTeamAvg } from "@/lib/mock-coach-team"
 import { CALL_TYPES, CALL_TYPE_META } from "@/lib/call-types"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
@@ -110,8 +110,18 @@ const SENTIMENT = {
 }
 
 // No real per-item priority data exists yet — cycles a deterministic
-// high/medium/low so the Next Steps list reads as prioritized.
+// high/medium/low so the Next Steps list reads as prioritized. The rep can
+// override any of them from the per-step Priority dropdown.
 const ACTION_ITEM_PRIORITIES = ["high", "medium", "low"] as const
+type ActionItemPriority = (typeof ACTION_ITEM_PRIORITIES)[number]
+
+// Urgency, not quality — high priority is the alarming one. Reuses the same
+// green/amber/red tokens the score pills use.
+const PRIORITY_TONE: Record<ActionItemPriority, string> = {
+  high: "bg-destructive/15 text-destructive",
+  medium: "bg-chart-4/15 text-chart-4",
+  low: "bg-chart-1/15 text-chart-1",
+}
 
 const COPY = {
   en: {
@@ -166,12 +176,14 @@ const COPY = {
     noShow: "No-show",
     addToCrm: "Add to CRM",
     inCrm: "In CRM",
+    crmDetails: (crm: string) => `${crm} details`,
     nextStepFieldLabel: (n: number) => `Next step ${n}`,
     selectNextStepAria: (step: string) => `Select for CRM: ${step}`,
     crmFirstName: "First name",
     crmLastName: "Last name",
     crmEmail: "Email",
     priorityLabel: (p: string) => `Priority: ${p}`,
+    priorityAria: (s: string) => `Priority for "${s}"`,
     priority: {
       high: "High",
       medium: "Medium",
@@ -314,12 +326,14 @@ const COPY = {
     noShow: "No asistió",
     addToCrm: "Añadir al CRM",
     inCrm: "En CRM",
+    crmDetails: (crm: string) => `Detalles en ${crm}`,
     nextStepFieldLabel: (n: number) => `Próximo paso ${n}`,
     selectNextStepAria: (step: string) => `Seleccionar para el CRM: ${step}`,
     crmFirstName: "Nombre",
     crmLastName: "Apellidos",
     crmEmail: "Correo",
     priorityLabel: (p: string) => `Prioridad: ${p}`,
+    priorityAria: (s: string) => `Prioridad de «${s}»`,
     priority: {
       high: "Alta",
       medium: "Media",
@@ -462,12 +476,14 @@ const COPY = {
     noShow: "Assente",
     addToCrm: "Aggiungi al CRM",
     inCrm: "Nel CRM",
+    crmDetails: (crm: string) => `Dettagli su ${crm}`,
     nextStepFieldLabel: (n: number) => `Prossimo passo ${n}`,
     selectNextStepAria: (step: string) => `Seleziona per il CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Cognome",
     crmEmail: "Email",
     priorityLabel: (p: string) => `Priorità: ${p}`,
+    priorityAria: (s: string) => `Priorità di «${s}»`,
     priority: {
       high: "Alta",
       medium: "Media",
@@ -610,12 +626,14 @@ const COPY = {
     noShow: "Absent",
     addToCrm: "Ajouter au CRM",
     inCrm: "Dans le CRM",
+    crmDetails: (crm: string) => `Détails dans ${crm}`,
     nextStepFieldLabel: (n: number) => `Étape suivante ${n}`,
     selectNextStepAria: (step: string) => `Sélectionner pour le CRM : ${step}`,
     crmFirstName: "Prénom",
     crmLastName: "Nom",
     crmEmail: "E-mail",
     priorityLabel: (p: string) => `Priorité : ${p}`,
+    priorityAria: (s: string) => `Priorité de « ${s} »`,
     priority: {
       high: "Haute",
       medium: "Moyenne",
@@ -758,12 +776,14 @@ const COPY = {
     noShow: "Nicht erschienen",
     addToCrm: "Zum CRM hinzufügen",
     inCrm: "Im CRM",
+    crmDetails: (crm: string) => `Details in ${crm}`,
     nextStepFieldLabel: (n: number) => `Nächster Schritt ${n}`,
     selectNextStepAria: (step: string) => `Für CRM auswählen: ${step}`,
     crmFirstName: "Vorname",
     crmLastName: "Nachname",
     crmEmail: "E-Mail",
     priorityLabel: (p: string) => `Priorität: ${p}`,
+    priorityAria: (s: string) => `Priorität von „${s}“`,
     priority: {
       high: "Hoch",
       medium: "Mittel",
@@ -906,12 +926,14 @@ const COPY = {
     noShow: "Não compareceu",
     addToCrm: "Adicionar ao CRM",
     inCrm: "No CRM",
+    crmDetails: (crm: string) => `Detalhes no ${crm}`,
     nextStepFieldLabel: (n: number) => `Próximo passo ${n}`,
     selectNextStepAria: (step: string) => `Selecionar para o CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Apelido",
     crmEmail: "Email",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
+    priorityAria: (s: string) => `Prioridade de «${s}»`,
     priority: {
       high: "Alta",
       medium: "Média",
@@ -1054,12 +1076,14 @@ const COPY = {
     noShow: "Não compareceu",
     addToCrm: "Adicionar ao CRM",
     inCrm: "No CRM",
+    crmDetails: (crm: string) => `Detalhes no ${crm}`,
     nextStepFieldLabel: (n: number) => `Próximo passo ${n}`,
     selectNextStepAria: (step: string) => `Selecionar para o CRM: ${step}`,
     crmFirstName: "Nome",
     crmLastName: "Sobrenome",
     crmEmail: "E-mail",
     priorityLabel: (p: string) => `Prioridade: ${p}`,
+    priorityAria: (s: string) => `Prioridade de "${s}"`,
     priority: {
       high: "Alta",
       medium: "Média",
@@ -1441,6 +1465,12 @@ export default function CoachRecordingDetail() {
     setIsPlaying((p) => !p)
   }
   const [doneItems, setDoneItems] = React.useState<Record<number, boolean>>({})
+  // Per-next-step priority the rep can change. Seeded lazily from the
+  // AI-assigned default (ACTION_ITEM_PRIORITIES, cycled) — an entry only
+  // appears here once the rep has actually overridden that step.
+  const [priorities, setPriorities] = React.useState<
+    Record<number, ActionItemPriority>
+  >({})
   const [followUpHelpful, setFollowUpHelpful] = React.useState<boolean | null>(null)
   // Lives on the page, not inside FollowUpTab — that component unmounts
   // whenever this TabsContent isn't the active tab (see its own comment),
@@ -1655,10 +1685,16 @@ export default function CoachRecordingDetail() {
                 )}
                 {!p.isOwner &&
                   (p.inCrm ? (
-                    <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                      <Building2 className="size-3.5" />
-                      {c.inCrm}
-                    </span>
+                    // Already on the CRM — the extension swaps the Add action
+                    // for a read-only link out to the existing record rather
+                    // than a bare "in CRM" label.
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/integrations">
+                        <Building2 className="size-4" />
+                        {c.crmDetails(CONNECTED_CRM_PROVIDER.name)}
+                        <ExternalLink className="size-3.5" />
+                      </Link>
+                    </Button>
                   ) : (
                     <Button
                       variant="outline"
@@ -1701,11 +1737,13 @@ export default function CoachRecordingDetail() {
         {rec.nextSteps.map((item, i) => {
           const done = doneItems[i] ?? false
           const inCrm = nextStepsInCrm[i] ?? false
-          const priority = ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
+          const priority =
+            priorities[i] ??
+            ACTION_ITEM_PRIORITIES[i % ACTION_ITEM_PRIORITIES.length]
           return (
             <div
               key={item}
-              className="bg-muted/50 flex items-center gap-2 rounded-md px-3 py-2 text-sm"
+              className="bg-muted/50 flex flex-wrap items-center gap-2 rounded-md px-3 py-2 text-sm"
             >
               {inCrm ? (
                 <span
@@ -1743,9 +1781,33 @@ export default function CoachRecordingDetail() {
               >
                 {item}
               </span>
-              <Badge variant="outline" className="shrink-0 font-normal">
-                {c.priorityLabel(c.priority[priority])}
-              </Badge>
+              <Select
+                value={priority}
+                onValueChange={(v) =>
+                  setPriorities((prev) => ({
+                    ...prev,
+                    [i]: v as ActionItemPriority,
+                  }))
+                }
+              >
+                <SelectTrigger
+                  size="sm"
+                  aria-label={c.priorityAria(item)}
+                  className={cn(
+                    "h-6 shrink-0 rounded-md border-0 px-2 text-xs font-medium",
+                    PRIORITY_TONE[priority]
+                  )}
+                >
+                  {c.priorityLabel(c.priority[priority])}
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTION_ITEM_PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {c.priority[p]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {inCrm && (
                 <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs">
                   {c.inCrm}
