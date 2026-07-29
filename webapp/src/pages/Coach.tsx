@@ -4,7 +4,6 @@ import { toast } from "sonner"
 import {
   Play,
   TrendingUp,
-  TrendingDown,
   Clock,
   Smile,
   Meh,
@@ -12,8 +11,6 @@ import {
   CheckCircle2,
   ArrowRight,
   GraduationCap,
-  ThumbsUp,
-  Target,
   SlidersHorizontal,
   Sparkles,
   X,
@@ -30,22 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -78,11 +60,7 @@ import {
 import { coachRecordings } from "@/lib/mock-data"
 import { useCoachRecordings, coachRecordingStore } from "@/lib/store"
 import { getScorecard } from "@/lib/mock-coaching"
-import {
-  coachLeaderboard,
-  coachTeamAvg,
-  type CoachSkill,
-} from "@/lib/mock-coach-team"
+import { type CoachSkill } from "@/lib/mock-coach-team"
 import { deals } from "@/lib/mock-extra"
 import { team, teams, teamMembers } from "@/lib/team"
 import { formatDate } from "@/lib/format"
@@ -909,8 +887,6 @@ const COPY = {
   },
 } as const
 
-type Copy = (typeof COPY)[keyof typeof COPY]
-
 function scorePillClass(score: number): string {
   if (score >= 80) return "bg-chart-1/15 text-chart-1"
   if (score >= 65) return "bg-chart-4/15 text-chart-4"
@@ -923,23 +899,6 @@ const avgScore = Math.round(
 const avgTalkRatio = Math.round(
   coachRecordings.reduce((s, r) => s + r.talkRatio, 0) / coachRecordings.length
 )
-
-// Cross-call strengths & gaps: the strong/weak graded sections across all calls.
-const strongSections = coachRecordings
-  .flatMap((r) =>
-    getScorecard(r.id)
-      .sections.filter((s) => s.grade === "strong")
-      .map((s) => ({ id: r.id, call: r.title, label: s.label, score: s.score }))
-  )
-  .sort((a, b) => b.score - a.score)
-const weakSections = coachRecordings
-  .flatMap((r) =>
-    getScorecard(r.id)
-      .sections.filter((s) => s.grade === "weak")
-      .map((s) => ({ id: r.id, call: r.title, label: s.label, score: s.score }))
-  )
-  .sort((a, b) => a.score - b.score)
-const rankedCalls = [...coachRecordings].sort((a, b) => b.score - a.score)
 
 // Header labels reuse the per-locale strings already defined in COPY above
 // (colTitle, colContact, …) rather than duplicating translations.
@@ -1283,14 +1242,7 @@ export default function Coach() {
         </Card>
       </div>
 
-      <Tabs defaultValue="efficiency">
-        <TabsList className="mb-6">
-          <TabsTrigger value="efficiency">{c.tabEfficiency}</TabsTrigger>
-          <TabsTrigger value="performance">{c.tabPerformance}</TabsTrigger>
-          <TabsTrigger value="team">{c.tabTeam}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="efficiency">
+      <div>
           <CollectionToolbar
             query={query}
             onQueryChange={setQuery}
@@ -1381,16 +1333,7 @@ export default function Coach() {
               )}
             </>
           )}
-        </TabsContent>
-
-        <TabsContent value="performance">
-          <PerformanceTab c={c} />
-        </TabsContent>
-
-        <TabsContent value="team">
-          <TeamTab c={c} />
-        </TabsContent>
-      </Tabs>
+      </div>
 
       <CoachBulkActionsBar
         count={sel.selectedIds.size}
@@ -1781,226 +1724,6 @@ function CoachBulkActionsBar({
           {c.clear}
         </Button>
       </div>
-    </div>
-  )
-}
-
-function PerformanceTab({ c }: { c: Copy }) {
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ThumbsUp className="text-chart-1 size-4" />
-              {c.perfStrengths}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {strongSections.length === 0 ? (
-              <p className="text-muted-foreground text-sm">{c.perfNoStrong}</p>
-            ) : (
-              strongSections.slice(0, 4).map((s) => (
-                <Link
-                  key={`${s.id}-${s.label}`}
-                  to={`/coach/${s.id}`}
-                  className="hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
-                >
-                  <span className="min-w-0">
-                    <span className="font-medium">{s.label}</span>
-                    <span className="text-muted-foreground"> · {s.call}</span>
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                      scorePillClass(s.score)
-                    )}
-                  >
-                    {s.score}
-                  </span>
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Target className="text-destructive size-4" />
-              {c.perfGaps}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {weakSections.length === 0 ? (
-              <p className="text-muted-foreground text-sm">{c.perfNoWeak}</p>
-            ) : (
-              weakSections.slice(0, 4).map((s) => (
-                <Link
-                  key={`${s.id}-${s.label}`}
-                  to={`/coach/${s.id}`}
-                  className="hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
-                >
-                  <span className="min-w-0">
-                    <span className="font-medium">{s.label}</span>
-                    <span className="text-muted-foreground"> · {s.call}</span>
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                      scorePillClass(s.score)
-                    )}
-                  >
-                    {s.score}
-                  </span>
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{c.perfRanked}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {rankedCalls.map((r) => (
-            <Link
-              key={r.id}
-              to={`/coach/${r.id}`}
-              className="hover:bg-muted/50 -mx-2 flex items-center gap-3 rounded-md px-2 py-1.5"
-            >
-              <span
-                className={cn(
-                  "w-10 shrink-0 rounded-md px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
-                  scorePillClass(r.score)
-                )}
-              >
-                {r.score}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="text-sm font-medium">{r.title}</span>
-                <span className="text-muted-foreground text-sm">
-                  {" "}
-                  · {r.prospectName}
-                </span>
-              </span>
-              <Progress value={r.score} className="hidden w-40 sm:block" />
-            </Link>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-function TeamTab({ c }: { c: Copy }) {
-  const rows = coachLeaderboard()
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardDescription>{c.teamAvgScore}</CardDescription>
-            <CardTitle className="text-2xl">{coachTeamAvg.score}/100</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{c.teamCalls}</CardDescription>
-            <CardTitle className="text-2xl">{coachTeamAvg.calls}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{c.teamAvgTalk}</CardDescription>
-            <CardTitle className="text-2xl">{coachTeamAvg.talkRatio}%</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      <Card className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{c.colRep}</TableHead>
-              <TableHead className="text-right">{c.colAvgScore}</TableHead>
-              <TableHead className="text-right">{c.colCalls}</TableHead>
-              <TableHead className="text-right">{c.colTalk}</TableHead>
-              <TableHead className="text-right">{c.colTrend}</TableHead>
-              <TableHead className="hidden md:table-cell">
-                {c.colStrength}
-              </TableHead>
-              <TableHead className="hidden md:table-cell">{c.colGap}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((m) => (
-              <TableRow key={m.repId}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white"
-                      style={{ backgroundColor: m.avatarColor }}
-                    >
-                      {m.name.charAt(0)}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{m.name}</p>
-                      <p className="text-muted-foreground truncate text-xs">
-                        {m.role}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <span
-                    className={cn(
-                      "inline-flex rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                      scorePillClass(m.avgScore)
-                    )}
-                  >
-                    {m.avgScore}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {m.callsAnalyzed}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {m.avgTalkRatio}%
-                </TableCell>
-                <TableCell className="text-right">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-0.5 text-xs font-medium tabular-nums",
-                      m.trend >= 0 ? "text-chart-1" : "text-destructive"
-                    )}
-                  >
-                    {m.trend >= 0 ? (
-                      <TrendingUp className="size-3.5" />
-                    ) : (
-                      <TrendingDown className="size-3.5" />
-                    )}
-                    {m.trend >= 0 ? "+" : ""}
-                    {m.trend}
-                  </span>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge variant="secondary" className="font-normal">
-                    {c.skill[m.topStrength]}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge variant="outline" className="font-normal">
-                    {c.skill[m.topGap]}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
     </div>
   )
 }

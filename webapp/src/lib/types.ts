@@ -455,17 +455,50 @@ export interface Campaign {
   autoPauseOnReply?: boolean
 }
 
+// A single rubric question under a sub-metric (e.g. "Did the rep ask
+// open-ended questions?") — the leaf of the Analysis tab's Call Score tree.
+export interface CoachQuestion {
+  text: string
+  // "good"/"medium"/"bad" drive the value badge color (green/orange/red);
+  // never used when isNa is true (an NA question is always neutral gray,
+  // never rendered as a failing/red result).
+  breakdownType: "good" | "medium" | "bad"
+  value: string // e.g. "Yes", "No", or a raw score label
+  isNa?: boolean
+  why: string // "Why this result?"
+  quotes: string[] // "Where in the transcript?" — verbatim excerpts
+  howToImprove: string
+}
+
 // A scored dimension in the Analysis tab's "Call Score Breakdown" (e.g.
-// "Discovery", "Objection handling"), each optionally split into sub-metrics.
+// "Discovery", "Objection handling"), each split into sub-metrics, each of
+// those split into individual rubric questions.
 export interface CoachScoreMetric {
   label: string
-  metricScore: number // 0-100
+  metricScore: number // 0-100 — this call's score
   metricSummary?: string
   // When true, this metric wasn't applicable to this call (e.g. "Handled
   // objections" on a call where none came up) — render an "NA" chip instead
   // of the (misleading) percent score.
   isNa?: boolean
-  subMetrics?: { label: string; score: number; isNa?: boolean }[]
+  // This rep's and the team's average score for this same metric, across
+  // their other analyzed calls — the radar graph's second/third series.
+  repAvgScore?: number
+  teamAvgScore?: number
+  subMetrics?: {
+    label: string
+    score: number
+    isNa?: boolean
+    questions?: CoachQuestion[]
+  }[]
+}
+
+// A named rubric a call can be scored against (e.g. "Discovery call",
+// "Demo call") — Call Analytics can only aggregate calls scored under the
+// same card, so a mixed selection prompts the user to pick one.
+export interface CoachScoreCard {
+  id: string
+  name: string
 }
 
 // A meeting participant identified from calendar/attendance data — the
@@ -557,6 +590,9 @@ export interface CoachRecording {
   prospectPosition?: string
   dealId?: string
   salesRepId?: string
+  // Which rubric this call was scored against — Call Analytics can only
+  // aggregate calls scored under the same card.
+  scoreCardId?: string
 }
 
 export interface Integration {

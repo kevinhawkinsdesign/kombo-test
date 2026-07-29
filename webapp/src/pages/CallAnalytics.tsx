@@ -32,11 +32,20 @@ import {
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { DataTable } from "@/components/common/DataTable"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useTableSortFilter } from "@/lib/table-sort-filter"
 import type { ColumnDef } from "@/lib/table-columns"
 import { useCoachRecordings } from "@/lib/store"
+import { coachScoreCards } from "@/lib/mock-data"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { CallScoreRadarChart } from "@/components/charts/Charts"
 import type { CoachRecording } from "@/lib/types"
 
 // A call "scores well" on a metric at or above this — the mocked equivalent
@@ -80,6 +89,8 @@ const COPY = {
     emptyTitle: "No analyzed calls yet",
     emptyDescription: "Analyze a call from Call Coach to see it here.",
     viewCoachAnalytics: "View Coach Analytics",
+    scoreCardLabel: "Score Card:",
+    scoreCardPlaceholder: "Select a Score Card",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Aggregate performance across ${n} analyzed ${n === 1 ? "call" : "calls"}.`,
@@ -141,6 +152,8 @@ const COPY = {
     emptyTitle: "Todavía no hay llamadas analizadas",
     emptyDescription: "Analiza una llamada desde Coach de llamadas para verla aquí.",
     viewCoachAnalytics: "Ver Coach Analytics",
+    scoreCardLabel: "Score Card:",
+    scoreCardPlaceholder: "Selecciona un Score Card",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Rendimiento agregado de ${n} ${n === 1 ? "llamada analizada" : "llamadas analizadas"}.`,
@@ -202,6 +215,8 @@ const COPY = {
     emptyTitle: "Ancora nessuna chiamata analizzata",
     emptyDescription: "Analizza una chiamata da Coach chiamate per vederla qui.",
     viewCoachAnalytics: "Vedi Coach Analytics",
+    scoreCardLabel: "Score Card:",
+    scoreCardPlaceholder: "Seleziona uno Score Card",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Prestazioni aggregate su ${n} ${n === 1 ? "chiamata analizzata" : "chiamate analizzate"}.`,
@@ -264,6 +279,8 @@ const COPY = {
     emptyDescription:
       "Analysez un appel depuis Coach d'appels pour le voir apparaître ici.",
     viewCoachAnalytics: "Voir Coach Analytics",
+    scoreCardLabel: "Score Card :",
+    scoreCardPlaceholder: "Sélectionnez un Score Card",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Performance agrégée sur ${n} ${n === 1 ? "appel analysé" : "appels analysés"}.`,
@@ -325,6 +342,8 @@ const COPY = {
     emptyTitle: "Noch keine analysierten Calls",
     emptyDescription: "Analysiere einen Call im Call-Coach, um ihn hier zu sehen.",
     viewCoachAnalytics: "Coach Analytics ansehen",
+    scoreCardLabel: "Score Card:",
+    scoreCardPlaceholder: "Score Card auswählen",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Aggregierte Leistung über ${n} analysierte ${n === 1 ? "Call" : "Calls"}.`,
@@ -387,6 +406,8 @@ const COPY = {
     emptyDescription:
       "Analise uma chamada a partir do Coach de chamadas para a ver aqui.",
     viewCoachAnalytics: "Ver Coach Analytics",
+    scoreCardLabel: "Score Card:",
+    scoreCardPlaceholder: "Selecione um Score Card",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Desempenho agregado em ${n} ${n === 1 ? "chamada analisada" : "chamadas analisadas"}.`,
@@ -449,6 +470,8 @@ const COPY = {
     emptyDescription:
       "Analise uma ligação a partir do Coach de ligações para vê-la aqui.",
     viewCoachAnalytics: "Ver Coach Analytics",
+    scoreCardLabel: "Score Card:",
+    scoreCardPlaceholder: "Selecione um Score Card",
     dialogTitle: "Coach Analytics",
     dialogDescription: (n: number) =>
       `Desempenho agregado em ${n} ${n === 1 ? "ligação analisada" : "ligações analisadas"}.`,
@@ -662,6 +685,28 @@ export default function CallAnalytics() {
   )
   const [dialogOpen, setDialogOpen] = React.useState(false)
 
+  // Aggregating across calls scored under different rubrics wouldn't mean
+  // anything, so when the filtered set spans more than one Score Card the
+  // user must pick which one to run analytics against (matches the
+  // extension's isScoreCardSelectionMissing gate).
+  const distinctScoreCardIds = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          analyzedCalls.map((r) => r.scoreCardId).filter((id): id is string => Boolean(id))
+        )
+      ),
+    [analyzedCalls]
+  )
+  const [scoreCardId, setScoreCardId] = React.useState<string | undefined>(undefined)
+  const needsScoreCardSelection = distinctScoreCardIds.length > 1
+  const effectiveScoreCardId = needsScoreCardSelection
+    ? scoreCardId
+    : distinctScoreCardIds[0]
+  const scopedCalls = effectiveScoreCardId
+    ? analyzedCalls.filter((r) => r.scoreCardId === effectiveScoreCardId)
+    : analyzedCalls
+
   const tsf = useTableSortFilter(CALL_COLUMNS, analyzedCalls)
 
   return (
@@ -670,14 +715,38 @@ export default function CallAnalytics() {
         title={c.title}
         description={c.description}
         action={
-          <Button
-            variant="volt"
-            disabled={analyzedCalls.length === 0}
-            onClick={() => setDialogOpen(true)}
-          >
-            <BarChart3 className="size-4" />
-            {c.viewCoachAnalytics}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {needsScoreCardSelection && (
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-sm whitespace-nowrap">
+                  {c.scoreCardLabel}
+                </span>
+                <Select value={scoreCardId} onValueChange={setScoreCardId}>
+                  <SelectTrigger size="sm" className="w-44">
+                    <SelectValue placeholder={c.scoreCardPlaceholder} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {distinctScoreCardIds.map((id) => {
+                      const card = coachScoreCards.find((sc) => sc.id === id)
+                      return (
+                        <SelectItem key={id} value={id}>
+                          {card?.name ?? id}
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <Button
+              variant="volt"
+              disabled={scopedCalls.length === 0 || (needsScoreCardSelection && !scoreCardId)}
+              onClick={() => setDialogOpen(true)}
+            >
+              <BarChart3 className="size-4" />
+              {c.viewCoachAnalytics}
+            </Button>
+          </div>
         }
       />
 
@@ -716,7 +785,7 @@ export default function CallAnalytics() {
       <CoachAnalyticsDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        calls={analyzedCalls}
+        calls={scopedCalls}
         c={c}
       />
     </Page>
@@ -801,6 +870,22 @@ function CoachAnalyticsDialog({
               </span>
             </div>
           </div>
+
+          {metrics.length > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="h-56">
+                  <CallScoreRadarChart
+                    labels={metrics.map((m) => m.label)}
+                    callSeries={metrics.map((m) => m.avgScore)}
+                    callLabel={c.avgScoreLabel}
+                    repAvgLabel=""
+                    teamAvgLabel=""
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>

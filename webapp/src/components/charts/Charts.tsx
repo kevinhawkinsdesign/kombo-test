@@ -2,6 +2,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  RadialLinearScale,
   PointElement,
   LineElement,
   BarElement,
@@ -12,13 +13,14 @@ import {
   type ChartOptions,
   type Plugin,
 } from "chart.js"
-import { Line, Doughnut, Bar } from "react-chartjs-2"
+import { Line, Doughnut, Bar, Radar } from "react-chartjs-2"
 
 import { useTheme } from "@/components/theme-provider"
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  RadialLinearScale,
   PointElement,
   LineElement,
   BarElement,
@@ -393,6 +395,101 @@ export function AttainmentDoughnut({
       </div>
     </div>
   )
+}
+
+// Call Score radar graph (Analysis tab, Call Analytics aggregation panel):
+// one axis per scoring metric, up to 3 overlaid series (this call/rep
+// average/team average). Series are dropped entirely rather than plotted at
+// 0 when their average isn't available, since 0 would misleadingly read as
+// a failing score.
+export function CallScoreRadarChart({
+  labels,
+  callSeries,
+  repAvgSeries,
+  teamAvgSeries,
+  callLabel,
+  repAvgLabel,
+  teamAvgLabel,
+}: {
+  labels: string[]
+  callSeries: number[]
+  repAvgSeries?: number[]
+  teamAvgSeries?: number[]
+  callLabel: string
+  repAvgLabel: string
+  teamAvgLabel: string
+}) {
+  const t = useChartTheme()
+
+  const options: ChartOptions<"radar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          color: t.ticks,
+          usePointStyle: true,
+          pointStyle: "circle",
+          boxWidth: 6,
+          boxHeight: 6,
+          padding: 16,
+        },
+      },
+      tooltip: {
+        backgroundColor: t.tooltipBg,
+        titleColor: t.tooltipTitle,
+        bodyColor: t.tooltipBody,
+        borderColor: t.border,
+        borderWidth: 1,
+        padding: 10,
+        callbacks: { label: (c) => ` ${c.dataset.label}: ${c.parsed.r}%` },
+      },
+    },
+    scales: {
+      r: {
+        min: 0,
+        max: 100,
+        grid: { color: t.grid },
+        angleLines: { color: t.grid },
+        pointLabels: { color: t.ticks, font: { size: 11 } },
+        ticks: { display: false, stepSize: 25 },
+      },
+    },
+  }
+
+  const datasets = [
+    {
+      label: callLabel,
+      data: callSeries,
+      borderColor: t.primary,
+      backgroundColor: hexAlpha(t.primary, 0.2),
+      pointBackgroundColor: t.primary,
+      borderWidth: 2,
+    },
+  ]
+  if (repAvgSeries) {
+    datasets.push({
+      label: repAvgLabel,
+      data: repAvgSeries,
+      borderColor: t.accent,
+      backgroundColor: hexAlpha(t.accent, 0.12),
+      pointBackgroundColor: t.accent,
+      borderWidth: 2,
+    })
+  }
+  if (teamAvgSeries) {
+    datasets.push({
+      label: teamAvgLabel,
+      data: teamAvgSeries,
+      borderColor: PALETTE.amber,
+      backgroundColor: hexAlpha(PALETTE.amber, 0.12),
+      pointBackgroundColor: PALETTE.amber,
+      borderWidth: 2,
+    })
+  }
+
+  return <Radar options={options} data={{ labels, datasets }} />
 }
 
 export function HeadcountChart({

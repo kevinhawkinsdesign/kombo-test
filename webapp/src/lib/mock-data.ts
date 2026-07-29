@@ -1054,24 +1054,105 @@ export const coachRecordings: CoachRecording[] = [
         label: "Discovery",
         metricScore: 92,
         metricSummary: "Uncovered current tooling, team size, and specific pain points early.",
+        repAvgScore: 84,
+        teamAvgScore: 79,
         subMetrics: [
-          { label: "Open-ended questions", score: 90 },
+          {
+            label: "Open-ended questions",
+            score: 90,
+            questions: [
+              {
+                text: "Did the rep ask open-ended discovery questions?",
+                breakdownType: "good",
+                value: "Yes",
+                why: "The rep opened with \"I'd love to hear how outbound works today on your team\" — a broad, open-ended prompt rather than a leading yes/no question.",
+                quotes: ["Sure. Right now our SDRs spend a lot of time just finding the right contact and verifying emails before they can even start a sequence."],
+                howToImprove: "Keep stacking a second open-ended follow-up before pivoting to a closed quantifying question.",
+              },
+            ],
+          },
           // Flagged NA as a concrete example of the "not applicable" chip —
           // renders a neutral pill instead of a (misleading) percent score.
-          { label: "Pain quantification", score: 94, isNa: true },
+          {
+            label: "Pain quantification",
+            score: 94,
+            isNa: true,
+            questions: [
+              {
+                text: "Did the rep quantify the cost of the prospect's pain?",
+                breakdownType: "good",
+                value: "N/A",
+                isNa: true,
+                why: "The prospect volunteered a concrete number before the rep needed to probe for one.",
+                quotes: ["Honestly, probably a third of their week. It's a real bottleneck."],
+                howToImprove: "No action needed — the quantification came from the prospect unprompted.",
+              },
+            ],
+          },
         ],
       },
       {
         label: "Objection handling",
         metricScore: 81,
         metricSummary: "Handled the security question well; slightly rushed the pricing pushback.",
+        repAvgScore: 77,
+        teamAvgScore: 74,
+        subMetrics: [
+          {
+            label: "Pricing objection",
+            score: 68,
+            questions: [
+              {
+                text: "Did the rep uncover the prospect's budget before defending price?",
+                breakdownType: "medium",
+                value: "Partial",
+                why: "The rep answered the 40-seat minimum question directly but moved on before establishing what Criteo was already paying.",
+                quotes: ["On pricing — we do have a 40-seat minimum for the team plan.", "Okay, and where does that land relative to what we're paying today?"],
+                howToImprove: "Ask \"what are you budgeting for this today?\" before quoting the minimum, so the number lands in context.",
+              },
+            ],
+          },
+          {
+            label: "Security objection",
+            score: 95,
+            questions: [
+              {
+                text: "Did the rep address the security question with evidence?",
+                breakdownType: "good",
+                value: "Yes",
+                why: "The rep offered to loop in a technical deep-dive with the security team directly rather than answering from memory.",
+                quotes: ["Let's get a technical deep-dive on the calendar with your security team."],
+                howToImprove: "Consider sending the SOC 2 report ahead of the deep-dive so security has a head start.",
+              },
+            ],
+          },
+        ],
       },
       {
         label: "Next steps",
         metricScore: 95,
         metricSummary: "Booked a clear technical deep-dive with a named date.",
+        repAvgScore: 88,
+        teamAvgScore: 82,
+        subMetrics: [
+          {
+            label: "Clear commitment",
+            score: 95,
+            questions: [
+              {
+                text: "Did the call end with a specific, dated next step?",
+                breakdownType: "good",
+                value: "Yes",
+                why: "Both sides confirmed a concrete next meeting and named an additional stakeholder to include.",
+                quotes: ["Works for me — I'll loop in procurement too."],
+                howToImprove: "Send the calendar invite within the hour while the commitment is fresh.",
+              },
+            ],
+          },
+        ],
       },
     ],
+    scoreCardId: "sc_discovery",
     review: {
       positiveFeedback:
         "Great use of silence after asking about current pain — let Wei fully explain before responding. Multi-threaded into procurement naturally.",
@@ -1182,7 +1263,94 @@ export const coachRecordings: CoachRecording[] = [
     // A regular phone call has no video track — audio-only.
     videoSource: "phone",
     mediaKind: "audio",
+    summarized: true,
+    analyzed: true,
+    overview:
+      "Short check-in call to confirm Delta Robotics' board-review timeline and re-send the updated proposal at the new seat count.",
+    scoreBreakdown: [
+      {
+        label: "Next steps",
+        metricScore: 90,
+        metricSummary: "Confirmed a firm date for the board decision and what's needed before then.",
+        repAvgScore: 88,
+        teamAvgScore: 82,
+        subMetrics: [
+          {
+            label: "Clear commitment",
+            score: 90,
+            questions: [
+              {
+                text: "Did the call end with a specific, dated next step?",
+                breakdownType: "good",
+                value: "Yes",
+                why: "Hugo named the board meeting date and what he needs from the rep before then.",
+                quotes: ["We review it with the board next Thursday, so if I could get the updated numbers by Wednesday that'd help."],
+                howToImprove: "Confirm back the exact date verbally to lock it into the rep's own calendar on the call.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Objection handling",
+        metricScore: 72,
+        metricSummary: "Pricing came up briefly; handled but not fully explored.",
+        repAvgScore: 77,
+        teamAvgScore: 74,
+        subMetrics: [
+          {
+            label: "Pricing objection",
+            score: 72,
+            questions: [
+              {
+                text: "Did the rep uncover the reason behind the pricing concern?",
+                breakdownType: "medium",
+                value: "Partial",
+                why: "The rep acknowledged the concern and offered a revised quote, but didn't ask what changed since the original proposal.",
+                quotes: ["Let me get you an updated number at the new seat count."],
+                howToImprove: "Ask what's driving the reconsideration before re-quoting — it may be seat count, budget cycle, or a competing option.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    review: {
+      positiveFeedback: "Efficient, respectful of Hugo's time — got the date and the ask in under 15 minutes.",
+      thingsToImprove: "Didn't probe why the seat count changed since the original proposal before agreeing to re-quote.",
+    },
+    speakers: [
+      { speakerId: "speaker-0", name: "You", role: "Rep" },
+      { speakerId: "speaker-1", name: "Hugo Alvarez", role: "Prospect" },
+    ],
+    transcript: [
+      { speakerId: "speaker-0", atSec: 6, text: "Hey Hugo, quick one today — wanted to check in on timing." },
+      { speakerId: "speaker-1", atSec: 20, text: "We review it with the board next Thursday, so if I could get the updated numbers by Wednesday that'd help." },
+      { speakerId: "speaker-0", atSec: 240, text: "Let me get you an updated number at the new seat count." },
+      { speakerId: "speaker-1", atSec: 250, text: "Appreciate it — that should cover what they'll ask." },
+    ],
+    participants: [
+      { name: "You", isOwner: true, attended: true },
+      { name: "Hugo Alvarez", email: "hugo.alvarez@deltarobotics.com", attended: true, inCrm: true },
+    ],
+    keyFields: [
+      { label: "Decision timeline", value: "Board review next Thursday" },
+      { label: "Seat count", value: "Increased from original proposal" },
+    ],
+    prospectPosition: "VP Operations",
+    dealId: "deal_5",
+    salesRepId: "rep_2",
+    scoreCardId: "sc_checkin",
   },
+]
+
+// The rubrics calls can be scored against — Call Analytics' "Score Card"
+// selector lets the user pick one when the filtered set of analyzed calls
+// spans more than one, since aggregating across different rubrics wouldn't
+// mean anything.
+export const coachScoreCards: { id: string; name: string }[] = [
+  { id: "sc_discovery", name: "Discovery call" },
+  { id: "sc_checkin", name: "Check-in call" },
 ]
 
 export const integrations: Integration[] = [
