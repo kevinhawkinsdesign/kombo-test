@@ -1,7 +1,7 @@
 import type * as React from "react"
 import {
   Download,
-  Layers,
+  Stars,
   FolderPlus,
   FolderInput,
   ScanSearch,
@@ -211,7 +211,7 @@ export function BulkActionsBar({
       </Button>
       {onEnrich && (
         <Button variant="outline" size="sm" onClick={onEnrich}>
-          <Layers className="size-4" />
+          <Stars className="size-4" />
           {c.enrich}
         </Button>
       )}

@@ -32,7 +32,7 @@ import {
   FolderPlus,
   Link2,
   Check,
-  Layers,
+  Stars,
   MoreHorizontal,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -3865,7 +3865,7 @@ export default function Search() {
                     aria-label={c.enrichRow}
                     onClick={() => enrichRow(l)}
                   >
-                    <Layers className="size-4" />
+                    <Stars className="size-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -3922,7 +3922,7 @@ export default function Search() {
                     aria-label={c.enrichRow}
                     onClick={enrichCompanyRow}
                   >
-                    <Layers className="size-4" />
+                    <Stars className="size-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

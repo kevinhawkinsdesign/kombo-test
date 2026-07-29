@@ -6,7 +6,7 @@ import {
   ExternalLink,
   FolderPlus,
   Building2,
-  Layers,
+  Stars,
   UserSearch,
   ScanSearch,
   Ban,
@@ -235,7 +235,7 @@ export function RecordActionsMenu({
               disabled={!needsAnyEnrichScope(record as Prospect)}
               onClick={() => setDialog("enrich")}
             >
-              <Layers className="size-4" />
+              <Stars className="size-4" />
               {c.enrich}
             </DropdownMenuItem>
           )}
@@ -244,7 +244,7 @@ export function RecordActionsMenu({
               disabled={isCompanyEnriched(record as Account)}
               onClick={() => setDialog("enrich")}
             >
-              <Layers className="size-4" />
+              <Stars className="size-4" />
               {c.enrich}
             </DropdownMenuItem>
           )}

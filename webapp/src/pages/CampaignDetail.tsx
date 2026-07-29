@@ -16,7 +16,7 @@ import {
   X,
   Sparkles,
   Zap,
-  Layers,
+  Stars,
   AlertTriangle,
   CalendarClock,
   ChevronDown,
@@ -4451,7 +4451,7 @@ export default function CampaignDetail() {
               {c.activateAnyway}
             </Button>
             <Button variant="volt" onClick={enrichAndActivate}>
-              <Layers className="size-4" />
+              <Stars className="size-4" />
               {c.enrichAndActivate} · {enrichCost}
             </Button>
           </DialogFooter>

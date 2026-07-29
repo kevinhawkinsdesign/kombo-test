@@ -10,7 +10,7 @@ import {
   X,
   Plus,
   Search,
-  Layers,
+  Stars,
   Columns3,
   ShieldCheck,
   TriangleAlert,
@@ -1199,7 +1199,7 @@ export default function ListDetail() {
           </div>
           {pending.length > 0 ? (
             <Button variant="volt" onClick={() => setEnrichOpen(true)}>
-              <Layers className="size-4" />
+              <Stars className="size-4" />
               {c.enrichContacts(pending.length)}
             </Button>
           ) : (
@@ -1401,7 +1401,7 @@ export default function ListDetail() {
                     disabled={!needsAnyEnrichScope(p)}
                     onClick={() => setRowEnrichProspect(p)}
                   >
-                    <Layers className="size-4" />
+                    <Stars className="size-4" />
                   </Button>
                   <RecordActionsMenu
                     kind="person"
@@ -1768,7 +1768,7 @@ function ListSettingsBox({
           onClick={onAddSource}
         />
         <SettingCard
-          icon={<Layers className="size-3.5" />}
+          icon={<Stars className="size-3.5" />}
           label={c.labelEnrich}
           value={enrichOn ? c.keptFresh : c.noAutomation}
           hint={

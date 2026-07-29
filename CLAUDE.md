@@ -75,11 +75,11 @@ history, deleting branches, etc.) — see the escalation rules below.
 
 ### Fixed icon meanings (app-wide — don't improvise)
 
-- `Sparkles` = AI-powered, exclusively.
+- `Sparkles` = AI-powered, exclusively (general AI features).
+- `Stars` = Enrich (AI-powered enrichment — distinct from `Sparkles` to
+  signal a specific action, not general AI).
 - `Database` = Kombo's own data source (vs. an external source like Google
   Maps).
-- `Layers` = Enrich (deliberately distinct from AI — enrichment is not
-  AI-powered).
 - `Zap` = alerts/speed — not enrichment, not AI.
 
 ### Copy
