@@ -3907,6 +3907,15 @@ export default function Search() {
                   </Button>
                 </div>
               )}
+              onReorderColumns={(from, to) => {
+                const cur = [...leadColPrefs.visible]
+                const fi = cur.indexOf(from)
+                const ti = cur.indexOf(to)
+                if (fi === -1 || ti === -1 || fi === ti) return
+                cur.splice(fi, 1)
+                cur.splice(ti, 0, from)
+                leadColPrefs.setVisible(cur)
+              }}
             />
           ) : (
             <DataTable
@@ -3957,6 +3966,15 @@ export default function Search() {
                   </Button>
                 </div>
               )}
+              onReorderColumns={(from, to) => {
+                const cur = [...companyColPrefs.visible]
+                const fi = cur.indexOf(from)
+                const ti = cur.indexOf(to)
+                if (fi === -1 || ti === -1 || fi === ti) return
+                cur.splice(fi, 1)
+                cur.splice(ti, 0, from)
+                companyColPrefs.setVisible(cur)
+              }}
             />
           )}
 
