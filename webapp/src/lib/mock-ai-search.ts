@@ -1,5 +1,5 @@
 // Data layer for the AI Search experience — a unified surface that merges
-// classic prospect-database search with an "Ask Kai" style prompt. A natural
+// classic prospect-database search with an "Ask AI" style prompt. A natural
 // language prompt is interpreted into a structured query; the query builds a
 // custom table of people OR companies scored by fit. Results can be saved as a
 // list and connected to a campaign. Saved searches keep the prompt + chat

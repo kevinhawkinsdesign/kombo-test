@@ -212,7 +212,7 @@ export interface Message {
   timestamp: string
   read: boolean
   lang?: ChatLang // language the message was written in
-  aiGenerated?: boolean // outbound message was drafted by Kai
+  aiGenerated?: boolean // outbound message was drafted by AI
   // A recorded voice note (LinkedIn/WhatsApp only) instead of a text body —
   // `body` still carries a plain-text fallback (for search/translation), and
   // `voiceDurationSec` drives the mock waveform/playback bubble.
@@ -260,12 +260,12 @@ export interface Conversation {
   archived?: boolean
   recipientLang?: ChatLang // the prospect's preferred language
   status?: ConvStatus // auto-tagged intent
-  aiDraft?: string // Kai's suggested reply, ready to send
+  aiDraft?: string // AI's suggested reply, ready to send
   scheduledAt?: string | null // ISO date; a reply queued to send later
   snoozedUntil?: string | null // ISO date; hidden from folders until this time
   events?: ConvEvent[] // activity timeline interleaved with messages
   // When true, an inbound reply on this thread auto-populates aiDraft via the
-  // same draftReply() generator the composer's "Kai draft" uses — the rep
+  // same draftReply() generator the composer's "AI draft" uses — the rep
   // still reviews and sends it manually, it's never auto-sent.
   autoReply?: boolean
 }
@@ -691,7 +691,7 @@ export type TaskType = "call" | "email" | "linkedin" | "manual" | "follow_up"
 // "contract_review") and the UI falls back to a generic rendering.
 export type TaskKind = TaskType | (string & {})
 
-// What created a task: a person in the app, Kai, a running sequence, the
+// What created a task: a person in the app, AI, a running sequence, the
 // system itself, or an external caller hitting the (future) API.
 export type TaskSource = "user" | "kai" | "sequence" | "system" | "api"
 

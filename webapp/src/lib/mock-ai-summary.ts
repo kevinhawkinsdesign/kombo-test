@@ -1,4 +1,4 @@
-// Mock "Kai" prospect summaries for Inbox's ProspectSummaryPanel. Deterministic
+// Mock "AI" prospect summaries for Inbox's ProspectSummaryPanel. Deterministic
 // template fill-in, varied by picking a random phrasing per call — UI-only, no
 // network. Mirrors the pattern in mock-ai-reply.ts.
 import type { Prospect } from "@/lib/types"

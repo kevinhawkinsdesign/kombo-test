@@ -1,4 +1,4 @@
-// Human-in-the-loop approvals. Before Kai takes an irreversible action on your
+// Human-in-the-loop approvals. Before AI takes an irreversible action on your
 // behalf (send a sequence, enroll a list, sync to CRM), it queues an approval so
 // you stay in charge. Automations in "ask" mode route their runs through here;
 // "auto" automations skip it.
@@ -11,7 +11,7 @@ export interface PendingApproval {
   id: string
   action: string // "Send email sequence"
   target: string // "142 contacts in \"Fintech Seed\" list"
-  detail: string // why this surfaced / what Kai prepared
+  detail: string // why this surfaced / what AI prepared
   trigger: string // the signal/automation that proposed it
   count: number // contacts/companies affected
   irreversible: boolean
@@ -28,7 +28,7 @@ const SEED: PendingApproval[] = [
     action: "Send email sequence",
     target: '142 contacts in "Fintech Seed" list',
     detail:
-      "142 net-new contacts matched your Fintech Seed playlist and were enriched. Kai drafted a 3-step sequence and is ready to send.",
+      "142 net-new contacts matched your Fintech Seed playlist and were enriched. AI drafted a 3-step sequence and is ready to send.",
     trigger: "Playlist · Fintech Seed · net-new contacts",
     count: 142,
     irreversible: true,
@@ -52,7 +52,7 @@ const SEED: PendingApproval[] = [
     action: "Start re-engagement sequence",
     target: "Grace Liu · Betterfly",
     detail:
-      "Closed-lost 7 months ago over budget. Betterfly just announced a transformation budget — Kai wants to re-open with a warm note.",
+      "Closed-lost 7 months ago over budget. Betterfly just announced a transformation budget — AI wants to re-open with a warm note.",
     trigger: "Signal · Budget approved",
     count: 1,
     irreversible: true,

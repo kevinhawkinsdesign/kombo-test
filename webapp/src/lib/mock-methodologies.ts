@@ -1,6 +1,6 @@
 // Custom sales methodologies a team defines beyond the built-in list —
 // each is a named set of discovery sections (e.g. MEDDIC's "Metrics",
-// "Economic buyer", …) with example questions Kai draws on during call prep.
+// "Economic buyer", …) with example questions AI draws on during call prep.
 // Mirrors the extension's custom-sales-methodology concept.
 
 import * as React from "react"

@@ -1,4 +1,4 @@
-// Mock "Kai" reply drafting. Produces a context-aware suggested reply for a
+// Mock "AI" reply drafting. Produces a context-aware suggested reply for a
 // conversation, varying tone by the auto-tagged intent. UI-only — no network.
 import type { ChatLang, ConvStatus, Conversation, Prospect } from "@/lib/types"
 import { translate } from "@/lib/mock-translate"
