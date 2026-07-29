@@ -3114,16 +3114,12 @@ export default function CampaignDetail() {
 
   return (
     <>
-      <Page className="pb-0">
-        <BackLink to="/campaigns" label={c.campaigns} />
-      </Page>
-
       {/* Full-bleed within the main content area — not constrained to the
           page's max-w-7xl — so the tab strip spans from the sidebar edge to
           the viewport edge. Horizontal padding matches AppHeader's own
           px-4 md:px-6 so its edges still line up with the rest of the
           chrome. */}
-      <div className="px-4 md:px-6">
+      <div className="px-4 md:px-6 pt-4 md:pt-6">
         <CampaignTabBar currentId={campaign.id} />
       </div>
 

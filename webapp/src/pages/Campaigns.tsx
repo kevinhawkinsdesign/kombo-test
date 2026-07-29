@@ -65,6 +65,7 @@ import { downloadCsv } from "@/lib/csv"
 import { formatDate, isCampaignScheduled } from "@/lib/format"
 import { useLocale, type Locale } from "@/lib/locale"
 import { useNewCampaign } from "@/components/campaign/NewCampaignWizard"
+import { CampaignTabBar } from "@/components/campaigns/CampaignTabBar"
 import type { Campaign, CampaignStatus } from "@/lib/types"
 
 interface CampaignAudience {
@@ -1285,17 +1286,25 @@ export default function Campaigns() {
   }
 
   return (
-    <Page>
-      <PageHeading
-        title={c.pageTitle}
-        description={c.pageDescription}
-        action={
-          <Button variant="volt" onClick={openNewCampaign}>
-            <Plus className="size-4" />
-            {c.newCampaign}
-          </Button>
-        }
-      />
+    <>
+      <Page className="pb-0">
+        <PageHeading
+          title={c.pageTitle}
+          description={c.pageDescription}
+          action={
+            <Button variant="volt" onClick={openNewCampaign}>
+              <Plus className="size-4" />
+              {c.newCampaign}
+            </Button>
+          }
+        />
+      </Page>
+
+      <div className="px-4 md:px-6">
+        <CampaignTabBar currentId="all" />
+      </div>
+
+      <Page className="pt-0">
       <FeatureIntro
         featureKey="campaigns"
         icon={Send}
@@ -1455,6 +1464,7 @@ export default function Campaigns() {
         prefs={campaignColPrefs}
         locale={locale}
       />
-    </Page>
+      </Page>
+    </>
   )
 }

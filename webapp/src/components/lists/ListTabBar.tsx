@@ -17,6 +17,7 @@ import type { ProspectList } from "@/lib/types"
 
 const COPY = {
   en: {
+    allLists: "All Lists",
     closeTab: (name: string) => `Close ${name}`,
     addTab: "Open another list",
     searchToOpen: "Search lists to open…",
@@ -24,6 +25,7 @@ const COPY = {
     createNewList: "Create new list",
   },
   es: {
+    allLists: "Todas las listas",
     closeTab: (name: string) => `Cerrar ${name}`,
     addTab: "Abrir otra lista",
     searchToOpen: "Buscar listas para abrir…",
@@ -31,6 +33,7 @@ const COPY = {
     createNewList: "Crear nueva lista",
   },
   it: {
+    allLists: "Tutte le liste",
     closeTab: (name: string) => `Chiudi ${name}`,
     addTab: "Apri un'altra lista",
     searchToOpen: "Cerca liste da aprire…",
@@ -38,6 +41,7 @@ const COPY = {
     createNewList: "Crea nuova lista",
   },
   fr: {
+    allLists: "Toutes les listes",
     closeTab: (name: string) => `Fermer ${name}`,
     addTab: "Ouvrir une autre liste",
     searchToOpen: "Rechercher des listes à ouvrir…",
@@ -45,6 +49,7 @@ const COPY = {
     createNewList: "Créer une nouvelle liste",
   },
   de: {
+    allLists: "Alle Listen",
     closeTab: (name: string) => `${name} schließen`,
     addTab: "Weitere Liste öffnen",
     searchToOpen: "Listen zum Öffnen suchen…",
@@ -52,6 +57,7 @@ const COPY = {
     createNewList: "Neue Liste erstellen",
   },
   pt: {
+    allLists: "Todas as listas",
     closeTab: (name: string) => `Fechar ${name}`,
     addTab: "Abrir outra lista",
     searchToOpen: "Pesquisar listas para abrir…",
@@ -59,6 +65,7 @@ const COPY = {
     createNewList: "Criar nova lista",
   },
   pt_BR: {
+    allLists: "Todas as listas",
     closeTab: (name: string) => `Fechar ${name}`,
     addTab: "Abrir outra lista",
     searchToOpen: "Buscar listas para abrir…",
@@ -75,7 +82,8 @@ function memberCount(list: ProspectList): number {
 // Chrome/Lemlist-style tab strip for lists the user has open at once —
 // distinct from ListSwitcher (the H1 dropdown), which replaces the current
 // tab's target rather than keeping several lists open side by side.
-export function ListTabBar({ currentId }: { currentId: string }) {
+// "all" means the All Lists index page is active (no individual list selected).
+export function ListTabBar({ currentId }: { currentId: string | "all" }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
@@ -120,6 +128,18 @@ export function ListTabBar({ currentId }: { currentId: string }) {
 
   return (
     <div className="scrollbar-thin-x mb-4 flex items-end gap-0.5 border-b">
+      {/* Permanent "All Lists" tab — always first, never dismissable */}
+      <div
+        className={cn(
+          "relative -mb-px flex shrink-0 items-center rounded-t-lg border transition-colors",
+          currentId === "all"
+            ? "border-border border-b-background bg-background text-foreground px-4 py-2.5 text-base font-semibold"
+            : "border-transparent px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
+        )}
+      >
+        <Link to="/lists">{c.allLists}</Link>
+      </div>
+
       {tabs.map((t) => {
         const active = t.id === currentId
         return (

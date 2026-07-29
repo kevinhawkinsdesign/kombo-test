@@ -19,6 +19,7 @@ import type { Campaign, CampaignStatus } from "@/lib/types"
 
 const COPY = {
   en: {
+    allCampaigns: "All Campaigns",
     closeTab: (name: string) => `Close ${name}`,
     addTab: "Open another campaign",
     searchToOpen: "Search campaigns to open…",
@@ -33,6 +34,7 @@ const COPY = {
     scheduledBadge: "Scheduled",
   },
   es: {
+    allCampaigns: "Todas las campañas",
     closeTab: (name: string) => `Cerrar ${name}`,
     addTab: "Abrir otra campaña",
     searchToOpen: "Buscar campañas para abrir…",
@@ -47,6 +49,7 @@ const COPY = {
     scheduledBadge: "Programada",
   },
   it: {
+    allCampaigns: "Tutte le campagne",
     closeTab: (name: string) => `Chiudi ${name}`,
     addTab: "Apri un'altra campagna",
     searchToOpen: "Cerca campagne da aprire…",
@@ -61,6 +64,7 @@ const COPY = {
     scheduledBadge: "Programmata",
   },
   fr: {
+    allCampaigns: "Toutes les campagnes",
     closeTab: (name: string) => `Fermer ${name}`,
     addTab: "Ouvrir une autre campagne",
     searchToOpen: "Rechercher des campagnes à ouvrir…",
@@ -75,6 +79,7 @@ const COPY = {
     scheduledBadge: "Planifiée",
   },
   de: {
+    allCampaigns: "Alle Kampagnen",
     closeTab: (name: string) => `${name} schließen`,
     addTab: "Weitere Kampagne öffnen",
     searchToOpen: "Kampagnen zum Öffnen suchen…",
@@ -89,6 +94,7 @@ const COPY = {
     scheduledBadge: "Geplant",
   },
   pt: {
+    allCampaigns: "Todas as campanhas",
     closeTab: (name: string) => `Fechar ${name}`,
     addTab: "Abrir outra campanha",
     searchToOpen: "Pesquisar campanhas para abrir…",
@@ -103,6 +109,7 @@ const COPY = {
     scheduledBadge: "Agendada",
   },
   pt_BR: {
+    allCampaigns: "Todas as campanhas",
     closeTab: (name: string) => `Fechar ${name}`,
     addTab: "Abrir outra campanha",
     searchToOpen: "Buscar campanhas para abrir…",
@@ -146,7 +153,8 @@ const STATUS_DOT_CLASS: Record<CampaignStatus, string> = {
 
 // Chrome/Lemlist-style tab strip for campaigns the user has open at once —
 // mirrors ListTabBar's shape and store pattern (lib/campaign-tabs.ts).
-export function CampaignTabBar({ currentId }: { currentId: string }) {
+// "all" means the All Campaigns index page is active (no individual campaign selected).
+export function CampaignTabBar({ currentId }: { currentId: string | "all" }) {
   const { locale } = useLocale()
   const c = COPY[locale]
   const navigate = useNavigate()
@@ -193,6 +201,18 @@ export function CampaignTabBar({ currentId }: { currentId: string }) {
 
   return (
     <div className="scrollbar-thin-x mb-6 flex items-end gap-0.5 border-b">
+      {/* Permanent "All Campaigns" tab — always first, never dismissable */}
+      <div
+        className={cn(
+          "relative -mb-px flex shrink-0 items-center rounded-t-lg border transition-colors",
+          currentId === "all"
+            ? "border-border border-b-background bg-background text-foreground px-4 py-2.5 text-base font-semibold"
+            : "border-transparent px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
+        )}
+      >
+        <Link to="/campaigns">{c.allCampaigns}</Link>
+      </div>
+
       {tabs.map((t) => {
         const active = t.id === currentId
         return (
