@@ -113,7 +113,7 @@ export const sendingChannels: SendingChannel[] = [
   { id: "ch_5", type: "linkedin", label: "Maya Patel", provider: "HeyReach", status: "active", dailyLimit: 25, sentToday: 20, warmupPct: 100, health: 90 },
 ]
 
-// --- MCP-backed AI tool connections (what Kai can use) ---
+// --- MCP-backed AI tool connections (what AI can use) ---
 export interface McpConnection {
   id: string
   name: string

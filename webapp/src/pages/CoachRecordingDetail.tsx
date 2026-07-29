@@ -113,7 +113,7 @@ const COPY = {
     reanalyze: "Re-analyze",
     callTypeAria: "Call type",
     aiAssigned: "AI-assigned",
-    aiAssignedHint: "Kai classified this call automatically from the transcript.",
+    aiAssignedHint: "AI classified this call automatically from the transcript.",
     retypeTitle: "Re-analyze recording with the new type?",
     retypeDesc:
       "The summary, key fields, and insights for this recording were generated using the previous type. Re-analyzing will clear them and re-run the analysis against the new type's prompts and key-field definitions. The transcript itself is preserved either way.",
@@ -171,7 +171,7 @@ const COPY = {
     followUpTitle: (name: string) => `Follow up with ${name}`,
     valuePropGateTitle: "Confirm your value proposition",
     valuePropGateIntro:
-      "Confirm your value proposition so Kai can tailor this follow-up.",
+      "Confirm your value proposition so AI can tailor this follow-up.",
     valuePropGateDefault: (company: string) =>
       `${company} helps sales teams find and engage the right prospects faster with AI-powered search, enrichment, and outreach — all in one place.`,
     valuePropGateConfirm: "Confirm & continue",
@@ -257,7 +257,7 @@ const COPY = {
     reanalyze: "Reanalizar",
     callTypeAria: "Tipo de llamada",
     aiAssigned: "Asignado por IA",
-    aiAssignedHint: "Kai clasificó esta llamada automáticamente a partir de la transcripción.",
+    aiAssignedHint: "La IA clasificó esta llamada automáticamente a partir de la transcripción.",
     retypeTitle: "¿Reanalizar la grabación con el nuevo tipo?",
     retypeDesc:
       "El resumen, los campos clave y los insights de esta grabación se generaron con el tipo anterior. Al reanalizar se borrarán y se volverá a ejecutar el análisis con los prompts y campos clave del nuevo tipo. La transcripción se conserva en cualquier caso.",
@@ -315,7 +315,7 @@ const COPY = {
     followUpTitle: (name: string) => `Seguimiento con ${name}`,
     valuePropGateTitle: "Confirma tu propuesta de valor",
     valuePropGateIntro:
-      "Confirma tu propuesta de valor para que Kai pueda adaptar este seguimiento.",
+      "Confirma tu propuesta de valor para que la IA pueda adaptar este seguimiento.",
     valuePropGateDefault: (company: string) =>
       `${company} ayuda a los equipos de ventas a encontrar y contactar a los prospectos adecuados más rápido con búsqueda, enriquecimiento y prospección impulsados por IA — todo en un mismo lugar.`,
     valuePropGateConfirm: "Confirmar y continuar",
@@ -401,7 +401,7 @@ const COPY = {
     reanalyze: "Rianalizza",
     callTypeAria: "Tipo di chiamata",
     aiAssigned: "Assegnato dall'AI",
-    aiAssignedHint: "Kai ha classificato questa chiamata automaticamente dalla trascrizione.",
+    aiAssignedHint: "L'IA ha classificato questa chiamata automaticamente dalla trascrizione.",
     retypeTitle: "Rianalizzare la registrazione con il nuovo tipo?",
     retypeDesc:
       "Il riepilogo, i campi chiave e gli insight di questa registrazione sono stati generati con il tipo precedente. Rianalizzando verranno cancellati e l'analisi verrà rieseguita con i prompt e le definizioni dei campi chiave del nuovo tipo. La trascrizione viene comunque conservata.",
@@ -459,7 +459,7 @@ const COPY = {
     followUpTitle: (name: string) => `Follow-up con ${name}`,
     valuePropGateTitle: "Conferma la tua proposta di valore",
     valuePropGateIntro:
-      "Conferma la tua proposta di valore così Kai può personalizzare questo follow-up.",
+      "Conferma la tua proposta di valore così l'IA può personalizzare questo follow-up.",
     valuePropGateDefault: (company: string) =>
       `${company} aiuta i team di vendita a trovare e coinvolgere i prospect giusti più velocemente con ricerca, arricchimento e prospecting basati sull'AI — tutto in un unico posto.`,
     valuePropGateConfirm: "Conferma e continua",
@@ -545,7 +545,7 @@ const COPY = {
     reanalyze: "Relancer l'analyse",
     callTypeAria: "Type d'appel",
     aiAssigned: "Attribué par l'IA",
-    aiAssignedHint: "Kai a classé cet appel automatiquement à partir de la transcription.",
+    aiAssignedHint: "L'IA a classé cet appel automatiquement à partir de la transcription.",
     retypeTitle: "Relancer l'analyse avec le nouveau type ?",
     retypeDesc:
       "Le résumé, les champs clés et les insights de cet enregistrement ont été générés avec le type précédent. Relancer l'analyse les effacera et réexécutera l'analyse avec les prompts et les définitions de champs clés du nouveau type. La transcription est conservée dans tous les cas.",
@@ -603,7 +603,7 @@ const COPY = {
     followUpTitle: (name: string) => `Suivi avec ${name}`,
     valuePropGateTitle: "Confirmez votre proposition de valeur",
     valuePropGateIntro:
-      "Confirmez votre proposition de valeur pour que Kai puisse adapter ce suivi.",
+      "Confirmez votre proposition de valeur pour que l'IA puisse adapter ce suivi.",
     valuePropGateDefault: (company: string) =>
       `${company} aide les équipes commerciales à trouver et engager les bons prospects plus rapidement grâce à la recherche, l'enrichissement et la prospection propulsés par l'IA — le tout au même endroit.`,
     valuePropGateConfirm: "Confirmer et continuer",
@@ -689,7 +689,7 @@ const COPY = {
     reanalyze: "Neu analysieren",
     callTypeAria: "Call-Typ",
     aiAssigned: "Von KI zugewiesen",
-    aiAssignedHint: "Kai hat diesen Call automatisch anhand des Transkripts klassifiziert.",
+    aiAssignedHint: "Die KI hat diesen Call automatisch anhand des Transkripts klassifiziert.",
     retypeTitle: "Aufzeichnung mit dem neuen Typ neu analysieren?",
     retypeDesc:
       "Zusammenfassung, Schlüsselfelder und Insights dieser Aufzeichnung wurden mit dem vorherigen Typ erstellt. Beim Neu-Analysieren werden sie gelöscht und die Analyse läuft mit den Prompts und Schlüsselfeld-Definitionen des neuen Typs erneut. Das Transkript bleibt in jedem Fall erhalten.",
@@ -747,7 +747,7 @@ const COPY = {
     followUpTitle: (name: string) => `Follow-up mit ${name}`,
     valuePropGateTitle: "Bestätige deine Value Proposition",
     valuePropGateIntro:
-      "Bestätige deine Value Proposition, damit Kai dieses Follow-up darauf abstimmen kann.",
+      "Bestätige deine Value Proposition, damit die KI dieses Follow-up darauf abstimmen kann.",
     valuePropGateDefault: (company: string) =>
       `${company} hilft Sales-Teams, die richtigen Prospects schneller zu finden und anzusprechen — mit KI-gestützter Suche, Anreicherung und Prospecting, alles an einem Ort.`,
     valuePropGateConfirm: "Bestätigen und fortfahren",
@@ -833,7 +833,7 @@ const COPY = {
     reanalyze: "Reanalisar",
     callTypeAria: "Tipo de chamada",
     aiAssigned: "Atribuído por IA",
-    aiAssignedHint: "O Kai classificou esta chamada automaticamente a partir da transcrição.",
+    aiAssignedHint: "A IA classificou esta chamada automaticamente a partir da transcrição.",
     retypeTitle: "Reanalisar a gravação com o novo tipo?",
     retypeDesc:
       "O resumo, os campos-chave e os insights desta gravação foram gerados com o tipo anterior. Ao reanalisar, serão apagados e a análise voltará a ser executada com os prompts e as definições de campos-chave do novo tipo. A transcrição é preservada em qualquer caso.",
@@ -891,7 +891,7 @@ const COPY = {
     followUpTitle: (name: string) => `Seguimento com ${name}`,
     valuePropGateTitle: "Confirme a sua proposta de valor",
     valuePropGateIntro:
-      "Confirme a sua proposta de valor para que o Kai possa adaptar este seguimento.",
+      "Confirme a sua proposta de valor para que a IA possa adaptar este seguimento.",
     valuePropGateDefault: (company: string) =>
       `${company} ajuda as equipas de vendas a encontrar e envolver os prospects certos mais depressa com pesquisa, enriquecimento e prospeção com IA — tudo num só lugar.`,
     valuePropGateConfirm: "Confirmar e continuar",
@@ -977,7 +977,7 @@ const COPY = {
     reanalyze: "Reanalisar",
     callTypeAria: "Tipo de ligação",
     aiAssigned: "Atribuído por IA",
-    aiAssignedHint: "O Kai classificou esta ligação automaticamente a partir da transcrição.",
+    aiAssignedHint: "A IA classificou esta ligação automaticamente a partir da transcrição.",
     retypeTitle: "Reanalisar a gravação com o novo tipo?",
     retypeDesc:
       "O resumo, os campos-chave e os insights desta gravação foram gerados com o tipo anterior. Ao reanalisar, eles serão apagados e a análise será executada de novo com os prompts e as definições de campos-chave do novo tipo. A transcrição é preservada de qualquer forma.",
@@ -1035,7 +1035,7 @@ const COPY = {
     followUpTitle: (name: string) => `Follow-up com ${name}`,
     valuePropGateTitle: "Confirme sua proposta de valor",
     valuePropGateIntro:
-      "Confirme sua proposta de valor para que o Kai possa personalizar este follow-up.",
+      "Confirme sua proposta de valor para que a IA possa personalizar este follow-up.",
     valuePropGateDefault: (company: string) =>
       `${company} ajuda times de vendas a encontrar e engajar os prospects certos mais rápido com busca, enriquecimento e prospecção com IA — tudo em um só lugar.`,
     valuePropGateConfirm: "Confirmar e continuar",
@@ -1371,7 +1371,7 @@ export default function CoachRecordingDetail() {
   const [analyzedType, setAnalyzedType] = React.useState<CallType>(
     analysis?.callType ?? "Discovery"
   )
-  // True until the user overrides the type Kai picked from the transcript.
+  // True until the user overrides the type AI picked from the transcript.
   const [aiAssigned, setAiAssigned] = React.useState(true)
   // Non-null = the change-type confirm dialog is open for this target type.
   const [pendingType, setPendingType] = React.useState<CallType | null>(null)

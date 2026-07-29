@@ -29,7 +29,7 @@ export type Assigner =
   | { kind: "system" }
   | { kind: "user"; person: Person; isSelf: boolean }
 
-// Who created/assigned a task: Kai (AI), the system, or a person.
+// Who created/assigned a task: AI, the system, or a person.
 export function resolveAssigner(id: string | undefined): Assigner {
   if (!id || id === "kai") return { kind: "kai" }
   if (id === "system") return { kind: "system" }

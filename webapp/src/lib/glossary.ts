@@ -37,7 +37,7 @@ export const GLOSSARY: Record<string, string> = {
     "Pipeline value × each deal's win probability — a more realistic revenue estimate.",
   "quota attainment":
     "How much of your sales target you've closed, shown as a percentage.",
-  MCP: "Model Context Protocol — a standard that lets Kai securely use tools like your CRM, calendar, and email.",
+  MCP: "Model Context Protocol — a standard that lets AI securely use tools like your CRM, calendar, and email.",
   impersonation:
     "Viewing the app exactly as one of your reps sees it — to coach or troubleshoot — without logging in as them.",
   "warm intro":
@@ -47,7 +47,7 @@ export const GLOSSARY: Record<string, string> = {
     "A short statement of the concrete value you deliver and why it matters to this buyer.",
   USP: "Unique Selling Point — what makes you clearly different from alternatives.",
   autopilot:
-    "Lets Kai run routine steps for you automatically, within rules you set.",
+    "Lets AI run routine steps for you automatically, within rules you set.",
 }
 
 export function define(term: string): string | undefined {

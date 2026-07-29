@@ -42,7 +42,7 @@ const CUSTOM_PREFIX = "custom:"
 const COPY = {
   en: {
     title: "Sales Methodology",
-    description: "Kai uses this to structure call prep and qualification.",
+    description: "AI uses this to structure call prep and qualification.",
     methodology: "Methodology",
     custom: "Custom",
     addCustom: "Add custom",
@@ -55,7 +55,7 @@ const COPY = {
     deleted: "Methodology deleted",
     newTitle: "New sales methodology",
     formDesc:
-      "Define the discovery sections and example questions Kai should draw on for this methodology.",
+      "Define the discovery sections and example questions AI should draw on for this methodology.",
     name: "Methodology name",
     namePlaceholder: "e.g. Value Selling",
     sections: "Sections",
@@ -75,7 +75,7 @@ const COPY = {
   es: {
     title: "Metodología de ventas",
     description:
-      "Kai la usa para estructurar la preparación de llamadas y la cualificación.",
+      "La IA la usa para estructurar la preparación de llamadas y la cualificación.",
     methodology: "Metodología",
     custom: "Personalizada",
     addCustom: "Añadir personalizada",
@@ -88,7 +88,7 @@ const COPY = {
     deleted: "Metodología eliminada",
     newTitle: "Nueva metodología de ventas",
     formDesc:
-      "Define las secciones de descubrimiento y las preguntas de ejemplo que Kai debe usar para esta metodología.",
+      "Define las secciones de descubrimiento y las preguntas de ejemplo que la IA debe usar para esta metodología.",
     name: "Nombre de la metodología",
     namePlaceholder: "ej. Value Selling",
     sections: "Secciones",
@@ -108,7 +108,7 @@ const COPY = {
   it: {
     title: "Metodologia di vendita",
     description:
-      "Kai la usa per strutturare la preparazione delle chiamate e la qualificazione.",
+      "L'IA la usa per strutturare la preparazione delle chiamate e la qualificazione.",
     methodology: "Metodologia",
     custom: "Personalizzata",
     addCustom: "Aggiungi personalizzata",
@@ -121,7 +121,7 @@ const COPY = {
     deleted: "Metodologia eliminata",
     newTitle: "Nuova metodologia di vendita",
     formDesc:
-      "Definisci le sezioni di scoperta e le domande di esempio che Kai deve usare per questa metodologia.",
+      "Definisci le sezioni di scoperta e le domande di esempio che l'IA deve usare per questa metodologia.",
     name: "Nome della metodologia",
     namePlaceholder: "es. Value Selling",
     sections: "Sezioni",
@@ -141,7 +141,7 @@ const COPY = {
   fr: {
     title: "Méthodologie de vente",
     description:
-      "Kai l'utilise pour structurer la préparation des appels et la qualification.",
+      "L'IA l'utilise pour structurer la préparation des appels et la qualification.",
     methodology: "Méthodologie",
     custom: "Personnalisée",
     addCustom: "Ajouter une personnalisée",
@@ -154,7 +154,7 @@ const COPY = {
     deleted: "Méthodologie supprimée",
     newTitle: "Nouvelle méthodologie de vente",
     formDesc:
-      "Définissez les sections de découverte et les questions types que Kai doit utiliser pour cette méthodologie.",
+      "Définissez les sections de découverte et les questions types que l'IA doit utiliser pour cette méthodologie.",
     name: "Nom de la méthodologie",
     namePlaceholder: "ex. Value Selling",
     sections: "Sections",
@@ -174,7 +174,7 @@ const COPY = {
   de: {
     title: "Vertriebsmethodik",
     description:
-      "Kai nutzt sie, um Gesprächsvorbereitung und Qualifizierung zu strukturieren.",
+      "Die KI nutzt sie, um Gesprächsvorbereitung und Qualifizierung zu strukturieren.",
     methodology: "Methodik",
     custom: "Eigene",
     addCustom: "Eigene hinzufügen",
@@ -187,7 +187,7 @@ const COPY = {
     deleted: "Methodik gelöscht",
     newTitle: "Neue Vertriebsmethodik",
     formDesc:
-      "Definiere die Discovery-Abschnitte und Beispielfragen, die Kai für diese Methodik verwenden soll.",
+      "Definiere die Discovery-Abschnitte und Beispielfragen, die die KI für diese Methodik verwenden soll.",
     name: "Name der Methodik",
     namePlaceholder: "z. B. Value Selling",
     sections: "Abschnitte",
@@ -207,7 +207,7 @@ const COPY = {
   pt: {
     title: "Metodologia de vendas",
     description:
-      "O Kai usa-a para estruturar a preparação de chamadas e a qualificação.",
+      "A IA usa-a para estruturar a preparação de chamadas e a qualificação.",
     methodology: "Metodologia",
     custom: "Personalizada",
     addCustom: "Adicionar personalizada",
@@ -220,7 +220,7 @@ const COPY = {
     deleted: "Metodologia eliminada",
     newTitle: "Nova metodologia de vendas",
     formDesc:
-      "Define as secções de descoberta e as perguntas de exemplo que o Kai deve usar para esta metodologia.",
+      "Define as secções de descoberta e as perguntas de exemplo que a IA deve usar para esta metodologia.",
     name: "Nome da metodologia",
     namePlaceholder: "ex. Value Selling",
     sections: "Secções",
@@ -240,7 +240,7 @@ const COPY = {
   pt_BR: {
     title: "Metodologia de vendas",
     description:
-      "O Kai a usa para estruturar a preparação de ligações e a qualificação.",
+      "A IA a usa para estruturar a preparação de ligações e a qualificação.",
     methodology: "Metodologia",
     custom: "Personalizada",
     addCustom: "Adicionar personalizada",
@@ -253,7 +253,7 @@ const COPY = {
     deleted: "Metodologia excluída",
     newTitle: "Nova metodologia de vendas",
     formDesc:
-      "Defina as seções de descoberta e as perguntas de exemplo que o Kai deve usar para essa metodologia.",
+      "Defina as seções de descoberta e as perguntas de exemplo que a IA deve usar para essa metodologia.",
     name: "Nome da metodologia",
     namePlaceholder: "ex.: Value Selling",
     sections: "Seções",

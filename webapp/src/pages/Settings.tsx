@@ -152,7 +152,7 @@ const COPY = {
     uploadSaved: "Upload settings saved",
     outreachTemplates: "Outreach templates",
     outreachTemplatesDesc:
-      "The templates and playbook Kai draws from when drafting outreach.",
+      "The templates and playbook AI draws from when drafting outreach.",
     manageTemplates: "Manage templates",
     openPlaybook: "Open playbook",
     appearance: "Appearance",
@@ -178,10 +178,10 @@ const COPY = {
     notificationsSaved: "Notification settings saved",
     preferencesSaved: "Preferences saved",
     coachLanguage: "Coach language",
-    coachLanguageDesc: "The language Kai uses for AI-generated call coaching.",
+    coachLanguageDesc: "The language AI uses for AI-generated call coaching.",
     coachLanguageCompanyDefault: "Use company default",
     coachLanguageHint:
-      "Controls the language Kai uses when generating call summaries, analysis, and follow-up drafts — separate from your app display language.",
+      "Controls the language AI uses when generating call summaries, analysis, and follow-up drafts — separate from your app display language.",
     coachLanguageUpdated: "Coach language updated",
     currentPlan: "Current plan",
     currentPlanDesc: (plan?: string) => `You are on the ${plan} plan.`,
@@ -195,7 +195,7 @@ const COPY = {
     seatsUsed: (used: number, total: number) => `${used} of ${total} seats used`,
     inviteMember: "Invite member",
     companyUsps: "Company USPs",
-    companyUspsDesc: "Unique selling points Kai weaves into outreach.",
+    companyUspsDesc: "Unique selling points AI weaves into outreach.",
     removeUsp: "Remove USP",
     addUsp: "Add USP",
     save: "Save",
@@ -297,7 +297,7 @@ const COPY = {
     uploadSaved: "Ajustes de carga guardados",
     outreachTemplates: "Plantillas de outreach",
     outreachTemplatesDesc:
-      "Las plantillas y la estrategia que Kai utiliza al redactar el outreach.",
+      "Las plantillas y la estrategia que la IA utiliza al redactar el outreach.",
     manageTemplates: "Gestionar plantillas",
     openPlaybook: "Abrir estrategia",
     appearance: "Apariencia",
@@ -324,10 +324,10 @@ const COPY = {
     preferencesSaved: "Preferencias guardadas",
     coachLanguage: "Idioma del coach",
     coachLanguageDesc:
-      "El idioma que usa Kai para el coaching generado por IA.",
+      "El idioma que usa la IA para el coaching generado por IA.",
     coachLanguageCompanyDefault: "Usar el predeterminado de la empresa",
     coachLanguageHint:
-      "Controla el idioma que usa Kai al generar resúmenes de llamadas, análisis y borradores de seguimiento — independiente del idioma de visualización de la app.",
+      "Controla el idioma que usa la IA al generar resúmenes de llamadas, análisis y borradores de seguimiento — independiente del idioma de visualización de la app.",
     coachLanguageUpdated: "Idioma del coach actualizado",
     currentPlan: "Plan actual",
     currentPlanDesc: (plan?: string) => `Tienes el plan ${plan}.`,
@@ -343,7 +343,7 @@ const COPY = {
     inviteMember: "Invitar miembro",
     companyUsps: "Propuestas únicas de la empresa",
     companyUspsDesc:
-      "Propuestas únicas de venta que Kai integra en el outreach.",
+      "Propuestas únicas de venta que la IA integra en el outreach.",
     removeUsp: "Eliminar propuesta",
     addUsp: "Añadir propuesta",
     save: "Guardar",
@@ -445,7 +445,7 @@ const COPY = {
     uploadSaved: "Impostazioni di caricamento salvate",
     outreachTemplates: "Modelli di outreach",
     outreachTemplatesDesc:
-      "I modelli e la strategia che Kai utilizza quando redige l'outreach.",
+      "I modelli e la strategia che l'IA utilizza quando redige l'outreach.",
     manageTemplates: "Gestisci modelli",
     openPlaybook: "Apri strategia",
     appearance: "Aspetto",
@@ -472,10 +472,10 @@ const COPY = {
     preferencesSaved: "Preferenze salvate",
     coachLanguage: "Lingua del coach",
     coachLanguageDesc:
-      "La lingua che Kai utilizza per il coaching generato dall'IA.",
+      "La lingua che l'IA utilizza per il coaching generato dall'IA.",
     coachLanguageCompanyDefault: "Usa l'impostazione predefinita dell'azienda",
     coachLanguageHint:
-      "Controlla la lingua che Kai utilizza per generare riepiloghi delle chiamate, analisi e bozze di follow-up — indipendente dalla lingua di visualizzazione dell'app.",
+      "Controlla la lingua che l'IA utilizza per generare riepiloghi delle chiamate, analisi e bozze di follow-up — indipendente dalla lingua di visualizzazione dell'app.",
     coachLanguageUpdated: "Lingua del coach aggiornata",
     currentPlan: "Piano attuale",
     currentPlanDesc: (plan?: string) => `Hai il piano ${plan}.`,
@@ -491,7 +491,7 @@ const COPY = {
     inviteMember: "Invita membro",
     companyUsps: "Punti di forza dell'azienda",
     companyUspsDesc:
-      "I punti di forza unici che Kai integra nell'outreach.",
+      "I punti di forza unici che l'IA integra nell'outreach.",
     removeUsp: "Rimuovi punto di forza",
     addUsp: "Aggiungi punto di forza",
     save: "Salva",
@@ -593,7 +593,7 @@ const COPY = {
     uploadSaved: "Paramètres d'import enregistrés",
     outreachTemplates: "Modèles de prospection",
     outreachTemplatesDesc:
-      "Les modèles et la stratégie que Kai utilise pour rédiger la prospection.",
+      "Les modèles et la stratégie que l'IA utilise pour rédiger la prospection.",
     manageTemplates: "Gérer les modèles",
     openPlaybook: "Ouvrir la stratégie",
     appearance: "Apparence",
@@ -620,11 +620,11 @@ const COPY = {
     preferencesSaved: "Préférences enregistrées",
     coachLanguage: "Langue du coach",
     coachLanguageDesc:
-      "La langue que Kai utilise pour le coaching généré par IA.",
+      "La langue que l'IA utilise pour le coaching généré par IA.",
     coachLanguageCompanyDefault:
       "Utiliser la langue par défaut de l'entreprise",
     coachLanguageHint:
-      "Détermine la langue que Kai utilise pour générer les résumés d'appels, les analyses et les brouillons de relance — indépendamment de la langue d'affichage de l'application.",
+      "Détermine la langue que l'IA utilise pour générer les résumés d'appels, les analyses et les brouillons de relance — indépendamment de la langue d'affichage de l'application.",
     coachLanguageUpdated: "Langue du coach mise à jour",
     currentPlan: "Plan actuel",
     currentPlanDesc: (plan?: string) => `Vous êtes sur le plan ${plan}.`,
@@ -640,7 +640,7 @@ const COPY = {
     inviteMember: "Inviter un membre",
     companyUsps: "Atouts uniques de l'entreprise",
     companyUspsDesc:
-      "Les arguments de vente uniques que Kai intègre dans la prospection.",
+      "Les arguments de vente uniques que l'IA intègre dans la prospection.",
     removeUsp: "Supprimer l'atout",
     addUsp: "Ajouter un atout",
     save: "Enregistrer",
@@ -742,7 +742,7 @@ const COPY = {
     uploadSaved: "Upload-Einstellungen gespeichert",
     outreachTemplates: "Outreach-Vorlagen",
     outreachTemplatesDesc:
-      "Die Vorlagen und das Playbook, auf die Kai beim Verfassen von Outreach zurückgreift.",
+      "Die Vorlagen und das Playbook, auf die die KI beim Verfassen von Outreach zurückgreift.",
     manageTemplates: "Vorlagen verwalten",
     openPlaybook: "Playbook öffnen",
     appearance: "Darstellung",
@@ -769,10 +769,10 @@ const COPY = {
     preferencesSaved: "Präferenzen gespeichert",
     coachLanguage: "Coach-Sprache",
     coachLanguageDesc:
-      "Die Sprache, die Kai für KI-generiertes Coaching verwendet.",
+      "Die Sprache, die die KI für KI-generiertes Coaching verwendet.",
     coachLanguageCompanyDefault: "Unternehmensstandard verwenden",
     coachLanguageHint:
-      "Legt fest, in welcher Sprache Kai Anrufzusammenfassungen, Analysen und Follow-up-Entwürfe erstellt — unabhängig von der Anzeigesprache deiner App.",
+      "Legt fest, in welcher Sprache die KI Anrufzusammenfassungen, Analysen und Follow-up-Entwürfe erstellt — unabhängig von der Anzeigesprache deiner App.",
     coachLanguageUpdated: "Coach-Sprache aktualisiert",
     currentPlan: "Aktueller Plan",
     currentPlanDesc: (plan?: string) => `Du nutzt den Plan ${plan}.`,
@@ -788,7 +788,7 @@ const COPY = {
     inviteMember: "Mitglied einladen",
     companyUsps: "USPs des Unternehmens",
     companyUspsDesc:
-      "Alleinstellungsmerkmale, die Kai in dein Outreach einbaut.",
+      "Alleinstellungsmerkmale, die die KI in dein Outreach einbaut.",
     removeUsp: "USP entfernen",
     addUsp: "USP hinzufügen",
     save: "Speichern",
@@ -890,7 +890,7 @@ const COPY = {
     uploadSaved: "Definições de carregamento guardadas",
     outreachTemplates: "Modelos de outreach",
     outreachTemplatesDesc:
-      "Os modelos e a estratégia que o Kai utiliza ao redigir o outreach.",
+      "Os modelos e a estratégia que a IA utiliza ao redigir o outreach.",
     manageTemplates: "Gerir modelos",
     openPlaybook: "Abrir estratégia",
     appearance: "Aspeto",
@@ -917,10 +917,10 @@ const COPY = {
     preferencesSaved: "Preferências guardadas",
     coachLanguage: "Idioma do coach",
     coachLanguageDesc:
-      "O idioma que o Kai utiliza para o coaching gerado por IA.",
+      "O idioma que a IA utiliza para o coaching gerado por IA.",
     coachLanguageCompanyDefault: "Utilizar a predefinição da empresa",
     coachLanguageHint:
-      "Controla o idioma que o Kai utiliza ao gerar resumos de chamadas, análises e rascunhos de acompanhamento — independente do idioma de visualização da app.",
+      "Controla o idioma que a IA utiliza ao gerar resumos de chamadas, análises e rascunhos de acompanhamento — independente do idioma de visualização da app.",
     coachLanguageUpdated: "Idioma do coach atualizado",
     currentPlan: "Plano atual",
     currentPlanDesc: (plan?: string) => `Está no plano ${plan}.`,
@@ -936,7 +936,7 @@ const COPY = {
     inviteMember: "Convidar membro",
     companyUsps: "Argumentos únicos da empresa",
     companyUspsDesc:
-      "Argumentos de venda únicos que o Kai integra no outreach.",
+      "Argumentos de venda únicos que a IA integra no outreach.",
     removeUsp: "Remover argumento",
     addUsp: "Adicionar argumento",
     save: "Guardar",
@@ -1038,7 +1038,7 @@ const COPY = {
     uploadSaved: "Configurações de upload salvas",
     outreachTemplates: "Modelos de outreach",
     outreachTemplatesDesc:
-      "Os modelos e a estratégia que o Kai usa ao redigir o outreach.",
+      "Os modelos e a estratégia que a IA usa ao redigir o outreach.",
     manageTemplates: "Gerenciar modelos",
     openPlaybook: "Abrir estratégia",
     appearance: "Aparência",
@@ -1064,10 +1064,10 @@ const COPY = {
     notificationsSaved: "Configurações de notificação salvas",
     preferencesSaved: "Preferências salvas",
     coachLanguage: "Idioma do coach",
-    coachLanguageDesc: "O idioma que o Kai usa para o coaching gerado por IA.",
+    coachLanguageDesc: "O idioma que a IA usa para o coaching gerado por IA.",
     coachLanguageCompanyDefault: "Usar o padrão da empresa",
     coachLanguageHint:
-      "Controla o idioma que o Kai usa ao gerar resumos de ligações, análises e rascunhos de follow-up — separado do idioma de exibição do seu app.",
+      "Controla o idioma que a IA usa ao gerar resumos de ligações, análises e rascunhos de follow-up — separado do idioma de exibição do seu app.",
     coachLanguageUpdated: "Idioma do coach atualizado",
     currentPlan: "Plano atual",
     currentPlanDesc: (plan?: string) => `Você está no plano ${plan}.`,
@@ -1083,7 +1083,7 @@ const COPY = {
     inviteMember: "Convidar membro",
     companyUsps: "Diferenciais da empresa",
     companyUspsDesc:
-      "Diferenciais de venda que o Kai integra no outreach.",
+      "Diferenciais de venda que a IA integra no outreach.",
     removeUsp: "Remover diferencial",
     addUsp: "Adicionar diferencial",
     save: "Salvar",

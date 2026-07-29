@@ -26,7 +26,7 @@ const COPY = {
   en: {
     heroTitle: "You're always in charge",
     heroBody:
-      "Kai asks before anything irreversible — sending, enrolling, or syncing. Approve, deny, or turn it into an automation so it just happens next time.",
+      "AI asks before anything irreversible — sending, enrolling, or syncing. Approve, deny, or turn it into an automation so it just happens next time.",
     approvalRequired: "Approval required",
     irreversible: "Irreversible",
     trigger: "Trigger",
@@ -37,12 +37,12 @@ const COPY = {
     pending: "Awaiting your approval",
     resolved: "Recently resolved",
     none: "Nothing needs your approval right now.",
-    noneBody: "Kai will queue actions here before doing anything irreversible.",
+    noneBody: "AI will queue actions here before doing anything irreversible.",
     approved: "Approved",
     denied: "Denied",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "contact" : "contacts"}`,
     approvedToast: (target: string) => `Approved — running on ${target}`,
-    deniedToast: "Denied — Kai won't proceed",
+    deniedToast: "Denied — AI won't proceed",
     automatedToast: (trigger: string) =>
       `Automation created — this now runs automatically on "${trigger}"`,
     dismiss: "Clear",
@@ -50,7 +50,7 @@ const COPY = {
   es: {
     heroTitle: "Siempre tienes el control",
     heroBody:
-      "Kai pregunta antes de cualquier acción irreversible — enviar, inscribir o sincronizar. Aprueba, deniega o conviértela en automatización para que ocurra sola la próxima vez.",
+      "La IA pregunta antes de cualquier acción irreversible — enviar, inscribir o sincronizar. Aprueba, deniega o conviértela en automatización para que ocurra sola la próxima vez.",
     approvalRequired: "Aprobación requerida",
     irreversible: "Irreversible",
     trigger: "Disparador",
@@ -61,12 +61,12 @@ const COPY = {
     pending: "Esperando tu aprobación",
     resolved: "Resueltas recientemente",
     none: "Nada necesita tu aprobación ahora mismo.",
-    noneBody: "Kai pondrá en cola las acciones aquí antes de hacer algo irreversible.",
+    noneBody: "La IA pondrá en cola las acciones aquí antes de hacer algo irreversible.",
     approved: "Aprobada",
     denied: "Denegada",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "contacto" : "contactos"}`,
     approvedToast: (target: string) => `Aprobado — ejecutando en ${target}`,
-    deniedToast: "Denegado — Kai no continuará",
+    deniedToast: "Denegado — la IA no continuará",
     automatedToast: (trigger: string) =>
       `Automatización creada — ahora se ejecuta sola con "${trigger}"`,
     dismiss: "Quitar",
@@ -74,7 +74,7 @@ const COPY = {
   it: {
     heroTitle: "Hai sempre il controllo",
     heroBody:
-      "Kai chiede conferma prima di qualsiasi azione irreversibile — inviare, iscrivere o sincronizzare. Approva, rifiuta o trasformala in un'automazione così accade da sola la prossima volta.",
+      "L'IA chiede conferma prima di qualsiasi azione irreversibile — inviare, iscrivere o sincronizzare. Approva, rifiuta o trasformala in un'automazione così accade da sola la prossima volta.",
     approvalRequired: "Approvazione richiesta",
     irreversible: "Irreversibile",
     trigger: "Trigger",
@@ -85,12 +85,12 @@ const COPY = {
     pending: "In attesa della tua approvazione",
     resolved: "Risolte di recente",
     none: "Al momento non serve la tua approvazione.",
-    noneBody: "Kai metterà qui in coda le azioni prima di fare qualcosa di irreversibile.",
+    noneBody: "L'IA metterà qui in coda le azioni prima di fare qualcosa di irreversibile.",
     approved: "Approvata",
     denied: "Rifiutata",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "contatto" : "contatti"}`,
     approvedToast: (target: string) => `Approvato — in esecuzione su ${target}`,
-    deniedToast: "Rifiutato — Kai non procederà",
+    deniedToast: "Rifiutato — l'IA non procederà",
     automatedToast: (trigger: string) =>
       `Automazione creata — ora viene eseguita automaticamente con "${trigger}"`,
     dismiss: "Cancella",
@@ -98,7 +98,7 @@ const COPY = {
   fr: {
     heroTitle: "Vous gardez toujours le contrôle",
     heroBody:
-      "Kai demande votre accord avant toute action irréversible — envoyer, inscrire ou synchroniser. Approuvez, refusez, ou transformez-la en automatisation pour qu'elle se déclenche seule la prochaine fois.",
+      "L'IA demande votre accord avant toute action irréversible — envoyer, inscrire ou synchroniser. Approuvez, refusez, ou transformez-la en automatisation pour qu'elle se déclenche seule la prochaine fois.",
     approvalRequired: "Approbation requise",
     irreversible: "Irréversible",
     trigger: "Déclencheur",
@@ -109,12 +109,12 @@ const COPY = {
     pending: "En attente de votre approbation",
     resolved: "Résolues récemment",
     none: "Rien ne nécessite votre approbation pour le moment.",
-    noneBody: "Kai mettra ici en attente les actions avant toute action irréversible.",
+    noneBody: "L'IA mettra ici en attente les actions avant toute action irréversible.",
     approved: "Approuvée",
     denied: "Refusée",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "contact" : "contacts"}`,
     approvedToast: (target: string) => `Approuvé — exécution sur ${target}`,
-    deniedToast: "Refusé — Kai n'ira pas plus loin",
+    deniedToast: "Refusé — l'IA n'ira pas plus loin",
     automatedToast: (trigger: string) =>
       `Automatisation créée — elle s'exécute désormais automatiquement sur « ${trigger} »`,
     dismiss: "Effacer",
@@ -122,7 +122,7 @@ const COPY = {
   de: {
     heroTitle: "Du hast immer die Kontrolle",
     heroBody:
-      "Kai fragt nach, bevor etwas Unumkehrbares passiert — senden, anmelden oder synchronisieren. Genehmige, lehne ab oder mache daraus eine Automatisierung, damit es beim nächsten Mal von selbst passiert.",
+      "Die KI fragt nach, bevor etwas Unumkehrbares passiert — senden, anmelden oder synchronisieren. Genehmige, lehne ab oder mache daraus eine Automatisierung, damit es beim nächsten Mal von selbst passiert.",
     approvalRequired: "Genehmigung erforderlich",
     irreversible: "Unumkehrbar",
     trigger: "Auslöser",
@@ -133,12 +133,12 @@ const COPY = {
     pending: "Wartet auf deine Genehmigung",
     resolved: "Kürzlich erledigt",
     none: "Aktuell ist keine Genehmigung von dir nötig.",
-    noneBody: "Kai stellt hier Aktionen in die Warteschlange, bevor etwas Unumkehrbares passiert.",
+    noneBody: "Die KI stellt hier Aktionen in die Warteschlange, bevor etwas Unumkehrbares passiert.",
     approved: "Genehmigt",
     denied: "Abgelehnt",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "Kontakt" : "Kontakte"}`,
     approvedToast: (target: string) => `Genehmigt — wird auf ${target} ausgeführt`,
-    deniedToast: "Abgelehnt — Kai macht nicht weiter",
+    deniedToast: "Abgelehnt — die KI macht nicht weiter",
     automatedToast: (trigger: string) =>
       `Automatisierung erstellt — läuft jetzt automatisch bei „${trigger}“`,
     dismiss: "Entfernen",
@@ -146,7 +146,7 @@ const COPY = {
   pt: {
     heroTitle: "Tens sempre o controlo",
     heroBody:
-      "O Kai pergunta antes de qualquer ação irreversível — enviar, inscrever ou sincronizar. Aprova, recusa ou transforma-a numa automatização para que aconteça sozinha da próxima vez.",
+      "A IA pergunta antes de qualquer ação irreversível — enviar, inscrever ou sincronizar. Aprova, recusa ou transforma-a numa automatização para que aconteça sozinha da próxima vez.",
     approvalRequired: "Aprovação necessária",
     irreversible: "Irreversível",
     trigger: "Gatilho",
@@ -157,12 +157,12 @@ const COPY = {
     pending: "A aguardar a tua aprovação",
     resolved: "Resolvidas recentemente",
     none: "Neste momento, nada precisa da tua aprovação.",
-    noneBody: "O Kai vai colocar aqui as ações em fila antes de fazer algo irreversível.",
+    noneBody: "A IA vai colocar aqui as ações em fila antes de fazer algo irreversível.",
     approved: "Aprovada",
     denied: "Recusada",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "contacto" : "contactos"}`,
     approvedToast: (target: string) => `Aprovado — a executar em ${target}`,
-    deniedToast: "Recusado — o Kai não vai continuar",
+    deniedToast: "Recusado — a IA não vai continuar",
     automatedToast: (trigger: string) =>
       `Automatização criada — agora executa-se automaticamente com "${trigger}"`,
     dismiss: "Limpar",
@@ -170,7 +170,7 @@ const COPY = {
   pt_BR: {
     heroTitle: "Você está sempre no controle",
     heroBody:
-      "O Kai pergunta antes de qualquer ação irreversível — enviar, inscrever ou sincronizar. Aprove, recuse ou transforme em uma automação para que aconteça sozinho da próxima vez.",
+      "A IA pergunta antes de qualquer ação irreversível — enviar, inscrever ou sincronizar. Aprove, recuse ou transforme em uma automação para que aconteça sozinho da próxima vez.",
     approvalRequired: "Aprovação necessária",
     irreversible: "Irreversível",
     trigger: "Gatilho",
@@ -181,12 +181,12 @@ const COPY = {
     pending: "Aguardando sua aprovação",
     resolved: "Resolvidas recentemente",
     none: "No momento, nada precisa da sua aprovação.",
-    noneBody: "O Kai vai colocar as ações aqui na fila antes de fazer algo irreversível.",
+    noneBody: "A IA vai colocar as ações aqui na fila antes de fazer algo irreversível.",
     approved: "Aprovada",
     denied: "Recusada",
     contacts: (n: number) => `${n.toLocaleString()} ${n === 1 ? "contato" : "contatos"}`,
     approvedToast: (target: string) => `Aprovado — executando em ${target}`,
-    deniedToast: "Recusado — o Kai não vai continuar",
+    deniedToast: "Recusado — a IA não vai continuar",
     automatedToast: (trigger: string) =>
       `Automação criada — agora é executada automaticamente com "${trigger}"`,
     dismiss: "Limpar",

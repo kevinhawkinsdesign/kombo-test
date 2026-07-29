@@ -10,7 +10,7 @@ import { getCallQa, genericAnswer, type CoachQaPair } from "@/lib/mock-coach-qa"
 const COPY = {
   en: {
     title: "Ask about this call",
-    subtitle: "Kai answers from the transcript and scorecard.",
+    subtitle: "AI answers from the transcript and scorecard.",
     suggested: "Suggested questions",
     placeholder: "Ask a precise question…",
     send: "Ask",
@@ -18,7 +18,7 @@ const COPY = {
   },
   es: {
     title: "Pregunta sobre esta llamada",
-    subtitle: "Kai responde desde la transcripción y el informe.",
+    subtitle: "La IA responde desde la transcripción y el informe.",
     suggested: "Preguntas sugeridas",
     placeholder: "Haz una pregunta precisa…",
     send: "Preguntar",
@@ -26,7 +26,7 @@ const COPY = {
   },
   it: {
     title: "Chiedi di questa chiamata",
-    subtitle: "Kai risponde in base alla trascrizione e al resoconto.",
+    subtitle: "L'IA risponde in base alla trascrizione e al resoconto.",
     suggested: "Domande suggerite",
     placeholder: "Fai una domanda precisa…",
     send: "Chiedi",
@@ -34,7 +34,7 @@ const COPY = {
   },
   fr: {
     title: "Poser une question sur cet appel",
-    subtitle: "Kai répond à partir de la transcription et du compte-rendu.",
+    subtitle: "L'IA répond à partir de la transcription et du compte-rendu.",
     suggested: "Questions suggérées",
     placeholder: "Posez une question précise…",
     send: "Demander",
@@ -42,7 +42,7 @@ const COPY = {
   },
   de: {
     title: "Frage zu diesem Anruf stellen",
-    subtitle: "Kai antwortet anhand von Transkript und Auswertung.",
+    subtitle: "Die KI antwortet anhand von Transkript und Auswertung.",
     suggested: "Vorgeschlagene Fragen",
     placeholder: "Stell eine präzise Frage…",
     send: "Fragen",
@@ -50,7 +50,7 @@ const COPY = {
   },
   pt: {
     title: "Pergunte sobre esta chamada",
-    subtitle: "O Kai responde com base na transcrição e no relatório.",
+    subtitle: "A IA responde com base na transcrição e no relatório.",
     suggested: "Perguntas sugeridas",
     placeholder: "Faça uma pergunta precisa…",
     send: "Perguntar",
@@ -58,7 +58,7 @@ const COPY = {
   },
   pt_BR: {
     title: "Pergunte sobre esta ligação",
-    subtitle: "O Kai responde com base na transcrição e no relatório.",
+    subtitle: "A IA responde com base na transcrição e no relatório.",
     suggested: "Perguntas sugeridas",
     placeholder: "Faça uma pergunta precisa…",
     send: "Perguntar",

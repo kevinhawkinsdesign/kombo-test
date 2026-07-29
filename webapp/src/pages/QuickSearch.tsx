@@ -367,7 +367,7 @@ function SearchHero({
   )
 }
 
-// Live typeahead preview: as the user types, show which filters Kai has
+// Live typeahead preview: as the user types, show which filters AI has
 // picked up (checked once detected) and a sample of 5 matching results — so
 // the search feels understood before running it.
 function AiSearchPreview({

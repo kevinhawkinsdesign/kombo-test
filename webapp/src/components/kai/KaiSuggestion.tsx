@@ -4,7 +4,7 @@ import { Sparkles, X } from "lucide-react"
 import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
 
-// Persisted dismissals so a dismissed Kai banner stays gone across reloads.
+// Persisted dismissals so a dismissed AI banner stays gone across reloads.
 const KEY = "kombo_kai_dismissed_v1"
 const subs = new Set<() => void>()
 
@@ -42,7 +42,7 @@ function useDismissed(key?: string): boolean {
 }
 
 /**
- * An in-situ Kai suggestion / tip. Use it to surface the next-best action or
+ * An in-situ AI suggestion / tip. Use it to surface the next-best action or
  * a helpful explanation right where the user is working. Always dismissable;
  * pass `dismissKey` to remember the dismissal across reloads.
  */
