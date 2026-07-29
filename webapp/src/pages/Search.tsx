@@ -33,6 +33,7 @@ import {
   Link2,
   Check,
   Layers,
+  MoreHorizontal,
 } from "lucide-react"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 
@@ -382,6 +383,7 @@ const COPY = {
     enrichRow: "Enrich",
     findLookalikesRow: "Find lookalikes",
     exportRow: "Export",
+    moreActions: "More actions",
     exportedToast: (n: number, format: string) => `Exported ${n} to ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} of ${total.toLocaleString()}`,
@@ -689,6 +691,7 @@ const COPY = {
     enrichRow: "Enriquecer",
     findLookalikesRow: "Buscar similares",
     exportRow: "Exportar",
+    moreActions: "Más acciones",
     exportedToast: (n: number, format: string) => `Exportados ${n} a ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
@@ -996,6 +999,7 @@ const COPY = {
     enrichRow: "Arricchisci",
     findLookalikesRow: "Trova simili",
     exportRow: "Esporta",
+    moreActions: "Altre azioni",
     exportedToast: (n: number, format: string) => `Esportati ${n} in ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} di ${total.toLocaleString()}`,
@@ -1303,6 +1307,7 @@ const COPY = {
     enrichRow: "Enrichir",
     findLookalikesRow: "Trouver des profils similaires",
     exportRow: "Exporter",
+    moreActions: "Plus d'actions",
     exportedToast: (n: number, format: string) => `${n} exportés en ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} sur ${total.toLocaleString()}`,
@@ -1610,6 +1615,7 @@ const COPY = {
     enrichRow: "Anreichern",
     findLookalikesRow: "Ähnliche finden",
     exportRow: "Exportieren",
+    moreActions: "Weitere Aktionen",
     exportedToast: (n: number, format: string) => `${n} als ${format} exportiert`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} von ${total.toLocaleString()}`,
@@ -1917,6 +1923,7 @@ const COPY = {
     enrichRow: "Enriquecer",
     findLookalikesRow: "Encontrar semelhantes",
     exportRow: "Exportar",
+    moreActions: "Mais ações",
     exportedToast: (n: number, format: string) => `Exportados ${n} para ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
@@ -2224,6 +2231,7 @@ const COPY = {
     enrichRow: "Enriquecer",
     findLookalikesRow: "Encontrar similares",
     exportRow: "Exportar",
+    moreActions: "Mais ações",
     exportedToast: (n: number, format: string) => `Exportados ${n} para ${format}`,
     pageRange: (from: number, to: number, total: number) =>
       `${from.toLocaleString()}–${to.toLocaleString()} de ${total.toLocaleString()}`,
@@ -3215,25 +3223,6 @@ export default function Search() {
   function enrichCompanyRow() {
     toast.success(c.enrichCompaniesToast(1))
   }
-  // Per-row Export — same CSV shape as the bulk export (confirmExport),
-  // just for a single search-result row and no format picker, matching the
-  // People/Companies per-row export convention.
-  function exportLeadRow(l: AiLead) {
-    downloadCsv(
-      "prospect.csv",
-      ["Name", "Title", "Company", "Region", "Fit"],
-      [[`${l.firstName} ${l.lastName}`, l.title, l.company, l.region, l.fit]]
-    )
-    toast.success(c.exportedToast(1, "CSV"))
-  }
-  function exportCompanyRow(co: AiCompany) {
-    downloadCsv(
-      "company.csv",
-      ["Company", "Industry", "Region", "Headcount", "Fit"],
-      [[co.name, co.industry, co.region, co.headcount, co.fit]]
-    )
-    toast.success(c.exportedToast(1, "CSV"))
-  }
   // Per-row Find lookalikes — same seed shape as bulkLookalikes, just scoped
   // to a single search-result row instead of the current selection.
   function lookalikeFromLeadRow(l: AiLead) {
@@ -3878,33 +3867,31 @@ export default function Search() {
                   >
                     <Layers className="size-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.findLookalikesRow}
-                    onClick={() => lookalikeFromLeadRow(l)}
-                  >
-                    <ScanSearch className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.addRowToList}
-                    onClick={() => addRowToList(materializeLeadsToIds([l]))}
-                  >
-                    <FolderPlus className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.exportRow}
-                    onClick={() => exportLeadRow(l)}
-                  >
-                    <Download className="size-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label={c.moreActions}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => lookalikeFromLeadRow(l)}>
+                        <ScanSearch className="size-4" />
+                        {c.findLookalikesRow}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => addRowToList(materializeLeadsToIds([l]))}
+                      >
+                        <FolderPlus className="size-4" />
+                        {c.addRowToList}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
               onReorderColumns={(from, to) => {
@@ -3937,33 +3924,31 @@ export default function Search() {
                   >
                     <Layers className="size-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.findLookalikesRow}
-                    onClick={() => lookalikeFromCompanyRow(co)}
-                  >
-                    <ScanSearch className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.addRowToList}
-                    onClick={() => addRowToList(materializeCompaniesToIds([co]))}
-                  >
-                    <FolderPlus className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={c.exportRow}
-                    onClick={() => exportCompanyRow(co)}
-                  >
-                    <Download className="size-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label={c.moreActions}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => lookalikeFromCompanyRow(co)}>
+                        <ScanSearch className="size-4" />
+                        {c.findLookalikesRow}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => addRowToList(materializeCompaniesToIds([co]))}
+                      >
+                        <FolderPlus className="size-4" />
+                        {c.addRowToList}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
               onReorderColumns={(from, to) => {
