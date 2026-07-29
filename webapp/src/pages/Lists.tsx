@@ -41,6 +41,7 @@ import {
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
+import { ListTabBar } from "@/components/lists/ListTabBar"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import type { CollectionView } from "@/components/common/ViewToggle"
@@ -598,24 +599,31 @@ export default function Lists() {
   }
 
   return (
-    <Page>
-      <PageHeading
-        title={c.title}
-        description={c.description}
-        action={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" onClick={() => setImportOpen(true)}>
-              <Upload className="size-4" />
-              {c.importCsv}
-            </Button>
-            <Button variant="volt" onClick={openCreate}>
-              <Plus className="size-4" />
-              {c.newList}
-            </Button>
-          </div>
-        }
-      />
+    <>
+      <Page className="pb-0">
+        <PageHeading
+          title={c.title}
+          description={c.description}
+          action={
+            <div className="flex flex-wrap gap-2">
+              <Button variant="ghost" onClick={() => setImportOpen(true)}>
+                <Upload className="size-4" />
+                {c.importCsv}
+              </Button>
+              <Button variant="volt" onClick={openCreate}>
+                <Plus className="size-4" />
+                {c.newList}
+              </Button>
+            </div>
+          }
+        />
+      </Page>
 
+      <div className="px-4 md:px-6">
+        <ListTabBar currentId="all" />
+      </div>
+
+      <Page className="pt-0">
       <CollectionToolbar
         query={query}
         onQueryChange={setQuery}
@@ -922,7 +930,8 @@ export default function Lists() {
         onOpenChange={closeImport}
         onImported={(count) => toast.success(c.imported(count))}
       />
-    </Page>
+      </Page>
+    </>
   )
 }
 
