@@ -492,6 +492,62 @@ export function CallScoreRadarChart({
   return <Radar options={options} data={{ labels, datasets }} />
 }
 
+// A small inline donut showing how one rubric question was answered across a
+// set of calls (Coach Analytics' per-question aggregate). Plain SVG rather
+// than a chart.js canvas — these render one per question, and at this size
+// strokes stay crisper and far cheaper than a canvas each.
+export function AnswerDistributionDonut({
+  segments,
+  centerValue,
+  centerLabel,
+  centerColor,
+}: {
+  segments: { share: number; color: string }[]
+  centerValue: string
+  centerLabel: string
+  centerColor: string
+}) {
+  const R = 26
+  const C = 2 * Math.PI * R
+  // Arc lengths and their running start offsets, resolved up front so the
+  // render pass itself stays free of accumulator mutation.
+  const arcs = segments.reduce<{ len: number; offset: number; color: string }[]>(
+    (acc, s) => {
+      const prev = acc[acc.length - 1]
+      const offset = prev ? prev.offset + prev.len : 0
+      acc.push({ len: s.share * C, offset, color: s.color })
+      return acc
+    },
+    []
+  )
+
+  return (
+    <div className="relative size-[72px] shrink-0">
+      <svg viewBox="0 0 72 72" className="size-full -rotate-90">
+        {arcs.map((a, i) => (
+          <circle
+            key={i}
+            cx="36"
+            cy="36"
+            r={R}
+            fill="none"
+            stroke={a.color}
+            strokeWidth="10"
+            strokeDasharray={`${a.len} ${C - a.len}`}
+            strokeDashoffset={-a.offset}
+          />
+        ))}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center leading-tight">
+        <span className="text-xs font-semibold tabular-nums">{centerValue}</span>
+        <span className="text-[10px]" style={{ color: centerColor }}>
+          {centerLabel}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export function HeadcountChart({
   labels,
   values,

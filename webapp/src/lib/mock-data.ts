@@ -1203,9 +1203,115 @@ export const coachRecordings: CoachRecording[] = [
     videoSource: "teams",
     mediaKind: "video",
     summarized: true,
-    analyzed: false,
+    analyzed: true,
+    scoreCardId: "sc_discovery",
     overview:
       "Product walkthrough for Marcus's revenue ops team. Good coverage of the enrichment and sequencing features; the rep talked more than ideal.",
+    scoreBreakdown: [
+      {
+        label: "Discovery",
+        metricScore: 64,
+        metricSummary: "Jumped into the demo before establishing what Marcus actually needed.",
+        repAvgScore: 84,
+        teamAvgScore: 79,
+        subMetrics: [
+          {
+            label: "Open-ended questions",
+            score: 58,
+            questions: [
+              {
+                text: "Did the rep ask open-ended discovery questions?",
+                breakdownType: "medium",
+                value: "Partial",
+                why: "One broad question early on, but the rest of the call was rep-led narration of features.",
+                quotes: ["So this is the enrichment view — every contact gets 30+ data points automatically."],
+                howToImprove: "Open with 10 minutes of discovery before showing a single screen.",
+              },
+            ],
+          },
+          {
+            label: "Pain quantification",
+            score: 70,
+            questions: [
+              {
+                text: "Did the rep quantify the cost of the prospect's pain?",
+                breakdownType: "bad",
+                value: "No",
+                why: "Marcus raised cost directly and the rep deferred it to a document instead of quantifying it live.",
+                quotes: ["Nice, and how does that compare cost-wise to what we're doing manually today?"],
+                howToImprove: "Ask what the manual process costs them per month before promising an ROI doc.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Objection handling",
+        metricScore: 72,
+        metricSummary: "Cost question was acknowledged but deflected to follow-up material.",
+        repAvgScore: 77,
+        teamAvgScore: 74,
+        subMetrics: [
+          {
+            label: "Pricing objection",
+            score: 75,
+            questions: [
+              {
+                text: "Did the rep uncover the prospect's budget before defending price?",
+                breakdownType: "good",
+                value: "Yes",
+                why: "The rep asked what Softonic currently spends on manual research before quoting anything.",
+                quotes: ["I'll send over an ROI breakdown by end of day."],
+                howToImprove: "Good — bring the same number back verbally on the follow-up call.",
+              },
+            ],
+          },
+          {
+            label: "Security objection",
+            score: 68,
+            questions: [
+              {
+                text: "Did the rep address the security question with evidence?",
+                breakdownType: "medium",
+                value: "Partial",
+                why: "Security came up briefly and was answered from memory rather than with documentation.",
+                quotes: [],
+                howToImprove: "Offer the SOC 2 report rather than describing the controls verbally.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Next steps",
+        metricScore: 88,
+        metricSummary: "Clear regroup agreed, though without a specific time.",
+        repAvgScore: 88,
+        teamAvgScore: 82,
+        subMetrics: [
+          {
+            label: "Clear commitment",
+            score: 88,
+            questions: [
+              {
+                text: "Did the call end with a specific, dated next step?",
+                breakdownType: "good",
+                value: "Yes",
+                why: "Both sides agreed to regroup on Tuesday with the ROI breakdown in hand.",
+                quotes: ["Perfect, let's regroup Tuesday."],
+                howToImprove: "Pin an exact time, not just a day, before the call ends.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    review: {
+      positiveFeedback:
+        "Thorough, confident product walkthrough — Marcus never had to ask how a feature worked twice.",
+      thingsToImprove:
+        "Talk ratio hit 58%. The demo started before any discovery, so the features shown weren't tied to a stated problem.",
+    },
     speakers: [
       { speakerId: "speaker-0", name: "You", role: "Rep" },
       { speakerId: "speaker-1", name: "Marcus Riley", role: "Prospect" },
@@ -1341,6 +1447,156 @@ export const coachRecordings: CoachRecording[] = [
     dealId: "deal_5",
     salesRepId: "rep_2",
     scoreCardId: "sc_checkin",
+  },
+  {
+    id: "r_5",
+    title: "Discovery — Nexi",
+    prospectName: "Aisha Khan",
+    company: "Clarity AI",
+    date: "2026-06-12T10:30:00Z",
+    durationMin: 27,
+    score: 58,
+    talkRatio: 71,
+    sentiment: "negative",
+    highlights: ["Rep dominated the conversation", "No budget or timeline established"],
+    nextSteps: ["Send a shorter, problem-led follow-up", "Re-qualify before booking more time"],
+    videoSource: "zoom",
+    mediaKind: "video",
+    summarized: true,
+    analyzed: true,
+    scoreCardId: "sc_discovery",
+    overview:
+      "Intro-to-discovery call with Aisha. The rep pitched heavily and never established the underlying problem, so the call ended without a committed next step.",
+    scoreBreakdown: [
+      {
+        label: "Discovery",
+        metricScore: 52,
+        metricSummary: "Almost no discovery — the call was a pitch from minute two.",
+        repAvgScore: 84,
+        teamAvgScore: 79,
+        subMetrics: [
+          {
+            label: "Open-ended questions",
+            score: 48,
+            questions: [
+              {
+                text: "Did the rep ask open-ended discovery questions?",
+                breakdownType: "bad",
+                value: "No",
+                why: "Every question asked was a closed yes/no confirmation of a feature's value.",
+                quotes: ["That'd be useful for your team, right?"],
+                howToImprove: "Replace \u201cwouldn't that be useful?\u201d with \u201chow do you handle that today?\u201d",
+              },
+            ],
+          },
+          {
+            label: "Pain quantification",
+            score: 55,
+            questions: [
+              {
+                text: "Did the rep quantify the cost of the prospect's pain?",
+                breakdownType: "bad",
+                value: "No",
+                why: "No cost, time, or headcount figure was established at any point in the call.",
+                quotes: [],
+                howToImprove: "Anchor on a number early — hours per rep per week is the easiest one to get.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Objection handling",
+        metricScore: 60,
+        metricSummary: "The one objection raised was talked over rather than explored.",
+        repAvgScore: 77,
+        teamAvgScore: 74,
+        subMetrics: [
+          {
+            label: "Pricing objection",
+            score: 55,
+            questions: [
+              {
+                text: "Did the rep uncover the prospect's budget before defending price?",
+                breakdownType: "bad",
+                value: "No",
+                why: "Aisha flagged price as a concern and the rep immediately justified the number instead of asking what she'd budgeted.",
+                quotes: ["It's priced that way because of the enrichment volume included."],
+                howToImprove: "Pause on a price objection and ask what range they had in mind first.",
+              },
+            ],
+          },
+          {
+            label: "Security objection",
+            score: 0,
+            isNa: true,
+            questions: [
+              {
+                text: "Did the rep address the security question with evidence?",
+                breakdownType: "good",
+                value: "N/A",
+                isNa: true,
+                why: "Security never came up on this call.",
+                quotes: [],
+                howToImprove: "No action needed — the topic wasn't raised.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Next steps",
+        metricScore: 49,
+        metricSummary: "Call ended on \u201cI'll send something over\u201d with nothing booked.",
+        repAvgScore: 88,
+        teamAvgScore: 82,
+        subMetrics: [
+          {
+            label: "Clear commitment",
+            score: 49,
+            questions: [
+              {
+                text: "Did the call end with a specific, dated next step?",
+                breakdownType: "bad",
+                value: "No",
+                why: "No follow-up meeting was proposed and no date was named by either side.",
+                quotes: ["I'll send some material over and we can take it from there."],
+                howToImprove: "Never end a discovery call without a calendar invite sent live.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    review: {
+      positiveFeedback:
+        "Strong product knowledge — every feature question was answered accurately and quickly.",
+      thingsToImprove:
+        "Talk ratio of 71% is the core issue. Without discovery there was no problem to anchor the pitch to, which is why the call ended without a commitment.",
+    },
+    speakers: [
+      { speakerId: "speaker-0", name: "You", role: "Rep" },
+      { speakerId: "speaker-1", name: "Aisha Khan", role: "Prospect" },
+    ],
+    transcript: [
+      { speakerId: "speaker-0", atSec: 12, text: "Let me walk you through what we've built — I think you'll see the fit straight away." },
+      { speakerId: "speaker-1", atSec: 140, text: "Sure. Though I should say we're early in figuring out what we even need." },
+      { speakerId: "speaker-0", atSec: 620, text: "That'd be useful for your team, right?" },
+      { speakerId: "speaker-1", atSec: 900, text: "Possibly. What does something like this cost?" },
+      { speakerId: "speaker-0", atSec: 915, text: "It's priced that way because of the enrichment volume included." },
+      { speakerId: "speaker-0", atSec: 1580, text: "I'll send some material over and we can take it from there." },
+    ],
+    participants: [
+      { name: "You", isOwner: true, attended: true },
+      { name: "Aisha Khan", email: "aisha.khan@clarity.ai", attended: true, inCrm: true },
+    ],
+    keyFields: [
+      { label: "Budget", value: "Not established" },
+      { label: "Decision timeline", value: "Not established" },
+    ],
+    prospectPosition: "Chief Revenue Officer",
+    dealId: "deal_3",
+    salesRepId: "rep_2",
   },
 ]
 
