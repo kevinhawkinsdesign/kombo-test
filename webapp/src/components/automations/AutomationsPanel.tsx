@@ -108,7 +108,7 @@ const STEP_META: Record<
 
 const COPY = {
   en: {
-    recommendTitle: "Kai recommends",
+    recommendTitle: "AI recommends",
     recommendBody: "You have hot signals worth automating. Turn one of these on to act on them on autopilot.",
     enable: "Enable",
     library: "Start from a template",
@@ -148,7 +148,7 @@ const COPY = {
     modeHint: "Switch between auto-run and approve-each-run",
   },
   es: {
-    recommendTitle: "Kai recomienda",
+    recommendTitle: "La IA recomienda",
     recommendBody: "Tienes señales calientes que merece automatizar. Activa una para actuar en piloto automático.",
     enable: "Activar",
     library: "Empieza con una plantilla",
@@ -188,7 +188,7 @@ const COPY = {
     modeHint: "Cambia entre ejecución automática y aprobar cada ejecución",
   },
   it: {
-    recommendTitle: "Kai consiglia",
+    recommendTitle: "L'IA consiglia",
     recommendBody: "Hai segnali caldi che vale la pena automatizzare. Attivane uno per agire in pilota automatico.",
     enable: "Attiva",
     library: "Inizia da un modello",
@@ -228,7 +228,7 @@ const COPY = {
     modeHint: "Passa tra esecuzione automatica e approvazione di ogni esecuzione",
   },
   fr: {
-    recommendTitle: "Kai recommande",
+    recommendTitle: "L'IA recommande",
     recommendBody: "Vous avez des signaux prioritaires à automatiser. Activez-en un pour agir en pilote automatique.",
     enable: "Activer",
     library: "Commencer avec un modèle",
@@ -268,7 +268,7 @@ const COPY = {
     modeHint: "Basculez entre l'exécution automatique et l'approbation à chaque exécution",
   },
   de: {
-    recommendTitle: "Kai empfiehlt",
+    recommendTitle: "Die KI empfiehlt",
     recommendBody: "Du hast heiße Signale, die sich zu automatisieren lohnen. Aktiviere eines davon, um im Autopilot zu handeln.",
     enable: "Aktivieren",
     library: "Mit einer Vorlage starten",
@@ -308,7 +308,7 @@ const COPY = {
     modeHint: "Wechsle zwischen automatischer Ausführung und Genehmigung pro Ausführung",
   },
   pt: {
-    recommendTitle: "Kai recomenda",
+    recommendTitle: "A IA recomenda",
     recommendBody: "Tens sinais quentes que vale a pena automatizar. Ativa um deles para agir em piloto automático.",
     enable: "Ativar",
     library: "Começa com um modelo",
@@ -348,7 +348,7 @@ const COPY = {
     modeHint: "Alterna entre execução automática e aprovação de cada execução",
   },
   pt_BR: {
-    recommendTitle: "Kai recomenda",
+    recommendTitle: "A IA recomenda",
     recommendBody: "Você tem sinais quentes que vale a pena automatizar. Ative um deles para agir no piloto automático.",
     enable: "Ativar",
     library: "Comece com um modelo",
@@ -418,7 +418,7 @@ export function AutomationsPanel() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6">
-      {/* Kai recommendation */}
+      {/* AI recommendation */}
       <Card className="border-primary/20 from-primary/[0.05] to-card gap-3 bg-gradient-to-br p-5">
         <div className="flex items-start gap-3">
           <span className="bg-primary/15 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
