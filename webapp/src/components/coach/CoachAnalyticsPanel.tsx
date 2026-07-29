@@ -1,13 +1,15 @@
 import * as React from "react"
-import { Sparkles, Loader2, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Sparkles, Loader2, ThumbsUp, ThumbsDown, ChevronDown } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { CallScoreRadarChart } from "@/components/charts/Charts"
+import {
+  CallScoreRadarChart,
+  AnswerDistributionDonut,
+} from "@/components/charts/Charts"
 import { cn } from "@/lib/utils"
-import type { CoachRecording } from "@/lib/types"
+import type { CoachRecording, CoachQuestion } from "@/lib/types"
 
 // A call "scores well" on a metric at or above this — the mocked equivalent
 // of the real extension's per-question aggregation threshold.
@@ -21,6 +23,12 @@ const COPY = {
   en: {
     avgScoreLabel: "Average score",
     callsAnalyzedLabel: "Calls analyzed",
+    callsAvg: (n: number) => `Calls avg: ${n}%`,
+    expand: (l: string) => `Expand ${l}`,
+    collapse: (l: string) => `Collapse ${l}`,
+    na: "NA",
+    answeredAcross: (n: number) => `Across ${n} ${n === 1 ? "call" : "calls"}`,
+    naOnCalls: (n: number) => `NA on ${n}`,
     scoreBreakdownTitle: "Coach score breakdown",
     scoreBreakdownEmpty:
       "No score breakdown data available for the analyzed calls yet.",
@@ -54,6 +62,12 @@ const COPY = {
   es: {
     avgScoreLabel: "Puntuación media",
     callsAnalyzedLabel: "Llamadas analizadas",
+    callsAvg: (n: number) => `Media de llamadas: ${n}%`,
+    expand: (l: string) => `Expandir ${l}`,
+    collapse: (l: string) => `Contraer ${l}`,
+    na: "NA",
+    answeredAcross: (n: number) => `En ${n} ${n === 1 ? "llamada" : "llamadas"}`,
+    naOnCalls: (n: number) => `NA en ${n}`,
     scoreBreakdownTitle: "Desglose de la puntuación",
     scoreBreakdownEmpty:
       "Todavía no hay datos de desglose de puntuación para las llamadas analizadas.",
@@ -87,6 +101,12 @@ const COPY = {
   it: {
     avgScoreLabel: "Punteggio medio",
     callsAnalyzedLabel: "Chiamate analizzate",
+    callsAvg: (n: number) => `Media chiamate: ${n}%`,
+    expand: (l: string) => `Espandi ${l}`,
+    collapse: (l: string) => `Comprimi ${l}`,
+    na: "NA",
+    answeredAcross: (n: number) => `Su ${n} ${n === 1 ? "chiamata" : "chiamate"}`,
+    naOnCalls: (n: number) => `NA su ${n}`,
     scoreBreakdownTitle: "Dettaglio del punteggio",
     scoreBreakdownEmpty:
       "Nessun dettaglio del punteggio disponibile per le chiamate analizzate.",
@@ -121,6 +141,12 @@ const COPY = {
   fr: {
     avgScoreLabel: "Score moyen",
     callsAnalyzedLabel: "Appels analysés",
+    callsAvg: (n: number) => `Moyenne des appels : ${n} %`,
+    expand: (l: string) => `Développer ${l}`,
+    collapse: (l: string) => `Réduire ${l}`,
+    na: "NA",
+    answeredAcross: (n: number) => `Sur ${n} appel${n === 1 ? "" : "s"}`,
+    naOnCalls: (n: number) => `NA sur ${n}`,
     scoreBreakdownTitle: "Détail du score",
     scoreBreakdownEmpty:
       "Aucun détail de score disponible pour les appels analysés pour le moment.",
@@ -156,6 +182,12 @@ const COPY = {
   de: {
     avgScoreLabel: "Durchschnittlicher Score",
     callsAnalyzedLabel: "Analysierte Calls",
+    callsAvg: (n: number) => `Call-Durchschnitt: ${n}%`,
+    expand: (l: string) => `${l} aufklappen`,
+    collapse: (l: string) => `${l} zuklappen`,
+    na: "NA",
+    answeredAcross: (n: number) => `Über ${n} ${n === 1 ? "Call" : "Calls"}`,
+    naOnCalls: (n: number) => `NA bei ${n}`,
     scoreBreakdownTitle: "Score-Aufschlüsselung",
     scoreBreakdownEmpty:
       "Für die analysierten Calls liegt noch keine Score-Aufschlüsselung vor.",
@@ -189,6 +221,12 @@ const COPY = {
   pt: {
     avgScoreLabel: "Pontuação média",
     callsAnalyzedLabel: "Chamadas analisadas",
+    callsAvg: (n: number) => `Média das chamadas: ${n}%`,
+    expand: (l: string) => `Expandir ${l}`,
+    collapse: (l: string) => `Recolher ${l}`,
+    na: "NA",
+    answeredAcross: (n: number) => `Em ${n} ${n === 1 ? "chamada" : "chamadas"}`,
+    naOnCalls: (n: number) => `NA em ${n}`,
     scoreBreakdownTitle: "Detalhe da pontuação",
     scoreBreakdownEmpty:
       "Ainda não há dados de detalhe de pontuação para as chamadas analisadas.",
@@ -222,6 +260,12 @@ const COPY = {
   pt_BR: {
     avgScoreLabel: "Pontuação média",
     callsAnalyzedLabel: "Ligações analisadas",
+    callsAvg: (n: number) => `Média das ligações: ${n}%`,
+    expand: (l: string) => `Expandir ${l}`,
+    collapse: (l: string) => `Recolher ${l}`,
+    na: "NA",
+    answeredAcross: (n: number) => `Em ${n} ${n === 1 ? "ligação" : "ligações"}`,
+    naOnCalls: (n: number) => `NA em ${n}`,
     scoreBreakdownTitle: "Detalhamento da pontuação",
     scoreBreakdownEmpty:
       "Ainda não há dados de detalhamento de pontuação para as ligações analisadas.",
@@ -262,40 +306,115 @@ function scorePillClass(score: number): string {
   return "bg-destructive/15 text-destructive"
 }
 
+interface QuestionAggregate {
+  text: string
+  // Distribution of the answers given across calls, most common first.
+  answers: { value: string; count: number; tone: CoachQuestion["breakdownType"] }[]
+  answered: number // calls that answered it at all (NA excluded)
+  naCount: number
+}
+
+interface SubMetricAggregate {
+  label: string
+  avgScore: number
+  isNa: boolean // every occurrence across the set was NA
+  questions: QuestionAggregate[]
+}
+
 interface MetricAggregate {
   label: string
   avgScore: number
   wellCount: number
   total: number
+  subMetrics: SubMetricAggregate[]
 }
 
-// Averages every distinct scoreBreakdown metric label across whichever
-// analyzed calls happen to carry that data — not every analyzed call has a
-// scoreBreakdown, so this silently skips calls that don't rather than
-// treating a missing metric as 0.
+// Rolls the whole metric -> sub-metric -> question tree up across whichever
+// analyzed calls carry that data. Not every analyzed call has a
+// scoreBreakdown, and any level can be flagged NA on a given call, so
+// missing/NA entries are skipped rather than averaged in as 0 (which would
+// drag the aggregate down for a question that simply didn't apply).
 function aggregateScoreBreakdown(calls: CoachRecording[]): MetricAggregate[] {
-  const byLabel = new Map<
-    string,
-    { sum: number; wellCount: number; total: number }
-  >()
+  interface QAcc {
+    answers: Map<string, { count: number; tone: CoachQuestion["breakdownType"] }>
+    answered: number
+    naCount: number
+  }
+  interface SubAcc {
+    sum: number
+    scored: number // non-NA occurrences
+    seen: number
+    questions: Map<string, QAcc>
+  }
+  interface MetricAcc {
+    sum: number
+    wellCount: number
+    total: number
+    subMetrics: Map<string, SubAcc>
+  }
+
+  const byLabel = new Map<string, MetricAcc>()
+
   for (const call of calls) {
     for (const metric of call.scoreBreakdown ?? []) {
-      const entry = byLabel.get(metric.label) ?? {
-        sum: 0,
-        wellCount: 0,
-        total: 0,
+      let m = byLabel.get(metric.label)
+      if (!m) {
+        m = { sum: 0, wellCount: 0, total: 0, subMetrics: new Map() }
+        byLabel.set(metric.label, m)
       }
-      entry.sum += metric.metricScore
-      entry.total += 1
-      if (metric.metricScore >= SCORE_THRESHOLD) entry.wellCount += 1
-      byLabel.set(metric.label, entry)
+      m.sum += metric.metricScore
+      m.total += 1
+      if (metric.metricScore >= SCORE_THRESHOLD) m.wellCount += 1
+
+      for (const sub of metric.subMetrics ?? []) {
+        let s = m.subMetrics.get(sub.label)
+        if (!s) {
+          s = { sum: 0, scored: 0, seen: 0, questions: new Map() }
+          m.subMetrics.set(sub.label, s)
+        }
+        s.seen += 1
+        if (!sub.isNa) {
+          s.sum += sub.score
+          s.scored += 1
+        }
+
+        for (const q of sub.questions ?? []) {
+          let acc = s.questions.get(q.text)
+          if (!acc) {
+            acc = { answers: new Map(), answered: 0, naCount: 0 }
+            s.questions.set(q.text, acc)
+          }
+          if (q.isNa) {
+            acc.naCount += 1
+            continue
+          }
+          acc.answered += 1
+          const prev = acc.answers.get(q.value)
+          if (prev) prev.count += 1
+          else acc.answers.set(q.value, { count: 1, tone: q.breakdownType })
+        }
+      }
     }
   }
-  return Array.from(byLabel.entries()).map(([label, entry]) => ({
+
+  return Array.from(byLabel.entries()).map(([label, m]) => ({
     label,
-    avgScore: Math.round(entry.sum / entry.total),
-    wellCount: entry.wellCount,
-    total: entry.total,
+    avgScore: Math.round(m.sum / m.total),
+    wellCount: m.wellCount,
+    total: m.total,
+    subMetrics: Array.from(m.subMetrics.entries()).map(([subLabel, s]) => ({
+      label: subLabel,
+      avgScore: s.scored > 0 ? Math.round(s.sum / s.scored) : 0,
+      isNa: s.scored === 0,
+      questions: Array.from(s.questions.entries()).map(([text, q]) => ({
+        text,
+        answered: q.answered,
+        naCount: q.naCount,
+        answers: Array.from(q.answers.entries())
+          .map(([value, v]) => ({ value, count: v.count, tone: v.tone }))
+          .sort((a, b) => b.count - a.count),
+      })),
+    })),
   }))
 }
 
@@ -343,6 +462,156 @@ function buildAiSummary(
     whatWentWell: c.aiFromCall(highest.title, wellText),
     whatCanImprove: c.aiFromCall(lowest.title, improveText),
   }
+}
+
+// A score bar with its percentage inline, matching how the extension renders
+// each metric/sub-metric level of the aggregate breakdown.
+function ScoreBar({ score, isNa, na }: { score: number; isNa?: boolean; na: string }) {
+  if (isNa) {
+    return (
+      <div className="text-muted-foreground bg-muted/60 rounded px-2 py-1 text-xs">
+        {na}
+      </div>
+    )
+  }
+  return (
+    <div className="bg-muted relative h-6 w-full overflow-hidden rounded">
+      <div
+        className={cn("absolute inset-y-0 left-0 rounded", scoreBarClass(score))}
+        style={{ width: `${score}%` }}
+      />
+      <span className="absolute inset-y-0 left-2 flex items-center text-xs font-semibold tabular-nums">
+        {score}%
+      </span>
+    </div>
+  )
+}
+
+function scoreBarClass(score: number): string {
+  if (score >= 80) return "bg-chart-1/60"
+  if (score >= 65) return "bg-chart-4/60"
+  return "bg-destructive/50"
+}
+
+const TONE_VAR: Record<CoachQuestion["breakdownType"], string> = {
+  good: "var(--chart-1)",
+  medium: "var(--chart-4)",
+  bad: "var(--destructive)",
+}
+
+// One rubric question, aggregated: a donut of how it was answered across the
+// calls in scope, labelled with the most common answer.
+function QuestionRow({ question, c }: { question: QuestionAggregate; c: Copy }) {
+  const total = question.answered
+  if (total === 0) {
+    return (
+      <div className="flex items-center gap-3 border-l-2 py-2 pl-3">
+        <span className="text-muted-foreground border-muted-foreground/30 rounded border px-1.5 py-0.5 text-xs">
+          {c.na}
+        </span>
+        <p className="text-xs">{question.text}</p>
+      </div>
+    )
+  }
+  const top = question.answers[0]
+  const topPct = Math.round((top.count / total) * 100)
+  return (
+    <div
+      className="flex items-center gap-3 border-l-2 py-2 pl-3"
+      style={{ borderColor: TONE_VAR[top.tone] }}
+    >
+      <AnswerDistributionDonut
+        segments={question.answers.map((a) => ({
+          share: a.count / total,
+          color: TONE_VAR[a.tone],
+        }))}
+        centerValue={`${topPct}%`}
+        centerLabel={top.value}
+        centerColor={TONE_VAR[top.tone]}
+      />
+      <div className="min-w-0">
+        <p className="text-xs">{question.text}</p>
+        <p className="text-muted-foreground mt-1 text-[11px]">
+          {c.answeredAcross(total)}
+          {question.naCount > 0 && ` · ${c.naOnCalls(question.naCount)}`}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function SubMetricRow({ sub, c }: { sub: SubMetricAggregate; c: Copy }) {
+  const [open, setOpen] = React.useState(false)
+  const hasQuestions = sub.questions.length > 0
+  return (
+    <div className="rounded-md border p-2">
+      <button
+        type="button"
+        onClick={() => hasQuestions && setOpen((v) => !v)}
+        disabled={!hasQuestions}
+        aria-expanded={hasQuestions ? open : undefined}
+        aria-label={open ? c.collapse(sub.label) : c.expand(sub.label)}
+        className="w-full space-y-1.5 text-left"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium">{sub.label}</span>
+          {hasQuestions && (
+            <ChevronDown
+              className={cn(
+                "text-muted-foreground size-4 shrink-0 transition-transform",
+                open && "rotate-180"
+              )}
+            />
+          )}
+        </div>
+        <ScoreBar score={sub.avgScore} isNa={sub.isNa} na={c.na} />
+      </button>
+      {hasQuestions && open && (
+        <div className="mt-2 space-y-1">
+          {sub.questions.map((q) => (
+            <QuestionRow key={q.text} question={q} c={c} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MetricRow({ metric, c }: { metric: MetricAggregate; c: Copy }) {
+  const [open, setOpen] = React.useState(false)
+  const hasSubs = metric.subMetrics.length > 0
+  return (
+    <div className={cn("rounded-lg border p-3", open && "border-primary/40 bg-primary/5")}>
+      <button
+        type="button"
+        onClick={() => hasSubs && setOpen((v) => !v)}
+        disabled={!hasSubs}
+        aria-expanded={hasSubs ? open : undefined}
+        aria-label={open ? c.collapse(metric.label) : c.expand(metric.label)}
+        className="w-full space-y-2 text-left"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium">{metric.label}</span>
+          {hasSubs && (
+            <ChevronDown
+              className={cn(
+                "text-muted-foreground size-4 shrink-0 transition-transform",
+                open && "rotate-180"
+              )}
+            />
+          )}
+        </div>
+        <ScoreBar score={metric.avgScore} na={c.na} />
+      </button>
+      {hasSubs && open && (
+        <div className="mt-3 space-y-2">
+          {metric.subMetrics.map((s) => (
+            <SubMetricRow key={s.label} sub={s} c={c} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 /**
@@ -417,30 +686,27 @@ export function CoachAnalyticsPanel({ calls }: { calls: CoachRecording[] }) {
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-base">{c.scoreBreakdownTitle}</CardTitle>
+          {metrics.length > 0 && (
+            <span
+              className={cn(
+                "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
+                scorePillClass(avgScore)
+              )}
+            >
+              {c.callsAvg(avgScore)}
+            </span>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2">
           {metrics.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               {c.scoreBreakdownEmpty}
             </p>
           ) : (
             metrics.map((m) => (
-              <div key={m.label} className="space-y-1.5">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="font-medium">{m.label}</span>
-                  <span
-                    className={cn(
-                      "rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                      scorePillClass(m.avgScore)
-                    )}
-                  >
-                    {m.avgScore}
-                  </span>
-                </div>
-                <Progress value={m.avgScore} />
-              </div>
+              <MetricRow key={m.label} metric={m} c={c} />
             ))
           )}
         </CardContent>

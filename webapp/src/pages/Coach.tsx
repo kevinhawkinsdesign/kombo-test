@@ -59,7 +59,7 @@ import {
   type SortState,
   type ColumnFilterState,
 } from "@/lib/table-sort-filter"
-import { coachRecordings } from "@/lib/mock-data"
+import { coachRecordings, coachScoreCards } from "@/lib/mock-data"
 import { useCoachRecordings, coachRecordingStore } from "@/lib/store"
 import { EmptyState } from "@/components/common/EmptyState"
 import { CoachAnalyticsPanel } from "@/components/coach/CoachAnalyticsPanel"
@@ -90,6 +90,8 @@ const COACH_VIDEO_SOURCES: CoachVideoSource[] = [
 // Sentinel value for the Team select's "no team picked" state — mirrors the
 // ALL-value pattern used by other single-select filters in the app.
 const ALL_TEAMS = "all"
+// Same "no selection" sentinel convention for the Score Card filter.
+const ALL_SCORE_CARDS = "all"
 
 // Recordings sync in from the connected CRM, so with none connected there's
 // nothing to populate this page with. This app allows only one active CRM
@@ -205,6 +207,10 @@ const COPY = {
     filterDeal: "Deal",
     filterTeam: "Team",
     filterAllTeams: "All teams",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "All score cards",
+    filterScoreCardHint:
+      "Coach Analytics can only aggregate calls scored on the same card.",
     filterSalesRep: "Sales rep",
     filterSource: "Source",
     source: {
@@ -333,6 +339,10 @@ const COPY = {
     filterDeal: "Negocio",
     filterTeam: "Equipo",
     filterAllTeams: "Todos los equipos",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "Todos los score cards",
+    filterScoreCardHint:
+      "Coach Analytics solo puede agregar llamadas evaluadas con el mismo score card.",
     filterSalesRep: "Representante de ventas",
     filterSource: "Origen",
     source: {
@@ -461,6 +471,10 @@ const COPY = {
     filterDeal: "Trattativa",
     filterTeam: "Team",
     filterAllTeams: "Tutti i team",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "Tutti gli score card",
+    filterScoreCardHint:
+      "Coach Analytics può aggregare solo chiamate valutate con lo stesso score card.",
     filterSalesRep: "Rappresentante di vendita",
     filterSource: "Origine",
     source: {
@@ -589,6 +603,10 @@ const COPY = {
     filterDeal: "Transaction",
     filterTeam: "Équipe",
     filterAllTeams: "Toutes les équipes",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "Tous les score cards",
+    filterScoreCardHint:
+      "Coach Analytics ne peut agréger que des appels évalués avec le même score card.",
     filterSalesRep: "Commercial",
     filterSource: "Source",
     source: {
@@ -717,6 +735,10 @@ const COPY = {
     filterDeal: "Deal",
     filterTeam: "Team",
     filterAllTeams: "Alle Teams",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "Alle Score Cards",
+    filterScoreCardHint:
+      "Coach Analytics kann nur Calls aggregieren, die mit derselben Score Card bewertet wurden.",
     filterSalesRep: "Vertriebsmitarbeiter",
     filterSource: "Quelle",
     source: {
@@ -845,6 +867,10 @@ const COPY = {
     filterDeal: "Negócio",
     filterTeam: "Equipa",
     filterAllTeams: "Todas as equipas",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "Todos os score cards",
+    filterScoreCardHint:
+      "O Coach Analytics só pode agregar chamadas avaliadas com o mesmo score card.",
     filterSalesRep: "Representante de vendas",
     filterSource: "Origem",
     source: {
@@ -973,6 +999,10 @@ const COPY = {
     filterDeal: "Negócio",
     filterTeam: "Time",
     filterAllTeams: "Todos os times",
+    filterScoreCard: "Score Card",
+    filterAllScoreCards: "Todos os score cards",
+    filterScoreCardHint:
+      "O Coach Analytics só pode agregar ligações avaliadas com o mesmo score card.",
     filterSalesRep: "Representante de vendas",
     filterSource: "Origem",
     source: {
@@ -1179,6 +1209,7 @@ export default function Coach() {
   const [prospectCompanyFilter, setProspectCompanyFilter] = React.useState("")
   const [dealIds, setDealIds] = React.useState<Set<string>>(new Set())
   const [teamId, setTeamId] = React.useState<string>(ALL_TEAMS)
+  const [scoreCardId, setScoreCardId] = React.useState<string>(ALL_SCORE_CARDS)
   const [salesRepIds, setSalesRepIds] = React.useState<Set<string>>(new Set())
   const [sources, setSources] = React.useState<Set<CoachVideoSource>>(new Set())
   const filtersActive = Boolean(
@@ -1189,6 +1220,7 @@ export default function Coach() {
       prospectCompanyFilter ||
       dealIds.size ||
       teamId !== ALL_TEAMS ||
+      scoreCardId !== ALL_SCORE_CARDS ||
       salesRepIds.size ||
       sources.size
   )
@@ -1223,6 +1255,8 @@ export default function Coach() {
         salesRepIds.size === 0 || (r.salesRepId ? salesRepIds.has(r.salesRepId) : false)
       const matchesSource =
         sources.size === 0 || (r.videoSource ? sources.has(r.videoSource) : false)
+      const matchesScoreCard =
+        scoreCardId === ALL_SCORE_CARDS || r.scoreCardId === scoreCardId
       return (
         matchesQuery &&
         matchesFrom &&
@@ -1233,7 +1267,8 @@ export default function Coach() {
         matchesDeal &&
         matchesTeam &&
         matchesRep &&
-        matchesSource
+        matchesSource &&
+        matchesScoreCard
       )
     })
     const sorted = [...filtered]
@@ -1259,6 +1294,7 @@ export default function Coach() {
     prospectCompanyFilter,
     dealIds,
     teamId,
+    scoreCardId,
     salesRepIds,
     sources,
   ])
@@ -1551,6 +1587,7 @@ export default function Coach() {
         dateTo={dateTo}
         dealIds={dealIds}
         teamId={teamId}
+        scoreCardId={scoreCardId}
         salesRepIds={salesRepIds}
         sources={sources}
         onApply={(next) => {
@@ -1561,6 +1598,7 @@ export default function Coach() {
           setDateTo(next.dateTo)
           setDealIds(next.dealIds)
           setTeamId(next.teamId)
+          setScoreCardId(next.scoreCardId)
           setSalesRepIds(next.salesRepIds)
           setSources(next.sources)
         }}
@@ -1577,6 +1615,7 @@ interface CoachFilterValues {
   dateTo: string
   dealIds: Set<string>
   teamId: string
+  scoreCardId: string
   salesRepIds: Set<string>
   sources: Set<CoachVideoSource>
 }
@@ -1591,6 +1630,7 @@ function CoachFilterDialog({
   dateTo,
   dealIds,
   teamId,
+  scoreCardId,
   salesRepIds,
   sources,
   onApply,
@@ -1609,6 +1649,7 @@ function CoachFilterDialog({
   const [to, setTo] = React.useState(dateTo)
   const [deals_, setDeals_] = React.useState(dealIds)
   const [teamSel, setTeamSel] = React.useState(teamId)
+  const [cardSel, setCardSel] = React.useState(scoreCardId)
   const [reps, setReps] = React.useState(salesRepIds)
   const [srcs, setSrcs] = React.useState(sources)
 
@@ -1624,6 +1665,7 @@ function CoachFilterDialog({
       setTo(dateTo)
       setDeals_(new Set(dealIds))
       setTeamSel(teamId)
+      setCardSel(scoreCardId)
       setReps(new Set(salesRepIds))
       setSrcs(new Set(sources))
     }
@@ -1649,6 +1691,7 @@ function CoachFilterDialog({
     (to ? 1 : 0) +
     deals_.size +
     (teamSel !== ALL_TEAMS ? 1 : 0) +
+    (cardSel !== ALL_SCORE_CARDS ? 1 : 0) +
     reps.size +
     srcs.size
 
@@ -1661,6 +1704,7 @@ function CoachFilterDialog({
       dateTo: to,
       dealIds: deals_,
       teamId: teamSel,
+      scoreCardId: cardSel,
       salesRepIds: reps,
       sources: srcs,
     })
@@ -1765,6 +1809,26 @@ function CoachFilterDialog({
           </div>
 
           <div className="space-y-1.5">
+            <Label htmlFor="coach-filter-scorecard">{c.filterScoreCard}</Label>
+            <Select value={cardSel} onValueChange={setCardSel}>
+              <SelectTrigger id="coach-filter-scorecard" className="w-full">
+                <SelectValue placeholder={c.filterAllScoreCards} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_SCORE_CARDS}>
+                  {c.filterAllScoreCards}
+                </SelectItem>
+                {coachScoreCards.map((sc) => (
+                  <SelectItem key={sc.id} value={sc.id}>
+                    {sc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">{c.filterScoreCardHint}</p>
+          </div>
+
+          <div className="space-y-1.5">
             <p className="text-muted-foreground px-1 text-xs font-medium">
               {c.filterSalesRep}
             </p>
@@ -1811,6 +1875,7 @@ function CoachFilterDialog({
               setTo("")
               setDeals_(new Set())
               setTeamSel(ALL_TEAMS)
+              setCardSel(ALL_SCORE_CARDS)
               setReps(new Set())
               setSrcs(new Set())
             }}
