@@ -1288,6 +1288,10 @@ export default function Campaigns() {
   return (
     <>
       <Page className="pb-0">
+        <CampaignTabBar currentId="all" />
+      </Page>
+
+      <div className="px-4 md:px-6">
         <PageHeading
           title={c.pageTitle}
           description={c.pageDescription}
@@ -1298,10 +1302,6 @@ export default function Campaigns() {
             </Button>
           }
         />
-      </Page>
-
-      <div className="px-4 md:px-6">
-        <CampaignTabBar currentId="all" />
       </div>
 
       <Page className="pt-0">

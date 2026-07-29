@@ -601,6 +601,10 @@ export default function Lists() {
   return (
     <>
       <Page className="pb-0">
+        <ListTabBar currentId="all" />
+      </Page>
+
+      <div className="px-4 md:px-6">
         <PageHeading
           title={c.title}
           description={c.description}
@@ -617,10 +621,6 @@ export default function Lists() {
             </div>
           }
         />
-      </Page>
-
-      <div className="px-4 md:px-6">
-        <ListTabBar currentId="all" />
       </div>
 
       <Page className="pt-0">
