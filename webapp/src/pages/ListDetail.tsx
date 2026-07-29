@@ -11,6 +11,7 @@ import {
   Plus,
   Search,
   Stars,
+  Sparkles,
   Columns3,
   ShieldCheck,
   TriangleAlert,
@@ -96,6 +97,12 @@ const COPY = {
     labelEnrich: "Enrichment",
     labelCrm: "CRM",
     labelCampaign: "Outreach",
+    smartSettings: "Smart Settings",
+    descSource: "Auto-grow the list from a saved search.",
+    descEnrich: "Fill in emails, phones, and profile data.",
+    actionEnrich: "Configure",
+    descCrm: "Sync enriched records to your CRM.",
+    descCampaign: "Auto-enroll new prospects in a sequence.",
     notSet: "Not set",
     notLinked: "Not linked",
     noAutomation: "No automation",
@@ -209,6 +216,12 @@ const COPY = {
     labelEnrich: "Enriquecimiento",
     labelCrm: "CRM",
     labelCampaign: "Contacto",
+    smartSettings: "Configuración inteligente",
+    descSource: "Amplía la lista automáticamente desde una búsqueda guardada.",
+    descEnrich: "Añade correos, teléfonos y datos de perfil.",
+    actionEnrich: "Configurar",
+    descCrm: "Sincroniza los registros enriquecidos con tu CRM.",
+    descCampaign: "Inscribe automáticamente nuevos prospectos en una secuencia.",
     notSet: "Sin definir",
     notLinked: "Sin vincular",
     noAutomation: "Sin automatización",
@@ -323,6 +336,12 @@ const COPY = {
     labelEnrich: "Arricchimento",
     labelCrm: "CRM",
     labelCampaign: "Contatto",
+    smartSettings: "Impostazioni smart",
+    descSource: "Fai crescere la lista automaticamente da una ricerca salvata.",
+    descEnrich: "Aggiungi email, telefoni e dati di profilo.",
+    actionEnrich: "Configura",
+    descCrm: "Sincronizza i record arricchiti con il tuo CRM.",
+    descCampaign: "Iscrivi automaticamente i nuovi prospect in una sequenza.",
     notSet: "Non impostata",
     notLinked: "Non collegato",
     noAutomation: "Nessuna automazione",
@@ -436,6 +455,12 @@ const COPY = {
     labelEnrich: "Enrichissement",
     labelCrm: "CRM",
     labelCampaign: "Prospection",
+    smartSettings: "Paramètres intelligents",
+    descSource: "Développez la liste automatiquement depuis une recherche sauvegardée.",
+    descEnrich: "Complétez e-mails, téléphones et données de profil.",
+    actionEnrich: "Configurer",
+    descCrm: "Synchronisez les enregistrements enrichis avec votre CRM.",
+    descCampaign: "Inscrivez automatiquement les nouveaux prospects dans une séquence.",
     notSet: "Non définie",
     notLinked: "Non lié",
     noAutomation: "Aucune automatisation",
@@ -549,6 +574,12 @@ const COPY = {
     labelEnrich: "Anreicherung",
     labelCrm: "CRM",
     labelCampaign: "Outreach",
+    smartSettings: "Smarte Einstellungen",
+    descSource: "Liste automatisch aus einer gespeicherten Suche befüllen.",
+    descEnrich: "E-Mails, Telefonnummern und Profildaten ergänzen.",
+    actionEnrich: "Konfigurieren",
+    descCrm: "Angereicherte Einträge mit dem CRM synchronisieren.",
+    descCampaign: "Neue Prospects automatisch in eine Sequenz einschreiben.",
     notSet: "Nicht gesetzt",
     notLinked: "Nicht verknüpft",
     noAutomation: "Keine Automatisierung",
@@ -662,6 +693,12 @@ const COPY = {
     labelEnrich: "Enriquecimento",
     labelCrm: "CRM",
     labelCampaign: "Contacto",
+    smartSettings: "Configurações inteligentes",
+    descSource: "Expanda a lista automaticamente a partir de uma pesquisa guardada.",
+    descEnrich: "Complete emails, telefones e dados de perfil.",
+    actionEnrich: "Configurar",
+    descCrm: "Sincronize registos enriquecidos com o seu CRM.",
+    descCampaign: "Inscreva automaticamente novos prospects numa sequência.",
     notSet: "Por definir",
     notLinked: "Não associado",
     noAutomation: "Sem automação",
@@ -775,6 +812,12 @@ const COPY = {
     labelEnrich: "Enriquecimento",
     labelCrm: "CRM",
     labelCampaign: "Contacto",
+    smartSettings: "Configurações inteligentes",
+    descSource: "Expanda a lista automaticamente a partir de uma pesquisa salva.",
+    descEnrich: "Preencha emails, telefones e dados de perfil.",
+    actionEnrich: "Configurar",
+    descCrm: "Sincronize registros enriquecidos com o seu CRM.",
+    descCampaign: "Inscreva automaticamente novos prospects em uma sequência.",
     notSet: "Por definir",
     notLinked: "Não associado",
     noAutomation: "Sem automação",
@@ -1725,9 +1768,11 @@ function ListSettingsBox({
 
   return (
     <Card className="mb-6 gap-0 overflow-hidden p-0">
-      {/* The tab strip above already names the list, so this header carries
-          status and record-level actions only. */}
       <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2">
+        <span className="flex items-center gap-1.5 text-sm font-medium">
+          <Sparkles className="text-primary size-3.5" />
+          {c.smartSettings}
+        </span>
         {list.dynamic && (
           <Badge className="bg-chart-1/15 text-chart-1 gap-1 border-transparent font-normal">
             <span className="relative flex size-1.5">
@@ -1766,6 +1811,8 @@ function ListSettingsBox({
           hint={sourceLabel ? sourceHint : undefined}
           isSet={Boolean(sourceLabel)}
           onClick={onAddSource}
+          desc={!sourceLabel ? c.descSource : undefined}
+          actionLabel={!sourceLabel ? c.addSource : undefined}
         />
         <SettingCard
           icon={<Stars className="size-3.5" />}
@@ -1778,6 +1825,8 @@ function ListSettingsBox({
           }
           isSet={enrichOn}
           onClick={onEnrich}
+          desc={!enrichOn ? c.descEnrich : undefined}
+          actionLabel={!enrichOn ? c.actionEnrich : undefined}
         />
         <SettingCard
           icon={
@@ -1801,6 +1850,8 @@ function ListSettingsBox({
           }
           isSet={Boolean(list.crmSynced)}
           onClick={onLinkToCrm}
+          desc={!list.crmSynced ? c.descCrm : undefined}
+          actionLabel={!list.crmSynced ? c.linkToCrm : undefined}
         />
         {/* Company lists have no outreach — campaigns send to people. */}
         {!isCompany && (
@@ -1811,6 +1862,8 @@ function ListSettingsBox({
             hint={campaignHint}
             isSet={Boolean(campaign)}
             onClick={onLinkToCampaign}
+            desc={!campaign ? c.descCampaign : undefined}
+            actionLabel={!campaign ? c.linkToCampaign : undefined}
           />
         )}
       </div>
@@ -1819,8 +1872,8 @@ function ListSettingsBox({
 }
 
 // One list setting, showing its current value inline rather than deferring
-// to a shared summary line. Unset settings read as dashed placeholders so
-// what's still unconfigured is obvious at a glance.
+// to a shared summary line. Unset settings show a blue-tinted dashed border
+// plus a short "why" description and action label to encourage first-time setup.
 function SettingCard({
   icon,
   label,
@@ -1828,6 +1881,8 @@ function SettingCard({
   hint,
   isSet,
   onClick,
+  desc,
+  actionLabel,
 }: {
   icon: React.ReactNode
   label: string
@@ -1835,6 +1890,8 @@ function SettingCard({
   hint?: string
   isSet: boolean
   onClick: () => void
+  desc?: string
+  actionLabel?: string
 }) {
   return (
     <button
@@ -1844,7 +1901,7 @@ function SettingCard({
         "flex min-w-0 flex-col gap-0.5 rounded-lg border p-3 text-left transition-colors",
         isSet
           ? "border-primary/40 bg-primary/[0.03] hover:bg-primary/[0.06]"
-          : "hover:bg-muted/60 border-dashed"
+          : "border-primary/20 border-dashed hover:bg-primary/[0.03]"
       )}
     >
       <span className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
@@ -1862,6 +1919,16 @@ function SettingCard({
       {hint && (
         <span className="text-muted-foreground truncate text-[11px]">
           {hint}
+        </span>
+      )}
+      {!isSet && desc && (
+        <span className="text-muted-foreground mt-1 text-[11px] leading-tight">
+          {desc}
+        </span>
+      )}
+      {!isSet && actionLabel && (
+        <span className="text-primary mt-1.5 text-[11px] font-medium">
+          {actionLabel} →
         </span>
       )}
     </button>
