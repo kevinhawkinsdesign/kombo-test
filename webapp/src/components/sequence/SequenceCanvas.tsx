@@ -5,6 +5,7 @@ import {
   Controls,
   Handle,
   Position,
+  PanOnScrollMode,
   type NodeProps,
   type NodeTypes,
 } from "@xyflow/react"
@@ -993,6 +994,12 @@ export function SequenceCanvas({
         // has no visual side effect here and nothing listens for it.
         elementsSelectable={interactive}
         panOnScroll
+        // A vertical scroll/trackpad gesture over the canvas used to pan it
+        // instead of scrolling the page underneath — surprising since the
+        // canvas already fits its content via fitView, so there's rarely
+        // anything new to reveal by panning vertically. Horizontal panning
+        // stays on for sequences wider than the viewport.
+        panOnScrollMode={PanOnScrollMode.Horizontal}
         proOptions={{ hideAttribution: true }}
         fitView
         fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
