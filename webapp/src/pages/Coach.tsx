@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Play,
+  BarChart3,
   TrendingUp,
   Clock,
   Smile,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -59,7 +61,10 @@ import {
 } from "@/lib/table-sort-filter"
 import { coachRecordings } from "@/lib/mock-data"
 import { useCoachRecordings, coachRecordingStore } from "@/lib/store"
+import { EmptyState } from "@/components/common/EmptyState"
+import { CoachAnalyticsPanel } from "@/components/coach/CoachAnalyticsPanel"
 import { getScorecard } from "@/lib/mock-coaching"
+import { CRM_PROVIDERS } from "@/lib/mock-depth"
 import { type CoachSkill } from "@/lib/mock-coach-team"
 import { deals } from "@/lib/mock-extra"
 import { team, teams, teamMembers } from "@/lib/team"
@@ -85,6 +90,11 @@ const COACH_VIDEO_SOURCES: CoachVideoSource[] = [
 // Sentinel value for the Team select's "no team picked" state — mirrors the
 // ALL-value pattern used by other single-select filters in the app.
 const ALL_TEAMS = "all"
+
+// Recordings sync in from the connected CRM, so with none connected there's
+// nothing to populate this page with. This app allows only one active CRM
+// connection at a time (see CONNECTED_CRM_PROVIDER).
+const crmConnected = CRM_PROVIDERS.some((p) => p.connected)
 
 function toggled<T>(set: Set<T>, value: T): Set<T> {
   const next = new Set(set)
@@ -153,7 +163,23 @@ const COPY = {
     viewTable: "Table",
     exportLabel: "Export",
     exported: "Calls exported to CSV",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `Aggregating ${n} analyzed ${n === 1 ? "call" : "calls"} — use Filters to change the set.`,
+    analyticsEmptyTitle: "No analyzed calls yet",
+    analyticsEmptyFiltered: "No analyzed calls match your filters",
+    analyticsEmptyDescription:
+      "Analyze calls from the Recording history tab to build team-wide analytics.",
+    recordingHistory: "Recording history",
     noResults: "No calls match your search.",
+    emptyTitle: "No recorded calls yet",
+    emptyDescription:
+      "Calls sync in from your connected CRM — once one is recorded it shows up here.",
+    connectCrmTitle: "Unlock insights to boost your sales",
+    connectCrmDescription:
+      "Connect a CRM to sync your recorded calls, then summarize and analyze them here.",
+    connectCrmAction: "Connect a CRM",
+    connectCrmHint: "You can only connect one CRM at a time.",
     sortRecent: "Most recent",
     sortScore: "Highest score",
     sortDuration: "Longest",
@@ -265,7 +291,23 @@ const COPY = {
     viewTable: "Tabla",
     exportLabel: "Exportar",
     exported: "Llamadas exportadas a CSV",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `Agregando ${n} ${n === 1 ? "llamada analizada" : "llamadas analizadas"} — usa Filtros para cambiar el conjunto.`,
+    analyticsEmptyTitle: "Todavía no hay llamadas analizadas",
+    analyticsEmptyFiltered: "Ninguna llamada analizada coincide con tus filtros",
+    analyticsEmptyDescription:
+      "Analiza llamadas desde la pestaña Historial de grabaciones para construir las analíticas del equipo.",
+    recordingHistory: "Historial de grabaciones",
     noResults: "Ninguna llamada coincide con tu búsqueda.",
+    emptyTitle: "Todavía no hay llamadas grabadas",
+    emptyDescription:
+      "Las llamadas se sincronizan desde tu CRM conectado — en cuanto se grabe una, aparecerá aquí.",
+    connectCrmTitle: "Impulsa tus ventas con insights",
+    connectCrmDescription:
+      "Conecta un CRM para sincronizar tus llamadas grabadas y luego resumirlas y analizarlas aquí.",
+    connectCrmAction: "Conectar un CRM",
+    connectCrmHint: "Solo puedes conectar un CRM a la vez.",
     sortRecent: "Más recientes",
     sortScore: "Mayor puntuación",
     sortDuration: "Más largas",
@@ -377,7 +419,23 @@ const COPY = {
     viewTable: "Tabella",
     exportLabel: "Esporta",
     exported: "Chiamate esportate in CSV",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `Aggregazione di ${n} ${n === 1 ? "chiamata analizzata" : "chiamate analizzate"} — usa i Filtri per cambiare il set.`,
+    analyticsEmptyTitle: "Ancora nessuna chiamata analizzata",
+    analyticsEmptyFiltered: "Nessuna chiamata analizzata corrisponde ai tuoi filtri",
+    analyticsEmptyDescription:
+      "Analizza le chiamate dalla scheda Cronologia delle registrazioni per costruire le analisi del team.",
+    recordingHistory: "Cronologia delle registrazioni",
     noResults: "Nessuna chiamata corrisponde alla tua ricerca.",
+    emptyTitle: "Ancora nessuna chiamata registrata",
+    emptyDescription:
+      "Le chiamate si sincronizzano dal CRM collegato — appena ne viene registrata una, comparirà qui.",
+    connectCrmTitle: "Sblocca gli insight per far crescere le vendite",
+    connectCrmDescription:
+      "Collega un CRM per sincronizzare le chiamate registrate, poi riassumile e analizzale qui.",
+    connectCrmAction: "Collega un CRM",
+    connectCrmHint: "Puoi collegare un solo CRM alla volta.",
     sortRecent: "Più recenti",
     sortScore: "Punteggio più alto",
     sortDuration: "Più lunghe",
@@ -489,7 +547,23 @@ const COPY = {
     viewTable: "Tableau",
     exportLabel: "Exporter",
     exported: "Appels exportés en CSV",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `Agrégation de ${n} ${n === 1 ? "appel analysé" : "appels analysés"} — utilisez les Filtres pour modifier l'ensemble.`,
+    analyticsEmptyTitle: "Aucun appel analysé pour le moment",
+    analyticsEmptyFiltered: "Aucun appel analysé ne correspond à vos filtres",
+    analyticsEmptyDescription:
+      "Analysez des appels depuis l'onglet Historique des enregistrements pour construire les analyses d'équipe.",
+    recordingHistory: "Historique des enregistrements",
     noResults: "Aucun appel ne correspond à votre recherche.",
+    emptyTitle: "Aucun appel enregistré pour le moment",
+    emptyDescription:
+      "Les appels se synchronisent depuis votre CRM connecté — dès qu'un appel est enregistré, il apparaît ici.",
+    connectCrmTitle: "Boostez vos ventes grâce aux insights",
+    connectCrmDescription:
+      "Connectez un CRM pour synchroniser vos appels enregistrés, puis résumez-les et analysez-les ici.",
+    connectCrmAction: "Connecter un CRM",
+    connectCrmHint: "Vous ne pouvez connecter qu'un seul CRM à la fois.",
     sortRecent: "Plus récents",
     sortScore: "Score le plus élevé",
     sortDuration: "Plus longs",
@@ -601,7 +675,23 @@ const COPY = {
     viewTable: "Tabelle",
     exportLabel: "Exportieren",
     exported: "Calls als CSV exportiert",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `${n} analysierte ${n === 1 ? "Call" : "Calls"} werden aggregiert — nutze Filter, um die Auswahl zu ändern.`,
+    analyticsEmptyTitle: "Noch keine analysierten Calls",
+    analyticsEmptyFiltered: "Keine analysierten Calls entsprechen deinen Filtern",
+    analyticsEmptyDescription:
+      "Analysiere Calls im Tab Aufnahmeverlauf, um team-weite Analytics aufzubauen.",
+    recordingHistory: "Aufnahmeverlauf",
     noResults: "Keine Calls entsprechen deiner Suche.",
+    emptyTitle: "Noch keine aufgezeichneten Calls",
+    emptyDescription:
+      "Calls werden aus deinem verbundenen CRM synchronisiert — sobald einer aufgezeichnet wird, erscheint er hier.",
+    connectCrmTitle: "Mehr Umsatz durch Insights",
+    connectCrmDescription:
+      "Verbinde ein CRM, um deine aufgezeichneten Calls zu synchronisieren und sie hier zusammenzufassen und zu analysieren.",
+    connectCrmAction: "CRM verbinden",
+    connectCrmHint: "Du kannst immer nur ein CRM gleichzeitig verbinden.",
     sortRecent: "Neueste zuerst",
     sortScore: "Höchster Score",
     sortDuration: "Längste zuerst",
@@ -713,7 +803,23 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Chamadas exportadas para CSV",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `A agregar ${n} ${n === 1 ? "chamada analisada" : "chamadas analisadas"} — use os Filtros para mudar o conjunto.`,
+    analyticsEmptyTitle: "Ainda sem chamadas analisadas",
+    analyticsEmptyFiltered: "Nenhuma chamada analisada corresponde aos seus filtros",
+    analyticsEmptyDescription:
+      "Analise chamadas no separador Histórico de gravações para construir as análises da equipa.",
+    recordingHistory: "Histórico de gravações",
     noResults: "Nenhuma chamada corresponde à sua pesquisa.",
+    emptyTitle: "Ainda sem chamadas gravadas",
+    emptyDescription:
+      "As chamadas sincronizam a partir do seu CRM ligado — assim que uma for gravada, aparece aqui.",
+    connectCrmTitle: "Impulsione as vendas com insights",
+    connectCrmDescription:
+      "Ligue um CRM para sincronizar as suas chamadas gravadas e depois resumi-las e analisá-las aqui.",
+    connectCrmAction: "Ligar um CRM",
+    connectCrmHint: "Só pode ligar um CRM de cada vez.",
     sortRecent: "Mais recentes",
     sortScore: "Maior pontuação",
     sortDuration: "Mais longas",
@@ -825,7 +931,23 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Ligações exportadas para CSV",
+    coachAnalytics: "Coach Analytics",
+    analyticsScope: (n: number) =>
+      `Agregando ${n} ${n === 1 ? "ligação analisada" : "ligações analisadas"} — use os Filtros para mudar o conjunto.`,
+    analyticsEmptyTitle: "Ainda sem ligações analisadas",
+    analyticsEmptyFiltered: "Nenhuma ligação analisada corresponde aos seus filtros",
+    analyticsEmptyDescription:
+      "Analise ligações na aba Histórico de gravações para construir as análises do time.",
+    recordingHistory: "Histórico de gravações",
     noResults: "Nenhuma ligação corresponde à sua busca.",
+    emptyTitle: "Ainda sem ligações gravadas",
+    emptyDescription:
+      "As ligações sincronizam a partir do seu CRM conectado — assim que uma for gravada, aparece aqui.",
+    connectCrmTitle: "Impulsione as vendas com insights",
+    connectCrmDescription:
+      "Conecte um CRM para sincronizar suas ligações gravadas e depois resumi-las e analisá-las aqui.",
+    connectCrmAction: "Conectar um CRM",
+    connectCrmHint: "Você só pode conectar um CRM por vez.",
     sortRecent: "Mais recentes",
     sortScore: "Maior pontuação",
     sortDuration: "Mais longas",
@@ -1045,6 +1167,7 @@ export default function Coach() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const liveRecordings = useCoachRecordings()
+  const [tab, setTab] = React.useState("recordings")
   const [view, setView] = React.useState<CollectionView>("table")
   const [query, setQuery] = React.useState("")
   const [sort, setSort] = React.useState("recent")
@@ -1139,6 +1262,14 @@ export default function Coach() {
     salesRepIds,
     sources,
   ])
+
+  // The Coach Analytics tab aggregates whatever the Filters drawer + search
+  // leave visible, narrowed to calls that have actually been analyzed —
+  // un-analyzed calls carry no scoreBreakdown to aggregate.
+  const analyzedVisible = React.useMemo(
+    () => visible.filter((r) => r.analyzed),
+    [visible]
+  )
 
   // Column-level sort/filter (from the table's header controls) layers on
   // top of the toolbar's search/sort/date-range filtering above.
@@ -1242,7 +1373,13 @@ export default function Coach() {
         </Card>
       </div>
 
-      <div>
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="recordings">{c.recordingHistory}</TabsTrigger>
+          <TabsTrigger value="analytics">{c.coachAnalytics}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="recordings">
           <CollectionToolbar
             query={query}
             onQueryChange={setQuery}
@@ -1274,7 +1411,32 @@ export default function Coach() {
             </Button>
           </CollectionToolbar>
 
-          {visible.length === 0 ? (
+          {liveRecordings.length === 0 ? (
+            // Genuinely-empty (no recordings at all) vs. filtered-empty below —
+            // the app's two-empty-state convention. When no CRM is connected
+            // there's nothing to sync recordings from, so this doubles as the
+            // connect prompt (the extension's "Unlock Insights" state).
+            crmConnected ? (
+              <EmptyState
+                icon={<GraduationCap className="size-8" />}
+                title={c.emptyTitle}
+                description={c.emptyDescription}
+              />
+            ) : (
+              <EmptyState
+                icon={<GraduationCap className="size-8" />}
+                title={c.connectCrmTitle}
+                description={c.connectCrmDescription}
+              >
+                <Button variant="volt" asChild>
+                  <Link to="/integrations">{c.connectCrmAction}</Link>
+                </Button>
+                <p className="text-muted-foreground mt-2 text-xs">
+                  {c.connectCrmHint}
+                </p>
+              </EmptyState>
+            )
+          ) : visible.length === 0 ? (
             <Card className="text-muted-foreground p-8 text-center text-sm">
               {c.noResults}
             </Card>
@@ -1333,10 +1495,46 @@ export default function Coach() {
               )}
             </>
           )}
-      </div>
+        </TabsContent>
 
+        <TabsContent value="analytics">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-muted-foreground text-sm">
+              {c.analyticsScope(analyzedVisible.length)}
+            </p>
+            <Button
+              variant="outline"
+              className={cn(
+                "shrink-0",
+                filtersActive && "border-primary bg-primary/10 text-primary"
+              )}
+              onClick={() => setFilterOpen(true)}
+            >
+              <SlidersHorizontal className="size-4" />
+              {c.filters}
+            </Button>
+          </div>
+
+          {analyzedVisible.length === 0 ? (
+            <EmptyState
+              icon={<BarChart3 className="size-8" />}
+              title={
+                filtersActive || query
+                  ? c.analyticsEmptyFiltered
+                  : c.analyticsEmptyTitle
+              }
+              description={c.analyticsEmptyDescription}
+            />
+          ) : (
+            <CoachAnalyticsPanel calls={analyzedVisible} />
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Selection lives on the recordings list — hide its action bar while
+          the analytics tab is showing. */}
       <CoachBulkActionsBar
-        count={sel.selectedIds.size}
+        count={tab === "recordings" ? sel.selectedIds.size : 0}
         toSummarizeCount={toSummarizeCount}
         toAnalyzeCount={toAnalyzeCount}
         onProcess={handleProcess}

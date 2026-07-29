@@ -1,27 +1,12 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  BarChart3,
-  Smile,
-  Meh,
-  Frown,
-  Sparkles,
-  Loader2,
-  ThumbsUp,
-  ThumbsDown,
-} from "lucide-react"
+import { BarChart3, Smile, Meh, Frown } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
 import { Page, PageHeading } from "@/components/layout/Page"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -30,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
 import { DataTable } from "@/components/common/DataTable"
 import {
   Select,
@@ -45,17 +29,9 @@ import { useCoachRecordings } from "@/lib/store"
 import { coachScoreCards } from "@/lib/mock-data"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { CallScoreRadarChart } from "@/components/charts/Charts"
+import { CoachAnalyticsPanel } from "@/components/coach/CoachAnalyticsPanel"
 import type { CoachRecording } from "@/lib/types"
 
-// A call "scores well" on a metric at or above this — the mocked equivalent
-// of the real extension's per-question aggregation threshold.
-const SCORE_THRESHOLD = 70
-// Loading affordance for the mocked "Generate Summary" action — matches the
-// ~600-900ms window CoachRecordingDetail's re-analyze flow already uses
-// (see runReanalysis there), just on the shorter end since this only
-// synthesizes text from data already in hand.
-const SUMMARY_DELAY_MS = 750
 
 const SENTIMENT = {
   positive: { icon: Smile, className: "text-chart-1" },
@@ -88,6 +64,7 @@ const COPY = {
     emptyFiltered: "No calls match your filters.",
     emptyTitle: "No analyzed calls yet",
     emptyDescription: "Analyze a call from Call Coach to see it here.",
+    analyzedCallsHeading: "Analyzed calls",
     viewCoachAnalytics: "View Coach Analytics",
     scoreCardLabel: "Score Card:",
     scoreCardPlaceholder: "Select a Score Card",
@@ -151,6 +128,7 @@ const COPY = {
     emptyFiltered: "Ninguna llamada coincide con tus filtros.",
     emptyTitle: "Todavía no hay llamadas analizadas",
     emptyDescription: "Analiza una llamada desde Coach de llamadas para verla aquí.",
+    analyzedCallsHeading: "Llamadas analizadas",
     viewCoachAnalytics: "Ver Coach Analytics",
     scoreCardLabel: "Score Card:",
     scoreCardPlaceholder: "Selecciona un Score Card",
@@ -214,6 +192,7 @@ const COPY = {
     emptyFiltered: "Nessuna chiamata corrisponde ai tuoi filtri.",
     emptyTitle: "Ancora nessuna chiamata analizzata",
     emptyDescription: "Analizza una chiamata da Coach chiamate per vederla qui.",
+    analyzedCallsHeading: "Chiamate analizzate",
     viewCoachAnalytics: "Vedi Coach Analytics",
     scoreCardLabel: "Score Card:",
     scoreCardPlaceholder: "Seleziona uno Score Card",
@@ -278,6 +257,7 @@ const COPY = {
     emptyTitle: "Aucun appel analysé pour le moment",
     emptyDescription:
       "Analysez un appel depuis Coach d'appels pour le voir apparaître ici.",
+    analyzedCallsHeading: "Appels analysés",
     viewCoachAnalytics: "Voir Coach Analytics",
     scoreCardLabel: "Score Card :",
     scoreCardPlaceholder: "Sélectionnez un Score Card",
@@ -341,6 +321,7 @@ const COPY = {
     emptyFiltered: "Keine Calls entsprechen deinen Filtern.",
     emptyTitle: "Noch keine analysierten Calls",
     emptyDescription: "Analysiere einen Call im Call-Coach, um ihn hier zu sehen.",
+    analyzedCallsHeading: "Analysierte Calls",
     viewCoachAnalytics: "Coach Analytics ansehen",
     scoreCardLabel: "Score Card:",
     scoreCardPlaceholder: "Score Card auswählen",
@@ -405,6 +386,7 @@ const COPY = {
     emptyTitle: "Ainda sem chamadas analisadas",
     emptyDescription:
       "Analise uma chamada a partir do Coach de chamadas para a ver aqui.",
+    analyzedCallsHeading: "Chamadas analisadas",
     viewCoachAnalytics: "Ver Coach Analytics",
     scoreCardLabel: "Score Card:",
     scoreCardPlaceholder: "Selecione um Score Card",
@@ -469,6 +451,7 @@ const COPY = {
     emptyTitle: "Ainda sem ligações analisadas",
     emptyDescription:
       "Analise uma ligação a partir do Coach de ligações para vê-la aqui.",
+    analyzedCallsHeading: "Ligações analisadas",
     viewCoachAnalytics: "Ver Coach Analytics",
     scoreCardLabel: "Score Card:",
     scoreCardPlaceholder: "Selecione um Score Card",
@@ -602,78 +585,6 @@ const CALL_COLUMNS: ColumnDef<CoachRecording>[] = [
   },
 ]
 
-interface MetricAggregate {
-  label: string
-  avgScore: number
-  wellCount: number
-  total: number
-}
-
-// Averages every distinct scoreBreakdown metric label across whichever
-// analyzed calls happen to carry that data — not every analyzed call has a
-// scoreBreakdown (only calls actually run through Analysis do), so this
-// silently skips calls that don't rather than treating a missing metric as 0.
-function aggregateScoreBreakdown(calls: CoachRecording[]): MetricAggregate[] {
-  const byLabel = new Map<string, { sum: number; wellCount: number; total: number }>()
-  for (const call of calls) {
-    for (const metric of call.scoreBreakdown ?? []) {
-      const entry = byLabel.get(metric.label) ?? { sum: 0, wellCount: 0, total: 0 }
-      entry.sum += metric.metricScore
-      entry.total += 1
-      if (metric.metricScore >= SCORE_THRESHOLD) entry.wellCount += 1
-      byLabel.set(metric.label, entry)
-    }
-  }
-  return Array.from(byLabel.entries()).map(([label, entry]) => ({
-    label,
-    avgScore: Math.round(entry.sum / entry.total),
-    wellCount: entry.wellCount,
-    total: entry.total,
-  }))
-}
-
-interface AiSummary {
-  overallSummary: string
-  whatWentWell: string
-  whatCanImprove: string
-}
-
-// Mocked "AI" synthesis: built entirely from data already in mock-data.ts
-// (no network call) — the highest and lowest-scoring analyzed calls' own
-// highlights/nextSteps/review fields stand in for a real per-call analysis.
-function buildAiSummary(calls: CoachRecording[], avgScore: number, c: Copy): AiSummary {
-  const sorted = [...calls].sort((a, b) => b.score - a.score)
-  const highest = sorted[0]
-  const lowest = sorted[sorted.length - 1]
-
-  const wellText =
-    highest.review?.positiveFeedback ??
-    (highest.highlights.length
-      ? highest.highlights.join("; ")
-      : c.aiImproveGeneric)
-  const improveText =
-    lowest.review?.thingsToImprove ??
-    (lowest.nextSteps.length
-      ? c.aiImproveFallback(lowest.nextSteps.join("; "))
-      : c.aiImproveGeneric)
-
-  return {
-    overallSummary:
-      calls.length > 1
-        ? c.aiOverallMulti(
-            calls.length,
-            avgScore,
-            highest.title,
-            highest.score,
-            lowest.title,
-            lowest.score
-          )
-        : c.aiOverallSingle(highest.title, highest.score),
-    whatWentWell: c.aiFromCall(highest.title, wellText),
-    whatCanImprove: c.aiFromCall(lowest.title, improveText),
-  }
-}
-
 export default function CallAnalytics() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -759,6 +670,8 @@ export default function CallAnalytics() {
         className="mb-6"
       />
 
+      <h2 className="mb-3 text-lg font-semibold">{c.analyzedCallsHeading}</h2>
+
       {analyzedCalls.length === 0 ? (
         <EmptyState
           icon={<BarChart3 className="size-8" />}
@@ -803,36 +716,6 @@ function CoachAnalyticsDialog({
   calls: CoachRecording[]
   c: Copy
 }) {
-  const [summaryStatus, setSummaryStatus] = React.useState<
-    "idle" | "loading" | "done"
-  >("idle")
-  const [summary, setSummary] = React.useState<AiSummary | null>(null)
-
-  // Reset on open, never on close — house pattern (render-time check).
-  const [wasOpen, setWasOpen] = React.useState(open)
-  if (open !== wasOpen) {
-    setWasOpen(open)
-    if (open) {
-      setSummaryStatus("idle")
-      setSummary(null)
-    }
-  }
-
-  const avgScore =
-    calls.length > 0
-      ? Math.round(calls.reduce((sum, r) => sum + r.score, 0) / calls.length)
-      : 0
-  const metrics = aggregateScoreBreakdown(calls)
-
-  function handleGenerate() {
-    if (calls.length === 0 || summaryStatus === "loading") return
-    setSummaryStatus("loading")
-    window.setTimeout(() => {
-      setSummary(buildAiSummary(calls, avgScore, c))
-      setSummaryStatus("done")
-    }, SUMMARY_DELAY_MS)
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
@@ -846,159 +729,10 @@ function CoachAnalyticsDialog({
           <DialogDescription>{c.dialogDescription(calls.length)}</DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[65vh] space-y-5 overflow-y-auto pr-1">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col items-center gap-1.5 rounded-lg border py-3 text-center">
-              <span
-                className={cn(
-                  "rounded-full px-3 py-1 text-lg font-semibold tabular-nums",
-                  scorePillClass(avgScore)
-                )}
-              >
-                {avgScore}
-              </span>
-              <span className="text-muted-foreground text-xs">
-                {c.avgScoreLabel}
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 rounded-lg border py-3 text-center">
-              <span className="text-lg font-semibold tabular-nums">
-                {calls.length}
-              </span>
-              <span className="text-muted-foreground text-xs">
-                {c.callsAnalyzedLabel}
-              </span>
-            </div>
-          </div>
-
-          {metrics.length > 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="h-56">
-                  <CallScoreRadarChart
-                    labels={metrics.map((m) => m.label)}
-                    callSeries={metrics.map((m) => m.avgScore)}
-                    callLabel={c.avgScoreLabel}
-                    repAvgLabel=""
-                    teamAvgLabel=""
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.scoreBreakdownTitle}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {metrics.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  {c.scoreBreakdownEmpty}
-                </p>
-              ) : (
-                metrics.map((m) => (
-                  <div key={m.label} className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="font-medium">{m.label}</span>
-                      <span
-                        className={cn(
-                          "rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-                          scorePillClass(m.avgScore)
-                        )}
-                      >
-                        {m.avgScore}
-                      </span>
-                    </div>
-                    <Progress value={m.avgScore} />
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {metrics.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{c.perMetricTitle}</CardTitle>
-                <p className="text-muted-foreground text-xs">
-                  {c.perMetricHint(SCORE_THRESHOLD)}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {metrics.map((m) => {
-                  const wellPct = Math.round((m.wellCount / m.total) * 100)
-                  return (
-                    <div key={m.label} className="space-y-1.5">
-                      <p className="text-sm">
-                        {c.scoredWell(m.wellCount, m.total, m.label)}
-                      </p>
-                      <div className="bg-muted relative h-2 w-full overflow-hidden rounded-full">
-                        <div
-                          className="bg-chart-1 absolute inset-y-0 left-0 rounded-full"
-                          style={{ width: `${wellPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.aiSectionTitle}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {summaryStatus === "idle" && (
-                <Button
-                  variant="volt"
-                  disabled={calls.length === 0}
-                  onClick={handleGenerate}
-                >
-                  <Sparkles className="size-4" />
-                  {c.generateSummary}
-                </Button>
-              )}
-              {summaryStatus === "loading" && (
-                <p className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Loader2 className="size-4 animate-spin" />
-                  {c.generatingSummary}
-                </p>
-              )}
-              {summaryStatus === "done" && summary && (
-                <div className="space-y-4">
-                  <div>
-                    <p className="mb-1 text-sm font-medium">
-                      {c.aiSummaryOverall}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      {summary.overallSummary}
-                    </p>
-                  </div>
-                  <div className="border-chart-1/30 bg-chart-1/5 rounded-lg border p-3">
-                    <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                      <ThumbsUp className="text-chart-1 size-4" />
-                      {c.aiSummaryWell}
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      {summary.whatWentWell}
-                    </p>
-                  </div>
-                  <div className="border-chart-4/30 bg-chart-4/5 rounded-lg border p-3">
-                    <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                      <ThumbsDown className="text-chart-4 size-4" />
-                      {c.aiSummaryImprove}
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      {summary.whatCanImprove}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Radix unmounts closed dialog content, so the panel's own
+            generate-summary state resets each time this reopens. */}
+        <div className="max-h-[65vh] overflow-y-auto pr-1">
+          <CoachAnalyticsPanel calls={calls} />
         </div>
 
         <DialogFooter>
