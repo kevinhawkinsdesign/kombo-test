@@ -1767,7 +1767,7 @@ function ListSettingsBox({
     : undefined
 
   return (
-    <Card className="mb-6 gap-0 overflow-hidden p-0">
+    <Card className="border-primary/20 from-primary/[0.04] to-card mb-6 gap-0 overflow-hidden bg-gradient-to-br p-0">
       <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2">
         <span className="flex items-center gap-1.5 text-sm font-medium">
           <Sparkles className="text-primary size-3.5" />
