@@ -17,7 +17,6 @@ import {
   ENRICH_COST,
   MAX_ENRICH_BATCH,
   needsEnrichScope,
-  needsAnyEnrichScope,
   type EnrichScope,
 } from "@/lib/enrichment"
 import { prospectStore, listStore } from "@/lib/store"
@@ -32,14 +31,14 @@ const COPY = {
     modeWarn: (n: number) => `Charges up to ${n} credits per prospect as new ones arrive.`,
     modeContinuous: "Continuously",
     description:
-      "Reveal verified emails and direct dials, plus 30+ data points per prospect.",
+      "Choose which data to reveal — emails, phones, and profile data are enriched independently.",
     chooseScope: "What do you want to reveal? Pick any combination.",
     scopeEmail: "Verified email",
     scopePhone: "Phone number",
     scopeProfile: "Profile enrichment",
     scopeEmailDesc: "Verified work email",
     scopePhoneDesc: "Direct dial & mobile",
-    scopeProfileDesc: "Includes email + phone, plus scoring & 30+ data points",
+    scopeProfileDesc: "LinkedIn, scoring, seniority, function & 30+ data points",
     included: "Included",
     toEnrich: "Prospects to enrich",
     total: "Total",
@@ -65,14 +64,14 @@ const COPY = {
     modeWarn: (n: number) => `Cobra hasta ${n} créditos por prospecto a medida que llegan nuevos.`,
     modeContinuous: "De forma continua",
     description:
-      "Revela correos verificados y teléfonos directos, además de más de 30 datos por prospecto.",
+      "Elige qué datos revelar — correos, teléfonos y perfil se enriquecen de forma independiente.",
     chooseScope: "¿Qué quieres revelar? Elige cualquier combinación.",
     scopeEmail: "Correo verificado",
     scopePhone: "Teléfono",
     scopeProfile: "Perfil enriquecido",
     scopeEmailDesc: "Correo de trabajo verificado",
     scopePhoneDesc: "Teléfono directo y móvil",
-    scopeProfileDesc: "Incluye correo y teléfono, además de puntuación y más de 30 datos",
+    scopeProfileDesc: "LinkedIn, puntuación, nivel de antigüedad, función y más de 30 datos",
     included: "Incluido",
     toEnrich: "Prospectos por enriquecer",
     total: "Total",
@@ -98,14 +97,14 @@ const COPY = {
     modeWarn: (n: number) => `Addebita fino a ${n} crediti per prospect man mano che ne arrivano di nuovi.`,
     modeContinuous: "In continuo",
     description:
-      "Rivela email verificate e numeri diretti, oltre a più di 30 dati per prospect.",
+      "Scegli quali dati rivelare — email, telefono e profilo vengono arricchiti in modo indipendente.",
     chooseScope: "Cosa vuoi rivelare? Scegli qualsiasi combinazione.",
     scopeEmail: "Email verificata",
     scopePhone: "Numero di telefono",
     scopeProfile: "Arricchimento del profilo",
     scopeEmailDesc: "Email di lavoro verificata",
     scopePhoneDesc: "Numero diretto e cellulare",
-    scopeProfileDesc: "Include email e telefono, oltre a punteggio e più di 30 dati",
+    scopeProfileDesc: "LinkedIn, punteggio, seniority, funzione e più di 30 dati",
     included: "Incluso",
     toEnrich: "Prospect da arricchire",
     total: "Totale",
@@ -131,7 +130,7 @@ const COPY = {
     modeWarn: (n: number) => `Facture jusqu'à ${n} crédits par prospect à mesure que de nouveaux arrivent.`,
     modeContinuous: "En continu",
     description:
-      "Révélez des e-mails vérifiés et des lignes directes, ainsi que plus de 30 points de données par prospect.",
+      "Choisissez les données à révéler — e-mail, téléphone et profil sont enrichis indépendamment.",
     chooseScope: "Que voulez-vous révéler ? Choisissez n'importe quelle combinaison.",
     scopeEmail: "E-mail vérifié",
     scopePhone: "Numéro de téléphone",
@@ -139,7 +138,7 @@ const COPY = {
     scopeEmailDesc: "E-mail professionnel vérifié",
     scopePhoneDesc: "Ligne directe et mobile",
     scopeProfileDesc:
-      "Inclut l'e-mail et le téléphone, plus le scoring et plus de 30 points de données",
+      "LinkedIn, scoring, séniorité, fonction et plus de 30 points de données",
     included: "Inclus",
     toEnrich: "Prospects à enrichir",
     total: "Total",
@@ -165,14 +164,14 @@ const COPY = {
     modeWarn: (n: number) => `Berechnet bis zu ${n} Credits pro Prospect, sobald neue hinzukommen.`,
     modeContinuous: "Fortlaufend",
     description:
-      "Zeige verifizierte E-Mails und Durchwahlen sowie über 30 Datenpunkte pro Prospect an.",
+      "Wähle, welche Daten aufgedeckt werden — E-Mail, Telefon und Profil werden unabhängig angereichert.",
     chooseScope: "Was möchtest du aufdecken? Wähle eine beliebige Kombination.",
     scopeEmail: "Verifizierte E-Mail",
     scopePhone: "Telefonnummer",
     scopeProfile: "Profilanreicherung",
     scopeEmailDesc: "Verifizierte geschäftliche E-Mail",
     scopePhoneDesc: "Durchwahl & Mobilnummer",
-    scopeProfileDesc: "Enthält E-Mail und Telefon, plus Scoring und über 30 Datenpunkte",
+    scopeProfileDesc: "LinkedIn, Scoring, Seniority, Funktion & über 30 Datenpunkte",
     included: "Inbegriffen",
     toEnrich: "Zu bereichernde Prospects",
     total: "Gesamt",
@@ -199,7 +198,7 @@ const COPY = {
     modeWarn: (n: number) => `Cobra até ${n} créditos por prospect à medida que chegam novos.`,
     modeContinuous: "Continuamente",
     description:
-      "Revele emails verificados e contactos diretos, além de mais de 30 pontos de dados por prospect.",
+      "Escolha os dados a revelar — email, telefone e perfil são enriquecidos de forma independente.",
     chooseScope: "O que quer revelar? Escolha qualquer combinação.",
     scopeEmail: "Email verificado",
     scopePhone: "Número de telefone",
@@ -207,7 +206,7 @@ const COPY = {
     scopeEmailDesc: "Email profissional verificado",
     scopePhoneDesc: "Contacto direto e telemóvel",
     scopeProfileDesc:
-      "Inclui email e telefone, além de pontuação e mais de 30 pontos de dados",
+      "LinkedIn, pontuação, senioridade, função e mais de 30 pontos de dados",
     included: "Incluído",
     toEnrich: "Prospects a enriquecer",
     total: "Total",
@@ -233,7 +232,7 @@ const COPY = {
     modeWarn: (n: number) => `Cobra até ${n} créditos por prospect à medida que chegam novos.`,
     modeContinuous: "Continuamente",
     description:
-      "Revele emails verificados e contatos diretos, além de mais de 30 pontos de dados por prospect.",
+      "Escolha os dados a revelar — email, telefone e perfil são enriquecidos de forma independente.",
     chooseScope: "O que você quer revelar? Escolha qualquer combinação.",
     scopeEmail: "Email verificado",
     scopePhone: "Número de telefone",
@@ -241,7 +240,7 @@ const COPY = {
     scopeEmailDesc: "Email profissional verificado",
     scopePhoneDesc: "Contato direto e celular",
     scopeProfileDesc:
-      "Inclui email e telefone, além de pontuação e mais de 30 pontos de dados",
+      "LinkedIn, pontuação, senioridade, função e mais de 30 pontos de dados",
     included: "Incluído",
     toEnrich: "Prospects a enriquecer",
     total: "Total",
@@ -284,10 +283,8 @@ export function EnrichListDialog({
   const { locale } = useLocale()
   const c = COPY[locale]
   const { balance, spend } = useCredits()
-  // Email and phone are independent, a-la-carte reveals. Profile enrichment is
-  // a superset that already includes both (plus the ~30 data points) — start
-  // with everything selected, deselect freely, but see profileOn below for
-  // how profile locks in (and absorbs the charge for) the other two.
+  // All three scopes are independent and can be combined freely. Start with
+  // everything selected so users understand all three are available.
   const [selected, setSelected] = React.useState<Set<EnrichScope>>(
     () => new Set(ALL_SCOPES)
   )
@@ -307,17 +304,9 @@ export function EnrichListDialog({
     { value: "profile", label: c.scopeProfile, desc: c.scopeProfileDesc, icon: Database },
   ]
 
-  // Profile enrichment already includes verified email + direct dial, so
-  // while it's selected the other two tiles are shown as included (checked,
-  // locked, "Included" instead of their own price) rather than stacking a
-  // second charge on top of profile's.
-  const profileOn = selected.has("profile")
-  const isScopeActive = (scope: EnrichScope) =>
-    scope === "profile" ? profileOn : profileOn || selected.has(scope)
-  const isScopeLocked = (scope: EnrichScope) => scope !== "profile" && profileOn
+  const isScopeActive = (scope: EnrichScope) => selected.has(scope)
 
   function toggleScope(scope: EnrichScope) {
-    if (isScopeLocked(scope)) return
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(scope)) next.delete(scope)
@@ -326,42 +315,23 @@ export function EnrichListDialog({
     })
   }
 
-  // À la carte scopes only matter when profile isn't selected — once it is,
-  // it alone drives the batch/cost math below (its price already covers
-  // email + phone, so they must never contribute their own line).
-  const alaCarteScopes = profileOn
-    ? []
-    : ALL_SCOPES.filter((s) => s !== "profile" && selected.has(s))
-  const anySelected = profileOn || alaCarteScopes.length > 0
+  // All three scopes are independent — each one charges separately for the
+  // contacts that still need it.
+  const alaCarteScopes = ALL_SCOPES.filter((s) => selected.has(s))
+  const anySelected = alaCarteScopes.length > 0
 
-  // Contacts needing at least one thing the current selection would reveal,
-  // capped to one batch. Profile's "need" is the full-bundle check (any of
-  // email/phone/profile still missing) since buying it fills in all three.
-  const affected = profileOn
-    ? prospects.filter(needsAnyEnrichScope)
-    : prospects.filter((p) => alaCarteScopes.some((s) => needsEnrichScope(p, s)))
+  const affected =
+    alaCarteScopes.length === 0
+      ? []
+      : prospects.filter((p) => alaCarteScopes.some((s) => needsEnrichScope(p, s)))
   const batch = affected.slice(0, MAX_ENRICH_BATCH)
   const queued = affected.length - batch.length
-  // Per-scope breakdown so the credit math is transparent. Profile collapses
-  // to a single line (its flat price already covers email + phone) instead of
-  // three lines that could double-charge or silently drop one another.
-  const perScope = profileOn
-    ? batch.length > 0
-      ? [
-          {
-            scope: "profile" as EnrichScope,
-            count: batch.length,
-            unit: ENRICH_COST.profile,
-            cost: batch.length * ENRICH_COST.profile,
-          },
-        ]
-      : []
-    : alaCarteScopes
-        .map((s) => {
-          const count = batch.filter((p) => needsEnrichScope(p, s)).length
-          return { scope: s, count, unit: ENRICH_COST[s], cost: count * ENRICH_COST[s] }
-        })
-        .filter((x) => x.count > 0)
+  const perScope = alaCarteScopes
+    .map((s) => {
+      const count = batch.filter((p) => needsEnrichScope(p, s)).length
+      return { scope: s, count, unit: ENRICH_COST[s], cost: count * ENRICH_COST[s] }
+    })
+    .filter((x) => x.count > 0)
   const cost = perScope.reduce((sum, x) => sum + x.cost, 0)
   const after = balance - cost
   const affordable = after >= 0
@@ -370,23 +340,12 @@ export function EnrichListDialog({
 
   function handleEnrich() {
     if (batch.length === 0) return
-    const label = profileOn
-      ? scopeLabel("profile")
-      : alaCarteScopes.map(scopeLabel).join(" + ")
+    const label = alaCarteScopes.map(scopeLabel).join(" + ")
     const ok = spend(cost, c.usageLabel(batch.length, label))
     if (!ok) return
-    if (profileOn) {
-      // One call reveals email + phone + the ~30 data points together.
-      prospectStore.enrich(
-        batch.map((p) => p.id),
-        "profile"
-      )
-    } else {
-      // Apply each selected reveal to the contacts that still need it.
-      for (const s of alaCarteScopes) {
-        const ids = batch.filter((p) => needsEnrichScope(p, s)).map((p) => p.id)
-        if (ids.length > 0) prospectStore.enrich(ids, s)
-      }
+    for (const s of alaCarteScopes) {
+      const ids = batch.filter((p) => needsEnrichScope(p, s)).map((p) => p.id)
+      if (ids.length > 0) prospectStore.enrich(ids, s)
     }
     toast.success(c.done(batch.length) + (queued > 0 ? c.queued(queued) : ""))
     onOpenChange(false)
@@ -457,20 +416,17 @@ export function EnrichListDialog({
               {scopeOptions.map((o) => {
                 const Icon = o.icon
                 const isActive = isScopeActive(o.value)
-                const locked = isScopeLocked(o.value)
                 return (
                   <button
                     key={o.value}
                     type="button"
                     onClick={() => toggleScope(o.value)}
                     aria-pressed={isActive}
-                    disabled={locked}
                     className={cn(
                       "relative flex flex-col gap-1 rounded-lg border p-2.5 text-left transition-colors",
                       isActive
                         ? "border-primary ring-primary/30 bg-primary/[0.04] ring-1"
-                        : "hover:bg-muted/60",
-                      locked && "cursor-default"
+                        : "hover:bg-muted/60"
                     )}
                   >
                     {isActive && (
@@ -488,13 +444,8 @@ export function EnrichListDialog({
                     <span className="text-muted-foreground text-[11px] leading-tight">
                       {o.desc}
                     </span>
-                    <span
-                      className={cn(
-                        "mt-0.5 text-[11px] font-semibold tabular-nums",
-                        locked ? "text-muted-foreground" : "text-primary"
-                      )}
-                    >
-                      {locked ? c.included : `${ENRICH_COST[o.value]} ${c.credits}`}
+                    <span className="text-primary mt-0.5 text-[11px] font-semibold tabular-nums">
+                      {ENRICH_COST[o.value]} {c.credits}
                     </span>
                   </button>
                 )

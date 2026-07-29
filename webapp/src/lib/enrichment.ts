@@ -1,13 +1,11 @@
 import type { Account, Prospect } from "./types"
 
 
-// What to reveal when enriching. "email" reveals only the verified email and
-// "phone" only the direct dial — either can be bought a la carte. "profile"
-// is a superset, not a third parallel option: it reveals the ~30
-// firmographic/scoring data points AND already includes a verified email +
-// direct dial at no extra charge. Picking "profile" in the enrich dialog
-// therefore subsumes (and locks) the other two rather than stacking their
-// charges on top of its own — see EnrichListDialog.tsx.
+// Three independent enrichment scopes, each purchased separately:
+// "email" reveals the verified work email, "phone" the direct dial & mobile,
+// and "profile" reveals scoring, LinkedIn, seniority, job function, and 30+
+// firmographic data points — it does NOT include email or phone.
+// Any combination can be bought together.
 export type EnrichScope = "email" | "phone" | "profile"
 
 // Credits charged per contact, per scope.
