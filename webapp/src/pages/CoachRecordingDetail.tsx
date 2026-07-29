@@ -85,14 +85,23 @@ import { CALL_TYPES, CALL_TYPE_META } from "@/lib/call-types"
 import { plainToHtml, stripHtml } from "@/lib/rich-text"
 import { formatDate } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { CallScoreRadarChart } from "@/components/charts/Charts"
 import type {
   CoachRecording,
   CallType,
   CoachSpeaker,
   CoachUtterance,
   CoachScoreMetric,
+  CoachQuestion,
   CoachParticipant,
 } from "@/lib/types"
+
+function toggled<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set)
+  if (next.has(value)) next.delete(value)
+  else next.add(value)
+  return next
+}
 
 const SENTIMENT = {
   positive: { icon: Smile, variant: "success" as const },
@@ -125,6 +134,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `This analysis was generated with the “${t}” type — re-analyze to refresh it.`,
     callScoreBreakdown: "Call score breakdown",
+    callScoreGraph: "Call score",
+    whyThisResult: "Why this result?",
+    whereInTranscript: "Where in the transcript?",
+    howToImproveLabel: "How can I improve for next time?",
     na: "NA",
     callReview: "Call review",
     yourAverage: "Your average",
@@ -269,6 +282,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Este análisis se generó con el tipo «${t}» — reanaliza para actualizarlo.`,
     callScoreBreakdown: "Desglose de la puntuación",
+    callScoreGraph: "Puntuación de la llamada",
+    whyThisResult: "¿Por qué este resultado?",
+    whereInTranscript: "¿Dónde en la transcripción?",
+    howToImproveLabel: "¿Cómo puedo mejorar la próxima vez?",
     na: "NA",
     callReview: "Revisión de la llamada",
     yourAverage: "Tu media",
@@ -413,6 +430,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Questa analisi è stata generata con il tipo «${t}» — rianalizza per aggiornarla.`,
     callScoreBreakdown: "Dettaglio del punteggio",
+    callScoreGraph: "Punteggio della chiamata",
+    whyThisResult: "Perché questo risultato?",
+    whereInTranscript: "Dove nella trascrizione?",
+    howToImproveLabel: "Come posso migliorare la prossima volta?",
     na: "NA",
     callReview: "Revisione della chiamata",
     yourAverage: "La tua media",
@@ -557,6 +578,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Cette analyse a été générée avec le type « ${t} » — relancez l'analyse pour l'actualiser.`,
     callScoreBreakdown: "Détail du score",
+    callScoreGraph: "Score de l'appel",
+    whyThisResult: "Pourquoi ce résultat ?",
+    whereInTranscript: "Où dans la transcription ?",
+    howToImproveLabel: "Comment m'améliorer la prochaine fois ?",
     na: "NA",
     callReview: "Bilan de l'appel",
     yourAverage: "Votre moyenne",
@@ -701,6 +726,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Diese Analyse wurde mit dem Typ „${t}“ erstellt — analysiere neu, um sie zu aktualisieren.`,
     callScoreBreakdown: "Score-Aufschlüsselung",
+    callScoreGraph: "Anruf-Score",
+    whyThisResult: "Warum dieses Ergebnis?",
+    whereInTranscript: "Wo im Transkript?",
+    howToImproveLabel: "Wie kann ich mich beim nächsten Mal verbessern?",
     na: "NA",
     callReview: "Call-Review",
     yourAverage: "Dein Durchschnitt",
@@ -845,6 +874,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo «${t}» — reanalise para a atualizar.`,
     callScoreBreakdown: "Detalhe da pontuação",
+    callScoreGraph: "Pontuação da chamada",
+    whyThisResult: "Porquê este resultado?",
+    whereInTranscript: "Onde na transcrição?",
+    howToImproveLabel: "Como posso melhorar da próxima vez?",
     na: "NA",
     callReview: "Revisão da chamada",
     yourAverage: "A sua média",
@@ -989,6 +1022,10 @@ const COPY = {
     staleAnalysis: (t: string) =>
       `Esta análise foi gerada com o tipo “${t}” — reanalise para atualizá-la.`,
     callScoreBreakdown: "Detalhamento da pontuação",
+    callScoreGraph: "Pontuação da chamada",
+    whyThisResult: "Por que esse resultado?",
+    whereInTranscript: "Onde na transcrição?",
+    howToImproveLabel: "Como posso melhorar da próxima vez?",
     na: "NA",
     callReview: "Revisão da ligação",
     yourAverage: "Sua média",
@@ -2051,6 +2088,33 @@ export default function CoachRecordingDetail() {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle className="text-base">{c.callScoreGraph}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <CallScoreRadarChart
+                        labels={rec.scoreBreakdown.map((m) => m.label)}
+                        callSeries={rec.scoreBreakdown.map((m) => m.metricScore)}
+                        repAvgSeries={
+                          rec.scoreBreakdown.every((m) => m.repAvgScore !== undefined)
+                            ? rec.scoreBreakdown.map((m) => m.repAvgScore ?? 0)
+                            : undefined
+                        }
+                        teamAvgSeries={
+                          rec.scoreBreakdown.every((m) => m.teamAvgScore !== undefined)
+                            ? rec.scoreBreakdown.map((m) => m.teamAvgScore ?? 0)
+                            : undefined
+                        }
+                        callLabel={c.callScore}
+                        repAvgLabel={c.yourAverage}
+                        teamAvgLabel={c.teamAverage}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardTitle className="text-base">
                       {c.callScoreBreakdown}
                     </CardTitle>
@@ -2410,8 +2474,106 @@ function ScoreStat({ label, score }: { label: string; score: number }) {
   )
 }
 
-// One row of the Call Score Breakdown — a scored metric category with an
-// optional summary and, when present, expandable sub-metrics.
+// A value/NA badge shared by sub-metric rows and rubric-question rows — an
+// NA result is always the same neutral gray chip, never the (misleading)
+// red/error styling a low score would otherwise get.
+function ScoreValueBadge({
+  isNa,
+  na,
+  children,
+  className,
+}: {
+  isNa?: boolean
+  na: string
+  children: React.ReactNode
+  className?: string
+}) {
+  if (isNa) {
+    return (
+      <Badge
+        variant="outline"
+        className="text-muted-foreground border-muted-foreground/30"
+      >
+        {na}
+      </Badge>
+    )
+  }
+  return (
+    <span
+      className={cn(
+        "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
+        className
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
+const BREAKDOWN_TONE: Record<CoachQuestion["breakdownType"], string> = {
+  good: "bg-chart-1/15 text-chart-1",
+  medium: "bg-chart-4/15 text-chart-4",
+  bad: "bg-destructive/15 text-destructive",
+}
+
+// The leaf of the Call Score tree — a single rubric question, expandable to
+// its Why/Quotes/How-to-improve explanation.
+function QuestionRow({ question, c }: { question: CoachQuestion; c: Copy }) {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <div className="rounded-md border pl-3 pr-2 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 text-left"
+        aria-expanded={open}
+      >
+        <span className="text-xs">{question.text}</span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          <ScoreValueBadge
+            isNa={question.isNa}
+            na={c.na}
+            className={BREAKDOWN_TONE[question.breakdownType]}
+          >
+            {question.value}
+          </ScoreValueBadge>
+          <ChevronDown
+            className={cn("size-3.5 transition-transform", open && "rotate-180")}
+          />
+        </span>
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2 border-t pt-2 text-xs">
+          <div>
+            <p className="text-muted-foreground font-medium">{c.whyThisResult}</p>
+            <p className="mt-0.5">{question.why}</p>
+          </div>
+          {question.quotes.length > 0 && (
+            <div>
+              <p className="text-muted-foreground font-medium">
+                {c.whereInTranscript}
+              </p>
+              {question.quotes.map((q) => (
+                <p key={q} className="mt-0.5 italic">
+                  &ldquo;{q}&rdquo;
+                </p>
+              ))}
+            </div>
+          )}
+          <div>
+            <p className="text-muted-foreground font-medium">
+              {c.howToImproveLabel}
+            </p>
+            <p className="mt-0.5">{question.howToImprove}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// One row of the Call Score Breakdown — a scored metric category, expandable
+// to its sub-metrics, each of those expandable to its own rubric questions.
 function ScoreBreakdownRow({
   metric,
   c,
@@ -2420,6 +2582,7 @@ function ScoreBreakdownRow({
   c: Copy
 }) {
   const [open, setOpen] = React.useState(false)
+  const [openSub, setOpenSub] = React.useState<Set<string>>(new Set())
   const subMetrics = metric.subMetrics ?? []
 
   return (
@@ -2434,23 +2597,16 @@ function ScoreBreakdownRow({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          {metric.isNa ? (
-            <Badge
-              variant="outline"
-              className="text-muted-foreground border-muted-foreground/30"
-            >
-              {c.na}
-            </Badge>
-          ) : (
-            <span
-              className={cn(
-                "rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
-                scorePillClass(metric.metricScore)
-              )}
-            >
-              {metric.metricScore}
-            </span>
-          )}
+          <ScoreValueBadge
+            isNa={metric.isNa}
+            na={c.na}
+            className={cn(
+              "rounded-md px-2 py-0.5 text-xs font-semibold",
+              scorePillClass(metric.metricScore)
+            )}
+          >
+            {metric.metricScore}
+          </ScoreValueBadge>
           {subMetrics.length > 0 && (
             <Button
               variant="ghost"
@@ -2467,32 +2623,45 @@ function ScoreBreakdownRow({
         </div>
       </div>
       {subMetrics.length > 0 && open && (
-        <div className="mt-3 space-y-1.5 border-t pt-3">
-          {subMetrics.map((sub) => (
-            <div
-              key={sub.label}
-              className="flex items-center justify-between text-sm"
-            >
-              <span className="text-muted-foreground">{sub.label}</span>
-              {sub.isNa ? (
-                <Badge
-                  variant="outline"
-                  className="text-muted-foreground border-muted-foreground/30"
+        <div className="mt-3 space-y-2 border-t pt-3">
+          {subMetrics.map((sub) => {
+            const questions = sub.questions ?? []
+            const subOpen = openSub.has(sub.label)
+            return (
+              <div key={sub.label} className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenSub((prev) => toggled(prev, sub.label))
+                  }
+                  className="flex w-full items-center justify-between text-sm"
+                  disabled={questions.length === 0}
                 >
-                  {c.na}
-                </Badge>
-              ) : (
-                <span
-                  className={cn(
-                    "rounded px-1.5 py-0.5 text-xs font-medium tabular-nums",
-                    scorePillClass(sub.score)
-                  )}
-                >
-                  {sub.score}
-                </span>
-              )}
-            </div>
-          ))}
+                  <span className="text-muted-foreground">{sub.label}</span>
+                  <span className="flex items-center gap-1.5">
+                    <ScoreValueBadge isNa={sub.isNa} na={c.na}>
+                      {sub.score}
+                    </ScoreValueBadge>
+                    {questions.length > 0 && (
+                      <ChevronDown
+                        className={cn(
+                          "size-3.5 transition-transform",
+                          subOpen && "rotate-180"
+                        )}
+                      />
+                    )}
+                  </span>
+                </button>
+                {questions.length > 0 && subOpen && (
+                  <div className="space-y-1.5 pl-2">
+                    {questions.map((q) => (
+                      <QuestionRow key={q.text} question={q} c={c} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
