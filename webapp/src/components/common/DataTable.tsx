@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ArrowUp, ArrowDown, ChevronDown, Filter as FilterIcon, X } from "lucide-react"
+import { ArrowUp, ArrowDown, ChevronDown, Filter as FilterIcon, GripVertical, Plus, X } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
 import type { ColumnDef } from "@/lib/table-columns"
@@ -30,6 +31,7 @@ const HEADER_COPY = {
     clearFilter: "Clear filter",
     noValues: "No values",
     columnOptions: "Column options",
+    addColumn: "Add custom column",
   },
   es: {
     sortAZ: "Ordenar de A a Z",
@@ -42,6 +44,7 @@ const HEADER_COPY = {
     clearFilter: "Quitar filtro",
     noValues: "Sin valores",
     columnOptions: "Opciones de columna",
+    addColumn: "Agregar columna personalizada",
   },
   it: {
     sortAZ: "Ordina dalla A alla Z",
@@ -54,6 +57,7 @@ const HEADER_COPY = {
     clearFilter: "Rimuovi filtro",
     noValues: "Nessun valore",
     columnOptions: "Opzioni colonna",
+    addColumn: "Aggiungi colonna personalizzata",
   },
   fr: {
     sortAZ: "Trier de A à Z",
@@ -66,6 +70,7 @@ const HEADER_COPY = {
     clearFilter: "Effacer le filtre",
     noValues: "Aucune valeur",
     columnOptions: "Options de colonne",
+    addColumn: "Ajouter une colonne personnalisée",
   },
   de: {
     sortAZ: "Von A bis Z sortieren",
@@ -78,6 +83,7 @@ const HEADER_COPY = {
     clearFilter: "Filter entfernen",
     noValues: "Keine Werte",
     columnOptions: "Spaltenoptionen",
+    addColumn: "Benutzerdefinierte Spalte hinzufügen",
   },
   pt: {
     sortAZ: "Ordenar de A a Z",
@@ -90,6 +96,7 @@ const HEADER_COPY = {
     clearFilter: "Remover filtro",
     noValues: "Sem valores",
     columnOptions: "Opções de coluna",
+    addColumn: "Adicionar coluna personalizada",
   },
   pt_BR: {
     sortAZ: "Ordenar de A a Z",
@@ -102,6 +109,7 @@ const HEADER_COPY = {
     clearFilter: "Remover filtro",
     noValues: "Sem valores",
     columnOptions: "Opções de coluna",
+    addColumn: "Adicionar coluna personalizada",
   },
 } as const
 
@@ -304,6 +312,8 @@ export function DataTable<T>({
   filters = {},
   onFilterChange = () => {},
   filterRows,
+  onAddColumn,
+  onReorderColumns,
 }: {
   columns: ColumnDef<T>[]
   visible: string[]
@@ -331,10 +341,21 @@ export function DataTable<T>({
   // the user pages through results. Defaults to `rows` (fine for tables that
   // don't paginate).
   filterRows?: T[]
+  // When provided, renders a primary + button as the first scrollable column
+  // header. Intended to open an add-custom-column dialog.
+  onAddColumn?: () => void
+  // When provided, renders a grab handle on each scrollable column header for
+  // drag-to-reorder. `fromId` is the dragged column, `toId` is where it was
+  // dropped — the caller should insert `from` before `to` in `visible`.
+  onReorderColumns?: (fromId: string, toId: string) => void
 }) {
+  const c = HEADER_COPY[locale]
+  const [dragColId, setDragColId] = React.useState<string | null>(null)
+  const [dragOverColId, setDragOverColId] = React.useState<string | null>(null)
+
   const byId = React.useMemo(() => {
     const map = new Map<string, ColumnDef<T>>()
-    for (const c of columns) map.set(c.id, c)
+    for (const col of columns) map.set(col.id, col)
     return map
   }, [columns])
 
@@ -424,25 +445,96 @@ export function DataTable<T>({
                   }}
                 />
               )}
+              {onAddColumn && (
+                <TableHead style={{ width: 44, minWidth: 44, maxWidth: 44 }}>
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={onAddColumn}
+                          aria-label={c.addColumn}
+                          className="flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                          <Plus className="size-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{c.addColumn}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableHead>
+              )}
               {shown.map((col) => (
                 <TableHead
                   key={col.id}
-                  className={cn("whitespace-nowrap", col.align === "right" && "text-right")}
-                  style={col.minWidth ? { minWidth: col.minWidth } : undefined}
-                >
-                  {col.getValue ? (
-                    <ColumnHeaderControl
-                      col={col}
-                      locale={locale}
-                      rows={sampleRows}
-                      sort={sort}
-                      onSortChange={onSortChange}
-                      filter={filters[col.id]}
-                      onFilterChange={(next) => onFilterChange(col.id, next)}
-                    />
-                  ) : (
-                    col.label[locale]
+                  className={cn(
+                    "whitespace-nowrap",
+                    col.align === "right" && "text-right",
+                    onReorderColumns &&
+                      dragOverColId === col.id &&
+                      dragColId !== col.id &&
+                      "border-l-primary border-l-2"
                   )}
+                  style={col.minWidth ? { minWidth: col.minWidth } : undefined}
+                  onDragOver={
+                    onReorderColumns
+                      ? (e) => {
+                          e.preventDefault()
+                          setDragOverColId(col.id)
+                        }
+                      : undefined
+                  }
+                  onDragLeave={
+                    onReorderColumns
+                      ? (e) => {
+                          if (!e.currentTarget.contains(e.relatedTarget as Node))
+                            setDragOverColId(null)
+                        }
+                      : undefined
+                  }
+                  onDrop={
+                    onReorderColumns
+                      ? (e) => {
+                          e.preventDefault()
+                          if (dragColId && dragColId !== col.id)
+                            onReorderColumns(dragColId, col.id)
+                          setDragColId(null)
+                          setDragOverColId(null)
+                        }
+                      : undefined
+                  }
+                >
+                  <div className="group/col flex items-center gap-0.5">
+                    {onReorderColumns && (
+                      <span
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.effectAllowed = "move"
+                          setDragColId(col.id)
+                        }}
+                        onDragEnd={() => {
+                          setDragColId(null)
+                          setDragOverColId(null)
+                        }}
+                        className="cursor-grab opacity-0 group-hover/col:opacity-50 active:cursor-grabbing"
+                      >
+                        <GripVertical className="text-muted-foreground size-3.5 shrink-0" />
+                      </span>
+                    )}
+                    {col.getValue ? (
+                      <ColumnHeaderControl
+                        col={col}
+                        locale={locale}
+                        rows={sampleRows}
+                        sort={sort}
+                        onSortChange={onSortChange}
+                        filter={filters[col.id]}
+                        onFilterChange={(next) => onFilterChange(col.id, next)}
+                      />
+                    ) : (
+                      col.label[locale]
+                    )}
+                  </div>
                 </TableHead>
               ))}
             </TableRow>
@@ -504,6 +596,9 @@ export function DataTable<T>({
                     {actions(row)}
                   </TableCell>
                 )}
+                {onAddColumn && (
+                  <TableCell style={{ width: 44, minWidth: 44, maxWidth: 44 }} />
+                )}
                 {shown.map((col) => (
                   <TableCell
                     key={col.id}
@@ -538,7 +633,8 @@ export function DataTable<T>({
                     shown.length +
                     (pinned ? 1 : 0) +
                     (actions ? 1 : 0) +
-                    (selection ? 1 : 0)
+                    (selection ? 1 : 0) +
+                    (onAddColumn ? 1 : 0)
                   }
                   className="text-muted-foreground py-10 text-center text-sm"
                 >

@@ -1356,6 +1356,16 @@ export default function ListDetail() {
               filters={companyTsf.filters}
               onFilterChange={companyTsf.setFilter}
               filterRows={accountMembers}
+              onAddColumn={() => setAiColOpen(true)}
+              onReorderColumns={(from, to) => {
+                const cur = [...accountColumnPrefs.visible]
+                const fi = cur.indexOf(from)
+                const ti = cur.indexOf(to)
+                if (fi === -1 || ti === -1 || fi === ti) return
+                cur.splice(fi, 1)
+                cur.splice(ti, 0, from)
+                accountColumnPrefs.setVisible(cur)
+              }}
             />
           ) : (
             <DataTable
@@ -1416,6 +1426,16 @@ export default function ListDetail() {
                   />
                 </div>
               )}
+              onAddColumn={() => setAiColOpen(true)}
+              onReorderColumns={(from, to) => {
+                const cur = [...columnPrefs.visible]
+                const fi = cur.indexOf(from)
+                const ti = cur.indexOf(to)
+                if (fi === -1 || ti === -1 || fi === ti) return
+                cur.splice(fi, 1)
+                cur.splice(ti, 0, from)
+                columnPrefs.setVisible(cur)
+              }}
             />
           )}
 
