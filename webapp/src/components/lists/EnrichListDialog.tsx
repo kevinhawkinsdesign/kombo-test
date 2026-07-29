@@ -1,6 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { Layers, Mail, Phone, Database, Check, TriangleAlert } from "lucide-react"
+import { Stars, Mail, Phone, Database, Check, TriangleAlert } from "lucide-react"
 
 import {
   Dialog,
@@ -398,7 +398,7 @@ export function EnrichListDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-md">
-              <Layers className="size-4" />
+              <Stars className="size-4" />
             </span>
             {c.title}
           </DialogTitle>
@@ -553,7 +553,7 @@ export function EnrichListDialog({
           </Button>
           {anySelected && batch.length > 0 && (
             <Button variant="volt" onClick={handleEnrich} disabled={!affordable}>
-              <Layers className="size-4" />
+              <Stars className="size-4" />
               {c.enrich(batch.length)}
             </Button>
           )}
