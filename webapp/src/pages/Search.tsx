@@ -175,23 +175,23 @@ const COPY = {
     clearList: "Clear list",
     introTitle: "Prospect with a prompt",
     introDescription:
-      "Ask in plain English or build an advanced query by hand. Kai returns a fit-scored table of prospects or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
+      "Ask in plain English or build an advanced query by hand. AI returns a fit-scored table of prospects or companies you can refine, enrich, save as a dynamic list, and push into a campaign.",
     introPoints: [
       "Search the database or let AI find look-alikes",
       "Fit score every result against your ask",
       "Save as a dynamic list that keeps filling",
       "Connect straight to a campaign",
     ],
-    assistantName: "Kai",
+    assistantName: "AI",
     chatHint: "Describe your ideal prospects, or pick an example.",
     examples: "Examples",
-    thinking: "Kai is searching…",
+    thinking: "AI is searching…",
     starter:
       "Here's a starter table for VPs of Sales at European SaaS companies that recently raised. Refine it with a prompt or edit the filters on the right.",
     showingOf: (count: number, total: number) =>
       `Showing ${count} of an estimated ${total.toLocaleString()}. Refine further or save these as a list.`,
     refinedTo: (label: string) => `Refined: ${label.toLowerCase()}.`,
-    thinkingTitle: "Kai is analyzing your request…",
+    thinkingTitle: "AI is analyzing your request…",
     thinkingSub: "Searching the database and scoring fit against your ask.",
     thinkingSteps: [
       "Understanding your request",
@@ -279,7 +279,7 @@ const COPY = {
     lookalike: "Lookalikes",
     lookalikeTitle: "Find lookalikes",
     lookalikeDesc:
-      "Pick a person or company you already like — Kai finds records similar to that specific seed. Refine further with the sidebar filters.",
+      "Pick a person or company you already like — AI finds records similar to that specific seed. Refine further with the sidebar filters.",
     pickSeed: "Pick a prospect or company",
     companySearch: "Search a company by name…",
     personSearch: "Search a prospect by name…",
@@ -483,23 +483,23 @@ const COPY = {
     clearList: "Quitar lista",
     introTitle: "Prospecta con un prompt",
     introDescription:
-      "Pregunta en lenguaje natural o crea una consulta avanzada a mano. Kai devuelve una tabla de prospectos o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
+      "Pregunta en lenguaje natural o crea una consulta avanzada a mano. La IA devuelve una tabla de prospectos o empresas puntuada por encaje que puedes refinar, enriquecer, guardar como lista dinámica y enviar a una campaña.",
     introPoints: [
       "Busca en la base o deja que la IA encuentre similares",
       "Puntúa el encaje de cada resultado con tu petición",
       "Guarda como lista dinámica que se sigue llenando",
       "Conecta directamente con una campaña",
     ],
-    assistantName: "Kai",
+    assistantName: "IA",
     chatHint: "Describe tus prospectos ideales, o elige un ejemplo.",
     examples: "Ejemplos",
-    thinking: "Kai está buscando…",
+    thinking: "La IA está buscando…",
     starter:
       "Aquí tienes una tabla inicial de VPs de Ventas en empresas SaaS europeas que han levantado financiación recientemente. Refínala con un prompt o edita los filtros de la derecha.",
     showingOf: (count: number, total: number) =>
       `Mostrando ${count} de unos ${total.toLocaleString()}. Sigue refinando o guarda estos como una lista.`,
     refinedTo: (label: string) => `Refinado: ${label.toLowerCase()}.`,
-    thinkingTitle: "Kai está analizando tu petición…",
+    thinkingTitle: "La IA está analizando tu petición…",
     thinkingSub: "Buscando en la base de datos y puntuando el encaje con tu petición.",
     thinkingSteps: [
       "Entendiendo tu petición",
@@ -587,7 +587,7 @@ const COPY = {
     lookalike: "Similares",
     lookalikeTitle: "Buscar similares",
     lookalikeDesc:
-      "Elige una persona o empresa que ya te encaja — Kai encuentra registros similares a ese origen concreto. Refina con los filtros de la barra lateral.",
+      "Elige una persona o empresa que ya te encaja — la IA encuentra registros similares a ese origen concreto. Refina con los filtros de la barra lateral.",
     pickSeed: "Elige un prospecto o empresa",
     companySearch: "Busca una empresa por nombre…",
     personSearch: "Busca un prospecto por nombre…",
@@ -791,23 +791,23 @@ const COPY = {
     clearList: "Rimuovi lista",
     introTitle: "Trova prospect con un prompt",
     introDescription:
-      "Chiedi in linguaggio naturale o crea una query avanzata a mano. Kai restituisce una tabella di prospect o aziende con punteggio di affinità che puoi affinare, arricchire, salvare come lista dinamica e inviare a una campagna.",
+      "Chiedi in linguaggio naturale o crea una query avanzata a mano. L'IA restituisce una tabella di prospect o aziende con punteggio di affinità che puoi affinare, arricchire, salvare come lista dinamica e inviare a una campagna.",
     introPoints: [
       "Cerca nel database o lascia che l'IA trovi record simili",
       "Assegna un punteggio di affinità a ogni risultato in base alla tua richiesta",
       "Salva come lista dinamica che continua a riempirsi",
       "Collega direttamente a una campagna",
     ],
-    assistantName: "Kai",
+    assistantName: "IA",
     chatHint: "Descrivi i tuoi prospect ideali, oppure scegli un esempio.",
     examples: "Esempi",
-    thinking: "Kai sta cercando…",
+    thinking: "L'IA sta cercando…",
     starter:
       "Ecco una tabella iniziale di VP Sales in aziende SaaS europee che hanno raccolto finanziamenti di recente. Affinala con un prompt o modifica i filtri a destra.",
     showingOf: (count: number, total: number) =>
       `Mostrando ${count} di circa ${total.toLocaleString()}. Continua ad affinare o salva questi come lista.`,
     refinedTo: (label: string) => `Affinato: ${label.toLowerCase()}.`,
-    thinkingTitle: "Kai sta analizzando la tua richiesta…",
+    thinkingTitle: "L'IA sta analizzando la tua richiesta…",
     thinkingSub: "Ricerca nel database e calcolo dell'affinità in base alla tua richiesta.",
     thinkingSteps: [
       "Comprensione della richiesta",
@@ -895,7 +895,7 @@ const COPY = {
     lookalike: "Simili",
     lookalikeTitle: "Trova simili",
     lookalikeDesc:
-      "Scegli una persona o azienda che ti piace già — Kai trova record simili a quel riferimento specifico. Affina ulteriormente con i filtri della barra laterale.",
+      "Scegli una persona o azienda che ti piace già — l'IA trova record simili a quel riferimento specifico. Affina ulteriormente con i filtri della barra laterale.",
     pickSeed: "Scegli un prospect o un'azienda",
     companySearch: "Cerca un'azienda per nome…",
     personSearch: "Cerca un prospect per nome…",
@@ -1099,23 +1099,23 @@ const COPY = {
     clearList: "Retirer la liste",
     introTitle: "Prospectez avec un prompt",
     introDescription:
-      "Posez votre question en langage naturel ou créez une requête avancée à la main. Kai renvoie un tableau de prospects ou d'entreprises noté selon leur adéquation, que vous pouvez affiner, enrichir, enregistrer comme liste dynamique et envoyer vers une campagne.",
+      "Posez votre question en langage naturel ou créez une requête avancée à la main. L'IA renvoie un tableau de prospects ou d'entreprises noté selon leur adéquation, que vous pouvez affiner, enrichir, enregistrer comme liste dynamique et envoyer vers une campagne.",
     introPoints: [
       "Recherchez dans la base ou laissez l'IA trouver des profils similaires",
       "Notez chaque résultat selon son adéquation avec votre demande",
       "Enregistrez comme liste dynamique qui continue de se remplir",
       "Connectez directement à une campagne",
     ],
-    assistantName: "Kai",
+    assistantName: "IA",
     chatHint: "Décrivez vos prospects idéaux, ou choisissez un exemple.",
     examples: "Exemples",
-    thinking: "Kai recherche…",
+    thinking: "L'IA recherche…",
     starter:
       "Voici un tableau de départ pour les VP Sales dans des entreprises SaaS européennes ayant récemment levé des fonds. Affinez-le avec un prompt ou modifiez les filtres à droite.",
     showingOf: (count: number, total: number) =>
       `Affichage de ${count} sur environ ${total.toLocaleString()}. Continuez à affiner ou enregistrez ces résultats comme liste.`,
     refinedTo: (label: string) => `Affiné : ${label.toLowerCase()}.`,
-    thinkingTitle: "Kai analyse votre demande…",
+    thinkingTitle: "L'IA analyse votre demande…",
     thinkingSub: "Recherche dans la base de données et calcul de l'adéquation avec votre demande.",
     thinkingSteps: [
       "Compréhension de votre demande",
@@ -1203,7 +1203,7 @@ const COPY = {
     lookalike: "Similaires",
     lookalikeTitle: "Trouver des profils similaires",
     lookalikeDesc:
-      "Choisissez une personne ou une entreprise qui vous convient déjà — Kai trouve des profils similaires à cette référence précise. Affinez encore avec les filtres de la barre latérale.",
+      "Choisissez une personne ou une entreprise qui vous convient déjà — l'IA trouve des profils similaires à cette référence précise. Affinez encore avec les filtres de la barre latérale.",
     pickSeed: "Choisissez un prospect ou une entreprise",
     companySearch: "Rechercher une entreprise par nom…",
     personSearch: "Rechercher un prospect par nom…",
@@ -1407,23 +1407,23 @@ const COPY = {
     clearList: "Liste entfernen",
     introTitle: "Prospecting per Prompt",
     introDescription:
-      "Frag in natürlicher Sprache oder erstelle manuell eine erweiterte Abfrage. Kai liefert eine nach Fit bewertete Tabelle mit Prospects oder Unternehmen, die du verfeinern, anreichern, als dynamische Liste speichern und in eine Kampagne übernehmen kannst.",
+      "Frag in natürlicher Sprache oder erstelle manuell eine erweiterte Abfrage. Die KI liefert eine nach Fit bewertete Tabelle mit Prospects oder Unternehmen, die du verfeinern, anreichern, als dynamische Liste speichern und in eine Kampagne übernehmen kannst.",
     introPoints: [
       "Durchsuche die Datenbank oder lass die KI ähnliche Profile finden",
       "Bewerte jedes Ergebnis nach Fit zu deiner Anfrage",
       "Speichere als dynamische Liste, die sich stetig füllt",
       "Verbinde direkt mit einer Kampagne",
     ],
-    assistantName: "Kai",
+    assistantName: "KI",
     chatHint: "Beschreibe deine idealen Prospects oder wähle ein Beispiel.",
     examples: "Beispiele",
-    thinking: "Kai sucht…",
+    thinking: "Die KI sucht…",
     starter:
       "Hier ist eine Starttabelle für VP Sales bei europäischen SaaS-Unternehmen, die kürzlich Kapital aufgenommen haben. Verfeinere sie mit einem Prompt oder bearbeite die Filter rechts.",
     showingOf: (count: number, total: number) =>
       `Zeigt ${count} von geschätzt ${total.toLocaleString()}. Weiter verfeinern oder als Liste speichern.`,
     refinedTo: (label: string) => `Verfeinert: ${label.toLowerCase()}.`,
-    thinkingTitle: "Kai analysiert deine Anfrage…",
+    thinkingTitle: "Die KI analysiert deine Anfrage…",
     thinkingSub: "Durchsucht die Datenbank und bewertet den Fit zu deiner Anfrage.",
     thinkingSteps: [
       "Anfrage wird verstanden",
@@ -1511,7 +1511,7 @@ const COPY = {
     lookalike: "Lookalikes",
     lookalikeTitle: "Lookalikes finden",
     lookalikeDesc:
-      "Wähle eine Person oder ein Unternehmen, das dir bereits gefällt — Kai findet Datensätze ähnlich zu genau diesem Vorbild. Verfeinere weiter mit den Filtern in der Seitenleiste.",
+      "Wähle eine Person oder ein Unternehmen, das dir bereits gefällt — die KI findet Datensätze ähnlich zu genau diesem Vorbild. Verfeinere weiter mit den Filtern in der Seitenleiste.",
     pickSeed: "Wähle einen Prospect oder ein Unternehmen",
     companySearch: "Unternehmen nach Namen suchen…",
     personSearch: "Prospect nach Namen suchen…",
@@ -1715,23 +1715,23 @@ const COPY = {
     clearList: "Remover lista",
     introTitle: "Prospeta com um prompt",
     introDescription:
-      "Pergunta em linguagem natural ou cria uma consulta avançada manualmente. O Kai devolve uma tabela de prospects ou empresas pontuada por adequação, que podes refinar, enriquecer, guardar como lista dinâmica e enviar para uma campanha.",
+      "Pergunta em linguagem natural ou cria uma consulta avançada manualmente. A IA devolve uma tabela de prospects ou empresas pontuada por adequação, que podes refinar, enriquecer, guardar como lista dinâmica e enviar para uma campanha.",
     introPoints: [
       "Pesquisa na base de dados ou deixa a IA encontrar semelhantes",
       "Pontua cada resultado por adequação ao teu pedido",
       "Guarda como lista dinâmica que continua a preencher-se",
       "Liga diretamente a uma campanha",
     ],
-    assistantName: "Kai",
+    assistantName: "IA",
     chatHint: "Descreve os teus prospects ideais, ou escolhe um exemplo.",
     examples: "Exemplos",
-    thinking: "O Kai está a pesquisar…",
+    thinking: "A IA está a pesquisar…",
     starter:
       "Aqui tens uma tabela inicial de VPs de Vendas em empresas SaaS europeias que angariaram financiamento recentemente. Refina-a com um prompt ou edita os filtros à direita.",
     showingOf: (count: number, total: number) =>
       `A mostrar ${count} de um total estimado de ${total.toLocaleString()}. Continua a refinar ou guarda estes como lista.`,
     refinedTo: (label: string) => `Refinado: ${label.toLowerCase()}.`,
-    thinkingTitle: "O Kai está a analisar o teu pedido…",
+    thinkingTitle: "A IA está a analisar o teu pedido…",
     thinkingSub: "A pesquisar na base de dados e a pontuar a adequação ao teu pedido.",
     thinkingSteps: [
       "A perceber o teu pedido",
@@ -1819,7 +1819,7 @@ const COPY = {
     lookalike: "Semelhantes",
     lookalikeTitle: "Encontrar semelhantes",
     lookalikeDesc:
-      "Escolhe uma pessoa ou empresa de que já gostas — o Kai encontra registos semelhantes a essa referência concreta. Refina mais com os filtros da barra lateral.",
+      "Escolhe uma pessoa ou empresa de que já gostas — a IA encontra registos semelhantes a essa referência concreta. Refina mais com os filtros da barra lateral.",
     pickSeed: "Escolhe um prospect ou empresa",
     companySearch: "Pesquisa uma empresa por nome…",
     personSearch: "Pesquisa um prospect por nome…",
@@ -2023,23 +2023,23 @@ const COPY = {
     clearList: "Remover lista",
     introTitle: "Prospecte com um prompt",
     introDescription:
-      "Pergunte em linguagem natural ou crie uma consulta avançada manualmente. O Kai retorna uma tabela de prospects ou empresas com pontuação de fit, que você pode refinar, enriquecer, salvar como lista dinâmica e enviar para uma campanha.",
+      "Pergunte em linguagem natural ou crie uma consulta avançada manualmente. A IA retorna uma tabela de prospects ou empresas com pontuação de fit, que você pode refinar, enriquecer, salvar como lista dinâmica e enviar para uma campanha.",
     introPoints: [
       "Pesquise no banco de dados ou deixe a IA encontrar semelhantes",
       "Pontue cada resultado pelo fit com seu pedido",
       "Salve como lista dinâmica que continua se preenchendo",
       "Conecte direto a uma campanha",
     ],
-    assistantName: "Kai",
+    assistantName: "IA",
     chatHint: "Descreva seus prospects ideais, ou escolha um exemplo.",
     examples: "Exemplos",
-    thinking: "Kai está pesquisando…",
+    thinking: "A IA está pesquisando…",
     starter:
       "Aqui está uma tabela inicial de VPs de Vendas em empresas SaaS europeias que levantaram investimento recentemente. Refine com um prompt ou edite os filtros à direita.",
     showingOf: (count: number, total: number) =>
       `Mostrando ${count} de um total estimado de ${total.toLocaleString()}. Continue refinando ou salve estes como lista.`,
     refinedTo: (label: string) => `Refinado: ${label.toLowerCase()}.`,
-    thinkingTitle: "Kai está analisando seu pedido…",
+    thinkingTitle: "A IA está analisando seu pedido…",
     thinkingSub: "Pesquisando no banco de dados e pontuando o fit com seu pedido.",
     thinkingSteps: [
       "Entendendo seu pedido",
@@ -2127,7 +2127,7 @@ const COPY = {
     lookalike: "Semelhantes",
     lookalikeTitle: "Encontrar semelhantes",
     lookalikeDesc:
-      "Escolha uma pessoa ou empresa de que você já goste — o Kai encontra registros semelhantes a essa referência específica. Refine mais com os filtros da barra lateral.",
+      "Escolha uma pessoa ou empresa de que você já goste — a IA encontra registros semelhantes a essa referência específica. Refine mais com os filtros da barra lateral.",
     pickSeed: "Escolha um prospect ou empresa",
     companySearch: "Pesquise uma empresa pelo nome…",
     personSearch: "Pesquise um prospect pelo nome…",

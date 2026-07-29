@@ -160,7 +160,7 @@ const STEP_META: Record<
     tint: "bg-chart-4/15 text-chart-4",
     title: "Who's your ideal customer?",
     description:
-      "Add the titles, industries and countries you sell into — Kai uses this to score fit and suggest new prospects.",
+      "Add the titles, industries and countries you sell into — AI uses this to score fit and suggest new prospects.",
   },
   crm: {
     icon: Database,

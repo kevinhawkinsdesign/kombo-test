@@ -51,14 +51,14 @@ const COPY = {
     saveValueProps: "Save value props",
     valuePropsSaved: "Value props saved",
     templatesIntro:
-      "Kai prefers higher-ranked templates when drafting first-touch outreach.",
+      "AI prefers higher-ranked templates when drafting first-touch outreach.",
     moveTemplateUp: "Move template up",
     moveTemplateDown: "Move template down",
     saveOrder: "Save order",
     templateOrderSaved: "Template order saved",
     pageTitle: "Outreach Playbook",
     pageDescription:
-      "Configure the products, value props, and templates Kai uses to draft outreach.",
+      "Configure the products, value props, and templates AI uses to draft outreach.",
     introTitle: "Your team's sales playbook",
     introDescription:
       "Codify what works — messaging, objection handling, and qualification — in one shared place.",
@@ -88,14 +88,14 @@ const COPY = {
     saveValueProps: "Guardar propuestas de valor",
     valuePropsSaved: "Propuestas de valor guardadas",
     templatesIntro:
-      "Kai prefiere las plantillas mejor clasificadas al redactar el primer contacto.",
+      "La IA prefiere las plantillas mejor clasificadas al redactar el primer contacto.",
     moveTemplateUp: "Subir plantilla",
     moveTemplateDown: "Bajar plantilla",
     saveOrder: "Guardar orden",
     templateOrderSaved: "Orden de plantillas guardado",
     pageTitle: "Estrategia de contacto",
     pageDescription:
-      "Configura los productos, propuestas de valor y plantillas que Kai usa para redactar el contacto.",
+      "Configura los productos, propuestas de valor y plantillas que la IA usa para redactar el contacto.",
     introTitle: "La estrategia de ventas de tu equipo",
     introDescription:
       "Documenta lo que funciona — mensajes, manejo de objeciones y cualificación — en un único lugar compartido.",
@@ -125,14 +125,14 @@ const COPY = {
     saveValueProps: "Salva proposte di valore",
     valuePropsSaved: "Proposte di valore salvate",
     templatesIntro:
-      "Kai preferisce i modelli con il punteggio più alto per scrivere il primo contatto.",
+      "L'IA preferisce i modelli con il punteggio più alto per scrivere il primo contatto.",
     moveTemplateUp: "Sposta modello in alto",
     moveTemplateDown: "Sposta modello in basso",
     saveOrder: "Salva ordine",
     templateOrderSaved: "Ordine dei modelli salvato",
     pageTitle: "Playbook di outreach",
     pageDescription:
-      "Configura i prodotti, le proposte di valore e i modelli che Kai usa per scrivere l'outreach.",
+      "Configura i prodotti, le proposte di valore e i modelli che l'IA usa per scrivere l'outreach.",
     introTitle: "Il playbook di vendita del tuo team",
     introDescription:
       "Codifica ciò che funziona — messaggistica, gestione delle obiezioni e qualificazione — in un unico posto condiviso.",
@@ -162,14 +162,14 @@ const COPY = {
     saveValueProps: "Enregistrer les propositions de valeur",
     valuePropsSaved: "Propositions de valeur enregistrées",
     templatesIntro:
-      "Kai privilégie les modèles les mieux classés lors de la rédaction du premier contact.",
+      "L'IA privilégie les modèles les mieux classés lors de la rédaction du premier contact.",
     moveTemplateUp: "Monter le modèle",
     moveTemplateDown: "Descendre le modèle",
     saveOrder: "Enregistrer l'ordre",
     templateOrderSaved: "Ordre des modèles enregistré",
     pageTitle: "Playbook de prospection",
     pageDescription:
-      "Configurez les produits, les propositions de valeur et les modèles que Kai utilise pour rédiger la prospection.",
+      "Configurez les produits, les propositions de valeur et les modèles que l'IA utilise pour rédiger la prospection.",
     introTitle: "Le playbook commercial de votre équipe",
     introDescription:
       "Formalisez ce qui fonctionne — messages, gestion des objections et qualification — en un seul endroit partagé.",
@@ -199,14 +199,14 @@ const COPY = {
     saveValueProps: "Value Propositions speichern",
     valuePropsSaved: "Value Propositions gespeichert",
     templatesIntro:
-      "Kai bevorzugt höher eingestufte Vorlagen beim Verfassen der Erstansprache.",
+      "Die KI bevorzugt höher eingestufte Vorlagen beim Verfassen der Erstansprache.",
     moveTemplateUp: "Vorlage nach oben verschieben",
     moveTemplateDown: "Vorlage nach unten verschieben",
     saveOrder: "Reihenfolge speichern",
     templateOrderSaved: "Vorlagenreihenfolge gespeichert",
     pageTitle: "Outreach-Playbook",
     pageDescription:
-      "Konfiguriere die Produkte, Value Propositions und Vorlagen, die Kai für die Erstansprache nutzt.",
+      "Konfiguriere die Produkte, Value Propositions und Vorlagen, die die KI für die Erstansprache nutzt.",
     introTitle: "Das Sales-Playbook deines Teams",
     introDescription:
       "Halte fest, was funktioniert — Messaging, Einwandbehandlung und Qualifizierung — an einem gemeinsamen Ort.",
@@ -236,14 +236,14 @@ const COPY = {
     saveValueProps: "Guardar propostas de valor",
     valuePropsSaved: "Propostas de valor guardadas",
     templatesIntro:
-      "O Kai prefere os modelos mais bem classificados ao redigir o primeiro contacto.",
+      "A IA prefere os modelos mais bem classificados ao redigir o primeiro contacto.",
     moveTemplateUp: "Mover modelo para cima",
     moveTemplateDown: "Mover modelo para baixo",
     saveOrder: "Guardar ordem",
     templateOrderSaved: "Ordem dos modelos guardada",
     pageTitle: "Playbook de outreach",
     pageDescription:
-      "Configure os produtos, as propostas de valor e os modelos que o Kai usa para redigir o outreach.",
+      "Configure os produtos, as propostas de valor e os modelos que a IA usa para redigir o outreach.",
     introTitle: "O playbook de vendas da sua equipa",
     introDescription:
       "Documente o que funciona — mensagens, gestão de objeções e qualificação — num único local partilhado.",
@@ -273,14 +273,14 @@ const COPY = {
     saveValueProps: "Salvar propostas de valor",
     valuePropsSaved: "Propostas de valor salvas",
     templatesIntro:
-      "O Kai prefere os modelos mais bem avaliados ao redigir o primeiro contato.",
+      "A IA prefere os modelos mais bem avaliados ao redigir o primeiro contato.",
     moveTemplateUp: "Mover modelo para cima",
     moveTemplateDown: "Mover modelo para baixo",
     saveOrder: "Salvar ordem",
     templateOrderSaved: "Ordem dos modelos salva",
     pageTitle: "Playbook de outreach",
     pageDescription:
-      "Configure os produtos, as propostas de valor e os modelos que o Kai usa para redigir o outreach.",
+      "Configure os produtos, as propostas de valor e os modelos que a IA usa para redigir o outreach.",
     introTitle: "O playbook de vendas do seu time",
     introDescription:
       "Documente o que funciona — mensagens, tratamento de objeções e qualificação — em um único lugar compartilhado.",

@@ -82,13 +82,13 @@ const COPY = {
     description: "Connect Kombo to the tools your team already uses.",
     connectedToast: (name: string) => `${name} connected`,
     disconnectedToast: (name: string) => `${name} disconnected`,
-    mcpConnectedToast: (name: string) => `${name} connected — Kai can now use it`,
+    mcpConnectedToast: (name: string) => `${name} connected — AI can now use it`,
     connected: "Connected",
     connect: "Connect",
     disconnect: "Disconnect",
     aiConnections: "AI tool connections",
     aiConnectionsDesc:
-      "MCP servers Kai can call to take action on your behalf — search your CRM, book meetings, draft and send outreach.",
+      "MCP servers AI can call to take action on your behalf — search your CRM, book meetings, draft and send outreach.",
     workspaceConnections: "Workspace connections",
     workspaceConnectionsDesc:
       "Your professional network, outreach channels, call sources, CRM, and campaign defaults.",
@@ -112,13 +112,13 @@ const COPY = {
     connectedToast: (name: string) => `${name} conectado`,
     disconnectedToast: (name: string) => `${name} desconectado`,
     mcpConnectedToast: (name: string) =>
-      `${name} conectado — Kai ya puede usarlo`,
+      `${name} conectado — la IA ya puede usarlo`,
     connected: "Conectado",
     connect: "Conectar",
     disconnect: "Desconectar",
     aiConnections: "Conexiones de herramientas de IA",
     aiConnectionsDesc:
-      "Servidores MCP que Kai puede invocar para actuar en tu nombre: buscar en tu CRM, agendar reuniones y redactar y enviar outreach.",
+      "Servidores MCP que la IA puede invocar para actuar en tu nombre: buscar en tu CRM, agendar reuniones y redactar y enviar outreach.",
     workspaceConnections: "Conexiones del espacio de trabajo",
     workspaceConnectionsDesc:
       "Tu red profesional, canales de outreach, fuentes de llamadas, CRM y ajustes de campaña.",
@@ -141,13 +141,13 @@ const COPY = {
     connectedToast: (name: string) => `${name} connesso`,
     disconnectedToast: (name: string) => `${name} disconnesso`,
     mcpConnectedToast: (name: string) =>
-      `${name} connesso — ora Kai può usarlo`,
+      `${name} connesso — ora l'IA può usarlo`,
     connected: "Connesso",
     connect: "Connetti",
     disconnect: "Disconnetti",
     aiConnections: "Connessioni degli strumenti IA",
     aiConnectionsDesc:
-      "Server MCP che Kai può richiamare per agire per tuo conto: cercare nel tuo CRM, fissare riunioni, redigere e inviare outreach.",
+      "Server MCP che l'IA può richiamare per agire per tuo conto: cercare nel tuo CRM, fissare riunioni, redigere e inviare outreach.",
     workspaceConnections: "Connessioni dello spazio di lavoro",
     workspaceConnectionsDesc:
       "La tua rete professionale, i canali di outreach, le fonti delle chiamate, il CRM e le impostazioni predefinite delle campagne.",
@@ -170,13 +170,13 @@ const COPY = {
     connectedToast: (name: string) => `${name} connecté`,
     disconnectedToast: (name: string) => `${name} déconnecté`,
     mcpConnectedToast: (name: string) =>
-      `${name} connecté — Kai peut désormais l'utiliser`,
+      `${name} connecté — l'IA peut désormais l'utiliser`,
     connected: "Connecté",
     connect: "Connecter",
     disconnect: "Déconnecter",
     aiConnections: "Connexions d'outils IA",
     aiConnectionsDesc:
-      "Serveurs MCP que Kai peut appeler pour agir en votre nom : rechercher dans votre CRM, planifier des rendez-vous, rédiger et envoyer de l'outreach.",
+      "Serveurs MCP que l'IA peut appeler pour agir en votre nom : rechercher dans votre CRM, planifier des rendez-vous, rédiger et envoyer de l'outreach.",
     workspaceConnections: "Connexions de l'espace de travail",
     workspaceConnectionsDesc:
       "Votre réseau professionnel, vos canaux d'outreach, vos sources d'appels, votre CRM et les paramètres par défaut de vos campagnes.",
@@ -199,13 +199,13 @@ const COPY = {
     connectedToast: (name: string) => `${name} verbunden`,
     disconnectedToast: (name: string) => `${name} getrennt`,
     mcpConnectedToast: (name: string) =>
-      `${name} verbunden — Kai kann es jetzt nutzen`,
+      `${name} verbunden — die KI kann es jetzt nutzen`,
     connected: "Verbunden",
     connect: "Verbinden",
     disconnect: "Trennen",
     aiConnections: "KI-Tool-Verbindungen",
     aiConnectionsDesc:
-      "MCP-Server, die Kai in deinem Namen aufrufen kann — dein CRM durchsuchen, Meetings buchen, Outreach entwerfen und versenden.",
+      "MCP-Server, die die KI in deinem Namen aufrufen kann — dein CRM durchsuchen, Meetings buchen, Outreach entwerfen und versenden.",
     workspaceConnections: "Workspace-Verbindungen",
     workspaceConnectionsDesc:
       "Dein berufliches Netzwerk, Outreach-Kanäle, Anrufquellen, CRM und Kampagnen-Standardeinstellungen.",
@@ -228,13 +228,13 @@ const COPY = {
     connectedToast: (name: string) => `${name} conectado`,
     disconnectedToast: (name: string) => `${name} desconectado`,
     mcpConnectedToast: (name: string) =>
-      `${name} conectado — o Kai já pode utilizá-lo`,
+      `${name} conectado — a IA já pode utilizá-lo`,
     connected: "Conectado",
     connect: "Conectar",
     disconnect: "Desconectar",
     aiConnections: "Conexões de ferramentas de IA",
     aiConnectionsDesc:
-      "Servidores MCP que o Kai pode invocar para agir em seu nome — pesquisar no seu CRM, marcar reuniões, redigir e enviar outreach.",
+      "Servidores MCP que a IA pode invocar para agir em seu nome — pesquisar no seu CRM, marcar reuniões, redigir e enviar outreach.",
     workspaceConnections: "Conexões do espaço de trabalho",
     workspaceConnectionsDesc:
       "A sua rede profissional, canais de outreach, fontes de chamadas, CRM e predefinições de campanha.",
@@ -257,13 +257,13 @@ const COPY = {
     connectedToast: (name: string) => `${name} conectado`,
     disconnectedToast: (name: string) => `${name} desconectado`,
     mcpConnectedToast: (name: string) =>
-      `${name} conectado — o Kai já pode usá-lo`,
+      `${name} conectado — a IA já pode usá-lo`,
     connected: "Conectado",
     connect: "Conectar",
     disconnect: "Desconectar",
     aiConnections: "Conexões de ferramentas de IA",
     aiConnectionsDesc:
-      "Servidores MCP que o Kai pode chamar para agir em seu nome — buscar no seu CRM, marcar reuniões, escrever e enviar outreach.",
+      "Servidores MCP que a IA pode chamar para agir em seu nome — buscar no seu CRM, marcar reuniões, escrever e enviar outreach.",
     workspaceConnections: "Conexões do espaço de trabalho",
     workspaceConnectionsDesc:
       "Sua rede profissional, canais de outreach, fontes de chamadas, CRM e configurações padrão de campanha.",
