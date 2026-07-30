@@ -602,9 +602,6 @@ export default function Lists() {
     <>
       <Page className="pb-0">
         <ListTabBar currentId="all" />
-      </Page>
-
-      <div className="px-4 md:px-6">
         <PageHeading
           title={c.title}
           description={c.description}
@@ -621,7 +618,7 @@ export default function Lists() {
             </div>
           }
         />
-      </div>
+      </Page>
 
       <Page className="pt-0">
       <CollectionToolbar

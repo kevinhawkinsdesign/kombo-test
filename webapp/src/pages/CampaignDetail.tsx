@@ -3114,14 +3114,12 @@ export default function CampaignDetail() {
 
   return (
     <>
-      {/* Full-bleed within the main content area — not constrained to the
-          page's max-w-7xl — so the tab strip spans from the sidebar edge to
-          the viewport edge. Horizontal padding matches AppHeader's own
-          px-4 md:px-6 so its edges still line up with the rest of the
-          chrome. */}
-      <div className="px-4 md:px-6 pt-4 md:pt-6">
+      {/* Same max-w-7xl container as the page body below, so the tab strip's
+          edges line up with the content it sits above rather than running
+          wider than it. */}
+      <Page className="pb-0">
         <CampaignTabBar currentId={campaign.id} />
-      </div>
+      </Page>
 
       <Page className="pt-0">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
