@@ -6,10 +6,13 @@ import {
   Building2,
   Cake,
   DollarSign,
+  FolderPlus,
   Globe,
   Grid2x2,
+  Mail,
   MapPin,
   Pencil,
+  Phone,
   RefreshCw,
   Sparkles,
   Users,
@@ -29,6 +32,7 @@ import {
 } from "@/components/ui/dialog"
 import { ProspectAvatar, ScoreBadge, StatusBadge } from "@/components/common/ProspectBits"
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { generateProspectSummary } from "@/lib/mock-ai-summary"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
@@ -50,7 +54,12 @@ const COPY = {
     ageRange: "Age range",
     personality: "Personality",
     location: "Location",
+    email: "Email",
+    phone: "Phone",
     linkedin: "LinkedIn",
+    addToList: "Add to list",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} added to "${name}"`,
     firmographics: "Company details",
     seniority: "Seniority",
     department: "Department",
@@ -76,7 +85,12 @@ const COPY = {
     ageRange: "Rango de edad",
     personality: "Personalidad",
     location: "Ubicación",
+    email: "Correo electrónico",
+    phone: "Teléfono",
     linkedin: "LinkedIn",
+    addToList: "Añadir a lista",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} añadido a "${name}"`,
     firmographics: "Datos de la empresa",
     seniority: "Antigüedad",
     department: "Departamento",
@@ -102,7 +116,12 @@ const COPY = {
     ageRange: "Fascia d'età",
     personality: "Personalità",
     location: "Località",
+    email: "Email",
+    phone: "Telefono",
     linkedin: "LinkedIn",
+    addToList: "Aggiungi a lista",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} aggiunto a "${name}"`,
     firmographics: "Dettagli azienda",
     seniority: "Seniority",
     department: "Reparto",
@@ -128,7 +147,12 @@ const COPY = {
     ageRange: "Tranche d'âge",
     personality: "Personnalité",
     location: "Localisation",
+    email: "E-mail",
+    phone: "Téléphone",
     linkedin: "LinkedIn",
+    addToList: "Ajouter à une liste",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} ajouté à "${name}"`,
     firmographics: "Détails de l'entreprise",
     seniority: "Ancienneté",
     department: "Département",
@@ -154,7 +178,12 @@ const COPY = {
     ageRange: "Altersgruppe",
     personality: "Persönlichkeit",
     location: "Standort",
+    email: "E-Mail",
+    phone: "Telefon",
     linkedin: "LinkedIn",
+    addToList: "Zu Liste hinzufügen",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} zu "${name}" hinzugefügt`,
     firmographics: "Unternehmensdetails",
     seniority: "Karrierestufe",
     department: "Abteilung",
@@ -180,7 +209,12 @@ const COPY = {
     ageRange: "Faixa etária",
     personality: "Personalidade",
     location: "Localização",
+    email: "Email",
+    phone: "Telefone",
     linkedin: "LinkedIn",
+    addToList: "Adicionar a lista",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} adicionado a "${name}"`,
     firmographics: "Detalhes da empresa",
     seniority: "Senioridade",
     department: "Departamento",
@@ -206,7 +240,12 @@ const COPY = {
     ageRange: "Faixa etária",
     personality: "Personalidade",
     location: "Localização",
+    email: "Email",
+    phone: "Telefone",
     linkedin: "LinkedIn",
+    addToList: "Adicionar a lista",
+    addedToList: (firstName: string, name: string) =>
+      `${firstName} adicionado a "${name}"`,
     firmographics: "Detalhes da empresa",
     seniority: "Senioridade",
     department: "Departamento",
@@ -294,6 +333,7 @@ export function ProspectSummaryPanel({
   const [summary, setSummary] = React.useState(() => generateProspectSummary(prospect))
   const [customizeOpen, setCustomizeOpen] = React.useState(false)
   const [instructions, setInstructions] = React.useState("")
+  const [addListOpen, setAddListOpen] = React.useState(false)
 
   // A fresh contextual summary whenever the open thread's prospect changes.
   const [shownId, setShownId] = React.useState(prospect.id)
@@ -339,6 +379,15 @@ export function ProspectSummaryPanel({
           </p>
         </div>
         <StatusBadge status={prospect.status} />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => setAddListOpen(true)}
+        >
+          <FolderPlus className="size-3.5" />
+          {c.addToList}
+        </Button>
       </div>
 
       <div className="bg-primary/[0.03] space-y-2 rounded-lg border p-3">
@@ -400,6 +449,20 @@ export function ProspectSummaryPanel({
         )}
         <Field icon={MapPin} label={c.location} value={prospect.location} />
         <Field
+          icon={Mail}
+          label={c.email}
+          value={prospect.email}
+          href={`mailto:${prospect.email}`}
+        />
+        {prospect.phone && (
+          <Field
+            icon={Phone}
+            label={c.phone}
+            value={prospect.phone}
+            href={`tel:${prospect.phone}`}
+          />
+        )}
+        <Field
           icon={LinkedinIcon}
           label={c.linkedin}
           value={stripProtocol(prospect.linkedinUrl)}
@@ -456,6 +519,15 @@ export function ProspectSummaryPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AddToListDialog
+        open={addListOpen}
+        onOpenChange={setAddListOpen}
+        count={1}
+        onAdded={(name) =>
+          toast.success(c.addedToList(prospect.firstName, name))
+        }
+      />
     </div>
   )
 }
