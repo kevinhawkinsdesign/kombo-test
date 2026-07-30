@@ -52,7 +52,8 @@ import { useReleaseMode } from "@/lib/release-mode"
 import { STATUS_LABELS } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import { usePagedSelection } from "@/lib/use-paged-selection"
-import { useTableSortFilter } from "@/lib/table-sort-filter"
+import { useTableSortFilter, filterChipsFor } from "@/lib/table-sort-filter"
+import { ActiveFiltersBar } from "@/components/common/ActiveFiltersBar"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Prospect, ProspectStatus } from "@/lib/types"
 
@@ -378,6 +379,29 @@ export default function People() {
   })
 
   const tsf = useTableSortFilter(allColumns, results)
+
+  // Everything currently narrowing the table, in one place: the per-column
+  // DataTable filters plus the toolbar's Status/List facets — so there's a
+  // single spot to see and clear all of them together (CollectionToolbar's
+  // own controls stay the "how you set" a filter; this is the "what's set").
+  // Not memoized — cheap (a handful of filter entries), and `activeList` is a
+  // live store object the React Compiler can't safely treat as a stable dep.
+  const filterChips = filterChipsFor(allColumns, tsf.filters, tsf.setFilter, locale)
+  if (status !== ALL) {
+    filterChips.push({
+      key: "toolbar-status",
+      label: STATUS_LABELS[status as ProspectStatus],
+      onClear: () => setStatus(ALL),
+    })
+  }
+  if (activeList) {
+    filterChips.push({
+      key: "toolbar-list",
+      label: activeList.name,
+      onClear: () => setListFilter("all"),
+    })
+  }
+
   const sel = usePagedSelection(
     tsf.rows,
     (p) => p.id,
@@ -579,6 +603,16 @@ export default function People() {
           <span className="hidden sm:inline">{c.columns}</span>
         </Button>
       </div>
+
+      <ActiveFiltersBar
+        chips={filterChips}
+        onClearAll={() => {
+          tsf.clearFilters()
+          setStatus(ALL)
+          setListFilter("all")
+        }}
+        locale={locale}
+      />
 
       {tsf.rows.length === 0 ? (
         <EmptyState description={c.noMatch} />

@@ -49,11 +49,13 @@ import type { CollectionView } from "@/components/common/ViewToggle"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
+import { ActiveFiltersBar } from "@/components/common/ActiveFiltersBar"
 import {
   useColumnPrefs,
   type ColumnDef,
   type ColGroup,
 } from "@/lib/table-columns"
+import { useTableSortFilter, filterChipsFor } from "@/lib/table-sort-filter"
 import {
   useCampaigns,
   useLists,
@@ -142,7 +144,7 @@ const COPY = {
     viewTable: "Table",
     exportLabel: "Export",
     exported: "Campaigns exported to CSV",
-    noResults: "No campaigns match your search.",
+    noResults: "No campaigns match your filters.",
     sortRecent: "Newest",
     sortName: "Name (A–Z)",
     sortEnrolled: "Most enrolled",
@@ -227,7 +229,7 @@ const COPY = {
     viewTable: "Tabla",
     exportLabel: "Exportar",
     exported: "Campañas exportadas a CSV",
-    noResults: "Ninguna campaña coincide con tu búsqueda.",
+    noResults: "Ninguna campaña coincide con tus filtros.",
     sortRecent: "Más recientes",
     sortName: "Nombre (A–Z)",
     sortEnrolled: "Más inscritos",
@@ -312,7 +314,7 @@ const COPY = {
     viewTable: "Tabella",
     exportLabel: "Esporta",
     exported: "Campagne esportate in CSV",
-    noResults: "Nessuna campagna corrisponde alla tua ricerca.",
+    noResults: "Nessuna campagna corrisponde ai tuoi filtri.",
     sortRecent: "Più recenti",
     sortName: "Nome (A–Z)",
     sortEnrolled: "Più iscritti",
@@ -397,7 +399,7 @@ const COPY = {
     viewTable: "Tableau",
     exportLabel: "Exporter",
     exported: "Campagnes exportées en CSV",
-    noResults: "Aucune campagne ne correspond à votre recherche.",
+    noResults: "Aucune campagne ne correspond à vos filtres.",
     sortRecent: "Plus récentes",
     sortName: "Nom (A–Z)",
     sortEnrolled: "Plus d'inscrits",
@@ -482,7 +484,7 @@ const COPY = {
     viewTable: "Tabelle",
     exportLabel: "Exportieren",
     exported: "Kampagnen als CSV exportiert",
-    noResults: "Keine Kampagnen entsprechen deiner Suche.",
+    noResults: "Keine Kampagnen entsprechen deinen Filtern.",
     sortRecent: "Neueste",
     sortName: "Name (A–Z)",
     sortEnrolled: "Meiste Aufnahmen",
@@ -567,7 +569,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Campanhas exportadas para CSV",
-    noResults: "Nenhuma campanha corresponde à sua pesquisa.",
+    noResults: "Nenhuma campanha corresponde aos seus filtros.",
     sortRecent: "Mais recentes",
     sortName: "Nome (A–Z)",
     sortEnrolled: "Mais inscritos",
@@ -652,7 +654,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Campanhas exportadas para CSV",
-    noResults: "Nenhuma campanha corresponde à sua busca.",
+    noResults: "Nenhuma campanha corresponde aos seus filtros.",
     sortRecent: "Mais recentes",
     sortName: "Nome (A–Z)",
     sortEnrolled: "Mais inscritos",
@@ -1164,11 +1166,21 @@ export default function Campaigns() {
     return sorted
   }, [campaigns, query, sort])
 
+  // Per-column sort/filter (the DataTable header controls) layered on top of
+  // the search + preset-sort above — same shared hook People.tsx/Companies.tsx
+  // use, applied to the full pre-pagination set (there's no pagination here,
+  // so `visible` itself is that set).
+  const tsf = useTableSortFilter(CAMPAIGN_COLUMNS, visible)
+  const filterChips = React.useMemo(
+    () => filterChipsFor(CAMPAIGN_COLUMNS, tsf.filters, tsf.setFilter, locale),
+    [tsf.filters, tsf.setFilter, locale]
+  )
+
   function exportCsv() {
     downloadCsv(
       "kombo-campaigns.csv",
       [c.colName, c.colStatus, c.enrolled, c.opened, c.colReply, c.meetings, c.colCreated],
-      visible.map((cm) => [
+      tsf.rows.map((cm) => [
         cm.name,
         c.statusLabel[cm.status],
         cm.enrolled,
@@ -1201,7 +1213,10 @@ export default function Campaigns() {
   }
 
   // Bulk selection — same DataTable selection pattern used elsewhere.
-  const rowIds = visible.map((cm) => cm.id)
+  // "Select all" reflects the currently filtered/visible rows (tsf.rows),
+  // not the whole search+sort set — same rule DataTable's own selection
+  // contract follows everywhere else (People.tsx, Companies.tsx).
+  const rowIds = tsf.rows.map((cm) => cm.id)
   const allSelected =
     rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
   const someSelected = !allSelected && rowIds.some((id) => selectedIds.has(id))
@@ -1349,13 +1364,15 @@ export default function Campaigns() {
         )}
       </CollectionToolbar>
 
-      {visible.length === 0 ? (
+      <ActiveFiltersBar chips={filterChips} onClearAll={tsf.clearFilters} locale={locale} />
+
+      {tsf.rows.length === 0 ? (
         <Card className="text-muted-foreground p-8 text-center text-sm">
           {c.noResults}
         </Card>
       ) : view === "cards" ? (
         <div className="grid gap-4 lg:grid-cols-2">
-          {visible.map((campaign) => (
+          {tsf.rows.map((campaign) => (
             <CampaignCard
               key={campaign.id}
               campaign={campaign}
@@ -1371,7 +1388,7 @@ export default function Campaigns() {
           <DataTable
             columns={CAMPAIGN_COLUMNS}
             visible={campaignColPrefs.visible}
-            rows={visible}
+            rows={tsf.rows}
             rowKey={(cm) => cm.id}
             locale={locale}
             selection={{
@@ -1381,6 +1398,11 @@ export default function Campaigns() {
               allSelected,
               someSelected,
             }}
+            sort={tsf.sort}
+            onSortChange={tsf.setSort}
+            filters={tsf.filters}
+            onFilterChange={tsf.setFilter}
+            filterRows={visible}
             actions={(cm) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
