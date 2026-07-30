@@ -645,6 +645,61 @@ export function CoachAnalyticsPanel({ calls }: { calls: CoachRecording[] }) {
 
   return (
     <div className="space-y-5">
+      {/* The AI summary leads the page — it's a TL;DR of the score tiles,
+          radar, breakdown, and pass-rate cards that follow, so it belongs
+          above them rather than as the last thing scrolled to. */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{c.aiSectionTitle}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {summaryStatus === "idle" && (
+            <Button
+              variant="volt"
+              disabled={calls.length === 0}
+              onClick={handleGenerate}
+            >
+              <Sparkles className="size-4" />
+              {c.generateSummary}
+            </Button>
+          )}
+          {summaryStatus === "loading" && (
+            <p className="text-muted-foreground flex items-center gap-2 text-sm">
+              <Loader2 className="size-4 animate-spin" />
+              {c.generatingSummary}
+            </p>
+          )}
+          {summaryStatus === "done" && summary && (
+            <div className="space-y-4">
+              <div>
+                <p className="mb-1 text-sm font-medium">{c.aiSummaryOverall}</p>
+                <p className="text-muted-foreground text-sm">
+                  {summary.overallSummary}
+                </p>
+              </div>
+              <div className="border-chart-1/30 bg-chart-1/5 rounded-lg border p-3">
+                <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                  <ThumbsUp className="text-chart-1 size-4" />
+                  {c.aiSummaryWell}
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  {summary.whatWentWell}
+                </p>
+              </div>
+              <div className="border-chart-4/30 bg-chart-4/5 rounded-lg border p-3">
+                <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                  <ThumbsDown className="text-chart-4 size-4" />
+                  {c.aiSummaryImprove}
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  {summary.whatCanImprove}
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col items-center gap-1.5 rounded-lg border py-3 text-center">
           <span
@@ -740,58 +795,6 @@ export function CoachAnalyticsPanel({ calls }: { calls: CoachRecording[] }) {
           </CardContent>
         </Card>
       )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{c.aiSectionTitle}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {summaryStatus === "idle" && (
-            <Button
-              variant="volt"
-              disabled={calls.length === 0}
-              onClick={handleGenerate}
-            >
-              <Sparkles className="size-4" />
-              {c.generateSummary}
-            </Button>
-          )}
-          {summaryStatus === "loading" && (
-            <p className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Loader2 className="size-4 animate-spin" />
-              {c.generatingSummary}
-            </p>
-          )}
-          {summaryStatus === "done" && summary && (
-            <div className="space-y-4">
-              <div>
-                <p className="mb-1 text-sm font-medium">{c.aiSummaryOverall}</p>
-                <p className="text-muted-foreground text-sm">
-                  {summary.overallSummary}
-                </p>
-              </div>
-              <div className="border-chart-1/30 bg-chart-1/5 rounded-lg border p-3">
-                <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                  <ThumbsUp className="text-chart-1 size-4" />
-                  {c.aiSummaryWell}
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  {summary.whatWentWell}
-                </p>
-              </div>
-              <div className="border-chart-4/30 bg-chart-4/5 rounded-lg border p-3">
-                <div className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                  <ThumbsDown className="text-chart-4 size-4" />
-                  {c.aiSummaryImprove}
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  {summary.whatCanImprove}
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }
