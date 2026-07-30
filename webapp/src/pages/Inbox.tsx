@@ -53,6 +53,9 @@ import {
   Moon,
   CircleAlert,
   Bell,
+  Palette,
+  Ruler,
+  Link2,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -73,13 +76,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -108,6 +104,7 @@ import {
   type ConversationFilters,
 } from "@/lib/conversation-filters"
 import { getProspect, currentUser } from "@/lib/mock-data"
+import { SMART_LINKS } from "@/lib/mock-smart-links"
 import { getRep, assigneeName } from "@/lib/team"
 import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
 import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
@@ -238,19 +235,21 @@ const COPY = {
     tone: "Tone",
     toneFormal: "Formal",
     toneFriendly: "Friendly",
-    toneProfessional: "Professional",
-    toneConcise: "Concise",
+    toneEmpathic: "Empathic",
+    toneEnthusiastic: "Enthusiastic",
+    toneAnalytical: "Analytical",
+    toneDirect: "Direct",
     length: "Length",
     shorter: "Make shorter",
     longer: "Make longer",
     refined: (label: string) => `Rewrote — ${label.toLowerCase()}`,
     personalize: "+ Variables",
-    regenTitle: "Regenerate with…",
+    custom: "Custom",
+    smartLinks: "Links",
     regenLengthNormal: "Normal",
     regenLanguage: "Language",
     regenInstructions: "Additional instructions (optional)",
     regenInstructionsPlaceholder: "e.g. mention our upcoming webinar…",
-    regenCancel: "Cancel",
     regenerated: "Draft regenerated",
     varsSearchPlaceholder: "Search variables…",
     personalizedVariable: "Personalized variable",
@@ -398,19 +397,21 @@ const COPY = {
     tone: "Tono",
     toneFormal: "Formal",
     toneFriendly: "Cercano",
-    toneProfessional: "Profesional",
-    toneConcise: "Conciso",
+    toneEmpathic: "Empático",
+    toneEnthusiastic: "Entusiasta",
+    toneAnalytical: "Analítico",
+    toneDirect: "Directo",
     length: "Longitud",
     shorter: "Más corto",
     longer: "Más largo",
     refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
     personalize: "+ Variables",
-    regenTitle: "Regenerar con…",
+    custom: "Personalizado",
+    smartLinks: "Enlaces",
     regenLengthNormal: "Normal",
     regenLanguage: "Idioma",
     regenInstructions: "Instrucciones adicionales (opcional)",
     regenInstructionsPlaceholder: "p. ej. menciona nuestro próximo webinar…",
-    regenCancel: "Cancelar",
     regenerated: "Borrador regenerado",
     varsSearchPlaceholder: "Buscar variables…",
     personalizedVariable: "Variable personalizada",
@@ -558,19 +559,21 @@ const COPY = {
     tone: "Tono",
     toneFormal: "Formale",
     toneFriendly: "Amichevole",
-    toneProfessional: "Professionale",
-    toneConcise: "Conciso",
+    toneEmpathic: "Empatico",
+    toneEnthusiastic: "Entusiasta",
+    toneAnalytical: "Analitico",
+    toneDirect: "Diretto",
     length: "Lunghezza",
     shorter: "Più breve",
     longer: "Più lungo",
     refined: (label: string) => `Riscritto — ${label.toLowerCase()}`,
     personalize: "+ Variabili",
-    regenTitle: "Rigenera con…",
+    custom: "Personalizzato",
+    smartLinks: "Link",
     regenLengthNormal: "Normale",
     regenLanguage: "Lingua",
     regenInstructions: "Istruzioni aggiuntive (facoltativo)",
     regenInstructionsPlaceholder: "es. menziona il nostro prossimo webinar…",
-    regenCancel: "Annulla",
     regenerated: "Bozza rigenerata",
     varsSearchPlaceholder: "Cerca variabili…",
     personalizedVariable: "Variabile personalizzata",
@@ -718,19 +721,21 @@ const COPY = {
     tone: "Ton",
     toneFormal: "Formel",
     toneFriendly: "Amical",
-    toneProfessional: "Professionnel",
-    toneConcise: "Concis",
+    toneEmpathic: "Empathique",
+    toneEnthusiastic: "Enthousiaste",
+    toneAnalytical: "Analytique",
+    toneDirect: "Direct",
     length: "Longueur",
     shorter: "Plus court",
     longer: "Plus long",
     refined: (label: string) => `Réécrit — ${label.toLowerCase()}`,
     personalize: "+ Variables",
-    regenTitle: "Régénérer avec…",
+    custom: "Personnalisé",
+    smartLinks: "Liens",
     regenLengthNormal: "Normal",
     regenLanguage: "Langue",
     regenInstructions: "Instructions supplémentaires (facultatif)",
     regenInstructionsPlaceholder: "ex. mentionnez notre prochain webinaire…",
-    regenCancel: "Annuler",
     regenerated: "Brouillon régénéré",
     varsSearchPlaceholder: "Rechercher des variables…",
     personalizedVariable: "Variable personnalisée",
@@ -878,19 +883,21 @@ const COPY = {
     tone: "Ton",
     toneFormal: "Formell",
     toneFriendly: "Freundlich",
-    toneProfessional: "Professionell",
-    toneConcise: "Prägnant",
+    toneEmpathic: "Einfühlsam",
+    toneEnthusiastic: "Enthusiastisch",
+    toneAnalytical: "Analytisch",
+    toneDirect: "Direkt",
     length: "Länge",
     shorter: "Kürzer",
     longer: "Länger",
     refined: (label: string) => `Umgeschrieben — ${label.toLowerCase()}`,
     personalize: "+ Variablen",
-    regenTitle: "Neu generieren mit…",
+    custom: "Individuell",
+    smartLinks: "Links",
     regenLengthNormal: "Normal",
     regenLanguage: "Sprache",
     regenInstructions: "Zusätzliche Anweisungen (optional)",
     regenInstructionsPlaceholder: "z. B. erwähne unser kommendes Webinar…",
-    regenCancel: "Abbrechen",
     regenerated: "Entwurf neu generiert",
     varsSearchPlaceholder: "Variablen suchen…",
     personalizedVariable: "Personalisierte Variable",
@@ -1038,19 +1045,21 @@ const COPY = {
     tone: "Tom",
     toneFormal: "Formal",
     toneFriendly: "Amigável",
-    toneProfessional: "Profissional",
-    toneConcise: "Conciso",
+    toneEmpathic: "Empático",
+    toneEnthusiastic: "Entusiasmado",
+    toneAnalytical: "Analítico",
+    toneDirect: "Direto",
     length: "Tamanho",
     shorter: "Mais curto",
     longer: "Mais longo",
     refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
     personalize: "+ Variáveis",
-    regenTitle: "Regenerar com…",
+    custom: "Personalizado",
+    smartLinks: "Links",
     regenLengthNormal: "Normal",
     regenLanguage: "Idioma",
     regenInstructions: "Instruções adicionais (opcional)",
     regenInstructionsPlaceholder: "p. ex. mencione o nosso próximo webinar…",
-    regenCancel: "Cancelar",
     regenerated: "Rascunho regenerado",
     varsSearchPlaceholder: "Pesquisar variáveis…",
     personalizedVariable: "Variável personalizada",
@@ -1198,19 +1207,21 @@ const COPY = {
     tone: "Tom",
     toneFormal: "Formal",
     toneFriendly: "Amigável",
-    toneProfessional: "Profissional",
-    toneConcise: "Conciso",
+    toneEmpathic: "Empático",
+    toneEnthusiastic: "Entusiasmado",
+    toneAnalytical: "Analítico",
+    toneDirect: "Direto",
     length: "Tamanho",
     shorter: "Mais curto",
     longer: "Mais longo",
     refined: (label: string) => `Reescrito — ${label.toLowerCase()}`,
     personalize: "+ Variáveis",
-    regenTitle: "Gerar novamente com…",
+    custom: "Personalizado",
+    smartLinks: "Links",
     regenLengthNormal: "Normal",
     regenLanguage: "Idioma",
     regenInstructions: "Instruções adicionais (opcional)",
     regenInstructionsPlaceholder: "ex.: mencione nosso próximo webinar…",
-    regenCancel: "Cancelar",
     regenerated: "Rascunho gerado novamente",
     varsSearchPlaceholder: "Buscar variáveis…",
     personalizedVariable: "Variável personalizada",
@@ -3582,30 +3593,24 @@ function Composer({
   const [templateOpen, setTemplateOpen] = React.useState(false)
   const [customOpen, setCustomOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
-  const [regenOpen, setRegenOpen] = React.useState(false)
-  const [regenTone, setRegenTone] = React.useState<ReplyTone>("professional")
-  const [regenLength, setRegenLength] = React.useState<ReplyLength>("normal")
-  const [regenLang, setRegenLang] = React.useState<ChatLang>(recipientLang)
-  const [regenInstructions, setRegenInstructions] = React.useState("")
+  // AI-generation factors — inline in the composer toolbar (Tone, Length,
+  // Language, Custom instructions), matching the extension's always-visible
+  // MessageEnhancerBox controls rather than a "Regenerate with…" modal that
+  // only surfaced once a draft already existed. Each applies independently
+  // and immediately on selection, re-rolling the current draft with just
+  // that one option — mirrors the extension's handleAdapt({ toneOfVoice })
+  // / handleAdapt({ instruction }) calls, which never combine dimensions.
+  const [activeTone, setActiveTone] = React.useState<ReplyTone | undefined>(undefined)
+  const [activeLength, setActiveLength] = React.useState<ReplyLength | undefined>(undefined)
+  const [activeLang, setActiveLang] = React.useState<ChatLang | undefined>(undefined)
+  const [customInstructionsOpen, setCustomInstructionsOpen] = React.useState(false)
+  const [customInstructions, setCustomInstructions] = React.useState("")
   const [varSearch, setVarSearch] = React.useState("")
   // Free-text "personalized variable" — wraps whatever's typed in {{ }} as a
   // placeholder to fill in by hand later, matching the extension's Add
   // Variables modal. Always inserted literally, never resolved like insertVar.
   const [customVarText, setCustomVarText] = React.useState("")
   const taRef = React.useRef<RichTextEditorHandle>(null)
-
-  // wasOpen reset pattern — seed every field back to its default each time
-  // the Regenerate dialog opens, so a prior selection never lingers.
-  const [regenWasOpen, setRegenWasOpen] = React.useState(regenOpen)
-  if (regenOpen !== regenWasOpen) {
-    setRegenWasOpen(regenOpen)
-    if (regenOpen) {
-      setRegenTone("professional")
-      setRegenLength("normal")
-      setRegenLang(recipientLang)
-      setRegenInstructions("")
-    }
-  }
 
   const CHANNEL_NAMES: Record<string, string> = {
     email: c.email,
@@ -3678,24 +3683,46 @@ function Composer({
     setAiUsed(true)
   }
 
+  // Plain re-roll, no explicit tone/length/language pinned — cycles the next
+  // canned phrasing for this intent. Drives both "Generate draft" (no text
+  // yet) and the toolbar's "Regenerate" button (re-roll everything at once).
   function generate() {
+    setActiveTone(undefined)
+    setActiveLength(undefined)
+    setActiveLang(undefined)
     runGenerate()
   }
 
-  // Regenerate (composer already has text) opens a dialog for tone/length/
-  // language/instructions first, instead of re-rolling with no input.
-  function openRegenerate() {
-    setRegenOpen(true)
+  // Each inline factor applies immediately and independently — selecting a
+  // Tone re-rolls with just that tone (not combined with a previously
+  // picked Length/Language), matching the extension's handleAdapt calls.
+  function applyTone(tone: ReplyTone) {
+    setActiveTone(tone)
+    runGenerate({ tone })
+    toast.success(c.regenerated)
   }
 
-  function confirmRegenerate() {
-    runGenerate({
-      tone: regenTone,
-      length: regenLength,
-      lang: regenLang,
-      instructions: regenInstructions.trim() || undefined,
-    })
-    setRegenOpen(false)
+  function applyLength(length: ReplyLength) {
+    setActiveLength(length)
+    runGenerate({ length })
+    toast.success(c.regenerated)
+  }
+
+  function applyLanguage(lang: ChatLang) {
+    setActiveLang(lang)
+    runGenerate({ lang })
+    toast.success(c.regenerated)
+  }
+
+  // Custom instructions only apply on explicit "Generate" click, unlike the
+  // Tone/Length/Language controls above — matches the extension's Custom
+  // badge (reveals an instructions box + separate Generate button).
+  function applyCustomInstructions() {
+    const instructions = customInstructions.trim()
+    if (!instructions) return
+    runGenerate({ instructions })
+    setCustomInstructions("")
+    setCustomInstructionsOpen(false)
     toast.success(c.regenerated)
   }
 
@@ -3704,6 +3731,13 @@ function Composer({
   // back to the literal tag when this prospect has no value for the field.
   function insertVar(tag: string) {
     taRef.current?.insertText(varsMap[tag] || `{{${tag}}}`)
+  }
+
+  // Insert a reusable tracking/CTA link at the caret — mirrors the
+  // extension's "Links" dropdown. Minimal read-only catalog (see
+  // lib/mock-smart-links.ts); no per-workspace management UI yet.
+  function insertSmartLink(link: (typeof SMART_LINKS)[number]) {
+    taRef.current?.insertText(`${link.label[locale]}: ${link.url}`)
   }
 
   // Unlike insertVar, always inserts the raw typed text literally — it's a
@@ -3728,6 +3762,9 @@ function Composer({
     conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed, sendChannel)
     setReply("")
     setAiUsed(false)
+    setActiveTone(undefined)
+    setActiveLength(undefined)
+    setActiveLang(undefined)
     toast.success(c.replySent(prospect.firstName))
   }
 
@@ -3756,14 +3793,20 @@ function Composer({
 
   const showTranslate = hasText && detectLang(replyText) !== recipientLang
 
-  // Regenerate-dialog option arrays — locale-dependent labels, so declared
-  // inside the component rather than hoisted to module scope. Reuse the
-  // existing Tone/Length copy keys rather than a second taxonomy.
+  // Inline composer option arrays — locale-dependent labels, so declared
+  // inside the component rather than hoisted to module scope. Tone matches
+  // the extension's exact 6-tone set (kombo-extension's toneOfVoices) for
+  // real parity — "professional"/"concise" were dropped rather than kept
+  // alongside it: an 8-option list with "Concise" tone overlapping Length's
+  // "Make shorter" was more confusing than a clean parity match. Judgment
+  // call — flagged for review, see the sub-task 1 report.
   const TONE_OPTIONS: { value: ReplyTone; label: string }[] = [
-    { value: "formal", label: c.toneFormal },
     { value: "friendly", label: c.toneFriendly },
-    { value: "professional", label: c.toneProfessional },
-    { value: "concise", label: c.toneConcise },
+    { value: "empathic", label: c.toneEmpathic },
+    { value: "enthusiastic", label: c.toneEnthusiastic },
+    { value: "formal", label: c.toneFormal },
+    { value: "analytical", label: c.toneAnalytical },
+    { value: "direct", label: c.toneDirect },
   ]
   const LENGTH_OPTIONS: { value: ReplyLength; label: string }[] = [
     { value: "shorter", label: c.shorter },
@@ -3866,6 +3909,95 @@ function Composer({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* AI-generation factors — inline and always visible (disabled until
+          there's draft content to work from), matching the extension's
+          MessageEnhancerBox toolbar instead of gating them behind a
+          "Regenerate" modal that only appeared once a draft already existed. */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={!hasText}>
+            <Palette className="size-4" />
+            {activeTone ? TONE_OPTIONS.find((o) => o.value === activeTone)?.label : c.tone}
+            <ChevronDown className="size-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {TONE_OPTIONS.map((o) => (
+            <DropdownMenuItem key={o.value} onClick={() => applyTone(o.value)}>
+              {o.label}
+              {activeTone === o.value && <Check className="ml-auto size-3.5" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={!hasText}>
+            <Ruler className="size-4" />
+            {activeLength ? LENGTH_OPTIONS.find((o) => o.value === activeLength)?.label : c.length}
+            <ChevronDown className="size-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {LENGTH_OPTIONS.map((o) => (
+            <DropdownMenuItem key={o.value} onClick={() => applyLength(o.value)}>
+              {o.label}
+              {activeLength === o.value && <Check className="ml-auto size-3.5" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={!hasText}>
+            <Languages className="size-4" />
+            {activeLang ? `${LANG_FLAG[activeLang]} ${LANG_LABEL[activeLang]}` : c.regenLanguage}
+            <ChevronDown className="size-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {LANG_OPTIONS.map((lang) => (
+            <DropdownMenuItem key={lang} onClick={() => applyLanguage(lang)}>
+              {LANG_FLAG[lang]} {LANG_LABEL[lang]}
+              {activeLang === lang && <Check className="ml-auto size-3.5" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={!hasText}
+        className={cn(
+          "text-muted-foreground",
+          customInstructionsOpen && "bg-muted text-foreground"
+        )}
+        onClick={() => setCustomInstructionsOpen((v) => !v)}
+      >
+        <Pencil className="size-4" />
+        {c.custom}
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground">
+            <Link2 className="size-4" />
+            {c.smartLinks}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {SMART_LINKS.map((link) => (
+            <DropdownMenuItem key={link.id} onClick={() => insertSmartLink(link)}>
+              <Link2 className="text-primary size-3.5 shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{link.label[locale]}</span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </>
   )
 
@@ -3944,7 +4076,12 @@ function Composer({
           value={reply}
           onChange={(html) => {
             setReply(html)
-            if (stripHtml(html) === "") setAiUsed(false)
+            if (stripHtml(html) === "") {
+              setAiUsed(false)
+              setActiveTone(undefined)
+              setActiveLength(undefined)
+              setActiveLang(undefined)
+            }
           }}
           placeholder={c.replyTo(prospect.firstName)}
           ariaLabel={c.replyTo(prospect.firstName)}
@@ -3954,12 +4091,37 @@ function Composer({
         />
       )}
 
+      {/* Custom instructions — revealed by the inline "Custom" toggle in the
+          toolbar above. Only applies on explicit Generate, not on every
+          keystroke (matches the extension's Custom badge + Generate button). */}
+      {customInstructionsOpen && !recording && (
+        <div className="border-primary/20 bg-primary/[0.03] flex items-end gap-2 rounded-lg border p-2.5">
+          <Textarea
+            value={customInstructions}
+            onChange={(e) => setCustomInstructions(e.target.value)}
+            placeholder={c.regenInstructionsPlaceholder}
+            aria-label={c.regenInstructions}
+            className="bg-background min-h-16 flex-1"
+            autoFocus
+          />
+          <Button
+            variant="volt"
+            size="sm"
+            disabled={!customInstructions.trim()}
+            onClick={applyCustomInstructions}
+          >
+            <Wand2 className="size-4" />
+            {c.generate}
+          </Button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
           disabled={recording}
-          onClick={hasText ? openRegenerate : generate}
+          onClick={generate}
         >
           <Wand2 className="size-4" />
           {hasText ? c.regenerate : c.generate}
@@ -4064,81 +4226,6 @@ function Composer({
             <Button variant="volt" disabled={!customValue} onClick={confirmCustomSchedule}>
               <CalendarClock className="size-4" />
               {c.scheduleConfirm}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Regenerate options */}
-      <Dialog open={regenOpen} onOpenChange={setRegenOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{c.regenTitle}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="regen-tone">{c.tone}</Label>
-              <Select value={regenTone} onValueChange={(v) => setRegenTone(v as ReplyTone)}>
-                <SelectTrigger id="regen-tone" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TONE_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="regen-length">{c.length}</Label>
-              <Select value={regenLength} onValueChange={(v) => setRegenLength(v as ReplyLength)}>
-                <SelectTrigger id="regen-length" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LENGTH_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="regen-lang">{c.regenLanguage}</Label>
-              <Select value={regenLang} onValueChange={(v) => setRegenLang(v as ChatLang)}>
-                <SelectTrigger id="regen-lang" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LANG_OPTIONS.map((lang) => (
-                    <SelectItem key={lang} value={lang}>
-                      {LANG_FLAG[lang]} {LANG_LABEL[lang]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="regen-instructions">{c.regenInstructions}</Label>
-              <Textarea
-                id="regen-instructions"
-                value={regenInstructions}
-                onChange={(e) => setRegenInstructions(e.target.value)}
-                placeholder={c.regenInstructionsPlaceholder}
-                className="min-h-20"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setRegenOpen(false)}>
-              {c.regenCancel}
-            </Button>
-            <Button variant="volt" onClick={confirmRegenerate}>
-              <Wand2 className="size-4" />
-              {c.regenerate}
             </Button>
           </DialogFooter>
         </DialogContent>
