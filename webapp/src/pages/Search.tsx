@@ -1,7 +1,6 @@
 import * as React from "react"
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import { toast } from "sonner"
-import kaiUrl from "@/assets/kai-pleased.png"
 import {
   Sparkles,
   Search as SearchIcon,
@@ -3569,6 +3568,7 @@ export default function Search() {
             entity={entity}
             urlsMode={urlsMode}
             onSuggestion={(s) => runPrompt(s, entity)}
+            onOpenFilters={() => setFiltersRequested(true)}
           />
         )}
 
@@ -5114,22 +5114,26 @@ function SearchIdleState({
   entity,
   urlsMode,
   onSuggestion,
+  onOpenFilters,
 }: {
   c: Copy
   entity: AiEntity
   urlsMode: boolean
   onSuggestion: (prompt: string) => void
+  onOpenFilters: () => void
 }) {
   const suggestions =
     entity === "companies" ? c.idleSuggestionsCompanies : c.idleSuggestionsPeople
   return (
+    // No mascot illustration here anymore (Ale's call — "removing the robot
+    // for another illustration I think is better (or nothing)"; nothing was
+    // the simpler option and needs no new asset). The "Search with filters"
+    // button is the other half of the same feedback: a way in for people who
+    // don't want to write a free-text query at all.
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed px-4 py-16 text-center">
-      <img src={kaiUrl} alt="" className="size-16" />
-      {/* One-click curated prompts — swapped per entity tab; URL mode has its
-          own pill input, so suggestions would mislead there. */}
       {!urlsMode && (
         <>
-          <p className="text-muted-foreground mt-3 text-xs font-medium tracking-wide uppercase">
+          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
             {c.idleSuggestedTitle}
           </p>
           <div className="flex max-w-2xl flex-wrap justify-center gap-2">
@@ -5144,6 +5148,10 @@ function SearchIdleState({
               </button>
             ))}
           </div>
+          <Button variant="outline" size="sm" className="mt-3" onClick={onOpenFilters}>
+            <SlidersHorizontal className="size-4" />
+            {c.searchWithFilters}
+          </Button>
         </>
       )}
     </div>
