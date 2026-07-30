@@ -107,8 +107,6 @@ import {
   countConversationFilters,
   type ConversationFilters,
 } from "@/lib/conversation-filters"
-import { AssigneePicker } from "@/components/common/AssigneePicker"
-import { resolveUser } from "@/lib/task-people"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { getRep, assigneeName } from "@/lib/team"
 import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
@@ -207,9 +205,7 @@ const COPY = {
     selectConversationHint: "Choose a thread to read and reply.",
     markRead: "Mark as read",
     markUnread: "Mark as unread",
-    assign: "Assign owner",
     assignedTo: (name: string) => `Owner: ${name}`,
-    unassign: "Remove owner",
     archive: "Archive",
     unarchive: "Move to inbox",
     delete: "Delete",
@@ -218,7 +214,6 @@ const COPY = {
     deleteConfirm: "Delete",
     deleted: "Conversation deleted",
     archived: "Conversation archived",
-    assignedToast: (name: string) => `Owner set to ${name}`,
     templates: "Templates",
     noTemplates: "No templates yet",
     translate: "Translate",
@@ -371,9 +366,7 @@ const COPY = {
     selectConversationHint: "Elige un hilo para leer y responder.",
     markRead: "Marcar como leído",
     markUnread: "Marcar como no leído",
-    assign: "Asignar responsable",
     assignedTo: (name: string) => `Responsable: ${name}`,
-    unassign: "Quitar responsable",
     archive: "Archivar",
     unarchive: "Mover a la bandeja",
     delete: "Eliminar",
@@ -382,7 +375,6 @@ const COPY = {
     deleteConfirm: "Eliminar",
     deleted: "Conversación eliminada",
     archived: "Conversación archivada",
-    assignedToast: (name: string) => `Responsable definido: ${name}`,
     templates: "Plantillas",
     noTemplates: "Aún no hay plantillas",
     translate: "Traducir",
@@ -534,9 +526,7 @@ const COPY = {
     selectConversationHint: "Scegli un thread per leggere e rispondere.",
     markRead: "Segna come letta",
     markUnread: "Segna come non letta",
-    assign: "Assegna responsabile",
     assignedTo: (name: string) => `Responsabile: ${name}`,
-    unassign: "Rimuovi responsabile",
     archive: "Archivia",
     unarchive: "Sposta nella posta in arrivo",
     delete: "Elimina",
@@ -545,7 +535,6 @@ const COPY = {
     deleteConfirm: "Elimina",
     deleted: "Conversazione eliminata",
     archived: "Conversazione archiviata",
-    assignedToast: (name: string) => `Responsabile impostato: ${name}`,
     templates: "Modelli",
     noTemplates: "Ancora nessun modello",
     translate: "Traduci",
@@ -697,9 +686,7 @@ const COPY = {
     selectConversationHint: "Choisissez une conversation pour la lire et y répondre.",
     markRead: "Marquer comme lue",
     markUnread: "Marquer comme non lue",
-    assign: "Attribuer un responsable",
     assignedTo: (name: string) => `Responsable : ${name}`,
-    unassign: "Retirer le responsable",
     archive: "Archiver",
     unarchive: "Déplacer vers la boîte de réception",
     delete: "Supprimer",
@@ -708,7 +695,6 @@ const COPY = {
     deleteConfirm: "Supprimer",
     deleted: "Conversation supprimée",
     archived: "Conversation archivée",
-    assignedToast: (name: string) => `Responsable défini : ${name}`,
     templates: "Modèles",
     noTemplates: "Aucun modèle pour l'instant",
     translate: "Traduire",
@@ -860,9 +846,7 @@ const COPY = {
     selectConversationHint: "Wähle einen Thread zum Lesen und Antworten.",
     markRead: "Als gelesen markieren",
     markUnread: "Als ungelesen markieren",
-    assign: "Verantwortlichen zuweisen",
     assignedTo: (name: string) => `Verantwortlich: ${name}`,
-    unassign: "Verantwortlichen entfernen",
     archive: "Archivieren",
     unarchive: "In den Posteingang verschieben",
     delete: "Löschen",
@@ -871,7 +855,6 @@ const COPY = {
     deleteConfirm: "Löschen",
     deleted: "Unterhaltung gelöscht",
     archived: "Unterhaltung archiviert",
-    assignedToast: (name: string) => `Verantwortlich festgelegt: ${name}`,
     templates: "Vorlagen",
     noTemplates: "Noch keine Vorlagen",
     translate: "Übersetzen",
@@ -1023,9 +1006,7 @@ const COPY = {
     selectConversationHint: "Escolha uma conversa para ler e responder.",
     markRead: "Marcar como lida",
     markUnread: "Marcar como não lida",
-    assign: "Atribuir responsável",
     assignedTo: (name: string) => `Responsável: ${name}`,
-    unassign: "Remover responsável",
     archive: "Arquivar",
     unarchive: "Mover para a caixa de entrada",
     delete: "Eliminar",
@@ -1034,7 +1015,6 @@ const COPY = {
     deleteConfirm: "Eliminar",
     deleted: "Conversa eliminada",
     archived: "Conversa arquivada",
-    assignedToast: (name: string) => `Responsável definido: ${name}`,
     templates: "Modelos",
     noTemplates: "Ainda não há modelos",
     translate: "Traduzir",
@@ -1186,9 +1166,7 @@ const COPY = {
     selectConversationHint: "Escolha uma conversa para ler e responder.",
     markRead: "Marcar como lida",
     markUnread: "Marcar como não lida",
-    assign: "Atribuir responsável",
     assignedTo: (name: string) => `Responsável: ${name}`,
-    unassign: "Remover responsável",
     archive: "Arquivar",
     unarchive: "Mover para a caixa de entrada",
     delete: "Excluir",
@@ -1197,7 +1175,6 @@ const COPY = {
     deleteConfirm: "Excluir",
     deleted: "Conversa excluída",
     archived: "Conversa arquivada",
-    assignedToast: (name: string) => `Responsável definido: ${name}`,
     templates: "Modelos",
     noTemplates: "Ainda não há modelos",
     translate: "Traduzir",
@@ -3085,21 +3062,6 @@ export default function Inbox() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <AssigneePicker
-              variant="icon"
-              value={effectiveActive.assigneeId}
-              onChange={(id) => {
-                conversationStore.assign(effectiveActive.id, id)
-                if (id) {
-                  toast.success(
-                    c.assignedToast(resolveUser(id).name.split(" ")[0])
-                  )
-                }
-              }}
-              triggerAriaLabel={c.assign}
-              unassignLabel={c.unassign}
-            />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
