@@ -1780,7 +1780,15 @@ const SEQUENCE_COLUMNS: ColumnDef<SequenceTemplate>[] = [
     },
     group: "sequence",
     default: true,
-    align: "right",
+    // Deliberately left-aligned, not right-aligned: this table has no wide
+    // flex column (like Subject on the Messages tab) to soak up leftover
+    // width, so with only 3 unconstrained columns sharing it, this column
+    // ends up much wider than its "4"-digit content needs. Right-aligning
+    // used to push that content flush against the neighboring Channels
+    // column with no visible gap, reading as a rendering bug rather than a
+    // wide-but-correct column. Left-aligned, the count sits right after its
+    // own header regardless of how wide the column grows.
+    minWidth: "90px",
     getValue: (t) => flattenCampaignSteps(t.steps).length,
     render: (t) => (
       <span className="tabular-nums">{flattenCampaignSteps(t.steps).length}</span>
@@ -1799,6 +1807,7 @@ const SEQUENCE_COLUMNS: ColumnDef<SequenceTemplate>[] = [
     },
     group: "sequence",
     default: true,
+    minWidth: "140px",
     render: (t) => <SequenceChannels steps={t.steps} />,
   },
   {
