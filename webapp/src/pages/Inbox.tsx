@@ -3585,6 +3585,16 @@ function Composer({
   const [reply, setReply] = React.useState(conv.aiDraft ?? "")
   const [aiUsed, setAiUsed] = React.useState(Boolean(conv.aiDraft))
   const [seed, setSeed] = React.useState(0)
+  // A thread's messages can each carry their own channel (Message.channel is
+  // independent of Conversation.channel) — the reply doesn't have to go out
+  // on whatever channel the thread happens to be tagged with. Offered
+  // channels are gated on what contact info the prospect actually has
+  // (email/LinkedIn always exist on Prospect; WhatsApp needs a phone number).
+  const availableChannels = React.useMemo<Channel[]>(
+    () => (prospect.phone ? ["email", "linkedin", "whatsapp"] : ["email", "linkedin"]),
+    [prospect.phone]
+  )
+  const [sendChannel, setSendChannel] = React.useState<Channel>(conv.channel)
   // Mock voice-message recording — no real mic access, just a timer UI that
   // replaces the composer while "recording," same shape LinkedIn/WhatsApp's
   // own voice-note affordance has.
@@ -3596,7 +3606,7 @@ function Composer({
     return () => clearInterval(id)
   }, [recording])
   function sendVoice() {
-    conversationStore.sendVoiceMessage(conv.id, Math.max(1, recordSec), recipientLang)
+    conversationStore.sendVoiceMessage(conv.id, Math.max(1, recordSec), recipientLang, sendChannel)
     setRecording(false)
     setRecordSec(0)
     toast.success(c.replySent(prospect.firstName))
@@ -3641,7 +3651,7 @@ function Composer({
     messenger: "Messenger",
     instagram: "Instagram",
   }
-  const channelLabel = CHANNEL_NAMES[conv.channel] ?? c.email
+  const channelLabel = CHANNEL_NAMES[sendChannel] ?? c.email
   const firstName = currentUser.name.split(" ")[0]
   // The reply is rich HTML — check its text content for emptiness.
   const replyText = stripHtml(reply)
@@ -3751,7 +3761,7 @@ function Composer({
     if (!hasText) return
     // Send with personalization variables filled in.
     const out = renderedReply.trim()
-    conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed)
+    conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed, sendChannel)
     setReply("")
     setAiUsed(false)
     toast.success(c.replySent(prospect.firstName))
@@ -3911,8 +3921,34 @@ function Composer({
           <span className="text-foreground font-medium">{firstName}</span>
           <span className="opacity-50">·</span>
           {c.from}
-          <ChannelIcon channel={conv.channel} className="size-3" />
-          <span className="text-foreground font-medium">{channelLabel}</span>
+          {availableChannels.length > 1 ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="text-foreground hover:bg-muted -my-0.5 inline-flex items-center gap-1 rounded px-1 py-0.5 font-medium"
+                >
+                  <ChannelIcon channel={sendChannel} className="size-3" />
+                  {channelLabel}
+                  <ChevronDown className="size-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {availableChannels.map((ch) => (
+                  <DropdownMenuItem key={ch} onClick={() => setSendChannel(ch)}>
+                    <ChannelIcon channel={ch} className="size-3.5" />
+                    {CHANNEL_NAMES[ch] ?? ch}
+                    {ch === sendChannel && <Check className="ml-auto size-3.5" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <ChannelIcon channel={sendChannel} className="size-3" />
+              <span className="text-foreground font-medium">{channelLabel}</span>
+            </>
+          )}
         </span>
         <span className="hidden items-center gap-1 sm:inline-flex">
           {LANG_FLAG[recipientLang]} {LANG_LABEL[recipientLang]}
@@ -3965,7 +4001,7 @@ function Composer({
           {hasText ? c.regenerate : c.generate}
         </Button>
 
-        {(conv.channel === "whatsapp" || conv.channel === "linkedin") && !recording && (
+        {(sendChannel === "whatsapp" || sendChannel === "linkedin") && !recording && (
           <Button
             variant="outline"
             size="sm"

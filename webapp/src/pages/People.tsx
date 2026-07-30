@@ -4,8 +4,6 @@ import { toast } from "sonner"
 import {
   Search as SearchIcon,
   Users,
-  Pencil,
-  Check,
   Columns3,
   Waypoints,
 } from "lucide-react"
@@ -110,9 +108,6 @@ const COPY = {
     viewTable: "Table",
     viewCards: "Cards",
     columns: "Columns",
-    edit: "Edit",
-    done: "Done",
-    editingHint: "Editing — changes save automatically",
     selectAll: "Select all",
     capNote: (max: number) => `Only ${max.toLocaleString()} contacts can be added at a time.`,
   },
@@ -148,9 +143,6 @@ const COPY = {
     viewTable: "Tabla",
     viewCards: "Tarjetas",
     columns: "Columnas",
-    edit: "Editar",
-    done: "Listo",
-    editingHint: "Editando — los cambios se guardan solos",
     selectAll: "Seleccionar todo",
     capNote: (max: number) => `Solo se pueden añadir ${max.toLocaleString()} contactos a la vez.`,
   },
@@ -186,9 +178,6 @@ const COPY = {
     viewTable: "Tabella",
     viewCards: "Schede",
     columns: "Colonne",
-    edit: "Modifica",
-    done: "Fatto",
-    editingHint: "In modifica — le modifiche si salvano da sole",
     selectAll: "Seleziona tutto",
     capNote: (max: number) => `Puoi aggiungere solo ${max.toLocaleString()} contatti alla volta.`,
   },
@@ -224,9 +213,6 @@ const COPY = {
     viewTable: "Tableau",
     viewCards: "Cartes",
     columns: "Colonnes",
-    edit: "Modifier",
-    done: "Terminé",
-    editingHint: "Édition — les modifications s'enregistrent automatiquement",
     selectAll: "Tout sélectionner",
     capNote: (max: number) => `Seuls ${max.toLocaleString()} contacts peuvent être ajoutés à la fois.`,
   },
@@ -262,9 +248,6 @@ const COPY = {
     viewTable: "Tabelle",
     viewCards: "Karten",
     columns: "Spalten",
-    edit: "Bearbeiten",
-    done: "Fertig",
-    editingHint: "Bearbeitung — Änderungen werden automatisch gespeichert",
     selectAll: "Alle auswählen",
     capNote: (max: number) => `Es können nur ${max.toLocaleString()} Kontakte auf einmal hinzugefügt werden.`,
   },
@@ -300,9 +283,6 @@ const COPY = {
     viewTable: "Tabela",
     viewCards: "Cartões",
     columns: "Colunas",
-    edit: "Editar",
-    done: "Concluído",
-    editingHint: "A editar — as alterações guardam-se automaticamente",
     selectAll: "Selecionar tudo",
     capNote: (max: number) => `Só é possível adicionar ${max.toLocaleString()} contactos de cada vez.`,
   },
@@ -338,9 +318,6 @@ const COPY = {
     viewTable: "Tabela",
     viewCards: "Cartões",
     columns: "Colunas",
-    edit: "Editar",
-    done: "Concluído",
-    editingHint: "Editando — as alterações são salvas automaticamente",
     selectAll: "Selecionar tudo",
     capNote: (max: number) => `Só é possível adicionar ${max.toLocaleString()} contatos por vez.`,
   },
@@ -359,7 +336,6 @@ export default function People() {
   const [query, setQuery] = React.useState(() => searchParams.get("q") ?? "")
   const [status, setStatus] = React.useState<string>(ALL)
   const [listFilter, setListFilter] = React.useState<string>("all")
-  const [editing, setEditing] = React.useState(false)
   const [columnsOpen, setColumnsOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
   const [bulkList, setBulkList] = React.useState(false)
@@ -602,31 +578,7 @@ export default function People() {
           <Columns3 className="size-4" />
           <span className="hidden sm:inline">{c.columns}</span>
         </Button>
-        <Button
-          variant={editing ? "secondary" : "outline"}
-          className="shrink-0"
-          onClick={() => setEditing((v) => !v)}
-        >
-          {editing ? (
-            <>
-              <Check className="size-4" />
-              {c.done}
-            </>
-          ) : (
-            <>
-              <Pencil className="size-4" />
-              {c.edit}
-            </>
-          )}
-        </Button>
       </div>
-
-      {editing && (
-        <p className="text-primary mb-3 flex items-center gap-1 text-xs">
-          <Pencil className="size-3" />
-          {c.editingHint}
-        </p>
-      )}
 
       {tsf.rows.length === 0 ? (
         <EmptyState description={c.noMatch} />
@@ -653,8 +605,6 @@ export default function People() {
             rows={sel.pagedItems}
             rowKey={(p) => p.id}
             locale={locale}
-            editing={editing}
-            onUpdate={(p, patch) => prospectStore.update(p.id, patch)}
             actions={(p) => (
               <RecordActionsMenu kind="person" record={p} onExport={() => exportOne(p)} />
             )}
