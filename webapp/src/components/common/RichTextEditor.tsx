@@ -1,5 +1,14 @@
 import * as React from "react"
-import { Bold, Italic, Underline, List, ListOrdered, Link as LinkIcon } from "lucide-react"
+import {
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Table as TableIcon,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -8,6 +17,25 @@ export interface RichTextEditorHandle {
   insertText: (text: string) => void
   focus: () => void
 }
+
+// A plain 3x2 starter grid — inserted via insertHTML since execCommand has
+// no native "insertTable". Borders are inline (not a class) so they survive
+// once this HTML is read back out of the editor and sent as a message.
+const DEFAULT_TABLE_HTML =
+  '<table style="border-collapse:collapse;width:100%">' +
+  "<tbody>" +
+  Array.from(
+    { length: 3 },
+    () =>
+      "<tr>" +
+      Array.from(
+        { length: 2 },
+        () =>
+          '<td style="border:1px solid #d4d4d8;padding:4px 8px">&nbsp;</td>'
+      ).join("") +
+      "</tr>"
+  ).join("") +
+  "</tbody></table><p><br></p>"
 
 // A lightweight WYSIWYG editor built on contentEditable. Stores HTML in `value`
 // and emits HTML through `onChange`. Shared by every outbound message field
@@ -134,6 +162,18 @@ export const RichTextEditor = React.forwardRef<
       label: "Link",
       arg: () => window.prompt("Link URL") ?? undefined,
     },
+    {
+      icon: ImageIcon,
+      command: "insertImage",
+      label: "Image",
+      arg: () => window.prompt("Image URL") ?? undefined,
+    },
+    {
+      icon: TableIcon,
+      command: "insertHTML",
+      label: "Table",
+      arg: () => DEFAULT_TABLE_HTML,
+    },
   ]
 
   return (
@@ -183,7 +223,7 @@ export const RichTextEditor = React.forwardRef<
           onMouseUp={saveRange}
           onBlur={saveRange}
           className={cn(
-            "prose-sm max-w-none px-3 py-2 text-sm leading-relaxed outline-none [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5",
+            "prose-sm max-w-none px-3 py-2 text-sm leading-relaxed outline-none [&_a]:text-primary [&_a]:underline [&_img]:my-1 [&_img]:max-w-full [&_ol]:list-decimal [&_ol]:pl-5 [&_table]:my-1 [&_ul]:list-disc [&_ul]:pl-5",
             minHeight
           )}
         />
