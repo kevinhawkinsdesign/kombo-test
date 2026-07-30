@@ -29,6 +29,7 @@ import {
   Braces,
   ExternalLink,
   FileText,
+  Download,
 } from "lucide-react"
 
 import {
@@ -86,6 +87,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
+import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -125,7 +127,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CampaignDailyChart } from "@/components/charts/Charts"
+import { CampaignDailyChart, CampaignChannelChart } from "@/components/charts/Charts"
 import { DataTable } from "@/components/common/DataTable"
 import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
@@ -156,6 +158,7 @@ import {
   useCampaigns,
   useLists,
   useAccounts,
+  useConversations,
   campaignStore,
   listStore,
   prospectStore,
@@ -169,13 +172,19 @@ import {
   TASK_REMINDER_OPTIONS,
 } from "@/lib/store"
 import { useCredits } from "@/lib/credits"
-import { campaignDailyStats, campaignEnrollments, CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
+import {
+  campaignDailyStats,
+  campaignEnrollments,
+  campaignNotReached,
+  CONNECTED_CRM_PROVIDER,
+} from "@/lib/mock-depth"
 import { formatDate, relativeTime, isCampaignScheduled } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
 import { LOCALES, LOCALE_FLAG, LOCALE_LABEL } from "@/lib/locale-meta"
 import { useTableSortFilter } from "@/lib/table-sort-filter"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
+import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
 import type {
   CampaignStatus,
   Channel,
@@ -186,6 +195,8 @@ import type {
   CampaignStep,
   LinkedInAction,
   StepTypeSelection,
+  StepChannel,
+  NotReachedReason,
 } from "@/lib/types"
 
 // Sending accounts: the current user first, then teammates, deduped by id.
@@ -194,6 +205,25 @@ const ACCOUNT_OPTIONS = [
   ...team
     .filter((m) => m.id !== currentUser.id)
     .map((m) => ({ id: m.id, name: m.name })),
+]
+
+// Every StepChannel that can actually send something — "manual" is a
+// channel-less offline task, so it never appears in the Overview tab's
+// per-channel breakdowns.
+type SendableChannel = Exclude<StepChannel, "manual">
+
+// Fixed display order for the Overview tab's per-channel breakdown (chart
+// legend, Prospect Engaged, Total Replies) — only channels actually present
+// in a given campaign's mock daily data are shown, but when they are, they
+// always appear in this order.
+const CHANNEL_DISPLAY_ORDER: SendableChannel[] = [
+  "email",
+  "linkedin_message",
+  "linkedin_inmail",
+  "linkedin_dm",
+  "whatsapp",
+  "call",
+  "ai_call",
 ]
 
 const COPY = {
@@ -267,6 +297,31 @@ const COPY = {
     dailyPerformance: "Daily performance",
     dailyPerformanceDesc: "Sent, opened and replied per day.",
     noDailyData: "No daily data yet for this campaign.",
+    exportOverview: "Export",
+    channelPerformance: "Campaign Performance Overview",
+    channelPerformanceDesc: "Daily activity broken down by channel.",
+    prospectEngaged: "Prospect Engaged",
+    totalInteractions: "Total interactions",
+    totalRepliesTitle: "Total Replies",
+    outcomes: "Outcomes",
+    notReached: "Not Reached",
+    channelLabel: {
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Calls",
+      ai_call: "AI calls",
+      linkedin_message: "LinkedIn messages",
+      linkedin_dm: "LinkedIn DMs",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Already in campaign",
+      invalid_contact_info: "Contact info not available",
+      duplicate: "Duplicate",
+      blacklisted: "Blacklisted",
+      manually_cancelled: "Manually cancelled",
+      other: "Other errors",
+    } as Record<NotReachedReason, string>,
     audience: "Linked List",
     audienceDesc:
       "Link a single prospect list to feed this campaign. The link is 1-to-1; a dynamic list auto-enrolls new matching prospects as they're found.",
@@ -498,6 +553,31 @@ const COPY = {
     dailyPerformance: "Rendimiento diario",
     dailyPerformanceDesc: "Enviados, abiertos y respondidos por día.",
     noDailyData: "Aún no hay datos diarios para esta campaña.",
+    exportOverview: "Exportar",
+    channelPerformance: "Resumen de rendimiento de la campaña",
+    channelPerformanceDesc: "Actividad diaria desglosada por canal.",
+    prospectEngaged: "Interacción con prospectos",
+    totalInteractions: "Interacciones totales",
+    totalRepliesTitle: "Respuestas totales",
+    outcomes: "Resultados",
+    notReached: "No contactados",
+    channelLabel: {
+      email: "Correo",
+      whatsapp: "WhatsApp",
+      call: "Llamadas",
+      ai_call: "Llamadas con IA",
+      linkedin_message: "Mensajes de LinkedIn",
+      linkedin_dm: "MD de LinkedIn",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Ya estaba en la campaña",
+      invalid_contact_info: "Sin datos de contacto",
+      duplicate: "Duplicado",
+      blacklisted: "En lista negra",
+      manually_cancelled: "Cancelado manualmente",
+      other: "Otros errores",
+    } as Record<NotReachedReason, string>,
     audience: "Lista vinculada",
     audienceDesc:
       "Vincula una única lista de prospectos para alimentar esta campaña. La relación es de uno a uno; una lista dinámica inscribe automáticamente los nuevos prospectos que coincidan a medida que se encuentran.",
@@ -729,6 +809,31 @@ const COPY = {
     dailyPerformance: "Andamento giornaliero",
     dailyPerformanceDesc: "Inviati, aperti e risposti al giorno.",
     noDailyData: "Ancora nessun dato giornaliero per questa campagna.",
+    exportOverview: "Esporta",
+    channelPerformance: "Panoramica delle prestazioni della campagna",
+    channelPerformanceDesc: "Attività giornaliera suddivisa per canale.",
+    prospectEngaged: "Prospect coinvolti",
+    totalInteractions: "Interazioni totali",
+    totalRepliesTitle: "Risposte totali",
+    outcomes: "Esiti",
+    notReached: "Non raggiunti",
+    channelLabel: {
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Chiamate",
+      ai_call: "Chiamate IA",
+      linkedin_message: "Messaggi LinkedIn",
+      linkedin_dm: "DM LinkedIn",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Già nella campagna",
+      invalid_contact_info: "Contatto non disponibile",
+      duplicate: "Duplicato",
+      blacklisted: "In blacklist",
+      manually_cancelled: "Annullato manualmente",
+      other: "Altri errori",
+    } as Record<NotReachedReason, string>,
     audience: "Lista collegata",
     audienceDesc:
       "Collega un'unica lista di prospect per alimentare questa campagna. Il collegamento è uno a uno; una lista dinamica iscrive automaticamente i nuovi prospect corrispondenti man mano che vengono trovati.",
@@ -960,6 +1065,31 @@ const COPY = {
     dailyPerformance: "Performance quotidienne",
     dailyPerformanceDesc: "Envoyés, ouverts et répondus par jour.",
     noDailyData: "Pas encore de données quotidiennes pour cette campagne.",
+    exportOverview: "Exporter",
+    channelPerformance: "Aperçu des performances de la campagne",
+    channelPerformanceDesc: "Activité quotidienne par canal.",
+    prospectEngaged: "Prospects engagés",
+    totalInteractions: "Interactions totales",
+    totalRepliesTitle: "Réponses totales",
+    outcomes: "Résultats",
+    notReached: "Non atteints",
+    channelLabel: {
+      email: "E-mail",
+      whatsapp: "WhatsApp",
+      call: "Appels",
+      ai_call: "Appels IA",
+      linkedin_message: "Messages LinkedIn",
+      linkedin_dm: "MP LinkedIn",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Déjà dans la campagne",
+      invalid_contact_info: "Coordonnées indisponibles",
+      duplicate: "Doublon",
+      blacklisted: "Sur liste noire",
+      manually_cancelled: "Annulé manuellement",
+      other: "Autres erreurs",
+    } as Record<NotReachedReason, string>,
     audience: "Liste liée",
     audienceDesc:
       "Liez une seule liste de prospects pour alimenter cette campagne. Le lien est univoque ; une liste dynamique inscrit automatiquement les nouveaux prospects correspondants au fur et à mesure qu'ils sont trouvés.",
@@ -1191,6 +1321,31 @@ const COPY = {
     dailyPerformance: "Tägliche Leistung",
     dailyPerformanceDesc: "Gesendet, geöffnet und beantwortet pro Tag.",
     noDailyData: "Noch keine Tagesdaten für diese Kampagne.",
+    exportOverview: "Exportieren",
+    channelPerformance: "Kampagnenleistung im Überblick",
+    channelPerformanceDesc: "Tägliche Aktivität nach Kanal.",
+    prospectEngaged: "Interagierte Prospects",
+    totalInteractions: "Interaktionen gesamt",
+    totalRepliesTitle: "Antworten gesamt",
+    outcomes: "Ergebnisse",
+    notReached: "Nicht erreicht",
+    channelLabel: {
+      email: "E-Mail",
+      whatsapp: "WhatsApp",
+      call: "Anrufe",
+      ai_call: "KI-Anrufe",
+      linkedin_message: "LinkedIn-Nachrichten",
+      linkedin_dm: "LinkedIn-DMs",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Bereits in Kampagne",
+      invalid_contact_info: "Keine Kontaktdaten",
+      duplicate: "Duplikat",
+      blacklisted: "Auf Sperrliste",
+      manually_cancelled: "Manuell abgebrochen",
+      other: "Sonstige Fehler",
+    } as Record<NotReachedReason, string>,
     audience: "Verknüpfte Liste",
     audienceDesc:
       "Verknüpfe eine einzelne Prospect-Liste, um diese Kampagne zu speisen. Die Verknüpfung ist 1-zu-1; eine dynamische Liste schreibt neue passende Prospects automatisch ein, sobald sie gefunden werden.",
@@ -1422,6 +1577,31 @@ const COPY = {
     dailyPerformance: "Desempenho diário",
     dailyPerformanceDesc: "Enviados, abertos e respondidos por dia.",
     noDailyData: "Ainda não há dados diários para esta campanha.",
+    exportOverview: "Exportar",
+    channelPerformance: "Resumo de desempenho da campanha",
+    channelPerformanceDesc: "Atividade diária por canal.",
+    prospectEngaged: "Prospects envolvidos",
+    totalInteractions: "Interações totais",
+    totalRepliesTitle: "Respostas totais",
+    outcomes: "Resultados",
+    notReached: "Não contactados",
+    channelLabel: {
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Chamadas",
+      ai_call: "Chamadas com IA",
+      linkedin_message: "Mensagens do LinkedIn",
+      linkedin_dm: "MD do LinkedIn",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Já estava na campanha",
+      invalid_contact_info: "Sem dados de contacto",
+      duplicate: "Duplicado",
+      blacklisted: "Na lista negra",
+      manually_cancelled: "Cancelado manualmente",
+      other: "Outros erros",
+    } as Record<NotReachedReason, string>,
     audience: "Lista vinculada",
     audienceDesc:
       "Vincule uma única lista de prospects para alimentar esta campanha. A ligação é um-para-um; uma lista dinâmica inscreve automaticamente novos prospects correspondentes à medida que são encontrados.",
@@ -1653,6 +1833,31 @@ const COPY = {
     dailyPerformance: "Desempenho diário",
     dailyPerformanceDesc: "Enviados, abertos e respondidos por dia.",
     noDailyData: "Ainda não há dados diários para esta campanha.",
+    exportOverview: "Exportar",
+    channelPerformance: "Resumo de desempenho da campanha",
+    channelPerformanceDesc: "Atividade diária por canal.",
+    prospectEngaged: "Prospects engajados",
+    totalInteractions: "Interações totais",
+    totalRepliesTitle: "Respostas totais",
+    outcomes: "Resultados",
+    notReached: "Não contatados",
+    channelLabel: {
+      email: "Email",
+      whatsapp: "WhatsApp",
+      call: "Ligações",
+      ai_call: "Ligações com IA",
+      linkedin_message: "Mensagens do LinkedIn",
+      linkedin_dm: "MD do LinkedIn",
+      linkedin_inmail: "Sales Navigator",
+    } as Record<Exclude<StepChannel, "manual">, string>,
+    notReachedReason: {
+      already_in_campaign: "Já estava na campanha",
+      invalid_contact_info: "Sem dados de contato",
+      duplicate: "Duplicado",
+      blacklisted: "Na lista negra",
+      manually_cancelled: "Cancelado manualmente",
+      other: "Outros erros",
+    } as Record<NotReachedReason, string>,
     audience: "Lista vinculada",
     audienceDesc:
       "Vincule uma única lista de prospects para alimentar esta campanha. O vínculo é um-para-um; uma lista dinâmica inscreve automaticamente novos prospects correspondentes à medida que são encontrados.",
@@ -2164,6 +2369,42 @@ function shortDay(iso: string): string {
   })
 }
 
+// A label/count/percentage row with a Progress bar underneath — same shape
+// as the campaign card's own "reached" progress row on the Campaigns list
+// page, reused here for the Overview tab's per-channel/outcome/not-reached
+// breakdowns instead of inventing a new expand/collapse metric-row
+// primitive (see CLAUDE.md's escalation rule on shared-component blast
+// radius — this stays a page-local presentational helper, not exported).
+function MetricProgressRow({
+  label,
+  count,
+  total,
+  dotClassName,
+}: {
+  label: string
+  count: number
+  total: number
+  dotClassName?: string
+}) {
+  const pct = total ? Math.round((count / total) * 100) : 0
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground flex items-center gap-1.5">
+          {dotClassName && (
+            <span className={cn("size-1.5 shrink-0 rounded-full", dotClassName)} />
+          )}
+          {label}
+        </span>
+        <span className="tabular-nums">
+          {count.toLocaleString()} ({pct}%)
+        </span>
+      </div>
+      <Progress value={pct} />
+    </div>
+  )
+}
+
 export default function CampaignDetail() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -2173,6 +2414,7 @@ export default function CampaignDetail() {
   const lists = useLists()
   const linkableLists = lists.filter((l) => l.kind !== "company")
   const accounts = useAccounts()
+  const conversations = useConversations()
   const campaign = campaigns.find((item) => item.id === id)
 
   const [editOpen, setEditOpen] = React.useState(false)
@@ -2584,6 +2826,57 @@ export default function CampaignDetail() {
     })),
   ]
 
+  // --- Overview tab: per-channel breakdown, Outcomes, Not Reached ---
+  // Only the channels that actually have mock byChannel data show up here —
+  // in practice that's exactly the channels the campaign's own sequence
+  // uses (see mock-depth.ts's buildDaily), so an email-only campaign never
+  // shows a LinkedIn row and vice versa.
+  const channelKeys = Array.from(
+    new Set(daily.flatMap((d) => Object.keys(d.byChannel ?? {})))
+  ) as SendableChannel[]
+  const orderedChannelKeys = CHANNEL_DISPLAY_ORDER.filter((ch) =>
+    channelKeys.includes(ch)
+  )
+  const channelTotals = orderedChannelKeys.map((ch) => ({
+    channel: ch,
+    sent: daily.reduce((sum, d) => sum + (d.byChannel?.[ch]?.sent ?? 0), 0),
+    replied: daily.reduce(
+      (sum, d) => sum + (d.byChannel?.[ch]?.replied ?? 0),
+      0
+    ),
+  }))
+  const totalChannelSent = channelTotals.reduce((s, x) => s + x.sent, 0)
+  const totalChannelReplied = channelTotals.reduce((s, x) => s + x.replied, 0)
+  const channelSeries = orderedChannelKeys.map((ch) => ({
+    key: ch,
+    label: c.channelLabel[ch],
+    data: daily.map((d) => d.byChannel?.[ch]?.sent ?? 0),
+  }))
+
+  // Outcomes — aggregated across every conversation tied to a prospect
+  // currently enrolled in this campaign (same enrolled+manual set the
+  // Prospects tab table above uses).
+  const campaignProspectIds = new Set(prospectRows.map((r) => r.id))
+  const campaignConversations = conversations.filter((cv) =>
+    campaignProspectIds.has(cv.prospectId)
+  )
+  const outcomeCounts = STATUS_ORDER.map((status) => ({
+    status,
+    count: campaignConversations.filter((cv) => cv.status === status).length,
+  })).filter((o) => o.count > 0)
+  const totalOutcomes = outcomeCounts.reduce((s, o) => s + o.count, 0)
+
+  // Not Reached — only rendered once at least one reason has a non-zero
+  // count (mirrors the extension's gating; cm_3 in the mock data is
+  // intentionally all-zero to exercise that path).
+  const notReachedData = campaignNotReached[campaign.id]
+  const notReachedEntries = notReachedData
+    ? (Object.entries(notReachedData) as [NotReachedReason, number][]).filter(
+        ([, v]) => v > 0
+      )
+    : []
+  const totalNotReached = notReachedEntries.reduce((s, [, v]) => s + v, 0)
+
   // Bulk selection spans the manually-added rows only; stale ids (already
   // removed) drop out at compute time. Paginated like every other
   // enrichment-capable table, but "select page"/"select all" only ever
@@ -2792,6 +3085,36 @@ export default function CampaignDetail() {
   const hasEmailStep = steps.some((s) => s.channel === "email")
   const missingEmails = hasEmailStep ? Math.round(camp.enrolled * 0.22) : 0
   const enrichCost = missingEmails * 2
+
+  // Overview tab's export button — a flat metric CSV (summary + per-channel
+  // + outcomes + not-reached), same downloadCsv/exportedCsv-toast pattern
+  // the Prospects tab's row/bulk export already use.
+  function exportOverviewCsv() {
+    const rows: (string | number)[][] = [
+      [c.enrolled, camp.enrolled],
+      [c.sent, totals.sent],
+      [c.opened, totals.opened],
+      [c.openRate, `${openRate}%`],
+      [c.replied, totals.replied],
+      [c.replyRate, `${replyRate}%`],
+      [c.bounced, totals.bounced],
+      [c.meetings, camp.meetings],
+      ...channelTotals.map((ct) => [
+        `${c.prospectEngaged} — ${c.channelLabel[ct.channel]}`,
+        ct.sent,
+      ]),
+      ...outcomeCounts.map((o) => [
+        `${c.outcomes} — ${STATUS_META[o.status][locale]}`,
+        o.count,
+      ]),
+      ...notReachedEntries.map(([reason, count]) => [
+        `${c.notReached} — ${c.notReachedReason[reason]}`,
+        count,
+      ]),
+    ]
+    downloadCsv(`${camp.name}-overview.csv`, ["Metric", "Value"], rows)
+    toast.success(c.exportedCsv)
+  }
 
   const scheduled = isCampaignScheduled(camp)
 
@@ -3280,8 +3603,24 @@ export default function CampaignDetail() {
               places (a strip above the tabs, and a "Summary" card down here);
               now it's one section. */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex-row items-start justify-between">
               <CardTitle className="text-base">{c.summary}</CardTitle>
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      onClick={exportOverviewCsv}
+                      aria-label={c.exportOverview}
+                    >
+                      <Download className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{c.exportOverview}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -3360,6 +3699,118 @@ export default function CampaignDetail() {
               )}
             </CardContent>
           </Card>
+
+          {/* Per-channel breakdown — only the channels this campaign's own
+              sequence actually uses show up (see channelSeries above). */}
+          {channelSeries.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.channelPerformance}</CardTitle>
+              <CardDescription>{c.channelPerformanceDesc}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-72">
+                <CampaignChannelChart
+                  labels={daily.map((d) => shortDay(d.date))}
+                  series={channelSeries}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          )}
+
+          {channelTotals.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.prospectEngaged}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-lg font-semibold tabular-nums">
+                  {totalChannelSent.toLocaleString()}
+                </p>
+                <p className="text-muted-foreground text-xs">{c.totalInteractions}</p>
+              </div>
+              <div className="space-y-3 border-t pt-4">
+                {channelTotals.map((ct) => (
+                  <MetricProgressRow
+                    key={ct.channel}
+                    label={c.channelLabel[ct.channel]}
+                    count={ct.sent}
+                    total={campaign.enrolled}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          )}
+
+          {channelTotals.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.totalRepliesTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-lg font-semibold tabular-nums">
+                  {totals.replied.toLocaleString()}
+                </p>
+                <p className="text-muted-foreground text-xs">{c.totalRepliesTitle}</p>
+              </div>
+              {totalChannelReplied > 0 && (
+                <div className="space-y-3 border-t pt-4">
+                  {channelTotals
+                    .filter((ct) => ct.replied > 0)
+                    .map((ct) => (
+                      <MetricProgressRow
+                        key={ct.channel}
+                        label={c.channelLabel[ct.channel]}
+                        count={ct.replied}
+                        total={totalChannelReplied}
+                      />
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          )}
+
+          {totalOutcomes > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.outcomes}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {outcomeCounts.map((o) => (
+                <MetricProgressRow
+                  key={o.status}
+                  label={STATUS_META[o.status][locale]}
+                  count={o.count}
+                  total={totalOutcomes}
+                  dotClassName={STATUS_META[o.status].dot}
+                />
+              ))}
+            </CardContent>
+          </Card>
+          )}
+
+          {totalNotReached > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{c.notReached}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {notReachedEntries.map(([reason, count]) => (
+                <MetricProgressRow
+                  key={reason}
+                  label={c.notReachedReason[reason]}
+                  count={count}
+                  total={totalNotReached}
+                />
+              ))}
+            </CardContent>
+          </Card>
+          )}
         </TabsContent>
         )}
 

@@ -806,6 +806,11 @@ export interface CampaignDailyStat {
   opened: number
   replied: number
   bounced: number
+  // Optional per-channel split of that day's `sent`/`replied` — only the
+  // channels a campaign's own sequence actually uses are populated. Drives
+  // the Overview tab's "Campaign Performance Overview" chart and the
+  // Prospect Engaged / Total Replies breakdown rows.
+  byChannel?: Partial<Record<StepChannel, { sent: number; replied: number }>>
 }
 
 export type EnrollmentStatus =
@@ -821,6 +826,22 @@ export interface CampaignEnrollment {
   status: EnrollmentStatus
   lastTouch: string // ISO
 }
+
+// Why an enrolled prospect never actually got touched — the Overview tab's
+// "Not Reached" breakdown. A reduced set relative to the extension's ~14
+// reasons: only the ones that map onto data this prototype actually models
+// (contact-info gaps, dedupe, blacklist, manual cancellation); the rest of
+// the extension's taxonomy is channel-connection-specific (e.g. "LinkedIn
+// account not connected") and doesn't have an equivalent here yet.
+export type NotReachedReason =
+  | "already_in_campaign"
+  | "invalid_contact_info"
+  | "duplicate"
+  | "blacklisted"
+  | "manually_cancelled"
+  | "other"
+
+export type CampaignNotReachedBreakdown = Record<NotReachedReason, number>
 
 // --- Depth: coaching ---
 export interface TranscriptTurn {

@@ -248,6 +248,102 @@ export function ReplyRateChart({
   )
 }
 
+// Fixed-order color cycle for CampaignChannelChart's series — the caller
+// only controls which channels are included and their labels, not their
+// colors, so any subset of channels still reads consistently across
+// campaigns. First slot uses the theme's primary (matches every other line
+// chart here); the rest are static palette hues that don't shift with theme.
+const CHANNEL_LINE_COLORS: ((primary: string) => string)[] = [
+  (primary) => primary,
+  () => PALETTE.teal,
+  () => PALETTE.amber,
+  () => PALETTE.lime,
+  () => PALETTE.rose,
+]
+
+// Per-channel daily send volume — the Overview tab's "Campaign Performance
+// Overview" chart. Same CategoryScale/crosshair convention as every other
+// line chart in this file (no TimeScale/date-fns adapter, matching house
+// style rather than the extension's date-axis version). Series are
+// caller-supplied so this stays agnostic to which channels a given
+// campaign's sequence actually uses.
+export function CampaignChannelChart({
+  labels,
+  series,
+}: {
+  labels: string[]
+  series: { key: string; label: string; data: number[] }[]
+}) {
+  const t = useChartTheme()
+
+  const options: ChartOptions<"line"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: {
+        position: "top",
+        align: "end",
+        labels: {
+          color: t.ticks,
+          usePointStyle: true,
+          pointStyle: "circle",
+          boxWidth: 6,
+          boxHeight: 6,
+          padding: 16,
+        },
+      },
+      tooltip: {
+        backgroundColor: t.tooltipBg,
+        titleColor: t.tooltipTitle,
+        bodyColor: t.tooltipBody,
+        borderColor: t.border,
+        borderWidth: 1,
+        padding: 10,
+        usePointStyle: true,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: t.ticks },
+      },
+      y: {
+        grid: { color: t.grid },
+        border: { display: false },
+        ticks: { color: t.ticks, precision: 0 },
+      },
+    },
+  }
+
+  return (
+    <Line
+      options={options}
+      plugins={[crosshair]}
+      data={{
+        labels,
+        datasets: series.map((s, i) => {
+          const color = CHANNEL_LINE_COLORS[i % CHANNEL_LINE_COLORS.length](
+            t.primary
+          )
+          return {
+            label: s.label,
+            data: s.data,
+            borderColor: color,
+            backgroundColor: "transparent",
+            fill: false,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0,
+            ...pointHover(color),
+          }
+        }),
+      }}
+    />
+  )
+}
+
 export function CampaignDailyChart({
   labels,
   sent,
