@@ -588,7 +588,22 @@ function FilterRow({
                 key={value}
                 className="hover:bg-muted/60 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
               >
-                <span className="min-w-0 flex-1 truncate">{value}</span>
+                {/* The name itself is clickable (defaults to Include, same
+                    toggle as the Include button) — Ale's test user tried
+                    clicking the option name and expected that to work,
+                    same as most checklist-style filter UIs; previously only
+                    the small "Include"/"Exclude" text links responded. */}
+                <button
+                  type="button"
+                  onClick={() => toggleInclude(value)}
+                  aria-pressed={isIn}
+                  className={cn(
+                    "min-w-0 flex-1 truncate text-left",
+                    isIn && "text-primary font-medium"
+                  )}
+                >
+                  {value}
+                </button>
                 <span className="flex shrink-0 items-center gap-1.5">
                   <button
                     type="button"
