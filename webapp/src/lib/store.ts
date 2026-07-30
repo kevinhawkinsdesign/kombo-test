@@ -40,6 +40,7 @@ import type {
   ChatLang,
   ConvStatus,
   CoachRecording,
+  Channel,
 } from "./types"
 import type { Locale } from "./locale"
 import type { EnrichScope } from "./enrichment"
@@ -1250,10 +1251,16 @@ function patchConversation(id: string, fn: (c: Conversation) => Conversation): v
 }
 
 export const conversationStore = {
-  sendMessage(id: string, body: string, lang: ChatLang, aiGenerated = false): Message {
+  sendMessage(
+    id: string,
+    body: string,
+    lang: ChatLang,
+    aiGenerated = false,
+    channel?: Channel
+  ): Message {
     const message: Message = {
       id: uid("msg"),
-      channel: state.conversations.find((c) => c.id === id)?.channel ?? "email",
+      channel: channel ?? state.conversations.find((c) => c.id === id)?.channel ?? "email",
       direction: "outbound",
       body,
       timestamp: nowISO(),
@@ -1272,10 +1279,15 @@ export const conversationStore = {
     }))
     return message
   },
-  sendVoiceMessage(id: string, durationSec: number, lang: ChatLang): Message {
+  sendVoiceMessage(
+    id: string,
+    durationSec: number,
+    lang: ChatLang,
+    channel?: Channel
+  ): Message {
     const message: Message = {
       id: uid("msg"),
-      channel: state.conversations.find((c) => c.id === id)?.channel ?? "whatsapp",
+      channel: channel ?? state.conversations.find((c) => c.id === id)?.channel ?? "whatsapp",
       direction: "outbound",
       body: "🎤 Voice message",
       timestamp: nowISO(),
