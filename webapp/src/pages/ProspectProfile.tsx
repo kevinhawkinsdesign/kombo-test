@@ -24,6 +24,15 @@ import {
   StickyNote,
   PhoneCall,
   Waypoints,
+  MapPin,
+  User,
+  Languages as LanguagesIcon,
+  ChevronDown,
+  Handshake,
+  XCircle,
+  AlertTriangle,
+  Activity,
+  ThumbsUp,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -75,6 +84,14 @@ import { ComposeDialog } from "@/components/prospect/ComposeDialog"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
+import { InfoHint } from "@/components/common/InfoHint"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { conversations } from "@/lib/mock-data"
 import { useProspects, prospectStore } from "@/lib/store"
 import {
@@ -83,6 +100,11 @@ import {
   getHistory,
   getNotes,
   qualification,
+  professionalSummaryBullets,
+  engagementStrategy,
+  challenges,
+  linkedinActivity,
+  activityInsights,
   SMART_TAGS,
   type HistoryType,
   type ProspectNote,
@@ -90,7 +112,9 @@ import {
 import { getIntroPaths, type IntroStrength } from "@/lib/mock-network"
 import { useCredits } from "@/lib/credits"
 import { useAuth } from "@/lib/auth"
-import { initials, relativeTime } from "@/lib/format"
+import { useProducts } from "@/lib/mock-products"
+import { CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
+import { initials, relativeTime, linkedinHandle } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import type { Prospect } from "@/lib/types"
 
@@ -181,6 +205,33 @@ const COPY = {
     noteAdded: "Note added",
     noNotes: "No notes yet.",
     youAuthor: "You",
+    basedIn: (loc: string) => `Based: ${loc}`,
+    age: (range: string) => `Age: ${range}`,
+    languagesLabel: "Languages",
+    professionalSummaryInfo: (name: string) =>
+      `A career overview of ${name}, highlighting the details most relevant to your outreach.`,
+    engagementStrategyTitle: "Engagement strategy",
+    engagementStrategyInfo: (name: string) =>
+      `Recommended do's and don'ts for engaging ${name}, based on their role and profile.`,
+    dos: "Do's",
+    donts: "Don'ts",
+    challengesTitle: "Challenges",
+    challengesInfo: (name: string) =>
+      `Potential pain points for ${name}, useful for tailoring your value proposition.`,
+    genericTab: "Generic",
+    specificTab: "Specific",
+    valueProposition: "Value proposition",
+    linkedinActivityTitle: "LinkedIn activity",
+    noLinkedinActivity: "No recent LinkedIn activity.",
+    reactions: (n: number) => `${n} reaction${n === 1 ? "" : "s"}`,
+    commentsCount: (n: number) => `${n} comment${n === 1 ? "" : "s"}`,
+    activityInsightsTitle: "Activity insights",
+    activityInsightsInfo: (name: string) =>
+      `A summary of ${name}'s CRM activity, plus suggested next steps.`,
+    nextSteps: "Suggested next steps",
+    product: "Product",
+    expand: (l: string) => `Expand ${l}`,
+    collapse: (l: string) => `Collapse ${l}`,
   },
   es: {
     prospectNotFound: "Prospecto no encontrado.",
@@ -269,6 +320,33 @@ const COPY = {
     noteAdded: "Nota añadida",
     noNotes: "Aún no hay notas.",
     youAuthor: "Tú",
+    basedIn: (loc: string) => `Ubicado en: ${loc}`,
+    age: (range: string) => `Edad: ${range}`,
+    languagesLabel: "Idiomas",
+    professionalSummaryInfo: (name: string) =>
+      `Un resumen de la trayectoria de ${name}, con los detalles más relevantes para tu contacto.`,
+    engagementStrategyTitle: "Estrategia de contacto",
+    engagementStrategyInfo: (name: string) =>
+      `Qué hacer y qué evitar al contactar con ${name}, según su cargo y perfil.`,
+    dos: "Qué hacer",
+    donts: "Qué evitar",
+    challengesTitle: "Retos",
+    challengesInfo: (name: string) =>
+      `Posibles puntos de dolor de ${name}, útiles para adaptar tu propuesta de valor.`,
+    genericTab: "General",
+    specificTab: "Específico",
+    valueProposition: "Propuesta de valor",
+    linkedinActivityTitle: "Actividad en LinkedIn",
+    noLinkedinActivity: "Aún no hay actividad en LinkedIn.",
+    reactions: (n: number) => `${n} reacci${n === 1 ? "ón" : "ones"}`,
+    commentsCount: (n: number) => `${n} comentario${n === 1 ? "" : "s"}`,
+    activityInsightsTitle: "Información de actividad",
+    activityInsightsInfo: (name: string) =>
+      `Un resumen de la actividad de ${name} en el CRM, con próximos pasos sugeridos.`,
+    nextSteps: "Próximos pasos sugeridos",
+    product: "Producto",
+    expand: (l: string) => `Expandir ${l}`,
+    collapse: (l: string) => `Contraer ${l}`,
   },
   it: {
     prospectNotFound: "Prospect non trovato.",
@@ -357,6 +435,33 @@ const COPY = {
     noteAdded: "Nota aggiunta",
     noNotes: "Ancora nessuna nota.",
     youAuthor: "Tu",
+    basedIn: (loc: string) => `Sede: ${loc}`,
+    age: (range: string) => `Età: ${range}`,
+    languagesLabel: "Lingue",
+    professionalSummaryInfo: (name: string) =>
+      `Una panoramica della carriera di ${name}, con i dettagli più rilevanti per il tuo approccio.`,
+    engagementStrategyTitle: "Strategia di coinvolgimento",
+    engagementStrategyInfo: (name: string) =>
+      `Cosa fare e cosa evitare quando contatti ${name}, in base al suo ruolo e profilo.`,
+    dos: "Cosa fare",
+    donts: "Cosa evitare",
+    challengesTitle: "Sfide",
+    challengesInfo: (name: string) =>
+      `Possibili criticità di ${name}, utili per adattare la tua proposta di valore.`,
+    genericTab: "Generico",
+    specificTab: "Specifico",
+    valueProposition: "Proposta di valore",
+    linkedinActivityTitle: "Attività su LinkedIn",
+    noLinkedinActivity: "Ancora nessuna attività su LinkedIn.",
+    reactions: (n: number) => `${n} reazion${n === 1 ? "e" : "i"}`,
+    commentsCount: (n: number) => `${n} comment${n === 1 ? "o" : "i"}`,
+    activityInsightsTitle: "Approfondimenti sull'attività",
+    activityInsightsInfo: (name: string) =>
+      `Un riepilogo dell'attività di ${name} nel CRM, con i prossimi passi consigliati.`,
+    nextSteps: "Prossimi passi consigliati",
+    product: "Prodotto",
+    expand: (l: string) => `Espandi ${l}`,
+    collapse: (l: string) => `Comprimi ${l}`,
   },
   fr: {
     prospectNotFound: "Prospect introuvable.",
@@ -445,6 +550,33 @@ const COPY = {
     noteAdded: "Note ajoutée",
     noNotes: "Pas encore de notes.",
     youAuthor: "Vous",
+    basedIn: (loc: string) => `Basé à : ${loc}`,
+    age: (range: string) => `Âge : ${range}`,
+    languagesLabel: "Langues",
+    professionalSummaryInfo: (name: string) =>
+      `Un aperçu du parcours de ${name}, avec les informations les plus utiles pour votre approche.`,
+    engagementStrategyTitle: "Stratégie d'approche",
+    engagementStrategyInfo: (name: string) =>
+      `Ce qu'il faut faire ou éviter pour approcher ${name}, selon son poste et son profil.`,
+    dos: "À faire",
+    donts: "À éviter",
+    challengesTitle: "Défis",
+    challengesInfo: (name: string) =>
+      `Difficultés potentielles de ${name}, utiles pour adapter votre proposition de valeur.`,
+    genericTab: "Générique",
+    specificTab: "Spécifique",
+    valueProposition: "Proposition de valeur",
+    linkedinActivityTitle: "Activité LinkedIn",
+    noLinkedinActivity: "Pas encore d'activité LinkedIn.",
+    reactions: (n: number) => `${n} réaction${n > 1 ? "s" : ""}`,
+    commentsCount: (n: number) => `${n} commentaire${n > 1 ? "s" : ""}`,
+    activityInsightsTitle: "Aperçu de l'activité",
+    activityInsightsInfo: (name: string) =>
+      `Un résumé de l'activité CRM de ${name}, avec les prochaines étapes suggérées.`,
+    nextSteps: "Prochaines étapes suggérées",
+    product: "Produit",
+    expand: (l: string) => `Développer ${l}`,
+    collapse: (l: string) => `Réduire ${l}`,
   },
   de: {
     prospectNotFound: "Prospect nicht gefunden.",
@@ -533,6 +665,33 @@ const COPY = {
     noteAdded: "Notiz hinzugefügt",
     noNotes: "Noch keine Notizen.",
     youAuthor: "Du",
+    basedIn: (loc: string) => `Standort: ${loc}`,
+    age: (range: string) => `Alter: ${range}`,
+    languagesLabel: "Sprachen",
+    professionalSummaryInfo: (name: string) =>
+      `Ein Karriereüberblick zu ${name} mit den für deine Ansprache relevantesten Details.`,
+    engagementStrategyTitle: "Engagement-Strategie",
+    engagementStrategyInfo: (name: string) =>
+      `Empfohlene Dos und Don'ts für die Ansprache von ${name}, basierend auf Rolle und Profil.`,
+    dos: "Zu tun",
+    donts: "Zu vermeiden",
+    challengesTitle: "Herausforderungen",
+    challengesInfo: (name: string) =>
+      `Mögliche Herausforderungen von ${name}, hilfreich, um dein Nutzenversprechen anzupassen.`,
+    genericTab: "Allgemein",
+    specificTab: "Spezifisch",
+    valueProposition: "Nutzenversprechen",
+    linkedinActivityTitle: "LinkedIn-Aktivität",
+    noLinkedinActivity: "Noch keine LinkedIn-Aktivität.",
+    reactions: (n: number) => `${n} Reaktion${n === 1 ? "" : "en"}`,
+    commentsCount: (n: number) => `${n} Kommentar${n === 1 ? "" : "e"}`,
+    activityInsightsTitle: "Aktivitätseinblicke",
+    activityInsightsInfo: (name: string) =>
+      `Eine Zusammenfassung der CRM-Aktivität von ${name} mit vorgeschlagenen nächsten Schritten.`,
+    nextSteps: "Vorgeschlagene nächste Schritte",
+    product: "Produkt",
+    expand: (l: string) => `${l} aufklappen`,
+    collapse: (l: string) => `${l} zuklappen`,
   },
   pt: {
     prospectNotFound: "Prospect não encontrado.",
@@ -621,6 +780,33 @@ const COPY = {
     noteAdded: "Nota adicionada",
     noNotes: "Ainda não há notas.",
     youAuthor: "Você",
+    basedIn: (loc: string) => `Localização: ${loc}`,
+    age: (range: string) => `Idade: ${range}`,
+    languagesLabel: "Idiomas",
+    professionalSummaryInfo: (name: string) =>
+      `Uma visão geral da carreira de ${name}, com os detalhes mais relevantes para o seu contacto.`,
+    engagementStrategyTitle: "Estratégia de envolvimento",
+    engagementStrategyInfo: (name: string) =>
+      `O que fazer e evitar ao contactar ${name}, com base na função e perfil.`,
+    dos: "O que fazer",
+    donts: "O que evitar",
+    challengesTitle: "Desafios",
+    challengesInfo: (name: string) =>
+      `Possíveis pontos de dor de ${name}, úteis para adaptar a sua proposta de valor.`,
+    genericTab: "Genérico",
+    specificTab: "Específico",
+    valueProposition: "Proposta de valor",
+    linkedinActivityTitle: "Atividade no LinkedIn",
+    noLinkedinActivity: "Ainda não há atividade no LinkedIn.",
+    reactions: (n: number) => `${n} reaç${n === 1 ? "ão" : "ões"}`,
+    commentsCount: (n: number) => `${n} comentário${n === 1 ? "" : "s"}`,
+    activityInsightsTitle: "Informações de atividade",
+    activityInsightsInfo: (name: string) =>
+      `Um resumo da atividade de ${name} no CRM, com próximos passos sugeridos.`,
+    nextSteps: "Próximos passos sugeridos",
+    product: "Produto",
+    expand: (l: string) => `Expandir ${l}`,
+    collapse: (l: string) => `Recolher ${l}`,
   },
   pt_BR: {
     prospectNotFound: "Prospect não encontrado.",
@@ -709,6 +895,33 @@ const COPY = {
     noteAdded: "Nota adicionada",
     noNotes: "Ainda não há notas.",
     youAuthor: "Você",
+    basedIn: (loc: string) => `Localização: ${loc}`,
+    age: (range: string) => `Idade: ${range}`,
+    languagesLabel: "Idiomas",
+    professionalSummaryInfo: (name: string) =>
+      `Uma visão geral da carreira de ${name}, com os detalhes mais relevantes para o seu contato.`,
+    engagementStrategyTitle: "Estratégia de engajamento",
+    engagementStrategyInfo: (name: string) =>
+      `O que fazer e evitar ao contatar ${name}, com base na função e perfil.`,
+    dos: "O que fazer",
+    donts: "O que evitar",
+    challengesTitle: "Desafios",
+    challengesInfo: (name: string) =>
+      `Possíveis pontos de dor de ${name}, úteis para adaptar sua proposta de valor.`,
+    genericTab: "Genérico",
+    specificTab: "Específico",
+    valueProposition: "Proposta de valor",
+    linkedinActivityTitle: "Atividade no LinkedIn",
+    noLinkedinActivity: "Ainda não há atividade no LinkedIn.",
+    reactions: (n: number) => `${n} reaç${n === 1 ? "ão" : "ões"}`,
+    commentsCount: (n: number) => `${n} comentário${n === 1 ? "" : "s"}`,
+    activityInsightsTitle: "Insights de atividade",
+    activityInsightsInfo: (name: string) =>
+      `Um resumo da atividade de ${name} no CRM, com próximos passos sugeridos.`,
+    nextSteps: "Próximos passos sugeridos",
+    product: "Produto",
+    expand: (l: string) => `Expandir ${l}`,
+    collapse: (l: string) => `Recolher ${l}`,
   },
 } as const
 
@@ -757,6 +970,7 @@ export default function ProspectProfile() {
             <p className="text-muted-foreground mt-1">
               {prospect.title} · {prospect.company}
             </p>
+            <ProspectFactsRow prospect={prospect} />
             <div className="mt-2 flex flex-wrap gap-1.5">
               {prospect.tags.map((t) => (
                 <Badge key={t} variant="secondary" className="font-normal">
@@ -820,12 +1034,27 @@ export default function ProspectProfile() {
             <TabsContent value="overview" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">{c.about}</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    {c.about}
+                    <InfoHint label={c.about}>
+                      {c.professionalSummaryInfo(
+                        `${prospect.firstName} ${prospect.lastName}`
+                      )}
+                    </InfoHint>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {prospect.about}
-                  </p>
+                  <ul className="space-y-1.5">
+                    {professionalSummaryBullets(prospect).map((bullet) => (
+                      <li
+                        key={bullet}
+                        className="text-muted-foreground flex items-start gap-2 text-sm leading-relaxed"
+                      >
+                        <span className="bg-muted-foreground/40 mt-1.5 size-1 shrink-0 rounded-full" />
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
                 </CardContent>
               </Card>
 
@@ -848,6 +1077,11 @@ export default function ProspectProfile() {
                   ))}
                 </CardContent>
               </Card>
+
+              <EngagementStrategyCard prospect={prospect} />
+              <ChallengesCard prospect={prospect} />
+              <LinkedInActivityCard prospect={prospect} />
+              <ActivityInsightsCard prospect={prospect} />
 
               <Card>
                 <CardHeader className="flex-row items-center justify-between">
@@ -975,6 +1209,254 @@ export default function ProspectProfile() {
         }}
       />
     </Page>
+  )
+}
+
+/* ----------------------------- Quick facts pills ----------------------------- */
+
+// Header-level "at a glance" pills — mirrors the extension's ContactCard
+// badge row (location, age, languages, LinkedIn handle). Email/phone reveal
+// stays exclusively in the sidebar Contact card below to avoid two divergent
+// reveal affordances for the same credit-gated action on one page.
+function ProspectFactsRow({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      {prospect.ageRange && (
+        <Badge variant="outline" className="font-normal">
+          <User className="size-3" />
+          {c.age(prospect.ageRange)}
+        </Badge>
+      )}
+      <Badge variant="outline" className="font-normal">
+        <MapPin className="size-3" />
+        {c.basedIn(prospect.location)}
+      </Badge>
+      {prospect.languages && prospect.languages.length > 0 && (
+        <Badge
+          variant="outline"
+          className="font-normal"
+          title={prospect.languages.map((l) => l.name).join(", ")}
+        >
+          <LanguagesIcon className="size-3" />
+          {c.languagesLabel}: {prospect.languages.map((l) => l.flag).join(" ")}
+        </Badge>
+      )}
+      <Badge variant="outline" className="font-normal" asChild>
+        <a
+          href={prospect.linkedinUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:bg-accent"
+        >
+          <LinkedinIcon className="size-3" />
+          {linkedinHandle(prospect.linkedinUrl)}
+        </a>
+      </Badge>
+    </div>
+  )
+}
+
+/* ----------------------------- Collapsible section card ----------------------------- */
+
+// Page-local collapsible card matching the extension's accordion-per-section
+// pattern for the Overview tab's AI-derived content blocks.
+function CollapsibleCard({
+  icon: Icon,
+  title,
+  infoText,
+  defaultOpen = true,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  infoText?: string
+  defaultOpen?: boolean
+  children: React.ReactNode
+}) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const [open, setOpen] = React.useState(defaultOpen)
+  return (
+    <Card>
+      <CardHeader
+        className="flex-row items-center justify-between cursor-pointer select-none"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Icon className="text-primary size-4" />
+          {title}
+          {infoText && <InfoHint label={title}>{infoText}</InfoHint>}
+        </CardTitle>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label={open ? c.collapse(title) : c.expand(title)}
+          onClick={(e) => {
+            e.stopPropagation()
+            setOpen((o) => !o)
+          }}
+          className="text-muted-foreground hover:text-foreground shrink-0"
+        >
+          <ChevronDown
+            className={cn("size-4 transition-transform", open && "rotate-180")}
+          />
+        </button>
+      </CardHeader>
+      {open && <CardContent className="space-y-4">{children}</CardContent>}
+    </Card>
+  )
+}
+
+/* ----------------------------- Engagement strategy ----------------------------- */
+
+function EngagementStrategyCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const strategy = engagementStrategy(prospect)
+  return (
+    <CollapsibleCard
+      icon={Handshake}
+      title={c.engagementStrategyTitle}
+      infoText={c.engagementStrategyInfo(
+        `${prospect.firstName} ${prospect.lastName}`
+      )}
+    >
+      <div>
+        <p className="mb-2 text-sm font-medium">{c.dos}</p>
+        <ul className="space-y-1.5">
+          {strategy.dos.map((item) => (
+            <li key={item} className="flex items-start gap-2 text-sm">
+              <ThumbsUp className="text-chart-1 mt-0.5 size-3.5 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Separator />
+      <div>
+        <p className="mb-2 text-sm font-medium">{c.donts}</p>
+        <ul className="space-y-1.5">
+          {strategy.donts.map((item) => (
+            <li key={item} className="flex items-start gap-2 text-sm">
+              <XCircle className="text-destructive mt-0.5 size-3.5 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </CollapsibleCard>
+  )
+}
+
+/* ----------------------------- Challenges ----------------------------- */
+
+function ChallengesCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const ch = challenges(prospect)
+  return (
+    <CollapsibleCard
+      icon={AlertTriangle}
+      title={c.challengesTitle}
+      infoText={c.challengesInfo(`${prospect.firstName} ${prospect.lastName}`)}
+    >
+      <Tabs defaultValue="generic">
+        <TabsList>
+          <TabsTrigger value="generic">{c.genericTab}</TabsTrigger>
+          <TabsTrigger value="specific">{c.specificTab}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="generic" className="space-y-2 pt-3">
+          {ch.generic.map((item) => (
+            <div key={item} className="bg-muted/50 rounded-md p-3 text-sm">
+              {item}
+            </div>
+          ))}
+        </TabsContent>
+        <TabsContent value="specific" className="space-y-3 pt-3">
+          <div className="space-y-2">
+            {ch.specific.map((item) => (
+              <div key={item} className="bg-muted/50 rounded-md p-3 text-sm">
+                {item}
+              </div>
+            ))}
+          </div>
+          <div className="bg-primary/5 rounded-md p-3">
+            <p className="text-primary mb-1 text-xs font-semibold">
+              {c.valueProposition}
+            </p>
+            <p className="text-sm">{ch.valueProp}</p>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </CollapsibleCard>
+  )
+}
+
+/* ----------------------------- LinkedIn activity ----------------------------- */
+
+function LinkedInActivityCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const posts = linkedinActivity(prospect)
+  return (
+    <CollapsibleCard
+      icon={LinkedinIcon}
+      title={c.linkedinActivityTitle}
+      defaultOpen={false}
+    >
+      {posts.length === 0 ? (
+        <p className="text-muted-foreground text-sm">{c.noLinkedinActivity}</p>
+      ) : (
+        <div className="space-y-3">
+          {posts.map((post) => (
+            <div key={post.id} className="rounded-lg border p-3">
+              <p className="text-sm">{post.summary}</p>
+              <div className="text-muted-foreground mt-2 flex items-center justify-between text-xs">
+                <span>
+                  {c.reactions(post.reactions)} · {c.commentsCount(post.comments)}
+                </span>
+                <span>{relativeTime(post.timestamp)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </CollapsibleCard>
+  )
+}
+
+/* ----------------------------- Activity insights ----------------------------- */
+
+function ActivityInsightsCard({ prospect }: { prospect: Prospect }) {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const insights = activityInsights(prospect, CONNECTED_CRM_PROVIDER.name)
+  return (
+    <CollapsibleCard
+      icon={Activity}
+      title={c.activityInsightsTitle}
+      infoText={c.activityInsightsInfo(
+        `${prospect.firstName} ${prospect.lastName}`
+      )}
+      defaultOpen={false}
+    >
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        {insights.summary}
+      </p>
+      <div>
+        <p className="mb-2 text-sm font-medium">{c.nextSteps}</p>
+        <ul className="space-y-1.5">
+          {insights.nextSteps.map((step) => (
+            <li key={step} className="flex items-start gap-2 text-sm">
+              <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
+              {step}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </CollapsibleCard>
   )
 }
 
@@ -1332,11 +1814,32 @@ function PrepTab({
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const prep = callPrep(prospect)
-  const emails = emailPrep(prospect)
+  const products = useProducts()
+  const [productId, setProductId] = React.useState(products[0]?.id)
+  const selectedProduct =
+    products.find((pr) => pr.id === productId) ?? products[0]
+  const prep = callPrep(prospect, selectedProduct)
+  const emails = emailPrep(prospect, selectedProduct)
 
   return (
     <div className="space-y-6">
+      {products.length > 1 && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium">{c.product}</span>
+          <Select value={selectedProduct?.id} onValueChange={setProductId}>
+            <SelectTrigger className="w-64">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {products.map((pr) => (
+                <SelectItem key={pr.id} value={pr.id}>
+                  {pr.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
