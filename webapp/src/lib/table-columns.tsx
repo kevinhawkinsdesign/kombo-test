@@ -417,6 +417,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     label: L("Owner", "Responsable", "Proprietario", "Propriétaire", "Owner", "Proprietário", "Proprietário"),
     group: "crm",
     default: true,
+    minWidth: "130px",
     getValue: (a) => getRep(a.ownerId)?.name ?? "",
     filterType: "enum",
     render: (a, locale) => {
@@ -622,7 +623,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   },
 
   // Role
-  { id: "title", label: L("Job title", "Cargo", "Ruolo", "Poste", "Berufsbezeichnung", "Cargo", "Cargo"), group: "role", getValue: (p) => p.title, render: (p) => mut(p.title) },
+  { id: "title", label: L("Job title", "Cargo", "Ruolo", "Poste", "Berufsbezeichnung", "Cargo", "Cargo"), group: "role", minWidth: "160px", getValue: (p) => p.title, render: (p) => mut(p.title) },
   { id: "seniority", label: L("Seniority", "Antigüedad", "Anzianità", "Ancienneté", "Senioritätsstufe", "Senioridade", "Senioridade"), group: "role", getValue: (p) => p.seniority, filterType: "enum", render: (p) => (
     <Badge variant="secondary" className="font-normal">{p.seniority}</Badge>
   ) },
@@ -636,7 +637,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
   pTxt("pastTitle", L("Past title", "Cargo anterior", "Ruolo precedente", "Poste précédent", "Vorherige Position", "Cargo anterior", "Cargo anterior"), "role", "pti", ["Account Executive", "Sales Manager", "BDR Lead", "Consultant"]),
 
   // Company
-  { id: "company", label: L("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"), group: "company", default: true, getValue: (p) => p.company, render: (p) => (
+  { id: "company", label: L("Company", "Empresa", "Azienda", "Entreprise", "Unternehmen", "Empresa", "Empresa"), group: "company", default: true, minWidth: "170px", getValue: (p) => p.company, render: (p) => (
     <div className="min-w-0">
       <TruncatedText label={p.company}>
         <p className="truncate font-medium">{p.company}</p>
@@ -676,7 +677,7 @@ export const PEOPLE_COLUMNS: ColumnDef<Prospect>[] = [
 
   // Engagement & signals
   { id: "score", label: L("Score", "Puntuación", "Punteggio", "Score", "Score", "Pontuação", "Pontuação"), group: "engage", default: true, getValue: (p) => p.score, render: (p) => <ScoreBadge score={p.score} /> },
-  { id: "status", label: L("Status", "Estado", "Stato", "Statut", "Status", "Estado", "Status"), group: "engage", default: true, getValue: (p) => p.status ?? "", filterType: "enum", render: (p) => <StatusBadge status={p.status} /> },
+  { id: "status", label: L("Status", "Estado", "Stato", "Statut", "Status", "Estado", "Status"), group: "engage", default: true, minWidth: "130px", getValue: (p) => p.status ?? "", filterType: "enum", render: (p) => <StatusBadge status={p.status} /> },
   { id: "source", label: L("Source", "Origen", "Origine", "Source", "Quelle", "Origem", "Origem"), group: "engage", default: true, getValue: (p) => prospectSource(p), filterType: "enum", render: (p, locale) => <SourceBadge source={prospectSource(p)} locale={locale} /> },
   { id: "tags", label: L("Tags", "Etiquetas", "Tag", "Tags", "Tags", "Etiquetas", "Tags"), group: "engage", minWidth: "140px", render: (p) => chips(p.tags) },
   { id: "signals", label: L("Signals", "Señales", "Segnali", "Signaux", "Signale", "Sinais", "Sinais"), group: "engage", minWidth: "160px", render: (p) => chips(p.signals) },

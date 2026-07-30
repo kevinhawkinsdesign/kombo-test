@@ -2738,6 +2738,7 @@ export default function CampaignDetail() {
         pt_BR: "Etapa atual",
       },
       group: "progress",
+      minWidth: "130px",
       render: (row) => (
         <span className="text-sm tabular-nums">
           {c.stepOf(row.currentStep, steps.length)}
@@ -2756,6 +2757,7 @@ export default function CampaignDetail() {
         pt_BR: "Status",
       },
       group: "progress",
+      minWidth: "110px",
       render: (row) => (
         <Badge variant={ENROLLMENT_VARIANT[row.status]}>
           {c.enrollmentLabel[row.status]}
@@ -2774,6 +2776,7 @@ export default function CampaignDetail() {
         pt_BR: "Último contato",
       },
       group: "progress",
+      minWidth: "100px",
       render: (row) => (
         <span className="text-muted-foreground text-sm">
           {row.lastTouchLabel}
