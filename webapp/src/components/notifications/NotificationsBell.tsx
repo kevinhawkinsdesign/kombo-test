@@ -10,12 +10,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { NOTIFICATION_META } from "@/components/notifications/meta"
-import { notifications } from "@/lib/mock-extra"
+import { useNotifications, notificationStore } from "@/lib/notification-store"
 import { relativeTime } from "@/lib/format"
+import { useLocale } from "@/lib/locale"
 import { cn } from "@/lib/utils"
+
+// This dropdown otherwise has no localization of its own (a pre-existing
+// gap, not touched here) — this one key covers only the button this change
+// adds.
+const MARK_ALL_READ = {
+  en: "Mark all read",
+  es: "Marcar todo como leído",
+  it: "Segna tutto come letto",
+  fr: "Tout marquer comme lu",
+  de: "Alle als gelesen markieren",
+  pt: "Marcar tudo como lido",
+  pt_BR: "Marcar tudo como lido",
+} as const
 
 export function NotificationsBell() {
   const navigate = useNavigate()
+  const { locale } = useLocale()
+  const notifications = useNotifications()
   const unread = notifications.filter((n) => !n.read).length
   const recent = notifications.slice(0, 4)
 
@@ -40,9 +56,16 @@ export function NotificationsBell() {
         <DropdownMenuLabel className="flex items-center justify-between px-3 py-2.5">
           Notifications
           {unread > 0 && (
-            <span className="text-muted-foreground text-xs font-normal">
-              {unread} new
-            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                notificationStore.markAllRead()
+              }}
+              className="text-primary text-xs font-normal hover:underline"
+            >
+              {MARK_ALL_READ[locale]}
+            </button>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="my-0" />

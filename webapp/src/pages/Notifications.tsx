@@ -1,4 +1,3 @@
-import * as React from "react"
 import { CheckCheck } from "lucide-react"
 
 import { useLocale } from "@/lib/locale"
@@ -6,7 +5,7 @@ import { Page, PageHeading } from "@/components/layout/Page"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { NOTIFICATION_META } from "@/components/notifications/meta"
-import { notifications as seed } from "@/lib/mock-extra"
+import { useNotifications, notificationStore } from "@/lib/notification-store"
 import { relativeTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -78,18 +77,8 @@ const COPY = {
 export default function Notifications() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const [items, setItems] = React.useState(seed)
+  const items = useNotifications()
   const unread = items.filter((n) => !n.read).length
-
-  function markAll() {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
-
-  function markRead(id: string) {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
-  }
 
   return (
     <Page className="max-w-3xl">
@@ -97,7 +86,7 @@ export default function Notifications() {
         title={c.title}
         description={unread ? c.unread(unread) : c.caughtUp}
         action={
-          <Button variant="volt" onClick={markAll} disabled={!unread}>
+          <Button variant="volt" onClick={notificationStore.markAllRead} disabled={!unread}>
             <CheckCheck className="size-4" />
             {c.markAllRead}
           </Button>
@@ -120,7 +109,7 @@ export default function Notifications() {
           return (
             <button
               key={n.id}
-              onClick={() => markRead(n.id)}
+              onClick={() => notificationStore.markRead(n.id)}
               className={cn(
                 "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors",
                 n.read ? "hover:bg-muted/40" : "bg-primary/[0.04] hover:bg-primary/[0.07]"
