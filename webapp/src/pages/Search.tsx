@@ -3597,19 +3597,26 @@ export default function Search() {
               selector now lives in the search bar itself, since it picks
               WHERE the query runs rather than filtering its results. */}
           <Card className="gap-3 p-3">
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex flex-wrap items-center gap-2">
+          {/* Toolbar — Sort/Columns read as table configuration, not
+              actions, so they stay small icon-only controls. "Save this
+              search" is the one primary, visually-emphasized CTA before any
+              row is selected (bulk export/list/CRM actions only appear once
+              rows are checked, via BulkActionsBar below) — a test user
+              assumed Save-this-search itself would export the results, so
+              having it compete for attention with 3 other equal-weight
+              buttons was the actual bug, not the label. Lookalikes isn't
+              selection-dependent either, so it moves into the overflow menu
+              alongside Sort/Columns rather than sitting as its own button. */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="ghost" size="icon" aria-label={sortLabel(sortKey, c)}>
                     <ArrowDownUp className="size-4" />
-                    <span className="hidden sm:inline">
-                      {sortLabel(sortKey, c)}
-                    </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>{c.sortBy}</DropdownMenuLabel>
                   {(["fit", "name", "company", "headcount", "recent"] as SortKey[]).map(
                     (k) => (
                       <DropdownMenuItem key={k} onClick={() => setSortKey(k)}>
@@ -3621,54 +3628,50 @@ export default function Search() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="outline" size="sm" onClick={() => setColumnsOpen(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setColumnsOpen(true)}
+                aria-label={c.columnsBtn}
+              >
                 <Columns3 className="size-4" />
-                <span className="hidden sm:inline">{c.columnsBtn}</span>
               </Button>
 
-              {/* Secondary actions stay visible at every width — icon-only on
-                  the narrowest screens, never collapsed behind an overflow
-                  menu. */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLookalikeOpen(true)}
-                aria-label={c.lookalike}
-              >
-                <ScanSearch className="size-4" />
-                <span className="hidden sm:inline">{c.lookalike}</span>
-              </Button>
-              {shownCount > 0 ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={openSaveDialog}
-                  aria-label={c.saveThis}
-                >
-                  <Bookmark className="size-4" />
-                  <span className="hidden sm:inline">{c.saveThis}</span>
-                </Button>
-              ) : (
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span tabIndex={0} className="inline-flex">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          aria-label={c.saveThis}
-                        >
-                          <Bookmark className="size-4" />
-                          <span className="hidden sm:inline">{c.saveThis}</span>
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{c.saveDisabledReason}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label={c.moreActions}>
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => setLookalikeOpen(true)}>
+                    <ScanSearch className="size-4" />
+                    {c.lookalike}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+
+            {shownCount > 0 ? (
+              <Button variant="volt" size="sm" onClick={openSaveDialog}>
+                <Bookmark className="size-4" />
+                {c.saveThis}
+              </Button>
+            ) : (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0} className="inline-flex">
+                      <Button variant="volt" size="sm" disabled>
+                        <Bookmark className="size-4" />
+                        {c.saveThis}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{c.saveDisabledReason}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
           </Card>
 
