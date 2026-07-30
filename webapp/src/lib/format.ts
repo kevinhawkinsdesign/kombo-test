@@ -101,6 +101,14 @@ const TIME_WORDS: Record<
   },
 }
 
+/** Extracts the "@handle" from a LinkedIn profile URL, e.g.
+ * "https://linkedin.com/in/sarahchen" -> "@sarahchen". Falls back to the raw
+ * URL when it doesn't match the expected /in/ pattern. */
+export function linkedinHandle(url: string): string {
+  const match = url.match(/linkedin\.com\/in\/([^/?#]+)/i)
+  return match ? `@${match[1]}` : url
+}
+
 export function initials(first: string, last?: string): string {
   const a = first?.[0] ?? ""
   const b = last?.[0] ?? ""

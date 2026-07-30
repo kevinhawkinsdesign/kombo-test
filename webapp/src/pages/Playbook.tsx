@@ -32,6 +32,7 @@ import type { PlaybookProduct, ValueProp } from "@/lib/mock-playbook"
 import { emailTemplates } from "@/lib/mock-extra"
 import { useLocale } from "@/lib/locale"
 import type { Channel } from "@/lib/types"
+import { ConversationTagsTab } from "@/components/playbook/ConversationTagsTab"
 
 const COPY = {
   en: {
@@ -70,6 +71,7 @@ const COPY = {
     tabProducts: "Products",
     tabValueProps: "Value props",
     tabTemplates: "Templates",
+    tabConversationTags: "AI Conversation Tags",
   },
   es: {
     productsActive: (active: number, total: number) =>
@@ -107,6 +109,7 @@ const COPY = {
     tabProducts: "Productos",
     tabValueProps: "Propuestas de valor",
     tabTemplates: "Plantillas",
+    tabConversationTags: "Etiquetas de conversación con IA",
   },
   it: {
     productsActive: (active: number, total: number) =>
@@ -144,6 +147,7 @@ const COPY = {
     tabProducts: "Prodotti",
     tabValueProps: "Proposte di valore",
     tabTemplates: "Modelli",
+    tabConversationTags: "Tag di conversazione IA",
   },
   fr: {
     productsActive: (active: number, total: number) =>
@@ -181,6 +185,7 @@ const COPY = {
     tabProducts: "Produits",
     tabValueProps: "Propositions de valeur",
     tabTemplates: "Modèles",
+    tabConversationTags: "Tags de conversation IA",
   },
   de: {
     productsActive: (active: number, total: number) =>
@@ -218,6 +223,7 @@ const COPY = {
     tabProducts: "Produkte",
     tabValueProps: "Value Propositions",
     tabTemplates: "Vorlagen",
+    tabConversationTags: "KI-Konversations-Tags",
   },
   pt: {
     productsActive: (active: number, total: number) =>
@@ -255,6 +261,7 @@ const COPY = {
     tabProducts: "Produtos",
     tabValueProps: "Propostas de valor",
     tabTemplates: "Modelos",
+    tabConversationTags: "Etiquetas de conversa com IA",
   },
   pt_BR: {
     productsActive: (active: number, total: number) =>
@@ -292,6 +299,7 @@ const COPY = {
     tabProducts: "Produtos",
     tabValueProps: "Propostas de valor",
     tabTemplates: "Modelos",
+    tabConversationTags: "Tags de conversa com IA",
   },
 } as const
 
@@ -585,6 +593,9 @@ export default function Playbook() {
           <TabsTrigger value="products">{c.tabProducts}</TabsTrigger>
           <TabsTrigger value="value-props">{c.tabValueProps}</TabsTrigger>
           <TabsTrigger value="templates">{c.tabTemplates}</TabsTrigger>
+          <TabsTrigger value="conversation-tags">
+            {c.tabConversationTags}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -597,6 +608,10 @@ export default function Playbook() {
 
         <TabsContent value="templates">
           <TemplatesTab />
+        </TabsContent>
+
+        <TabsContent value="conversation-tags">
+          <ConversationTagsTab />
         </TabsContent>
       </Tabs>
     </Page>

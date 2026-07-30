@@ -1,35 +1,93 @@
 import type {
   CampaignDailyStat,
   CampaignEnrollment,
+  CampaignNotReachedBreakdown,
   CrmProvider,
   NewsItem,
   RecordingAnalysis,
+  StepChannel,
 } from "./types"
 
 // --- Campaign daily breakdown ---
+// `channelSplit` mirrors the channels a campaign's own sequence actually
+// uses (e.g. { email: 0.65, linkedin_message: 0.35 }) so the per-channel
+// breakdown a campaign shows always matches its real steps — an
+// email-only campaign never shows a LinkedIn line, etc. Omitted entirely
+// for campaigns that don't need the breakdown.
 function buildDaily(
   seed: number[],
+  channelSplit?: Partial<Record<StepChannel, number>>,
   start = "2026-06-04"
 ): CampaignDailyStat[] {
   const base = new Date(start).getTime()
+  const channels = channelSplit
+    ? (Object.keys(channelSplit) as StepChannel[])
+    : []
   return seed.map((sent, i) => {
     const opened = Math.round(sent * (0.55 + (i % 3) * 0.05))
     const replied = Math.round(opened * (0.18 + (i % 2) * 0.04))
     const bounced = Math.round(sent * (0.02 + (i % 4) * 0.01))
+    const byChannel = channelSplit
+      ? channels.reduce<NonNullable<CampaignDailyStat["byChannel"]>>(
+          (acc, ch) => {
+            const weight = channelSplit[ch] ?? 0
+            acc[ch] = {
+              sent: Math.round(sent * weight),
+              replied: Math.round(replied * weight),
+            }
+            return acc
+          },
+          {}
+        )
+      : undefined
     return {
       date: new Date(base + i * 86400000).toISOString(),
       sent,
       opened,
       replied,
       bounced,
+      ...(byChannel ? { byChannel } : {}),
     }
   })
 }
 
 export const campaignDailyStats: Record<string, CampaignDailyStat[]> = {
-  cm_1: buildDaily([14, 18, 22, 16, 20, 24, 19, 21, 17, 23, 26, 22]),
-  cm_2: buildDaily([8, 10, 12, 9, 11, 13, 10, 12, 9, 11]),
-  cm_3: buildDaily([5, 6, 7, 4, 6, 5, 7]),
+  cm_1: buildDaily(
+    [14, 18, 22, 16, 20, 24, 19, 21, 17, 23, 26, 22],
+    { email: 0.65, linkedin_message: 0.35 }
+  ),
+  cm_2: buildDaily([8, 10, 12, 9, 11, 13, 10, 12, 9, 11], { email: 1 }),
+  cm_3: buildDaily([5, 6, 7, 4, 6, 5, 7], { linkedin_message: 1 }),
+}
+
+// --- Campaign "Not Reached" breakdown (Overview tab) ---
+// cm_3 is intentionally all-zero — the Overview tab only renders this card
+// when at least one reason has a non-zero count, same as the extension.
+export const campaignNotReached: Record<string, CampaignNotReachedBreakdown> = {
+  cm_1: {
+    already_in_campaign: 4,
+    invalid_contact_info: 6,
+    duplicate: 2,
+    blacklisted: 1,
+    manually_cancelled: 0,
+    other: 3,
+  },
+  cm_2: {
+    already_in_campaign: 1,
+    invalid_contact_info: 2,
+    duplicate: 0,
+    blacklisted: 0,
+    manually_cancelled: 1,
+    other: 0,
+  },
+  cm_3: {
+    already_in_campaign: 0,
+    invalid_contact_info: 0,
+    duplicate: 0,
+    blacklisted: 0,
+    manually_cancelled: 0,
+    other: 0,
+  },
 }
 
 export const campaignEnrollments: Record<string, CampaignEnrollment[]> = {

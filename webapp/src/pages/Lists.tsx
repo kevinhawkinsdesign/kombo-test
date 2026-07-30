@@ -33,11 +33,13 @@ import {
 import { DataTable } from "@/components/common/DataTable"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { ColumnManager } from "@/components/common/ColumnManager"
+import { ActiveFiltersBar } from "@/components/common/ActiveFiltersBar"
 import {
   useColumnPrefs,
   type ColumnDef,
   type ColGroup,
 } from "@/lib/table-columns"
+import { useTableSortFilter, filterChipsFor } from "@/lib/table-sort-filter"
 import { ProspectAvatar } from "@/components/common/ProspectBits"
 import { ImportCsvDialog } from "@/components/lists/ImportCsvDialog"
 import { ListFormDialog } from "@/components/lists/ListFormDialog"
@@ -95,7 +97,7 @@ const COPY = {
     viewTable: "Table",
     exportLabel: "Export",
     exported: "Lists exported to CSV",
-    noResults: "No lists match your search.",
+    noResults: "No lists match your filters.",
     sortDefault: "Dynamic first",
     sortName: "Name (A–Z)",
     sortMembers: "Most members",
@@ -149,7 +151,7 @@ const COPY = {
     viewTable: "Tabla",
     exportLabel: "Exportar",
     exported: "Listas exportadas a CSV",
-    noResults: "Ninguna lista coincide con tu búsqueda.",
+    noResults: "Ninguna lista coincide con tus filtros.",
     sortDefault: "Dinámicas primero",
     sortName: "Nombre (A–Z)",
     sortMembers: "Más miembros",
@@ -203,7 +205,7 @@ const COPY = {
     viewTable: "Tabella",
     exportLabel: "Esporta",
     exported: "Liste esportate in CSV",
-    noResults: "Nessuna lista corrisponde alla tua ricerca.",
+    noResults: "Nessuna lista corrisponde ai tuoi filtri.",
     sortDefault: "Prima le dinamiche",
     sortName: "Nome (A–Z)",
     sortMembers: "Più membri",
@@ -257,7 +259,7 @@ const COPY = {
     viewTable: "Tableau",
     exportLabel: "Exporter",
     exported: "Listes exportées en CSV",
-    noResults: "Aucune liste ne correspond à votre recherche.",
+    noResults: "Aucune liste ne correspond à vos filtres.",
     sortDefault: "Dynamiques d'abord",
     sortName: "Nom (A–Z)",
     sortMembers: "Plus de membres",
@@ -311,7 +313,7 @@ const COPY = {
     viewTable: "Tabelle",
     exportLabel: "Exportieren",
     exported: "Listen als CSV exportiert",
-    noResults: "Keine Listen entsprechen deiner Suche.",
+    noResults: "Keine Listen entsprechen deinen Filtern.",
     sortDefault: "Dynamische zuerst",
     sortName: "Name (A–Z)",
     sortMembers: "Meiste Mitglieder",
@@ -365,7 +367,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Listas exportadas para CSV",
-    noResults: "Nenhuma lista corresponde à sua pesquisa.",
+    noResults: "Nenhuma lista corresponde aos seus filtros.",
     sortDefault: "Dinâmicas primeiro",
     sortName: "Nome (A–Z)",
     sortMembers: "Mais membros",
@@ -419,7 +421,7 @@ const COPY = {
     viewTable: "Tabela",
     exportLabel: "Exportar",
     exported: "Listas exportadas para CSV",
-    noResults: "Nenhuma lista corresponde à sua busca.",
+    noResults: "Nenhuma lista corresponde aos seus filtros.",
     sortDefault: "Dinâmicas primeiro",
     sortName: "Nome (A–Z)",
     sortMembers: "Mais membros",
@@ -539,6 +541,16 @@ export default function Lists() {
     return sorted
   }, [lists, query, sort])
 
+  // Per-column sort/filter (the DataTable header controls) layered on top of
+  // the search + preset-sort above — same shared hook People.tsx/Companies.tsx
+  // use, applied to the full pre-pagination set (there's no pagination here,
+  // so `sortedLists` itself is that set).
+  const tsf = useTableSortFilter(LIST_COLUMNS, sortedLists)
+  const filterChips = React.useMemo(
+    () => filterChipsFor(LIST_COLUMNS, tsf.filters, tsf.setFilter, locale),
+    [tsf.filters, tsf.setFilter, locale]
+  )
+
   function listsToRows(rows: ProspectList[]) {
     return rows.map((l) => [
       l.name,
@@ -553,7 +565,7 @@ export default function Lists() {
     downloadCsv(
       "kombo-lists.csv",
       [c.colName, c.colType, c.colSource, c.colMembers, c.colCreated],
-      listsToRows(sortedLists)
+      listsToRows(tsf.rows)
     )
     toast.success(c.exported)
   }
@@ -567,8 +579,11 @@ export default function Lists() {
     toast.success(c.exported)
   }
 
-  // Bulk selection — same DataTable selection pattern used elsewhere (Templates.tsx).
-  const rowIds = sortedLists.map((l) => l.id)
+  // Bulk selection — same DataTable selection pattern used elsewhere
+  // (Templates.tsx). "Select all" reflects the currently filtered/visible
+  // rows (tsf.rows), not the whole search+sort set — same rule DataTable's
+  // own selection contract follows everywhere else (People.tsx, Companies.tsx).
+  const rowIds = tsf.rows.map((l) => l.id)
   const allSelected =
     rowIds.length > 0 && rowIds.every((id) => selectedIds.has(id))
   const someSelected = !allSelected && rowIds.some((id) => selectedIds.has(id))
@@ -648,7 +663,9 @@ export default function Lists() {
         )}
       </CollectionToolbar>
 
-      {sortedLists.length === 0 ? (
+      <ActiveFiltersBar chips={filterChips} onClearAll={tsf.clearFilters} locale={locale} />
+
+      {tsf.rows.length === 0 ? (
         <Card className="text-muted-foreground p-8 text-center text-sm">
           {c.noResults}
         </Card>
@@ -657,7 +674,7 @@ export default function Lists() {
         <DataTable
           columns={LIST_COLUMNS}
           visible={listColPrefs.visible}
-          rows={sortedLists}
+          rows={tsf.rows}
           rowKey={(l) => l.id}
           locale={locale}
           onRowClick={(l) => navigate(`/lists/${l.id}`)}
@@ -668,6 +685,11 @@ export default function Lists() {
             allSelected,
             someSelected,
           }}
+          sort={tsf.sort}
+          onSortChange={tsf.setSort}
+          filters={tsf.filters}
+          onFilterChange={tsf.setFilter}
+          filterRows={sortedLists}
           actions={(list) => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -714,7 +736,7 @@ export default function Lists() {
         </>
       ) : (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {sortedLists.map((list) => {
+        {tsf.rows.map((list) => {
           const isCompany = list.kind === "company"
           const members = list.prospectIds
             .map(getProspect)
@@ -1059,6 +1081,7 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     },
     group: "list",
     default: true,
+    minWidth: "150px",
     // Filter checklist shows the English label, same convention as "type".
     getValue: (l) =>
       ({

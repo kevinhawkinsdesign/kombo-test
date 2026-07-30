@@ -95,6 +95,11 @@ export const prospects: Prospect[] = [
     personalityType: "C",
     companyLocation: "Barcelona, Spain",
     companyLinkedinUrl: "https://linkedin.com/company/softonic",
+    outOfOffice: true,
+    languages: [
+      { flag: "🇪🇸", name: "Spanish" },
+      { flag: "🇬🇧", name: "English" },
+    ],
   },
   {
     id: "p_3",
@@ -153,6 +158,10 @@ export const prospects: Prospect[] = [
     personalityType: "C",
     companyLocation: "Valencia, Spain",
     companyLinkedinUrl: "https://linkedin.com/company/edicom",
+    languages: [
+      { flag: "🇪🇸", name: "Spanish" },
+      { flag: "🇬🇧", name: "English" },
+    ],
   },
   {
     id: "p_5",
@@ -182,6 +191,11 @@ export const prospects: Prospect[] = [
     personalityType: "I",
     companyLocation: "Milan, Italy",
     companyLinkedinUrl: "https://linkedin.com/company/talent-garden",
+    outOfOffice: true,
+    languages: [
+      { flag: "🇬🇧", name: "English" },
+      { flag: "🇮🇳", name: "Hindi" },
+    ],
   },
   {
     id: "p_6",
@@ -239,6 +253,10 @@ export const prospects: Prospect[] = [
     personalityType: "S",
     companyLocation: "Paris, France",
     companyLinkedinUrl: "https://linkedin.com/company/weekendesk",
+    languages: [
+      { flag: "🇮🇹", name: "Italian" },
+      { flag: "🇬🇧", name: "English" },
+    ],
   },
   {
     id: "p_8",
@@ -298,6 +316,10 @@ export const prospects: Prospect[] = [
     personalityType: "I",
     companyLocation: "Paris, France",
     companyLinkedinUrl: "https://linkedin.com/company/criteo",
+    languages: [
+      { flag: "🇨🇳", name: "Mandarin" },
+      { flag: "🇬🇧", name: "English" },
+    ],
   },
   {
     id: "p_10",
@@ -356,6 +378,10 @@ export const prospects: Prospect[] = [
     personalityType: "I",
     companyLocation: "Barcelona, Spain",
     companyLinkedinUrl: "https://linkedin.com/company/nuclio",
+    languages: [
+      { flag: "🇫🇷", name: "French" },
+      { flag: "🇬🇧", name: "English" },
+    ],
   },
   {
     id: "p_12",
@@ -386,6 +412,10 @@ export const prospects: Prospect[] = [
     personalityType: "D",
     companyLocation: "Santiago, Chile",
     companyLinkedinUrl: "https://linkedin.com/company/betterfly",
+    languages: [
+      { flag: "🇨🇳", name: "Mandarin" },
+      { flag: "🇬🇧", name: "English" },
+    ],
   },
   // Bulk procedurally-generated prospects so the People page is fully populated.
   ...generateProspects(),

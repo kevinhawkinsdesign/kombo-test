@@ -48,7 +48,8 @@ import { useAccounts, accountStore, useLists, blacklistStore } from "@/lib/store
 import { ListSelector } from "@/components/common/ListSelector"
 import { useView } from "@/lib/view-context"
 import { usePagedSelection } from "@/lib/use-paged-selection"
-import { useTableSortFilter } from "@/lib/table-sort-filter"
+import { useTableSortFilter, filterChipsFor } from "@/lib/table-sort-filter"
+import { ActiveFiltersBar } from "@/components/common/ActiveFiltersBar"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Account, AccountTier } from "@/lib/types"
 
@@ -456,6 +457,25 @@ export default function Companies() {
   })
 
   const tsf = useTableSortFilter(allColumns, results)
+
+  // Everything currently narrowing the table, in one place: the per-column
+  // DataTable filters plus the toolbar's Tier/List facets — so there's a
+  // single spot to see and clear all of them together (the toolbar controls
+  // stay the "how you set" a filter; this is the "what's set").
+  // Not memoized — cheap (a handful of filter entries), and `activeList` is a
+  // live store object the React Compiler can't safely treat as a stable dep.
+  const filterChips = filterChipsFor(allColumns, tsf.filters, tsf.setFilter, locale)
+  if (tier !== ALL) {
+    filterChips.push({ key: "toolbar-tier", label: tier, onClear: () => setTier(ALL) })
+  }
+  if (activeList) {
+    filterChips.push({
+      key: "toolbar-list",
+      label: activeList.name,
+      onClear: () => setListFilter("all"),
+    })
+  }
+
   const sel = usePagedSelection(
     tsf.rows,
     (a) => a.id,
@@ -636,6 +656,16 @@ export default function Companies() {
           {c.editingHint}
         </p>
       )}
+
+      <ActiveFiltersBar
+        chips={filterChips}
+        onClearAll={() => {
+          tsf.clearFilters()
+          setTier(ALL)
+          setListFilter("all")
+        }}
+        locale={locale}
+      />
 
       {tsf.rows.length === 0 ? (
         <EmptyState description={c.noMatch} />

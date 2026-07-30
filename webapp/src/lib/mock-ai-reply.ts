@@ -63,7 +63,10 @@ const TEMPLATES: Record<ConvStatus | "default", ((p: Prospect) => string)[]> = {
   ],
 }
 
-export type ReplyTone = "formal" | "friendly" | "professional" | "concise"
+// Matches the extension's exact 6-tone set (src/utils/constants/valueConstants.ts
+// toneOfVoices) — "professional"/"concise" were dropped for parity, see
+// Inbox.tsx's TONE_OPTIONS comment.
+export type ReplyTone = "friendly" | "empathic" | "enthusiastic" | "formal" | "analytical" | "direct"
 export type ReplyLength = "shorter" | "normal" | "longer"
 
 export interface DraftReplyOptions {
@@ -74,18 +77,20 @@ export interface DraftReplyOptions {
 }
 
 const TONE_SIGNOFF: Record<ReplyTone, string> = {
-  formal: "Please let me know if this time works for you.",
   friendly: "Excited to keep this moving!",
-  professional: "Happy to align on next steps at your convenience.",
-  concise: "",
+  empathic: "No pressure at all — happy to work around whatever's easiest for you.",
+  enthusiastic: "Really looking forward to this!",
+  formal: "Please let me know if this time works for you.",
+  analytical: "Happy to walk through the numbers in more detail if useful.",
+  direct: "Let me know today so we can lock this in.",
 }
 
 /**
  * Draft a reply for a conversation. `seed` lets the caller rotate variants so
  * pressing "Generate" repeatedly cycles phrasings instead of repeating one.
  * `options` (tone/length/language/free-text instructions) come from the
- * Regenerate dialog — all optional and backward-compatible with the plain
- * re-roll used by "Generate draft" and the existing Tone/Length dropdowns.
+ * composer's inline Tone/Length/Language/Custom controls — all optional and
+ * backward-compatible with the plain re-roll used by "Generate draft".
  */
 export function draftReply(
   prospect: Prospect,
