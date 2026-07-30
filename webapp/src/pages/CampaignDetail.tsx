@@ -94,7 +94,8 @@ import {
   RichTextEditor,
   type RichTextEditorHandle,
 } from "@/components/common/RichTextEditor"
-import { plainToHtml } from "@/lib/rich-text"
+import { plainToHtml, stripHtml } from "@/lib/rich-text"
+import { highlightVarsHtml, mergeVarsRaw } from "@/lib/merge-vars-highlight"
 import {
   Tabs,
   TabsContent,
@@ -308,6 +309,7 @@ const COPY = {
     clearDelay: "Reset to send immediately",
     actionNeeded: "Action needed",
     subjectLine: "Subject line",
+    previewSubjectLabel: "Subject",
     messageBody: "Message body",
     manualTaskBadge: "Manual",
     manualTaskAssignee: "Owner",
@@ -538,6 +540,7 @@ const COPY = {
     clearDelay: "Restablecer a envío inmediato",
     actionNeeded: "Necesita acción",
     subjectLine: "Asunto",
+    previewSubjectLabel: "Asunto",
     messageBody: "Cuerpo del mensaje",
     manualTaskBadge: "Manual",
     manualTaskAssignee: "Responsable",
@@ -768,6 +771,7 @@ const COPY = {
     clearDelay: "Ripristina invio immediato",
     actionNeeded: "Azione richiesta",
     subjectLine: "Oggetto",
+    previewSubjectLabel: "Oggetto",
     messageBody: "Corpo del messaggio",
     manualTaskBadge: "Manuale",
     manualTaskAssignee: "Responsabile",
@@ -998,6 +1002,7 @@ const COPY = {
     clearDelay: "Revenir à un envoi immédiat",
     actionNeeded: "Action requise",
     subjectLine: "Objet",
+    previewSubjectLabel: "Objet",
     messageBody: "Corps du message",
     manualTaskBadge: "Manuel",
     manualTaskAssignee: "Responsable",
@@ -1228,6 +1233,7 @@ const COPY = {
     clearDelay: "Auf sofortigen Versand zurücksetzen",
     actionNeeded: "Aktion erforderlich",
     subjectLine: "Betreff",
+    previewSubjectLabel: "Betreff",
     messageBody: "Nachrichtentext",
     manualTaskBadge: "Manuell",
     manualTaskAssignee: "Verantwortlich",
@@ -1458,6 +1464,7 @@ const COPY = {
     clearDelay: "Repor envio imediato",
     actionNeeded: "Ação necessária",
     subjectLine: "Assunto",
+    previewSubjectLabel: "Assunto",
     messageBody: "Corpo da mensagem",
     manualTaskBadge: "Manual",
     manualTaskAssignee: "Responsável",
@@ -1688,6 +1695,7 @@ const COPY = {
     clearDelay: "Redefinir para envio imediato",
     actionNeeded: "Ação necessária",
     subjectLine: "Assunto",
+    previewSubjectLabel: "Assunto",
     messageBody: "Corpo da mensagem",
     manualTaskBadge: "Manual",
     manualTaskAssignee: "Responsável",
@@ -3985,6 +3993,7 @@ export default function CampaignDetail() {
                             </p>
                           </div>
                         ) : (
+                        <>
                         <RichTextEditor
                           ref={stepBodyRef}
                           value={plainToHtml(step.body)}
@@ -4020,6 +4029,52 @@ export default function CampaignDetail() {
                             </>
                           }
                         />
+                        {/* A read-only render of the message as it'll actually
+                            send — variables highlighted, formatting applied —
+                            instead of only the raw editable HTML above. Same
+                            look as the Templates message-editor's own Preview
+                            column (highlightVarsHtml/mergeVarsRaw), just
+                            stacked below the editor since this panel is a
+                            single column, not a 3-column dialog. */}
+                        {(stripHtml(step.body).trim() !== "" ||
+                          (isEmail && (step.subject ?? "").trim() !== "")) && (
+                          <div className="space-y-2">
+                            <p className="text-muted-foreground text-xs font-medium">
+                              {c.tabPreview}
+                            </p>
+                            {isEmail ? (
+                              <div className="bg-muted/30 overflow-hidden rounded-lg border">
+                                <div className="flex gap-2 border-b p-3 text-xs">
+                                  <span className="text-muted-foreground w-16 shrink-0">
+                                    {c.previewSubjectLabel}
+                                  </span>
+                                  <span className="font-medium">
+                                    {step.subject ? mergeVarsRaw(step.subject) : "—"}
+                                  </span>
+                                </div>
+                                <div
+                                  className="text-foreground/90 p-3 text-sm whitespace-pre-wrap [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                                  dangerouslySetInnerHTML={{
+                                    __html: highlightVarsHtml(step.body),
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex items-start gap-2">
+                                <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                                  {"{}"}
+                                </span>
+                                <div
+                                  className="bg-background max-w-full rounded-2xl rounded-tl-sm border p-3 text-sm whitespace-pre-wrap shadow-sm [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                                  dangerouslySetInnerHTML={{
+                                    __html: highlightVarsHtml(step.body),
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        </>
                         )}
                       </>
                     )}

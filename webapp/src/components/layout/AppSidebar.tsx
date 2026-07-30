@@ -12,8 +12,6 @@ import {
   Users,
   Plug,
   Settings,
-  Gift,
-  Zap,
   Menu,
   Rocket,
   BookOpen,
@@ -31,6 +29,8 @@ import {
   Folder,
   Compass,
   BarChart3,
+  CreditCard,
+  ShieldOff,
 } from "lucide-react"
 
 import { KomboLockup, KomboMark } from "@/components/KomboLogo"
@@ -133,8 +133,13 @@ const manageGroup: NavGroup = {
     { to: "/onboarding", labelKey: "nav.onboarding", icon: Compass },
     { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen },
     { to: "/team", labelKey: "nav.team", icon: Users },
-    { to: "/usage", labelKey: "nav.usage", icon: Zap },
-    { to: "/referrals", labelKey: "nav.referrals", icon: Gift },
+    // Billing and Blacklists used to be Settings tabs — promoted to this
+    // top level, same as Team and Playbook, per Ale's feedback. Usage and
+    // Referrals moved the other way: they're top-bar CTAs only now (the
+    // credits pill and "Refer" pill already link to /usage and /referrals),
+    // so they're deliberately not listed here anymore.
+    { to: "/billing", labelKey: "nav.billing", icon: CreditCard },
+    { to: "/blacklists", labelKey: "nav.blacklists", icon: ShieldOff },
     { to: "/integrations", labelKey: "nav.integrations", icon: Plug },
     { to: "/settings", labelKey: "nav.settings", icon: Settings },
   ],

@@ -97,7 +97,6 @@ const COPY = {
       "Manage your account, value proposition, and selling config.",
     tabAccount: "Account",
     tabAccountMgmt: "Account Management",
-    tabBilling: "Billing",
     teamRosterTitle: "Team roster",
     teamDesc: "See and manage the reps in your organization.",
     teamRep: "Rep",
@@ -126,7 +125,6 @@ const COPY = {
     noInvites: "No teammates invited yet — invite your first one above.",
     tabValue: "Value Proposition",
     tabSelling: "Selling Configuration",
-    tabBlacklists: "Blacklists",
     profileDetails: "Profile details",
     profileDetailsDesc: "Update your personal information.",
     fullName: "Full name",
@@ -240,7 +238,6 @@ const COPY = {
       "Gestiona tu cuenta, propuesta de valor y configuración de ventas.",
     tabAccount: "Cuenta",
     tabAccountMgmt: "Gestión de cuenta",
-    tabBilling: "Facturación",
     teamRosterTitle: "Vendedores del equipo",
     teamDesc: "Consulta y gestiona a los vendedores de tu organización.",
     teamRep: "Vendedor",
@@ -269,7 +266,6 @@ const COPY = {
     noInvites: "Aún no has invitado a nadie — invita a tu primer compañero arriba.",
     tabValue: "Propuesta de valor",
     tabSelling: "Configuración de ventas",
-    tabBlacklists: "Listas negras",
     profileDetails: "Datos del perfil",
     profileDetailsDesc: "Actualiza tu información personal.",
     fullName: "Nombre completo",
@@ -388,7 +384,6 @@ const COPY = {
       "Gestisci il tuo account, la proposta di valore e la configurazione di vendita.",
     tabAccount: "Account",
     tabAccountMgmt: "Gestione account",
-    tabBilling: "Fatturazione",
     teamRosterTitle: "Venditori del team",
     teamDesc: "Visualizza e gestisci i venditori della tua organizzazione.",
     teamRep: "Venditore",
@@ -417,7 +412,6 @@ const COPY = {
     noInvites: "Non hai ancora invitato nessuno — invita il primo collega qui sopra.",
     tabValue: "Proposta di valore",
     tabSelling: "Configurazione vendite",
-    tabBlacklists: "Liste nere",
     profileDetails: "Dati del profilo",
     profileDetailsDesc: "Aggiorna le tue informazioni personali.",
     fullName: "Nome completo",
@@ -536,7 +530,6 @@ const COPY = {
       "Gérez votre compte, votre proposition de valeur et votre configuration de vente.",
     tabAccount: "Compte",
     tabAccountMgmt: "Gestion du compte",
-    tabBilling: "Facturation",
     teamRosterTitle: "Commerciaux de l'équipe",
     teamDesc: "Consultez et gérez les commerciaux de votre organisation.",
     teamRep: "Commercial",
@@ -565,7 +558,6 @@ const COPY = {
     noInvites: "Aucun collègue invité pour le moment — invitez-en un ci-dessus.",
     tabValue: "Proposition de valeur",
     tabSelling: "Configuration des ventes",
-    tabBlacklists: "Listes noires",
     profileDetails: "Informations du profil",
     profileDetailsDesc: "Mettez à jour vos informations personnelles.",
     fullName: "Nom complet",
@@ -685,7 +677,6 @@ const COPY = {
       "Verwalte dein Konto, dein Wertversprechen und deine Vertriebseinstellungen.",
     tabAccount: "Konto",
     tabAccountMgmt: "Kontoverwaltung",
-    tabBilling: "Abrechnung",
     teamRosterTitle: "Vertriebler-Übersicht",
     teamDesc: "Sieh dir die Vertriebler deiner Organisation an und verwalte sie.",
     teamRep: "Vertriebler",
@@ -714,7 +705,6 @@ const COPY = {
     noInvites: "Noch niemand eingeladen — lade oben deinen ersten Kollegen ein.",
     tabValue: "Wertversprechen",
     tabSelling: "Vertriebskonfiguration",
-    tabBlacklists: "Blacklists",
     profileDetails: "Profildaten",
     profileDetailsDesc: "Aktualisiere deine persönlichen Daten.",
     fullName: "Vollständiger Name",
@@ -833,7 +823,6 @@ const COPY = {
       "Faça a gestão da sua conta, proposta de valor e configuração de vendas.",
     tabAccount: "Conta",
     tabAccountMgmt: "Gestão da conta",
-    tabBilling: "Faturação",
     teamRosterTitle: "Comerciais da equipa",
     teamDesc: "Consulte e faça a gestão dos comerciais da sua organização.",
     teamRep: "Comercial",
@@ -862,7 +851,6 @@ const COPY = {
     noInvites: "Ainda não convidou ninguém — convide o primeiro colega acima.",
     tabValue: "Proposta de valor",
     tabSelling: "Configuração de vendas",
-    tabBlacklists: "Listas negras",
     profileDetails: "Dados do perfil",
     profileDetailsDesc: "Atualize as suas informações pessoais.",
     fullName: "Nome completo",
@@ -981,7 +969,6 @@ const COPY = {
       "Gerencie sua conta, proposta de valor e configuração de vendas.",
     tabAccount: "Conta",
     tabAccountMgmt: "Gestão da conta",
-    tabBilling: "Faturamento",
     teamRosterTitle: "Vendedores do time",
     teamDesc: "Veja e gerencie os vendedores da sua organização.",
     teamRep: "Vendedor",
@@ -1010,7 +997,6 @@ const COPY = {
     noInvites: "Você ainda não convidou ninguém — convide seu primeiro colega acima.",
     tabValue: "Proposta de valor",
     tabSelling: "Configuração de vendas",
-    tabBlacklists: "Listas negras",
     profileDetails: "Dados do perfil",
     profileDetailsDesc: "Atualize suas informações pessoais.",
     fullName: "Nome completo",
@@ -1127,7 +1113,6 @@ const COPY = {
 export default function Settings() {
   const { locale } = useLocale()
   const c = COPY[locale]
-  const { user } = useAuth()
   const { theme, setTheme } = useTheme()
   const { scope, impersonating, viewTeam, impersonate, viewAsTeam, exitImpersonation } =
     useView()
@@ -1195,12 +1180,6 @@ export default function Settings() {
             {c.tabAccountMgmt}
           </TabsTrigger>
           <TabsTrigger
-            value="billing"
-            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
-          >
-            {c.tabBilling}
-          </TabsTrigger>
-          <TabsTrigger
             value="value"
             className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
           >
@@ -1211,12 +1190,6 @@ export default function Settings() {
             className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
           >
             {c.tabSelling}
-          </TabsTrigger>
-          <TabsTrigger
-            value="blacklists"
-            className="h-auto w-full flex-none justify-start rounded-md border-none px-3 py-2 text-sm font-medium shadow-none data-[state=active]:bg-muted data-[state=active]:shadow-none dark:data-[state=active]:border-none dark:data-[state=active]:bg-muted"
-          >
-            {c.tabBlacklists}
           </TabsTrigger>
         </TabsList>
 
@@ -1589,48 +1562,6 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        {/* BILLING */}
-        <TabsContent value="billing" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{c.currentPlan}</CardTitle>
-              <CardDescription>{c.currentPlanDesc(user?.plan)}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">{user?.plan}</p>
-                    <Badge variant="success" className="font-normal">
-                      {c.active}
-                    </Badge>
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    {c.planFeatures}
-                  </p>
-                </div>
-                <p className="text-xl font-semibold">
-                  $99
-                  <span className="text-muted-foreground text-sm">
-                    {c.perMonth}
-                  </span>
-                </p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => toast.info(c.manageBilling)}
-                >
-                  {c.manageBilling}
-                </Button>
-                <Button onClick={() => toast.info(c.upgradeFlow)}>
-                  {c.upgradePlan}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* VALUE PROPOSITION */}
         <TabsContent value="value" className="space-y-4">
           <IcpManager />
@@ -1658,11 +1589,6 @@ export default function Settings() {
           </Card>
 
           <SalesMethodologyCard />
-        </TabsContent>
-
-        {/* BLACKLISTS */}
-        <TabsContent value="blacklists">
-          <BlacklistCard />
         </TabsContent>
         </div>
       </Tabs>
@@ -1845,9 +1771,54 @@ function UspsCard() {
   )
 }
 
-/* -------------------------- Company blacklist card -------------------------- */
+/* --------------------------------- Billing card --------------------------------- */
+// Exported (not just used inline) — the Billing page renders this directly;
+// billing no longer has its own Settings tab, it lives in the Manage nav
+// alongside Team and Playbook.
+export function BillingCard() {
+  const { locale } = useLocale()
+  const c = COPY[locale]
+  const { user } = useAuth()
 
-function BlacklistCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{c.currentPlan}</CardTitle>
+        <CardDescription>{c.currentPlanDesc(user?.plan)}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold">{user?.plan}</p>
+              <Badge variant="success" className="font-normal">
+                {c.active}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-sm">{c.planFeatures}</p>
+          </div>
+          <p className="text-xl font-semibold">
+            $99
+            <span className="text-muted-foreground text-sm">{c.perMonth}</span>
+          </p>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => toast.info(c.manageBilling)}>
+            {c.manageBilling}
+          </Button>
+          <Button onClick={() => toast.info(c.upgradeFlow)}>
+            {c.upgradePlan}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+/* -------------------------- Company blacklist card -------------------------- */
+// Exported for the same reason as BillingCard above — Blacklists is now its
+// own Manage-nav page, not a Settings tab.
+export function BlacklistCard() {
   const { locale } = useLocale()
   const c = COPY[locale]
   const items = useBlacklist()

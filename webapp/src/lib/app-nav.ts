@@ -21,6 +21,8 @@ import {
   Settings,
   Rocket,
   Compass,
+  CreditCard,
+  ShieldOff,
 } from "lucide-react"
 
 export interface AppDestination {
@@ -50,6 +52,8 @@ export const APP_DESTINATIONS: AppDestination[] = [
   { to: "/coach", labelKey: "nav.coach", icon: GraduationCap, keywords: ["calls", "recordings"] },
   { to: "/playbook", labelKey: "nav.playbook", icon: BookOpen, keywords: ["strategy", "icp"] },
   { to: "/team", labelKey: "nav.team", icon: Users, keywords: ["members", "reps"] },
+  { to: "/billing", labelKey: "nav.billing", icon: CreditCard, keywords: ["plan", "invoice", "payment", "upgrade"] },
+  { to: "/blacklists", labelKey: "nav.blacklists", icon: ShieldOff, keywords: ["exclude", "block", "companies"] },
   { to: "/usage", labelKey: "nav.usage", icon: Zap, keywords: ["credits", "billing", "plan"] },
   { to: "/referrals", labelKey: "nav.referrals", icon: Gift, keywords: ["invite"] },
   { to: "/integrations", labelKey: "nav.integrations", icon: Plug, keywords: ["connect", "salesforce", "hubspot", "crm"] },
