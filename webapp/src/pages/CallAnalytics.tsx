@@ -80,28 +80,6 @@ const COPY = {
     perMetricHint: (n: number) => `Share of calls scoring ${n} or above`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} of ${total} ${total === 1 ? "call" : "calls"} scored well on ${label}`,
-    aiSectionTitle: "AI-generated summary",
-    generateSummary: "Generate Summary",
-    generatingSummary: "Generating summary…",
-    aiSummaryOverall: "Overall summary",
-    aiSummaryWell: "What went well",
-    aiSummaryImprove: "What can be improved",
-    aiOverallSingle: (title: string, score: number) =>
-      `Based on the one analyzed call so far (“${title}”), the score is ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `Across ${n} analyzed calls, the average score is ${avg}/100. “${highTitle}” scored highest at ${highScore}, while “${lowTitle}” scored lowest at ${lowScore}.`,
-    aiFromCall: (title: string, text: string) => `From “${title}”: ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `No review notes yet — the recommended next steps were: ${steps}.`,
-    aiImproveGeneric:
-      "No review notes or next steps were logged for this call yet.",
     close: "Close",
   },
   es: {
@@ -144,28 +122,6 @@ const COPY = {
     perMetricHint: (n: number) => `Proporción de llamadas con ${n} o más`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} de ${total} ${total === 1 ? "llamada" : "llamadas"} destacó en ${label}`,
-    aiSectionTitle: "Resumen generado por IA",
-    generateSummary: "Generar resumen",
-    generatingSummary: "Generando resumen…",
-    aiSummaryOverall: "Resumen general",
-    aiSummaryWell: "Qué salió bien",
-    aiSummaryImprove: "Qué se puede mejorar",
-    aiOverallSingle: (title: string, score: number) =>
-      `Con la única llamada analizada hasta ahora (“${title}”), la puntuación es ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `En las ${n} llamadas analizadas, la puntuación media es ${avg}/100. “${highTitle}” obtuvo la más alta, con ${highScore}, mientras que “${lowTitle}” obtuvo la más baja, con ${lowScore}.`,
-    aiFromCall: (title: string, text: string) => `De “${title}”: ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `Todavía no hay notas de revisión — los próximos pasos recomendados fueron: ${steps}.`,
-    aiImproveGeneric:
-      "Todavía no se registraron notas de revisión ni próximos pasos para esta llamada.",
     close: "Cerrar",
   },
   it: {
@@ -208,28 +164,6 @@ const COPY = {
     perMetricHint: (n: number) => `Quota di chiamate con punteggio ${n} o superiore`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} chiamate su ${total} hanno ottenuto un buon punteggio su ${label}`,
-    aiSectionTitle: "Riepilogo generato dall'AI",
-    generateSummary: "Genera riepilogo",
-    generatingSummary: "Generazione del riepilogo…",
-    aiSummaryOverall: "Riepilogo generale",
-    aiSummaryWell: "Cosa è andato bene",
-    aiSummaryImprove: "Cosa si può migliorare",
-    aiOverallSingle: (title: string, score: number) =>
-      `In base all'unica chiamata analizzata finora (“${title}”), il punteggio è ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `Nelle ${n} chiamate analizzate, il punteggio medio è ${avg}/100. “${highTitle}” ha ottenuto il punteggio più alto, ${highScore}, mentre “${lowTitle}” il più basso, ${lowScore}.`,
-    aiFromCall: (title: string, text: string) => `Da “${title}”: ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `Ancora nessuna nota di revisione — i prossimi passi consigliati erano: ${steps}.`,
-    aiImproveGeneric:
-      "Per questa chiamata non sono ancora state registrate note di revisione né prossimi passi.",
     close: "Chiudi",
   },
   fr: {
@@ -273,28 +207,6 @@ const COPY = {
     perMetricHint: (n: number) => `Part des appels avec un score de ${n} ou plus`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} appel${well > 1 ? "s" : ""} sur ${total} ${total > 1 ? "ont" : "a"} obtenu un bon score sur ${label}`,
-    aiSectionTitle: "Résumé généré par IA",
-    generateSummary: "Générer le résumé",
-    generatingSummary: "Génération du résumé…",
-    aiSummaryOverall: "Résumé général",
-    aiSummaryWell: "Ce qui s'est bien passé",
-    aiSummaryImprove: "Ce qui peut être amélioré",
-    aiOverallSingle: (title: string, score: number) =>
-      `D'après le seul appel analysé pour l'instant (« ${title} »), le score est de ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `Sur les ${n} appels analysés, le score moyen est de ${avg}/100. « ${highTitle} » a obtenu le score le plus élevé, ${highScore}, tandis que « ${lowTitle} » a obtenu le plus bas, ${lowScore}.`,
-    aiFromCall: (title: string, text: string) => `Extrait de « ${title} » : ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `Pas encore de notes de bilan — les prochaines étapes recommandées étaient : ${steps}.`,
-    aiImproveGeneric:
-      "Aucune note de bilan ni prochaine étape n'a encore été enregistrée pour cet appel.",
     close: "Fermer",
   },
   de: {
@@ -337,28 +249,6 @@ const COPY = {
     perMetricHint: (n: number) => `Anteil der Calls mit Score ${n} oder höher`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} von ${total} ${total === 1 ? "Call" : "Calls"} haben bei ${label} gut abgeschnitten`,
-    aiSectionTitle: "KI-generierte Zusammenfassung",
-    generateSummary: "Zusammenfassung generieren",
-    generatingSummary: "Zusammenfassung wird generiert…",
-    aiSummaryOverall: "Gesamtzusammenfassung",
-    aiSummaryWell: "Was gut lief",
-    aiSummaryImprove: "Was verbessert werden kann",
-    aiOverallSingle: (title: string, score: number) =>
-      `Basierend auf dem bisher einzigen analysierten Call („${title}“) liegt der Score bei ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `Über ${n} analysierte Calls liegt der durchschnittliche Score bei ${avg}/100. „${highTitle}“ hatte mit ${highScore} den höchsten Score, „${lowTitle}“ mit ${lowScore} den niedrigsten.`,
-    aiFromCall: (title: string, text: string) => `Aus „${title}“: ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `Noch keine Review-Notizen — die empfohlenen nächsten Schritte waren: ${steps}.`,
-    aiImproveGeneric:
-      "Für diesen Call wurden noch keine Review-Notizen oder nächsten Schritte erfasst.",
     close: "Schließen",
   },
   pt: {
@@ -402,28 +292,6 @@ const COPY = {
     perMetricHint: (n: number) => `Proporção de chamadas com ${n} ou mais`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} de ${total} ${total === 1 ? "chamada" : "chamadas"} destacou-se em ${label}`,
-    aiSectionTitle: "Resumo gerado por IA",
-    generateSummary: "Gerar resumo",
-    generatingSummary: "A gerar resumo…",
-    aiSummaryOverall: "Resumo geral",
-    aiSummaryWell: "O que correu bem",
-    aiSummaryImprove: "O que pode ser melhorado",
-    aiOverallSingle: (title: string, score: number) =>
-      `Com base na única chamada analisada até agora (“${title}”), a pontuação é ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `Nas ${n} chamadas analisadas, a pontuação média é ${avg}/100. “${highTitle}” obteve a pontuação mais alta, ${highScore}, enquanto “${lowTitle}” obteve a mais baixa, ${lowScore}.`,
-    aiFromCall: (title: string, text: string) => `De “${title}”: ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `Ainda sem notas de revisão — os próximos passos recomendados foram: ${steps}.`,
-    aiImproveGeneric:
-      "Ainda não foram registadas notas de revisão nem próximos passos para esta chamada.",
     close: "Fechar",
   },
   pt_BR: {
@@ -467,28 +335,6 @@ const COPY = {
     perMetricHint: (n: number) => `Proporção de ligações com ${n} ou mais`,
     scoredWell: (well: number, total: number, label: string) =>
       `${well} de ${total} ${total === 1 ? "ligação" : "ligações"} se destacou em ${label}`,
-    aiSectionTitle: "Resumo gerado por IA",
-    generateSummary: "Gerar resumo",
-    generatingSummary: "Gerando resumo…",
-    aiSummaryOverall: "Resumo geral",
-    aiSummaryWell: "O que funcionou bem",
-    aiSummaryImprove: "O que pode melhorar",
-    aiOverallSingle: (title: string, score: number) =>
-      `Com base na única ligação analisada até agora (“${title}”), a pontuação é ${score}/100.`,
-    aiOverallMulti: (
-      n: number,
-      avg: number,
-      highTitle: string,
-      highScore: number,
-      lowTitle: string,
-      lowScore: number
-    ) =>
-      `Nas ${n} ligações analisadas, a pontuação média é ${avg}/100. “${highTitle}” teve a pontuação mais alta, ${highScore}, enquanto “${lowTitle}” teve a mais baixa, ${lowScore}.`,
-    aiFromCall: (title: string, text: string) => `De “${title}”: ${text}`,
-    aiImproveFallback: (steps: string) =>
-      `Ainda sem notas de revisão — os próximos passos recomendados foram: ${steps}.`,
-    aiImproveGeneric:
-      "Ainda não foram registradas notas de revisão nem próximos passos para esta ligação.",
     close: "Fechar",
   },
 } as const
