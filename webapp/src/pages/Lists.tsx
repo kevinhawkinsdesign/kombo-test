@@ -1081,6 +1081,7 @@ const LIST_COLUMNS: ColumnDef<ProspectList>[] = [
     },
     group: "list",
     default: true,
+    minWidth: "150px",
     // Filter checklist shows the English label, same convention as "type".
     getValue: (l) =>
       ({
