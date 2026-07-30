@@ -85,6 +85,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -2668,10 +2669,12 @@ export default function Inbox() {
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setUnreadOnly((v) => !v)}>
-                  <Checkbox checked={unreadOnly} className="pointer-events-none" />
+                <DropdownMenuCheckboxItem
+                  checked={unreadOnly}
+                  onCheckedChange={(v) => setUnreadOnly(v === true)}
+                >
                   {c.unreadOnly}
-                </DropdownMenuItem>
+                </DropdownMenuCheckboxItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{c.recency}</DropdownMenuLabel>
                 {(["any", "24h", "7d", "30d"] as const).map((r) => (
@@ -3123,10 +3126,10 @@ export default function Inbox() {
                   <ListTodo className="size-4" />
                   {c.createTask}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    const next = !effectiveActive.autoReply
-                    conversationStore.setAutoReply(effectiveActive.id, next)
+                <DropdownMenuCheckboxItem
+                  checked={Boolean(effectiveActive.autoReply)}
+                  onCheckedChange={(next) => {
+                    conversationStore.setAutoReply(effectiveActive.id, next === true)
                     // Mock "the agent already drafted one" the moment auto-reply
                     // turns on for a thread that's already awaiting a reply —
                     // there's no live inbound-message simulation to hang this
@@ -3142,10 +3145,9 @@ export default function Inbox() {
                     )
                   }}
                 >
-                  <Checkbox checked={Boolean(effectiveActive.autoReply)} className="pointer-events-none" />
                   <Sparkles className="size-4" />
                   {c.autoReply}
-                </DropdownMenuItem>
+                </DropdownMenuCheckboxItem>
                 <DropdownMenuSeparator />
                 {effectiveActive.archived ? (
                   <DropdownMenuItem onClick={() => conversationStore.unarchive(effectiveActive.id)}>
