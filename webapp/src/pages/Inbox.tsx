@@ -56,6 +56,7 @@ import {
   Palette,
   Ruler,
   Link2,
+  List,
 } from "lucide-react"
 
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
@@ -77,6 +78,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -106,7 +108,7 @@ import {
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { SMART_LINKS } from "@/lib/mock-smart-links"
 import { getRep, assigneeName } from "@/lib/team"
-import { useConversations, conversationStore, useTasks, taskStore, useCampaigns } from "@/lib/store"
+import { useConversations, conversationStore, useTasks, taskStore, useCampaigns, useLists } from "@/lib/store"
 import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
 import { campaignEnrollments } from "@/lib/mock-depth"
 import {
@@ -174,6 +176,8 @@ const COPY = {
     allChannels: "All channels",
     email: "Email",
     linkedin: "LinkedIn",
+    phone: "Phone",
+    addedToList: (n: number) => `Added to List (${n})`,
     unreadOnly: "Unread only",
     recency: "Last message",
     recencyAny: "Any time",
@@ -337,6 +341,8 @@ const COPY = {
     allChannels: "Todos los canales",
     email: "Correo",
     linkedin: "LinkedIn",
+    phone: "Teléfono",
+    addedToList: (n: number) => `Añadido a la lista (${n})`,
     unreadOnly: "Solo sin leer",
     recency: "Último mensaje",
     recencyAny: "Cualquier momento",
@@ -499,6 +505,8 @@ const COPY = {
     allChannels: "Tutti i canali",
     email: "Email",
     linkedin: "LinkedIn",
+    phone: "Telefono",
+    addedToList: (n: number) => `Aggiunto alla lista (${n})`,
     unreadOnly: "Solo non lette",
     recency: "Ultimo messaggio",
     recencyAny: "Qualsiasi momento",
@@ -661,6 +669,8 @@ const COPY = {
     allChannels: "Tous les canaux",
     email: "E-mail",
     linkedin: "LinkedIn",
+    phone: "Téléphone",
+    addedToList: (n: number) => `Ajouté à la liste (${n})`,
     unreadOnly: "Non lues uniquement",
     recency: "Dernier message",
     recencyAny: "N'importe quand",
@@ -823,6 +833,8 @@ const COPY = {
     allChannels: "Alle Kanäle",
     email: "E-Mail",
     linkedin: "LinkedIn",
+    phone: "Telefon",
+    addedToList: (n: number) => `Zur Liste hinzugefügt (${n})`,
     unreadOnly: "Nur ungelesene",
     recency: "Letzte Nachricht",
     recencyAny: "Beliebig",
@@ -985,6 +997,8 @@ const COPY = {
     allChannels: "Todos os canais",
     email: "Email",
     linkedin: "LinkedIn",
+    phone: "Telefone",
+    addedToList: (n: number) => `Adicionado à lista (${n})`,
     unreadOnly: "Apenas por ler",
     recency: "Última mensagem",
     recencyAny: "Qualquer altura",
@@ -1147,6 +1161,8 @@ const COPY = {
     allChannels: "Todos os canais",
     email: "E-mail",
     linkedin: "LinkedIn",
+    phone: "Telefone",
+    addedToList: (n: number) => `Adicionado à lista (${n})`,
     unreadOnly: "Apenas não lidas",
     recency: "Última mensagem",
     recencyAny: "Qualquer momento",
@@ -1668,6 +1684,7 @@ export default function Inbox() {
   const conversations = useConversations()
   const tasks = useTasks()
   const campaigns = useCampaigns()
+  const lists = useLists()
   const customFolders = useCustomFolders()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
@@ -1884,6 +1901,17 @@ export default function Inbox() {
     return map
   }, [campaigns])
 
+  // How many lists a prospect belongs to — drives the thread header's
+  // "Added to List (N)" pill (extension parity, see the header render below).
+  const prospectListCounts = React.useMemo(() => {
+    const map = new Map<string, number>()
+    for (const list of lists) {
+      const ids = list.kind === "company" ? (list.accountIds ?? []) : list.prospectIds
+      for (const id of ids) map.set(id, (map.get(id) ?? 0) + 1)
+    }
+    return map
+  }, [lists])
+
   const list = React.useMemo(() => {
     // The Archived folder is the one view that reaches past `visible` (which
     // excludes archived threads everywhere else) to show exactly what's archived.
@@ -1967,6 +1995,15 @@ export default function Inbox() {
         (!conv.status || !advancedFilters.outcomes.has(conv.status))
       )
         return false
+      if (advancedFilters.statuses.size > 0) {
+        const p = getProspect(conv.prospectId)
+        if (!p || !advancedFilters.statuses.has(p.status)) return false
+      }
+      if (advancedFilters.availability !== "any") {
+        const isOoo = Boolean(getProspect(conv.prospectId)?.outOfOffice)
+        if (advancedFilters.availability === "only" && !isOoo) return false
+        if (advancedFilters.availability === "exclude" && isOoo) return false
+      }
       if (
         advancedFilters.assigneeIds.size > 0 &&
         (!conv.assigneeId || !advancedFilters.assigneeIds.has(conv.assigneeId))
@@ -3025,6 +3062,44 @@ export default function Inbox() {
               </div>
             </Link>
 
+            {/* Phone / email / list-membership info pills — extension parity
+                (ProspectSummaryCard). Hidden below lg so the single-row
+                header never wraps on narrow viewports; "Confirm Match" isn't
+                included here — this app's mock data has no per-prospect CRM
+                match-confirmation field to back it (see sub-task 3 report). */}
+            <div className="hidden shrink-0 items-center gap-1 lg:flex">
+              {activeProspect.phone && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground size-8"
+                  title={`${c.phone}: ${activeProspect.phone}`}
+                  asChild
+                >
+                  <a href={`tel:${activeProspect.phone}`} aria-label={c.phone}>
+                    <Phone className="size-4" />
+                  </a>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground size-8"
+                title={`${c.email}: ${activeProspect.email}`}
+                asChild
+              >
+                <a href={`mailto:${activeProspect.email}`} aria-label={c.email}>
+                  <Mail className="size-4" />
+                </a>
+              </Button>
+              {(prospectListCounts.get(activeProspect.id) ?? 0) > 0 && (
+                <Badge variant="secondary" className="gap-1 font-normal whitespace-nowrap">
+                  <List className="size-3" />
+                  {c.addedToList(prospectListCounts.get(activeProspect.id) ?? 0)}
+                </Badge>
+              )}
+            </div>
+
             {/* Status tag selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -3074,6 +3149,15 @@ export default function Inbox() {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Promoted out of the "..." menu — Ale flagged task creation as
+                important enough to need a visible header pill instead of
+                being buried, matching the extension's prominent "New Task"
+                header pill. */}
+            <Button variant="outline" size="sm" onClick={() => setTaskDialogOpen(true)}>
+              <ListTodo className="size-3.5" />
+              {c.createTask}
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label={c.more}>
@@ -3094,10 +3178,6 @@ export default function Inbox() {
                     <Mail className="size-4" />
                   )}
                   {effectiveActive.unread > 0 ? c.markRead : c.markUnread}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTaskDialogOpen(true)}>
-                  <ListTodo className="size-4" />
-                  {c.createTask}
                 </DropdownMenuItem>
                 <DropdownMenuCheckboxItem
                   checked={Boolean(effectiveActive.autoReply)}

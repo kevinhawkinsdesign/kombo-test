@@ -62,6 +62,12 @@ export interface Prospect {
   personalityType?: "D" | "I" | "S" | "C" // DISC-style read
   companyLocation?: string // HQ, distinct from the prospect's own `location`
   companyLinkedinUrl?: string
+  // Spoken languages, most-fluent first — mirrors the extension's header
+  // language pills. Undefined reads as "not detected" (pill simply omitted).
+  languages?: { flag: string; name: string }[]
+  // Detected from an auto-reply — mirrors the extension's OutOfOfficeBadge /
+  // "Exclude out-of-office prospects" Inbox filter. Undefined reads as false.
+  outOfOffice?: boolean
 }
 
 export interface SavedSearchCriteria {
