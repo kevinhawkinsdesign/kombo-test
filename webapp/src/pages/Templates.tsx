@@ -66,6 +66,7 @@ import { Card } from "@/components/ui/card"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import { Segmented } from "@/components/common/Segmented"
 import { PromptFormDialog } from "@/components/templates/PromptFormDialog"
+import { SequenceTemplatePreviewDialog } from "@/components/templates/SequenceTemplatePreviewDialog"
 import {
   usePromptTemplates,
   promptTemplateStore,
@@ -1835,23 +1836,38 @@ const SEQUENCE_COLUMNS: ColumnDef<SequenceTemplate>[] = [
 ]
 
 // Card-view tile for a saved sequence template — mirrors TemplateCard's
-// layout (avatar, name, duplicate/delete actions, meta line) but isn't
-// clickable-to-open: a sequence template has no standalone editor of its
-// own, only the campaign Sequence tab that saved it.
+// layout (avatar, name, duplicate/delete actions, meta line) and, like
+// TemplateCard, is clickable to open — here that opens the read-only
+// SequenceTemplatePreviewDialog, since a sequence template has no
+// standalone editor of its own, only the campaign Sequence tab that
+// saved it.
 function SequenceTemplateCard({
   template,
   c,
+  onOpen,
   onDuplicate,
   onDelete,
 }: {
   template: SequenceTemplate
   c: Copy
+  onOpen: (template: SequenceTemplate) => void
   onDuplicate: (template: SequenceTemplate) => void
   onDelete: (template: SequenceTemplate) => void
 }) {
   const count = flattenCampaignSteps(template.steps).length
   return (
-    <div className="bg-card text-card-foreground relative flex h-full flex-col gap-3 rounded-xl border p-4 text-left shadow-sm">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(template)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onOpen(template)
+        }
+      }}
+      className="bg-card text-card-foreground hover:border-primary/40 focus-visible:border-primary/40 focus-visible:ring-ring/50 relative flex h-full cursor-pointer flex-col gap-3 rounded-xl border p-4 text-left shadow-sm transition-colors outline-none focus-visible:ring-[3px]"
+    >
       <div className="flex items-start gap-3">
         <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
           <Workflow className="size-4" />
@@ -1867,7 +1883,10 @@ function SequenceTemplateCard({
           size="icon"
           aria-label={c.duplicateAria(template.name)}
           className="text-muted-foreground -mt-1 size-8 shrink-0"
-          onClick={() => onDuplicate(template)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDuplicate(template)
+          }}
         >
           <Copy className="size-4" />
         </Button>
@@ -1876,7 +1895,10 @@ function SequenceTemplateCard({
           size="icon"
           aria-label={c.deleteAria(template.name)}
           className="text-muted-foreground hover:text-destructive -mt-1 -mr-1 size-8 shrink-0"
-          onClick={() => onDelete(template)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(template)
+          }}
         >
           <Trash2 className="size-4" />
         </Button>
@@ -2310,6 +2332,16 @@ export default function Templates() {
   const [seqBulkDeleteOpen, setSeqBulkDeleteOpen] = React.useState(false)
   const [seqDeleteTarget, setSeqDeleteTarget] =
     React.useState<SequenceTemplate | null>(null)
+  // Read-only preview dialog — the target is kept on close (not cleared)
+  // so the closing animation doesn't flash empty content, same as
+  // editingPrompt/promptFormOpen above.
+  const [seqPreviewOpen, setSeqPreviewOpen] = React.useState(false)
+  const [previewSequence, setPreviewSequence] =
+    React.useState<SequenceTemplate | null>(null)
+  function openSequencePreview(t: SequenceTemplate) {
+    setPreviewSequence(t)
+    setSeqPreviewOpen(true)
+  }
 
   const seqMatches = React.useCallback(
     (t: SequenceTemplate) => {
@@ -2917,6 +2949,7 @@ export default function Templates() {
             rows={seqFlat}
             rowKey={(t) => t.id}
             locale={locale}
+            onRowClick={(t) => openSequencePreview(t)}
             selection={{
               isSelected: (t) => seqSelectedIds.has(t.id),
               toggle: (t) => toggleSeqRow(t.id),
@@ -2976,6 +3009,7 @@ export default function Templates() {
               key={t.id}
               template={t}
               c={c}
+              onOpen={openSequencePreview}
               onDuplicate={duplicateSequenceTemplate}
               onDelete={setSeqDeleteTarget}
             />
@@ -3492,6 +3526,12 @@ export default function Templates() {
         confirmLabel={c.delete}
         destructive
         onConfirm={deleteSelectedSequences}
+      />
+
+      <SequenceTemplatePreviewDialog
+        open={seqPreviewOpen}
+        onOpenChange={setSeqPreviewOpen}
+        template={previewSequence}
       />
 
       <ColumnManager
