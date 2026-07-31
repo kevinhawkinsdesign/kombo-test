@@ -146,6 +146,7 @@ import {
 } from "@/lib/inbox-folders"
 import { FolderFilterBuilder } from "@/components/inbox/FolderFilterBuilder"
 import { ProspectSummaryPanel } from "@/components/common/ProspectSummaryPanel"
+import { ConfirmCrmMatchDialog } from "@/components/crm/ConfirmCrmMatchDialog"
 import type {
   Channel,
   ChatLang,
@@ -222,6 +223,7 @@ const COPY = {
     selectConversationHint: "Choose a thread to read and reply.",
     markRead: "Mark as read",
     markUnread: "Mark as unread",
+    confirmMatch: "Confirm Match",
     assignedTo: (name: string) => `Owner: ${name}`,
     archive: "Archive",
     unarchive: "Move to inbox",
@@ -394,6 +396,7 @@ const COPY = {
     selectConversationHint: "Elige un hilo para leer y responder.",
     markRead: "Marcar como leído",
     markUnread: "Marcar como no leído",
+    confirmMatch: "Confirmar coincidencia",
     assignedTo: (name: string) => `Responsable: ${name}`,
     archive: "Archivar",
     unarchive: "Mover a la bandeja",
@@ -565,6 +568,7 @@ const COPY = {
     selectConversationHint: "Scegli un thread per leggere e rispondere.",
     markRead: "Segna come letta",
     markUnread: "Segna come non letta",
+    confirmMatch: "Conferma corrispondenza",
     assignedTo: (name: string) => `Responsabile: ${name}`,
     archive: "Archivia",
     unarchive: "Sposta nella posta in arrivo",
@@ -736,6 +740,7 @@ const COPY = {
     selectConversationHint: "Choisissez une conversation pour la lire et y répondre.",
     markRead: "Marquer comme lue",
     markUnread: "Marquer comme non lue",
+    confirmMatch: "Confirmer la correspondance",
     assignedTo: (name: string) => `Responsable : ${name}`,
     archive: "Archiver",
     unarchive: "Déplacer vers la boîte de réception",
@@ -907,6 +912,7 @@ const COPY = {
     selectConversationHint: "Wähle einen Thread zum Lesen und Antworten.",
     markRead: "Als gelesen markieren",
     markUnread: "Als ungelesen markieren",
+    confirmMatch: "Übereinstimmung bestätigen",
     assignedTo: (name: string) => `Verantwortlich: ${name}`,
     archive: "Archivieren",
     unarchive: "In den Posteingang verschieben",
@@ -1078,6 +1084,7 @@ const COPY = {
     selectConversationHint: "Escolha uma conversa para ler e responder.",
     markRead: "Marcar como lida",
     markUnread: "Marcar como não lida",
+    confirmMatch: "Confirmar correspondência",
     assignedTo: (name: string) => `Responsável: ${name}`,
     archive: "Arquivar",
     unarchive: "Mover para a caixa de entrada",
@@ -1249,6 +1256,7 @@ const COPY = {
     selectConversationHint: "Escolha uma conversa para ler e responder.",
     markRead: "Marcar como lida",
     markUnread: "Marcar como não lida",
+    confirmMatch: "Confirmar correspondência",
     assignedTo: (name: string) => `Responsável: ${name}`,
     archive: "Arquivar",
     unarchive: "Mover para a caixa de entrada",
@@ -1761,6 +1769,7 @@ export default function Inbox() {
   const [toDelete, setToDelete] = React.useState<string | null>(null)
   const [taskDialogOpen, setTaskDialogOpen] = React.useState(false)
   const [editingTask, setEditingTask] = React.useState<Task | undefined>()
+  const [confirmMatchOpen, setConfirmMatchOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
   const [channelFilter, setChannelFilter] = React.useState<Channel | "all">("all")
   const [unreadOnly, setUnreadOnly] = React.useState(false)
@@ -3297,6 +3306,12 @@ export default function Inbox() {
                   <Sparkles className="size-4" />
                   {c.autoReply}
                 </DropdownMenuCheckboxItem>
+                {activeProspect && !activeProspect.inCrm && (
+                  <DropdownMenuItem onClick={() => setConfirmMatchOpen(true)}>
+                    <UserCheck className="size-4" />
+                    {c.confirmMatch}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 {effectiveActive.archived ? (
                   <DropdownMenuItem onClick={() => conversationStore.unarchive(effectiveActive.id)}>
@@ -3651,6 +3666,14 @@ export default function Inbox() {
           open={taskDialogOpen}
           onOpenChange={setTaskDialogOpen}
           defaultProspectId={effectiveActive.prospectId}
+        />
+      )}
+
+      {activeProspect && (
+        <ConfirmCrmMatchDialog
+          open={confirmMatchOpen}
+          onOpenChange={setConfirmMatchOpen}
+          prospect={activeProspect}
         />
       )}
 

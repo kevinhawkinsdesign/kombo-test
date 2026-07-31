@@ -319,6 +319,7 @@ export const COMPANY_COLUMNS: ColumnDef<Account>[] = [
     label: L("Tier", "Segmento", "Livello", "Catégorie", "Segment", "Segmento", "Segmento"),
     group: "firmo",
     default: true,
+    minWidth: "120px",
     getValue: (a) => a.tier,
     filterType: "enum",
     render: (a) => (
