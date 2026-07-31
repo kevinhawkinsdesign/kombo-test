@@ -53,8 +53,6 @@ import {
   Moon,
   CircleAlert,
   Bell,
-  Palette,
-  Ruler,
   Link2,
   List,
 } from "lucide-react"
@@ -64,6 +62,13 @@ import { Segmented } from "@/components/common/Segmented"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   RichTextEditor,
   type RichTextEditorHandle,
@@ -272,6 +277,9 @@ const COPY = {
     regenLanguage: "Language",
     regenInstructions: "Additional instructions (optional)",
     regenInstructionsPlaceholder: "e.g. mention our upcoming webinar…",
+    genSettingsTitle: "Generation settings",
+    noPreference: "No preference",
+    genSettingsCancel: "Cancel",
     regenerated: "Draft regenerated",
     varsSearchPlaceholder: "Search variables…",
     personalizedVariable: "Personalized variable",
@@ -444,6 +452,9 @@ const COPY = {
     regenLanguage: "Idioma",
     regenInstructions: "Instrucciones adicionales (opcional)",
     regenInstructionsPlaceholder: "p. ej. menciona nuestro próximo webinar…",
+    genSettingsTitle: "Ajustes de generación",
+    noPreference: "Sin preferencia",
+    genSettingsCancel: "Cancelar",
     regenerated: "Borrador regenerado",
     varsSearchPlaceholder: "Buscar variables…",
     personalizedVariable: "Variable personalizada",
@@ -616,6 +627,9 @@ const COPY = {
     regenLanguage: "Lingua",
     regenInstructions: "Istruzioni aggiuntive (facoltativo)",
     regenInstructionsPlaceholder: "es. menziona il nostro prossimo webinar…",
+    genSettingsTitle: "Impostazioni di generazione",
+    noPreference: "Nessuna preferenza",
+    genSettingsCancel: "Annulla",
     regenerated: "Bozza rigenerata",
     varsSearchPlaceholder: "Cerca variabili…",
     personalizedVariable: "Variabile personalizzata",
@@ -788,6 +802,9 @@ const COPY = {
     regenLanguage: "Langue",
     regenInstructions: "Instructions supplémentaires (facultatif)",
     regenInstructionsPlaceholder: "ex. mentionnez notre prochain webinaire…",
+    genSettingsTitle: "Paramètres de génération",
+    noPreference: "Aucune préférence",
+    genSettingsCancel: "Annuler",
     regenerated: "Brouillon régénéré",
     varsSearchPlaceholder: "Rechercher des variables…",
     personalizedVariable: "Variable personnalisée",
@@ -960,6 +977,9 @@ const COPY = {
     regenLanguage: "Sprache",
     regenInstructions: "Zusätzliche Anweisungen (optional)",
     regenInstructionsPlaceholder: "z. B. erwähne unser kommendes Webinar…",
+    genSettingsTitle: "Generierungseinstellungen",
+    noPreference: "Keine Präferenz",
+    genSettingsCancel: "Abbrechen",
     regenerated: "Entwurf neu generiert",
     varsSearchPlaceholder: "Variablen suchen…",
     personalizedVariable: "Personalisierte Variable",
@@ -1132,6 +1152,9 @@ const COPY = {
     regenLanguage: "Idioma",
     regenInstructions: "Instruções adicionais (opcional)",
     regenInstructionsPlaceholder: "p. ex. mencione o nosso próximo webinar…",
+    genSettingsTitle: "Definições de geração",
+    noPreference: "Sem preferência",
+    genSettingsCancel: "Cancelar",
     regenerated: "Rascunho regenerado",
     varsSearchPlaceholder: "Pesquisar variáveis…",
     personalizedVariable: "Variável personalizada",
@@ -1304,6 +1327,9 @@ const COPY = {
     regenLanguage: "Idioma",
     regenInstructions: "Instruções adicionais (opcional)",
     regenInstructionsPlaceholder: "ex.: mencione nosso próximo webinar…",
+    genSettingsTitle: "Configurações de geração",
+    noPreference: "Sem preferência",
+    genSettingsCancel: "Cancelar",
     regenerated: "Rascunho gerado novamente",
     varsSearchPlaceholder: "Buscar variáveis…",
     personalizedVariable: "Variável personalizada",
@@ -3208,7 +3234,7 @@ export default function Inbox() {
             {/* Status tag selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5">
+                <Button variant="outline" size="sm" className="shrink-0 gap-1.5">
                   {effectiveActive.status ? (
                     <>
                       <span className={cn("size-1.5 rounded-full", STATUS_META[effectiveActive.status].dot)} />
@@ -3257,15 +3283,25 @@ export default function Inbox() {
             {/* Promoted out of the "..." menu — Ale flagged task creation as
                 important enough to need a visible header pill instead of
                 being buried, matching the extension's prominent "New Task"
-                header pill. */}
-            <Button variant="outline" size="sm" onClick={() => setTaskDialogOpen(true)}>
+                header pill. Label collapses to icon-only below xl so it
+                doesn't crowd out the prospect name on medium viewports —
+                same idea as the phone/email/list pills hiding below lg,
+                just a step less aggressive since this stays visible. */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setTaskDialogOpen(true)}
+              aria-label={c.createTask}
+              title={c.createTask}
+            >
               <ListTodo className="size-3.5" />
-              {c.createTask}
+              <span className="hidden xl:inline">{c.createTask}</span>
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={c.more}>
+                <Button variant="ghost" size="icon" className="shrink-0" aria-label={c.more}>
                   <MoreHorizontal className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -3824,18 +3860,26 @@ function Composer({
   const [templateOpen, setTemplateOpen] = React.useState(false)
   const [customOpen, setCustomOpen] = React.useState(false)
   const [customValue, setCustomValue] = React.useState("")
-  // AI-generation factors — inline in the composer toolbar (Tone, Length,
-  // Language, Custom instructions), matching the extension's always-visible
-  // MessageEnhancerBox controls rather than a "Regenerate with…" modal that
-  // only surfaced once a draft already existed. Each applies independently
-  // and immediately on selection, re-rolling the current draft with just
-  // that one option — mirrors the extension's handleAdapt({ toneOfVoice })
-  // / handleAdapt({ instruction }) calls, which never combine dimensions.
-  const [activeTone, setActiveTone] = React.useState<ReplyTone | undefined>(undefined)
-  const [activeLength, setActiveLength] = React.useState<ReplyLength | undefined>(undefined)
-  const [activeLang, setActiveLang] = React.useState<ChatLang | undefined>(undefined)
-  const [customInstructionsOpen, setCustomInstructionsOpen] = React.useState(false)
-  const [customInstructions, setCustomInstructions] = React.useState("")
+  // AI-generation factors (Tone, Length, Language, Custom instructions) live
+  // in a modal opened from the Generate/Regenerate button, rather than
+  // always-visible inline toolbar controls. Never sticky across opens (the
+  // wasOpen render-time-check pattern) — a stale pick from a prior
+  // generation shouldn't silently reapply next time.
+  const [genSettingsOpen, setGenSettingsOpen] = React.useState(false)
+  const [genTone, setGenTone] = React.useState<ReplyTone | undefined>(undefined)
+  const [genLength, setGenLength] = React.useState<ReplyLength | undefined>(undefined)
+  const [genLang, setGenLang] = React.useState<ChatLang | undefined>(undefined)
+  const [genInstructions, setGenInstructions] = React.useState("")
+  const [genSettingsWasOpen, setGenSettingsWasOpen] = React.useState(genSettingsOpen)
+  if (genSettingsOpen !== genSettingsWasOpen) {
+    setGenSettingsWasOpen(genSettingsOpen)
+    if (genSettingsOpen) {
+      setGenTone(undefined)
+      setGenLength(undefined)
+      setGenLang(undefined)
+      setGenInstructions("")
+    }
+  }
   const [varSearch, setVarSearch] = React.useState("")
   // Free-text "personalized variable" — wraps whatever's typed in {{ }} as a
   // placeholder to fill in by hand later, matching the extension's Add
@@ -3914,47 +3958,19 @@ function Composer({
     setAiUsed(true)
   }
 
-  // Plain re-roll, no explicit tone/length/language pinned — cycles the next
-  // canned phrasing for this intent. Drives both "Generate draft" (no text
-  // yet) and the toolbar's "Regenerate" button (re-roll everything at once).
-  function generate() {
-    setActiveTone(undefined)
-    setActiveLength(undefined)
-    setActiveLang(undefined)
-    runGenerate()
-  }
-
-  // Each inline factor applies immediately and independently — selecting a
-  // Tone re-rolls with just that tone (not combined with a previously
-  // picked Length/Language), matching the extension's handleAdapt calls.
-  function applyTone(tone: ReplyTone) {
-    setActiveTone(tone)
-    runGenerate({ tone })
-    toast.success(c.regenerated)
-  }
-
-  function applyLength(length: ReplyLength) {
-    setActiveLength(length)
-    runGenerate({ length })
-    toast.success(c.regenerated)
-  }
-
-  function applyLanguage(lang: ChatLang) {
-    setActiveLang(lang)
-    runGenerate({ lang })
-    toast.success(c.regenerated)
-  }
-
-  // Custom instructions only apply on explicit "Generate" click, unlike the
-  // Tone/Length/Language controls above — matches the extension's Custom
-  // badge (reveals an instructions box + separate Generate button).
-  function applyCustomInstructions() {
-    const instructions = customInstructions.trim()
-    if (!instructions) return
-    runGenerate({ instructions })
-    setCustomInstructions("")
-    setCustomInstructionsOpen(false)
-    toast.success(c.regenerated)
+  // The generation-settings modal's own Generate/Regenerate button — combines
+  // whatever Tone/Length/Language/Custom-instructions fields are set (any
+  // left at "No preference" stay undefined) into one draftReply() call,
+  // unlike the old inline toolbar's one-factor-at-a-time re-rolls.
+  function runGenerateFromModal() {
+    runGenerate({
+      tone: genTone,
+      length: genLength,
+      lang: genLang,
+      instructions: genInstructions.trim() || undefined,
+    })
+    setGenSettingsOpen(false)
+    if (hasText) toast.success(c.regenerated)
   }
 
   // Insert the prospect's resolved value at the caret — the composer writes to
@@ -3993,9 +4009,6 @@ function Composer({
     conversationStore.sendMessage(conv.id, out, detectLang(out), aiUsed, sendChannel)
     setReply("")
     setAiUsed(false)
-    setActiveTone(undefined)
-    setActiveLength(undefined)
-    setActiveLang(undefined)
     toast.success(c.replySent(prospect.firstName))
   }
 
@@ -4141,78 +4154,6 @@ function Composer({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* AI-generation factors — inline and always visible (disabled until
-          there's draft content to work from), matching the extension's
-          MessageEnhancerBox toolbar instead of gating them behind a
-          "Regenerate" modal that only appeared once a draft already existed. */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={!hasText}>
-            <Palette className="size-4" />
-            {activeTone ? TONE_OPTIONS.find((o) => o.value === activeTone)?.label : c.tone}
-            <ChevronDown className="size-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {TONE_OPTIONS.map((o) => (
-            <DropdownMenuItem key={o.value} onClick={() => applyTone(o.value)}>
-              {o.label}
-              {activeTone === o.value && <Check className="ml-auto size-3.5" />}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={!hasText}>
-            <Ruler className="size-4" />
-            {activeLength ? LENGTH_OPTIONS.find((o) => o.value === activeLength)?.label : c.length}
-            <ChevronDown className="size-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {LENGTH_OPTIONS.map((o) => (
-            <DropdownMenuItem key={o.value} onClick={() => applyLength(o.value)}>
-              {o.label}
-              {activeLength === o.value && <Check className="ml-auto size-3.5" />}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={!hasText}>
-            <Languages className="size-4" />
-            {activeLang ? `${LANG_FLAG[activeLang]} ${LANG_LABEL[activeLang]}` : c.regenLanguage}
-            <ChevronDown className="size-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {LANG_OPTIONS.map((lang) => (
-            <DropdownMenuItem key={lang} onClick={() => applyLanguage(lang)}>
-              {LANG_FLAG[lang]} {LANG_LABEL[lang]}
-              {activeLang === lang && <Check className="ml-auto size-3.5" />}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={!hasText}
-        className={cn(
-          "text-muted-foreground",
-          customInstructionsOpen && "bg-muted text-foreground"
-        )}
-        onClick={() => setCustomInstructionsOpen((v) => !v)}
-      >
-        <Pencil className="size-4" />
-        {c.custom}
-      </Button>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="text-muted-foreground">
@@ -4307,12 +4248,7 @@ function Composer({
           value={reply}
           onChange={(html) => {
             setReply(html)
-            if (stripHtml(html) === "") {
-              setAiUsed(false)
-              setActiveTone(undefined)
-              setActiveLength(undefined)
-              setActiveLang(undefined)
-            }
+            if (stripHtml(html) === "") setAiUsed(false)
           }}
           placeholder={c.replyTo(prospect.firstName)}
           ariaLabel={c.replyTo(prospect.firstName)}
@@ -4322,37 +4258,12 @@ function Composer({
         />
       )}
 
-      {/* Custom instructions — revealed by the inline "Custom" toggle in the
-          toolbar above. Only applies on explicit Generate, not on every
-          keystroke (matches the extension's Custom badge + Generate button). */}
-      {customInstructionsOpen && !recording && (
-        <div className="border-primary/20 bg-primary/[0.03] flex items-end gap-2 rounded-lg border p-2.5">
-          <Textarea
-            value={customInstructions}
-            onChange={(e) => setCustomInstructions(e.target.value)}
-            placeholder={c.regenInstructionsPlaceholder}
-            aria-label={c.regenInstructions}
-            className="bg-background min-h-16 flex-1"
-            autoFocus
-          />
-          <Button
-            variant="volt"
-            size="sm"
-            disabled={!customInstructions.trim()}
-            onClick={applyCustomInstructions}
-          >
-            <Wand2 className="size-4" />
-            {c.generate}
-          </Button>
-        </div>
-      )}
-
       <div className="flex flex-wrap items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
           disabled={recording}
-          onClick={generate}
+          onClick={() => setGenSettingsOpen(true)}
         >
           <Wand2 className="size-4" />
           {hasText ? c.regenerate : c.generate}
@@ -4471,6 +4382,99 @@ function Composer({
         channel={conv.channel}
         locale={locale}
       />
+
+      {/* AI-generation settings — opened from the Generate/Regenerate button
+          instead of always-visible inline toolbar controls. Combines
+          Tone/Length/Language/Custom-instructions into one draftReply() call
+          on submit, rather than the old toolbar's one-factor-at-a-time
+          re-rolls. */}
+      <Dialog open={genSettingsOpen} onOpenChange={setGenSettingsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{c.genSettingsTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="gen-tone">{c.tone}</Label>
+                <Select
+                  value={genTone ?? "none"}
+                  onValueChange={(v) => setGenTone(v === "none" ? undefined : (v as ReplyTone))}
+                >
+                  <SelectTrigger id="gen-tone" size="sm" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{c.noPreference}</SelectItem>
+                    {TONE_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="gen-length">{c.length}</Label>
+                <Select
+                  value={genLength ?? "none"}
+                  onValueChange={(v) => setGenLength(v === "none" ? undefined : (v as ReplyLength))}
+                >
+                  <SelectTrigger id="gen-length" size="sm" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{c.noPreference}</SelectItem>
+                    {LENGTH_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="gen-lang">{c.regenLanguage}</Label>
+                <Select
+                  value={genLang ?? "none"}
+                  onValueChange={(v) => setGenLang(v === "none" ? undefined : (v as ChatLang))}
+                >
+                  <SelectTrigger id="gen-lang" size="sm" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{c.noPreference}</SelectItem>
+                    {LANG_OPTIONS.map((lang) => (
+                      <SelectItem key={lang} value={lang}>
+                        {LANG_FLAG[lang]} {LANG_LABEL[lang]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="gen-instructions">{c.regenInstructions}</Label>
+              <Textarea
+                id="gen-instructions"
+                value={genInstructions}
+                onChange={(e) => setGenInstructions(e.target.value)}
+                placeholder={c.regenInstructionsPlaceholder}
+                className="min-h-16"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setGenSettingsOpen(false)}>
+              {c.genSettingsCancel}
+            </Button>
+            <Button variant="volt" onClick={runGenerateFromModal}>
+              <Wand2 className="size-4" />
+              {hasText ? c.regenerate : c.generate}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
