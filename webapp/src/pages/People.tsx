@@ -54,12 +54,6 @@ import { cn } from "@/lib/utils"
 import { usePagedSelection } from "@/lib/use-paged-selection"
 import { useTableSortFilter, filterChipsFor } from "@/lib/table-sort-filter"
 import { ActiveFiltersBar } from "@/components/common/ActiveFiltersBar"
-import { SavedViewsTabBar } from "@/components/common/SavedViewsTabBar"
-import {
-  serializeColumnFilters,
-  deserializeColumnFilters,
-  type ProspectsSavedFilters,
-} from "@/lib/saved-views"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Prospect, ProspectStatus } from "@/lib/types"
 
@@ -386,33 +380,6 @@ export default function People() {
 
   const tsf = useTableSortFilter(allColumns, results)
 
-  // Saved-views capture/apply — exactly the filter state (toolbar facets +
-  // per-column DataTable filters), never columns or sort.
-  function captureProspectsFilters(): ProspectsSavedFilters {
-    return {
-      query,
-      status,
-      listFilter,
-      columnFilters: serializeColumnFilters(tsf.filters),
-    }
-  }
-  function applyProspectsFilters(f: ProspectsSavedFilters) {
-    setQuery(f.query)
-    setStatus(f.status)
-    setListFilter(f.listFilter)
-    tsf.clearFilters()
-    const restored = deserializeColumnFilters(f.columnFilters)
-    for (const [columnId, filterState] of Object.entries(restored)) {
-      tsf.setFilter(columnId, filterState)
-    }
-  }
-  function clearAllProspectsFilters() {
-    setQuery("")
-    setStatus(ALL)
-    setListFilter("all")
-    tsf.clearFilters()
-  }
-
   // Everything currently narrowing the table, in one place: the per-column
   // DataTable filters plus the toolbar's Status/List facets — so there's a
   // single spot to see and clear all of them together (CollectionToolbar's
@@ -576,14 +543,6 @@ export default function People() {
         <WarmIntrosPanel />
       ) : (
         <>
-      <SavedViewsTabBar
-        page="prospects"
-        allLabel={c.allProspects}
-        captureFilters={captureProspectsFilters}
-        onApplyView={applyProspectsFilters}
-        onClearAll={clearAllProspectsFilters}
-      />
-
       <FeatureIntro
         featureKey="people"
         icon={Users}
