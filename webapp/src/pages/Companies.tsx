@@ -50,12 +50,6 @@ import { useView } from "@/lib/view-context"
 import { usePagedSelection } from "@/lib/use-paged-selection"
 import { useTableSortFilter, filterChipsFor } from "@/lib/table-sort-filter"
 import { ActiveFiltersBar } from "@/components/common/ActiveFiltersBar"
-import { SavedViewsTabBar } from "@/components/common/SavedViewsTabBar"
-import {
-  serializeColumnFilters,
-  deserializeColumnFilters,
-  type CompaniesSavedFilters,
-} from "@/lib/saved-views"
 import { MAX_ENRICH_BATCH } from "@/lib/enrichment"
 import type { Account, AccountTier } from "@/lib/types"
 
@@ -464,33 +458,6 @@ export default function Companies() {
 
   const tsf = useTableSortFilter(allColumns, results)
 
-  // Saved-views capture/apply — exactly the filter state (toolbar facets +
-  // per-column DataTable filters), never columns or sort.
-  function captureCompaniesFilters(): CompaniesSavedFilters {
-    return {
-      query,
-      tier,
-      listFilter,
-      columnFilters: serializeColumnFilters(tsf.filters),
-    }
-  }
-  function applyCompaniesFilters(f: CompaniesSavedFilters) {
-    setQuery(f.query)
-    setTier(f.tier)
-    setListFilter(f.listFilter)
-    tsf.clearFilters()
-    const restored = deserializeColumnFilters(f.columnFilters)
-    for (const [columnId, filterState] of Object.entries(restored)) {
-      tsf.setFilter(columnId, filterState)
-    }
-  }
-  function clearAllCompaniesFilters() {
-    setQuery("")
-    setTier(ALL)
-    setListFilter("all")
-    tsf.clearFilters()
-  }
-
   // Everything currently narrowing the table, in one place: the per-column
   // DataTable filters plus the toolbar's Tier/List facets — so there's a
   // single spot to see and clear all of them together (the toolbar controls
@@ -604,14 +571,6 @@ export default function Companies() {
             {c.addCompany}
           </Button>
         }
-      />
-
-      <SavedViewsTabBar
-        page="companies"
-        allLabel={c.allCompanies}
-        captureFilters={captureCompaniesFilters}
-        onApplyView={applyCompaniesFilters}
-        onClearAll={clearAllCompaniesFilters}
       />
 
       <FeatureIntro

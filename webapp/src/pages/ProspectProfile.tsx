@@ -81,6 +81,8 @@ import {
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { ProspectFormDialog } from "@/components/prospect/ProspectFormDialog"
 import { ComposeDialog } from "@/components/prospect/ComposeDialog"
+import { ProspectTabBar } from "@/components/prospect/ProspectTabBar"
+import { prospectTabsStore } from "@/lib/prospect-tabs"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
@@ -938,6 +940,12 @@ export default function ProspectProfile() {
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
 
+  // Visiting a prospect registers it as an open tab — same mental model as a
+  // browser tab appearing the moment you navigate somewhere.
+  React.useEffect(() => {
+    if (id) prospectTabsStore.open(id)
+  }, [id])
+
   if (!prospect) {
     return (
       <Page>
@@ -950,7 +958,15 @@ export default function ProspectProfile() {
   const conversation = conversations.find((c) => c.prospectId === prospect.id)
 
   return (
-    <Page>
+    <>
+      {/* Same max-w-7xl container as the page body below, so the tab strip's
+          edges line up with the content it sits above rather than running
+          wider than it. */}
+      <Page className="pb-0">
+        <ProspectTabBar currentId={prospect.id} />
+      </Page>
+
+      <Page className="pt-0">
       <BackLink to="/search" label={c.backToSearch} />
 
       <Card className="mb-6">
@@ -1208,7 +1224,8 @@ export default function ProspectProfile() {
           navigate("/search")
         }}
       />
-    </Page>
+      </Page>
+    </>
   )
 }
 

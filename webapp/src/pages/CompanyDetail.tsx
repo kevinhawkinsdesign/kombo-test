@@ -34,7 +34,9 @@ import { ProspectAvatar, ScoreBadge } from "@/components/common/ProspectBits"
 import { TrackButton } from "@/components/common/TrackButton"
 import { BackLink } from "@/components/common/BackLink"
 import { CompanyMetrics } from "@/components/company/CompanyMetrics"
+import { CompanyTabBar } from "@/components/company/CompanyTabBar"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
+import { companyTabsStore } from "@/lib/company-tabs"
 import { getAccount, deals, DEAL_STAGES } from "@/lib/mock-extra"
 import { getCompanyNews } from "@/lib/mock-depth"
 import { prospects } from "@/lib/mock-data"
@@ -321,6 +323,12 @@ export default function CompanyDetail() {
   const account: Account | undefined = id ? getAccount(id) : undefined
   const [crmOpen, setCrmOpen] = React.useState(false)
 
+  // Visiting a company registers it as an open tab — same mental model as a
+  // browser tab appearing the moment you navigate somewhere.
+  React.useEffect(() => {
+    if (id) companyTabsStore.open(id)
+  }, [id])
+
   if (!account) {
     return (
       <Page>
@@ -345,7 +353,15 @@ export default function CompanyDetail() {
   ]
 
   return (
-    <Page>
+    <>
+      {/* Same max-w-7xl container as the page body below, so the tab strip's
+          edges line up with the content it sits above rather than running
+          wider than it. */}
+      <Page className="pb-0">
+        <CompanyTabBar currentId={account.id} />
+      </Page>
+
+      <Page className="pt-0">
       <BackLink to="/companies" label={c.companies} />
 
       <Card className="mb-6">
@@ -638,6 +654,7 @@ export default function CompanyDetail() {
           { label: c.location, value: account.location },
         ]}
       />
-    </Page>
+      </Page>
+    </>
   )
 }
