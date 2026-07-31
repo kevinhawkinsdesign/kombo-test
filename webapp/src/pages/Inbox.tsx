@@ -3145,7 +3145,7 @@ export default function Inbox() {
         <div className={cn("min-w-0 flex-1 flex-col", showThreadMobile ? "flex" : "hidden md:flex")}>
           {/* Header — kept to a single row; lower-priority actions collapse
               into the "..." menu on narrow viewports instead of wrapping. */}
-          <div className="flex min-h-14 items-center gap-1 overflow-hidden border-b px-4 py-2">
+          <div className="@container flex min-h-14 items-center gap-1 overflow-hidden border-b px-4 py-2">
             <Button
               variant="ghost"
               size="icon"
@@ -3175,7 +3175,11 @@ export default function Inbox() {
 
             <Link
               to={`/prospects/${activeProspect.id}`}
-              className="flex min-w-0 flex-1 items-center gap-2 hover:opacity-80"
+              // min-w-32 keeps the name legible (avatar + a few characters)
+              // instead of min-w-0, which let this block get squeezed to
+              // literally nothing once the row's other shrink-0 items claim
+              // the rest of a narrow container.
+              className="flex min-w-32 flex-1 items-center gap-2 hover:opacity-80"
             >
               <ProspectAvatar prospect={activeProspect} className="size-9 shrink-0" />
               <div className="min-w-0 flex-1">
@@ -3194,11 +3198,15 @@ export default function Inbox() {
             </Link>
 
             {/* Phone / email / list-membership info pills — extension parity
-                (ProspectSummaryCard). Hidden below lg so the single-row
-                header never wraps on narrow viewports; "Confirm Match" isn't
+                (ProspectSummaryCard). Hidden below a container-query
+                threshold (not a viewport breakpoint — see the Create Task
+                button below for why: this row's real available width can be
+                much narrower than the window when the prospect-detail panel
+                is open) so the single-row header never wraps and doesn't
+                squeeze the prospect name to nothing. "Confirm Match" isn't
                 included here — this app's mock data has no per-prospect CRM
                 match-confirmation field to back it (see sub-task 3 report). */}
-            <div className="hidden shrink-0 items-center gap-1 lg:flex">
+            <div className="hidden shrink-0 items-center gap-1 @xl:flex">
               {activeProspect.phone && (
                 <Button
                   variant="ghost"
@@ -3283,10 +3291,14 @@ export default function Inbox() {
             {/* Promoted out of the "..." menu — Ale flagged task creation as
                 important enough to need a visible header pill instead of
                 being buried, matching the extension's prominent "New Task"
-                header pill. Label collapses to icon-only below xl so it
-                doesn't crowd out the prospect name on medium viewports —
-                same idea as the phone/email/list pills hiding below lg,
-                just a step less aggressive since this stays visible. */}
+                header pill. Label collapses to icon-only below a container
+                query threshold (not a viewport breakpoint) — this row's own
+                available width shrinks independently of window width when
+                the right-hand prospect-detail panel is open, so a viewport
+                media query alone still let the "..." menu get clipped by
+                overflow-hidden even on a wide screen. Same idea as the
+                phone/email/list pills hiding below lg, just a step less
+                aggressive since this stays visible. */}
             <Button
               variant="outline"
               size="sm"
@@ -3296,7 +3308,7 @@ export default function Inbox() {
               title={c.createTask}
             >
               <ListTodo className="size-3.5" />
-              <span className="hidden xl:inline">{c.createTask}</span>
+              <span className="hidden @xl:inline">{c.createTask}</span>
             </Button>
 
             <DropdownMenu>
