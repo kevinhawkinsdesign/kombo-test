@@ -97,6 +97,12 @@ export function promptFolderFor(channel: Channel): string {
   return "Email Prompts"
 }
 
+// Coach's post-call follow-up composer saves into this folder instead of a
+// channel default — it's still an ordinary email PromptTemplate, just grouped
+// separately (via the same folder mechanism Templates.tsx already groups
+// prompts by) so it doesn't get lost among general outbound prompts.
+export const COACH_FOLLOWUP_FOLDER = "Coach Follow-ups"
+
 const KEY = "kombo_prompt_templates_v1"
 
 function load(): PromptTemplate[] {
