@@ -129,7 +129,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { CampaignDailyChart, CampaignChannelChart } from "@/components/charts/Charts"
 import { DataTable } from "@/components/common/DataTable"
-import { RecordActionsMenu } from "@/components/common/RecordActionsMenu"
+import { RecordActionsMenu, type RecordExtraAction } from "@/components/common/RecordActionsMenu"
 import { AssigneePicker } from "@/components/common/AssigneePicker"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
 import { BulkAddDialog } from "@/components/common/BulkAddDialog"
@@ -152,6 +152,7 @@ import { SequenceCostSummary } from "@/components/campaigns/SequenceCostSummary"
 import { AddRecordsDialog } from "@/components/common/AddRecordsDialog"
 import { CampaignTabBar } from "@/components/campaigns/CampaignTabBar"
 import { campaignTabsStore } from "@/lib/campaign-tabs"
+import { useCampaignEnrollments, campaignEnrollmentStore } from "@/lib/campaign-enrollment-store"
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { team } from "@/lib/team"
 import {
@@ -174,7 +175,6 @@ import {
 import { useCredits } from "@/lib/credits"
 import {
   campaignDailyStats,
-  campaignEnrollments,
   campaignNotReached,
   CONNECTED_CRM_PROVIDER,
 } from "@/lib/mock-depth"
@@ -444,6 +444,10 @@ const COPY = {
     removeFromCampaignAction: "Remove from campaign",
     removedFromCampaign: "Removed from campaign",
     removedFromCampaignCount: (n: number) => `${n} removed from campaign`,
+    pauseEnrollmentAction: "Pause enrollment",
+    resumeEnrollmentAction: "Resume enrollment",
+    enrollmentPaused: (name: string) => `${name}'s enrollment paused`,
+    enrollmentResumed: (name: string) => `${name}'s enrollment resumed`,
     exportedCsv: "Exported to CSV",
     crmSynced: (crm: string) => `Synced to ${crm}`,
     capNote: (max: number) => `Only ${max.toLocaleString()} can be enriched at a time.`,
@@ -700,6 +704,10 @@ const COPY = {
     removeFromCampaignAction: "Quitar de la campaña",
     removedFromCampaign: "Eliminado de la campaña",
     removedFromCampaignCount: (n: number) => `${n} eliminados de la campaña`,
+    pauseEnrollmentAction: "Pausar inscripción",
+    resumeEnrollmentAction: "Reanudar inscripción",
+    enrollmentPaused: (name: string) => `Inscripción de ${name} pausada`,
+    enrollmentResumed: (name: string) => `Inscripción de ${name} reanudada`,
     exportedCsv: "Exportado a CSV",
     crmSynced: (crm: string) => `Sincronizado con ${crm}`,
     capNote: (max: number) => `Solo se pueden enriquecer ${max.toLocaleString()} a la vez.`,
@@ -956,6 +964,10 @@ const COPY = {
     removeFromCampaignAction: "Rimuovi dalla campagna",
     removedFromCampaign: "Rimosso dalla campagna",
     removedFromCampaignCount: (n: number) => `${n} rimossi dalla campagna`,
+    pauseEnrollmentAction: "Metti in pausa l'iscrizione",
+    resumeEnrollmentAction: "Riprendi l'iscrizione",
+    enrollmentPaused: (name: string) => `Iscrizione di ${name} messa in pausa`,
+    enrollmentResumed: (name: string) => `Iscrizione di ${name} ripresa`,
     exportedCsv: "Esportato in CSV",
     crmSynced: (crm: string) => `Sincronizzato con ${crm}`,
     capNote: (max: number) => `Si possono arricchire solo ${max.toLocaleString()} alla volta.`,
@@ -1212,6 +1224,10 @@ const COPY = {
     removeFromCampaignAction: "Retirer de la campagne",
     removedFromCampaign: "Retiré de la campagne",
     removedFromCampaignCount: (n: number) => `${n} retirés de la campagne`,
+    pauseEnrollmentAction: "Mettre l'inscription en pause",
+    resumeEnrollmentAction: "Reprendre l'inscription",
+    enrollmentPaused: (name: string) => `Inscription de ${name} mise en pause`,
+    enrollmentResumed: (name: string) => `Inscription de ${name} reprise`,
     exportedCsv: "Exporté en CSV",
     crmSynced: (crm: string) => `Synchronisé avec ${crm}`,
     capNote: (max: number) => `Seuls ${max.toLocaleString()} peuvent être enrichis à la fois.`,
@@ -1468,6 +1484,10 @@ const COPY = {
     removeFromCampaignAction: "Aus Kampagne entfernen",
     removedFromCampaign: "Aus Kampagne entfernt",
     removedFromCampaignCount: (n: number) => `${n} aus der Kampagne entfernt`,
+    pauseEnrollmentAction: "Anmeldung pausieren",
+    resumeEnrollmentAction: "Anmeldung fortsetzen",
+    enrollmentPaused: (name: string) => `Anmeldung von ${name} pausiert`,
+    enrollmentResumed: (name: string) => `Anmeldung von ${name} fortgesetzt`,
     exportedCsv: "Als CSV exportiert",
     crmSynced: (crm: string) => `Mit ${crm} synchronisiert`,
     capNote: (max: number) => `Es können jeweils nur ${max.toLocaleString()} angereichert werden.`,
@@ -1724,6 +1744,10 @@ const COPY = {
     removeFromCampaignAction: "Remover da campanha",
     removedFromCampaign: "Removido da campanha",
     removedFromCampaignCount: (n: number) => `${n} removidos da campanha`,
+    pauseEnrollmentAction: "Pausar inscrição",
+    resumeEnrollmentAction: "Retomar inscrição",
+    enrollmentPaused: (name: string) => `Inscrição de ${name} pausada`,
+    enrollmentResumed: (name: string) => `Inscrição de ${name} retomada`,
     exportedCsv: "Exportado para CSV",
     crmSynced: (crm: string) => `Sincronizado com ${crm}`,
     capNote: (max: number) => `Só é possível enriquecer ${max.toLocaleString()} de cada vez.`,
@@ -1980,6 +2004,10 @@ const COPY = {
     removeFromCampaignAction: "Remover da campanha",
     removedFromCampaign: "Removido da campanha",
     removedFromCampaignCount: (n: number) => `${n} removidos da campanha`,
+    pauseEnrollmentAction: "Pausar inscrição",
+    resumeEnrollmentAction: "Retomar inscrição",
+    enrollmentPaused: (name: string) => `Inscrição de ${name} pausada`,
+    enrollmentResumed: (name: string) => `Inscrição de ${name} retomada`,
     exportedCsv: "Exportado para CSV",
     crmSynced: (crm: string) => `Sincronizado com ${crm}`,
     capNote: (max: number) => `Só é possível enriquecer ${max.toLocaleString()} por vez.`,
@@ -2416,6 +2444,10 @@ export default function CampaignDetail() {
   const accounts = useAccounts()
   const conversations = useConversations()
   const campaign = campaigns.find((item) => item.id === id)
+  // Called unconditionally (before the `if (!campaign)` early return below)
+  // so this hook's call order never varies across renders — id is "" (a
+  // harmless, always-empty lookup) on the not-found path.
+  const enrollments = useCampaignEnrollments(id ?? "")
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(false)
@@ -2754,7 +2786,6 @@ export default function CampaignDetail() {
     : 0
 
   const daily = campaignDailyStats[campaign.id] ?? []
-  const enrollments = campaignEnrollments[campaign.id] ?? []
   const replies = enrollments.filter((e) => e.status === "replied")
 
   const totals = daily.reduce(
@@ -4703,31 +4734,49 @@ export default function CampaignDetail() {
                   someSelected: someRowsSelected,
                   isSelectable: (r) => r.manual,
                 }}
-                actions={(row) =>
-                  row.prospect ? (
+                actions={(row) => {
+                  if (!row.prospect) return null
+                  const prospectName = `${row.prospect.firstName} ${row.prospect.lastName}`
+                  const extraActions: RecordExtraAction[] = []
+                  if (row.status === "active") {
+                    extraActions.push({
+                      label: c.pauseEnrollmentAction,
+                      icon: <Pause className="size-4" />,
+                      onClick: () => {
+                        campaignEnrollmentStore.pause(campaign.id, row.id)
+                        toast.success(c.enrollmentPaused(prospectName))
+                      },
+                    })
+                  } else if (row.status === "paused") {
+                    extraActions.push({
+                      label: c.resumeEnrollmentAction,
+                      icon: <Play className="size-4" />,
+                      onClick: () => {
+                        campaignEnrollmentStore.resume(campaign.id, row.id)
+                        toast.success(c.enrollmentResumed(prospectName))
+                      },
+                    })
+                  }
+                  if (row.manual) {
+                    extraActions.push({
+                      label: c.removeFromCampaignAction,
+                      icon: <X className="size-4" />,
+                      destructive: true,
+                      onClick: () => {
+                        campaignStore.removeProspect(campaign.id, row.id)
+                        toast.success(c.removedFromCampaign)
+                      },
+                    })
+                  }
+                  return (
                     <RecordActionsMenu
                       kind="person"
                       record={row.prospect}
                       onExport={() => exportOneRow(row)}
-                      extra={
-                        row.manual
-                          ? {
-                              label: c.removeFromCampaignAction,
-                              icon: <X className="size-4" />,
-                              destructive: true,
-                              onClick: () => {
-                                campaignStore.removeProspect(
-                                  campaign.id,
-                                  row.id
-                                )
-                                toast.success(c.removedFromCampaign)
-                              },
-                            }
-                          : undefined
-                      }
+                      extra={extraActions.length > 0 ? extraActions : undefined}
                     />
-                  ) : null
-                }
+                  )
+                }}
               />
 
               <BulkActionsBar
