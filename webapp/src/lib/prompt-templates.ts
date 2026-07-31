@@ -19,6 +19,7 @@ export interface PromptTemplate {
   // folder per channel to mirror the extension's picker.
   folder: string
   prompt: string
+  tags: string[]
   updatedAt: string
 }
 
@@ -32,6 +33,7 @@ const SEED: PromptTemplate[] = [
     folder: "Email Prompts",
     prompt:
       "Write a warm reply to {{first_name}} at {{company}} who requested a demo — confirm interest, suggest two time slots, and include {{calendar_link}}.",
+    tags: ["inbound", "demo"],
     updatedAt: "2026-06-28T09:00:00Z",
   },
   {
@@ -41,6 +43,7 @@ const SEED: PromptTemplate[] = [
     folder: "Email Prompts",
     prompt:
       "Write a short email to {{first_name}} referencing a recent trigger at {{company}} (funding, hiring, or a product launch) and tie it to how we help.",
+    tags: ["trigger-based"],
     updatedAt: "2026-06-25T15:30:00Z",
   },
   {
@@ -50,6 +53,7 @@ const SEED: PromptTemplate[] = [
     folder: "Email Prompts",
     prompt:
       "Write a structured cold email to {{first_name}}, a {{title}} at {{company}}: pain point, one-line proof, soft ask for a quick call.",
+    tags: ["cold-outbound"],
     updatedAt: "2026-06-20T11:00:00Z",
   },
   {
@@ -59,6 +63,7 @@ const SEED: PromptTemplate[] = [
     folder: "LinkedIn Prompts",
     prompt:
       "Write a short, casual LinkedIn message to {{first_name}} who engaged with my post — thank them, add one insight about {{company}}'s space, then a light ask.",
+    tags: ["warm", "engagement"],
     updatedAt: "2026-06-27T10:00:00Z",
   },
   {
@@ -68,6 +73,7 @@ const SEED: PromptTemplate[] = [
     folder: "LinkedIn Prompts",
     prompt:
       "Write a 1-line LinkedIn opener to {{first_name}} that references {{company}} and their role as {{title}} — no pitch.",
+    tags: ["cold-outbound"],
     updatedAt: "2026-06-22T17:45:00Z",
   },
   {
@@ -77,6 +83,7 @@ const SEED: PromptTemplate[] = [
     folder: "WhatsApp Prompts",
     prompt:
       "Write a friendly, 2-sentence WhatsApp opener to {{first_name}} referencing {{company}}, ending with a light question.",
+    tags: ["short"],
     updatedAt: "2026-06-18T08:20:00Z",
   },
 ]
@@ -89,6 +96,12 @@ export function promptFolderFor(channel: Channel): string {
   if (channel === "whatsapp") return "WhatsApp Prompts"
   return "Email Prompts"
 }
+
+// Coach's post-call follow-up composer saves into this folder instead of a
+// channel default — it's still an ordinary email PromptTemplate, just grouped
+// separately (via the same folder mechanism Templates.tsx already groups
+// prompts by) so it doesn't get lost among general outbound prompts.
+export const COACH_FOLLOWUP_FOLDER = "Coach Follow-ups"
 
 const KEY = "kombo_prompt_templates_v1"
 

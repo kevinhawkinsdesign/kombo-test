@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 import {
   Briefcase,
@@ -11,8 +12,11 @@ import {
   Grid2x2,
   Mail,
   MapPin,
+  Megaphone,
+  Pause,
   Pencil,
   Phone,
+  Play,
   RefreshCw,
   Sparkles,
   Users,
@@ -34,9 +38,12 @@ import { ProspectAvatar, ScoreBadge, StatusBadge } from "@/components/common/Pro
 import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { AddToListDialog } from "@/components/prospect/AddToListDialog"
 import { generateProspectSummary } from "@/lib/mock-ai-summary"
+import { CrmBadge } from "@/components/common/CrmBadge"
+import { useProspectEnrollments, campaignEnrollmentStore } from "@/lib/campaign-enrollment-store"
+import { getCampaign } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/locale"
-import type { Prospect } from "@/lib/types"
+import type { EnrollmentStatus, Prospect } from "@/lib/types"
 
 const COPY = {
   en: {
@@ -69,6 +76,19 @@ const COPY = {
     companyLocation: "Location",
     website: "Website",
     companyLinkedin: "LinkedIn",
+    campaigns: "Campaigns",
+    noCampaigns: "Not enrolled in any campaign.",
+    enrollmentStatus: {
+      active: "Active",
+      replied: "Replied",
+      completed: "Completed",
+      bounced: "Bounced",
+      paused: "Paused",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Pause",
+    resumeEnrollment: "Resume",
+    enrollmentPaused: (name: string) => `${name}'s enrollment paused`,
+    enrollmentResumed: (name: string) => `${name}'s enrollment resumed`,
   },
   es: {
     aiSummary: "Resumen con IA",
@@ -100,6 +120,19 @@ const COPY = {
     companyLocation: "Ubicación",
     website: "Sitio web",
     companyLinkedin: "LinkedIn",
+    campaigns: "Campañas",
+    noCampaigns: "No está inscrito en ninguna campaña.",
+    enrollmentStatus: {
+      active: "Activo",
+      replied: "Respondió",
+      completed: "Completado",
+      bounced: "Rebotado",
+      paused: "En pausa",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Pausar",
+    resumeEnrollment: "Reanudar",
+    enrollmentPaused: (name: string) => `Inscripción de ${name} pausada`,
+    enrollmentResumed: (name: string) => `Inscripción de ${name} reanudada`,
   },
   it: {
     aiSummary: "Riepilogo IA",
@@ -131,6 +164,19 @@ const COPY = {
     companyLocation: "Località",
     website: "Sito web",
     companyLinkedin: "LinkedIn",
+    campaigns: "Campagne",
+    noCampaigns: "Non iscritto a nessuna campagna.",
+    enrollmentStatus: {
+      active: "Attivo",
+      replied: "Ha risposto",
+      completed: "Completato",
+      bounced: "Respinto",
+      paused: "In pausa",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Pausa",
+    resumeEnrollment: "Riprendi",
+    enrollmentPaused: (name: string) => `Iscrizione di ${name} messa in pausa`,
+    enrollmentResumed: (name: string) => `Iscrizione di ${name} ripresa`,
   },
   fr: {
     aiSummary: "Résumé IA",
@@ -162,6 +208,19 @@ const COPY = {
     companyLocation: "Localisation",
     website: "Site web",
     companyLinkedin: "LinkedIn",
+    campaigns: "Campagnes",
+    noCampaigns: "Non inscrit à une campagne.",
+    enrollmentStatus: {
+      active: "Actif",
+      replied: "A répondu",
+      completed: "Terminé",
+      bounced: "Rejeté",
+      paused: "En pause",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Mettre en pause",
+    resumeEnrollment: "Reprendre",
+    enrollmentPaused: (name: string) => `Inscription de ${name} mise en pause`,
+    enrollmentResumed: (name: string) => `Inscription de ${name} reprise`,
   },
   de: {
     aiSummary: "KI-Zusammenfassung",
@@ -193,6 +252,19 @@ const COPY = {
     companyLocation: "Standort",
     website: "Website",
     companyLinkedin: "LinkedIn",
+    campaigns: "Kampagnen",
+    noCampaigns: "In keiner Kampagne angemeldet.",
+    enrollmentStatus: {
+      active: "Aktiv",
+      replied: "Geantwortet",
+      completed: "Abgeschlossen",
+      bounced: "Unzustellbar",
+      paused: "Pausiert",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Pausieren",
+    resumeEnrollment: "Fortsetzen",
+    enrollmentPaused: (name: string) => `Anmeldung von ${name} pausiert`,
+    enrollmentResumed: (name: string) => `Anmeldung von ${name} fortgesetzt`,
   },
   pt: {
     aiSummary: "Resumo com IA",
@@ -224,6 +296,19 @@ const COPY = {
     companyLocation: "Localização",
     website: "Website",
     companyLinkedin: "LinkedIn",
+    campaigns: "Campanhas",
+    noCampaigns: "Não inscrito em nenhuma campanha.",
+    enrollmentStatus: {
+      active: "Ativo",
+      replied: "Respondeu",
+      completed: "Concluído",
+      bounced: "Devolvido",
+      paused: "Em pausa",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Pausar",
+    resumeEnrollment: "Retomar",
+    enrollmentPaused: (name: string) => `Inscrição de ${name} pausada`,
+    enrollmentResumed: (name: string) => `Inscrição de ${name} retomada`,
   },
   pt_BR: {
     aiSummary: "Resumo com IA",
@@ -255,6 +340,19 @@ const COPY = {
     companyLocation: "Localização",
     website: "Site",
     companyLinkedin: "LinkedIn",
+    campaigns: "Campanhas",
+    noCampaigns: "Não inscrito em nenhuma campanha.",
+    enrollmentStatus: {
+      active: "Ativo",
+      replied: "Respondeu",
+      completed: "Concluído",
+      bounced: "Retornado",
+      paused: "Em pausa",
+    } as Record<EnrollmentStatus, string>,
+    pauseEnrollment: "Pausar",
+    resumeEnrollment: "Retomar",
+    enrollmentPaused: (name: string) => `Inscrição de ${name} pausada`,
+    enrollmentResumed: (name: string) => `Inscrição de ${name} retomada`,
   },
 } as const
 
@@ -334,6 +432,7 @@ export function ProspectSummaryPanel({
   const [customizeOpen, setCustomizeOpen] = React.useState(false)
   const [instructions, setInstructions] = React.useState("")
   const [addListOpen, setAddListOpen] = React.useState(false)
+  const enrollments = useProspectEnrollments(prospect.id)
 
   // A fresh contextual summary whenever the open thread's prospect changes.
   const [shownId, setShownId] = React.useState(prospect.id)
@@ -378,7 +477,10 @@ export function ProspectSummaryPanel({
             {prospect.title} · {prospect.company}
           </p>
         </div>
-        <StatusBadge status={prospect.status} />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusBadge status={prospect.status} />
+          <CrmBadge inCrm={Boolean(prospect.inCrm)} locale={locale} />
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -422,6 +524,72 @@ export function ProspectSummaryPanel({
           ))}
         </div>
       )}
+
+      <div className="space-y-2 border-t pt-4">
+        <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+          <Megaphone className="size-3.5" />
+          {c.campaigns}
+        </p>
+        {enrollments.length === 0 ? (
+          <p className="text-muted-foreground text-xs">{c.noCampaigns}</p>
+        ) : (
+          <div className="space-y-1.5">
+            {enrollments.map(({ campaignId, enrollment }) => {
+              const campaign = getCampaign(campaignId)
+              const prospectName = `${prospect.firstName} ${prospect.lastName}`
+              return (
+                <div
+                  key={campaignId}
+                  className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-sm"
+                >
+                  <div className="min-w-0">
+                    <Link
+                      to={`/campaigns/${campaignId}`}
+                      className="block truncate font-medium hover:underline"
+                    >
+                      {campaign?.name ?? campaignId}
+                    </Link>
+                    <Badge
+                      variant={enrollment.status === "paused" ? "outline" : "secondary"}
+                      className="mt-0.5 font-normal"
+                    >
+                      {c.enrollmentStatus[enrollment.status]}
+                    </Badge>
+                  </div>
+                  {enrollment.status === "active" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 text-xs"
+                      onClick={() => {
+                        campaignEnrollmentStore.pause(campaignId, prospect.id)
+                        toast.success(c.enrollmentPaused(prospectName))
+                      }}
+                    >
+                      <Pause className="size-3.5" />
+                      {c.pauseEnrollment}
+                    </Button>
+                  )}
+                  {enrollment.status === "paused" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 text-xs"
+                      onClick={() => {
+                        campaignEnrollmentStore.resume(campaignId, prospect.id)
+                        toast.success(c.enrollmentResumed(prospectName))
+                      }}
+                    >
+                      <Play className="size-3.5" />
+                      {c.resumeEnrollment}
+                    </Button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       <div className="space-y-3 border-t pt-4">
         <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">

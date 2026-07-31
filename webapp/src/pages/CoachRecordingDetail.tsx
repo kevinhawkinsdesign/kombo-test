@@ -34,7 +34,7 @@ import {
   ChevronDown,
 } from "lucide-react"
 
-import { useLocale, type Locale } from "@/lib/locale"
+import { useLocale } from "@/lib/locale"
 import { InfoHint } from "@/components/common/InfoHint"
 import { BackLink } from "@/components/common/BackLink"
 import { Page } from "@/components/layout/Page"
@@ -74,9 +74,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  useFollowUpTemplates,
-  followUpTemplateStore,
-} from "@/lib/followup-templates"
+  usePromptTemplates,
+  promptTemplateStore,
+  generatePromptedMessage,
+  COACH_FOLLOWUP_FOLDER,
+} from "@/lib/prompt-templates"
+import { mergeVars } from "@/lib/merge-vars"
 import { coachRecordings, currentUser } from "@/lib/mock-data"
 import { getScorecard } from "@/lib/mock-coaching"
 import { recordingDetails, CONNECTED_CRM_PROVIDER } from "@/lib/mock-depth"
@@ -202,8 +205,11 @@ const COPY = {
     valuePropGateConfirm: "Confirm & continue",
     followUpSubjectLabel: "Subject",
     followUpBodyLabel: "Message",
-    followUpDefaultSubject: (company: string) => `Following up — ${company}`,
     aiDraft: "Draft with AI",
+    aiPromptLabel: "What should the follow-up say?",
+    aiPromptPlaceholder:
+      "e.g. Thank {{first_name}} for their time, recap the next steps, and keep the tone warm but brief.",
+    aiRegenerate: "Regenerate",
     sendFollowUp: "Send email",
     followUpSent: "Follow-up email sent",
     templateLabel: "Template",
@@ -218,10 +224,6 @@ const COPY = {
     templateCreated: "Follow-up template created",
     templateUpdated: "Follow-up template updated",
     templateDeleted: "Follow-up template deleted",
-    followUpGreeting: (first: string) => `Hi ${first},`,
-    followUpNextStepsLabel: "Next steps:",
-    followUpRecapLabel: "Quick recap of what stood out:",
-    followUpSignoff: "Best,",
     followUpNoContext:
       "This call doesn't have any next steps or key details logged yet — the draft below is a general recap. Add specifics before sending.",
     videoSourceLabel: {
@@ -352,8 +354,11 @@ const COPY = {
     valuePropGateConfirm: "Confirmar y continuar",
     followUpSubjectLabel: "Asunto",
     followUpBodyLabel: "Mensaje",
-    followUpDefaultSubject: (company: string) => `Seguimiento — ${company}`,
     aiDraft: "Redactar con IA",
+    aiPromptLabel: "¿Qué debe decir el seguimiento?",
+    aiPromptPlaceholder:
+      "p. ej. Agradece a {{first_name}} su tiempo, resume los próximos pasos y mantén un tono cercano pero breve.",
+    aiRegenerate: "Regenerar",
     sendFollowUp: "Enviar correo",
     followUpSent: "Correo de seguimiento enviado",
     templateLabel: "Plantilla",
@@ -368,10 +373,6 @@ const COPY = {
     templateCreated: "Plantilla de seguimiento creada",
     templateUpdated: "Plantilla de seguimiento actualizada",
     templateDeleted: "Plantilla de seguimiento eliminada",
-    followUpGreeting: (first: string) => `Hola ${first}:`,
-    followUpNextStepsLabel: "Próximos pasos:",
-    followUpRecapLabel: "Un resumen rápido de lo más destacado:",
-    followUpSignoff: "Un saludo,",
     followUpNoContext:
       "Esta llamada aún no tiene próximos pasos ni detalles clave registrados — el borrador de abajo es un resumen general. Añade detalles concretos antes de enviarlo.",
     videoSourceLabel: {
@@ -502,8 +503,11 @@ const COPY = {
     valuePropGateConfirm: "Conferma e continua",
     followUpSubjectLabel: "Oggetto",
     followUpBodyLabel: "Messaggio",
-    followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
     aiDraft: "Scrivi con l'AI",
+    aiPromptLabel: "Cosa deve dire il follow-up?",
+    aiPromptPlaceholder:
+      "es. Ringrazia {{first_name}} per il tempo dedicato, riepiloga i prossimi passi e mantieni un tono caloroso ma breve.",
+    aiRegenerate: "Rigenera",
     sendFollowUp: "Invia email",
     followUpSent: "Email di follow-up inviata",
     templateLabel: "Modello",
@@ -518,10 +522,6 @@ const COPY = {
     templateCreated: "Modello di follow-up creato",
     templateUpdated: "Modello di follow-up aggiornato",
     templateDeleted: "Modello di follow-up eliminato",
-    followUpGreeting: (first: string) => `Ciao ${first},`,
-    followUpNextStepsLabel: "Prossimi passi:",
-    followUpRecapLabel: "Un rapido riepilogo di ciò che è emerso:",
-    followUpSignoff: "Un saluto,",
     followUpNoContext:
       "Questa chiamata non ha ancora prossimi passi o dettagli chiave registrati — la bozza qui sotto è un riepilogo generico. Aggiungi dettagli specifici prima di inviarla.",
     videoSourceLabel: {
@@ -652,8 +652,11 @@ const COPY = {
     valuePropGateConfirm: "Confirmer et continuer",
     followUpSubjectLabel: "Objet",
     followUpBodyLabel: "Message",
-    followUpDefaultSubject: (company: string) => `Suivi — ${company}`,
     aiDraft: "Rédiger avec l'IA",
+    aiPromptLabel: "Que doit dire le message de suivi ?",
+    aiPromptPlaceholder:
+      "ex. Remerciez {{first_name}} pour son temps, récapitulez les prochaines étapes et gardez un ton chaleureux mais bref.",
+    aiRegenerate: "Régénérer",
     sendFollowUp: "Envoyer l'e-mail",
     followUpSent: "E-mail de suivi envoyé",
     templateLabel: "Modèle",
@@ -668,10 +671,6 @@ const COPY = {
     templateCreated: "Modèle de suivi créé",
     templateUpdated: "Modèle de suivi mis à jour",
     templateDeleted: "Modèle de suivi supprimé",
-    followUpGreeting: (first: string) => `Bonjour ${first},`,
-    followUpNextStepsLabel: "Prochaines étapes :",
-    followUpRecapLabel: "Un rapide résumé de ce qui est ressorti :",
-    followUpSignoff: "Cordialement,",
     followUpNoContext:
       "Cet appel n'a pas encore d'étapes suivantes ni de détails clés enregistrés — le brouillon ci-dessous est un résumé général. Ajoutez des précisions avant de l'envoyer.",
     videoSourceLabel: {
@@ -802,8 +801,11 @@ const COPY = {
     valuePropGateConfirm: "Bestätigen und fortfahren",
     followUpSubjectLabel: "Betreff",
     followUpBodyLabel: "Nachricht",
-    followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
     aiDraft: "Mit KI entwerfen",
+    aiPromptLabel: "Was soll die Follow-up-Nachricht sagen?",
+    aiPromptPlaceholder:
+      "z. B. Bedanke dich bei {{first_name}} für die Zeit, fasse die nächsten Schritte zusammen und halte den Ton warm, aber kurz.",
+    aiRegenerate: "Neu generieren",
     sendFollowUp: "E-Mail senden",
     followUpSent: "Follow-up-E-Mail gesendet",
     templateLabel: "Vorlage",
@@ -818,10 +820,6 @@ const COPY = {
     templateCreated: "Follow-up-Vorlage erstellt",
     templateUpdated: "Follow-up-Vorlage aktualisiert",
     templateDeleted: "Follow-up-Vorlage gelöscht",
-    followUpGreeting: (first: string) => `Hallo ${first},`,
-    followUpNextStepsLabel: "Nächste Schritte:",
-    followUpRecapLabel: "Kurz zusammengefasst, was aufgefallen ist:",
-    followUpSignoff: "Viele Grüße,",
     followUpNoContext:
       "Für diesen Call sind noch keine nächsten Schritte oder Schlüsseldetails erfasst — der Entwurf unten ist eine allgemeine Zusammenfassung. Ergänze Details, bevor du sendest.",
     videoSourceLabel: {
@@ -952,8 +950,11 @@ const COPY = {
     valuePropGateConfirm: "Confirmar e continuar",
     followUpSubjectLabel: "Assunto",
     followUpBodyLabel: "Mensagem",
-    followUpDefaultSubject: (company: string) => `Seguimento — ${company}`,
     aiDraft: "Redigir com IA",
+    aiPromptLabel: "O que deve dizer o seguimento?",
+    aiPromptPlaceholder:
+      "p. ex. Agradeça a {{first_name}} pelo tempo, recapitule os próximos passos e mantenha um tom próximo mas breve.",
+    aiRegenerate: "Regenerar",
     sendFollowUp: "Enviar email",
     followUpSent: "Email de seguimento enviado",
     templateLabel: "Modelo",
@@ -968,10 +969,6 @@ const COPY = {
     templateCreated: "Modelo de seguimento criado",
     templateUpdated: "Modelo de seguimento atualizado",
     templateDeleted: "Modelo de seguimento eliminado",
-    followUpGreeting: (first: string) => `Olá ${first},`,
-    followUpNextStepsLabel: "Próximos passos:",
-    followUpRecapLabel: "Um resumo rápido do que se destacou:",
-    followUpSignoff: "Cumprimentos,",
     followUpNoContext:
       "Esta chamada ainda não tem próximos passos nem detalhes-chave registados — o rascunho abaixo é um resumo genérico. Acrescente detalhes antes de enviar.",
     videoSourceLabel: {
@@ -1102,8 +1099,11 @@ const COPY = {
     valuePropGateConfirm: "Confirmar e continuar",
     followUpSubjectLabel: "Assunto",
     followUpBodyLabel: "Mensagem",
-    followUpDefaultSubject: (company: string) => `Follow-up — ${company}`,
     aiDraft: "Redigir com IA",
+    aiPromptLabel: "O que o follow-up deve dizer?",
+    aiPromptPlaceholder:
+      "ex.: Agradeça a {{first_name}} pelo tempo, recapitule os próximos passos e mantenha um tom próximo, mas breve.",
+    aiRegenerate: "Regenerar",
     sendFollowUp: "Enviar e-mail",
     followUpSent: "E-mail de follow-up enviado",
     templateLabel: "Modelo",
@@ -1118,10 +1118,6 @@ const COPY = {
     templateCreated: "Modelo de follow-up criado",
     templateUpdated: "Modelo de follow-up atualizado",
     templateDeleted: "Modelo de follow-up excluído",
-    followUpGreeting: (first: string) => `Oi ${first},`,
-    followUpNextStepsLabel: "Próximos passos:",
-    followUpRecapLabel: "Um resumo rápido do que chamou atenção:",
-    followUpSignoff: "Atenciosamente,",
     followUpNoContext:
       "Esta ligação ainda não tem próximos passos nem detalhes-chave registrados — o rascunho abaixo é um resumo genérico. Adicione detalhes antes de enviar.",
     videoSourceLabel: {
@@ -1362,15 +1358,22 @@ function TranscriptSpeakingTime({
   )
 }
 
-// Fill a follow-up template's {{variables}} from the recording.
-function mergeFollowUpVars(text: string, rec: CoachRecording): string {
-  const data: Record<string, string> = {
+// The merge-var data a recording can offer generateTemplate()'s output —
+// covers every {{tag}} its canned copy uses (first_name/company plus the
+// sender fields), so nothing renders as a literal unresolved {{tag}}.
+// CoachRecording has no prospect job title, so {{title}} is intentionally
+// left out of this map (see buildDefaultFollowUpPrompt's note on why the
+// "cold" intent — the only bucket using {{title}} — is never reached here).
+function followUpMergeData(rec: CoachRecording): Record<string, string> {
+  return {
     first_name: rec.prospectName.split(" ")[0],
     company: rec.company,
     next_steps: rec.nextSteps.map((s) => `• ${s}`).join("\n"),
     sender: currentUser.name,
+    sender_company: currentUser.company,
+    sender_title: currentUser.role,
+    calendar_link: "kombo.ai/meet/kevin",
   }
-  return text.replace(/\{\{(\w+)\}\}/g, (whole, tag: string) => data[tag] ?? whole)
 }
 
 // Splits a participant's full name into first/last for the "Add to CRM"
@@ -1386,32 +1389,30 @@ function splitParticipantName(name: string): {
 
 const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 2] as const
 
-// A call-aware first draft that seeds the follow-up composer — opens with the
-// line the recording's call type prescribes (a demo thanks differently than a
-// negotiation), optionally bridges into the specific problem the Key Fields
-// tab captured for this call, then the shared next-steps block. `problem` is
-// the raw (English) Key Fields "problem" text — same non-localized-content
-// convention as `nextSteps` below: the call's own substance isn't translated,
-// only the surrounding template copy is.
-function buildFollowUpDraft(
+// Seeds the composer's free-text prompt from what's known about the call —
+// the call type and (when analyzed) the Key Fields "problem" and next steps —
+// so "Draft with AI" has real call context to write from on the first click,
+// same as opening any other prompt-driven generator with a blank field would
+// feel broken. `generateTemplate()`'s intent detection (lib/mock-template-ai)
+// only reads the prompt's own English text, so this is deliberately built in
+// English regardless of UI locale — matching how every other prompt template
+// in the app (lib/prompt-templates.ts's SEED, PROMPT_PRESETS) is authored.
+// The prompt always mentions "results" so it lands in generateTemplate()'s
+// case-study/results ("follow_up") bucket rather than falling through to its
+// "cold" bucket, the only one whose copy needs a {{title}} this recording
+// doesn't have (see followUpMergeData above).
+function buildDefaultFollowUpPrompt(
   rec: CoachRecording,
-  locale: Locale,
   callType: CallType,
   problem?: string
 ): string {
-  const t = COPY[locale]
-  const first = rec.prospectName.split(" ")[0]
+  const callLabel = CALL_TYPE_META[callType].label.en.toLowerCase()
   const steps = rec.nextSteps
-  const senderFirst = currentUser.name.split(" ")[0]
-  const opener = CALL_TYPE_META[callType].followUpOpener[locale].replace(
-    /\{\{company\}\}/g,
-    rec.company
-  )
-  const recap = problem ? `\n\n${t.followUpRecapLabel} ${problem}` : ""
-  const nextStepsBlock = steps.length
-    ? `\n\n${t.followUpNextStepsLabel}\n${steps.map((x) => `• ${x}`).join("\n")}`
+  const stepsPhrase = steps.length
+    ? ` and these next steps: ${steps.join("; ")}`
     : ""
-  return `${t.followUpGreeting(first)}\n\n${opener}${recap}${nextStepsBlock}\n\n${t.followUpSignoff}\n${senderFirst}`
+  const problemPhrase = problem ? ` — they mentioned: ${problem}` : ""
+  return `Write a warm thank-you follow-up email to {{first_name}} at {{company}} recapping today's ${callLabel} conversation${stepsPhrase}${problemPhrase}. Reference the results so far and keep it concise.`
 }
 
 export default function CoachRecordingDetail() {
@@ -2441,7 +2442,6 @@ export default function CoachRecordingDetail() {
             key={analyzedType}
             rec={rec}
             c={c}
-            locale={locale}
             callType={analyzedType}
             problem={analysis?.keyFields?.problem}
             helpful={followUpHelpful}
@@ -2765,7 +2765,6 @@ function ReviewCallout({
 function FollowUpTab({
   rec,
   c,
-  locale,
   callType,
   problem,
   helpful,
@@ -2775,7 +2774,6 @@ function FollowUpTab({
 }: {
   rec: CoachRecording
   c: Copy
-  locale: Locale
   callType: CallType
   // The Key Fields tab's "problem" extraction for this call, if analyzed —
   // the closest thing to a call-content overview available for the draft.
@@ -2788,56 +2786,83 @@ function FollowUpTab({
   const [valueProp, setValueProp] = React.useState(() =>
     c.valuePropGateDefault(currentUser.company)
   )
-  const templates = useFollowUpTemplates()
+  const allPromptTemplates = usePromptTemplates()
+  // Only the folder Coach's "Save as template" writes to — keeps the picker
+  // scoped to call follow-ups instead of every outbound prompt in Templates.
+  const templates = allPromptTemplates.filter(
+    (t) => t.channel === "email" && t.folder === COACH_FOLLOWUP_FOLDER
+  )
   // Nothing concrete to personalize the draft with yet — next steps carry
   // the "what to do", `problem` carries the "why it matters"; without either
-  // the draft would be nothing but the fixed call-type opener.
+  // the default prompt would be nothing but the call-type opener.
   const hasContext = rec.nextSteps.length > 0 || Boolean(problem)
+  const mergeData = React.useMemo(() => followUpMergeData(rec), [rec])
+
+  // Runs the shared prompt-driven generator (lib/mock-template-ai via
+  // lib/prompt-templates' generatePromptedMessage) against whatever prompt
+  // is currently loaded, merging this recording's data into the result.
+  function runGenerate(promptText: string, seed: number) {
+    const draft = generatePromptedMessage(promptText, "email", seed)
+    setSubject(mergeVars(draft.subject, mergeData))
+    setBody(plainToHtml(mergeVars(draft.body, mergeData)))
+  }
+
   // Radix unmounts inactive TabsContent, so this mounts fresh each time the
   // Follow-Up tab is selected — a plain initializer is enough, no dialog-style
-  // open/close reset needed.
+  // open/close reset needed. Subject and body both seed from the same first
+  // generation so they're never out of sync on first render (previously the
+  // subject fell back to a fixed default while only the body was generated).
+  const initialPrompt = buildDefaultFollowUpPrompt(rec, callType, problem)
+  const initialDraft = generatePromptedMessage(initialPrompt, "email", 0)
+
+  const [aiPrompt, setAiPrompt] = React.useState(initialPrompt)
+  const [aiSeed, setAiSeed] = React.useState(0)
+  const [aiGenerated, setAiGenerated] = React.useState(false)
   const [subject, setSubject] = React.useState(() =>
-    c.followUpDefaultSubject(rec.company)
+    mergeVars(initialDraft.subject, mergeData)
   )
   const [body, setBody] = React.useState(() =>
-    plainToHtml(buildFollowUpDraft(rec, locale, callType, problem))
+    plainToHtml(mergeVars(initialDraft.body, mergeData))
   )
   const [generating, setGenerating] = React.useState(false)
-  // "" = the AI draft; otherwise the id of the applied follow-up template.
+  // "" = the AI draft; otherwise the id of the applied prompt template.
   const [templateId, setTemplateId] = React.useState("")
   const [saveAsOpen, setSaveAsOpen] = React.useState(false)
   const [saveName, setSaveName] = React.useState("")
 
   const AI_DRAFT = "__ai_draft__"
 
-  // Apply a saved template (or fall back to the AI draft), with the
-  // recording's details merged into its {{variables}}.
+  // Apply a saved prompt template (or fall back to the call-aware default
+  // prompt), then immediately regenerate from it so the picker always shows
+  // a real draft, not just the raw instruction text.
   function applyTemplateChoice(v: string) {
     if (v === AI_DRAFT) {
       setTemplateId("")
-      setSubject(c.followUpDefaultSubject(rec.company))
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType, problem)))
+      const prompt = buildDefaultFollowUpPrompt(rec, callType, problem)
+      setAiPrompt(prompt)
+      setAiSeed(0)
+      setAiGenerated(false)
+      runGenerate(prompt, 0)
       return
     }
     const tpl = templates.find((t) => t.id === v)
     if (!tpl) return
     setTemplateId(tpl.id)
-    setSubject(mergeFollowUpVars(tpl.subject, rec))
-    setBody(plainToHtml(mergeFollowUpVars(tpl.body, rec)))
+    setAiPrompt(tpl.prompt)
+    setAiSeed(0)
+    setAiGenerated(false)
+    runGenerate(tpl.prompt, 0)
   }
 
   function updateTemplate() {
     if (!templateId) return
-    followUpTemplateStore.update(templateId, {
-      subject,
-      body: stripHtml(body),
-    })
+    promptTemplateStore.update(templateId, { prompt: aiPrompt })
     toast.success(c.templateUpdated)
   }
 
   function deleteTemplate() {
     if (!templateId) return
-    followUpTemplateStore.remove(templateId)
+    promptTemplateStore.remove(templateId)
     setTemplateId("")
     toast.success(c.templateDeleted)
   }
@@ -2845,10 +2870,12 @@ function FollowUpTab({
   function saveAsTemplate() {
     const name = saveName.trim()
     if (!name) return
-    const created = followUpTemplateStore.create({
+    const created = promptTemplateStore.create({
       name,
-      subject,
-      body: stripHtml(body),
+      channel: "email",
+      folder: COACH_FOLLOWUP_FOLDER,
+      prompt: aiPrompt,
+      tags: [],
     })
     setTemplateId(created.id)
     setSaveAsOpen(false)
@@ -2857,9 +2884,14 @@ function FollowUpTab({
   }
 
   function generate() {
+    const prompt = aiPrompt.trim()
+    if (!prompt || generating) return
     setGenerating(true)
+    const seed = aiGenerated ? aiSeed + 1 : 0
     setTimeout(() => {
-      setBody(plainToHtml(buildFollowUpDraft(rec, locale, callType, problem)))
+      runGenerate(prompt, seed)
+      setAiSeed(seed)
+      setAiGenerated(true)
       setGenerating(false)
     }, 600)
   }
@@ -2989,6 +3021,32 @@ function FollowUpTab({
                 )}
               </div>
               <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label>{c.aiPromptLabel}</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={generate}
+                    disabled={generating || aiPrompt.trim().length === 0}
+                  >
+                    {generating ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : aiGenerated ? (
+                      <RefreshCw className="size-4" />
+                    ) : (
+                      <Sparkles className="size-4" />
+                    )}
+                    {aiGenerated ? c.aiRegenerate : c.aiDraft}
+                  </Button>
+                </div>
+                <Textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder={c.aiPromptPlaceholder}
+                  className="min-h-20"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label>{c.followUpSubjectLabel}</Label>
                 <Input
                   value={subject}
@@ -2996,22 +3054,7 @@ function FollowUpTab({
                 />
               </div>
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label>{c.followUpBodyLabel}</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={generate}
-                    disabled={generating}
-                  >
-                    {generating ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="size-4" />
-                    )}
-                    {c.aiDraft}
-                  </Button>
-                </div>
+                <Label>{c.followUpBodyLabel}</Label>
                 <RichTextEditor
                   value={body}
                   onChange={setBody}

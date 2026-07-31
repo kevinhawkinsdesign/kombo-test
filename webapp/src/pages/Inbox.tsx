@@ -108,9 +108,17 @@ import {
 import { getProspect, currentUser } from "@/lib/mock-data"
 import { SMART_LINKS } from "@/lib/mock-smart-links"
 import { getRep, assigneeName } from "@/lib/team"
-import { useConversations, conversationStore, useTasks, taskStore, useCampaigns, useLists } from "@/lib/store"
+import {
+  useConversations,
+  conversationStore,
+  useTasks,
+  taskStore,
+  useCampaigns,
+  useLists,
+  useProspects,
+} from "@/lib/store"
 import { STATUS_META, STATUS_ORDER } from "@/lib/conv-status"
-import { campaignEnrollments } from "@/lib/mock-depth"
+import { useAllCampaignEnrollments } from "@/lib/campaign-enrollment-store"
 import {
   draftReply,
   type ReplyTone,
@@ -128,7 +136,15 @@ import { groupByMergeVarGroup, MERGE_VARIABLES, MERGE_VARIABLE_GROUPS } from "@/
 import { cn } from "@/lib/utils"
 import { useLocale, type Locale } from "@/lib/locale"
 import { useSidebarCollapsed } from "@/lib/sidebar-collapse-state"
-import { useCustomFolders, customFolderStore } from "@/lib/inbox-folders"
+import {
+  useCustomFolders,
+  customFolderStore,
+  folderHasConversation,
+  newFilterGroup,
+  type CustomFolder,
+  type FolderFilterGroup,
+} from "@/lib/inbox-folders"
+import { FolderFilterBuilder } from "@/components/inbox/FolderFilterBuilder"
 import { ProspectSummaryPanel } from "@/components/common/ProspectSummaryPanel"
 import type {
   Channel,
@@ -295,6 +311,13 @@ const COPY = {
     folderCreated: "Folder created",
     deleteFolder: (name: string) => `Delete ${name}`,
     folderDeleted: "Folder deleted",
+    editFolder: "Edit folder",
+    editFolderAction: (name: string) => `Edit ${name}`,
+    folderUpdated: "Folder updated",
+    save: "Save",
+    filterCriteriaLabel: "Filter criteria",
+    addFilterCriteria: "Add filter criteria",
+    noFilterCriteria: "No filter criteria — this folder is fully manual.",
     addToFolder: "Add to folder",
     removeFromFolder: "Remove from folder",
     noFolders: "No folders yet",
@@ -459,6 +482,13 @@ const COPY = {
     folderCreated: "Carpeta creada",
     deleteFolder: (name: string) => `Eliminar ${name}`,
     folderDeleted: "Carpeta eliminada",
+    editFolder: "Editar carpeta",
+    editFolderAction: (name: string) => `Editar ${name}`,
+    folderUpdated: "Carpeta actualizada",
+    save: "Guardar",
+    filterCriteriaLabel: "Criterios de filtro",
+    addFilterCriteria: "Añadir criterios de filtro",
+    noFilterCriteria: "Sin criterios de filtro — esta carpeta es totalmente manual.",
     addToFolder: "Añadir a carpeta",
     removeFromFolder: "Quitar de la carpeta",
     noFolders: "Aún no hay carpetas",
@@ -623,6 +653,13 @@ const COPY = {
     folderCreated: "Cartella creata",
     deleteFolder: (name: string) => `Elimina ${name}`,
     folderDeleted: "Cartella eliminata",
+    editFolder: "Modifica cartella",
+    editFolderAction: (name: string) => `Modifica ${name}`,
+    folderUpdated: "Cartella aggiornata",
+    save: "Salva",
+    filterCriteriaLabel: "Criteri di filtro",
+    addFilterCriteria: "Aggiungi criteri di filtro",
+    noFilterCriteria: "Nessun criterio di filtro — questa cartella è completamente manuale.",
     addToFolder: "Aggiungi a cartella",
     removeFromFolder: "Rimuovi dalla cartella",
     noFolders: "Ancora nessuna cartella",
@@ -787,6 +824,13 @@ const COPY = {
     folderCreated: "Dossier créé",
     deleteFolder: (name: string) => `Supprimer ${name}`,
     folderDeleted: "Dossier supprimé",
+    editFolder: "Modifier le dossier",
+    editFolderAction: (name: string) => `Modifier ${name}`,
+    folderUpdated: "Dossier mis à jour",
+    save: "Enregistrer",
+    filterCriteriaLabel: "Critères de filtre",
+    addFilterCriteria: "Ajouter des critères de filtre",
+    noFilterCriteria: "Aucun critère de filtre — ce dossier est entièrement manuel.",
     addToFolder: "Ajouter au dossier",
     removeFromFolder: "Retirer du dossier",
     noFolders: "Aucun dossier pour le moment",
@@ -951,6 +995,13 @@ const COPY = {
     folderCreated: "Ordner erstellt",
     deleteFolder: (name: string) => `${name} löschen`,
     folderDeleted: "Ordner gelöscht",
+    editFolder: "Ordner bearbeiten",
+    editFolderAction: (name: string) => `${name} bearbeiten`,
+    folderUpdated: "Ordner aktualisiert",
+    save: "Speichern",
+    filterCriteriaLabel: "Filterkriterien",
+    addFilterCriteria: "Filterkriterien hinzufügen",
+    noFilterCriteria: "Keine Filterkriterien — dieser Ordner ist vollständig manuell.",
     addToFolder: "Zu Ordner hinzufügen",
     removeFromFolder: "Aus Ordner entfernen",
     noFolders: "Noch keine Ordner",
@@ -1115,6 +1166,13 @@ const COPY = {
     folderCreated: "Pasta criada",
     deleteFolder: (name: string) => `Eliminar ${name}`,
     folderDeleted: "Pasta eliminada",
+    editFolder: "Editar pasta",
+    editFolderAction: (name: string) => `Editar ${name}`,
+    folderUpdated: "Pasta atualizada",
+    save: "Guardar",
+    filterCriteriaLabel: "Critérios de filtro",
+    addFilterCriteria: "Adicionar critérios de filtro",
+    noFilterCriteria: "Sem critérios de filtro — esta pasta é totalmente manual.",
     addToFolder: "Adicionar à pasta",
     removeFromFolder: "Remover da pasta",
     noFolders: "Ainda não há pastas",
@@ -1279,6 +1337,13 @@ const COPY = {
     folderCreated: "Pasta criada",
     deleteFolder: (name: string) => `Excluir ${name}`,
     folderDeleted: "Pasta excluída",
+    editFolder: "Editar pasta",
+    editFolderAction: (name: string) => `Editar ${name}`,
+    folderUpdated: "Pasta atualizada",
+    save: "Salvar",
+    filterCriteriaLabel: "Critérios de filtro",
+    addFilterCriteria: "Adicionar critérios de filtro",
+    noFilterCriteria: "Sem critérios de filtro — esta pasta é totalmente manual.",
     addToFolder: "Adicionar à pasta",
     removeFromFolder: "Remover da pasta",
     noFolders: "Ainda não há pastas",
@@ -1686,6 +1751,8 @@ export default function Inbox() {
   const campaigns = useCampaigns()
   const lists = useLists()
   const customFolders = useCustomFolders()
+  const prospects = useProspects()
+  const campaignEnrollments = useAllCampaignEnrollments()
 
   const [view, setView] = React.useState<View>({ kind: "folder", id: "inbox" })
   const [activeId, setActiveId] = React.useState<string | undefined>()
@@ -1719,6 +1786,10 @@ export default function Inbox() {
   }
   const [newFolderOpen, setNewFolderOpen] = React.useState(false)
   const [newFolderName, setNewFolderName] = React.useState("")
+  const [newFolderGroups, setNewFolderGroups] = React.useState<FolderFilterGroup[]>([])
+  // Set when the dialog is editing an existing folder rather than creating
+  // one — same dialog, seeded from that folder's current name + filters.
+  const [editFolderId, setEditFolderId] = React.useState<string | null>(null)
   // Set only when the dialog was opened from a conversation's or task's "Add
   // to folder" menu, so the new folder picks that record up immediately.
   const [newFolderForConvId, setNewFolderForConvId] = React.useState<string | undefined>(
@@ -1730,7 +1801,11 @@ export default function Inbox() {
   const [newFolderWasOpen, setNewFolderWasOpen] = React.useState(newFolderOpen)
   if (newFolderOpen !== newFolderWasOpen) {
     setNewFolderWasOpen(newFolderOpen)
-    if (newFolderOpen) setNewFolderName("")
+    if (newFolderOpen) {
+      const editing = editFolderId ? customFolders.find((f) => f.id === editFolderId) : undefined
+      setNewFolderName(editing?.name ?? "")
+      setNewFolderGroups(editing?.filterGroups ?? [])
+    }
   }
 
   const visible = conversations.filter((conv) => !conv.archived)
@@ -1899,7 +1974,7 @@ export default function Inbox() {
       }
     }
     return map
-  }, [campaigns])
+  }, [campaigns, campaignEnrollments])
 
   // How many lists a prospect belongs to — drives the thread header's
   // "Added to List (N)" pill (extension parity, see the header render below).
@@ -1921,9 +1996,8 @@ export default function Inbox() {
         : visible
     const inView = source.filter((conv) => {
       if (view.kind === "custom") {
-        return (
-          customFolders.find((f) => f.id === view.id)?.conversationIds.includes(conv.id) ?? false
-        )
+        const folder = customFolders.find((f) => f.id === view.id)
+        return folder ? folderHasConversation(folder, conv, getProspect(conv.prospectId)) : false
       }
       if (view.kind === "quickview") {
         if (view.tab === "my_tasks") return false // renders task rows, not conversations
@@ -2182,17 +2256,30 @@ export default function Inbox() {
     snoozeConversation(effectiveActive.id, new Date(snoozeCustomValue).toISOString())
   }
   function openNewFolder(forRecord?: { convId?: string; taskId?: string }) {
+    setEditFolderId(null)
     setNewFolderForConvId(forRecord?.convId)
     setNewFolderForTaskId(forRecord?.taskId)
+    setNewFolderOpen(true)
+  }
+  function openEditFolder(folder: CustomFolder) {
+    setEditFolderId(folder.id)
+    setNewFolderForConvId(undefined)
+    setNewFolderForTaskId(undefined)
     setNewFolderOpen(true)
   }
   function confirmNewFolder() {
     const name = newFolderName.trim()
     if (!name) return
-    const created = customFolderStore.create(name)
-    if (newFolderForConvId) customFolderStore.addConversation(created.id, newFolderForConvId)
-    if (newFolderForTaskId) customFolderStore.addTask(created.id, newFolderForTaskId)
-    toast.success(c.folderCreated)
+    if (editFolderId) {
+      customFolderStore.rename(editFolderId, name)
+      customFolderStore.setFilterGroups(editFolderId, newFolderGroups)
+      toast.success(c.folderUpdated)
+    } else {
+      const created = customFolderStore.create(name, newFolderGroups)
+      if (newFolderForConvId) customFolderStore.addConversation(created.id, newFolderForConvId)
+      if (newFolderForTaskId) customFolderStore.addTask(created.id, newFolderForTaskId)
+      toast.success(c.folderCreated)
+    }
     setNewFolderOpen(false)
   }
   function toggleSelectRow(id: string) {
@@ -2456,7 +2543,7 @@ export default function Inbox() {
       })),
     ]
     return items.sort((a, b) => a.at - b.at)
-  }, [effectiveActive, tasks, campaigns, locale])
+  }, [effectiveActive, tasks, campaigns, locale, campaignEnrollments])
 
   return (
     <div className="flex h-[calc(100svh-4rem)]">
@@ -2593,7 +2680,8 @@ export default function Inbox() {
               {customFolders.map((folder) => {
                 const activeFolder = view.kind === "custom" && view.id === folder.id
                 const count =
-                  visible.filter((x) => folder.conversationIds.includes(x.id)).length +
+                  visible.filter((x) => folderHasConversation(folder, x, getProspect(x.prospectId)))
+                    .length +
                   tasks.filter((t) => !t.done && !t.ignored && folder.taskIds.includes(t.id)).length
                 return (
                   <div key={folder.id} className="group flex items-center gap-0.5">
@@ -2614,6 +2702,14 @@ export default function Inbox() {
                           {count}
                         </span>
                       )}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={c.editFolderAction(folder.name)}
+                      onClick={() => openEditFolder(folder)}
+                      className="text-muted-foreground hover:text-foreground shrink-0 rounded-md p-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <Pencil className="size-3.5" />
                     </button>
                     <button
                       type="button"
@@ -3268,7 +3364,11 @@ export default function Inbox() {
                       <DropdownMenuItem disabled>{c.noFolders}</DropdownMenuItem>
                     ) : (
                       customFolders.map((folder) => {
-                        const inFolder = folder.conversationIds.includes(effectiveActive.id)
+                        const inFolder = folderHasConversation(
+                          folder,
+                          effectiveActive,
+                          getProspect(effectiveActive.prospectId)
+                        )
                         return (
                           <DropdownMenuItem
                             key={folder.id}
@@ -3597,26 +3697,54 @@ export default function Inbox() {
       </Dialog>
 
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{c.newFolder}</DialogTitle>
+            <DialogTitle>{editFolderId ? c.editFolder : c.newFolder}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="new-folder-name">{c.folderNameLabel}</Label>
-            <Input
-              id="new-folder-name"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder={c.newFolderPlaceholder}
-              autoFocus
-            />
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto">
+            <div className="space-y-2">
+              <Label htmlFor="new-folder-name">{c.folderNameLabel}</Label>
+              <Input
+                id="new-folder-name"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder={c.newFolderPlaceholder}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{c.filterCriteriaLabel}</Label>
+                {newFolderGroups.length === 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setNewFolderGroups([newFilterGroup()])}
+                  >
+                    <Plus className="size-3.5" />
+                    {c.addFilterCriteria}
+                  </Button>
+                )}
+              </div>
+              {newFolderGroups.length === 0 ? (
+                <p className="text-muted-foreground text-xs">{c.noFilterCriteria}</p>
+              ) : (
+                <FolderFilterBuilder
+                  groups={newFolderGroups}
+                  onChange={setNewFolderGroups}
+                  prospects={prospects}
+                />
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setNewFolderOpen(false)}>
               {c.cancelSchedule}
             </Button>
             <Button variant="volt" onClick={confirmNewFolder} disabled={!newFolderName.trim()}>
-              {c.create}
+              {editFolderId ? c.save : c.create}
             </Button>
           </DialogFooter>
         </DialogContent>

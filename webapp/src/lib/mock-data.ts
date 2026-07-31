@@ -66,6 +66,7 @@ export const prospects: Prospect[] = [
     personalityType: "D",
     companyLocation: "New York, NY",
     companyLinkedinUrl: "https://linkedin.com/company/fever",
+    inCrm: true,
   },
   {
     id: "p_2",
@@ -100,6 +101,7 @@ export const prospects: Prospect[] = [
       { flag: "🇪🇸", name: "Spanish" },
       { flag: "🇬🇧", name: "English" },
     ],
+    inCrm: true,
   },
   {
     id: "p_3",
@@ -225,6 +227,7 @@ export const prospects: Prospect[] = [
     personalityType: "I",
     companyLocation: "Amsterdam, Netherlands",
     companyLinkedinUrl: "https://linkedin.com/company/product-hackers",
+    inCrm: true,
   },
   {
     id: "p_7",
@@ -320,6 +323,7 @@ export const prospects: Prospect[] = [
       { flag: "🇨🇳", name: "Mandarin" },
       { flag: "🇬🇧", name: "English" },
     ],
+    inCrm: true,
   },
   {
     id: "p_10",

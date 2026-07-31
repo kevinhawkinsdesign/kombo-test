@@ -147,8 +147,8 @@ function scoreChip(n: number) {
 function chips(values: string[]) {
   return (
     <div className="flex flex-wrap gap-1">
-      {values.slice(0, 2).map((v) => (
-        <Badge key={v} variant="secondary" className="font-normal">
+      {values.slice(0, 2).map((v, i) => (
+        <Badge key={`${v}-${i}`} variant="secondary" className="font-normal">
           {v}
         </Badge>
       ))}

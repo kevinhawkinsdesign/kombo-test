@@ -145,17 +145,51 @@ const COPY = {
     clearQuery: "Clear search",
     srTitle: "Search",
     idleSuggestedTitle: "Or try one of these",
-    idleSuggestionsPeople: [
-      "VPs of Sales at SaaS scale-ups in EMEA",
-      "Heads of RevOps at companies hiring SDRs",
-      "Founders of B2B startups that raised a Series A this year",
-      "CROs in Iberia at companies with 50-500 employees",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Funding signals",
+        items: [
+          "Founders of B2B startups that raised a Series A this year",
+          "Sales leaders at companies that just closed a Series B",
+        ],
+      },
+      {
+        label: "Hiring signals",
+        items: [
+          "Heads of RevOps at companies hiring SDRs",
+          "VPs of Sales building out their first SDR team",
+        ],
+      },
+      {
+        label: "By role & region",
+        items: [
+          "VPs of Sales at SaaS scale-ups in EMEA",
+          "CROs in Iberia at companies with 50-500 employees",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "SaaS companies in Iberia with 50-500 employees",
-      "Agencies using HubSpot that opened a sales role",
-      "Logistics companies adopting AI tools in their stack",
-      "E-commerce brands that just expanded into the US",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Hiring signals",
+        items: [
+          "Agencies using HubSpot that opened a sales role",
+          "Retailers hiring for their first sales ops role",
+        ],
+      },
+      {
+        label: "Tech adoption",
+        items: [
+          "Logistics companies adopting AI tools in their stack",
+          "Fintechs adding new tools to their sales stack",
+        ],
+      },
+      {
+        label: "Firmographics & growth",
+        items: [
+          "SaaS companies in Iberia with 50-500 employees",
+          "E-commerce brands that just expanded into the US",
+        ],
+      },
     ],
     urlsTab: "URLs",
     urlsIdleBtn: "Search by URLs",
@@ -453,17 +487,51 @@ const COPY = {
     clearQuery: "Borrar búsqueda",
     srTitle: "Buscar",
     idleSuggestedTitle: "O prueba una de estas",
-    idleSuggestionsPeople: [
-      "VPs de Ventas en scale-ups SaaS de EMEA",
-      "Responsables de RevOps en empresas que contratan SDRs",
-      "Fundadores de startups B2B con Serie A este año",
-      "CROs en Iberia en empresas de 50-500 empleados",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Señales de financiación",
+        items: [
+          "Fundadores de startups B2B con Serie A este año",
+          "Líderes de ventas en empresas que acaban de cerrar una Serie B",
+        ],
+      },
+      {
+        label: "Señales de contratación",
+        items: [
+          "Responsables de RevOps en empresas que contratan SDRs",
+          "VPs de Ventas montando su primer equipo de SDRs",
+        ],
+      },
+      {
+        label: "Por rol y región",
+        items: [
+          "VPs de Ventas en scale-ups SaaS de EMEA",
+          "CROs en Iberia en empresas de 50-500 empleados",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "Empresas SaaS en Iberia de 50-500 empleados",
-      "Agencias que usan HubSpot con vacantes de ventas",
-      "Empresas de logística que adoptan herramientas de IA",
-      "Marcas de e-commerce recién expandidas a EE. UU.",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Señales de contratación",
+        items: [
+          "Agencias que usan HubSpot con vacantes de ventas",
+          "Retailers contratando su primer puesto de operaciones de ventas",
+        ],
+      },
+      {
+        label: "Adopción tecnológica",
+        items: [
+          "Empresas de logística que adoptan herramientas de IA",
+          "Fintechs añadiendo nuevas herramientas a su stack de ventas",
+        ],
+      },
+      {
+        label: "Datos firmográficos y crecimiento",
+        items: [
+          "Empresas SaaS en Iberia de 50-500 empleados",
+          "Marcas de e-commerce recién expandidas a EE. UU.",
+        ],
+      },
     ],
     urlsTab: "URLs",
     urlsIdleBtn: "Buscar por URLs",
@@ -761,17 +829,51 @@ const COPY = {
     clearQuery: "Cancella ricerca",
     srTitle: "Cerca",
     idleSuggestedTitle: "O prova una di queste",
-    idleSuggestionsPeople: [
-      "VP Sales in scale-up SaaS in EMEA",
-      "Responsabili RevOps in aziende che assumono SDR",
-      "Founder di startup B2B con un round Serie A quest'anno",
-      "CRO in Iberia in aziende con 50-500 dipendenti",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Segnali di funding",
+        items: [
+          "Founder di startup B2B con un round Serie A quest'anno",
+          "Sales leader in aziende che hanno appena chiuso un round Serie B",
+        ],
+      },
+      {
+        label: "Segnali di assunzione",
+        items: [
+          "Responsabili RevOps in aziende che assumono SDR",
+          "VP Sales che costruiscono il loro primo team di SDR",
+        ],
+      },
+      {
+        label: "Per ruolo e area",
+        items: [
+          "VP Sales in scale-up SaaS in EMEA",
+          "CRO in Iberia in aziende con 50-500 dipendenti",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "Aziende SaaS in Iberia con 50-500 dipendenti",
-      "Agenzie che usano HubSpot con una posizione aperta nelle vendite",
-      "Aziende di logistica che adottano strumenti IA nel loro stack",
-      "Brand e-commerce appena espansi negli USA",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Segnali di assunzione",
+        items: [
+          "Agenzie che usano HubSpot con una posizione aperta nelle vendite",
+          "Retailer che assumono per il loro primo ruolo sales ops",
+        ],
+      },
+      {
+        label: "Adozione tecnologica",
+        items: [
+          "Aziende di logistica che adottano strumenti IA nel loro stack",
+          "Fintech che aggiungono nuovi strumenti al loro stack di vendita",
+        ],
+      },
+      {
+        label: "Dati firmografici e crescita",
+        items: [
+          "Aziende SaaS in Iberia con 50-500 dipendenti",
+          "Brand e-commerce appena espansi negli USA",
+        ],
+      },
     ],
     urlsTab: "URL",
     urlsIdleBtn: "Cerca per URL",
@@ -1069,17 +1171,51 @@ const COPY = {
     clearQuery: "Effacer la recherche",
     srTitle: "Recherche",
     idleSuggestedTitle: "Ou essayez l'une de ces suggestions",
-    idleSuggestionsPeople: [
-      "VP Sales dans des scale-ups SaaS en EMEA",
-      "Responsables RevOps dans des entreprises qui recrutent des SDR",
-      "Fondateurs de startups B2B ayant levé une Série A cette année",
-      "CRO en Ibérie dans des entreprises de 50 à 500 salariés",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Signaux de financement",
+        items: [
+          "Fondateurs de startups B2B ayant levé une Série A cette année",
+          "Responsables commerciaux dans des entreprises qui viennent de boucler une Série B",
+        ],
+      },
+      {
+        label: "Signaux de recrutement",
+        items: [
+          "Responsables RevOps dans des entreprises qui recrutent des SDR",
+          "VP Sales en train de constituer leur première équipe de SDR",
+        ],
+      },
+      {
+        label: "Par poste et région",
+        items: [
+          "VP Sales dans des scale-ups SaaS en EMEA",
+          "CRO en Ibérie dans des entreprises de 50 à 500 salariés",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "Entreprises SaaS en Ibérie de 50 à 500 salariés",
-      "Agences utilisant HubSpot ayant ouvert un poste commercial",
-      "Entreprises de logistique adoptant des outils IA dans leur stack",
-      "Marques e-commerce qui viennent de se développer aux États-Unis",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Signaux de recrutement",
+        items: [
+          "Agences utilisant HubSpot ayant ouvert un poste commercial",
+          "Enseignes de retail recrutant leur premier poste sales ops",
+        ],
+      },
+      {
+        label: "Adoption technologique",
+        items: [
+          "Entreprises de logistique adoptant des outils IA dans leur stack",
+          "Fintechs ajoutant de nouveaux outils à leur stack commercial",
+        ],
+      },
+      {
+        label: "Données firmographiques et croissance",
+        items: [
+          "Entreprises SaaS en Ibérie de 50 à 500 salariés",
+          "Marques e-commerce qui viennent de se développer aux États-Unis",
+        ],
+      },
     ],
     urlsTab: "URL",
     urlsIdleBtn: "Rechercher par URL",
@@ -1377,17 +1513,51 @@ const COPY = {
     clearQuery: "Suche löschen",
     srTitle: "Suche",
     idleSuggestedTitle: "Oder probier eine dieser Optionen",
-    idleSuggestionsPeople: [
-      "VP Sales bei SaaS-Scale-ups in EMEA",
-      "RevOps-Leads bei Unternehmen, die SDRs einstellen",
-      "Gründer von B2B-Startups mit Series-A-Runde in diesem Jahr",
-      "CROs in Iberien bei Unternehmen mit 50-500 Mitarbeitenden",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Funding-Signale",
+        items: [
+          "Gründer von B2B-Startups mit Series-A-Runde in diesem Jahr",
+          "Vertriebsleiter bei Unternehmen mit gerade abgeschlossener Series-B-Runde",
+        ],
+      },
+      {
+        label: "Einstellungssignale",
+        items: [
+          "RevOps-Leads bei Unternehmen, die SDRs einstellen",
+          "VP Sales, die ihr erstes SDR-Team aufbauen",
+        ],
+      },
+      {
+        label: "Nach Rolle & Region",
+        items: [
+          "VP Sales bei SaaS-Scale-ups in EMEA",
+          "CROs in Iberien bei Unternehmen mit 50-500 Mitarbeitenden",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "SaaS-Unternehmen in Iberien mit 50-500 Mitarbeitenden",
-      "Agenturen mit HubSpot, die eine Vertriebsstelle ausgeschrieben haben",
-      "Logistikunternehmen, die KI-Tools in ihren Stack integrieren",
-      "E-Commerce-Marken, die gerade in die USA expandiert sind",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Einstellungssignale",
+        items: [
+          "Agenturen mit HubSpot, die eine Vertriebsstelle ausgeschrieben haben",
+          "Einzelhändler, die ihre erste Sales-Ops-Stelle besetzen",
+        ],
+      },
+      {
+        label: "Technologie-Adoption",
+        items: [
+          "Logistikunternehmen, die KI-Tools in ihren Stack integrieren",
+          "Fintechs, die neue Tools in ihren Vertriebsstack aufnehmen",
+        ],
+      },
+      {
+        label: "Firmografie & Wachstum",
+        items: [
+          "SaaS-Unternehmen in Iberien mit 50-500 Mitarbeitenden",
+          "E-Commerce-Marken, die gerade in die USA expandiert sind",
+        ],
+      },
     ],
     urlsTab: "URLs",
     urlsIdleBtn: "Nach URLs suchen",
@@ -1685,17 +1855,51 @@ const COPY = {
     clearQuery: "Limpar pesquisa",
     srTitle: "Pesquisar",
     idleSuggestedTitle: "Ou experimenta uma destas",
-    idleSuggestionsPeople: [
-      "VPs de Vendas em scale-ups SaaS na EMEA",
-      "Responsáveis de RevOps em empresas a contratar SDRs",
-      "Fundadores de startups B2B com uma ronda Série A este ano",
-      "CROs na Ibéria em empresas com 50-500 colaboradores",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Sinais de financiamento",
+        items: [
+          "Fundadores de startups B2B com uma ronda Série A este ano",
+          "Líderes de vendas em empresas que acabaram de fechar uma ronda Série B",
+        ],
+      },
+      {
+        label: "Sinais de contratação",
+        items: [
+          "Responsáveis de RevOps em empresas a contratar SDRs",
+          "VPs de Vendas a montar a sua primeira equipa de SDRs",
+        ],
+      },
+      {
+        label: "Por função e região",
+        items: [
+          "VPs de Vendas em scale-ups SaaS na EMEA",
+          "CROs na Ibéria em empresas com 50-500 colaboradores",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "Empresas SaaS na Ibéria com 50-500 colaboradores",
-      "Agências que usam HubSpot com uma vaga aberta em vendas",
-      "Empresas de logística a adotar ferramentas de IA na sua stack",
-      "Marcas de e-commerce recém-expandidas para os EUA",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Sinais de contratação",
+        items: [
+          "Agências que usam HubSpot com uma vaga aberta em vendas",
+          "Retalhistas a contratar para a sua primeira função de sales ops",
+        ],
+      },
+      {
+        label: "Adoção tecnológica",
+        items: [
+          "Empresas de logística a adotar ferramentas de IA na sua stack",
+          "Fintechs a adicionar novas ferramentas à sua stack de vendas",
+        ],
+      },
+      {
+        label: "Dados firmográficos e crescimento",
+        items: [
+          "Empresas SaaS na Ibéria com 50-500 colaboradores",
+          "Marcas de e-commerce recém-expandidas para os EUA",
+        ],
+      },
     ],
     urlsTab: "URLs",
     urlsIdleBtn: "Pesquisar por URLs",
@@ -1993,17 +2197,51 @@ const COPY = {
     clearQuery: "Limpar pesquisa",
     srTitle: "Pesquisar",
     idleSuggestedTitle: "Ou experimente uma destas",
-    idleSuggestionsPeople: [
-      "VPs de Vendas em scale-ups SaaS na EMEA",
-      "Responsáveis de RevOps em empresas contratando SDRs",
-      "Fundadores de startups B2B que levantaram uma Série A este ano",
-      "CROs na Ibéria em empresas com 50-500 funcionários",
+    idleSuggestionGroupsPeople: [
+      {
+        label: "Sinais de captação",
+        items: [
+          "Fundadores de startups B2B que levantaram uma Série A este ano",
+          "Líderes de vendas em empresas que acabaram de fechar uma Série B",
+        ],
+      },
+      {
+        label: "Sinais de contratação",
+        items: [
+          "Responsáveis de RevOps em empresas contratando SDRs",
+          "VPs de Vendas montando seu primeiro time de SDRs",
+        ],
+      },
+      {
+        label: "Por cargo e região",
+        items: [
+          "VPs de Vendas em scale-ups SaaS na EMEA",
+          "CROs na Ibéria em empresas com 50-500 funcionários",
+        ],
+      },
     ],
-    idleSuggestionsCompanies: [
-      "Empresas SaaS na Ibéria com 50-500 funcionários",
-      "Agências que usam HubSpot com uma vaga aberta em vendas",
-      "Empresas de logística adotando ferramentas de IA na sua stack",
-      "Marcas de e-commerce recém-expandidas para os EUA",
+    idleSuggestionGroupsCompanies: [
+      {
+        label: "Sinais de contratação",
+        items: [
+          "Agências que usam HubSpot com uma vaga aberta em vendas",
+          "Varejistas contratando para sua primeira vaga de sales ops",
+        ],
+      },
+      {
+        label: "Adoção de tecnologia",
+        items: [
+          "Empresas de logística adotando ferramentas de IA na sua stack",
+          "Fintechs adicionando novas ferramentas à sua stack de vendas",
+        ],
+      },
+      {
+        label: "Dados firmográficos e crescimento",
+        items: [
+          "Empresas SaaS na Ibéria com 50-500 funcionários",
+          "Marcas de e-commerce recém-expandidas para os EUA",
+        ],
+      },
     ],
     urlsTab: "URLs",
     urlsIdleBtn: "Pesquisar por URLs",
@@ -5122,8 +5360,8 @@ function SearchIdleState({
   onSuggestion: (prompt: string) => void
   onOpenFilters: () => void
 }) {
-  const suggestions =
-    entity === "companies" ? c.idleSuggestionsCompanies : c.idleSuggestionsPeople
+  const groups =
+    entity === "companies" ? c.idleSuggestionGroupsCompanies : c.idleSuggestionGroupsPeople
   return (
     // No mascot illustration here anymore (Ale's call — "removing the robot
     // for another illustration I think is better (or nothing)"; nothing was
@@ -5136,16 +5374,25 @@ function SearchIdleState({
           <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
             {c.idleSuggestedTitle}
           </p>
-          <div className="flex max-w-2xl flex-wrap justify-center gap-2">
-            {suggestions.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => onSuggestion(s)}
-                className="border-primary/30 bg-primary/5 hover:border-primary hover:bg-primary/10 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
-              >
-                + {s}
-              </button>
+          <div className="flex max-w-2xl flex-col gap-3">
+            {groups.map((group) => (
+              <div key={group.label} className="flex flex-col items-center gap-1.5">
+                <p className="text-muted-foreground/80 text-[11px] font-medium">
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {group.items.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => onSuggestion(s)}
+                      className="border-primary/30 bg-primary/5 hover:border-primary hover:bg-primary/10 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+                    >
+                      + {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
           <Button variant="outline" size="sm" className="mt-3" onClick={onOpenFilters}>

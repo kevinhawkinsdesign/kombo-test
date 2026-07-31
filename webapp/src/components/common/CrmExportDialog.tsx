@@ -568,6 +568,14 @@ export function CrmExportDialog({
             accountName={accountName}
             willFail={needsManualMapping}
             onDone={() => onOpenChange(false)}
+            onSuccess={() => {
+              // Mark the prospect as synced only once the export actually
+              // lands — mirrors AiLead/AiCompany's inCrm seeding, kept in
+              // sync in-session for prospects pushed to CRM from here.
+              if (recordKind === "person") {
+                prospectStore.update(record.id, { inCrm: true })
+              }
+            }}
           />
         )}
 

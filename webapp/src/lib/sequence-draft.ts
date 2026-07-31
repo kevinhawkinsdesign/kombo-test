@@ -91,7 +91,12 @@ function cloneStepWithNewIds(step: CampaignStep): CampaignStep {
 
 export function useSequenceDraft(
   campaignId: string,
-  appliedSteps: CampaignStep[]
+  appliedSteps: CampaignStep[],
+  // Overrides how apply() persists the draft. Defaults to writing into the
+  // real campaign store — the only behavior this hook had before a second
+  // call site (the standalone sequence-library editor, which has no
+  // campaign to write into) needed a different destination.
+  onApply?: (steps: CampaignStep[]) => void
 ): SequenceDraftApi {
   const [state, setState] = React.useState(() => ({
     campaignId,
@@ -263,7 +268,8 @@ export function useSequenceDraft(
       setDraft(steps)
     },
     apply() {
-      campaignStore.update(campaignId, { steps: state.draft })
+      if (onApply) onApply(state.draft)
+      else campaignStore.update(campaignId, { steps: state.draft })
       setState((s) => ({ ...s, baseline: s.draft }))
     },
     discard() {

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TagPicker } from "@/components/common/TagPicker"
 import {
   Select,
   SelectContent,
@@ -49,6 +50,9 @@ const COPY = {
       "e.g. Write a short cold email opening with a likely pain point for {{first_name}}'s team at {{company}}…",
     promptHint:
       "The AI blends this with what Kombo knows about you — your product, USPs, ICP, and the countries you sell in — plus each recipient's data.",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Add a tag…",
+    tagsAddLabel: (text: string) => `Add "${text}"`,
     folderLabel: "Folder",
     newFolder: "New folder…",
     newFolderPlaceholder: "Folder name",
@@ -81,6 +85,9 @@ const COPY = {
       "p. ej. Escribe un correo en frío breve abriendo con un posible punto de dolor del equipo de {{first_name}} en {{company}}…",
     promptHint:
       "La IA lo combina con lo que Kombo sabe de ti — tu producto, propuestas de valor, ICP y los países donde vendes — más los datos de cada destinatario.",
+    tagsLabel: "Etiquetas",
+    tagsPlaceholder: "Añadir una etiqueta…",
+    tagsAddLabel: (text: string) => `Añadir "${text}"`,
     folderLabel: "Carpeta",
     newFolder: "Nueva carpeta…",
     newFolderPlaceholder: "Nombre de la carpeta",
@@ -113,6 +120,9 @@ const COPY = {
       "es. Scrivi una breve email a freddo che apre con un probabile punto dolente per il team di {{first_name}} in {{company}}…",
     promptHint:
       "L'IA lo combina con ciò che Kombo sa di te — il tuo prodotto, le tue USP, l'ICP e i paesi in cui vendi — più i dati di ogni destinatario.",
+    tagsLabel: "Tag",
+    tagsPlaceholder: "Aggiungi un tag…",
+    tagsAddLabel: (text: string) => `Aggiungi "${text}"`,
     folderLabel: "Cartella",
     newFolder: "Nuova cartella…",
     newFolderPlaceholder: "Nome cartella",
@@ -145,6 +155,9 @@ const COPY = {
       "ex. Rédigez un email de prospection court qui commence par un point de douleur probable pour l'équipe de {{first_name}} chez {{company}}…",
     promptHint:
       "L'IA combine ceci avec ce que Kombo sait de vous — votre produit, vos USP, votre ICP et les pays où vous vendez — ainsi que les données de chaque destinataire.",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Ajouter un tag…",
+    tagsAddLabel: (text: string) => `Ajouter "${text}"`,
     folderLabel: "Dossier",
     newFolder: "Nouveau dossier…",
     newFolderPlaceholder: "Nom du dossier",
@@ -177,6 +190,9 @@ const COPY = {
       "z. B. Schreib eine kurze Kaltakquise-E-Mail, die mit einem wahrscheinlichen Problem für das Team von {{first_name}} bei {{company}} beginnt…",
     promptHint:
       "Die KI kombiniert dies mit dem, was Kombo über dich weiß — dein Produkt, deine USPs, dein ICP und die Länder, in denen du verkaufst — plus die Daten jedes Empfängers.",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Tag hinzufügen…",
+    tagsAddLabel: (text: string) => `"${text}" hinzufügen`,
     folderLabel: "Ordner",
     newFolder: "Neuer Ordner…",
     newFolderPlaceholder: "Ordnername",
@@ -209,6 +225,9 @@ const COPY = {
       "ex.: Escreva um email de prospeção curto que comece com um ponto de dor provável da equipa de {{first_name}} na {{company}}…",
     promptHint:
       "A IA combina isto com o que a Kombo sabe sobre si — o seu produto, propostas de valor, ICP e os países onde vende — mais os dados de cada destinatário.",
+    tagsLabel: "Etiquetas",
+    tagsPlaceholder: "Adicionar uma etiqueta…",
+    tagsAddLabel: (text: string) => `Adicionar "${text}"`,
     folderLabel: "Pasta",
     newFolder: "Nova pasta…",
     newFolderPlaceholder: "Nome da pasta",
@@ -241,6 +260,9 @@ const COPY = {
       "ex.: Escreva um e-mail de prospecção curto que comece com um ponto de dor provável da equipe de {{first_name}} na {{company}}…",
     promptHint:
       "A IA combina isso com o que a Kombo sabe sobre você — seu produto, propostas de valor, ICP e os países onde vende — além dos dados de cada destinatário.",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Adicionar uma tag…",
+    tagsAddLabel: (text: string) => `Adicionar "${text}"`,
     folderLabel: "Pasta",
     newFolder: "Nova pasta…",
     newFolderPlaceholder: "Nome da pasta",
@@ -296,12 +318,18 @@ export function PromptFormDialog({
   const c = COPY[locale]
 
   const all = usePromptTemplates()
+  const allExistingTags = React.useMemo(() => {
+    const set = new Set<string>()
+    all.forEach((p) => p.tags.forEach((tag) => set.add(tag)))
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [all])
   const [name, setName] = React.useState("")
   const [channel, setChannel] = React.useState<Channel>("email")
   const [folder, setFolder] = React.useState(promptFolderFor("email"))
   const [folderTouched, setFolderTouched] = React.useState(false)
   const [newFolderName, setNewFolderName] = React.useState("")
   const [promptText, setPromptText] = React.useState("")
+  const [tags, setTags] = React.useState<string[]>([])
   // Advances on "New example": rotates both the generation seed and the
   // sample recipient, so every click shows a genuinely different message.
   const [example, setExample] = React.useState(0)
@@ -317,6 +345,7 @@ export function PromptFormDialog({
       setFolderTouched(Boolean(prompt))
       setNewFolderName("")
       setPromptText(prompt?.prompt ?? "")
+      setTags(prompt?.tags ?? [])
       setExample(0)
     }
   }
@@ -373,6 +402,7 @@ export function PromptFormDialog({
         channel,
         folder: resolvedFolder,
         prompt: promptText.trim(),
+        tags,
       })
       toast.success(c.updated)
     } else {
@@ -381,6 +411,7 @@ export function PromptFormDialog({
         channel,
         folder: resolvedFolder,
         prompt: promptText.trim(),
+        tags,
       })
       toast.success(c.created)
     }
@@ -477,6 +508,18 @@ export function PromptFormDialog({
                 className="min-h-32"
               />
               <p className="text-muted-foreground text-xs">{c.promptHint}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="prompt-tags">{c.tagsLabel}</Label>
+              <TagPicker
+                id="prompt-tags"
+                value={tags}
+                onChange={setTags}
+                suggestions={allExistingTags}
+                placeholder={c.tagsPlaceholder}
+                addLabel={c.tagsAddLabel}
+              />
             </div>
           </div>
 

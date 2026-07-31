@@ -1,11 +1,12 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { CheckCircle2, CircleDashed, X, Lock, Building2 } from "lucide-react"
+import { CheckCircle2, CircleDashed, X, Lock } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScoreBadge } from "@/components/common/ProspectBits"
 import { TruncatedText } from "@/components/common/TruncatedText"
+import { CrmBadge } from "@/components/common/CrmBadge"
 import type { ColumnDef, ColGroup } from "@/lib/table-columns"
 import { mockLeadEmail, mockLeadPhone, type AiLead, type AiCompany } from "@/lib/mock-ai-search"
 import type { Locale } from "@/lib/locale"
@@ -94,7 +95,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name: string) => string
     mobile: string
     direct: string
-    inCrm: string
   }
 > = {
   en: {
@@ -106,7 +106,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Phone number found for ${name}`,
     mobile: "Mobile",
     direct: "Direct dial",
-    inCrm: "In CRM",
   },
   es: {
     missing: "Sin email",
@@ -117,7 +116,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Número encontrado para ${name}`,
     mobile: "Móvil",
     direct: "Línea directa",
-    inCrm: "En el CRM",
   },
   it: {
     missing: "Nessuna email",
@@ -128,7 +126,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Numero trovato per ${name}`,
     mobile: "Cellulare",
     direct: "Linea diretta",
-    inCrm: "Nel CRM",
   },
   fr: {
     missing: "Aucun email",
@@ -139,7 +136,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Numéro trouvé pour ${name}`,
     mobile: "Mobile",
     direct: "Ligne directe",
-    inCrm: "Dans le CRM",
   },
   de: {
     missing: "Keine E-Mail",
@@ -150,7 +146,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Telefonnummer für ${name} gefunden`,
     mobile: "Mobil",
     direct: "Durchwahl",
-    inCrm: "Im CRM",
   },
   pt: {
     missing: "Sem email",
@@ -161,7 +156,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Número encontrado para ${name}`,
     mobile: "Telemóvel",
     direct: "Linha direta",
-    inCrm: "No CRM",
   },
   pt_BR: {
     missing: "Sem email",
@@ -172,7 +166,6 @@ const REVEAL_COPY: Record<
     phoneRevealed: (name) => `Número encontrado para ${name}`,
     mobile: "Celular",
     direct: "Linha direta",
-    inCrm: "No CRM",
   },
 }
 
@@ -278,16 +271,6 @@ function PhoneCell({ lead, locale }: { lead: AiLead; locale: Locale }) {
   )
 }
 
-function CrmBadge({ inCrm, locale }: { inCrm: boolean; locale: Locale }) {
-  const t = REVEAL_COPY[locale]
-  if (!inCrm) return <span className="text-muted-foreground text-xs">—</span>
-  return (
-    <Badge variant="secondary" className="inline-flex items-center gap-1 font-normal">
-      <Building2 className="size-3" />
-      {t.inCrm}
-    </Badge>
-  )
-}
 
 export const LEAD_RESULT_COLUMNS: ColumnDef<AiLead>[] = [
   {
