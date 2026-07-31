@@ -657,7 +657,10 @@ export default function SequenceEditor() {
             steps={draft.steps}
             c={c}
             locale={locale}
-            onUpdate={(patch) => draft.updateStep(selectedStep.id, patch)}
+            onUpdate={(patch) => {
+              const gated = draft.updateStep(selectedStep.id, patch)
+              if (gated) toast.info(c.connectStepAutoAdded)
+            }}
             onMove={(dir) => draft.moveStep(selectedStep.id, dir)}
             onDelete={() => {
               draft.removeStep(selectedStep.id)

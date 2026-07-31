@@ -7,6 +7,7 @@
 import * as React from "react"
 
 import { campaignStore, uid, updateStepTree, AI_VOICES, CONDITION_TRACK_KINDS } from "@/lib/store"
+import { requiresLinkedInConnection, stepContainsConnect } from "@/lib/step-channels"
 import type { CampaignStep, ConditionKind, StepChannel, StepTypeSelection } from "@/lib/types"
 
 // The action-variant fields a freshly-created step can be seeded with —
@@ -25,7 +26,11 @@ export interface SequenceDraftApi {
     body: string
     aiPrompt?: string
   }): CampaignStep
-  updateStep(stepId: string, patch: Partial<CampaignStep>): void
+  // Returns true when the patch retyped the step into a LinkedIn message/
+  // voice message that needed (and got) an auto-inserted connect gate ahead
+  // of it — callers use this to surface the same "connect step added" toast
+  // the step-type picker shows for a fresh add via addConnectGatedStep.
+  updateStep(stepId: string, patch: Partial<CampaignStep>): boolean
   removeStep(stepId: string): void
   // Inserts a copy of the step (and, recursively, its own fork tracks /
   // parallel siblings, each with fresh ids) directly after the original.
@@ -141,11 +146,51 @@ export function useSequenceDraft(
       return step
     },
     updateStep(stepId, patch) {
+      // Retyping an existing top-level step into a LinkedIn message/voice
+      // message needs the same connect-gating a fresh add gets (see
+      // addConnectGatedStep below) — otherwise the picker's gate is easy to
+      // route around by adding a plain step of some other type first, then
+      // switching its type in the editor. Only a *transition* into that
+      // state triggers it (editing body copy on an already-gated step
+      // shouldn't re-wrap it), and — matching addConnectGatedStep's own
+      // scope — only at the top level; a step inside a fork track or
+      // parallel group is left to updateStepTree's plain patch below.
+      const topIdx = state.draft.findIndex((s) => s.id === stepId)
+      if (topIdx !== -1) {
+        const current = state.draft[topIdx]
+        const next = { ...current, ...patch }
+        const needsGating =
+          requiresLinkedInConnection(next.channel, next.linkedinAction) &&
+          !requiresLinkedInConnection(current.channel, current.linkedinAction) &&
+          !state.draft.slice(0, topIdx).some(stepContainsConnect)
+        if (needsGating) {
+          const connectStep = newStep("linkedin_message", topIdx === 0 ? 0 : 3, {
+            linkedinAction: "connect",
+          })
+          const [metKind, notMetKind] = CONDITION_TRACK_KINDS.accept
+          connectStep.fork = {
+            condition: "accept",
+            tracks: [
+              // A displaced first step loses its "sends immediately" delay
+              // to the new connect step ahead of it — matches
+              // addConnectGatedStep's target, which is never delay 0 either.
+              { id: uid("trk"), kind: metKind, steps: [{ ...next, delayDays: topIdx === 0 ? 3 : next.delayDays }] },
+              { id: uid("trk"), kind: notMetKind, steps: [] },
+            ],
+            withinDays: 4,
+          }
+          const nextDraft = [...state.draft]
+          nextDraft.splice(topIdx, 1, connectStep)
+          setDraft(nextDraft)
+          return true
+        }
+      }
       setDraft(
         updateStepTree(state.draft, stepId, (list, i) =>
           list.map((s, idx) => (idx === i ? { ...s, ...patch } : s))
         )
       )
+      return false
     },
     removeStep(stepId) {
       setDraft(updateStepTree(state.draft, stepId, (list, i) => list.filter((_, idx) => idx !== i)))

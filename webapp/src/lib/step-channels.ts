@@ -29,6 +29,7 @@ import { LinkedinIcon } from "@/components/icons/BrandIcons"
 import { integrations } from "@/lib/mock-data"
 import type { Locale } from "@/lib/locale"
 import type {
+  CampaignStep,
   ConditionKind,
   LinkedInAction,
   StepChannel,
@@ -353,4 +354,35 @@ export function conditionAppliesToStepType(
   if (condition === "accept" && opts?.forceAllowAccept) return true
   const def = CONDITION_CATALOG.find((d) => d.kind === condition)
   return def ? def.appliesToStepTypes.includes(stepType) : true
+}
+
+// A LinkedIn message/voice message can't actually reach someone who isn't a
+// connection yet — Connect/View Profile/Like Post/Sales Navigator don't have
+// that restriction (Sales Navigator messages work precisely because they
+// don't require a connection). Shared by the step-type picker (gates a
+// fresh add — see CampaignDetail/SequenceEditor's performStepTypeSelect) and
+// the step editor's type dropdown (gates retyping an existing step in
+// place), so neither path can leave a message/voice-message step stranded
+// without an earlier connect.
+export function requiresLinkedInConnection(
+  channel: StepChannel,
+  linkedinAction?: LinkedInAction
+): boolean {
+  return (
+    channel === "linkedin_message" &&
+    (linkedinAction === undefined ||
+      linkedinAction === "message" ||
+      linkedinAction === "voice_message")
+  )
+}
+
+// Whether `step` (or anything inside it — a fork track, a parallel sibling)
+// is or contains a LinkedIn connect step. Connect steps only ever live at
+// the top level (addConnectGatedStep/updateStep's in-place gating both only
+// insert one there), but a track can still carry one if a user manually
+// picks "LinkedIn connect" as a plain step type from within it.
+export function stepContainsConnect(step: CampaignStep): boolean {
+  if (step.linkedinAction === "connect") return true
+  if (step.parallelSteps?.some((p) => p.linkedinAction === "connect")) return true
+  return step.fork?.tracks.some((t) => t.steps.some(stepContainsConnect)) ?? false
 }

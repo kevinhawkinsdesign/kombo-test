@@ -4616,7 +4616,9 @@ export default function CampaignDetail() {
                           variant="volt"
                           size="sm"
                           onClick={() => {
-                            if (stepDraft) draft.updateStep(stepDraft.id, stepDraft)
+                            if (!stepDraft) return
+                            const gated = draft.updateStep(stepDraft.id, stepDraft)
+                            if (gated) toast.info(c.connectStepAutoAdded)
                           }}
                         >
                           {c.applyChanges}
