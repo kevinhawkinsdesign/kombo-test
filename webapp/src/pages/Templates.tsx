@@ -53,6 +53,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { TagPicker } from "@/components/common/TagPicker"
 import { DataTable } from "@/components/common/DataTable"
 import { ColumnManager } from "@/components/common/ColumnManager"
 import { BulkActionsBar } from "@/components/common/BulkActionsBar"
@@ -566,8 +567,8 @@ const COPY = {
     bodyPlaceholder: "Write your template…",
     variableHint: "Variables: {{first_name}}, {{company}}, {{sender}}",
     tags: "Tags",
-    tagsPlaceholder: "revops, intro, short",
-    tagsHint: "Separate tags with commas.",
+    tagsPlaceholder: "Add a tag…",
+    tagsAddLabel: (text: string) => `Add "${text}"`,
     cancel: "Cancel",
     save: "Save",
     templateSaved: "Template saved",
@@ -707,8 +708,8 @@ const COPY = {
     bodyPlaceholder: "Escribe tu plantilla…",
     variableHint: "Variables: {{first_name}}, {{company}}, {{sender}}",
     tags: "Etiquetas",
-    tagsPlaceholder: "revops, intro, corto",
-    tagsHint: "Separa las etiquetas con comas.",
+    tagsPlaceholder: "Añadir una etiqueta…",
+    tagsAddLabel: (text: string) => `Añadir "${text}"`,
     cancel: "Cancelar",
     save: "Guardar",
     templateSaved: "Plantilla guardada",
@@ -853,8 +854,8 @@ const COPY = {
     bodyPlaceholder: "Scrivi il tuo modello…",
     variableHint: "Variabili: {{first_name}}, {{company}}, {{sender}}",
     tags: "Tag",
-    tagsPlaceholder: "revops, intro, breve",
-    tagsHint: "Separa i tag con le virgole.",
+    tagsPlaceholder: "Aggiungi un tag…",
+    tagsAddLabel: (text: string) => `Aggiungi "${text}"`,
     cancel: "Annulla",
     save: "Salva",
     templateSaved: "Modello salvato",
@@ -995,8 +996,8 @@ const COPY = {
     bodyPlaceholder: "Rédigez votre modèle…",
     variableHint: "Variables : {{first_name}}, {{company}}, {{sender}}",
     tags: "Tags",
-    tagsPlaceholder: "revops, intro, court",
-    tagsHint: "Séparez les tags par des virgules.",
+    tagsPlaceholder: "Ajouter un tag…",
+    tagsAddLabel: (text: string) => `Ajouter "${text}"`,
     cancel: "Annuler",
     save: "Enregistrer",
     templateSaved: "Modèle enregistré",
@@ -1136,8 +1137,8 @@ const COPY = {
     bodyPlaceholder: "Schreib deine Vorlage…",
     variableHint: "Variablen: {{first_name}}, {{company}}, {{sender}}",
     tags: "Tags",
-    tagsPlaceholder: "revops, intro, kurz",
-    tagsHint: "Trenne die Tags mit Kommas.",
+    tagsPlaceholder: "Tag hinzufügen…",
+    tagsAddLabel: (text: string) => `"${text}" hinzufügen`,
     cancel: "Abbrechen",
     save: "Speichern",
     templateSaved: "Vorlage gespeichert",
@@ -1278,8 +1279,8 @@ const COPY = {
     bodyPlaceholder: "Escreva o seu modelo…",
     variableHint: "Variáveis: {{first_name}}, {{company}}, {{sender}}",
     tags: "Etiquetas",
-    tagsPlaceholder: "revops, intro, curto",
-    tagsHint: "Separe as etiquetas com vírgulas.",
+    tagsPlaceholder: "Adicionar uma etiqueta…",
+    tagsAddLabel: (text: string) => `Adicionar "${text}"`,
     cancel: "Cancelar",
     save: "Guardar",
     templateSaved: "Modelo guardado",
@@ -1424,8 +1425,8 @@ const COPY = {
     bodyPlaceholder: "Escreva seu modelo…",
     variableHint: "Variáveis: {{first_name}}, {{company}}, {{sender}}",
     tags: "Tags",
-    tagsPlaceholder: "revops, intro, curto",
-    tagsHint: "Separe as tags com vírgulas.",
+    tagsPlaceholder: "Adicionar uma tag…",
+    tagsAddLabel: (text: string) => `Adicionar "${text}"`,
     cancel: "Cancelar",
     save: "Salvar",
     templateSaved: "Modelo salvo",
@@ -2097,13 +2098,6 @@ function TemplateCard({
   )
 }
 
-function parseTags(value: string): string[] {
-  return value
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0)
-}
-
 export default function Templates() {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -2118,7 +2112,7 @@ export default function Templates() {
   const [channel, setChannel] = React.useState<Channel>("email")
   const [subject, setSubject] = React.useState("")
   const [body, setBody] = React.useState("")
-  const [tags, setTags] = React.useState("")
+  const [tags, setTags] = React.useState<string[]>([])
   const [copiedTag, setCopiedTag] = React.useState<string | null>(null)
   // Free-text "personalized variable" — wraps whatever the author types in
   // {{ }} as a placeholder to fill in by hand later, matching the
@@ -2148,6 +2142,13 @@ export default function Templates() {
     templates.forEach((t) => t.folder && set.add(t.folder))
     return [...set]
   }, [folders, templates])
+
+  // Existing tags across every template, offered as TagPicker suggestions.
+  const allExistingTags = React.useMemo(() => {
+    const set = new Set<string>()
+    templates.forEach((t) => t.tags.forEach((tag) => set.add(tag)))
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [templates])
 
   // Insert a {{variable}} into whichever field was last focused. The subject is
   // a plain input; the body is the rich-text editor (inserts at its caret).
@@ -2190,7 +2191,7 @@ export default function Templates() {
     setChannel(template?.channel ?? "email")
     setSubject(template?.subject ?? "")
     setBody(textToHtml(template?.body ?? ""))
-    setTags(template?.tags.join(", ") ?? "")
+    setTags(template?.tags ?? [])
     activeFieldRef.current = "body"
     setAiOpen(false)
     setAiPrompt("")
@@ -2233,7 +2234,7 @@ export default function Templates() {
       channel,
       subject: channel === "email" ? subject : "",
       body,
-      tags: parseTags(tags),
+      tags,
     }
     if (editing) {
       templateStore.update(editing.id, patch)
@@ -2289,6 +2290,7 @@ export default function Templates() {
       channel: p.channel,
       folder: p.folder,
       prompt: p.prompt,
+      tags: p.tags,
     })
     toast.success(c.duplicated(created.name))
   }
@@ -2375,7 +2377,8 @@ export default function Templates() {
   function duplicateSequenceTemplate(t: SequenceTemplate) {
     const created = sequenceTemplateStore.create(
       `${t.name} ${c.copySuffix}`,
-      t.steps
+      t.steps,
+      t.tags
     )
     toast.success(c.duplicated(created.name))
   }
@@ -2415,7 +2418,7 @@ export default function Templates() {
   function duplicateSelectedSequences() {
     const selected = seqFlat.filter((t) => seqSelectedIds.has(t.id))
     selected.forEach((t) =>
-      sequenceTemplateStore.create(`${t.name} ${c.copySuffix}`, t.steps)
+      sequenceTemplateStore.create(`${t.name} ${c.copySuffix}`, t.steps, t.tags)
     )
     toast.success(c.sequenceTemplatesDuplicated(selected.length))
     setSeqSelectedIds(new Set())
@@ -3195,13 +3198,14 @@ export default function Templates() {
 
               <div className="space-y-2">
                 <Label htmlFor="template-tags">{c.tags}</Label>
-                <Input
+                <TagPicker
                   id="template-tags"
                   value={tags}
-                  onChange={(e) => setTags(e.target.value)}
+                  onChange={setTags}
+                  suggestions={allExistingTags}
                   placeholder={c.tagsPlaceholder}
+                  addLabel={c.tagsAddLabel}
                 />
-                <p className="text-muted-foreground text-xs">{c.tagsHint}</p>
               </div>
             </div>
 

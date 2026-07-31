@@ -13,7 +13,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { sequenceTemplateStore } from "@/lib/sequence-templates"
+import { TagPicker } from "@/components/common/TagPicker"
+import { sequenceTemplateStore, useSequenceTemplates } from "@/lib/sequence-templates"
 import { flattenCampaignSteps } from "@/lib/store"
 import { useLocale } from "@/lib/locale"
 import type { CampaignStep } from "@/lib/types"
@@ -25,6 +26,9 @@ const COPY = {
       `Saves the current ${n} ${n === 1 ? "step" : "steps"} — delays and message content included — so any campaign can start from it.`,
     nameLabel: "Template name",
     namePlaceholder: "e.g. Enterprise outbound — 5 touches",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Add a tag…",
+    tagsAddLabel: (text: string) => `Add "${text}"`,
     cancel: "Cancel",
     save: "Save template",
     created: "Sequence template created",
@@ -35,6 +39,9 @@ const COPY = {
       `Guarda ${n === 1 ? "el paso actual" : `los ${n} pasos actuales`} — con sus tiempos y contenido — para que cualquier campaña pueda empezar desde ahí.`,
     nameLabel: "Nombre de la plantilla",
     namePlaceholder: "p. ej. Outbound enterprise — 5 toques",
+    tagsLabel: "Etiquetas",
+    tagsPlaceholder: "Añadir una etiqueta…",
+    tagsAddLabel: (text: string) => `Añadir "${text}"`,
     cancel: "Cancelar",
     save: "Guardar plantilla",
     created: "Plantilla de secuencia creada",
@@ -45,6 +52,9 @@ const COPY = {
       `Salva ${n === 1 ? "il passaggio attuale" : `i ${n} passaggi attuali`} — tempi e contenuto dei messaggi inclusi — così qualsiasi campagna può partire da lì.`,
     nameLabel: "Nome del modello",
     namePlaceholder: "es. Outbound enterprise — 5 tocchi",
+    tagsLabel: "Tag",
+    tagsPlaceholder: "Aggiungi un tag…",
+    tagsAddLabel: (text: string) => `Aggiungi "${text}"`,
     cancel: "Annulla",
     save: "Salva modello",
     created: "Modello di sequenza creato",
@@ -55,6 +65,9 @@ const COPY = {
       `Enregistre ${n === 1 ? "l'étape actuelle" : `les ${n} étapes actuelles`} — délais et contenu des messages inclus — pour que n'importe quelle campagne puisse en repartir.`,
     nameLabel: "Nom du modèle",
     namePlaceholder: "ex. Outbound enterprise — 5 touches",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Ajouter un tag…",
+    tagsAddLabel: (text: string) => `Ajouter "${text}"`,
     cancel: "Annuler",
     save: "Enregistrer le modèle",
     created: "Modèle de séquence créé",
@@ -65,6 +78,9 @@ const COPY = {
       `Speichert ${n === 1 ? "den aktuellen Schritt" : `die aktuellen ${n} Schritte`} — inklusive Wartezeiten und Nachrichteninhalt — damit jede Kampagne damit starten kann.`,
     nameLabel: "Name der Vorlage",
     namePlaceholder: "z. B. Enterprise-Outbound — 5 Touchpoints",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Tag hinzufügen…",
+    tagsAddLabel: (text: string) => `"${text}" hinzufügen`,
     cancel: "Abbrechen",
     save: "Vorlage speichern",
     created: "Sequenzvorlage erstellt",
@@ -75,6 +91,9 @@ const COPY = {
       `Guarda ${n === 1 ? "o passo atual" : `os ${n} passos atuais`} — com tempos e conteúdo das mensagens — para qualquer campanha poder começar a partir daí.`,
     nameLabel: "Nome do modelo",
     namePlaceholder: "ex. Outbound enterprise — 5 toques",
+    tagsLabel: "Etiquetas",
+    tagsPlaceholder: "Adicionar uma etiqueta…",
+    tagsAddLabel: (text: string) => `Adicionar "${text}"`,
     cancel: "Cancelar",
     save: "Guardar modelo",
     created: "Modelo de sequência criado",
@@ -85,6 +104,9 @@ const COPY = {
       `Salva ${n === 1 ? "a etapa atual" : `as ${n} etapas atuais`} — com tempos e conteúdo das mensagens — para que qualquer campanha possa começar a partir dela.`,
     nameLabel: "Nome do modelo",
     namePlaceholder: "ex.: Outbound enterprise — 5 toques",
+    tagsLabel: "Tags",
+    tagsPlaceholder: "Adicionar uma tag…",
+    tagsAddLabel: (text: string) => `Adicionar "${text}"`,
     cancel: "Cancelar",
     save: "Salvar modelo",
     created: "Modelo de sequência criado",
@@ -103,13 +125,24 @@ export function SaveSequenceTemplateDialog({
   const { locale } = useLocale()
   const c = COPY[locale]
 
+  const existingTemplates = useSequenceTemplates()
+  const allExistingTags = React.useMemo(() => {
+    const set = new Set<string>()
+    existingTemplates.forEach((t) => t.tags.forEach((tag) => set.add(tag)))
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [existingTemplates])
+
   const [name, setName] = React.useState("")
+  const [tags, setTags] = React.useState<string[]>([])
 
   // Reset on open (house pattern — render-time check, never an effect).
   const [wasOpen, setWasOpen] = React.useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
-    if (open) setName("")
+    if (open) {
+      setName("")
+      setTags([])
+    }
   }
 
   const count = flattenCampaignSteps(steps).length
@@ -117,7 +150,7 @@ export function SaveSequenceTemplateDialog({
 
   function handleSave() {
     if (!canSave) return
-    sequenceTemplateStore.create(name.trim(), steps)
+    sequenceTemplateStore.create(name.trim(), steps, tags)
     toast.success(c.created)
     onOpenChange(false)
   }
@@ -146,6 +179,18 @@ export function SaveSequenceTemplateDialog({
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSave()
             }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="sequence-template-tags">{c.tagsLabel}</Label>
+          <TagPicker
+            id="sequence-template-tags"
+            value={tags}
+            onChange={setTags}
+            suggestions={allExistingTags}
+            placeholder={c.tagsPlaceholder}
+            addLabel={c.tagsAddLabel}
           />
         </div>
 

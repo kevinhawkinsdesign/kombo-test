@@ -13,6 +13,7 @@ export interface SequenceTemplate {
   // Step ids inside a template are placeholders — every insert re-clones the
   // steps with fresh ids via cloneSequenceSteps().
   steps: CampaignStep[]
+  tags: string[]
   updatedAt: string
 }
 
@@ -49,6 +50,7 @@ const SEED: SequenceTemplate[] = [
         body: "Quick intro call — reference the two emails and the LinkedIn note.",
       },
     ],
+    tags: ["cold-outbound", "enterprise"],
     updatedAt: "2026-06-30T09:00:00Z",
   },
   {
@@ -76,6 +78,7 @@ const SEED: SequenceTemplate[] = [
         body: "Hi {{first_name}},\n\nTried to reach you by phone — still keen to walk {{company}} through Kombo whenever suits. Here's my calendar: {{calendar_link}}.\n\n{{sender}}",
       },
     ],
+    tags: ["inbound", "speed-to-lead"],
     updatedAt: "2026-06-26T14:00:00Z",
   },
   {
@@ -103,6 +106,7 @@ const SEED: SequenceTemplate[] = [
         body: "Hi {{first_name}},\n\nBefore the event buzz fades — want me to set up that walkthrough for {{company}}? Takes 15 minutes and I'll tailor it to what you told me.\n\n{{sender}}",
       },
     ],
+    tags: ["event", "follow-up"],
     updatedAt: "2026-06-20T10:00:00Z",
   },
 ]
@@ -164,11 +168,12 @@ export function cloneSequenceSteps(steps: CampaignStep[]): CampaignStep[] {
 }
 
 export const sequenceTemplateStore = {
-  create(name: string, steps: CampaignStep[]): SequenceTemplate {
+  create(name: string, steps: CampaignStep[], tags: string[] = []): SequenceTemplate {
     const record: SequenceTemplate = {
       id: uid(),
       name,
       steps: cloneSequenceSteps(steps),
+      tags,
       updatedAt: new Date().toISOString(),
     }
     state = [record, ...state]
