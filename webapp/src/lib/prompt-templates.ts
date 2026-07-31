@@ -108,7 +108,13 @@ const KEY = "kombo_prompt_templates_v1"
 function load(): PromptTemplate[] {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as PromptTemplate[]
+    // Normalize `tags` on read — records saved before this field existed
+    // have no `tags` array at all, which crashes every `.tags.forEach`/
+    // `.tags.map` call site downstream.
+    if (raw) {
+      const parsed = JSON.parse(raw) as PromptTemplate[]
+      return parsed.map((t) => ({ ...t, tags: t.tags ?? [] }))
+    }
   } catch {
     /* ignore */
   }
