@@ -116,7 +116,14 @@ const KEY = "kombo_sequence_templates_v1"
 function load(): SequenceTemplate[] {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as SequenceTemplate[]
+    // Normalize `tags` on read — records saved before this field existed
+    // (real risk for a localStorage-backed store: today's shape isn't
+    // guaranteed for yesterday's saved data) have no `tags` array at all,
+    // which crashes every `.tags.forEach`/`.tags.map` call site downstream.
+    if (raw) {
+      const parsed = JSON.parse(raw) as SequenceTemplate[]
+      return parsed.map((t) => ({ ...t, tags: t.tags ?? [] }))
+    }
   } catch {
     /* ignore */
   }
