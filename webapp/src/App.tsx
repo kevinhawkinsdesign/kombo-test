@@ -20,7 +20,7 @@ import WorkspaceDetail from "@/pages/WorkspaceDetail"
 import Inbox from "@/pages/Inbox"
 import Campaigns from "@/pages/Campaigns"
 import CampaignDetail from "@/pages/CampaignDetail"
-import SequenceBuilderPage from "@/pages/SequenceBuilder"
+import SequenceEditor from "@/pages/SequenceEditor"
 import Sequences from "@/pages/Sequences"
 import Templates from "@/pages/Templates"
 import Playbook from "@/pages/Playbook"
@@ -99,7 +99,7 @@ function App() {
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
         <Route path="/sequences" element={<Sequences />} />
-        <Route path="/sequence-builder" element={<SequenceBuilderPage />} />
+        <Route path="/sequence-builder" element={<SequenceEditor />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/playbook" element={<Playbook />} />
         <Route path="/deals" element={<Deals />} />

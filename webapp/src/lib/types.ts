@@ -142,7 +142,9 @@ export interface ProspectList {
   assigneeId?: string
 }
 
-// --- Sequence / diagram builder ---
+// --- Sequence library listing (lib/mock-sequences.ts's SequenceItem row
+// shape) — the actual step-tree editor uses CampaignStep (below), shared
+// with campaigns' Sequence tab. ---
 export type SequenceChannelType =
   | "email"
   | "linkedin"
@@ -150,31 +152,6 @@ export type SequenceChannelType =
   | "call"
   | "ai_call"
   | "wait"
-
-export type StepTriggerType =
-  | "delay" // after N days
-  | "on_open" // when a prior email is opened
-  | "on_no_reply" // when no reply by the delay
-  | "on_reply" // when the prospect replies
-  | "on_signal" // when a data point / intent signal fires
-  | "on_click" // when a link is clicked
-  | "manual" // wait for the rep to action
-
-export interface StepTrigger {
-  type: StepTriggerType
-  days?: number
-  label?: string // the data point / signal description, when relevant
-}
-
-export interface BuilderStep {
-  id: string
-  channel: SequenceChannelType
-  title: string
-  subtitle?: string
-  trigger: StepTrigger
-  parallel?: boolean // runs alongside the previous step (fan-out)
-  branch?: "reply" | "no_reply" // conditional branch label
-}
 
 // --- Coaching scorecard (critical, actionable) ---
 export type SectionGrade = "strong" | "okay" | "weak"
