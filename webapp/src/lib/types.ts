@@ -68,6 +68,11 @@ export interface Prospect {
   // Detected from an auto-reply — mirrors the extension's OutOfOfficeBadge /
   // "Exclude out-of-office prospects" Inbox filter. Undefined reads as false.
   outOfOffice?: boolean
+  // Already synced to a connected CRM — mirrors AiLead/AiCompany's `inCrm`
+  // (lib/mock-ai-search.ts). Undefined reads as false. No UI surfaces this
+  // yet (deferred to a follow-up); this flips true when the "Add to CRM"
+  // export flow actually completes (see CrmExportDialog).
+  inCrm?: boolean
 }
 
 export interface SavedSearchCriteria {

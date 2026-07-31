@@ -143,6 +143,7 @@ export function CrmSyncFlow({
   accountName,
   willFail,
   onDone,
+  onSuccess,
 }: {
   crmName: string
   crmColor?: string
@@ -150,6 +151,10 @@ export function CrmSyncFlow({
   accountName: string
   willFail: boolean
   onDone: () => void
+  // Fired once, the moment the sync actually lands in the "success" stage
+  // (either straight through, or after the manual-mapping save) — distinct
+  // from onDone, which just fires when the user dismisses the success screen.
+  onSuccess?: () => void
 }) {
   const { locale } = useLocale()
   const c = COPY[locale]
@@ -157,12 +162,19 @@ export function CrmSyncFlow({
   const [linkedinUrl, setLinkedinUrl] = React.useState("")
 
   React.useEffect(() => {
-    const timer = setTimeout(
-      () => setStage(willFail ? "mapping" : "success"),
-      1100
-    )
+    const timer = setTimeout(() => {
+      if (willFail) {
+        setStage("mapping")
+      } else {
+        // Fire onSuccess exactly once, right as the sync actually lands —
+        // distinct from onDone, which only fires when the user dismisses
+        // the success screen below.
+        setStage("success")
+        onSuccess?.()
+      }
+    }, 1100)
     return () => clearTimeout(timer)
-  }, [willFail])
+  }, [willFail, onSuccess])
 
   if (stage === "syncing") {
     return (
@@ -210,7 +222,10 @@ export function CrmSyncFlow({
           variant="volt"
           className="w-full"
           disabled={!linkedinUrl.trim()}
-          onClick={() => setStage("success")}
+          onClick={() => {
+            setStage("success")
+            onSuccess?.()
+          }}
         >
           {c.save}
         </Button>
