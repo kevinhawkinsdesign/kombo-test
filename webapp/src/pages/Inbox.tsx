@@ -2581,7 +2581,7 @@ export default function Inbox() {
   }, [effectiveActive, tasks, campaigns, locale, campaignEnrollments])
 
   return (
-    <div className="flex h-[calc(100svh-4rem)]">
+    <div className="@container flex h-[calc(100svh-4rem)]">
       {/* Rail: folders + tags */}
       <aside
         className={cn(
@@ -3680,12 +3680,20 @@ export default function Inbox() {
         </div>
       )}
 
-      {/* Prospect/company summary panel — every folder, not just Tasks */}
+      {/* Prospect/company summary panel — every folder, not just Tasks.
+          Gated on a container query against this row's own width, not a
+          viewport breakpoint: the folder rail (240px) and conversation list
+          (up to 380px) already claim real space before this panel's 288px
+          is even considered, so a plain `lg:` breakpoint could show this
+          panel with barely any width left for the thread pane itself
+          (composer text wrapping character-by-character). @min-[1360px]
+          is sized so the thread column keeps a sane minimum even with the
+          folder rail, list, and this panel all visible at once. */}
       {effectiveActive && activeProspect && (
         <div
           className={cn(
             "hidden w-72 shrink-0 flex-col overflow-y-auto border-l",
-            profileOpen ? "lg:flex" : "lg:hidden"
+            profileOpen ? "@min-[1360px]:flex" : "@min-[1360px]:hidden"
           )}
         >
           <ProspectSummaryPanel prospect={activeProspect} locale={locale} />
