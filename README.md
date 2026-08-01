@@ -17,7 +17,6 @@ Three things in one repo:
 | Team | `team.html` |
 | Podcast | `podcast.html` |
 | Features | `features.html` |
-| Pricing | `pricing.html` |
 | Integrations | `integrations.html` |
 | Customers | `customers.html` |
 | Blog | `blog.html` |
