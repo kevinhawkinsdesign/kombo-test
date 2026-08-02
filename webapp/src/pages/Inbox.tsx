@@ -198,6 +198,7 @@ const COPY = {
     allChannels: "All channels",
     email: "Email",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Phone",
     addedToList: (n: number) => `Added to List (${n})`,
     unreadOnly: "Unread only",
@@ -374,6 +375,7 @@ const COPY = {
     allChannels: "Todos los canales",
     email: "Correo",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Teléfono",
     addedToList: (n: number) => `Añadido a la lista (${n})`,
     unreadOnly: "Solo sin leer",
@@ -549,6 +551,7 @@ const COPY = {
     allChannels: "Tutti i canali",
     email: "Email",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Telefono",
     addedToList: (n: number) => `Aggiunto alla lista (${n})`,
     unreadOnly: "Solo non lette",
@@ -724,6 +727,7 @@ const COPY = {
     allChannels: "Tous les canaux",
     email: "E-mail",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Téléphone",
     addedToList: (n: number) => `Ajouté à la liste (${n})`,
     unreadOnly: "Non lues uniquement",
@@ -899,6 +903,7 @@ const COPY = {
     allChannels: "Alle Kanäle",
     email: "E-Mail",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Telefon",
     addedToList: (n: number) => `Zur Liste hinzugefügt (${n})`,
     unreadOnly: "Nur ungelesene",
@@ -1074,6 +1079,7 @@ const COPY = {
     allChannels: "Todos os canais",
     email: "Email",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Telefone",
     addedToList: (n: number) => `Adicionado à lista (${n})`,
     unreadOnly: "Apenas por ler",
@@ -1249,6 +1255,7 @@ const COPY = {
     allChannels: "Todos os canais",
     email: "E-mail",
     linkedin: "LinkedIn",
+    whatsapp: "WhatsApp",
     phone: "Telefone",
     addedToList: (n: number) => `Adicionado à lista (${n})`,
     unreadOnly: "Apenas não lidas",
@@ -2811,16 +2818,20 @@ export default function Inbox() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuLabel>{c.channel}</DropdownMenuLabel>
-                {(["all", "email", "linkedin"] as const).map((ch) => (
+                {(["all", "email", "linkedin", "whatsapp"] as const).map((ch) => (
                   <DropdownMenuItem key={ch} onClick={() => setChannelFilter(ch)}>
-                    {ch === "email" ? (
-                      <Mail className="size-4" />
-                    ) : ch === "linkedin" ? (
-                      <LinkedinIcon className="size-4" />
-                    ) : (
+                    {ch === "all" ? (
                       <span className="size-4" />
+                    ) : (
+                      <ChannelIcon channel={ch} className="size-4" />
                     )}
-                    {ch === "all" ? c.allChannels : ch === "email" ? c.email : c.linkedin}
+                    {ch === "all"
+                      ? c.allChannels
+                      : ch === "email"
+                        ? c.email
+                        : ch === "linkedin"
+                          ? c.linkedin
+                          : c.whatsapp}
                     {channelFilter === ch && <Check className="ml-auto size-4" />}
                   </DropdownMenuItem>
                 ))}
