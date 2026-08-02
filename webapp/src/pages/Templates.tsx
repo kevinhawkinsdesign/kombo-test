@@ -13,7 +13,6 @@ import {
   Braces,
   Sparkles,
   Wand2,
-  MessageCircle,
   Columns3,
   Download,
   Workflow,
@@ -21,7 +20,7 @@ import {
 
 import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { FeatureIntro } from "@/components/common/FeatureIntro"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { Page, PageHeading } from "@/components/layout/Page"
 import {
   Dialog,
@@ -1532,7 +1531,7 @@ function ChannelIcon({
     case "linkedin":
       return <LinkedinIcon className={className} />
     case "whatsapp":
-      return <MessageCircle className={cn(className, "text-[#25D366]")} />
+      return <WhatsappIcon className={cn(className, "text-[#25D366]")} />
     default:
       return <Mail className={className} />
   }

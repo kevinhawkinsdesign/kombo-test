@@ -4,7 +4,6 @@ import { toast } from "sonner"
 import {
   Mail,
   Search as SearchIcon,
-  MessageCircle,
   FileText,
   Check,
   ArrowLeft,
@@ -23,7 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { useTemplates, templateStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { mergeVarsHighlighted, mergeVarsRaw } from "@/lib/merge-vars-highlight"
@@ -270,7 +269,7 @@ function ChannelIcon({
     case "linkedin":
       return <LinkedinIcon className={className} />
     case "whatsapp":
-      return <MessageCircle className={cn(className, "text-[#25D366]")} />
+      return <WhatsappIcon className={cn(className, "text-[#25D366]")} />
     default:
       return <Mail className={className} />
   }

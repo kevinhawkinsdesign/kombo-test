@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ArrowLeft, Mail, MessageCircle, PenLine, RefreshCw, Sparkles } from "lucide-react"
+import { ArrowLeft, Mail, PenLine, RefreshCw, Sparkles } from "lucide-react"
 
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import {
   usePromptTemplates,
   generatePromptedMessage,
@@ -220,7 +220,7 @@ function ChannelGlyph({
 }) {
   if (channel === "linkedin") return <LinkedinIcon className={className} />
   if (channel === "whatsapp")
-    return <MessageCircle className={cn(className, "text-[#25D366]")} />
+    return <WhatsappIcon className={cn(className, "text-[#25D366]")} />
   return <Mail className={className} />
 }
 

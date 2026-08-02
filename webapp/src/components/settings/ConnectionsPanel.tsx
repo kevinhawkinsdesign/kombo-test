@@ -15,7 +15,7 @@ import {
   Video,
 } from "lucide-react"
 
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import {
   Card,
@@ -623,7 +623,7 @@ export function ConnectionsPanel() {
         description={c.connOutreachDesc}
       >
         <ConnectionToggleRow
-          icon={<MessageCircle className="size-5 text-emerald-600" />}
+          icon={<WhatsappIcon className="size-5 text-emerald-600" />}
           label={c.connWhatsapp}
           checked={whatsapp}
           onChange={setWhatsapp}
@@ -697,7 +697,7 @@ export function ConnectionsPanel() {
           onChange={setGoogleMeet}
         />
         <ConnectionToggleRow
-          icon={<MessageCircle className="size-5 text-emerald-600" />}
+          icon={<WhatsappIcon className="size-5 text-emerald-600" />}
           label={c.connWhatsapp}
           checked={whatsappCalls}
           onChange={setWhatsappCalls}
