@@ -37,7 +37,6 @@ import {
   ListTodo,
   Reply,
   Phone,
-  MessageCircle,
   Circle,
   AlarmClock,
   CheckCircle2,
@@ -57,7 +56,7 @@ import {
   List,
 } from "lucide-react"
 
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { Segmented } from "@/components/common/Segmented"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -1502,7 +1501,7 @@ const STEP_META: Record<
 > = {
   email: { en: "Email step sent", es: "Paso de email enviado", icon: Mail },
   linkedin: { en: "LinkedIn message sent", es: "Mensaje de LinkedIn enviado", icon: LinkedinIcon },
-  whatsapp: { en: "WhatsApp message sent", es: "Mensaje de WhatsApp enviado", icon: MessageCircle },
+  whatsapp: { en: "WhatsApp message sent", es: "Mensaje de WhatsApp enviado", icon: WhatsappIcon },
   call: { en: "Call logged", es: "Llamada registrada", icon: Phone },
   ai_call: { en: "AI call placed", es: "Llamada de IA realizada", icon: Sparkles },
   wait: { en: "Sequence step", es: "Paso de secuencia", icon: Clock },

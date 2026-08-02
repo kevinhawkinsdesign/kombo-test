@@ -5,7 +5,6 @@ import {
   Plus,
   Mail,
   Phone,
-  MessageCircle,
   Sparkles,
   Clock,
   Workflow,
@@ -39,7 +38,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog"
 import { CollectionToolbar } from "@/components/common/CollectionToolbar"
 import { SequenceRecommendations } from "@/components/common/Recommendations"
 import type { CollectionView } from "@/components/common/ViewToggle"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { useSequences, sequenceStore } from "@/lib/mock-sequences"
 import { downloadCsv } from "@/lib/csv"
 import { formatDate } from "@/lib/format"
@@ -55,7 +54,7 @@ const CHANNELS: Record<
   linkedin: { icon: LinkedinIcon, tint: "bg-[#0a66c2]/15 text-[#0a66c2]", en: "LinkedIn", es: "LinkedIn", it: "LinkedIn", fr: "LinkedIn", de: "LinkedIn", pt: "LinkedIn", pt_BR: "LinkedIn" },
   call: { icon: Phone, tint: "bg-chart-4/15 text-chart-4", en: "Call", es: "Llamada", it: "Chiamata", fr: "Appel", de: "Anruf", pt: "Chamada", pt_BR: "Ligação" },
   ai_call: { icon: Sparkles, tint: "bg-chart-5/15 text-chart-5", en: "AI call", es: "Llamada IA", it: "Chiamata IA", fr: "Appel IA", de: "KI-Anruf", pt: "Chamada IA", pt_BR: "Ligação IA" },
-  whatsapp: { icon: MessageCircle, tint: "bg-chart-1/15 text-chart-1", en: "WhatsApp", es: "WhatsApp", it: "WhatsApp", fr: "WhatsApp", de: "WhatsApp", pt: "WhatsApp", pt_BR: "WhatsApp" },
+  whatsapp: { icon: WhatsappIcon, tint: "bg-chart-1/15 text-chart-1", en: "WhatsApp", es: "WhatsApp", it: "WhatsApp", fr: "WhatsApp", de: "WhatsApp", pt: "WhatsApp", pt_BR: "WhatsApp" },
   wait: { icon: Clock, tint: "bg-muted text-muted-foreground", en: "Wait", es: "Espera", it: "Attesa", fr: "Attente", de: "Wartezeit", pt: "Espera", pt_BR: "Espera" },
 }
 

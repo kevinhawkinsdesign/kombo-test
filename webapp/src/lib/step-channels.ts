@@ -6,7 +6,6 @@
 import * as React from "react"
 import {
   Mail,
-  MessageCircle,
   Phone,
   Sparkles,
   ListTodo,
@@ -25,7 +24,7 @@ import {
   PhoneCall,
 } from "lucide-react"
 
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { integrations } from "@/lib/mock-data"
 import type { Locale } from "@/lib/locale"
 import type {
@@ -43,7 +42,7 @@ export interface ChannelMeta {
 
 export const CHANNELS: Record<StepChannel, ChannelMeta> = {
   email: { tint: "bg-primary/15 text-primary", Icon: Mail },
-  whatsapp: { tint: "bg-chart-1/15 text-chart-1", Icon: MessageCircle },
+  whatsapp: { tint: "bg-chart-1/15 text-chart-1", Icon: WhatsappIcon },
   call: { tint: "bg-chart-4/15 text-chart-4", Icon: Phone },
   ai_call: { tint: "bg-chart-5/15 text-chart-5", Icon: Sparkles },
   linkedin_message: { tint: "bg-[#0a66c2]/15 text-[#0a66c2]", Icon: LinkedinIcon },

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Copy, Mail, MessageCircle, Phone, Search, Sparkles } from "lucide-react"
+import { Copy, Mail, Phone, Search, Sparkles } from "lucide-react"
 
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { useCampaigns, flattenCampaignSteps } from "@/lib/store"
 import { useSequenceTemplates } from "@/lib/sequence-templates"
 import { normalizeChannel } from "@/lib/step-channels"
@@ -139,7 +139,7 @@ const COPY = {
 function StepGlyph({ channel }: { channel: StepChannel }) {
   const ch = normalizeChannel(channel)
   const cls = "size-3"
-  if (ch === "whatsapp") return <MessageCircle className={cn(cls, "text-chart-1")} />
+  if (ch === "whatsapp") return <WhatsappIcon className={cn(cls, "text-chart-1")} />
   if (ch === "call") return <Phone className={cn(cls, "text-chart-4")} />
   if (ch === "ai_call") return <Sparkles className={cn(cls, "text-chart-5")} />
   if (ch.startsWith("linkedin")) return <LinkedinIcon className={cn(cls, "text-[#0a66c2]")} />

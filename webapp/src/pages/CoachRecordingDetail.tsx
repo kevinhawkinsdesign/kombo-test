@@ -29,7 +29,6 @@ import {
   AlertTriangle,
   Video,
   Mic,
-  MessageCircle,
   Phone,
   ChevronDown,
 } from "lucide-react"
@@ -56,7 +55,7 @@ import { TabSkeleton } from "@/components/common/ContentSkeleton"
 import { useSkeletonTransition } from "@/lib/use-skeleton-transition"
 import { RichTextEditor } from "@/components/common/RichTextEditor"
 import { SearchCombobox } from "@/components/common/SearchCombobox"
-import { LinkedinIcon } from "@/components/icons/BrandIcons"
+import { LinkedinIcon, WhatsappIcon } from "@/components/icons/BrandIcons"
 import { AddToCrmDialog } from "@/components/crm/AddToCrmDialog"
 import {
   Select,
@@ -1202,7 +1201,7 @@ const VIDEO_SOURCE_ICON: Record<
   teams: { Icon: Video, className: "text-[#4b53bc]" },
   zoom: { Icon: Video, className: "text-[#2d8cff]" },
   gong: { Icon: Mic, className: "text-[#7444d6]" },
-  whatsapp: { Icon: MessageCircle, className: "text-emerald-600" },
+  whatsapp: { Icon: WhatsappIcon, className: "text-emerald-600" },
   phone: { Icon: Phone, className: "text-muted-foreground" },
   linkedin: { Icon: LinkedinIcon, className: "text-[#0a66c2]" },
 }
