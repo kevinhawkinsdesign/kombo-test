@@ -713,8 +713,8 @@
             <div class="cell"><span class="yes">●</span></div>
           </div>
           <div class="matrix-row">
-            <div class="feat">Chrome extension on LinkedIn / Sales Nav<span class="hint">Kombo: Recorder only — the main extension excludes LinkedIn</span></div>
-            <div class="cell kombo"><span class="partial">◐</span></div>
+            <div class="feat">Chrome extension on LinkedIn / Sales Nav<span class="hint">Kombo: via a LinkedIn-only side panel, not an in-page injection</span></div>
+            <div class="cell kombo"><span class="yes">●</span></div>
             <div class="cell"><span class="yes">●</span></div>
             <div class="cell"><span class="yes">●</span></div>
             <div class="cell"><span class="yes">●</span></div>
@@ -1283,11 +1283,12 @@
         <div class="extcard-head">
           <div class="extco">KomboAI</div>
         </div>
-        <div class="extcard-where">// main: CRM + mail + meeting surfaces · recorder: meetings + LinkedIn · connector: LinkedIn only</div>
+        <div class="extcard-where">// main: CRM + mail + meeting surfaces in-page, LinkedIn via side panel · recorder: meetings + LinkedIn · connector: LinkedIn only</div>
         <div style="font-size:12.5px;color:var(--lavender);font-family:'JetBrains Mono',monospace;letter-spacing:.02em;margin-top:-4px">3 extensions · main v1.7.38 · recorder v1.3.5 · connector v1.0.10 — versions from each repo's manifest</div>
         <ul class="ext-list">
           <li><b>Three separate, focused extensions</b> rather than one monolith: <i>Kombo</i> (the main UI), <i>KomboAI Recorder</i> (call &amp; meeting capture), and <i>KomboAI Connector</i> (LinkedIn account bridge).</li>
-          <li><b>Kombo (main), v1.7.38 —</b> injects a Shadow-DOM panel into HubSpot, Salesforce/force.com, Zoho, Pipedrive, Monday, Dynamics, SmartLead, Gmail, Google Calendar, Google Meet, Teams, Zoom and claude.ai. <b>It does not run on LinkedIn or Sales Navigator at all:</b> the manifest requests no LinkedIn host permission and its content script carries an explicit <b>exclude_globs</b> for <b>*.linkedin.com</b>. Permissions: storage, webNavigation, tabs, offscreen, sidePanel.</li>
+          <li><b>Kombo (main), v1.7.38 —</b> injects a Shadow-DOM panel into HubSpot, Salesforce/force.com, Zoho, Pipedrive, Monday, Dynamics, SmartLead, Gmail, Google Calendar, Google Meet, Teams, Zoom and claude.ai. Permissions: storage, webNavigation, tabs, offscreen, sidePanel.</li>
+          <li><b>On LinkedIn it runs beside the page, not inside it.</b> The content script is explicitly excluded from LinkedIn (<b>exclude_globs</b> for <b>*.linkedin.com</b>, and no LinkedIn host permission), so the full app is hosted in a browser <b>side panel</b> instead, which learns the current URL from <b>chrome.tabs</b> rather than the DOM. The panel is LinkedIn-only — it closes itself the moment the active tab is anything else. So LinkedIn is supported, and is in fact the side panel's only surface; what's absent is in-page injection, not the capability.</li>
           <li><b>KomboAI Recorder, v1.3.5 —</b> the only one of the three with a LinkedIn content script. Captures screen + tab audio in an offscreen document and mic audio in the content script, chunks both to IndexedDB, and uploads to our backend. Permissions: activeTab, storage, offscreen, tabCapture. Runs on LinkedIn, HubSpot, Salesforce, SmartLead, Gmail, Calendar, Meet, Teams and Zoom; activates on Ctrl/Cmd+Shift+K.</li>
           <li><b>KomboAI Connector, v1.0.10 —</b> no content script and no UI beyond an informational popup. Holds cookies, tabs and webNavigation against a single host permission for linkedin.com. On a <b>getLinkedInProfile</b> message it calls LinkedIn's internal <b>/voyager/api/me</b> endpoint and returns the rep's profile together with their full linkedin.com cookie set.</li>
           <li><b>How the three relate —</b> neither sibling authenticates on its own. The Recorder asks the main extension for the backend URL and access token over chrome.runtime.sendMessage; the Connector answers exactly one message type via onMessageExternal. All backend traffic is brokered by the main extension, whose externally_connectable allowlist is scoped to our Cloud Run origins and five sibling extension IDs.</li>
